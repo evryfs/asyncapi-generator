@@ -44,5 +44,6 @@
 
     <modules>
         <module>asyncapi-generator-core</module>
+        <module>asyncapi-generator-maven-plugin</module>
     </modules>
 </project>
