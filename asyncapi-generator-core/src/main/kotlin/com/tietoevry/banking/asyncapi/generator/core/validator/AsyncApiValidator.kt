@@ -38,7 +38,7 @@ class AsyncApiValidator(
 
 
     private fun validateAsyncApiVersion(node: AsyncApiDocument, results: ValidationResults) {
-        val asyncApiVersion = node.asyncapi
+        val asyncApiVersion = node.asyncapi.let(::sanitizeString)
         val versionRegex = Regex("""^\d+\.\d+\.\d+(-[A-Za-z0-9]+)?$""")
 
         if (asyncApiVersion.isBlank()) {
@@ -77,7 +77,7 @@ class AsyncApiValidator(
     }
 
     private fun validateDefaultContentType(node: AsyncApiDocument, results: ValidationResults) {
-        val contentType = node.defaultContentType ?: return
+        val contentType = node.defaultContentType?.let(::sanitizeString) ?: return
         val mimeRegex = Regex("""^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$""")
 
         if (!mimeRegex.matches(contentType)) {

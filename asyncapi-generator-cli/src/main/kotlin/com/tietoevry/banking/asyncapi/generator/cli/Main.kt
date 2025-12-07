@@ -1,6 +1,5 @@
 package com.tietoevry.banking.asyncapi.generator.cli
 
-import com.github.ajalt.clikt.core.BaseCliktCommand
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
@@ -19,9 +18,6 @@ import com.tietoevry.banking.asyncapi.generator.core.parser.AsyncApiParser
 import com.tietoevry.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import com.tietoevry.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
-import kotlin.collections.forEach
-import kotlin.io.resolve
-import kotlin.to
 
 fun main(args: Array<String>) =
     AsyncApiGeneratorCli().main(args)
@@ -61,7 +57,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val springKafka by option("--spring-kafka", help = "Generate Spring Kafka clients").flag()
 
     override fun run() {
-        echo("Generating AsyncAPI code from $input to $output...")
+        echo("Generating AsyncAPI code from $input...")
 
         val context = AsyncApiContext()
         val root = AsyncApiRegistry.readYaml(input, context)
@@ -85,7 +81,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         val effClientPackage = clientPackage ?: modelPackage
         val effSchemaPackage = schemaPackage ?: modelPackage
 
-        // pragmatic for now
         val sourceRootName = if (generator == KOTLIN) {
             "src/main/kotlin"
         } else {
