@@ -4,7 +4,6 @@ import com.github.mustachejava.DefaultMustacheFactory
 import com.tietoevry.banking.asyncapi.generator.core.generator.java.mapper.ImportMapper
 import com.tietoevry.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import com.tietoevry.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
-import com.tietoevry.banking.asyncapi.generator.core.generator.java.model.JavaFieldTemplate
 import com.tietoevry.banking.asyncapi.generator.core.generator.util.FileUtil
 import java.io.File
 import java.io.StringWriter
@@ -20,19 +19,19 @@ class JavaClassGenerator(
         val template = mustacheFactory.compile("javaClass.mustache")
 
         val fields = model.properties.mapIndexed { index, prop ->
-            JavaFieldTemplate(
-                name = prop.name,
-                type = prop.typeName,
-                getterName = prop.getterName,
-                setterName = prop.setterName,
-                docFirstLine = prop.description.firstOrNull(),
-                docTailLines = prop.description.drop(1),
-                last = index == model.properties.size - 1,
-                annotations = prop.annotations
+            mapOf(
+                "name" to prop.name,
+                "type" to prop.typeName,
+                "getterName" to prop.getterName,
+                "setterName" to prop.setterName,
+                "docFirstLine" to prop.docFirstLine,
+                "docTailLines" to prop.docTailLines,
+                "last" to (index == model.properties.size - 1),
+                "annotations" to prop.annotations
             )
         }
 
-        val imports = importMapper.computeImports(model.name, fields)
+        val imports = importMapper.computeImports(model.name, model.properties)
         val implementsClause = if (model.implementsInterfaces.isNotEmpty()) {
             " implements " + model.implementsInterfaces.joinToString(", ")
         } else {

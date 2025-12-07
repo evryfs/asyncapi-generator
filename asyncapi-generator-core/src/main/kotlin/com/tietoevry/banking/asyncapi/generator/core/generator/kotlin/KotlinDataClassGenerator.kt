@@ -4,7 +4,6 @@ import com.github.mustachejava.DefaultMustacheFactory
 import com.tietoevry.banking.asyncapi.generator.core.generator.kotlin.mapper.ImportMapper
 import com.tietoevry.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import com.tietoevry.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
-import com.tietoevry.banking.asyncapi.generator.core.generator.kotlin.model.KotlinFieldTemplate
 import com.tietoevry.banking.asyncapi.generator.core.generator.util.FileUtil
 import java.io.File
 import java.io.StringWriter
@@ -25,19 +24,19 @@ class KotlinDataClassGenerator(
         // Temporarily adapt our new rich PropertyModel to the old KotlinFieldTemplate
         // to avoid changing the mustache template for now.
         val fields = model.properties.mapIndexed { index, prop ->
-            KotlinFieldTemplate(
-                name = prop.name,
-                type = prop.typeName.removeSuffix("?"),
-                docFirstLine = prop.description.firstOrNull(),
-                docTailLines = prop.description.drop(1),
-                nullable = prop.typeName.endsWith("?"),
-                defaultValue = prop.defaultValue,
-                last = index == model.properties.size - 1,
-                annotations = prop.annotations
-            )
-        }
+               mapOf(
+                   "name" to prop.name,
+                   "type" to prop.baseType,
+                   "docFirstLine" to prop.docFirstLine,
+                   "docTailLines" to prop.docTailLines,
+                   "nullable" to prop.isNullable,
+                   "defaultValue" to prop.defaultValue,
+                   "last" to (index == model.properties.size - 1),
+                   "annotations" to prop.annotations
+               )
+           }
 
-        val imports = importMapper.computeImports(model.name, fields)
+        val imports = importMapper.computeImports(model.name, model.properties)
         val implementsClause = if (model.parentInterfaces.isNotEmpty()) {
             " : " + model.parentInterfaces.joinToString(", ")
         } else {

@@ -7,4 +7,7 @@ data class PropertyModel(
     val getterName: String,
     val setterName: String,
     val annotations: List<String>
-)
+) {
+    val docFirstLine: String? get() = description.firstOrNull()
+    val docTailLines: List<String> get() = description.drop(1)
+}

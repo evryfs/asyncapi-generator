@@ -1,66 +1,43 @@
 package com.tietoevry.banking.asyncapi.generator.core.generator.java.mapper
 
-import com.tietoevry.banking.asyncapi.generator.core.generator.java.model.JavaFieldTemplate
+import com.tietoevry.banking.asyncapi.generator.core.generator.java.model.PropertyModel
 import com.tietoevry.banking.asyncapi.generator.core.generator.util.TypeConstants.JAVA_BUILTINS
 
-class ImportMapper(private val modelPackage: String) {
+class ImportMapper(
+    val modelPackage: String,
+) {
 
     private val JAVA_LANG_BUILTINS = setOf("String", "Integer", "Long", "Double", "Float", "Boolean", "Object", "Void")
 
     fun computeImports(
         currentClassName: String,
-        fields: List<JavaFieldTemplate>,
+        fields: List<PropertyModel>,
     ): List<String> {
         val imports = linkedSetOf<String>()
 
-        // Standard imports for generated POJOs
         imports.add("java.util.Objects")
         imports.add("java.io.Serializable")
 
         fields.forEach { field ->
-            val raw = field.type // e.g., "Map<String, String>", "List<SomeItem>"
+            val raw = field.typeName
+            collectImports(raw, currentClassName, imports)
 
-            // Built-ins from java.* → add correct import
-            when {
-                raw == "UUID" -> imports += "java.util.UUID"
-                raw == "LocalDate" -> imports += "java.time.LocalDate"
-                raw == "LocalTime" -> imports += "java.time.LocalTime"
-                raw == "OffsetDateTime" -> imports += "java.time.OffsetDateTime"
-                raw == "BigDecimal" -> imports += "java.math.BigDecimal"
-                raw.startsWith("List<") -> imports += "java.util.List"
-                raw.startsWith("Map<") -> imports += "java.util.Map"
-            }
-
-            // Parse List<T> or Map<K,V> to find inner models (recursive call handles this)
-            if (raw.startsWith("List<") && raw.endsWith(">")) {
-                val element = raw.removePrefix("List<").removeSuffix(">").trim()
-                addIfModelType(imports, element, currentClassName)
-            } else if (raw.startsWith("Map<") && raw.endsWith(">")) {
-                val inner = raw.removePrefix("Map<").removeSuffix(">")
-                val parts = inner.split(",")
-                if (parts.size == 2) {
-                    addIfModelType(imports, parts[1].trim(), currentClassName)
-                }
-            } else {
-                addIfModelType(imports, raw, currentClassName)
-            }
-
-            // Annotation Imports
             field.annotations.forEach { ann ->
+                val trimmedAnn = ann.trim()
                 when {
-                    ann.startsWith("@NotNull") -> imports += "jakarta.validation.constraints.NotNull"
-                    ann.startsWith("@Size") -> imports += "jakarta.validation.constraints.Size"
-                    ann.startsWith("@Pattern") -> imports += "jakarta.validation.constraints.Pattern"
-                    ann.startsWith("@Min") -> imports += "jakarta.validation.constraints.Min"
-                    ann.startsWith("@Max") -> imports += "jakarta.validation.constraints.Max"
-                    ann.startsWith("@DecimalMin") -> imports += "jakarta.validation.constraints.DecimalMin"
-                    ann.startsWith("@DecimalMax") -> imports += "jakarta.validation.constraints.DecimalMax"
-                    ann.startsWith("@Email") -> imports += "jakarta.validation.constraints.Email"
-                    ann.startsWith("@Valid") -> imports += "jakarta.validation.Valid"
-                    ann.startsWith("@JsonProperty") -> {
+                    trimmedAnn.startsWith("@NotNull") -> imports += "jakarta.validation.constraints.NotNull"
+                    trimmedAnn.startsWith("@Size") -> imports += "jakarta.validation.constraints.Size"
+                    trimmedAnn.startsWith("@Pattern") -> imports += "jakarta.validation.constraints.Pattern"
+                    trimmedAnn.startsWith("@Min") -> imports += "jakarta.validation.constraints.Min"
+                    trimmedAnn.startsWith("@Max") -> imports += "jakarta.validation.constraints.Max"
+                    trimmedAnn.startsWith("@DecimalMin") -> imports += "jakarta.validation.constraints.DecimalMin"
+                    trimmedAnn.startsWith("@DecimalMax") -> imports += "jakarta.validation.constraints.DecimalMax"
+                    trimmedAnn.startsWith("@Email") -> imports += "jakarta.validation.constraints.Email"
+                    trimmedAnn.startsWith("@Valid") -> imports += "jakarta.validation.Valid"
+                    trimmedAnn.startsWith("@JsonProperty") -> {
                         imports += "com.fasterxml.jackson.annotation.JsonProperty"
                         // Add import for Access enum if it's used
-                        if (ann.contains("access = Access.")) {
+                        if (trimmedAnn.contains("access = Access.")) {
                             imports += "com.fasterxml.jackson.annotation.JsonProperty.Access"
                         }
                     }
@@ -69,6 +46,45 @@ class ImportMapper(private val modelPackage: String) {
         }
 
         return imports.toList().sorted()
+    }
+
+    private fun collectImports(type: String, currentClassName: String, imports: MutableSet<String>) {
+        val raw = type.trim()
+        when (raw) {
+            "UUID" -> {
+                imports += "java.util.UUID"; return
+            }
+            "LocalDate" -> {
+                imports += "java.time.LocalDate"; return
+            }
+            "LocalTime" -> {
+                imports += "java.time.LocalTime"; return
+            }
+            "OffsetDateTime" -> {
+                imports += "java.time.OffsetDateTime"; return
+            }
+            "BigDecimal" -> {
+                imports += "java.math.BigDecimal"; return
+            }
+        }
+        if (raw.startsWith("List<") && raw.endsWith(">")) {
+            imports += "java.util.List"
+            val element = raw.removePrefix("List<").removeSuffix(">")
+            collectImports(element, currentClassName, imports)
+            return
+        }
+        if (raw.startsWith("Map<") && raw.endsWith(">")) {
+            imports += "java.util.Map"
+            val content = raw.removePrefix("Map<").removeSuffix(">")
+            val parts = content.split(",")
+            if (parts.size >= 2) {
+                parts.forEach { part ->
+                    collectImports(part, currentClassName, imports)
+                }
+            }
+            return
+        }
+        addIfModelType(imports, raw, currentClassName)
     }
 
     private fun addIfModelType(imports: MutableSet<String>, type: String, currentClassName: String) {

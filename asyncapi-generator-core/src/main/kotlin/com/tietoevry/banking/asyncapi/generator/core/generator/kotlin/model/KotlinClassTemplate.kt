@@ -4,7 +4,7 @@ data class KotlinClassTemplate(
     val packageName: String,
     val className: String,
     val classDocLines: List<String>,
-    val fields: List<KotlinFieldTemplate>,
+    val fields: List<Map<String, Any?>>,
     val imports: List<String> = emptyList(),
     val implementsClause: String = "",
 )
