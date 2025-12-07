@@ -1,0 +1,38 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Schema Validation Test
+  version: 1.0.0
+channels:
+  testChannel:
+    address: "example.topic"
+    messages:
+      testMessage:
+        $ref: "#/components/messages/testMessage"
+components:
+  messages:
+    testMessage:
+      payload:
+        $ref: "#/components/schemas/validKotlinUserSchema"
+  schemas:
+    validKotlinUserSchema:
+      title: Valid User Schema
+      description: Represents a user with valid fields
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          type: integer
+          description: The unique identifier of the user
+        username:
+          type: string
+          minLength: 3
+          maxLength: 20
+          description: Username between 3 and 20 characters
+        active:
+          type: boolean
+          description: Whether the user is active
+        email:
+          type: string
+          description: Optional email address

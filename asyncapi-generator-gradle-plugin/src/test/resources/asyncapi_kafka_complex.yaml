@@ -1,0 +1,76 @@
+asyncapi: '3.0.0'
+info:
+  title: User Service Kafka API
+  version: '1.0.0'
+  description: A generic example of a Kafka-based API for testing generation.
+
+defaultContentType: application/json
+
+servers:
+  production:
+    host: kafka.example.com:9092
+    protocol: kafka
+    description: Production Kafka Broker
+
+channels:
+  userSignedUp:
+    address: 'user.events.signedup'
+    messages:
+      userSignedUpEvent:
+        $ref: '#/components/messages/UserSignedUp'
+  userLoggedOut:
+    address: 'user.events.loggedout'
+    messages:
+      userLoggedOutEvent:
+        $ref: '#/components/messages/UserLoggedOut'
+
+operations:
+  receiveUserSignup:
+    action: receive
+    channel:
+      $ref: '#/channels/userSignedUp'
+    messages:
+      - $ref: '#/channels/userSignedUp/messages/userSignedUpEvent'
+
+  sendUserLogout:
+    action: send
+    channel:
+      $ref: '#/channels/userLoggedOut'
+    messages:
+      - $ref: '#/channels/userLoggedOut/messages/userLoggedOutEvent'
+
+components:
+  messages:
+    UserSignedUp:
+      name: UserSignedUp
+      title: User Signed Up Event
+      payload:
+        $ref: '#/components/schemas/User'
+    UserLoggedOut:
+      name: UserLoggedOut
+      title: User Logged Out Event
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            format: uuid
+          timestamp:
+            type: string
+            format: date-time
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+      required:
+        - id
+        - username

@@ -1,0 +1,116 @@
+package com.tietoevry.banking.asyncapi.generator.maven.plugin
+
+import com.tietoevry.banking.asyncapi.generator.core.bundler.AsyncApiBundler
+import com.tietoevry.banking.asyncapi.generator.core.context.AsyncApiContext
+import com.tietoevry.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName
+import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorOptions
+import com.tietoevry.banking.asyncapi.generator.core.parser.AsyncApiParser
+import com.tietoevry.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import com.tietoevry.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import org.apache.maven.plugin.AbstractMojo
+import org.apache.maven.plugin.MojoExecutionException
+import org.apache.maven.plugins.annotations.LifecyclePhase
+import org.apache.maven.plugins.annotations.Mojo
+import org.apache.maven.plugins.annotations.Parameter
+import org.apache.maven.project.MavenProject
+import java.io.File
+import java.util.Locale
+
+@Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+class AsyncApiGeneratorMojo : AbstractMojo() {
+
+    @Parameter(defaultValue = "\${project}", readonly = true)
+    private lateinit var project: MavenProject
+
+    @Parameter(property = "generatorName", defaultValue = "kotlin")
+    private lateinit var generatorName: String
+
+    @Parameter(property = "inputFile", required = true)
+    private lateinit var inputFile: File
+
+    @Parameter(property = "outputFile")
+    private var outputFile: File? = null
+
+    @Parameter(property = "outputDir", defaultValue = "\${project.build.directory}/generated-sources/asyncapi")
+    private lateinit var outputDir: File
+
+    @Parameter(property = "modelPackage", required = true)
+    private lateinit var modelPackage: String
+
+    @Parameter(property = "clientPackage")
+    private var clientPackage: String? = null
+
+    @Parameter(property = "schemaPackage")
+    private var schemaPackage: String? = null
+
+    @Parameter
+    private var configuration: Map<String, String> = emptyMap()
+
+    @Parameter
+    private var experimental: Map<String, String> = emptyMap()
+
+    private val context = AsyncApiContext()
+    private val parser = AsyncApiParser(context)
+    private val validator = AsyncApiValidator(context)
+    private val bundler = AsyncApiBundler()
+    private val generator = AsyncApiGenerator()
+
+    override fun execute() {
+        log.info("asyncapi-generator-maven-plugin started")
+
+        if (!inputFile.exists()) {
+            throw MojoExecutionException("Input file not found: $inputFile")
+        }
+
+        val root = AsyncApiRegistry.readYaml(inputFile, context)
+        val asyncApiParsed = parser.parse(root)
+
+        val validationErrors = validator.validate(asyncApiParsed)
+        validationErrors.throwWarnings()
+        validationErrors.throwErrors()
+
+        val bundled = bundler.bundle(asyncApiParsed)
+
+        outputFile?.let { file ->
+            log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
+            AsyncApiRegistry.writeYaml(outputDir.resolve(file), bundled)
+        }
+
+        val targetLanguage = try {
+            GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
+        } catch (_: IllegalArgumentException) {
+            throw MojoExecutionException(
+                "Invalid generatorName '$generatorName'. Supported values: ${GeneratorName.entries.joinToString(", ")}"
+            )
+        }
+
+        val sourceRootName = when(targetLanguage) {
+            KOTLIN -> "src/main/kotlin"
+            JAVA -> "src/main/java"
+        }
+
+        val sourceRoot = outputDir.resolve(sourceRootName)
+        val options = GeneratorOptions(
+            generatorName = targetLanguage,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage ?: modelPackage,
+            schemaPackage = schemaPackage ?: modelPackage,
+            outputDir = sourceRoot,
+
+            generateModels = configuration["generateModels"]?.toBoolean() ?: true,
+            generateSpringKafkaClient = configuration["generateSpringKafkaClient"]?.toBoolean() ?: false,
+            generateQuarkusKafkaClient = configuration["generateQuarkusKafkaClient"]?.toBoolean() ?: false,
+            generateAvroSchema = configuration["generateAvroSchema"]?.toBoolean() ?: false,
+
+        )
+        generator.generate(bundled, options)
+
+        project.addCompileSourceRoot(sourceRoot.absolutePath)
+        log.info("Registered source root: ${sourceRoot.absolutePath}")
+
+        log.info("asyncapi-generator-maven-plugin completed successfully")
+    }
+}
