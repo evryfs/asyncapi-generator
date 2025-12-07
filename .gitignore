@@ -1,3 +1,38 @@
+# IntellJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+.nbproject/private/
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Maven
+target/
+
+# Gradle
+.gradle/
+build/
+
+# Gradle Wrapper
+gradle-wrapper.jar
+
+# OS generated files
+.DS_Store
+
 # Compiled class file
 *.class
 
