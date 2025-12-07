@@ -1,4 +1,4 @@
-package com.tietoevry.banking.asyncapi.generator.gradle.plugin.extensions
+package dev.banking.asyncapi.generator.gradle.plugin.extensions
 
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty

@@ -1,7 +1,7 @@
-package com.tietoevry.banking.asyncapi.generator.gradle.plugin
+package dev.banking.asyncapi.generator.gradle.plugin
 
-import com.tietoevry.banking.asyncapi.generator.gradle.plugin.extensions.AsyncApiExtension
-import com.tietoevry.banking.asyncapi.generator.gradle.plugin.tasks.GenerateAsyncApiTask
+import dev.banking.asyncapi.generator.gradle.plugin.extensions.AsyncApiExtension
+import dev.banking.asyncapi.generator.gradle.plugin.tasks.GenerateAsyncApiTask
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaPluginExtension

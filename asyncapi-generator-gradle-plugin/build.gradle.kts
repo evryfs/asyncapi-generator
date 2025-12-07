@@ -12,7 +12,7 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "2.2.0"
 }
 
-group = "com.tietoevry.banking.asyncapi.generator"
+group = "dev.banking.asyncapi.generator"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.tietoevry.banking.asyncapi.generator:asyncapi-generator-core:1.0-SNAPSHOT") {
+    implementation("dev.banking.asyncapi.generator:asyncapi-generator-core:1.0-SNAPSHOT") {
         isChanging = true
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.2.0")
@@ -37,8 +37,8 @@ gradlePlugin {
     website.set("https://github.com/evryfs/asyncapi-generator")
     vcsUrl.set("https://github.com/evryfs/asyncapi-generator.git")
     plugins.register("asyncapiGenerator") {
-        id = "com.tietoevry.banking.asyncapi.generator"
-        implementationClass = "com.tietoevry.banking.asyncapi.generator.gradle.plugin.AsyncApiPlugin"
+        id = "dev.banking.asyncapi.generator"
+        implementationClass = "dev.banking.asyncapi.generator.gradle.plugin.AsyncApiPlugin"
         displayName = "AsyncAPI Generator Plugin"
         description = "Generates AsyncAPI clients and models for Spring Kafka"
         tags.set(listOf("asyncapi", "kotlin", "java", "avro", "kafka", "spring", "generator"))

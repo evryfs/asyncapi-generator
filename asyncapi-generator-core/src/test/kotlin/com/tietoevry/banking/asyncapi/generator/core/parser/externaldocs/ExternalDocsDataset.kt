@@ -1,7 +1,7 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.externaldocs
+package dev.banking.asyncapi.generator.core.parser.externaldocs
 
-import com.tietoevry.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
-import com.tietoevry.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
+import dev.banking.asyncapi.generator.core.model.references.Reference
 
 fun myExternalDocs() = ExternalDoc(
     description = "\"My API Documentation",

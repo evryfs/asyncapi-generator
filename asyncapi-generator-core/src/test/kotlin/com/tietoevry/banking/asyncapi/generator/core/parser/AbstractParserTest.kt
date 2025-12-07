@@ -1,8 +1,8 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser
+package dev.banking.asyncapi.generator.core.parser
 
-import com.tietoevry.banking.asyncapi.generator.core.context.AsyncApiContext
-import com.tietoevry.banking.asyncapi.generator.core.parser.node.ParserNode
-import com.tietoevry.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import java.io.File
 
 abstract class AbstractParserTest {

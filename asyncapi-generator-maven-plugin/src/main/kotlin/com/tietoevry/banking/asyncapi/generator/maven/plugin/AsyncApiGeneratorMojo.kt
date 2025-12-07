@@ -1,15 +1,15 @@
-package com.tietoevry.banking.asyncapi.generator.maven.plugin
+package dev.banking.asyncapi.generator.maven.plugin
 
-import com.tietoevry.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import com.tietoevry.banking.asyncapi.generator.core.context.AsyncApiContext
-import com.tietoevry.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName
-import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import com.tietoevry.banking.asyncapi.generator.core.generator.model.GeneratorOptions
-import com.tietoevry.banking.asyncapi.generator.core.parser.AsyncApiParser
-import com.tietoevry.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import com.tietoevry.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
+import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -109,8 +109,6 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         generator.generate(bundled, options)
 
         project.addCompileSourceRoot(sourceRoot.absolutePath)
-        log.info("Registered source root: ${sourceRoot.absolutePath}")
-
         log.info("asyncapi-generator-maven-plugin completed successfully")
     }
 }

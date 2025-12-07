@@ -1,4 +1,4 @@
-package com.tietoevry.banking.asyncapi.generator.gradle.plugin
+package dev.banking.asyncapi.generator.gradle.plugin
 
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Test
@@ -19,7 +19,7 @@ class AsyncApiPluginTest {
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
@@ -48,7 +48,7 @@ class AsyncApiPluginTest {
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
@@ -81,7 +81,7 @@ class AsyncApiPluginTest {
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
@@ -111,7 +111,7 @@ class AsyncApiPluginTest {
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
@@ -134,7 +134,7 @@ class AsyncApiPluginTest {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("missing.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
@@ -154,7 +154,7 @@ class AsyncApiPluginTest {
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
 
         GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("com.tietoevry.banking.asyncapi.generator") }
+              plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))

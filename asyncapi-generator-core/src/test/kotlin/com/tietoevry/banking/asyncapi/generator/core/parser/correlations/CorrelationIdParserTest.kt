@@ -1,8 +1,8 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.correlations
+package dev.banking.asyncapi.generator.core.parser.correlations
 
-import com.tietoevry.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import com.tietoevry.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

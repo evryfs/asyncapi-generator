@@ -1,22 +1,22 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.operations
+package dev.banking.asyncapi.generator.core.parser.operations
 
-import com.tietoevry.banking.asyncapi.generator.core.model.bindings.Binding
-import com.tietoevry.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
-import com.tietoevry.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.references.Reference
-import com.tietoevry.banking.asyncapi.generator.core.model.tags.Tag
-import com.tietoevry.banking.asyncapi.generator.core.model.tags.TagInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.Operation
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReply
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.security.OAuthFlow
-import com.tietoevry.banking.asyncapi.generator.core.model.security.OAuthFlows
-import com.tietoevry.banking.asyncapi.generator.core.model.security.SecurityScheme
-import com.tietoevry.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.tags.Tag
+import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.operations.Operation
+import dev.banking.asyncapi.generator.core.model.operations.OperationReply
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
+import dev.banking.asyncapi.generator.core.model.security.OAuthFlow
+import dev.banking.asyncapi.generator.core.model.security.OAuthFlows
+import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
+import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 
 fun receiveLightMeasurement() = Operation(
     action = "receive",

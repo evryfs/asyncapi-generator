@@ -1,4 +1,4 @@
-package com.tietoevry.banking.asyncapi.generator.maven.plugin
+package dev.banking.asyncapi.generator.maven.plugin
 
 import org.apache.maven.plugin.Mojo
 import java.io.File

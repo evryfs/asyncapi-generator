@@ -1,9 +1,9 @@
-package com.tietoevry.banking.asyncapi.generator.core.validator
+package dev.banking.asyncapi.generator.core.validator
 
-import com.tietoevry.banking.asyncapi.generator.core.context.AsyncApiContext
-import com.tietoevry.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import com.tietoevry.banking.asyncapi.generator.core.parser.AsyncApiParser
-import com.tietoevry.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import java.io.File
 
 abstract class AbstractValidatorTest {

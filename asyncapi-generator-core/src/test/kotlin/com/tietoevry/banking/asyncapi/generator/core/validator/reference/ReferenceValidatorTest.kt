@@ -1,4 +1,4 @@
-package com.tietoevry.banking.asyncapi.generator.core.validator.reference
+package dev.banking.asyncapi.generator.core.validator.reference
 
 //class ReferenceValidatorTest : AbstractParserTest() {
 //

@@ -1,8 +1,8 @@
-package com.tietoevry.banking.asyncapi.generator.core.validator.messages
+package dev.banking.asyncapi.generator.core.validator.messages
 
-import com.tietoevry.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
-import com.tietoevry.banking.asyncapi.generator.core.validator.AbstractValidatorTest
-import com.tietoevry.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

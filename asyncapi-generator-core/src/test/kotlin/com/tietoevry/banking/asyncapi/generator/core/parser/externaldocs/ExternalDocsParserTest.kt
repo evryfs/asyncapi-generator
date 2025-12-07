@@ -1,8 +1,8 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.externaldocs
+package dev.banking.asyncapi.generator.core.parser.externaldocs
 
-import com.tietoevry.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import com.tietoevry.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import com.tietoevry.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
+import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFailsWith

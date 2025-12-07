@@ -1,8 +1,8 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.operations
+package dev.banking.asyncapi.generator.core.parser.operations
 
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
-import com.tietoevry.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
-import com.tietoevry.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

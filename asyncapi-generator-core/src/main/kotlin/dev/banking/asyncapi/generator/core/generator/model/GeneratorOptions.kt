@@ -1,0 +1,20 @@
+package dev.banking.asyncapi.generator.core.generator.model
+
+import java.io.File
+
+data class GeneratorOptions(
+    val generatorName: GeneratorName,
+    val modelPackage: String,
+    val clientPackage: String,
+    val schemaPackage: String,
+    val outputDir: File,
+
+    // Feature Flags
+    val generateModels: Boolean = true,
+    val generateSpringKafkaClient: Boolean = false,
+    val generateQuarkusKafkaClient: Boolean = false,
+    val generateAvroSchema: Boolean = false,
+
+    // Experimental options
+    val experimental: Map<String, String> = emptyMap()
+)

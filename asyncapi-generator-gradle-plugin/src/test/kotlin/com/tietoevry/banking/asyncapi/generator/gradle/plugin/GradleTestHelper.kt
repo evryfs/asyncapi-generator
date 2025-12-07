@@ -1,4 +1,4 @@
-package com.tietoevry.banking.asyncapi.generator.gradle.plugin
+package dev.banking.asyncapi.generator.gradle.plugin
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner

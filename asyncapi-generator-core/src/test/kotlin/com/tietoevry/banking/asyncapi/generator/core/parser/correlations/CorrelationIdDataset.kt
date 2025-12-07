@@ -1,6 +1,6 @@
-package com.tietoevry.banking.asyncapi.generator.core.parser.correlations
+package dev.banking.asyncapi.generator.core.parser.correlations
 
-import com.tietoevry.banking.asyncapi.generator.core.model.correlations.CorrelationId
+import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 
 fun myCorrelationId() = CorrelationId(
     location = $$"\"$message.header#/correlationId",

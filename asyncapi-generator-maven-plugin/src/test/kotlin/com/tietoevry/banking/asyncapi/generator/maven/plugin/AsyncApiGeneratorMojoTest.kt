@@ -1,15 +1,15 @@
-package com.tietoevry.banking.asyncapi.generator.maven.plugin
+package dev.banking.asyncapi.generator.maven.plugin
 
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.configuration
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDir
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
-import com.tietoevry.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.configuration
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDir
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertTrue
