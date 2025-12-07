@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: AllOf Constraint Intersection Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    BaseRange:
+      type: object
+      properties:
+        value:
+          type: number
+          minimum: 0
+          maximum: 100
+          multipleOf: 0.5
+      required: [value]
+    ExtendedRange:
+      allOf:
+        - $ref: '#/components/schemas/BaseRange'
+        - type: object
+          properties:
+            value:
+              type: number
+              minimum: 10     # overrides minimum (should merge using max(0,10)=10)
+              maximum: 50     # overrides maximum (should merge using min(100,50)=50)
+              multipleOf: 1   # compatible with 0.5 (LCM = 1)
+            label:
+              type: string
+          required: [label]

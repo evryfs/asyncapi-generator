@@ -30,32 +30,26 @@ class AsyncApiStringSerializer : JsonSerializer<String>() {
 
         val yamlGen = gen as? YAMLGenerator
         if (yamlGen == null) {
-            // Not YAML (e.g. JSON) – just write as a normal string
             gen.writeString(value)
             return
         }
 
-        // First non-space char is our optional style prefix
         val trimmedStart = value.trimStart()
         val prefix = trimmedStart.firstOrNull()
 
-        // Clean the value we actually want to emit
         val cleaned: String = when (prefix) {
             '|', '>' -> {
                 val withoutMarker = trimmedStart.drop(1)
-                // Drop a single immediate newline after the marker, if present
                 withoutMarker
                     .removePrefix("\r\n")
                     .removePrefix("\n")
             }
             '\'', '"' -> {
-                // For quoted-style prefix, drop the prefix and trim once
                 trimmedStart.drop(1).trim()
             }
             else -> value // No style prefix → leave untouched
         }
 
-        // Choose scalar style from the prefix
         val style = when (prefix) {
             '>' -> DumperOptions.ScalarStyle.FOLDED
             '|' -> DumperOptions.ScalarStyle.LITERAL
@@ -68,7 +62,6 @@ class AsyncApiStringSerializer : JsonSerializer<String>() {
             VERIFY_VALUE_WRITE.invoke(yamlGen, "write string value")
             WRITE_SCALAR.invoke(yamlGen, cleaned, "string", style)
         } catch (_: Exception) {
-            // Safety net: if reflection breaks for some reason, fall back to normal behavior
             gen.writeString(cleaned)
         }
     }

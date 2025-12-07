@@ -1,0 +1,159 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Service
+  version: 1.0.0
+  description: This service is an example service
+channels:
+  userSignedup:
+    address: user.signedup
+    messages:
+      UserSignedUp:
+        $ref: '#/components/schemas/SimpleObject'
+components:
+  schemas:
+    SimpleObject:
+      $comment: "This schema defines the minimal user object used across APIs."
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier
+        name:
+          type: string
+        active:
+          type: boolean
+          default: true
+    NestedObject:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+            profile:
+              type: object
+              properties:
+                age:
+                  type: integer
+                city:
+                  type: string
+    ArrayOfObjects:
+      type: array
+      description: "A list of user score objects"
+      items:
+        type: object
+        required:
+          - id
+          - score
+        properties:
+          id:
+            type: string
+            description: "Unique user identifier"
+          score:
+            type: number
+            minimum: 0
+            maximum: 100
+            description: "Score achieved by the user"
+          metadata:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+                description: "When the score was recorded"
+              tags:
+                type: array
+                items:
+                  type: string
+                  description: "Optional tags for score context"
+    EnumAndConst:
+      type: string
+      description: "Primary color selection"
+      enum: [red, green, blue]
+      const: red
+      default: red
+      pattern: "^(red|green|blue)$"
+      examples:
+        - red
+        - green
+      deprecated: false
+      readOnly: false
+      writeOnly: false
+    AllowAll: true
+    DenyAll: false
+    Combined:
+      allOf:
+        - type: object
+          properties:
+            id: { type: string }
+        - type: object
+          properties:
+            name: { type: string }
+      anyOf:
+        - type: string
+        - type: number
+      oneOf:
+        - const: true
+        - const: false
+    Conditional:
+      type: object
+      properties:
+        role:
+          type: string
+        accessLevel:
+          type: integer
+      if:
+        properties:
+          role:
+            const: admin
+      then:
+        required: [ accessLevel ]
+      else:
+        properties:
+          accessLevel:
+            const: 1
+    ObjectWithDeps:
+      type: object
+      properties:
+        credit_card: { type: number }
+        billing_address: { type: string }
+      required: [credit_card]
+      dependencies:
+        credit_card: [billing_address]
+      patternProperties:
+        "^S_": { type: string }
+    ArrayWithContains:
+      type: array
+      items:
+        type: integer
+      contains:
+        type: integer
+        minimum: 0
+    FlexibleObject:
+      type: object
+      properties:
+        known: { type: string }
+      additionalProperties:
+        type: string
+      propertyNames:
+        pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$"
+    UserRef:
+      $ref: "#/components/schemas/SimpleObject"
+    InvalidCoercions:
+      type: object
+      maxLength: "10"
+      minItems: "two"
+      uniqueItems: "false"
+#    AvroUser:
+#      schemaFormat: application/vnd.apache.avro;version=1.9.0
+#      schema:
+#        type: record
+#        name: User
+#        fields:
+#          - name: id
+#            type: string
+#          - name: email
+#            type: string

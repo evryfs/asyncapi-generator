@@ -1,0 +1,23 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Discriminator Test
+  version: 1.0.0
+components:
+  schemas:
+    # Case 1: Discriminator missing from 'required'
+    MissingRequiredDisc:
+      type: object
+      properties:
+        type:
+          type: string
+      discriminator: "type"
+      required: []
+
+    # Case 2: Discriminator missing from 'properties'
+    MissingPropertyDisc:
+      type: object
+      properties:
+        otherField:
+          type: string
+      discriminator: "type"
+      required: ["type"]

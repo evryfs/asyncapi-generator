@@ -1,0 +1,64 @@
+asyncapi: 3.0.0
+info:
+  title: User Service Events
+  version: 1.0.0
+  description: Full E2E test for Kotlin Spring Kafka generation
+defaultContentType: application/json
+channels:
+  userEvents:
+    address: user.events.v1
+    messages:
+      UserSignedUp:
+        $ref: '#/components/messages/UserSignedUp'
+      UserLoggedIn:
+        $ref: '#/components/messages/UserLoggedIn'
+  userCommands:
+    address: user.commands.v1
+    messages:
+      SendEmail:
+        $ref: '#/components/messages/SendEmail'
+components:
+  messages:
+    UserSignedUp:
+      name: UserSignedUp
+      title: User Signed Up
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            format: uuid
+          email:
+            type: string
+            format: email
+          marketingConsent:
+            type: boolean
+            default: false
+    UserLoggedIn:
+      name: UserLoggedIn
+      title: User Logged In
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+    SendEmail:
+      name: SendEmail
+      title: Send Email Command
+      payload:
+        type: object
+        required:
+          - to
+          - subject
+          - body
+        properties:
+          to:
+            type: string
+            format: email
+          subject:
+            type: string
+          body:
+            type: string

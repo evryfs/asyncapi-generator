@@ -1,0 +1,42 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Schema Validation Test
+  version: 1.0.0
+servers:
+  scram-connections:
+    host: "kafka.scram.local:9092"
+    protocol: kafka
+    description: SCRAM-based Kafka cluster
+    tags:
+      - $ref: 'asyncapi_multifile_example_tags.yaml#/components/tags/shared'
+      - $ref: 'asyncapi_multifile_example_tags.yaml#/components/tags/scram'
+  mtls-connections:
+    host: "kafka.mtls.local:9093"
+    protocol: kafka-secure
+    description: mTLS-protected Kafka cluster
+    tags:
+      - $ref: 'asyncapi_multifile_example_tags.yaml#/components/tags/shared'
+      - $ref: 'asyncapi_multifile_example_tags.yaml#/components/tags/mtls'
+channels:
+  testChannel:
+    address: "example.topic"
+    messages:
+      testMessage:
+        $ref: "#/components/messages/testMessage"
+  auditChannel:
+    address: "example.audit"
+    messages:
+      auditMessage:
+        $ref: "#/components/messages/auditMessage"
+  externalAuditChannel:
+    $ref: 'asyncapi_multifile_example_channels.yaml#/channels/externalAuditChannel'
+components:
+  messages:
+    testMessage:
+      name: "testMessage"
+      payload:
+        $ref: 'asyncapi_multifile_example_schemas.yaml#/components/schemas/validKotlinUserSchema'
+    auditMessage:
+      name: "auditMessage"
+      payload:
+        $ref: 'asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata'

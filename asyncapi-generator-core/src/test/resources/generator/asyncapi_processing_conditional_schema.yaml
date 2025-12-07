@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Conditional Schema Test
+  version: 1.0.0
+components:
+  schemas:
+    ConditionalPayload:
+      type: object
+      properties:
+        value:
+          description: A value whose type is conditional.
+          type: string # The base type
+      if:
+        properties:
+          someFlag:
+            const: 'A'
+      then:
+        properties:
+          value:
+            type: integer # A conflicting type

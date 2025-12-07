@@ -1,0 +1,21 @@
+asyncapi: 3.0.0
+info:
+  title: Binding Validation
+  version: 1.0.0
+components:
+  channelBindings:
+    # Case 1: Empty Binding Object (Warning)
+    EmptyBinding: {}
+
+    # Case 2: Binding with null property (Warning)
+    BindingWithNullProperty:
+      kafka:
+        version: 1.0.0
+        # property 'protocol' is null
+        protocol:
+
+    # Case 3: Binding with unsupported type in content (Warning)
+    BindingWithUnsupportedType:
+      kafka:
+        topic: my.topic
+        unsupported: ["list", "of", "strings"] # Should be map, string, number, or boolean

@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: Settings Object Type Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    SettingsObjectType:
+      type: object
+      description: >
+        Simple object used to exercise 'object' mapping. It intentionally has
+        both explicit properties and an open-ended map of additional settings.
+      required:
+        - mode
+      properties:
+        mode:
+          description: Operational mode for the process.
+          type: string
+          enum: [ "fast", "safe", "debug" ]
+        retryLimit:
+          description: Maximum number of retries allowed.
+          type: integer
+          minimum: 0
+          maximum: 10
+        extraSettings:
+          description: >
+            Arbitrary key-value pairs for advanced configuration. Keys are
+            strings; values can be of any type.
+          type: object

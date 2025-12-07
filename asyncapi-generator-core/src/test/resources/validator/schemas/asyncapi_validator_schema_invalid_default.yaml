@@ -1,0 +1,17 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Default Value Test
+  version: 1.0.0
+components:
+  schemas:
+    StringTypeWithNumericDefault:
+      type: string
+      default: 123 # Invalid: string type with numeric default
+
+    NumberTypeWithStringDefault:
+      type: number
+      default: "abc" # Invalid: number type with string default
+
+    BooleanTypeWithStringDefault:
+      type: boolean
+      default: "true" # Invalid: boolean type with string "true" (should be boolean true)

@@ -1,0 +1,57 @@
+asyncapi: 3.0.0
+info:
+  title: Streetlights Kafka API
+  version: 1.0.0
+servers:
+  scram-connections:
+    host: 'test.mykafkacluster.org:{port}/{environment}'
+    protocol: kafka-secure
+    description: Test broker secured with scramSha256
+    tags:
+      - name: "env:test-scram"
+        description: >
+          This environment is meant for running internal tests through scramSha256
+      - name: 'kind:remote'
+        description: |
+          This server is a remote server. 
+          Not exposed by the application
+      - name: 'visibility:private'
+        description: |
+          - This is one point
+          - This in another point
+    variables:
+      port:
+        enum: [ "18092", "28092" ]
+        default: "18092"
+        description: The port used for Kafka connections
+      environment:
+        default: "test"
+        enum: [ "test", "staging", "prod" ]
+        description: Deployment environment
+  mtls-connections:
+    host: 'test.mykafkacluster.org:28092'
+    protocol: kafka-secure
+    description: Test broker secured with X509
+    tags:
+      - name: 'env:test-mtls'
+        description: This environment is meant for running internal tests through mtls
+      - name: 'kind:remote'
+        description: This server is a remote server. Not exposed by the application
+      - name: 'visibility:private'
+        description: This resource is private and only available to certain users
+  staging:
+    $ref: '#/components/servers/stagingServer'
+components:
+  servers:
+    stagingServer:
+      host: 'staging.mykafkacluster.org:{port}'
+      protocol: kafka-secure
+      description: Staging broker used for pre-production testing
+      variables:
+        port:
+          enum: [ "38092" ]
+          default: "38092"
+          description: The staging broker port
+      tags:
+        - name: 'env:staging'
+          description: Used for staging environment

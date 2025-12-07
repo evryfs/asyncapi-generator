@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Warnings Test
+  version: 1.0.0
+components:
+  schemas:
+    # Case 1: Ambiguous Composition (allOf + oneOf)
+    AmbiguousComposition:
+      allOf:
+        - type: string
+      oneOf:
+        - type: number
+
+    # Case 2: Empty Required (Object)
+    EmptyRequiredObject:
+      type: object
+      required: []
+
+    # Case 3: Empty Enum
+    EmptyEnumString:
+      type: string
+      enum: []
+
+    # Case 4: Empty Bindings
+    EmptyBindingsSchema:
+      type: object
+      bindings: {}

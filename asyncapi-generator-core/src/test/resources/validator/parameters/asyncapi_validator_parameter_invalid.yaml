@@ -1,0 +1,43 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Parameter Validation
+  version: 1.0.0
+channels: {}
+components:
+  parameters:
+    # Case 1: Default not in enum
+    DefaultNotInEnum:
+      enum: ["A", "B"]
+      default: "C"
+      location: "$message.header#/id" # ADDED
+
+    # Case 2: Duplicate enum values (warning)
+    DuplicateEnum:
+      enum: ["X", "Y", "X"]
+      default: "X"
+      location: "$message.header#/id" # ADDED
+
+    # Case 3: Example not in enum (warning)
+    ExampleNotInEnum:
+      enum: ["P", "Q"]
+      default: "P"
+      examples: ["P", "R"]
+      location: "$message.header#/id" # ADDED
+
+    # Case 4: Empty enum (warning)
+    EmptyEnum:
+      enum: []
+      location: "$message.header#/id" # ADDED
+
+    # Case 5: Missing Location (warning) -> KEEP THIS ONE MISSING
+    MissingLocation:
+      description: A parameter with no location
+
+    # Case 6: Invalid Location Format (error)
+    InvalidLocation:
+      location: "not_a_runtime_expression"
+
+    # Case 7: Description too short (warning)
+    ShortDescription:
+      description: "ab"
+      location: "$message.header#/id" # ADDED

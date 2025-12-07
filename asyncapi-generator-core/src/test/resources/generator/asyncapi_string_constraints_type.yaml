@@ -1,0 +1,39 @@
+asyncapi: 3.0.0
+info:
+  title: Simple String Constraints Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    StringConstraintsType:
+      type: object
+      description: String fields with various constraints and formats.
+      required:
+        - email
+        - username
+      properties:
+        email:
+          description: >
+            E-mail address of the customer.
+          type: string
+          format: email
+          maxLength: 255
+        username:
+          description: >
+            Login name. Must start with a letter and then contain only
+            letters, digits, underscores or hyphens.
+          type: string
+          minLength: 3
+          maxLength: 30
+          pattern: "[A-Za-z][A-Za-z0-9_-]*"
+        freeText:
+          description: >
+            Arbitrary text with only a maximum length restriction.
+          type: string
+          maxLength: 500
+        countryCode:
+          description: Two-letter ISO-3166 country code.
+          type: string
+          minLength: 2
+          maxLength: 2
+          pattern: "[A-Z]{2}"

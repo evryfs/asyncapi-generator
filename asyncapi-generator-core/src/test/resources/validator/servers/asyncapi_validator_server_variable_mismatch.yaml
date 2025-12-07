@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Server Variable Mismatch Test
+  version: 1.0.0
+servers:
+  # Case 1: Variable used in host but not defined (Error)
+  missingVariableDefServer:
+    host: "{region}.api.com"
+    protocol: kafka
+    # no variables map
+
+  # Case 2: Variable defined but unused (Warning)
+  unusedVariableServer:
+    host: "api.com"
+    protocol: kafka
+    variables:
+      region:
+        default: us-east

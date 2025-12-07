@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Inline Message in Operation
+  version: 1.0.0
+channels:
+  myChannel:
+    messages:
+      myMessage:
+        payload:
+          type: string
+operations:
+  testOperation:
+    action: send # Valid action
+    channel:
+      $ref: '#/channels/myChannel'
+    messages:
+      - payload: # This is an INLINE message, which is NOT allowed
+          type: string

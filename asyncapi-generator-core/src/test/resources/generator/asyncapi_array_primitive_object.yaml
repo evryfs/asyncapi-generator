@@ -1,0 +1,65 @@
+asyncapi: 3.0.0
+info:
+  title: Array of Primitive and Object Types Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    ContactPointType:
+      type: object
+      description: >
+        A way of contacting a person, such as e-mail, phone, or postal address.
+      required:
+        - type
+        - value
+      properties:
+        type:
+          description: >
+            Type of the contact point.
+            Supported values:
+              * `email`
+              * `mobile`
+              * `landline`
+              * `postal`
+          type: string
+          minLength: 3
+          maxLength: 20
+        value:
+          description: >
+            The actual contact detail – phone number, e-mail address, etc.
+          type: string
+          maxLength: 200
+        preferred:
+          description: >
+            Indicates if this contact point is preferred.
+          type: boolean
+    CustomerWithContacts:
+      type: object
+      description: >
+        Customer object with nested contact points and primitive lists.
+      required:
+        - customerId
+        - fullName
+        - contactPoints
+      properties:
+        customerId:
+          description: Unique identifier for the customer.
+          type: string
+          format: uuid
+        fullName:
+          description: >
+            Customer's full name as presented in UI and reports.
+          type: string
+          maxLength: 140
+        tags:
+          description: >
+            Free-form tags associated with the customer.
+          type: array
+          items:
+            type: string
+        contactPoints:
+          description: >
+            List of contact points associated with the customer.
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactPointType'

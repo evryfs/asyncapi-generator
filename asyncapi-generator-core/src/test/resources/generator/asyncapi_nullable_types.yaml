@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Nullable Types Test
+  version: 1.0.0
+components:
+  schemas:
+    NullableObject:
+      type: object
+      required:
+        - requiredString
+      properties:
+        requiredString:
+          type: string # Should be String
+        optionalString:
+          type: string
+          nullable: true # OpenAPI 3.0+ style nullable. Should be String?
+        nullableStringArray:
+          type: array
+          items:
+            type: string
+          nullable: true # Array itself is nullable. Should be List<String>?
+        stringOrNull:
+          type: [string, "null"] # JSON Schema style nullable. Should be String?
+        integerOrNull:
+          type: [integer, "null"] # Should be Int?
+        booleanOrNull:
+          type: [boolean, "null"] # Should be Boolean?

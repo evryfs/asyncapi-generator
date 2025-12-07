@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Info Test
+  version: 1.2.3
+  description: "A simple description"
+  termsOfService: https://example.com/terms
+  contact:
+    name: Support
+    url: https://support.example.com
+    email: support@example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  tags:
+    - name: general
+      description: General tag
+  externalDocs:
+    url: 'https://example.com/docs'
+    description: Documentation
+  x-custom-extension: value

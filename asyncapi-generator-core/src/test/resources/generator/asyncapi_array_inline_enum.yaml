@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Array with Inline Enum Test
+  version: 1.0.0
+components:
+  schemas:
+    ObjectWithArrayOfEnums:
+      type: object
+      properties:
+        priorities:
+          type: array
+          items:
+            # This inline enum should be discovered and promoted to a "Priorities" enum class
+            type: string
+            enum: [ LOW, MEDIUM, HIGH ]

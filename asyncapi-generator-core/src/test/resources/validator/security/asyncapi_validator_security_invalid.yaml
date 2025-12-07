@@ -1,0 +1,36 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Security Schemes
+  version: 1.0.0
+channels: {}
+components:
+  securitySchemes:
+    # Case 1: HTTP missing scheme
+    InvalidHttp:
+      type: http
+      # missing scheme
+
+    # Case 2: OAuth2 missing flows
+    InvalidOAuth2:
+      type: oauth2
+      # missing flows
+
+    # Case 3: OpenID missing URL
+    InvalidOpenID:
+      type: openIdConnect
+      # missing openIdConnectUrl
+
+    # Case 4: ApiKey invalid 'in'
+    InvalidApiKey:
+      type: apiKey
+      in: header # Should be user/password
+
+    # Case 5: HttpApiKey invalid 'in'
+    InvalidHttpApiKey:
+      type: httpApiKey
+      name: myKey
+      in: body # Should be query/header/cookie
+
+    # Case 6: Invalid Type
+    UnknownType:
+      type: alien_technology

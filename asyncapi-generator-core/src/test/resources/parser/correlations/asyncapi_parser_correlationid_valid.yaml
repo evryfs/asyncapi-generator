@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Correlation ID Parser Valid Test
+  version: 1.0.0
+components:
+  correlationIds:
+    MyCorrelationId:
+      location: "$message.header#/correlationId"
+      description: "My custom correlation ID"

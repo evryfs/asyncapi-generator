@@ -1,0 +1,38 @@
+asyncapi: 3.0.0
+info:
+  title: Message Parser Edge Cases
+  version: 1.0.0
+components:
+  messages:
+    # Case 1: Payload with Ref
+    RefPayload:
+      name: RefPayload
+      payload:
+        $ref: '#/components/schemas/MySchema'
+
+
+    # Case 2: Correlation ID Ref
+    RefCorrelationId:
+      name: RefCorrelationId
+      correlationId:
+        $ref: '#/components/correlationIds/myId'
+
+    # Case 3: Missing Payload (Valid - handled as null/empty)
+    EmptyPayloadMessage:
+      name: empty
+
+    # Case 6: Inline Trait
+    InlineTraitMessage:
+      name: InlineTraitMessage
+      traits:
+        - headers:
+            X-Trace-ID: # Header Name
+              type: string # Header Schem
+
+  schemas:
+    MySchema:
+      type: string
+
+  correlationIds:
+    myId:
+      location: $message.header#/id

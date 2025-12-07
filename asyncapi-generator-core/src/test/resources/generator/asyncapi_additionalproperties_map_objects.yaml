@@ -1,0 +1,36 @@
+asyncapi: 3.0.0
+info:
+  title: Map Objects Test
+  version: 1.0.0
+components:
+  schemas:
+    # This is a reference object used as a value in one of the maps.
+    SomeItem:
+      type: object
+      properties:
+        itemId:
+          type: string
+
+    # This is the main object we will generate. Its properties will test the ObjectMapper.
+    ContainerObject:
+      type: object
+      properties:
+        # This property should be mapped to Map<String, String>
+        stringTags:
+          type: object
+          description: A map of string-to-string tags.
+          additionalProperties:
+            type: string
+
+        # This property should be mapped to Map<String, Any>
+        anyTags:
+          type: object
+          description: A map with values of any type.
+          # additionalProperties: true is the default when empty or not specified.
+
+        # This property should be mapped to Map<String, SomeItem>
+        itemMap:
+          type: object
+          description: A map of string-to-SomeItem objects.
+          additionalProperties:
+            $ref: '#/components/schemas/SomeItem'

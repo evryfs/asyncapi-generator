@@ -1,0 +1,698 @@
+asyncapi: 3.0.0
+info:
+  title: Streetlights Kafka API
+  version: 1.0.0
+  description: |-
+    # Introduction
+    The Kafka Example API illustrates how to specify a Kafka API using AsyncAPI. 
+    In this example, the API can be used for the following scenarios
+    * Receive messages when customer information is updated
+    * Send messages to update customer contact information (email and phone number)
+    ## Change Log
+    <table>
+      <tr>
+        <th align="left">Version</th>
+        <th align="left">Change Description</th>
+      </tr>
+      <tr>
+        <td>v1.0.0</td>
+        <td>First version of the Kafka Example API</td>
+      </tr>
+       <tr>
+        <td>v1.1.0</td>
+        <td>Added customerType in CustomerReadPayload</td>
+      </tr>
+    </table>
+  termsOfService: https://example.com/terms
+  contact:
+    name: "Smartylighting Support"
+    url: https://support.smartylighting.io
+    email: help@smartylighting.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  tags:
+    - name: streetlights
+      description: Top-level tag example
+    - name: environment
+      description: Environment-related operations
+    - $ref: '#/components/tags/lighting'
+  externalDocs:
+    description: Full API reference
+    url: https://example.com/docs
+  x-api-id: "streetlights-api-001"
+  x-internal: true
+defaultContentType: application/json
+servers:
+  scram-connections:
+    host: 'test.mykafkacluster.org:{port}/{environment}'
+    protocol: kafka-secure
+    description: Test broker secured with scramSha256
+    security:
+      - $ref: '#/components/securitySchemes/saslScram'
+    tags:
+      - name: "env:test-scram"
+        description: >
+          This environment is meant for running internal tests through scramSha256
+      - name: 'kind:remote'
+        description: |
+          This server is a remote server. 
+          Not exposed by the application
+      - name: 'visibility:private'
+        description: |
+          - This is one point
+          - This in another point
+    variables:
+      port:
+        enum: [ "18092", "28092" ]
+        default: "18092"
+        description: The port used for Kafka connections
+      environment:
+        default: "test"
+        enum: [ "test", "staging", "prod" ]
+        description: Deployment environment
+  mtls-connections:
+    host: 'test.mykafkacluster.org:28092'
+    protocol: kafka-secure
+    description: Test broker secured with X509
+    security:
+      - $ref: '#/components/securitySchemes/certs'
+    tags:
+      - name: 'env:test-mtls'
+        description: This environment is meant for running internal tests through mtls
+      - name: 'kind:remote'
+        description: This server is a remote server. Not exposed by the application
+      - name: 'visibility:private'
+        description: This resource is private and only available to certain users
+  staging:
+    $ref: '#/components/servers/stagingServer'
+channels:
+  lightingMeasured:
+    address: 'smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured'
+    messages:
+      lightMeasured:
+        $ref: '#/components/messages/lightMeasured'
+        bindings:
+          kafka:
+            key:
+              type: string
+              description: Key used for partitioning messages
+    description: The topic on which measured values may be produced and consumed.
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+    bindings:
+      kafka:
+        topic: smartylighting.streetlights.1.0.event
+        partitions: 3
+        replicas: 1
+  lightTurnOn:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.turn.on'
+    messages:
+      turnOn:
+        $ref: '#/components/messages/turnOnOff'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+  lightTurnOff:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.turn.off'
+    messages:
+      turnOff:
+        $ref: '#/components/messages/turnOnOff'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+  lightsDim:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.dim'
+    messages:
+      dimLight:
+        $ref: '#/components/messages/dimLight'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+  lightStatus:
+    address: 'smartylighting.streetlights.1.0.event.{city}.status'
+    description: The topic reporting light status by city.
+    parameters:
+      city:
+        description: The city where the streetlights are located.
+        location: "$message.payload#/city"
+        enum:
+          - helsinki
+          - oslo
+          - stockholm
+        default: helsinki
+        examples:
+          - helsinki
+          - oslo
+    messages:
+      lightStatusMessage:
+        $ref: '#/components/messages/lightMeasured'
+  maintenanceRequest:
+    address: 'smartylighting.streetlights.1.0.action.{requestId}.maintenance'
+    description: Command topic for maintenance requests.
+    parameters:
+      requestId:
+        description: Identifier for maintenance request.
+        location: "$message.header#/requestId"
+        default: "req-001"
+    messages:
+      maintenanceMessage:
+        $ref: '#/components/messages/turnOnOff'
+  cityLights:
+    address: 'smartylighting.streetlights.1.0.{cityId}.light.{lightId}'
+    description: Channel for controlling individual lights in a city.
+    parameters:
+      cityId:
+        $ref: '#/components/parameters/cityId'
+      lightId:
+        description: Identifier of the specific light.
+        location: "$message.header#/lightId"
+        enum:
+          - lamp-001
+          - lamp-002
+          - lamp-003
+        examples:
+          - lamp-001
+          - lamp-002
+    messages:
+      dimLight:
+        $ref: '#/components/messages/dimLight'
+  powerStatus:
+    address: 'smartylighting.streetlights.1.0.power.{streetlightId}.status'
+    description: Channel for power status updates.
+    parameters:
+      streetlightId:
+        description: Identifier for the streetlight.
+        location: "$message.header#/streetlightId"
+    messages:
+      powerMessage:
+        $ref: '#/components/messages/lightMeasured'
+operations:
+  receiveLightMeasurement:
+    action: receive
+    channel:
+      $ref: '#/channels/lightingMeasured'
+    summary: >-
+      Inform about environmental lighting conditions of a particular
+      streetlight.
+    traits:
+      - $ref: '#/components/operationTraits/kafka'
+    messages:
+      - $ref: '#/channels/lightingMeasured/messages/lightMeasured'
+    externalDocs:
+      url: 'https://example.com/api/oauth/dialog'
+    reply:
+      address:
+        location: '$message.header#/replyTo'
+      channel:
+        $ref: '#/channels/lightingMeasured'
+      messages:
+        - $ref: '#/channels/lightingMeasured/messages/lightMeasured'
+  turnOn:
+    action: send
+    channel:
+      $ref: '#/channels/lightTurnOn'
+    traits:
+      - $ref: '#/components/operationTraits/kafka'
+    messages:
+      - $ref: '#/channels/lightTurnOn/messages/turnOn'
+    tags:
+      - name: user
+      - name: signup
+      - name: register
+        externalDocs:
+          description: Details about registration flows
+          url: "https://example.com/docs/register"
+    bindings:
+      amqp:
+        ack: false
+    reply:
+      address:
+        location: "$message.header#/replyTo"
+      channel:
+        $ref: "#/channels/lightTurnOn"
+      messages:
+        - $ref: "#/channels/lightTurnOn/messages/turnOn"
+    externalDocs:
+      url: 'https://example.com/api/oauth/dialog'
+  turnOff:
+    action: send
+    channel:
+      $ref: '#/channels/lightTurnOff'
+    traits:
+      - $ref: '#/components/operationTraits/kafka'
+    messages:
+      - $ref: '#/channels/lightTurnOff/messages/turnOff'
+    externalDocs:
+      url: 'https://example.com/api/oauth/dialog'
+    security:
+      - $ref: '#/components/securitySchemes/saslScram'
+  dimLight:
+    action: send
+    channel:
+      $ref: '#/channels/lightsDim'
+    security:
+      - type: oauth2
+        name: OAuth2Security
+        in: header
+        scheme: oauth2
+        openIdConnectUrl: 'https://example.com/api/oauth/dialog'
+        description: The oauth security descriptions
+        flows:
+          clientCredentials:
+            tokenUrl: 'https://example.com/api/oauth/dialog'
+            refreshUrl: 'https://example.com/api/oauth/dialog'
+            availableScopes:
+              'subscribe:auth_revocations': Scope required for authorization revocation topic
+          implicit:
+              authorizationUrl: https://example.com/api/oauth/dialog
+              availableScopes:
+                write:pets: modify pets in your account
+                read:pets: read your pets
+        scopes:
+          - 'subscribe:auth_revocations'
+          - 'write:pets'
+    traits:
+      - $ref: "#/components/operationTraits/logging"
+    messages:
+      - $ref: '#/channels/lightsDim/messages/dimLight'
+components:
+  messages:
+    lightMeasured:
+      headers:
+        my-app-header:
+          type: object
+          required:
+            - correlationId
+          properties:
+            correlationId:
+              type: string
+              description: Correlation ID set by application
+            applicationInstanceId:
+              type: string
+              description: Unique identifier for a given instance of the publishing application
+      name: lightMeasured
+      title: Light measured
+      summary: Inform about environmental lighting conditions of a particular streetlight.
+      contentType: application/json
+      tags:
+        - name: telemetry
+          description: Messages about environmental sensors
+        - name: light
+          description: Messages about light levels
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/lightMeasuredPayload'
+      examples:
+        - name: lightMeasurementExample
+          summary: Example of light measurement payload
+          headers:
+            my-app-header:
+              type: object
+              properties:
+                applicationInstanceId:
+                  type: string
+                correlationId:
+                  type: string
+          payload:
+            lumens: 1200
+            sentAt: '2024-09-12T12:00:00Z'
+        - name: lightMeasurementExample2
+          summary: Example of light measurement payload 2
+          headers:
+            my-app-header:
+              type: object
+              properties:
+                applicationInstanceId:
+                  type: string
+                correlationId:
+                  type: string
+          payload:
+            lumens: 1200
+            sentAt: '2024-09-12T12:00:00Z'
+    turnOnOff:
+      name: turnOnOff
+      title: Turn on/off
+      summary: Command a particular streetlight to turn the lights on or off.
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/turnOnOffPayload'
+      bindings:
+        amqp:
+          contentEncoding: gzip
+          messageType: turnOnCommand
+      examples:
+        - name: turnOnExample
+          summary: Example for turn-on command
+          headers:
+            correlationId: 77
+          payload:
+            command: 'on'
+            sentAt: '2024-09-12T12:00:00Z'
+    dimLight:
+      name: dimLight
+      title: Dim light
+      summary: Command a particular streetlight to dim the lights.
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      correlationId:
+        description: Correlation ID for tracking message flow
+        location: "$message.header#/correlationId"
+      payload:
+        $ref: '#/components/schemas/dimLightPayload'
+      examples:
+        - name: dimLightExample
+          summary: Example of dim light payload
+          headers:
+            correlationId: 77
+          payload:
+            percentage: 50
+            sentAt: '2024-09-12T12:00:00Z'
+    referencedMessage:
+      $ref: '#/components/messages/lightMeasured'
+  schemas:
+    lightMeasuredPayload:
+      type: object
+      required:
+        - lumens
+      properties:
+        lumens:
+          type: integer
+          minimum: 0
+          description: Light intensity measured in lumens.
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+      examples:
+        - lumens: 1500
+          sentAt: '2024-09-12T12:00:00Z'
+        - lumens: 800
+          sentAt: '2024-09-12T18:30:00Z'
+    turnOnOffPayload:
+      type: object
+      required:
+        - command
+        - myDescription
+      properties:
+        command:
+          type: string
+          enum:
+            - 'on'
+            - 'off'
+          description: Whether to turn on or off the light.
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+    dimLightPayload:
+      deprecated: true
+      type: object
+      properties:
+        percentage:
+          type: integer
+          description: Percentage to which the light should be dimmed to.
+          minimum: 0
+          maximum: 100
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+    sentAt:
+      type: string
+      format: date-time
+      description: Date and time when the message was sent.
+    commandPayload:
+      oneOf:
+        - $ref: '#/components/schemas/turnOnOffPayload'
+        - $ref: '#/components/schemas/dimLightPayload'
+    
+    # === Basic Primitive Validators ===
+    simpleString:
+      title: Simple String Example
+      description: A short string with constraints
+      type: string
+      format: uuid
+      minLength: 3
+      maxLength: 36
+      pattern: "^[a-zA-Z0-9_-]+$"
+      default: "abc123"
+      const: "abc123"
+      enum: [ "abc123", "def456" ]
+      examples:
+        - "abc123"
+        - "def456"
+    
+    simpleNumber:
+      title: Simple Number Example
+      description: A number with range and divisibility
+      type: number
+      multipleOf: 0.5
+      exclusiveMinimum: 0
+      exclusiveMaximum: 10
+      default: 2.5
+      examples:
+        - 0.5
+        - 2
+        - 9.5
+    
+    # === Array Validation ===
+    numberArray:
+      title: Array of numbers
+      type: array
+      examples:
+        - [1, 2, 3]
+      items:
+        type: number
+        minimum: 0
+      minItems: 1
+      maxItems: 5
+      uniqueItems: true
+      contains:
+        minimum: 3
+
+    # === Object Validation ===
+    complexObject:
+      title: Complex Object Example
+      description: Object demonstrating properties and dependencies
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        age:
+          type: integer
+          minimum: 0
+          default: 18
+        email:
+          type: string
+          format: email
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+        nickname:
+          type: string
+          nullable: true
+      required: [ name, age ]
+      minProperties: 2
+      maxProperties: 5
+      propertyNames:
+        pattern: "^[a-z]+$"
+      additionalProperties: false
+      dependencies:
+        password: [ email ]
+      examples:
+        - name: "John"
+          age: 30
+          email: "john@example.com"
+    
+    # === Composition Keywords ===
+    composedSchema:
+      title: Schema Composition Example
+      description: Example demonstrating allOf, anyOf, oneOf, and not
+      allOf:
+        - $ref: '#/components/schemas/simpleString'
+        - $ref: '#/components/schemas/simpleNumber'
+      examples:
+        - "some value"
+    
+    # === Conditional Keywords ===
+    conditionalExample:
+      title: Conditional Schema
+      type: object
+      if:
+        properties:
+          type:
+            const: "car"
+      then:
+        required: [ "wheels" ]
+      else:
+        required: [ "legs" ]
+      properties:
+        type:
+          type: string
+        wheels:
+          type: integer
+        legs:
+          type: integer
+      examples:
+        - type: "car"
+          wheels: 4
+    
+    # === AsyncAPI Extended Fields ===
+    asyncApiSpecific:
+      title: AsyncAPI Custom Schema
+      description: Demonstrates AsyncAPI-only fields
+      type: object
+      discriminator: "type"
+      externalDocs:
+        description: "External reference documentation"
+        url: "https://example.com/docs/schema"
+      deprecated: true
+      required:
+        - type
+      bindings:
+        kafka:
+          topic: "my-topic"
+      properties:
+        type:
+          type: string
+        data:
+          type: object
+      examples:
+        - type: "event"
+          data:
+            id: "123"
+    
+    # === Reference Case ===
+    referencedSchema:
+      $ref: '#/components/schemas/simpleString'
+    
+    # === Boolean Shortcut Schemas ===
+    allowAnything: true
+    allowNothing: false
+  securitySchemes:
+    saslScram:
+      type: scramSha256
+      description: Provide your username and password for SASL/SCRAM authentication
+    certs:
+      type: X509
+      description: Download the certificate files from the service provider
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic HTTP authentication using username and password
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication with JWT format
+    apiKeyHeader:
+      type: httpApiKey
+      name: X-API-Key
+      in: header
+      description: API key passed in HTTP header
+    apiKeyQuery:
+      type: httpApiKey
+      name: apiKey
+      in: query
+      description: API key passed in query parameter
+    openIdConnectExample:
+      type: openIdConnect
+      description: OpenID Connect discovery URL example
+      openIdConnectUrl: "https://example.com/.well-known/openid-configuration"
+    oauthExample:
+      type: oauth2
+      description: Example OAuth2 flow
+      flows:
+        implicit:
+          authorizationUrl: "https://example.com/api/oauth/authorize"
+          availableScopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+        password:
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            admin: full access
+        clientCredentials:
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            write:docs: modify documents
+        authorizationCode:
+          authorizationUrl: "https://example.com/api/oauth/authorize"
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            read:docs: read documents
+            write:docs: modify documents
+      scopes:
+        - "read:pets"
+        - "write:pets"
+  parameters:
+    cityId:
+      description: Unique identifier of the city where the lights are located.
+      location: "$message.header#/cityId"
+      enum:
+        - helsinki
+        - oslo
+        - stockholm
+      default: helsinki
+      examples:
+        - oslo
+        - stockholm
+    streetlightId:
+      description: The ID of the streetlight.
+      location: "$message.header#/streetlightId"
+  channelBindings:
+    user-signedup:
+      kafka:
+        topic: 'my-specific-topic-name'
+        partitions: 20
+        replicas: 3
+        topicConfiguration:
+          cleanup.policy: [ "delete", "compact" ]
+          retention.ms: 604800000
+          retention.bytes: 1000000000
+          delete.retention.ms: 86400000
+          max.message.bytes: 1048588
+        bindingVersion: '0.5.0'
+  messageBindings:
+    user-signedup:
+      amqp:
+        contentEncoding: gzip
+  tags:
+    lighting:
+      name: lighting
+      description: Operations related to lighting control and status
+  servers:
+    stagingServer:
+      host: 'staging.mykafkacluster.org:{port}'
+      protocol: kafka-secure
+      description: Staging broker used for pre-production testing
+      variables:
+        port:
+          enum: [ "38092" ]
+          default: "38092"
+          description: The staging broker port
+      tags:
+        - name: 'env:staging'
+          description: Used for staging environment
+  messageTraits:
+    commonHeaders:
+
+      headers:
+        myHeaders:
+          type: object
+          properties:
+            my-app-header:
+              type: integer
+              minimum: 0
+              maximum: 100
+  operationTraits:
+    logging:
+      summary: Enables logging for this operation
+      bindings:
+        http:
+          method: POST
+    kafka:
+      summary: kafka summary
+      bindings:
+        kafka:
+          clientId: true

@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: AllOf Composition Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    BaseAccount:
+      type: object
+      properties:
+        accountId:
+          type: string
+          minLength: 4
+          maxLength: 35
+        active:
+          type: boolean
+      required: [accountId]
+    ExtendedAccount:
+      allOf:
+        - $ref: '#/components/schemas/BaseAccount'
+        - type: object
+          properties:
+            overdraftLimit:
+              type: number
+              minimum: 0
+              multipleOf: 0.01
+            accountType:
+              type: string
+              enum: [CURRENT, SAVINGS]
+          required: [accountType]

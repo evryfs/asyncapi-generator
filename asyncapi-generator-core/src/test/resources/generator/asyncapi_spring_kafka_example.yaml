@@ -1,0 +1,169 @@
+asyncapi: 3.0.0
+info:
+  title: Kafka Example Event
+  version: 1.1.0
+  description: |-
+    # Introduction
+    The Kafka Example API illustrates how to specify a Kafka API using AsyncAPI. 
+    In this example, the API can be used for the following scenarios
+    * Receive messages when customer information is updated
+    * Send messages to update customer contact information (email and phone number)
+    ## Change Log
+    <table>
+      <tr>
+        <th align="left">Version</th>
+        <th align="left">Change Description</th>
+      </tr>
+      <tr>
+        <td>v1.0.0</td>
+        <td>First version of the Kafka Example API</td>
+      </tr>
+       <tr>
+        <td>v1.1.0</td>
+        <td>Added customerType in CustomerReadPayload</td>
+      </tr>
+    </table>
+  contact:
+    name: API Support
+    url: https://www.asyncapi.org/support
+defaultContentType: application/json
+# A channel is similar to a topic in Kafka world
+channels:
+  # Decided to have two channels (ie. two topics) for this example
+  # One for sending messages when customer information is updated and another for receiving messages to update customer data (contact information)
+  customerUpdated:
+    address: amp.customer.updated.v1
+    # This channel handles messages of only one type of message
+    messages:
+      customerRead:
+        $ref: '#/components/messages/customerRead'
+    description: The topic where to listen for events on customer updates.
+  customerContactInfoUpdate:
+    address: amp.customer.contact-info-update.v1
+    # This channel handles messages of two different types of message
+    messages:
+      updateEmail:
+        $ref: '#/components/messages/updateEmail'
+      updatePhoneNumber:
+        $ref: '#/components/messages/updatePhoneNumber'
+    description: The topic where to send customer update messages.
+operations:
+  # In an AsyncAPI specification, the choice between using the send or receive operation depends on the role of the application
+  # you're describing in the context of a message exchange over a channel.
+  # Use send when your application is the producer of the message — i.e., it sends messages to the channel.
+  # Use receive when your application is the consumer — i.e., it receives messages from the channel.
+  receiveCustomerInfo:
+    action: send
+    channel:
+      $ref: '#/channels/customerUpdated'
+    summary: >-
+      Informs about changes on customer information
+      # "messages" is not required since the channel handles only one message type
+    #messages:
+    # - $ref: '#/channels/customerInformation/messages/customerRead'
+  updateEmail:
+    action: receive
+    channel:
+      $ref: '#/channels/customerContactInfoUpdate'
+    messages:
+      - $ref: '#/channels/customerContactInfoUpdate/messages/updateEmail'
+  updatePhoneNumber:
+    action: receive
+    channel:
+      $ref: '#/channels/customerContactInfoUpdate'
+    messages:
+      - $ref: '#/channels/customerContactInfoUpdate/messages/updatePhoneNumber'
+components:
+  messages:
+    customerRead:
+      name: customerRead
+      title: Customer Read
+      summary: >-
+        receives information on customer data
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/CustomerReadPayload'
+    updateEmail:
+      name: updateEmail
+      title: Update Email
+      summary: Update the email address of a customer.
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/CustomerEmailPayload'
+    updatePhoneNumber:
+      name: updatePhoneNumber
+      title: Update Phone Number
+      summary: Update the phone number of a customer.
+      contentType: application/json
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/CustomerPhoneNumberPayload'
+  schemas:
+    CustomerReadPayload:
+      type: object
+      required:
+        - customerId
+      properties:
+        customerId:
+          type: string
+          description: The ID of the customer.
+        orgId:
+          type: integer
+          minimum: 0
+          maximum: 9999
+          description: The organization ID of the customer.
+        customerName:
+          type: string
+          description: The name of the customer.
+        updatedDate:
+          type: string
+          format: date-time
+          description: The date when the customer data was last updated.
+        customerType:
+          type: string
+          enum:
+            - private
+            - corporate
+          description: The type of the customer.
+        phoneNumber:
+          type: string
+          description: The phone number of the customer.
+        email:
+          type: string
+          format: email
+          description: The email address of the customer.
+    CustomerEmailPayload:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: The ID of the customer.
+        email:
+          type: string
+          format: email
+          description: The new email address of the customer.
+    CustomerPhoneNumberPayload:
+      type: object
+      properties:
+        customerId:
+          type: string
+          description: The ID of the customer.
+        phoneNumber:
+          type: string
+          description: The new phone number of the customer.
+  messageTraits:
+    commonHeaders:
+      headers:
+        type: object
+        properties:
+          customerId:
+            type: string
+          orgId:
+            type: integer
+            minimum: 0
+            maximum: 9999

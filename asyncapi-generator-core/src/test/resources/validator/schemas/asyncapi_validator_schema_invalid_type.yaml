@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Type Test
+  version: 1.0.0
+channels: {}
+components:
+  schemas:
+    InvalidTypeSchema:
+      type: 123 # Invalid type for JSON Schema 'type' keyword (should be string or array of strings)
+      properties:
+        id:
+          type: string

@@ -1,0 +1,76 @@
+asyncapi: 3.0.0
+info:
+  title: Complex Order Payload Type Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    ComplexOrderPayloadType:
+      type: object
+      description: >
+        Example of a more complex payload combining nested objects, lists,
+        dates, decimals, booleans, and constrained strings.
+      required:
+        - orderId
+        - createdAt
+        - status
+        - customer
+        - orderLines
+      properties:
+        orderId:
+          description: Unique identifier for the order.
+          type: string
+          format: uuid
+        createdAt:
+          description: Timestamp for when the order was created.
+          type: string
+          format: date-time
+        status:
+          description: >
+            Current status of the order. Valid values include:
+              * `NEW`
+              * `PROCESSING`
+              * `COMPLETED`
+              * `CANCELLED`
+          type: string
+          minLength: 3
+          maxLength: 30
+        customer:
+          description: Customer placing the order.
+          $ref: './asyncapi_array_primitive_object.yaml#/components/schemas/CustomerWithContacts'
+        orderLines:
+          description: One or more order lines included in the order.
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/OrderLineType'
+        notes:
+          description: >
+            Optional free-text notes attached to the order.
+          type: string
+          maxLength: 2000
+    OrderLineType:
+      type: object
+      description: A single order line with product, quantity and price.
+      required:
+        - productCode
+        - quantity
+        - unitPrice
+      properties:
+        productCode:
+          description: >
+            Internal product identifier or SKU.
+          type: string
+          minLength: 1
+          maxLength: 50
+        quantity:
+          description: Ordered quantity.
+          type: integer
+          minimum: 1
+          maximum: 100000
+        unitPrice:
+          description: >
+            Price per unit in the order currency.
+          type: number
+          multipleOf: 0.01
+          exclusiveMinimum: 0

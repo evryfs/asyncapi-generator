@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Enum Default Value Test
+  version: 1.0.0
+components:
+  schemas:
+    TaskStatus:
+      type: string
+      enum: [ OPEN, IN_PROGRESS, CLOSED ]
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          allOf:
+            - $ref: '#/components/schemas/TaskStatus'
+          default: "IN_PROGRESS"
+        priority:
+          type: string
+          enum: [ LOW, MEDIUM, HIGH ] # Inline enum
+          default: "MEDIUM" # Default value for the inline enum

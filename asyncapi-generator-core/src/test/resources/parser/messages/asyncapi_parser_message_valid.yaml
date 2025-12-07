@@ -1,0 +1,104 @@
+asyncapi: 3.0.0
+info:
+  title: Message Valid Test
+  version: 1.0.0
+components:
+  messages:
+    lightMeasured:
+      headers:
+        my-app-header:
+          type: object
+          required:
+            - correlationId
+          properties:
+            correlationId:
+              type: string
+              description: Correlation ID set by application
+            applicationInstanceId:
+              type: string
+              description: Unique identifier for a given instance of the publishing application
+      name: lightMeasured
+      title: Light measured
+      summary: Inform about environmental lighting conditions of a particular streetlight.
+      contentType: application/json
+      tags:
+        - name: telemetry
+          description: Messages about environmental sensors
+        - name: light
+          description: Messages about light levels
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: '#/components/schemas/lightMeasuredPayload'
+      examples:
+        - name: lightMeasurementExample
+          summary: Example of light measurement payload
+          headers:
+            my-app-header:
+              type: object
+              properties:
+                applicationInstanceId:
+                  type: string
+                correlationId:
+                  type: string
+          payload:
+            lumens: 1200
+            sentAt: '2024-09-12T12:00:00Z'
+        - name: lightMeasurementExample2
+          summary: Example of light measurement payload 2
+          headers:
+            my-app-header:
+              type: object
+              properties:
+                applicationInstanceId:
+                  type: string
+                correlationId:
+                  type: string
+          payload:
+            lumens: 1200
+            sentAt: '2024-09-12T12:00:00Z'
+    turnOnOff:
+      name: turnOnOff
+      title: Turn on/off
+      summary: Command a particular streetlight to turn the lights on or off.
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      bindings:
+        amqp:
+          contentEncoding: gzip
+          messageType: turnOnCommand
+      examples:
+        - name: turnOnExample
+          summary: Example for turn-on command
+          headers:
+            correlationId: 77
+          payload:
+            command: 'on'
+            sentAt: '2024-09-12T12:00:00Z'
+    referencedMessage:
+      $ref: '#/components/messages/lightMeasured'
+  schemas:
+    lightMeasuredPayload:
+      type: object
+      required:
+        - lumens
+      properties:
+        lumens:
+          type: integer
+          minimum: 0
+          description: Light intensity measured in lumens.
+      examples:
+        - lumens: 1500
+          sentAt: '2024-09-12T12:00:00Z'
+        - lumens: 800
+          sentAt: '2024-09-12T18:30:00Z'
+  messageTraits:
+    commonHeaders:
+      headers:
+        myHeaders:
+          type: object
+          properties:
+            my-app-header:
+              type: integer
+              minimum: 0
+              maximum: 100

@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Channel Parameter Mismatch
+  version: 1.0.0
+channels:
+  userUpdates:
+    address: 'users.{userId}.updates'
+    messages:
+      userUpdate:
+        payload:
+          type: string
+    parameters:
+      # Missing 'userId' definition here!
+      otherParam:
+        type: string

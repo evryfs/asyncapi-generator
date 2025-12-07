@@ -1,0 +1,14 @@
+asyncapi: 3.0.0
+info:
+  title: Channel Unused Parameter
+  version: 1.0.0
+channels:
+  userUpdates:
+    address: 'users.updates' # No {userId} here
+    messages:
+      userUpdate:
+        payload:
+          type: string
+    parameters:
+      userId: # Defined but unused
+        type: string

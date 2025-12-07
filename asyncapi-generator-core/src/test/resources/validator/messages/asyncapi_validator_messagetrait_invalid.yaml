@@ -1,0 +1,25 @@
+asyncapi: 3.0.0
+info:
+  title: Message Trait Validation
+  version: 1.0.0
+channels: {}
+components:
+  messageTraits:
+    # Case 1: Invalid Content Type (Error)
+    InvalidContentType:
+      contentType: "invalid-type" # Missing '/'
+      headers:
+        type: object
+
+    # Case 2: Empty/Meaningless Trait (Warning)
+    MeaninglessTrait:
+      description: "Just description, no payload/headers/bindings"
+      # No headers, no bindings
+
+    # Case 3: Empty Metadata (Warning)
+    EmptyMetadataTrait:
+      name: ""
+      title: ""
+      summary: "hi" # Too short
+      headers:
+        type: object

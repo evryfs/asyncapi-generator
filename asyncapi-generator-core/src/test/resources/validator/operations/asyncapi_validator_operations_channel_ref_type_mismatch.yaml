@@ -1,0 +1,21 @@
+asyncapi: 3.0.0
+info:
+  title: Channel Ref Type Mismatch
+  version: 1.0.0
+channels: {} # No actual channels defined
+components:
+  schemas:
+    NotAChannel: # This is a schema, not a channel
+      type: string
+      description: This should not be referenced by an operation's channel field.
+  messages:
+    ValidMessage: # Define a valid message for operation.messages
+      payload:
+        type: string
+operations:
+  testOperation:
+    action: send
+    channel:
+      $ref: '#/components/schemas/NotAChannel' # ERROR: References a schema, not a channel
+    messages:
+      - $ref: '#/components/messages/ValidMessage' # This is a valid reference

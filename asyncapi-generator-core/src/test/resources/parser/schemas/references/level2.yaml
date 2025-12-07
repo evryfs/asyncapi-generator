@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Level 2
+  version: 1.0.0
+components:
+  schemas:
+    Level2Object:
+      type: string
+      description: "I am level 2 deep"

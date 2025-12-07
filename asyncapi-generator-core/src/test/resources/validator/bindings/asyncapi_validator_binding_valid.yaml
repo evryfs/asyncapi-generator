@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Binding Test
+  version: 1.0.0
+components:
+  channelBindings:
+    ValidKafkaBinding:
+      kafka:
+        topic: my.topic
+        partitions: 3
+        replicas: 1

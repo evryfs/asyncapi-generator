@@ -1,0 +1,36 @@
+asyncapi: 3.0.0
+info:
+  title: Conditional Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    ConditionalExample:
+      type: object
+      description: Example using if/then/else for conditional validation.
+      required:
+        - type
+        - value
+      properties:
+        type:
+          type: string
+          enum: [NUMERIC, TEXT]
+        value:
+          description: Will be validated differently depending on `type`.
+          type: string
+      if:
+        properties:
+          type:
+            const: NUMERIC
+      then:
+        properties:
+          value:
+            type: number
+            minimum: 0
+            maximum: 1000
+      else:
+        properties:
+          value:
+            type: string
+            minLength: 1
+            maxLength: 200

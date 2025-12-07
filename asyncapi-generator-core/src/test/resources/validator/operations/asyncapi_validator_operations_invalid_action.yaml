@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Operation Action
+  version: 1.0.0
+channels:
+  myChannel:
+    messages:
+      myMessage:
+        payload:
+          type: string
+components:
+  messages: # Define the message here for reference
+    UserSignedUp:
+      payload:
+        type: object
+operations:
+  testOperation:
+    action: invalidAction # Should be 'send' or 'receive'
+    channel:
+      $ref: '#/channels/myChannel'
+    messages:
+      - $ref: '#/components/messages/UserSignedUp' # Correctly references a message

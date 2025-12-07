@@ -1,0 +1,19 @@
+asyncapi: 3.0.0
+info:
+  # Missing 'title' and 'version' which are mandatory
+  description: "Info with missing fields"
+components:
+  schemas:
+    InvalidTypeSchema:
+      # 'type' should be string or list of strings (in some versions), but here we test a number
+      type: 123
+
+    InvalidEnumSchema:
+      type: string
+      # 'enum' should be a list
+      enum: "not-a-list"
+
+    MissingDependenciesObject:
+      type: object
+      # dependencies should be an object/map
+      dependencies: ["wrong", "type"]

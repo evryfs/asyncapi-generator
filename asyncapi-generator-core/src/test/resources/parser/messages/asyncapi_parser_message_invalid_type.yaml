@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Message Type
+  version: 1.0.0
+channels: {}
+components:
+  messages:
+    InvalidNameMessage:
+      name: 12345 # Error
+
