@@ -43,5 +43,6 @@
     </distributionManagement>
 
     <modules>
+        <module>asyncapi-generator-core</module>
     </modules>
 </project>
