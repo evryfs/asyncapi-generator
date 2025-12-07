@@ -1,0 +1,101 @@
+package {{packageName}};
+
+{{#imports}}
+import {{.}};
+{{/imports}}
+
+/**
+{{#classDocLines}}
+ * {{{.}}}
+{{/classDocLines}}
+ */
+public class {{className}}{{#parentClass}} extends {{parentClass}}{{/parentClass}}{{implementsClause}} {
+
+{{#fields}}
+    {{#annotations}}
+    {{{.}}}
+    {{/annotations}}
+    private {{{type}}} {{name}};
+
+{{/fields}}
+    public {{className}}() {
+        // Default constructor
+    }
+
+    // All-args constructor
+    public {{className}}(
+    {{#allFields}}
+        {{{type}}} {{name}}{{^last}},{{/last}}
+    {{/allFields}}
+    ) {
+    {{#parentClass}}
+        super({{#parentFields}}{{name}}{{^last}}, {{/last}}{{/parentFields}});
+    {{/parentClass}}
+    {{#fields}}
+        this.{{name}} = {{name}};
+    {{/fields}}
+    }
+
+{{#fields}}
+    /**
+     * Get {{name}}.
+{{#docFirstLine}}
+     * {{{.}}}
+{{/docFirstLine}}
+{{#docTailLines}}
+     * {{{.}}}
+{{/docTailLines}}
+     * @return {{{type}}}
+     */
+    public {{{type}}} {{getterName}}() {
+        return {{name}};
+    }
+
+    /**
+     * Set {{name}}.
+     * @param {{name}}{{#docFirstLine}} {{{.}}}{{/docFirstLine}}
+     */
+    public void {{setterName}}({{{type}}} {{name}}) {
+        this.{{name}} = {{name}};
+    }
+
+{{/fields}}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        {{className}} that = ({{className}}) o;
+        return
+{{#parentClass}}
+            super.equals(o) &&
+{{/parentClass}}
+{{#fields}}
+            Objects.equals({{name}}, that.{{name}}){{^last}} &&
+{{/last}}
+{{/fields}};
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+{{#parentClass}}super.hashCode(),{{/parentClass}}
+{{#fields}}
+            {{name}}{{^last}},{{/last}}
+{{/fields}}
+        );
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("class {{className}} {\n");
+{{#parentClass}}
+        sb.append("    ").append(super.toString()).append("\n");
+{{/parentClass}}
+{{#fields}}
+        sb.append("    {{name}}: ").append({{name}}).append("\n");
+{{/fields}}
+        sb.append("}");
+        return sb.toString();
+    }
+}

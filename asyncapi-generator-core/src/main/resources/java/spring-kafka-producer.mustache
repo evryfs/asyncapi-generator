@@ -1,0 +1,33 @@
+package {{packageName}};
+
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+{{#imports}}
+import {{{.}}};
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+@Component
+public class {{name}} {
+
+    private static final Logger log = LoggerFactory.getLogger({{name}}.class);
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+
+    public {{name}}(KafkaTemplate<String, Object> kafkaTemplate) {
+        this.kafkaTemplate = kafkaTemplate;
+    }
+
+    {{#sendMethods}}
+    public void {{methodName}}(String key, {{payloadType}} message) {
+        log.info("Sending {{payloadType}} to topic={{topic}}, key={}", key);
+        kafkaTemplate.send(new ProducerRecord<>("{{topic}}", key, message));
+    }
+    {{/sendMethods}}
+}

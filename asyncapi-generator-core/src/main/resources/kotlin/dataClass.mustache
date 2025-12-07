@@ -1,0 +1,32 @@
+package {{packageName}}
+
+{{#imports}}
+import {{.}}
+{{/imports}}
+
+/**
+{{#classDocLines}}
+ * {{{.}}}
+{{/classDocLines}}
+{{^classDocLines}}
+ * {{className}} model
+{{/classDocLines}}
+ *
+{{#fields}}
+ * @param [{{name}}]{{#docFirstLine}} {{{docFirstLine}}}{{/docFirstLine}}
+{{#docTailLines}}
+ *   {{{.}}}
+{{/docTailLines}}
+ *
+{{/fields}}
+ */
+data class {{className}}(
+{{#fields}}
+
+{{#annotations}}
+    {{{.}}}
+{{/annotations}}
+    val {{name}}: {{{type}}}{{#nullable}}?{{/nullable}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{^defaultValue}}{{#nullable}} = null{{/nullable}}{{/defaultValue}}{{^last}},{{/last}}
+{{/fields}}
+){{implementsClause}} {
+}

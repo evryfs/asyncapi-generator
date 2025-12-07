@@ -1,0 +1,16 @@
+package {{packageName}}
+
+{{#imports}}
+import {{{.}}}
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+interface {{name}} {
+{{#methods}}
+    fun {{methodName}}(message: KafkaMessage<{{payloadType}}>)
+{{/methods}}
+}
