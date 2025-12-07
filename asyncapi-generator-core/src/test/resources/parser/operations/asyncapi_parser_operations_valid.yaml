@@ -1,0 +1,68 @@
+asyncapi: 3.0.0
+info:
+  title: Operation Parser Valid Test
+  version: 1.0.0
+channels:
+  # Stubs for channel references
+  lightingMeasured: {}
+  lightTurnOn: {}
+  lightTurnOff: {}
+  lightsDim: {}
+components:
+  messages:
+    # Stubs for message references
+    lightMeasured: {}
+    turnOn: {}
+    turnOff: {}
+    dimLight: {}
+  securitySchemes:
+    saslScram: {}
+  operationTraits:
+    kafka: {}
+    logging: {}
+operations:
+  receiveLightMeasurement:
+    action: receive
+    channel:
+      $ref: '#/channels/lightingMeasured'
+    summary: Inform about environmental lighting conditions of a particular streetlight.
+    traits:
+      - $ref: '#/components/operationTraits/kafka'
+    messages:
+      - $ref: '#/components/messages/lightMeasured'
+    externalDocs:
+      url: 'https://example.com/api/oauth/dialog'
+    reply:
+      address:
+        location: '$message.header#/replyTo'
+      channel:
+        $ref: '#/channels/lightingMeasured'
+      messages:
+        - $ref: '#/components/messages/lightMeasured'
+  turnOn:
+    action: send
+    channel:
+      $ref: '#/channels/lightTurnOn'
+    traits:
+      - $ref: '#/components/operationTraits/kafka'
+    messages:
+      - $ref: '#/components/messages/turnOn'
+    tags:
+      - name: user
+      - name: signup
+      - name: register
+        externalDocs:
+          description: Details about registration flows
+          url: "https://example.com/docs/register"
+    bindings:
+      amqp:
+        ack: false
+    reply:
+      address:
+        location: "$message.header#/replyTo"
+      channel:
+        $ref: "#/channels/lightTurnOn"
+      messages:
+        - $ref: "#/components/messages/turnOn"
+    externalDocs:
+      url: 'https://example.com/api/oauth/dialog'

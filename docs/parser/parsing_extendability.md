@@ -14,7 +14,7 @@ The parser is organized hierarchically.
 If you are adding support for a new section of the AsyncAPI specification (e.g., a new object type in `components`):
 
 1.  **Create the Class:**
-    Create a new Kotlin class in the appropriate package (e.g., `com.tietoevry.banking.asyncapi.generator.core.parser.newfeature`).
+    Create a new Kotlin class in the appropriate package (e.g., `dev.banking.asyncapi.generator.core.parser.newfeature`).
     ```kotlin
     class NewFeatureParser(
         val asyncApiContext: AsyncApiContext

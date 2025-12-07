@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Server Parser Test
+  version: 1.0.0
+servers:
+
+  # Case 1: Invalid Variables Structure (Parser Error)
+  InvalidVariables:
+    host: localhost
+    protocol: kafka
+    variables: "not-a-map"

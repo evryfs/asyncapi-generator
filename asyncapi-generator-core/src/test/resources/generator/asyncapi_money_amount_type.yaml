@@ -1,0 +1,28 @@
+asyncapi: 3.0.0
+info:
+  title: Money Amount Type Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    MoneyAmountType:
+      type: object
+      description: >
+        A monetary amount with a currency. Used to validate mapping to
+        BigDecimal with inclusive/exclusive bounds.
+      required:
+        - currency
+        - value
+      properties:
+        currency:
+          description: ISO-4217 currency code.
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: "[A-Z]{3}"
+        value:
+          description: Signed monetary value, in currency minor units.
+          type: number
+          multipleOf: 0.01
+          exclusiveMinimum: -1000000000000
+          exclusiveMaximum: 1000000000000

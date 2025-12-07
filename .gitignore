@@ -22,10 +22,10 @@ nbdist/
 
 # Maven
 target/
+dependency-reduced-pom.xml
 
 # Gradle
 .gradle/
-build/
 
 # Gradle Wrapper
 gradle-wrapper.jar

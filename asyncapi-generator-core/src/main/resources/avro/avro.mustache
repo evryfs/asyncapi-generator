@@ -1,0 +1,18 @@
+{
+  "type": "record",
+  "name": "{{name}}",
+  "namespace": "{{namespace}}",
+  {{#doc}}
+  "doc": "{{{.}}}",
+  {{/doc}}
+  "fields": [
+    {{#fields}}
+    {
+      "name": "{{name}}",
+      "type": {{{jsonType}}}{{#doc}},
+      "doc": "{{{.}}}"{{/doc}}{{#hasDefaultNull}},
+      "default": null{{/hasDefaultNull}}
+    }{{^last}},{{/last}}
+    {{/fields}}
+  ]
+}

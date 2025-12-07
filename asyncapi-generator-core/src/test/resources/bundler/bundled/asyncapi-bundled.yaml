@@ -1,0 +1,134 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Schema Validation Test
+  version: 1.0.0
+servers:
+  scram-connections:
+    host: "kafka.scram.local:9092"
+    protocol: kafka
+    description: SCRAM-based Kafka cluster
+    tags:
+      - name: shared
+        description: Shared server tag used across environments
+      - name: scram
+        description: SCRAM-based Kafka cluster
+  mtls-connections:
+    host: "kafka.mtls.local:9093"
+    protocol: kafka-secure
+    description: mTLS-protected Kafka cluster
+    tags:
+      - name: shared
+        description: Shared server tag used across environments
+      - name: mtls
+        description: mTLS-protected Kafka cluster
+channels:
+  testChannel:
+    address: "example.topic"
+    messages:
+      testMessage:
+        payload:
+          title: Valid User Schema
+          description: Represents a user with valid fields
+          type: object
+          required: [id, username]
+          properties:
+            id:
+              description: The unique identifier of the user
+              type: integer
+            username:
+              description: Username between 3 and 20 characters
+              type: string
+              maxLength: 20
+              minLength: 3
+            active:
+              description: Whether the user is active
+              type: boolean
+            email:
+              description: Optional email address
+              type: string
+        name: "testMessage"
+  auditChannel:
+    address: "example.audit"
+    messages:
+      auditMessage:
+        payload:
+          title: Audit Metadata
+          description: Metadata about changes to user records
+          type: object
+          required: [timestamp, actor]
+          properties:
+            timestamp:
+              description: When the change was made
+              type: string
+              format: date-time
+            actor:
+              description: Who made the change
+              type: string
+            reason:
+              description: Optional reason for the change
+              type: string
+        name: "auditMessage"
+  externalAuditChannel:
+    address: "external.audit"
+    messages:
+      externalAuditMessage:
+        payload:
+          title: Audit Metadata
+          description: Metadata about changes to user records
+          type: object
+          required: [timestamp, actor]
+          properties:
+            timestamp:
+              description: When the change was made
+              type: string
+              format: date-time
+            actor:
+              description: Who made the change
+              type: string
+            reason:
+              description: Optional reason for the change
+              type: string
+        name: "ExternalAuditMessage"
+    description: "External audit events channel defined in shared file"
+components:
+  messages:
+    testMessage:
+      payload:
+        title: Valid User Schema
+        description: Represents a user with valid fields
+        type: object
+        required: [id, username]
+        properties:
+          id:
+            description: The unique identifier of the user
+            type: integer
+          username:
+            description: Username between 3 and 20 characters
+            type: string
+            maxLength: 20
+            minLength: 3
+          active:
+            description: Whether the user is active
+            type: boolean
+          email:
+            description: Optional email address
+            type: string
+      name: "testMessage"
+    auditMessage:
+      payload:
+        title: Audit Metadata
+        description: Metadata about changes to user records
+        type: object
+        required: [timestamp, actor]
+        properties:
+          timestamp:
+            description: When the change was made
+            type: string
+            format: date-time
+          actor:
+            description: Who made the change
+            type: string
+          reason:
+            description: Optional reason for the change
+            type: string
+      name: "auditMessage"

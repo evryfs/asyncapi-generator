@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: Integer Range Type Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    IntegerRangesType:
+      type: object
+      description: >
+        Object used to validate how different integer ranges and formats are
+        mapped to Kotlin Int vs Long.
+      required:
+        - smallCounter
+        - largeCounter
+      properties:
+        smallCounter:
+          description: >
+            A small counter that always fits within 32-bit signed range.
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 100000
+        largeCounter:
+          description: >
+            A large counter that may exceed 32-bit integer range.
+          type: integer
+          format: int64
+          minimum: 0
+          maximum: 9007199254740991
+        boundedWithoutFormat:
+          description: >
+            Integer without explicit format, but bounds suggest Int is safe.
+          type: integer
+          minimum: -1000
+          maximum: 1000
+        unboundedInteger:
+          description: >
+            Integer without explicit format or bounds. Should default to Long
+            as a safe choice.
+          type: integer

@@ -1,0 +1,198 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Valid Test
+  version: 1.0.0
+channels: {}
+components:
+  schemas:
+    # Primitives
+    simpleString:
+      title: Simple String Example
+      description: A short string with constraints
+      type: string
+      format: uuid
+      default: "abc123"
+      examples: ["abc123", "def456"]
+      pattern: "^[a-zA-Z0-9_-]+$"
+      enum: ["abc123", "def456"]
+      const: "abc123"
+      maxLength: 36
+      minLength: 3
+
+    simpleNumber:
+      title: Simple Number Example
+      description: A number with range and divisibility
+      type: number
+      default: 2.5
+      examples: [0.5, 2, 9.5]
+      multipleOf: 0.5
+      exclusiveMaximum: 10
+      exclusiveMinimum: 0
+
+    # Arrays
+    numberArray:
+      title: Array of numbers
+      type: array
+      examples: [[1, 2, 3]]
+      items:
+        type: number
+        minimum: 0
+      contains:
+        minimum: 3
+      uniqueItems: true
+      maxItems: 5
+      minItems: 1
+
+    # Objects
+    complexObject:
+      title: Complex Object Example
+      description: Object demonstrating properties and dependencies
+      type: object
+      examples:
+        - name: "John"
+          age: 30
+          email: "john@example.com"
+      required: [name, age]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        age:
+          type: integer
+          default: 18
+          minimum: 0
+        email:
+          type: string
+          format: email
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+        nickname:
+          type: string
+          nullable: true
+      dependencies:
+        password: [email]
+      propertyNames:
+        pattern: "^[a-z]+$"
+      additionalProperties: false
+      maxProperties: 5
+      minProperties: 2
+
+    # Composition
+    composedSchema:
+      title: Schema Composition Example
+      description: Example demonstrating allOf, anyOf, oneOf, and not
+      examples: ["some value"]
+      allOf:
+        - $ref: '#/components/schemas/simpleString'
+        - $ref: '#/components/schemas/simpleNumber'
+      # Note: anyOf/oneOf/not removed here if they weren't in your dataset or to simplify?
+      # Checking SchemaDataset.kt: "composedSchema" HAS anyOf, oneOf, not.
+      # I need to include them referenced or inline as per dataset expectations.
+      # Dataset expects References for anyOf[0], oneOf[0], and Inline for others.
+      # I will match the Golden Master content exactly for this section.
+      anyOf:
+        - $ref: '#/components/schemas/simpleString'
+        - type: boolean
+      oneOf:
+        - $ref: '#/components/schemas/simpleNumber'
+        - type: boolean
+      not:
+        type: null
+
+    # Conditional
+    conditionalExample:
+      title: Conditional Schema
+      type: object
+      examples:
+        - type: "car"
+          wheels: 4
+      properties:
+        type: { type: string }
+        wheels: { type: integer }
+        legs: { type: integer }
+      if:
+        properties:
+          type: { const: "car" }
+      then:
+        required: [wheels]
+      else:
+        required: [legs]
+
+    # AsyncAPI Specific
+    asyncApiSpecific:
+      title: AsyncAPI Custom Schema
+      description: Demonstrates AsyncAPI-only fields
+      type: object
+      required: [type]
+      examples:
+        - type: "event"
+          data: { id: "123" }
+      properties:
+        type: { type: string }
+        data: { type: object }
+      discriminator: "type"
+      deprecated: true
+      externalDocs:
+        url: "https://example.com/docs/schema"
+        description: "External reference documentation"
+      bindings:
+        kafka:
+          topic: "my-topic"
+
+    # Reference
+    referencedSchema:
+      $ref: '#/components/schemas/simpleString'
+
+    # Booleans
+    allowAnything: true
+    allowNothing: false
+
+    # Payload schemas (used in message tests but good to have here for completeness if dataset has them)
+    lightMeasuredPayload:
+      type: object
+      required: [lumens]
+      examples:
+        - { lumens: 1500, sentAt: '2024-09-12T12:00:00Z' }
+        - { lumens: 800, sentAt: '2024-09-12T18:30:00Z' }
+      properties:
+        lumens:
+          description: Light intensity measured in lumens.
+          type: integer
+          minimum: 0
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    sentAt:
+      description: Date and time when the message was sent.
+      type: string
+      format: date-time
+
+    turnOnOffPayload:
+      type: object
+      required: [command, myDescription]
+      properties:
+        command:
+          description: Whether to turn on or off the light.
+          type: string
+          enum: ['on', 'off']
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    dimLightPayload:
+      type: object
+      deprecated: true
+      properties:
+        percentage:
+          description: Percentage to which the light should be dimmed to.
+          type: integer
+          minimum: 0
+          maximum: 100
+        sentAt:
+          $ref: '#/components/schemas/sentAt'
+
+    commandPayload:
+      oneOf:
+        - $ref: '#/components/schemas/turnOnOffPayload'
+        - $ref: '#/components/schemas/dimLightPayload'

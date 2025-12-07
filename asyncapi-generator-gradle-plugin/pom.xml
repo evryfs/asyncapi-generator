@@ -4,11 +4,69 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.tietoevry.banking.asyncapi.generator</groupId>
+        <groupId>dev.banking.asyncapi.generator</groupId>
         <artifactId>asyncapi-generator</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-
     <artifactId>asyncapi-generator-gradle-plugin</artifactId>
+    <packaging>pom</packaging>
 
+    <name>asyncapi-generator-gradle-plugin (maven wrapper)</name>
+    <description>This is a maven wrapper to call Gradle during installation phase.</description>
+
+    <properties>
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
+    </properties>
+
+    <dependencies>
+        <!-- siblings -->
+        <dependency>
+            <groupId>dev.banking.asyncapi.generator</groupId>
+            <artifactId>asyncapi-generator-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>invoke-gradle-plugin-build</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>./gradlew</executable>
+                            <arguments>
+                                <argument>clean</argument>
+                                <argument>build</argument>
+                                <argument>publishToMavenLocal</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

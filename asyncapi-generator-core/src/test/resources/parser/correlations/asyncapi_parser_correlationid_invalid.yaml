@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Correlation ID Parser Test
+  version: 1.0.0
+components:
+  correlationIds:
+    # Case 1: Missing Location (Parser Error)
+    MissingLocationId:
+      description: "This ID is missing its location"

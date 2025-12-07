@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Operation Parser Test
+  version: 1.0.0
+channels: {}
+operations:
+  # Case 1: Missing Action (Parser Error)
+  MissingAction:
+    channel:
+      $ref: '#/channels/myChannel'

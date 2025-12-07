@@ -1,0 +1,117 @@
+asyncapi: 3.0.0
+info:
+  title: Channel Parser Valid Test
+  version: 1.0.0
+channels:
+  lightingMeasured:
+    address: 'smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured'
+    description: The topic on which measured values may be produced and consumed.
+    messages:
+      lightMeasured:
+        $ref: '#/components/messages/lightMeasured'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+    bindings:
+      kafka:
+        topic: smartylighting.streetlights.1.0.event
+        partitions: 3
+        replicas: 1
+
+  lightTurnOn:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.turn.on'
+    messages:
+      turnOn:
+        $ref: '#/components/messages/turnOnOff'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+
+  lightTurnOff:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.turn.off'
+    messages:
+      turnOff:
+        $ref: '#/components/messages/turnOnOff'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+
+  lightsDim:
+    address: 'smartylighting.streetlights.1.0.action.{streetlightId}.dim'
+    messages:
+      dimLight:
+        $ref: '#/components/messages/dimLight'
+    parameters:
+      streetlightId:
+        $ref: '#/components/parameters/streetlightId'
+
+  lightStatus:
+    address: 'smartylighting.streetlights.1.0.event.{city}.status'
+    description: The topic reporting light status by city.
+    parameters:
+      city:
+        description: The city where the streetlights are located.
+        location: "$message.payload#/city"
+        enum:
+          - helsinki
+          - oslo
+          - stockholm
+        default: helsinki
+        examples:
+          - helsinki
+          - oslo
+    messages:
+      lightStatusMessage:
+        $ref: '#/components/messages/lightMeasured'
+
+  maintenanceRequest:
+    address: 'smartylighting.streetlights.1.0.action.{requestId}.maintenance'
+    description: Command topic for maintenance requests.
+    parameters:
+      requestId:
+        description: Identifier for maintenance request.
+        location: "$message.header#/requestId"
+        default: "req-001"
+    messages:
+      maintenanceMessage:
+        $ref: '#/components/messages/turnOnOff'
+
+  cityLights:
+    address: 'smartylighting.streetlights.1.0.{cityId}.light.{lightId}'
+    description: Channel for controlling individual lights in a city.
+    parameters:
+      cityId:
+        $ref: '#/components/parameters/cityId'
+      lightId:
+        description: Identifier of the specific light.
+        location: "$message.header#/lightId"
+        enum:
+          - lamp-001
+          - lamp-002
+          - lamp-003
+        examples:
+          - lamp-001
+          - lamp-002
+    messages:
+      dimLight:
+        $ref: '#/components/messages/dimLight'
+
+  powerStatus:
+    address: 'smartylighting.streetlights.1.0.power.{streetlightId}.status'
+    description: Channel for power status updates.
+    parameters:
+      streetlightId:
+        description: Identifier for the streetlight.
+        location: "$message.header#/streetlightId"
+    messages:
+      powerMessage:
+        $ref: '#/components/messages/lightMeasured'
+
+components:
+  messages:
+    lightMeasured: { name: lightMeasured }
+    turnOnOff: { name: turnOnOff }
+    dimLight: { name: dimLight }
+  parameters:
+    streetlightId: { description: stub }
+    cityId: { description: stub }

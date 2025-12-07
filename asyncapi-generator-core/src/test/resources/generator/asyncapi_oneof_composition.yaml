@@ -1,0 +1,49 @@
+asyncapi: 3.0.0
+info:
+  title: OneOf Composition Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    PaymentBase:
+      type: object
+      required: [paymentType]
+      properties:
+        paymentType:
+          type: string
+          enum: [CARD, BANK]
+    Payment:
+      type: object
+      required: [paymentType]
+      properties:
+        paymentType:
+          type: string
+          enum: [CARD, BANK]
+      discriminator: paymentType
+      oneOf:
+        - $ref: '#/components/schemas/CardPayment'
+        - $ref: '#/components/schemas/BankPayment'
+    CardPayment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentBase'
+        - type: object
+          properties:
+            paymentType:
+              type: string
+              const: CARD
+            cardNumber:
+              type: string
+              pattern: "^[0-9]{16}$"
+          required: [cardNumber]
+    BankPayment:
+      allOf:
+        - $ref: '#/components/schemas/PaymentBase'
+        - type: object
+          properties:
+            paymentType:
+              type: string
+              const: BANK
+            iban:
+              type: string
+              pattern: "^[A-Z0-9]{15,34}$"
+          required: [iban]

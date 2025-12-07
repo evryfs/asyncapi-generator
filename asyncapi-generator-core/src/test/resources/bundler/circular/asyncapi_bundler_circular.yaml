@@ -1,0 +1,17 @@
+asyncapi: 3.0.0
+info:
+  title: Circular Reference Test
+  version: 1.0.0
+components:
+  schemas:
+    NodeA:
+      type: object
+      properties:
+        child:
+          $ref: '#/components/schemas/NodeB'
+
+    NodeB:
+      type: object
+      properties:
+        parent:
+          $ref: '#/components/schemas/NodeA'

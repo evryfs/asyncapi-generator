@@ -1,0 +1,57 @@
+asyncapi: 3.0.0
+info:
+  title: Components Parser Valid Test
+  version: 1.0.0
+channels: {}
+components:
+  schemas:
+    MySchema: { type: string }
+  servers:
+    MyServer:
+      host: localhost
+      protocol: kafka
+  channels:
+    MyChannel:
+      address: my/channel
+      messages: {}
+  operations:
+    MyOperation:
+      action: send
+      channel: { $ref: '#/components/channels/MyChannel' }
+  messages:
+    MyMessage:
+      payload: { type: string }
+  securitySchemes:
+    MySecurity:
+      type: http
+      scheme: basic
+  parameters:
+    MyParam:
+      description: param
+  correlationIds:
+    MyCorrelation:
+      location: $message.header#/id
+  tags:
+    MyTag:
+      name: tag
+  externalDocs:
+    MyDocs:
+      url: https://example.com
+  operationTraits:
+    MyOpTrait:
+      description: trait
+  messageTraits:
+    MyMsgTrait:
+      description: trait
+  serverBindings:
+    MyServerBinding:
+      kafka: {}
+  channelBindings:
+    MyChannelBinding:
+      kafka: {}
+  operationBindings:
+    MyOpBinding:
+      kafka: {}
+  messageBindings:
+    MyMsgBinding:
+      kafka: {}

@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Structure Test
+  version: 1.0.0
+components:
+  schemas:
+    InvalidArray:
+      type: array
+      minItems: 10
+      maxItems: 5
+
+    InvalidObject:
+      type: object
+      minProperties: 10
+      maxProperties: 5

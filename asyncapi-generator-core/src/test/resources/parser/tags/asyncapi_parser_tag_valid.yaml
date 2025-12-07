@@ -1,0 +1,14 @@
+asyncapi: 3.0.0
+info:
+  title: Tag Parser Test
+  version: 1.0.0
+components:
+  tags:
+    inlineTag:
+      name: "user"
+      description: "User related operations"
+      externalDocs:
+        url: "https://example.com/docs/user"
+        description: "User docs"
+    refTag:
+      $ref: '#/components/tags/inlineTag'

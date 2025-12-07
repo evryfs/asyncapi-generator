@@ -1,0 +1,30 @@
+package {{packageName}};
+
+import java.io.Serializable;
+{{#discriminator}}
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+{{/discriminator}}
+
+/**
+{{#description}}
+ * {{.}}
+{{/description}}
+ */
+{{#discriminator}}
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "{{discriminator}}",
+    visible = true
+)
+{{#hasSubTypes}}
+@JsonSubTypes({
+    {{#subTypes}}
+    @JsonSubTypes.Type(value = {{type}}.class, name = "{{name}}"){{^last}},{{/last}}
+    {{/subTypes}}
+})
+{{/hasSubTypes}}
+{{/discriminator}}
+public interface {{interfaceName}} extends Serializable {
+}

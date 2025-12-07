@@ -1,0 +1,61 @@
+asyncapi: 3.0.0
+info:
+  title: Security Scheme Parser Valid Test
+  version: 1.0.0
+components:
+  securitySchemes:
+    saslScram:
+      type: scramSha256
+      description: Provide your username and password for SASL/SCRAM authentication
+    certs:
+      type: X509
+      description: Download the certificate files from the service provider
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic HTTP authentication using username and password
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Bearer token authentication with JWT format
+    apiKeyHeader:
+      type: httpApiKey
+      name: X-API-Key
+      in: header
+      description: API key passed in HTTP header
+    apiKeyQuery:
+      type: httpApiKey
+      name: apiKey
+      in: query
+      description: API key passed in query parameter
+    openIdConnectExample:
+      type: openIdConnect
+      description: OpenID Connect discovery URL example
+      openIdConnectUrl: "https://example.com/.well-known/openid-configuration"
+    oauthExample:
+      type: oauth2
+      description: Example OAuth2 flow
+      flows:
+        implicit:
+          authorizationUrl: "https://example.com/api/oauth/authorize"
+          availableScopes:
+            write:pets: modify pets in your account
+            read:pets: read your pets
+        password:
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            admin: full access
+        clientCredentials:
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            write:docs: modify documents
+        authorizationCode:
+          authorizationUrl: "https://example.com/api/oauth/authorize"
+          tokenUrl: "https://example.com/api/oauth/token"
+          availableScopes:
+            read:docs: read documents
+            write:docs: modify documents
+      scopes:
+        - "read:pets"
+        - "write:pets"

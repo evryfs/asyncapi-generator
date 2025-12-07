@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: ExternalDocs Parser Valid Test
+  version: 1.0.0
+components:
+  externalDocs:
+    MyExternalDocs:
+      description: "My API Documentation"
+      url: "https://example.com/api-docs"
+    RefExternalDocs:
+      $ref: '#/components/externalDocs/MyExternalDocs'

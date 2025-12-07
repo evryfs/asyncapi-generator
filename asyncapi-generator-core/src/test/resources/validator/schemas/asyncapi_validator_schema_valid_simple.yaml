@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Schema Test
+  version: 1.0.0
+components:
+  schemas:
+    SimpleUser:
+      type: object
+      description: A simple user object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          minLength: 3
+      required:
+        - id

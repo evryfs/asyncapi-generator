@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Info Components Test
+  version: 1.0.0
+  contact:
+    name: "" # Blank name (Warning - if ContactValidator checks this)
+    url: "not-a-url" # Invalid URL (Error)
+    email: "invalid-email" # Invalid email format (Error)
+  license:
+    name: "" # Empty name (Error)
+    url: "invalid-license-url" # Invalid URL (Error)

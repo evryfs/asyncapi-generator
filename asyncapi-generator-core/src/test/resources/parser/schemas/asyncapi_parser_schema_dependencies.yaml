@@ -1,0 +1,28 @@
+asyncapi: 3.0.0
+info:
+  title: Dependencies Test
+  version: 1.0.0
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        sku:
+          type: string
+        credit_card:
+          type: string
+        billing_address:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+      required:
+        - sku
+      dependencies:
+        # Property Dependency (if credit_card is present, then billing_address must also be present)
+        credit_card: ["billing_address"]
+        # Schema Dependency (if name is present, then category is required)
+        name:
+          type: object
+          required: ["category"]

@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Tag
+  version: 1.0.0
+channels: {}
+components:
+  tags:
+    MissingName:
+      description: "Missing name field"

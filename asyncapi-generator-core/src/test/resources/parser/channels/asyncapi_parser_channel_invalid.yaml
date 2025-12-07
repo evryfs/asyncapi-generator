@@ -1,0 +1,8 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Channel Parser Test
+  version: 1.0.0
+channels:
+  # Case 1: Invalid Address Type
+  InvalidMessages:
+    messages: "not-a-map"

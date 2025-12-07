@@ -1,0 +1,32 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Server Test
+  version: 1.0.0
+servers:
+  # Case 1: Empty Protocol (Error) - Changed from missing
+  emptyProtocolServer:
+    host: "my.host.com"
+    protocol: "" # Empty protocol
+
+  # Case 2: Invalid Host Format (Warning)
+  invalidHostServer:
+    host: "http://my.host.com" # Host should be 'hostname[:port]', not URL with scheme
+    protocol: kafka
+
+  # Case 3: Variable Default not in Enum (Error)
+  invalidVariableServer:
+    host: "{env}.my.host.com"
+    protocol: kafka
+    variables:
+      env:
+        enum: ["dev", "prod"]
+        default: "staging" # 'staging' is not in enum
+
+  # Case 4: Variable missing Default (Error)
+  missingDefaultVariableServer:
+    host: "{port}.my.host.com"
+    protocol: kafka
+    variables:
+      port:
+        enum: ["9092", "9093"]
+        # missing default

@@ -1,0 +1,14 @@
+{
+  "type": "enum",
+  "name": "{{name}}",
+  "namespace": "{{namespace}}",
+  {{#doc}}
+  "doc": "{{{.}}}",
+  {{/doc}}
+  "symbols": [
+    {{#symbols}}
+    "{{name}}"{{^last}},{{/last}}
+    {{/symbols}}
+  ]{{#default}},
+  "default": "{{.}}"{{/default}}
+}

@@ -1,0 +1,54 @@
+asyncapi: 3.0.0
+info:
+  title: Simple Transaction Type Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    SimpleTransactionType:
+      type: object
+      description: >
+        A very small transaction object used to validate primitive mappings and
+        basic constraints in the Kotlin generator.
+      required:
+        - transactionId
+        - amount
+        - currency
+        - bookingDate
+        - createdAt
+        - active
+      properties:
+        transactionId:
+          description: Globally unique identifier for this transaction.
+          type: string
+          format: uuid
+        amount:
+          description: Monetary amount of this transaction.
+          type: number
+          multipleOf: 0.01
+          minimum: -1000000000
+          maximum: 1000000000
+        currency:
+          description: >
+            ISO-4217 currency code.
+          type: string
+          minLength: 3
+          maxLength: 3
+          pattern: "[A-Z]{3}"
+        bookingDate:
+          description: Booking date in system (local ledger) time.
+          type: string
+          format: date
+        createdAt:
+          description: Timestamp when the transaction was created.
+          type: string
+          format: date-time
+        active:
+          description: Indicates whether the transaction is currently active.
+          type: boolean
+        description:
+          description: >
+            Optional human-readable description of the transaction. This can be
+            shown in statements or UI.
+          type: string
+          maxLength: 200

@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Security Warnings Test
+  version: 1.0.0
+components:
+  securitySchemes:
+    # Case 1: Bearer missing format (Warning)
+    MissingBearerFormat:
+      type: http
+      scheme: bearer
+      # missing bearerFormat
+
+    # Case 2: OAuth2 empty scopes (Warning)
+    EmptyScopesOAuth2:
+      type: oauth2
+      flows:
+        implicit:
+          authorizationUrl: https://example.com/auth
+          availableScopes: {} # Empty scopes map? Or scopes list?
+      scopes: [] # AsyncAPI 2 defines scopes inside flows, but 3.0 defines scopes at scheme level?
+      # Wait, let's check your model. 'scopes' property on SecurityScheme.
+
+    # Case 3: HttpApiKey missing name (Error) - Adding to this file for convenience
+    MissingNameHttpApiKey:
+      type: httpApiKey
+      in: header
+      # missing name

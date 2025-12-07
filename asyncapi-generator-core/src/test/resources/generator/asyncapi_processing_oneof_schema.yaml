@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: OneOf Schema Test
+  version: 1.0.0
+components:
+  schemas:
+    Payment:
+      oneOf:
+        - $ref: '#/components/schemas/CardPayment'
+        - $ref: '#/components/schemas/BankPayment'
+    CardPayment:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+    BankPayment:
+      type: object
+      properties:
+        iban:
+          type: string

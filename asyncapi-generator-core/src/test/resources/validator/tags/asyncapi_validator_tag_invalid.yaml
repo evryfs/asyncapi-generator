@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Tag Validation Test
+  version: 1.0.0
+components:
+  tags:
+    # Case 1: Empty Name (Error)
+    InvalidTag:
+      name: ""
+      description: "A description"
+
+    # Case 2: Short Description (Warning)
+    ShortDescriptionTag:
+      name: "validName"
+      description: "hi" # Too short

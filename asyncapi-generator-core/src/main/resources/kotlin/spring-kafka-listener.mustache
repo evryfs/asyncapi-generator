@@ -1,0 +1,57 @@
+package {{packageName}}
+
+import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.LoggerFactory
+import org.springframework.kafka.annotation.KafkaListener
+import org.springframework.stereotype.Component
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+{{#imports}}
+import {{{.}}}
+{{/imports}}
+
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+@Component
+@ConditionalOnBean({{handlerInterface}}::class)
+class {{name}}(
+    private val handler: {{handlerInterface}}
+) {
+
+    private val log = LoggerFactory.getLogger({{name}}::class.java)
+
+    @KafkaListener(topics = ["{{topic}}"], groupId = "{{groupId}}")
+    fun listen(record: ConsumerRecord<String, Any>) {
+        val payload = record.value()
+
+        // Convert headers to Map<String, Any>
+        val headers = record.headers().associate { it.key() to String(it.value()) }
+
+        when (payload) {
+            {{#messageDispatches}}
+            is {{payloadType}} -> {
+                log.debug("Dispatching {{payloadType}} from topic {{topic}}")
+
+                // Wrap in KafkaMessage
+                val message = KafkaMessage(
+                    payload = payload,
+                    key = record.key(),
+                    headers = headers,
+                    topic = record.topic(),
+                    partition = record.partition(),
+                    offset = record.offset(),
+                    timestamp = record.timestamp()
+                )
+
+                handler.{{methodName}}(message)
+            }
+            {{/messageDispatches}}
+            else -> {
+                log.warn("Received unknown message type on topic {{topic}}: {}", payload::class.java.name)
+            }
+        }
+    }
+}

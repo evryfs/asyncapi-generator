@@ -1,0 +1,12 @@
+package {{packageName}};
+
+/**
+{{#description}}
+ * {{description}}
+{{/description}}
+ */
+public enum {{name}} implements Serializable {
+    {{#values}}
+    {{.}}{{^last}},{{/last}}
+    {{/values}}
+}

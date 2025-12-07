@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: Preprocessor Test Schema
+  version: 1.0.0
+components:
+  schemas:
+    Base:
+      type: object
+      properties:
+        baseProp:
+          type: string
+      required:
+        - baseProp
+    ComplexObject:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Base'
+      properties:
+        complexProp:
+          type: integer
+        inlineProp:
+          type: object
+          properties:
+            nestedProp:
+              type: boolean
+          required:
+            - nestedProp
+      required:
+        - complexProp
+        - inlineProp

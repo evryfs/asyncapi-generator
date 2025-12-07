@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Correlation ID
+  version: 1.0.0
+components:
+  correlationIds:
+    ValidCorrelationId:
+      location: "$message.header#/correlationId"
+      description: "A well-defined correlation identifier."

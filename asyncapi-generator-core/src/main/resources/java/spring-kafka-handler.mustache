@@ -1,0 +1,16 @@
+package {{packageName}};
+
+{{#imports}}
+import {{{.}}};
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+public interface {{name}} {
+{{#methods}}
+    void {{methodName}}(KafkaMessage<{{payloadType}}> message);
+{{/methods}}
+}
