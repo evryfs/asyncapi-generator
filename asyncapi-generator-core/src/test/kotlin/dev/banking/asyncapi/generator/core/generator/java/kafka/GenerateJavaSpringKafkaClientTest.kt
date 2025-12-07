@@ -22,8 +22,8 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val modelPath = "com/tietoevry/banking/ace/userservice/v1/model"
-        val clientPath = "com/tietoevry/banking/ace/userservice/v1/client"
+        val modelPath = "dev/banking/ace/userservice/v1/model"
+        val clientPath = "dev/banking/ace/userservice/v1/client"
 
         val modelDir = outputDir.resolve(modelPath)
         assertTrue(modelDir.resolve("UserSignedUp.java").exists(), "Model UserSignedUp missing")

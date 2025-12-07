@@ -24,6 +24,12 @@ nbdist/
 target/
 dependency-reduced-pom.xml
 
+# Maven Release Plugin
+release.properties
+pom.xml.next
+pom.xml.releaseBackup
+pom.xml.tag
+
 # Gradle
 .gradle/
 
