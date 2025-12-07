@@ -1,0 +1,75 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: "Release Version (e.g., 1.0.0). Leave empty for auto-increment."
+        required: false
+      developmentVersion:
+        description: "Next Dev Version (e.g., 1.0.1-SNAPSHOT). Leave empty for auto-increment."
+        required: false
+      dryRun:
+        description: "Dry Run (simulate release without pushing)"
+        type: boolean
+        default: true
+
+# Placeholder for now - release not ready yet from sonatype
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+          server-id: central
+          server-username: OSSRH_USERNAME
+          server-password: OSSRH_TOKEN
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+
+      - name: Configure Git User
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Ensure the token has permissions to push to main and create tags
+          # The URL might need adjustment if your repository is not github.com
+          git remote set-url origin "https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}"
+
+      - name: Maven Release
+        env:
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          # Build arguments for the release plugin
+          RELEASE_ARGS="-B" # --batch-mode for non-interactive execution
+          
+          # Add dryRun if enabled
+          if [ "${{ inputs.dryRun }}" = "true" ]; then
+            RELEASE_ARGS="$RELEASE_ARGS -DdryRun=true"
+            echo "⚠️ DRY RUN MODE ENABLED ⚠️ - No changes will be pushed to Git or published to Maven Central."
+          else
+            echo "🚀 LIVE RELEASE MODE 🚀 - Changes will be pushed to Git and published to Maven Central."
+          fi
+          
+          # Add explicit version arguments if provided
+          if [ -n "${{ inputs.releaseVersion }}" ]; then
+            RELEASE_ARGS="$RELEASE_ARGS -DreleaseVersion=${{ inputs.releaseVersion }}"
+            echo "Using explicit release version: ${{ inputs.releaseVersion }}"
+          fi
+          
+          if [ -n "${{ inputs.developmentVersion }}" ]; then
+            RELEASE_ARGS="$RELEASE_ARGS -DdevelopmentVersion=${{ inputs.developmentVersion }}"
+            echo "Using explicit development version: ${{ inputs.developmentVersion }}"
+          fi
+          mvn release:prepare release:perform $RELEASE_ARGS
