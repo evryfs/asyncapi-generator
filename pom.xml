@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.tietoevry.banking.asyncapi.generator</groupId>
+    <artifactId>asyncapi-generator</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+
+    <name>AsyncAPI Generator</name>
+    <description>Generate Code and Schemas from Yaml AsyncAPI specification</description>
+    <url>https://github.com/evryfs/asyncapi-generator</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>@bascunansalvador</id>
+            <name>Salvador Bascunan</name>
+            <email>bascunan.salvador@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/evryfs/asyncapi-generator.git</connection>
+        <developerConnection>scm:git:ssh://github.com/evryfs/asyncapi-generator.git</developerConnection>
+        <url>https://github.com/evryfs/asyncapi-generator</url>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <modules>
+        <module>asyncapi-generator-core</module>
+        <module>asyncapi-generator-maven-plugin</module>
+        <module>asyncapi-generator-gradle-plugin</module>
+        <module>asyncapi-generator-cli</module>
+    </modules>
+</project>
