@@ -87,18 +87,12 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             )
         }
 
-        val sourceRootName = when(targetLanguage) {
-            KOTLIN -> "src/main/kotlin"
-            JAVA -> "src/main/java"
-        }
-
-        val sourceRoot = outputDir.resolve(sourceRootName)
         val options = GeneratorOptions(
             generatorName = targetLanguage,
             modelPackage = modelPackage,
             clientPackage = clientPackage ?: modelPackage,
             schemaPackage = schemaPackage ?: modelPackage,
-            outputDir = sourceRoot,
+            outputDir = outputDir,
 
             generateModels = configuration["generateModels"]?.toBoolean() ?: true,
             generateSpringKafkaClient = configuration["generateSpringKafkaClient"]?.toBoolean() ?: false,
@@ -108,7 +102,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         )
         generator.generate(bundled, options)
 
-        project.addCompileSourceRoot(sourceRoot.absolutePath)
+        project.addCompileSourceRoot(outputDir.absolutePath)
         log.info("asyncapi-generator-maven-plugin completed successfully")
     }
 }
