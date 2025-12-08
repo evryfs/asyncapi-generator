@@ -13,10 +13,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
-import dev.banking.asyncapi.generator.core.model.security.OAuthFlow
-import dev.banking.asyncapi.generator.core.model.security.OAuthFlows
-import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
-import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 
 fun receiveLightMeasurement() = Operation(
     action = "receive",

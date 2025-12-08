@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
@@ -18,7 +17,7 @@ import kotlin.test.assertTrue
 
 class ChannelAnalyzerTest {
 
-    private val analyzer = ChannelAnalyzer(AsyncApiContext())
+    private val analyzer = ChannelAnalyzer()
 
     @Test
     fun `should default to both producer and consumer if no operations`() {
