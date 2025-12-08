@@ -41,8 +41,11 @@ jobs:
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          # Ensure the token has permissions to push to main and create tags
-          # The URL might need adjustment if your repository is not github.com
+          # Configure git to use the PAT for SSH connections to GitHub,
+          # allowing the release plugin to push tags and commits via HTTPS.
+          git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "git@github.com:"
+          git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "ssh://git@github.com/"
+          # Also set the origin URL for direct pushes in case the release plugin uses it (redundant but safe)
           git remote set-url origin "https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}"
 
       - name: Maven Release
