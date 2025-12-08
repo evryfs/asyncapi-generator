@@ -28,7 +28,7 @@ class AsyncApiGeneratorMojoTest {
             modelPackage("com.example.model")
             generatorName("kotlin")
         }.execute()
-        val output = File("target/generated-sources/asyncapi/src/main/kotlin/com/example/model")
+        val output = File("target/generated-sources/asyncapi/com/example/model")
         assertTrue(output.exists(), "Output directory should exist")
         assertTrue(output.list()?.isNotEmpty() == true, "Output directory should not be empty")
     }
@@ -46,7 +46,7 @@ class AsyncApiGeneratorMojoTest {
                 "generateSpringKafkaClient" to "true"
             ))
         }.execute()
-        val clientDir = File("target/generated-sources/asyncapi/src/main/kotlin/com/example/kafka/client")
+        val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
     }
 
@@ -63,7 +63,7 @@ class AsyncApiGeneratorMojoTest {
                 "generateSpringKafkaClient" to "true"
             ))
         }.execute()
-        val clientDir = File("target/generated-sources/asyncapi/src/main/java/com/example/kafka/client")
+        val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
     }
     @Test

@@ -17,6 +17,7 @@ import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import java.util.Locale
+import kotlin.text.get
 
 abstract class GenerateAsyncApiTask : DefaultTask() {
 
