@@ -77,10 +77,18 @@ abstract class AbstractJavaGeneratorClass {
         if (classStart == -1) {
             val packageEnd = source.indexOf("package ")
             if (packageEnd != -1) {
-                return source.substring(source.indexOf(';', packageEnd) + 1).trim()
+                return source
+                    .substring(source.indexOf(';', packageEnd) + 1)
+                    .trim()
+                    .trimIndent()
             }
-            return source.trim()
+            return source
+                .trim()
+                .trimIndent()
         }
-        return source.substring(classStart).trim()
+        return source
+            .substring(classStart)
+            .trim()
+            .trimIndent()
     }
 }

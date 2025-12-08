@@ -59,32 +59,20 @@ abstract class AbstractKotlinGeneratorClass {
         return ""
     }
 
-    fun extractImports(source: String): String {
-        val lines = source.lineSequence().toList()
-        var endIndex = -1
-        for ((idx, line) in lines.withIndex()) {
-            if (line.startsWith("import ")) {
-                endIndex = idx
-            } else if (endIndex != -1 && line.isBlank()) {
-                endIndex = idx
-                break
-            }
-        }
-        val blockLines = lines.subList(0, endIndex + 1)
-        return blockLines.joinToString("\n").trimEnd()
-    }
-
     protected fun extractElement(source: String): String {
         val dataIdx = source.indexOf("data class")
         val sealedIdx = source.indexOf("sealed interface")
         val enumIdx = source.indexOf("enum class")
         val candidates = listOf(dataIdx, sealedIdx, enumIdx).filter { it >= 0 }
         if (candidates.isEmpty()) {
-            // fallback - just return the whole file trimmed
-            return source.trim()
+            return source
+                .trim()
+                .trimIndent()
         }
         val startIdx = candidates.minOrNull()!!
-        return source.substring(startIdx).trimEnd()
+        return source
+            .substring(startIdx)
+            .trim()
+            .trimIndent()
     }
-
 }

@@ -35,8 +35,7 @@ class AsyncApiGenerator {
 
         val context = GeneratorContext(analyzedSchemas)
 
-        val asyncApiContext = dev.banking.asyncapi.generator.core.context.AsyncApiContext()
-        val channelAnalyzer = ChannelAnalyzer(asyncApiContext)
+        val channelAnalyzer = ChannelAnalyzer()
         val analyzedChannels = channelAnalyzer.analyze(asyncApiDocument).channels
 
         when (generatorOptions.generatorName) {

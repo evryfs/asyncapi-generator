@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -12,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class ChannelAnalyzer(private val context: AsyncApiContext) {
+class ChannelAnalyzer {
 
     private data class ChannelUsage(
         var isProducer: Boolean = false,
@@ -23,19 +22,15 @@ class ChannelAnalyzer(private val context: AsyncApiContext) {
         val channels = document.channels ?: return ChannelAnalysisResult(emptyList())
         val operations = document.operations ?: emptyMap()
 
-        // 1. Map Channel Name -> Usage Flags
         val channelUsage = mutableMapOf<String, ChannelUsage>()
         channels.keys.forEach { name -> channelUsage[name] = ChannelUsage() }
 
-        // 2. Scan Operations to determine usage
         operations.values.forEach { opInterface ->
             val op = when (opInterface) {
                 is OperationInterface.OperationInline -> opInterface.operation
                 is OperationInterface.OperationReference -> opInterface.reference.model as? Operation
             } ?: return@forEach
-
             val channelRef = op.channel ?: return@forEach
-
             val targetChannelName = channels.entries.find { (_, chInterface) ->
                 val ch =
                     if (chInterface is ChannelInterface.ChannelInline){
@@ -48,15 +43,12 @@ class ChannelAnalyzer(private val context: AsyncApiContext) {
 
             val usage = channelUsage[targetChannelName]!!
             if (op.action == "send") {
-                // "send" means the Application sends -> Client is PRODUCER
                 usage.isProducer = true
             } else if (op.action == "receive") {
-                // "receive" means Application receives -> Client is CONSUMER
                 usage.isConsumer = true
             }
         }
 
-        // 3. Build Analyzed Channels
         val analyzedChannels = channels.mapNotNull { (name, chInterface) ->
             val channel = when (chInterface) {
                 is ChannelInterface.ChannelInline -> chInterface.channel
@@ -64,7 +56,6 @@ class ChannelAnalyzer(private val context: AsyncApiContext) {
             } ?: return@mapNotNull null
 
             val usage = channelUsage[name]!!
-            // If no operations claimed it, default to BOTH
             val finalProducer = if (!usage.isProducer && !usage.isConsumer) true else usage.isProducer
             val finalConsumer = if (!usage.isProducer && !usage.isConsumer) true else usage.isConsumer
 
@@ -82,7 +73,6 @@ class ChannelAnalyzer(private val context: AsyncApiContext) {
 
     private fun resolveMessages(messages: Map<String, MessageInterface>?): List<AnalyzedMessage> {
         if (messages.isNullOrEmpty()) return emptyList()
-
         return messages.mapNotNull { (name, msgInterface) ->
             val message = when (msgInterface) {
                 is MessageInterface.MessageInline -> msgInterface.message
@@ -95,13 +85,10 @@ class ChannelAnalyzer(private val context: AsyncApiContext) {
             when (val p = message.payload) {
                 is SchemaInterface.SchemaInline -> {
                     payloadSchema = p.schema
-                    // For inline schema, use Message Name (or Title) as class name
                     typeName = MapperUtil.toPascalCase(message.name ?: message.title ?: name)
                 }
                 is SchemaInterface.SchemaReference -> {
                     payloadSchema = p.reference.model as? Schema
-                    // For reference, use the schema name from the reference path
-                    // e.g. #/components/schemas/CustomerEmailPayload -> CustomerEmailPayload
                     typeName = MapperUtil.toPascalCase(p.reference.ref.substringAfterLast('/'))
                 }
                 else -> {}

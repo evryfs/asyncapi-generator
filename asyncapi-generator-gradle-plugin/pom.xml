@@ -7,6 +7,7 @@
         <groupId>dev.banking.asyncapi.generator</groupId>
         <artifactId>asyncapi-generator</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>asyncapi-generator-gradle-plugin</artifactId>
     <packaging>pom</packaging>
