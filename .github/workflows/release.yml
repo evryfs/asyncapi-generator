@@ -29,7 +29,7 @@ jobs:
       - name: Set Release Version
         run: |
           # 1. Update Maven versions
-          mvn org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ inputs.releaseVersion }} -DgenerateBackupPoms=false
+          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion=${{ inputs.releaseVersion }} -DgenerateBackupPoms=false
           
           echo "Verified versions:"
           grep "<version>" pom.xml | head -n 1
@@ -45,4 +45,4 @@ jobs:
         run: |
           # -P release activates the profile with GPG signing and central-publishing
           # -DskipTests speeds up the release if CI/Build workflow already verified it
-          mvn clean deploy -P release -DskipTests
+          mvn -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn clean deploy -P release -DskipTests
