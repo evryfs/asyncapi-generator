@@ -39,8 +39,8 @@ jobs:
 
       - name: Configure Git User
         run: |
-          git config user.name "Salvador Bascunan"
-          git config user.email "salvador.bascunan@tietoevry.com"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           # Intercept all HTTPS requests to github.com and inject the PAT
           git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "https://github.com/"
       
