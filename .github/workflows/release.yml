@@ -76,4 +76,4 @@ jobs:
             echo "Using explicit development version: ${{ inputs.developmentVersion }}"
           fi
           
-          mvn release:prepare release:perform $RELEASE_ARGS
+          mvn release:prepare release:perform $RELEASE_ARGS -Prelease
