@@ -26,8 +26,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/evryfs/asyncapi-generator.git</connection>
-        <developerConnection>scm:git:ssh://github.com/evryfs/asyncapi-generator.git</developerConnection>
+        <connection>scm:git:https://github.com/evryfs/asyncapi-generator.git</connection>
+        <developerConnection>scm:git:https://github.com/evryfs/asyncapi-generator.git</developerConnection>
         <url>https://github.com/evryfs/asyncapi-generator</url>
     </scm>
 

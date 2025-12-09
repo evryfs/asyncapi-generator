@@ -33,9 +33,6 @@ pom.xml.tag
 # Gradle
 .gradle/
 
-# Gradle Wrapper
-gradle-wrapper.jar
-
 # OS generated files
 .DS_Store
 
