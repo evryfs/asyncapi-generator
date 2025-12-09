@@ -21,4 +21,4 @@ jobs:
           cache: 'maven'
 
       - name: Build with Maven
-        run: mvn verify --batch-mode
+        run: mvn verify --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
