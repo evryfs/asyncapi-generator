@@ -14,7 +14,7 @@ on:
         type: boolean
         default: true
 
-# Placeholder for now - release not ready yet from sonatype
+# Placeholder for now - just to release beta, and then we will refine it
 jobs:
   release:
     runs-on: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
       - name: Configure Git User
         run: |
           git config user.name "Salvador Bascunan"
-          git config user.email "bascunan.salvador@gmail.com"
+          git config user.email "salvador.bascunan@tietoevry.com"
           # Intercept all HTTPS requests to github.com and inject the PAT
           git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "https://github.com/"
       
