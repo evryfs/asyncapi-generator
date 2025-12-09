@@ -2,6 +2,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+val asyncApiGeneratorVersion: String by project
+
 plugins {
     `kotlin-dsl`
     id("java-gradle-plugin")
@@ -13,7 +15,7 @@ plugins {
 }
 
 group = "dev.banking.asyncapi.generator"
-version = "1.0-SNAPSHOT"
+version = asyncApiGeneratorVersion
 
 repositories {
     mavenLocal()
@@ -22,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation("dev.banking.asyncapi.generator:asyncapi-generator-core:1.0-SNAPSHOT") {
+    implementation("dev.banking.asyncapi.generator:asyncapi-generator-core:$asyncApiGeneratorVersion") {
         isChanging = true
     }
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.2.0")
