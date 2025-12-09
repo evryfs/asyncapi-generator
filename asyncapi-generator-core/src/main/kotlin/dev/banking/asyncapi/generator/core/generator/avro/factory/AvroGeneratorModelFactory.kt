@@ -43,7 +43,6 @@ class AvroGeneratorModelFactory(
             }
         }
 
-        // 2. Check for Enum
         if (!schema.enum.isNullOrEmpty()) {
             val symbols = schema.enum.map { it.toString().trim('"', '\'') }
             val defaultSymbol = schema.default?.toString()?.trim('"', '\'')?.takeIf { symbols.contains(it) }
@@ -71,7 +70,6 @@ class AvroGeneratorModelFactory(
                 is SchemaInterface.SchemaReference -> {
                     val resolved = propInterface.reference.model as? Schema
                     val name = propInterface.reference.ref.substringAfterLast('/')
-                    // We pass name for BOTH Objects and Enums now.
                     resolved to name
                 }
                 else -> null to null

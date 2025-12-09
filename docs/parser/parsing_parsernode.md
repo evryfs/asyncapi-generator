@@ -1,6 +1,8 @@
 # ParserNode Deep Dive
 
-The `ParserNode` class is the fundamental building block of the `asyncapi-generator-core` parsing logic. It serves as a robust abstraction layer over the raw YAML/JSON data structure, providing type safety, path tracking, and consistent error handling.
+The `ParserNode` class is the fundamental building block of the `asyncapi-generator-core` parsing logic. It serves as a 
+robust abstraction layer over the raw YAML/JSON data structure, providing type safety, path tracking, and consistent 
+error handling.
 
 ## Core Responsibilities
 
@@ -13,7 +15,8 @@ The `ParserNode` class is the fundamental building block of the `asyncapi-genera
 
 ### `mandatory(nodeKey: String): ParserNode`
 - **Purpose:** Retrieves a child node that *must* exist.
-- **Behavior:** If the node is missing, it immediately throws `AsyncApiParseException.Mandatory`, which includes the full path to the missing field.
+- **Behavior:** If the node is missing, it immediately throws `AsyncApiParseException.Mandatory`, which includes the 
+full path to the missing field.
 - **Usage:**
   ```kotlin
   val asyncApiVersion = rootNode.mandatory("asyncapi").coerce<String>()
@@ -80,7 +83,10 @@ The `ParserNode` class is the fundamental building block of the `asyncapi-genera
   val isRequired = node.coerce<Boolean>()
   ```
 - **Architectural Decision:**
-  It uses **Reified Generics** (`inline fun <reified T>`) to access the actual type `T` at runtime. This allows for domain-specific exception handling (`AsyncApiParseException.InvalidValue`) instead of generic `ClassCastException`. This "Fail Fast" approach prevents "Ghost Objects" (objects with all null fields) by enforcing structural validity before data extraction.
+  It uses **Reified Generics** (`inline fun <reified T>`) to access the actual type `T` at runtime. This allows for 
+domain-specific exception handling (`AsyncApiParseException.InvalidValue`) instead of generic `ClassCastException`. 
+This "Fail Fast" approach prevents "Ghost Objects" (objects with all null fields) by enforcing structural validity 
+before data extraction.
 
 ### `extractNodes(): List<ParserNode>`
 - **Purpose:** Iterates over a List or Map node and returns a list of `ParserNode` instances for each child.
@@ -100,14 +106,18 @@ The `ParserNode` class is the fundamental building block of the `asyncapi-genera
 
 ## Normalization Logic
 
-The `normalize` method (internal to `ParserNode`) attempts to be helpful by converting compliant strings into their strongly-typed counterparts.
+The `normalize` method (internal to `ParserNode`) attempts to be helpful by converting compliant strings into their 
+strongly-typed counterparts.
 
 - `"true"` / `"false"` (case-insensitive) -> `Boolean`
 - String parsable as Int -> `Int`
 - String parsable as Double -> `Double`
 
-**Note:** This behavior allows for some leniency in the input YAML but requires awareness when strict type adherence is desired.
+**Note:** This behavior allows for some leniency in the input YAML but requires awareness when strict type adherence is 
+desired.
 
 ## Error Handling
 
-`ParserNode` is designed to fail fast and fail informatively. By passing the `AsyncApiContext` and maintaining the `path` string (e.g., `components.schemas.User.properties.email`), any exception thrown from within `ParserNode` contains precise location data, which the top-level error handler uses to print user-friendly error messages.
+`ParserNode` is designed to fail fast and fail informatively. By passing the `AsyncApiContext` and maintaining the 
+`path` string (e.g., `components.schemas.User.properties.email`), any exception thrown from within `ParserNode` 
+contains precise location data, which the top-level error handler uses to print user-friendly error messages.

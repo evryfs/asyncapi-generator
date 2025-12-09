@@ -7,7 +7,7 @@ class BooleanMapper : TypeMapper {
 
     override fun map(schema: Schema, propertyName: String, root: KotlinTypeMapper): String? {
         if (schema.type.getPrimaryType() != "boolean") {
-            return null // This mapper only handles boolean
+            return null
         }
         return "Boolean"
     }

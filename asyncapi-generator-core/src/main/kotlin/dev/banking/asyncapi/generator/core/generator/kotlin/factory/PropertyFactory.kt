@@ -27,15 +27,12 @@ class PropertyFactory(
         requiredProperties: List<String>
     ): PropertyModel {
 
-        // 1. Resolve Type & Schema
         val (finalPropSchema, baseKotlinType) = resolveTypeAndSchema(propertyName, propSchemaInterface)
 
-        // 2. Determine Nullability
         val isExplicitlyNullableFromSchema = finalPropSchema?.let { it.nullable == true || it.type.isTypeNullable() } ?: false
         val isRequiredByParent = requiredProperties.contains(propertyName)
         val isNullable = !isRequiredByParent || isExplicitlyNullableFromSchema
 
-        // 3. Build Annotations
         val annotations = mutableListOf<String>()
         annotations.addAll(constraintMapper.buildAnnotations(finalPropSchema))
         annotations.addAll(serializationAnnotationMapper.buildAnnotations(propertyName, finalPropSchema))
@@ -43,14 +40,11 @@ class PropertyFactory(
         if (validationDetector.needsCascadedValidation(baseKotlinType)) {
             annotations.add("@field:Valid")
         }
-
-        // 4. Calculate Default Value
         val defaultValue = if (finalPropSchema != null) {
             defaultValueFactory.createDefaultValue(finalPropSchema, baseKotlinType, isNullable)
         } else {
             if (isNullable) "null" else null
         }
-
         val description = DocumentationUtils.toKDocLines(finalPropSchema?.description)
 
         return PropertyModel(

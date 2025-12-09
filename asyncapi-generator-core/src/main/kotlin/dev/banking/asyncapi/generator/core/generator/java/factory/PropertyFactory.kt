@@ -30,16 +30,11 @@ class PropertyFactory(
 
         val (finalPropSchema, baseJavaType) = resolveTypeAndSchema(propertyName, propSchemaInterface)
 
-        // In Java, primitives are nullable unless we use 'int' vs 'Integer'.
-        // We default to Object wrappers (Integer) so everything is nullable by default.
-        // If required, we add @NotNull.
         val isRequired = requiredProperties.contains(propertyName)
-        // AsyncAPI "nullable" keyword
         val isSchemaNullable = finalPropSchema?.let { it.nullable == true || it.type.isTypeNullable() } ?: false
 
         val annotations = mutableListOf<String>()
         annotations.addAll(constraintMapper.buildAnnotations(finalPropSchema))
-        // Pass propertyName to SerializationAnnotationMapper
         annotations.addAll(serializationAnnotationMapper.buildAnnotations(propertyName, finalPropSchema))
 
         if (isRequired && !isSchemaNullable) {

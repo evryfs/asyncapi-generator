@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class ArrayMapper(
     val context: GeneratorContext,
-) : TypeMapper { // Changed constructor
+) : TypeMapper {
 
     override fun map(schema: Schema, propertyName: String, root: KotlinTypeMapper): String? {
         if (schema.type.getPrimaryType() != "array") {
@@ -23,7 +23,7 @@ class ArrayMapper(
 
             is SchemaInterface.SchemaReference -> {
                 val refName = items.reference.ref.substringAfterLast("/")
-                val refSchema = context.findSchemaByName(refName) // Use context for lookup
+                val refSchema = context.findSchemaByName(refName)
 
                 val isStringEnum = refSchema?.type.getPrimaryType() == "string" && !refSchema?.enum.isNullOrEmpty()
 

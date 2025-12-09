@@ -5,11 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
-/**
- * The main orchestrator for type mapping. It holds a chain of specialized mappers
- * and delegates the mapping process to the first mapper in the chain that can handle
- * the given schema.
- */
 class KotlinTypeMapper(
     val context: GeneratorContext,
 ) {

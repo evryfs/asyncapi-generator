@@ -5,7 +5,9 @@ import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
 
-class AsyncApiExternalContext(private val context: AsyncApiContext) {
+class AsyncApiExternalContext(
+    val context: AsyncApiContext,
+) {
 
     private val loadedFiles = mutableSetOf<String>()  // absolute paths
 
@@ -27,12 +29,12 @@ class AsyncApiExternalContext(private val context: AsyncApiContext) {
         if (!loadedFiles.add(key)) {
             return
         }
-        val rootNode = AsyncApiRegistry.readYaml(externalFile, context) // Pass the context down
+        val rootNode = AsyncApiRegistry.readYaml(externalFile, context)
 
         val parser = AsyncApiParser(context)
         val parsed = parser.parse(rootNode)
 
-        val validator = AsyncApiValidator(context) // Pass context to validator
+        val validator = AsyncApiValidator(context)
         val result = validator.validate(parsed)
 
         result.throwWarnings()

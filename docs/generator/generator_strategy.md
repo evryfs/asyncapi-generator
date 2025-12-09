@@ -4,7 +4,8 @@ This document outlines the architectural strategy for the code generation phase 
 
 ## Core Architecture
 
-The generator follows an **Orchestrator Pattern**. The main `AsyncApiGenerator` class orchestrates the flow but delegates specific tasks to specialized components.
+The generator follows an **Orchestrator Pattern**. The main `AsyncApiGenerator` class orchestrates the flow but 
+delegates specific tasks to specialized components.
 
 ### The Pipeline
 
@@ -59,3 +60,9 @@ While Avro Enums are supported, users are advised to use the `default` property 
 }
 ```
 This pattern is fully supported by the generator.
+
+## Future Enhancements
+
+*  **Common Type Mapping:** We have some redundancy in type mapping logic across generators. Future work will focus on 
+centralizing this logic where possible. We also need to consider more languages, which is an argument for granular type
+mapping strategies.

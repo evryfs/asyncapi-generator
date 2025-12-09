@@ -14,15 +14,12 @@ class KotlinDataClassGenerator(
 ) {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")
 
-    // The ImportMapper is still needed to calculate imports from the final type names.
     private val importMapper = ImportMapper(packageName)
 
     fun generate(model: GeneratorItem.DataClassModel) {
 
         val template = mustacheFactory.compile("dataClass.mustache")
 
-        // Temporarily adapt our new rich PropertyModel to the old KotlinFieldTemplate
-        // to avoid changing the mustache template for now.
         val fields = model.properties.mapIndexed { index, prop ->
                mapOf(
                    "name" to prop.name,

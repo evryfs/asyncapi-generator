@@ -12,7 +12,6 @@ class ConstraintMapper {
         val type = schema.type.getPrimaryType()
         val format = schema.format
 
-        // String constraints
         if (type == "string") {
             val minLen = schema.minLength?.toInt()
             val maxLen = schema.maxLength?.toInt()
@@ -32,7 +31,6 @@ class ConstraintMapper {
             }
         }
 
-        // Integer constraints
         if (type == "integer") {
             val minimum = schema.minimum?.toLong()
             val maximum = schema.maximum?.toLong()
@@ -44,7 +42,6 @@ class ConstraintMapper {
             }
         }
 
-        // Number / BigDecimal constraints
         if (type == "number") {
             val minimum = schema.minimum
             val exclusiveMin = schema.exclusiveMinimum
