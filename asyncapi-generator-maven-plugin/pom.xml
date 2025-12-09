@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
+    <name>asyncapi-generator-maven-plugin</name>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
