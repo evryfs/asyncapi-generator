@@ -3,7 +3,7 @@
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <name>AsyncAPI Generator</name>
     <description>Generate Code and Schemas from Yaml AsyncAPI specification</description>
@@ -28,7 +28,7 @@
         <connection>scm:git:https://github.com/evryfs/asyncapi-generator.git</connection>
         <developerConnection>scm:git:https://github.com/evryfs/asyncapi-generator.git</developerConnection>
         <url>https://github.com/evryfs/asyncapi-generator</url>
-      <tag>HEAD</tag>
+      <tag>asyncapi-generator-0.0.1</tag>
   </scm>
 
     <distributionManagement>
