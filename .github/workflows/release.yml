@@ -39,9 +39,11 @@ jobs:
 
       - name: Configure Git User
         run: |
-           git config user.name "GitHub Actions"
-           git config user.email "actions@github.com"
-
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          # Intercept all HTTPS requests to github.com and inject the PAT
+          git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      
       - name: Maven Release
         env:
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
@@ -50,12 +52,7 @@ jobs:
         run: |
           # Build arguments for the release plugin
           RELEASE_ARGS="-B" # --batch-mode for non-interactive execution
-
-          # OVERRIDE SCM URL to force HTTPS with Token authentication
-          # This bypasses the ssh:// URL in pom.xml which causes "Permission denied (publickey)"
-          SCM_URL="scm:git:https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/${{ github.repository }}.git"
-          RELEASE_ARGS="$RELEASE_ARGS -Dproject.scm.developerConnection=$SCM_URL -Dproject.scm.connection=$SCM_URL"
-
+          
           # Add dryRun if enabled
           if [ "${{ inputs.dryRun }}" = "true" ]; then
             RELEASE_ARGS="$RELEASE_ARGS -DdryRun=true"
@@ -63,16 +60,16 @@ jobs:
           else
             echo "🚀 LIVE RELEASE MODE 🚀 - Changes will be pushed to Git and published to Maven Central."
           fi
-
+          
           # Add explicit version arguments if provided
           if [ -n "${{ inputs.releaseVersion }}" ]; then
             RELEASE_ARGS="$RELEASE_ARGS -DreleaseVersion=${{ inputs.releaseVersion }}"
             echo "Using explicit release version: ${{ inputs.releaseVersion }}"
           fi
-
+          
           if [ -n "${{ inputs.developmentVersion }}" ]; then
             RELEASE_ARGS="$RELEASE_ARGS -DdevelopmentVersion=${{ inputs.developmentVersion }}"
             echo "Using explicit development version: ${{ inputs.developmentVersion }}"
           fi
-
+          
           mvn release:prepare release:perform $RELEASE_ARGS
