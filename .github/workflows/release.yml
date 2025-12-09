@@ -39,16 +39,20 @@ jobs:
 
       - name: Configure Git User
         run: |
-          git config user.name "Salvador Bascunan"
-          git config user.email "salvador.bascunan@tietoevry.com"
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
           # Intercept all HTTPS requests to github.com and inject the PAT
           git config --global url."https://x-access-token:${{ secrets.GIT_TOKEN }}@github.com/".insteadOf "https://github.com/"
       
       - name: Maven Release
         env:
+          # Maven needs these
           OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
           OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          # Gradle needs these (based on build.gradle.kts)
+          OSSRH_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          OSSRH_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: |
           # Build arguments for the release plugin
           RELEASE_ARGS="-B" # --batch-mode for non-interactive execution
