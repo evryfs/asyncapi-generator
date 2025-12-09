@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator</artifactId>
@@ -28,8 +29,7 @@
         <connection>scm:git:https://github.com/evryfs/asyncapi-generator.git</connection>
         <developerConnection>scm:git:https://github.com/evryfs/asyncapi-generator.git</developerConnection>
         <url>https://github.com/evryfs/asyncapi-generator</url>
-    <tag>HEAD</tag>
-  </scm>
+    </scm>
 
     <distributionManagement>
         <snapshotRepository>
@@ -46,7 +46,7 @@
         <module>asyncapi-generator-core</module>
         <module>asyncapi-generator-cli</module>
         <module>asyncapi-generator-maven-plugin</module>
-<!--        <module>asyncapi-generator-gradle-plugin</module> Commented now for release maven-plugin test -->
+        <module>asyncapi-generator-gradle-plugin</module>
     </modules>
 
     <properties>
@@ -251,6 +251,15 @@
                             <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>in-deploy-phase</id>
+                                <goals>
+                                    <goal>publish</goal>
+                                </goals>
+                                <phase>deploy</phase>
+                            </execution>
+                        </executions>
                     </plugin>
 
                     <!-- gpg signing -->
