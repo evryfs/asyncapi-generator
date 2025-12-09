@@ -8,6 +8,7 @@
     </parent>
 
     <artifactId>asyncapi-generator-cli</artifactId>
+    <name>asyncapi-generator-cli</name>
 
     <dependencies>
         <!-- kotlin -->
