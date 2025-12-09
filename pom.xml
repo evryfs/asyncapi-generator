@@ -45,7 +45,7 @@
         <module>asyncapi-generator-core</module>
         <module>asyncapi-generator-cli</module>
         <module>asyncapi-generator-maven-plugin</module>
-        <module>asyncapi-generator-gradle-plugin</module>
+<!--        <module>asyncapi-generator-gradle-plugin</module> Commented now for release maven-plugin test -->
     </modules>
 
     <properties>
