@@ -7,12 +7,9 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class AvroTypeMapper(
     val packageName: String,
-    ) {
+) {
 
     fun mapToAvroType(schema: Schema?, isOptional: Boolean, refName: String? = null): String {
-        // 1. Handle Polymorphism (Inline Union)
-        // We check the schema object itself. If it defines 'oneOf', we MUST generate an Avro Union
-        // instead of referencing the schema by name (because the named schema 'MySchema' doesn't exist as a record).
         if (schema != null && !schema.oneOf.isNullOrEmpty()) {
             val unionTypes = schema.oneOf.mapNotNull { ref ->
                 if (ref is SchemaInterface.SchemaReference) {
@@ -23,35 +20,30 @@ class AvroTypeMapper(
 
             if (unionTypes.isNotEmpty()) {
                 return if (isOptional) {
-                    // Merge "null" into the union list: ["null", "Com.A", "Com.B"]
                     val combined = mutableListOf("\"null\"")
                     combined.addAll(unionTypes)
                     combined.joinToString(", ", "[", "]")
                 } else {
-                    // Standard union: ["Com.A", "Com.B"]
                     unionTypes.joinToString(", ", "[", "]")
                 }
             }
         }
 
-        // 2. Handle Named References (Standard Records)
         if (refName != null) {
             val pascalName = MapperUtil.toPascalCase(refName)
             val fullName = "\"$packageName.$pascalName\""
             return if (isOptional) "[\"null\", $fullName]" else fullName
         }
 
-        // 3. Handle Primitives (Inline schemas or unknown)
-        if (schema == null) return "\"string\""
-
+        if (schema == null) {
+            return "\"string\""
+        }
         val baseType = resolveBaseType(schema)
-
         val finalType = if (schema.type.getPrimaryType() == "integer" && schema.format == "int64") {
             "\"long\""
         } else {
             baseType
         }
-
         return if (isOptional) {
             "[\"null\", $finalType]"
         } else {
@@ -80,7 +72,6 @@ class AvroTypeMapper(
                 else "\"long\""
             }
             "array" -> {
-                // Simplified array logic for primitives
                 "{\"type\": \"array\", \"items\": \"string\"}"
             }
             else -> "\"string\""

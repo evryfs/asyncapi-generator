@@ -6,10 +6,6 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * Promotes inline schemas (objects and enums) within properties, items, and additionalProperties
- * to top-level schemas, replacing them with references.
- */
 class InlineSchemaAnalyzer : AnalysisStage<Map<String, Schema>> {
 
     override fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
@@ -39,8 +35,6 @@ class InlineSchemaAnalyzer : AnalysisStage<Map<String, Schema>> {
         namesToProcess: MutableList<String>
     ): Schema {
         var modifiedSchema = schema
-
-        // 1. Recurse into properties
         schema.properties?.let { props ->
             val newProps = props.mapValues { (propName, propSchema) ->
                 promoteIfNeeded(propSchema, propName, schemas, namesToProcess)
@@ -49,19 +43,12 @@ class InlineSchemaAnalyzer : AnalysisStage<Map<String, Schema>> {
                 modifiedSchema = modifiedSchema.copy(properties = newProps)
             }
         }
-
-        // 2. Recurse into array items
         schema.items?.let { items ->
-            // Use PascalCase of current name + "Item" for array items, or just singularize if needed
-            // For now, we use the property name hint itself (which usually becomes plural->singular by usage context)
             val newItems = promoteIfNeeded(items, currentNameHint, schemas, namesToProcess)
             if (newItems != items) {
                 modifiedSchema = modifiedSchema.copy(items = newItems)
             }
         }
-
-        // 3. Recurse into additionalProperties (Map values)
-        //    If a map has complex inline values (e.g. Map<String, InlineObject>), promote them.
         schema.additionalProperties?.let { additional ->
             val valueNameHint = currentNameHint + "Value"
             val newAdditional = promoteIfNeeded(additional, valueNameHint, schemas, namesToProcess)
@@ -102,8 +89,6 @@ class InlineSchemaAnalyzer : AnalysisStage<Map<String, Schema>> {
             val newReference = Reference(ref = "#/components/schemas/$newSchemaName", model = processedInlineSchema)
             return SchemaInterface.SchemaReference(reference = newReference)
         }
-
-        // Return the schema even if not promoted (but with its own children potentially promoted)
         return SchemaInterface.SchemaInline(processedInlineSchema)
     }
 }

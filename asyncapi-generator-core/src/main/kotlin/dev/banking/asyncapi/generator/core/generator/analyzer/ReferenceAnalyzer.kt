@@ -4,9 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * Discovers schemas embedded within SchemaReference objects and adds them to the main schema map.
- */
 class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
 
     override fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
@@ -36,7 +33,6 @@ class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
         // Look in array items
         schema.items?.let { processSubSchema(it, discoveredSchemas, namesToProcess) }
 
-        // --- NEW: Look in compositions (oneOf, anyOf, allOf) ---
         schema.oneOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
         schema.anyOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
         schema.allOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }

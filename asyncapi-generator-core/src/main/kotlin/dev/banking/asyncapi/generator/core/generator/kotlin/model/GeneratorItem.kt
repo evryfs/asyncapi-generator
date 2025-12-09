@@ -1,16 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.model
 
-/**
- * Represents the "Rich Model" contract between the schema processing "frontend" and
- * the code generation "backend".
- *
- * This sealed interface and its implementations are the final, unambiguous output of all
- * schema analysis and processing. All complex logic (composition, discovery, type mapping,
- * constraint building, etc.) is performed *before* these models are created.
- *
- * The code generator "backend" then becomes a simple, "dumb" system that just takes these
- * rich models and uses them to populate templates, with no further logic or decision-making required.
- */
 sealed interface GeneratorItem {
     val name: String
     val packageName: String

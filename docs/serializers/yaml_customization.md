@@ -1,6 +1,7 @@
 # YAML Serialization Customization
 
-This document explains the advanced customization applied to the YAML generation process in `asyncapi-generator-core`. We employ custom Jackson serializers to produce "human-friendly" and "spec-compliant" YAML that standard Jackson configuration cannot achieve on its own.
+This document explains the customization applied to the YAML generation process in `asyncapi-generator-core`. We employ 
+custom Jackson serializers to produce fine-tuned YAML that standard Jackson configuration cannot achieve on its own.
 
 ## The Problem: Jackson's "Safe" Defaults
 
@@ -20,31 +21,44 @@ By default, Jackson's `YAMLGenerator` prioritizes safety and uniformity. This re
 
 ## The Solution: Bridging Jackson and SnakeYAML
 
-Under the hood, Jackson uses **SnakeYAML** to write the actual output. SnakeYAML has powerful formatting options (`DumperOptions`), but Jackson hides most of them behind its high-level abstraction.
+Under the hood, Jackson uses **SnakeYAML** to write the actual output. SnakeYAML has powerful formatting options 
+(`DumperOptions`), but Jackson hides most of them behind its high-level abstraction.
 
-To bypass this limitation, we use **Java Reflection** in our custom serializers to directly manipulate the underlying SnakeYAML engine.
+To bypass this limitation, we use **Java Reflection** in our custom serializers to directly manipulate the underlying 
+SnakeYAML engine.
 
-> **⚠️ Implementation Note:** These serializers access private fields (`_outputOptions`) and methods (`_writeScalar`) of Jackson's `YAMLGenerator`. This creates a coupling to the internal implementation of Jackson. Upgrading the `jackson-dataformat-yaml` dependency should always be done with regression testing of these serializers.
+> **Implementation Note:** 
+>
+> These serializers access private fields (`_outputOptions`) and methods (`_writeScalar`) of 
+> Jackson's `YAMLGenerator`. This creates a coupling to the internal implementation of Jackson. Upgrading the 
+> `jackson-dataformat-yaml` dependency should always be done with regression testing of these serializers.
+> 
+> We will consider switching to kotlinx in the future.
 
 ---
 
 ## 1. Smart List Serialization (`AsyncApiListSerializer`)
 
 ### Goal
-We want **Flow Style** (inline `[...]`) for simple lists to save vertical space, but **Block Style** (bullet points `- ...`) for complex objects to maintain readability.
+
+We want **Flow Style** (inline `[...]`) for simple lists to save vertical space, but **Block Style** 
+(bullet points `- ...`) for complex objects to maintain readability.
 
 ### Heuristic
+
 The serializer inspects the list content:
 *   **Simple:** If *all* items are primitives (Numbers or Strings) -> Use **Flow Style**.
 *   **Complex:** If *any* item is an Object, Map, or List -> Use **Block Style**.
 
 ### Mechanism
+
 1.  **Reflection:** Access the private `_outputOptions` field (type `DumperOptions`) from the `YAMLGenerator` instance.
 2.  **State Change:** Temporarily set `options.defaultFlowStyle = FlowStyle.FLOW`.
 3.  **Write:** Call standard Jackson `gen.writeStartArray()` / `gen.writeEndArray()`. SnakeYAML reads the modified flag and writes `[...]`.
 4.  **Restore:** Immediately reset `defaultFlowStyle` to its previous value in a `finally` block.
 
 ### Example Output
+
 ```yaml
 # Simple List (Flow Style)
 tags: ["user", "signup", "experimental"]

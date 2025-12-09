@@ -1,6 +1,8 @@
 # Validator Strategy
 
-The Validator package ensures that the parsed AsyncAPI document is not just structurally correct (which the Parser guarantees), but also *semantically* valid according to the AsyncAPI 3.0 specification and specific generator constraints.
+The Validator package ensures that the parsed AsyncAPI document is not just structurally correct (which the Parser 
+guarantees), but also *semantically* valid according to the AsyncAPI 3.0 specification and specific generator 
+constraints.
 
 ## Architecture
 
@@ -17,7 +19,7 @@ The validation logic follows the same **Recursive Descent** pattern as the Parse
     ```kotlin
     results.error(
         "Invalid version...",
-        asyncApiContext.getLine(node, node::asyncapi) // <--- Magic here
+        asyncApiContext.getLine(node, node::asyncapi) // <--- Lets us output context in the error message
     )
     ```
 
@@ -42,5 +44,6 @@ The validation logic follows the same **Recursive Descent** pattern as the Parse
 
 ## Future Improvements
 
-*   **Deep Reference Validation:** Ensure that `$ref` pointers resolve to the correct *type* of object (e.g., a Channel ref points to a Channel, not a Schema).
+*   **Deep Reference Validation:** Ensure that `$ref` pointers resolve to the correct *type* of object (e.g., a Channel 
+ref points to a Channel, not a Schema).
 *   **AsyncAPI 3.0 Specifics:** Add more rules for Request/Reply patterns and Operation traits.

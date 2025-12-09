@@ -32,7 +32,7 @@ class JavaGeneratorModelFactory(
                 }
             )
             isUnionType -> {
-                val discriminatorPropertyName = schema.discriminator // Get the discriminator property name (e.g., "paymentType")
+                val discriminatorPropertyName = schema.discriminator
 
                 val subTypes = (schema.oneOf ?: schema.anyOf ?: emptyList())
                     .mapNotNull { ref ->
@@ -48,7 +48,7 @@ class JavaGeneratorModelFactory(
                                             ?: it.schema.enum?.firstOrNull()?.toString()
                                         else -> null
                                     }
-                                }?.removeSurrounding("\"") // Clean up any quotes from JSON parsing
+                                }?.removeSurrounding("\"")
 
                             if (discriminatorValue != null) {
                                 GeneratorItem.InterfaceModel.SubType(name = discriminatorValue, type = childSchemaName)
@@ -65,7 +65,7 @@ class JavaGeneratorModelFactory(
                     name = name,
                     packageName = packageName,
                     description = description,
-                    discriminator = discriminatorPropertyName, // Use the property name as discriminator
+                    discriminator = discriminatorPropertyName,
                     subTypes = subTypes
                 )
             }
@@ -79,7 +79,7 @@ class JavaGeneratorModelFactory(
                     packageName = packageName,
                     description = description,
                     properties = properties,
-                    implementsInterfaces = interfaces // Use the new list
+                    implementsInterfaces = interfaces
                 )
             }
             else -> null

@@ -16,17 +16,14 @@ class DefaultValueFactory(private val context: GeneratorContext) {
         }
 
         val defaultValRaw = schema.default.toString()
-        // Clean up raw string (remove quotes, pipes, etc.)
         val defaultVal = defaultValRaw.trimStart('"', '\'', '|', '>').removeSurrounding("\"")
 
         val schemaForKotlinType = context.findSchemaByName(baseKotlinType)
         val isEnum = schemaForKotlinType?.enum?.isNotEmpty() == true
 
         return if (isEnum) {
-            // Enum case: Type.VALUE
             "$baseKotlinType.${defaultVal.uppercase().replace("-", "_")}"
         } else {
-            // Primitive cases
             when (schema.type.getPrimaryType()) {
                 "boolean", "integer", "number" -> defaultVal
                 "string" -> "\"$defaultVal\""

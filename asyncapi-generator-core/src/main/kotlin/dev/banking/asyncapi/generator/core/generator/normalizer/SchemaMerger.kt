@@ -3,17 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * A stateless utility class responsible for performing a deep, semantic merge of two schemas.
- * This is used to resolve `allOf` compositions.
- */
 class SchemaMerger {
 
-    /**
-     * Merges two schemas, with the properties of the 'override' schema taking precedence or being intersected.
-     */
     fun merge(base: Schema, override: Schema): Schema {
-        // Deep merge properties by recursively merging schemas for each matching property key
         val baseProps = base.properties ?: emptyMap()
         val overrideProps = override.properties ?: emptyMap()
         val allPropKeys = baseProps.keys + overrideProps.keys
@@ -27,14 +19,13 @@ class SchemaMerger {
                     if (baseProp is SchemaInterface.SchemaInline && overrideProp is SchemaInterface.SchemaInline) {
                         SchemaInterface.SchemaInline(merge(baseProp.schema, overrideProp.schema))
                     } else {
-                        overrideProp // Fallback: cannot merge complex cases like ref+inline, override wins
+                        overrideProp
                     }
                 }
                 else -> overrideProp ?: baseProp!!
             }
         }.ifEmpty { null }
 
-        // Create a new schema with merged fields. `override` values take precedence.
         return override.copy(
             title = override.title ?: base.title,
             type = override.type ?: base.type,

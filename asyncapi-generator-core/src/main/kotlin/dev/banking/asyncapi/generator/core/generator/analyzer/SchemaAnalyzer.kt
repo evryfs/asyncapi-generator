@@ -6,8 +6,6 @@ class SchemaAnalyzer {
 
     private val referenceAnalyzer = ReferenceAnalyzer()
     private val inlineSchemaAnalyzer = InlineSchemaAnalyzer()
-
-    // Stage that extracts metadata without modifying the schema map
     private val polymorphicAnalyzer = PolymorphicAnalyzer()
 
     fun analyze(schemas: Map<String, Schema>): Pair<Map<String, Schema>, Map<String, List<String>>> {

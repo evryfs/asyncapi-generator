@@ -3,19 +3,12 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * Resolves schema compositions, starting with `allOf`.
- * This process is often called "flattening", as it merges properties from parent schemas
- * into a single, unified schema definition.
- */
 class CompositionNormalizer : NormalizationStage {
 
     private val schemaMerger = SchemaMerger()
 
     override fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
         return schemas.mapValues { (name, schema) ->
-            // The visited set tracks recursion depth to prevent StackOverflowErrors
-            // in case of circular schema references (e.g., A -> allOf B -> allOf A).
             resolveSchemaRecursive(schema, name, schemas, mutableSetOf())
         }
     }
@@ -92,7 +85,10 @@ class CompositionNormalizer : NormalizationStage {
                 val referencedSchema = (subSchemaInterface.reference.model as? Schema)
                     ?: allSchemas[refName]
                     // TODO - better error handling
-                    ?: throw IllegalArgumentException("CompositionProcessor: Unresolved reference in allOf for schema '$parentName': ${subSchemaInterface.reference.ref}")
+                    ?: throw IllegalArgumentException(
+                        "CompositionProcessor: Unresolved reference in allOf for " +
+                            "schema '$parentName': ${subSchemaInterface.reference.ref}"
+                    )
                 resolveSchemaRecursive(referencedSchema, refName, allSchemas, visited)
             }
 

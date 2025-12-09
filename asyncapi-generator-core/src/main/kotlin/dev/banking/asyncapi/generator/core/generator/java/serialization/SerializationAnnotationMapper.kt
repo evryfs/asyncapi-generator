@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.java.serialization
 
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
-/**
- * Maps schema's readOnly and writeOnly flags to Jackson's @JsonProperty annotations.
- */
 class SerializationAnnotationMapper(
     val framework: String,
     val includeJsonPropertyName: Boolean = false
