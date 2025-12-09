@@ -1,4 +1,4 @@
-name: Publish to Central
+name: Release
 
 on:
   workflow_dispatch:
