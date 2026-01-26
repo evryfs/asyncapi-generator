@@ -66,7 +66,7 @@
         <maven.plugin.api.version>3.9.6</maven.plugin.api.version>
         <mustache.compiler.version>0.9.14</mustache.compiler.version>
         <junit.jupiter.version>6.0.0</junit.jupiter.version>
-        <assertj.core.version>3.27.6</assertj.core.version>
+        <assertj.core.version>3.27.7</assertj.core.version>
         <gson.version>2.13.1</gson.version>
 
         <maven.gpg.version>3.1.0</maven.gpg.version>
