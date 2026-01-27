@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.generator.avro.AvroSchemaGenerator
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -32,7 +31,7 @@ abstract class AbstractJavaGeneratorClass {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
         val asyncApi = parser.parse(root)
         validator.validate(asyncApi).apply {
-            throwWarnings()
+            logWarnings()
             throwErrors()
         }
         val bundled = bundler.bundle(asyncApi)

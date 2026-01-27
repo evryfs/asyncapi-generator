@@ -33,6 +33,10 @@ class AsyncApiContext {
         return modelRepository.getLine(model, property)
     }
 
+    fun getLine(model: Any): Int? {
+        return modelRepository.getLine(model)
+    }
+
     fun pathSnippet(path: String, contextLines: Int = 3): String {
         return sourceRepository.pathSnippet(path, contextLines)
     }

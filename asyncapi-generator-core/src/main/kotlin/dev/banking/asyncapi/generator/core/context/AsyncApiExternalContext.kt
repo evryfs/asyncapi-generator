@@ -37,7 +37,7 @@ class AsyncApiExternalContext(
         val validator = AsyncApiValidator(context)
         val result = validator.validate(parsed)
 
-        result.throwWarnings()
+        result.logWarnings()
         result.throwErrors()
     }
 }

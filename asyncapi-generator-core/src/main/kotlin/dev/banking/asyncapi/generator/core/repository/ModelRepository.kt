@@ -39,6 +39,12 @@ class ModelRepository(
         return modelsByInstance[model]?.fieldLines?.get(fieldName)
     }
 
+    fun getLine(model: Any): Int? {
+        val entry = modelsByInstance[model] ?: return null
+        // We use the full node path to look up the line in SourceRepository
+        return entry.nodePath?.let { sourceRepository.getLine(it) }
+    }
+
     fun getModelsByInstance() = modelsByInstance.toMap()
     fun getModelsByPath() = modelsByPath.toMap()
 

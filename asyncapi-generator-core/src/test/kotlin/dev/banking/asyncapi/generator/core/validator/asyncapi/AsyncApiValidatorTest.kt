@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.validator.asyncapi
 
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class AsyncApiValidatorTest : AbstractValidatorTest() {
@@ -13,7 +12,7 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
     fun validateAsyncApiDocument() {
         val asyncApiDocument = parse("src/test/resources/asyncapi_kafka_single_file_example.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
-        validationResults.throwWarnings()
+        validationResults.logWarnings()
         validationResults.throwErrors()
     }
 }

@@ -31,7 +31,7 @@ abstract class AbstractKotlinGeneratorClass {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
         val asyncApi = parser.parse(root)
         validator.validate(asyncApi).apply {
-            throwWarnings()
+            logWarnings()
             throwErrors()
         }
         val bundled = bundler.bundle(asyncApi)

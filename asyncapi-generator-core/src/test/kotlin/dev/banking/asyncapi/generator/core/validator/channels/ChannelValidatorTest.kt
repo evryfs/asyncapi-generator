@@ -30,6 +30,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
         assertFalse(validationResults.hasErrors(), "Should not have errors for unused parameter (only warning).")
         assertTrue(validationResults.hasWarnings(), "Should have warnings.")
+        validationResults.logWarnings()
 
         val warnings = validationResults.warnings.map { it.message }
         assertEquals(3, warnings.size, "Expected 3 warning for unused parameter.")

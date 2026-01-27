@@ -82,7 +82,7 @@ class ParameterValidator(
         if (location.isNullOrBlank()) {
             results.warn(
                 "Parameter '$parameterName' is missing a 'location' expression — runtime substitution may fail.",
-                asyncApiContext.getLine(node, node::location)
+                asyncApiContext.getLine(node, node::location) ?: asyncApiContext.getLine(node),
             )
             return
         }

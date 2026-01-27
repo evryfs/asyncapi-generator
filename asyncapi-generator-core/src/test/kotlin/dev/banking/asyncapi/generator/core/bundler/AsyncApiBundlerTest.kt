@@ -27,7 +27,7 @@ class AsyncApiBundlerTest {
         val parsed = parser.parse(root)
         val validated = validator.validate(parsed)
         validated.apply {
-            throwWarnings()
+            logWarnings()
             throwErrors()
         }
         val result = bundler.bundle(parsed)
@@ -45,7 +45,7 @@ class AsyncApiBundlerTest {
         val result = parser.parse(root)
         val validated = validator.validate(result)
         validated.apply {
-            throwWarnings()
+            logWarnings()
             throwErrors()
         }
         val bundled = bundler.bundle(result)
@@ -61,7 +61,7 @@ class AsyncApiBundlerTest {
         val parsed = parser.parse(root)
         val validated = validator.validate(parsed)
         validated.apply {
-            throwWarnings()
+            logWarnings()
             throwErrors()
         }
         val result = bundler.bundle(parsed)

@@ -67,7 +67,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         val asyncApiParsed = parser.parse(root)
 
         val validationErrors = validator.validate(asyncApiParsed)
-        validationErrors.throwWarnings()
+        validationErrors.logWarnings()
         validationErrors.throwErrors()
 
         val bundled = bundler.bundle(asyncApiParsed)
