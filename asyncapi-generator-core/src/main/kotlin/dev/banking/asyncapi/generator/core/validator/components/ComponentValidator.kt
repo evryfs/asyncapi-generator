@@ -92,7 +92,7 @@ class ComponentValidator(
                     )
 
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaName, schemaInterface.reference, "Component Schema", results)
+                    referenceResolver.resolve(schemaInterface.reference, "Component Schema", results)
 
                 is SchemaInterface.BooleanSchema -> {}
             }
@@ -106,7 +106,7 @@ class ComponentValidator(
                     messageValidator.validate(msgInterface.message, messageName, results)
 
                 is MessageInterface.MessageReference -> {
-                    referenceResolver.resolve(messageName, msgInterface.reference, "Component Message", results)
+                    referenceResolver.resolve(msgInterface.reference, "Component Message", results)
                 }
             }
         }
@@ -126,7 +126,6 @@ class ComponentValidator(
 
                 is SecuritySchemeInterface.SecuritySchemeReference -> {
                     referenceResolver.resolve(
-                        securitySchemeName,
                         securitySchemeInterface.reference,
                         "Component SecurityScheme",
                         results
@@ -156,7 +155,6 @@ class ComponentValidator(
 
                 is ServerVariableInterface.ServerVariableReference -> {
                     referenceResolver.resolve(
-                        serverVariableName,
                         serverVariableInterface.reference,
                         "Component ServerVariable",
                         results
@@ -226,7 +224,7 @@ class ComponentValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingName, bindingInterface.reference, name, results)
+                    referenceResolver.resolve(bindingInterface.reference, name, results)
             }
         }
     }

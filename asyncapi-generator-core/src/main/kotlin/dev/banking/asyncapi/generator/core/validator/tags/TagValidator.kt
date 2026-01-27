@@ -50,7 +50,7 @@ class TagValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, tagName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(tagName, externalDocs.reference, "Tag ExternalDocs", results)
+                referenceResolver.resolve(externalDocs.reference, "Tag ExternalDocs", results)
         }
     }
 }

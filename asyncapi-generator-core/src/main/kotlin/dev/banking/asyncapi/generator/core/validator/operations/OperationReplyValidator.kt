@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 
@@ -20,7 +19,7 @@ class OperationReplyValidator(
             is OperationReplyInterface.OperationReplyInline ->
                 validate(node.operationReply, operationReplyName, results)
             is OperationReplyInterface.OperationReplyReference ->
-                referenceResolver.resolve(operationReplyName, node.reference, "Operation Reply", results)
+                referenceResolver.resolve(node.reference, "Operation Reply", results)
         }
     }
 
@@ -37,14 +36,14 @@ class OperationReplyValidator(
             is OperationReplyAddressInterface.OperationReplyAddressInline ->
                 replyAddressValidator.validate(address.operationReplyAddress, operationReplyName, results)
             is OperationReplyAddressInterface.OperationReplyAddressReference ->
-                referenceResolver.resolve(operationReplyName, address.reference, "Operation Reply Address", results)
+                referenceResolver.resolve(address.reference, "Operation Reply Address", results)
         }
     }
 
     private fun validateChannel(node: OperationReply, operationReplyName: String, results: ValidationResults) {
         val channelRef = node.channel
             ?: return
-        referenceResolver.resolve(operationReplyName, channelRef, "Operation Reply Channel", results)
+        referenceResolver.resolve(channelRef, "Operation Reply Channel", results)
     }
 
     private fun validateMessages(node: OperationReply, operationReplyName: String, results: ValidationResults) {
@@ -58,7 +57,7 @@ class OperationReplyValidator(
             return
         }
         messages.forEach { messageReference ->
-            referenceResolver.resolve(operationReplyName, messageReference, "Operation Reply Message", results)
+            referenceResolver.resolve(messageReference, "Operation Reply Message", results)
         }
     }
 }

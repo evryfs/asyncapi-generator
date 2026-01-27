@@ -31,7 +31,7 @@ class OperationTraitValidator(
                 validate(node.operationTrait, operationTraitName, results)
 
             is OperationTraitInterface.OperationTraitReference ->
-                referenceResolver.resolve(operationTraitName, node.reference, "Operation Trait", results)
+                referenceResolver.resolve(node.reference, "Operation Trait", results)
         }
     }
 
@@ -95,7 +95,11 @@ class OperationTraitValidator(
                 is SecuritySchemeInterface.SecuritySchemeInline ->
                     securitySchemeValidator.validate(securitySchemeInterface.security, securitySchemeName, results)
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(securitySchemeName, securitySchemeInterface.reference, operationTraitName, results)
+                    referenceResolver.resolve(
+                        securitySchemeInterface.reference,
+                        operationTraitName,
+                        results
+                    )
             }
         }
     }
@@ -116,7 +120,11 @@ class OperationTraitValidator(
                     tagValidator.validate(tagInterface.tag, operationTraitName, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(operationTraitName, tagInterface.reference, "Operation Trait Tag", results)
+                    referenceResolver.resolve(
+                        tagInterface.reference,
+                        "Operation Trait Tag",
+                        results
+                    )
             }
         }
     }
@@ -128,7 +136,11 @@ class OperationTraitValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, operationTraitName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(operationTraitName, externalDocs.reference, "Operation Trait ExternalDocs", results)
+                referenceResolver.resolve(
+                    externalDocs.reference,
+                    "Operation Trait ExternalDocs",
+                    results
+                )
         }
     }
 
@@ -145,7 +157,7 @@ class OperationTraitValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingName, bindingInterface.reference, operationTraitName, results)
+                    referenceResolver.resolve(bindingInterface.reference, operationTraitName, results)
             }
         }
     }

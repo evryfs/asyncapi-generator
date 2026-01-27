@@ -17,6 +17,8 @@ sealed class AsyncApiValidateException(message: String) : Exception(message) {
                 appendLine()
                 appendLine(context.validatorSnippet(err.line ?: -1))
                 appendLine()
+                if (err.doc != null) appendLine("See documentation: ${err.doc}")
+                appendLine("---------------------------------------------------------------------------------------------------------------------")
             }
         }
     )

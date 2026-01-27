@@ -26,7 +26,7 @@ class SchemaValidator(
                 validate(schemaInterface.schema, schemaName, results)
 
             is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(schemaName, schemaInterface.reference, "Schema", results)
+                referenceResolver.resolve(schemaInterface.reference, "Schema", results)
 
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
@@ -300,7 +300,7 @@ class SchemaValidator(
                 externalDocsValidator.validate(docs.externalDoc, schemaName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(schemaName, docs.reference, "Schema ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, "Schema ExternalDocs", results)
 
             null -> {}
         }
@@ -322,7 +322,7 @@ class SchemaValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(schemaName, bindingInterface.reference, "Schema Binding", results)
+                    referenceResolver.resolve(bindingInterface.reference, "Schema Binding", results)
             }
         }
     }

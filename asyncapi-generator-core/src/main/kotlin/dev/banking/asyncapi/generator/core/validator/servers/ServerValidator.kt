@@ -3,11 +3,9 @@ package dev.banking.asyncapi.generator.core.validator.servers
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -36,7 +34,7 @@ class ServerValidator(
                     validate(serverInterface.server, serverName, results)
 
                 is ServerInterface.ServerReference ->
-                    referenceResolver.resolve(serverName, serverInterface.reference, "Server", results)
+                    referenceResolver.resolve(serverInterface.reference, "Server", results)
             }
         }
     }
@@ -134,7 +132,7 @@ class ServerValidator(
                     serverVariableValidator.validate(varName, variableInterface.serverVariable, results)
 
                 is ServerVariableInterface.ServerVariableReference ->
-                    referenceResolver.resolve(varName, variableInterface.reference, "Server Variable", results)
+                    referenceResolver.resolve(variableInterface.reference, "Server Variable", results)
             }
         }
     }
@@ -154,7 +152,7 @@ class ServerValidator(
                     securitySchemeValidator.validate(secInterface.security, serverName, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(serverName, secInterface.reference, "Server Security", results)
+                    referenceResolver.resolve(secInterface.reference, "Server Security", results)
             }
         }
     }
@@ -174,7 +172,7 @@ class ServerValidator(
                     tagValidator.validate(tagInterface.tag, serverName, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(serverName, tagInterface.reference, "Server Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, "Server Tag", results)
             }
         }
     }
@@ -185,7 +183,7 @@ class ServerValidator(
                 externalDocsValidator.validate(docs.externalDoc, serverName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(serverName, docs.reference, "Server ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, "Server ExternalDocs", results)
 
             null -> {}
         }
@@ -207,7 +205,7 @@ class ServerValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(serverName, bindingInterface.reference, "Server Binding", results)
+                    referenceResolver.resolve(bindingInterface.reference, "Server Binding", results)
             }
         }
     }

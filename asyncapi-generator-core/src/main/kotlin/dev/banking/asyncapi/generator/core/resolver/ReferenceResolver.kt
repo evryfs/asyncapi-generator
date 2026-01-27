@@ -8,13 +8,13 @@ class ReferenceResolver(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun resolve(name: String, reference: Reference, contextString: String, results: ValidationResults) {
+    fun resolve(reference: Reference, contextString: String, results: ValidationResults) {
         asyncApiContext.findReference(reference)?.let { retrievedReference ->
             reference.model = retrievedReference
             return
         }
         results.error(
-            "$contextString reference '${reference.ref}' could not be resolved on: $name",
+            "$contextString reference '${reference.ref}' could not be resolved",
             asyncApiContext.getLine(reference, reference::ref),
             )
     }

@@ -17,12 +17,12 @@ class ValidationResults(
     val errors: List<ValidationError> get() = _errors
     val warnings: List<ValidationWarning> get() = _warnings
 
-    fun error(message: String, line: Int? = null) {
-        _errors += ValidationError(message, line)
+    fun error(message: String, line: Int? = null, doc: String? = null) {
+        _errors += ValidationError(message, line, doc)
     }
 
-    fun warn(message: String, line: Int? = null) {
-        _warnings += ValidationWarning(message, line)
+    fun warn(message: String, line: Int? = null, doc: String? = null) {
+        _warnings += ValidationWarning(message, line, doc)
     }
 
     fun hasErrors() = _errors.isNotEmpty()
@@ -46,13 +46,12 @@ class ValidationResults(
                         appendLine()
                         appendLine(asyncApiContext.validatorSnippet(warning.line ?: -1))
                         appendLine()
+                        if (warning.doc != null) appendLine("See documentation: ${warning.doc}")
+                        appendLine("---------------------------------------------------------------------------------------------------------------------")
+                        appendLine()
                     }
                 }
             )
         }
-    }
-
-    fun missingReference(ref: String, line: Int?) {
-        error("Unresolved reference: '$ref'. The target definition was not found.", line)
     }
 }

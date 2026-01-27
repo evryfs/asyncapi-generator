@@ -91,7 +91,7 @@ class InfoValidator(
                     is TagInterface.TagInline ->
                         tagValidator.validate(tagInterface.tag, "info", results)
                     is TagInterface.TagReference -> {
-                        referenceResolver.resolve("info", tagInterface.reference, "Info", results)
+                        referenceResolver.resolve(tagInterface.reference, "Info", results)
                     }
                 }
             }
@@ -104,7 +104,7 @@ class InfoValidator(
             is ExternalDocInterface.ExternalDocInline ->
                 externalDocsValidator.validate(externalDocs.externalDoc, "info", results)
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve("info", externalDocs.reference, "Info", results)
+                referenceResolver.resolve(externalDocs.reference, "Info", results)
         }
     }
 }

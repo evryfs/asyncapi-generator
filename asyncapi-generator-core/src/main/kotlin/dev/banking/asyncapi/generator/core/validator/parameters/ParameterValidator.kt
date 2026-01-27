@@ -18,7 +18,7 @@ class ParameterValidator(
             is ParameterInterface.ParameterInline ->
                 validate(parameterInterface.parameter, parameterName, results)
             is ParameterInterface.ParameterReference ->
-                referenceResolver.resolve(parameterName, parameterInterface.reference, "Parameter", results)
+                referenceResolver.resolve(parameterInterface.reference, "Parameter", results)
         }
     }
 
@@ -82,7 +82,7 @@ class ParameterValidator(
         if (location.isNullOrBlank()) {
             results.warn(
                 "Parameter '$parameterName' is missing a 'location' expression — runtime substitution may fail.",
-                asyncApiContext.getLine(node, node::location) ?: asyncApiContext.getLine(node),
+                asyncApiContext.getLine(node, node::location),
             )
             return
         }

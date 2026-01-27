@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -38,7 +37,7 @@ class OperationValidator(
                     validate(operationInterface.operation, operationName, results)
 
                 is OperationInterface.OperationReference ->
-                    referenceResolver.resolve(operationName, operationInterface.reference, "Operation", results)
+                    referenceResolver.resolve(operationInterface.reference, "Operation", results)
             }
         }
     }
@@ -79,7 +78,7 @@ class OperationValidator(
             )
             return
         }
-        referenceResolver.resolve(operationName, channelRef, "Channel", results)
+        referenceResolver.resolve(channelRef, "Channel", results)
         if (channelRef.model != null && channelRef.model !is Channel) {
             results.error(
                 "Operation '$operationName' channel reference must point to a Channel Object. " +
@@ -108,7 +107,7 @@ class OperationValidator(
                     asyncApiContext.getLine(node, node::messages)
                 )
             } else {
-                referenceResolver.resolve(operationName, msgRef, "Operation Message [index=$index]", results)
+                referenceResolver.resolve(msgRef, "Operation Message [index=$index]", results)
             }
         }
     }
@@ -121,7 +120,7 @@ class OperationValidator(
                 validateReplyInline(reply.operationReply, operationName, results)
 
             is OperationReplyInterface.OperationReplyReference ->
-                referenceResolver.resolve(operationName, reply.reference, "Operation Reply", results)
+                referenceResolver.resolve(reply.reference, "Operation Reply", results)
         }
     }
 
@@ -133,7 +132,7 @@ class OperationValidator(
                 asyncApiContext.getLine(node, node::channel)
             )
         } else {
-            referenceResolver.resolve(operationName, channelRef, "Operation Reply", results)
+            referenceResolver.resolve(channelRef, "Operation Reply", results)
         }
 
         val messages = node.messages
@@ -144,7 +143,7 @@ class OperationValidator(
             )
         } else {
             messages.forEachIndexed { index, msgRef ->
-                referenceResolver.resolve(operationName, msgRef, "Operation Reply Message [index=$index]", results)
+                referenceResolver.resolve(msgRef, "Operation Reply Message [index=$index]", results)
             }
         }
     }
@@ -165,7 +164,7 @@ class OperationValidator(
                     validateOperationTrait(trait.operationTrait, operationName, results)
 
                 is OperationTraitInterface.OperationTraitReference ->
-                    referenceResolver.resolve(operationName, trait.reference, "Operation Trait [index=$index]", results)
+                    referenceResolver.resolve(trait.reference, "Operation Trait [index=$index]", results)
             }
         }
     }
@@ -194,7 +193,7 @@ class OperationValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(operationName, bindingInterface.reference, "Operation Binding", results)
+                    referenceResolver.resolve(bindingInterface.reference, "Operation Binding", results)
             }
         }
     }
@@ -213,7 +212,11 @@ class OperationValidator(
                     securitySchemeValidator.validate(secInterface.security, operationName, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(operationName, secInterface.reference, "Security Scheme [index=$index]", results)
+                    referenceResolver.resolve(
+                        secInterface.reference,
+                        "Security Scheme [index=$index]",
+                        results
+                    )
             }
         }
     }
@@ -233,7 +236,11 @@ class OperationValidator(
                     tagValidator.validate(tagInterface.tag, operationName, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(operationName, tagInterface.reference, "Operation Tag [index=$index]", results)
+                    referenceResolver.resolve(
+                        tagInterface.reference,
+                        "Operation Tag [index=$index]",
+                        results
+                    )
             }
         }
     }
@@ -244,7 +251,7 @@ class OperationValidator(
                 externalDocsValidator.validate(docs.externalDoc, operationName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(operationName, docs.reference, "Operation ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, "Operation ExternalDocs", results)
 
             null -> {}
         }

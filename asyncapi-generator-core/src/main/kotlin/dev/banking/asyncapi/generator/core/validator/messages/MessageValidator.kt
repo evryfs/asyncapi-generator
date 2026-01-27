@@ -50,7 +50,7 @@ class MessageValidator(
                 schemaValidator.validate(payload.schema, messageName, results)
 
             is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(messageName, payload.reference, "Message", results)
+                referenceResolver.resolve(payload.reference, "Message", results)
 
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
@@ -69,7 +69,7 @@ class MessageValidator(
                     schemaValidator.validate(schemaInterface.schema, headerName, results)
 
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(headerName, schemaInterface.reference, "Message Header", results)
+                    referenceResolver.resolve(schemaInterface.reference, "Message Header", results)
 
                 is SchemaInterface.MultiFormatSchemaInline -> {
                     results.warn(
@@ -95,7 +95,7 @@ class MessageValidator(
                     validateTraitInline(trait.trait, messageName, results)
 
                 is MessageTraitInterface.ReferenceMessageTrait ->
-                    referenceResolver.resolve(messageName, trait.reference, "Message Trait", results)
+                    referenceResolver.resolve(trait.reference, "Message Trait", results)
             }
         }
     }
@@ -117,7 +117,7 @@ class MessageValidator(
                     tagValidator.validate(tagInterface.tag, messageName, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(messageName, tagInterface.reference, "Message Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, "Message Tag", results)
             }
         }
     }
@@ -128,7 +128,7 @@ class MessageValidator(
                 externalDocsValidator.validate(docs.externalDoc, messageName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(messageName, docs.reference, "Message ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, "Message ExternalDocs", results)
 
             null -> {}
         }
@@ -149,7 +149,7 @@ class MessageValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingName, bindingInterface.reference, messageName, results)
+                    referenceResolver.resolve(bindingInterface.reference, messageName, results)
             }
         }
     }

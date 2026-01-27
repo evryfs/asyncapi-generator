@@ -23,7 +23,7 @@ class OperationReplyAddressValidator(
                 validate(node.operationReplyAddress, operationReplyAddressName, results)
 
             is OperationReplyAddressInterface.OperationReplyAddressReference ->
-                referenceResolver.resolve(operationReplyAddressName, node.reference, "Operation Reply Address", results)
+                referenceResolver.resolve(node.reference, "Operation Reply Address", results)
         }
     }
 

@@ -2,9 +2,7 @@ package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -35,7 +33,7 @@ class MessageTraitValidator(
                 validate(node.trait, messageTraitName, results)
 
             is MessageTraitInterface.ReferenceMessageTrait ->
-                referenceResolver.resolve(messageTraitName, node.reference, "Message Trait", results)
+                referenceResolver.resolve(node.reference, "Message Trait", results)
         }
     }
 
@@ -73,7 +71,7 @@ class MessageTraitValidator(
                     schemaValidator.validate(schemaInterface.schema, schemaName, results)
 
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaName, schemaInterface.reference, messageTraitName, results)
+                    referenceResolver.resolve(schemaInterface.reference, messageTraitName, results)
 
                 is SchemaInterface.MultiFormatSchemaInline -> {}
                 is SchemaInterface.BooleanSchema -> {}
@@ -155,7 +153,7 @@ class MessageTraitValidator(
                     tagValidator.validate(tagInterface.tag, messageTraitName, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(messageTraitName, tagInterface.reference, "Message Trait Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, "Message Trait Tag", results)
             }
         }
     }
@@ -168,7 +166,11 @@ class MessageTraitValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, messageTraitName, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(messageTraitName, externalDocs.reference, "Message Trait ExternalDocs", results)
+                referenceResolver.resolve(
+                    externalDocs.reference,
+                    "Message Trait ExternalDocs",
+                    results
+                )
         }
     }
 
@@ -184,7 +186,7 @@ class MessageTraitValidator(
                     bindingValidator.validate(bindingName, bindingInterface.binding, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingName, bindingInterface.reference, messageTraitName, results)
+                    referenceResolver.resolve(bindingInterface.reference, messageTraitName, results)
             }
         }
     }

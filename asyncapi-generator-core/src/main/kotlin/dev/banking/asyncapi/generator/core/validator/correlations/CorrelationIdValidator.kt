@@ -18,7 +18,7 @@ class CorrelationIdValidator(
             is CorrelationIdInterface.CorrelationIdInline ->
                 validate(node.correlationId, correlationIdName, results)
             is CorrelationIdInterface.CorrelationIdReference ->
-                referenceResolver.resolve(correlationIdName, node.reference, "CorrelationId", results)
+                referenceResolver.resolve(node.reference, "CorrelationId", results)
         }
     }
 
