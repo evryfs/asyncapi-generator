@@ -35,13 +35,13 @@ class ParameterValidator(
             ?: return
         if (enum.isEmpty()) {
             results.warn(
-                "Parameter '$parameterName' 'enum' list is empty — omit it if unused.",
+                "$parameterName 'enum' list is empty — omit it if unused.",
                 asyncApiContext.getLine(node, node::enum)
             )
         }
         if (enum.distinct().size != enum.size) {
             results.warn(
-                "Parameter '$parameterName' 'enum' contains duplicate values.",
+                "$parameterName 'enum' contains duplicate values.",
                 asyncApiContext.getLine(node, node::enum)
             )
         }

@@ -104,11 +104,12 @@ class ChannelValidator(
         }
         checkAmbiguity(node, messages, channelName, results)
         messages.forEach { (messageName, messageInterface) ->
+            val contextString = "Channel $channelName Message '$messageName'"
             when (messageInterface) {
                 is MessageInterface.MessageInline ->
-                    messageValidator.validate(messageInterface.message, messageName, results)
+                    messageValidator.validate(messageInterface.message, contextString, results)
                 is MessageInterface.MessageReference ->
-                    referenceResolver.resolve(messageInterface.reference, "Channel Message '$messageName'", results)
+                    referenceResolver.resolve(messageInterface.reference, contextString, results)
             }
         }
     }
@@ -123,7 +124,7 @@ class ChannelValidator(
             )
         }
         servers.forEachIndexed { index, reference ->
-            referenceResolver.resolve(reference, "Channel Server [index=$index]", results)
+            referenceResolver.resolve(reference, "Channel $channelName Server [index=$index]", results)
         }
     }
 
@@ -136,11 +137,12 @@ class ChannelValidator(
             )
         }
         tags.forEachIndexed { index, tagInterface ->
+            val contextString = "Channel $channelName Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, channelName, results)
+                    tagValidator.validate(tagInterface.tag, contextString, results)
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, "Channel Tag [index=$index]", results)
+                    referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
         }
     }
@@ -155,21 +157,23 @@ class ChannelValidator(
             return
         }
         parameters.forEach { (parameterName, parameterInterface) ->
+            val contextString = "Channel $channelName Parameter '$parameterName'"
             when (parameterInterface) {
                 is ParameterInterface.ParameterInline ->
-                    parameterValidator.validate(parameterInterface.parameter, parameterName, results)
+                    parameterValidator.validate(parameterInterface.parameter, contextString, results)
                 is ParameterInterface.ParameterReference ->
-                    referenceResolver.resolve(parameterInterface.reference, "Channel Parameter", results)
+                    referenceResolver.resolve(parameterInterface.reference, contextString, results)
             }
         }
     }
 
     private fun validateExternalDocs(node: Channel, channelName: String, results: ValidationResults) {
+        val contextString = "Channel $channelName ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, channelName, results)
+                externalDocsValidator.validate(docs.externalDoc, contextString, results)
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, "Channel ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, contextString, results)
             null -> {}
         }
     }
@@ -184,11 +188,12 @@ class ChannelValidator(
             return
         }
         bindings.forEach { (bindingName, bindingInterface) ->
+            val contextString = "Channel $channelName Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingName, bindingInterface.binding, results)
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, "Channel Binding", results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
         }
     }

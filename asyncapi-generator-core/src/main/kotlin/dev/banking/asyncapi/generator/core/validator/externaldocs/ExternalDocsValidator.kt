@@ -24,7 +24,7 @@ class ExternalDocsValidator(
         val url = node.url.let(::sanitizeString)
         if (url.isBlank()) {
             results.error(
-                "ExternalDoc '${externalDocName}' 'url' is required and cannot be empty.",
+                "$externalDocName 'url' is required and cannot be empty.",
                 asyncApiContext.getLine(node, node::url)
             )
         } else {

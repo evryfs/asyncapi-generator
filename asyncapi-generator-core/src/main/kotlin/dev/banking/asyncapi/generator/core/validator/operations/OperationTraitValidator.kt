@@ -154,7 +154,7 @@ class OperationTraitValidator(
         bindings.forEach { (bindingName, bindingInterface) ->
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingName, bindingInterface.binding, results)
+                    bindingValidator.validate(bindingInterface.binding, bindingName, results)
 
                 is BindingInterface.BindingReference ->
                     referenceResolver.resolve(bindingInterface.reference, operationTraitName, results)
