@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -68,10 +69,11 @@ class ChannelValidator(
             return
         }
         val definedParameters = node.parameters?.keys ?: emptySet()
-        val addressParameters = Regex("""\{([^}]+)}""").findAll(address)
+        // Extract parameter names from the address (stripping the curly braces)
+        val addressParameters = PARAMETER_PLACEHOLDER
+            .findAll(address)
             .map { it.groupValues[1] }
             .toSet()
-        // groupValues[0] is "{paramName}", groupValues[1] is "paramName"
         val missingDefinitions = addressParameters - definedParameters
         if (missingDefinitions.isNotEmpty()) {
             results.error(
