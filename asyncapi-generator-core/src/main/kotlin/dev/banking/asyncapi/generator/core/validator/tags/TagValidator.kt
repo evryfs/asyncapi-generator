@@ -23,34 +23,27 @@ class TagValidator(
         }
     }
 
-    fun validate(node: Tag, tagName: String, results: ValidationResults) {
+    fun validate(node: Tag, contextString: String, results: ValidationResults) {
         val name = node.name.let(::sanitizeString)
         if (name.isBlank()) {
             results.error(
-                "Tag '$tagName' 'name' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::name)
+                "$contextString 'name' is required and cannot be empty.",
+                asyncApiContext.getLine(node, node::name),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#tagObject"
             )
         }
-        val description = node.description?.let(::sanitizeString)
-        description?.let {
-            if (it.length < 3) {
-                results.warn(
-                    "Tag '$tagName' 'description' seems too short.",
-                    asyncApiContext.getLine(node, node::description)
-                )
-            }
-        }
-        validateExternalDocs(node, tagName, results)
+        validateExternalDocs(node, contextString, results)
     }
 
-    private fun validateExternalDocs(node: Tag, tagName: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Tag, contextString: String, results: ValidationResults) {
         val externalDocs = node.externalDocs ?: return
+        val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, tagName, results)
+                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, "Tag ExternalDocs", results)
+                referenceResolver.resolve(externalDocs.reference, contextString, results)
         }
     }
 }
