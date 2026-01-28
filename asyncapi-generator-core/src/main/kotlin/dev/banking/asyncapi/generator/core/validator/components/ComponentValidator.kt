@@ -114,7 +114,7 @@ class ComponentValidator(
 
     private fun validateParameters(component: Component, results: ValidationResults) {
         component.parameters?.forEach { (parameterName, parameterInterface) ->
-            parameterValidator.validateInterface(parameterName, parameterInterface, results)
+            parameterValidator.validateInterface(parameterInterface, parameterName, results)
         }
     }
 

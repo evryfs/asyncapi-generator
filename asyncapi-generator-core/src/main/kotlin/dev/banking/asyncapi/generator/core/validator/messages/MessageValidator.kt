@@ -40,8 +40,10 @@ class MessageValidator(
         when (val payload = node.payload) {
             is SchemaInterface.SchemaInline ->
                 schemaValidator.validate(payload.schema, contextString, results)
+
             is SchemaInterface.SchemaReference ->
                 referenceResolver.resolve(payload.reference, contextString, results)
+
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
             null -> {}
@@ -55,14 +57,17 @@ class MessageValidator(
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline ->
                     schemaValidator.validate(schemaInterface.schema, contextString, results)
+
                 is SchemaInterface.SchemaReference ->
                     referenceResolver.resolve(schemaInterface.reference, contextString, results)
+
                 is SchemaInterface.MultiFormatSchemaInline -> {
                     results.warn(
                         "$contextString MultiFormatSchema in headers are not validated (header '$headerName').",
                         asyncApiContext.getLine(node, node::headers)
                     )
                 }
+
                 is SchemaInterface.BooleanSchema -> {}
             }
         }
@@ -76,6 +81,7 @@ class MessageValidator(
             when (trait) {
                 is MessageTraitInterface.InlineMessageTrait ->
                     messageTraitValidator.validate(trait.trait, contextString, results)
+
                 is MessageTraitInterface.ReferenceMessageTrait ->
                     referenceResolver.resolve(trait.reference, contextString, results)
             }
@@ -89,6 +95,7 @@ class MessageValidator(
             when (tagInterface) {
                 is TagInterface.TagInline ->
                     tagValidator.validate(tagInterface.tag, contextString, results)
+
                 is TagInterface.TagReference ->
                     referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
@@ -100,8 +107,10 @@ class MessageValidator(
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
+
             is ExternalDocInterface.ExternalDocReference ->
                 referenceResolver.resolve(docs.reference, contextString, results)
+
             null -> {}
         }
     }
@@ -114,6 +123,7 @@ class MessageValidator(
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
+
                 is BindingInterface.BindingReference ->
                     referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }

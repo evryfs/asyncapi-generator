@@ -13,7 +13,7 @@ class ParameterValidator(
 
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(parameterName: String, parameterInterface: ParameterInterface, results: ValidationResults) {
+    fun validateInterface(parameterInterface: ParameterInterface, parameterName: String, results: ValidationResults) {
         when (parameterInterface) {
             is ParameterInterface.ParameterInline ->
                 validate(parameterInterface.parameter, parameterName, results)
