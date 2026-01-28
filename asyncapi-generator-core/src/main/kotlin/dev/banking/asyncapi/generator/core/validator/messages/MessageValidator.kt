@@ -23,133 +23,99 @@ class MessageValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val schemaValidator = SchemaValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
+    private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validate(message: Message, messageName: String, results: ValidationResults) {
-        validateName(message, messageName, results)
-        validatePayload(message, messageName, results)
-        validateHeaders(message, messageName, results)
-        validateTraits(message, messageName, results)
-        validateTags(message, messageName, results)
-        validateExternalDocs(message, messageName, results)
-        validateBindings(message, messageName, results)
+    fun validate(message: Message, contextString: String, results: ValidationResults) {
+        validatePayload(message, contextString, results)
+        validateHeaders(message, contextString, results)
+        validateTraits(message, contextString, results)
+        validateTags(message, contextString, results)
+        validateExternalDocs(message, contextString, results)
+        validateBindings(message, contextString, results)
     }
 
-    private fun validateName(node: Message, messageName: String, results: ValidationResults) {
-        if (node.name.isNullOrBlank()) {
-            results.warn(
-                "Message '$messageName' missing 'name'. It’s recommended to provide one for referencing and tooling.",
-                asyncApiContext.getLine(node, node::name)
-            )
-        }
-    }
-
-    private fun validatePayload(node: Message, messageName: String, results: ValidationResults) {
+    private fun validatePayload(node: Message, contextString: String, results: ValidationResults) {
+        val contextString = "$contextString Payload"
         when (val payload = node.payload) {
             is SchemaInterface.SchemaInline ->
-                schemaValidator.validate(payload.schema, messageName, results)
-
+                schemaValidator.validate(payload.schema, contextString, results)
             is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(payload.reference, "Message", results)
-
+                referenceResolver.resolve(payload.reference, contextString, results)
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
-            null -> results.warn(
-                "Message '$messageName' does not define a 'payload'. It will be treated as empty.",
-                asyncApiContext.getLine(node, node::payload)
-            )
+            null -> {}
         }
     }
 
-    private fun validateHeaders(node: Message, messageName: String, results: ValidationResults) {
+    private fun validateHeaders(node: Message, contextString: String, results: ValidationResults) {
         val headers = node.headers ?: return
         headers.forEach { (headerName, schemaInterface) ->
+            val contextString = "$contextString Header '$headerName'"
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline ->
-                    schemaValidator.validate(schemaInterface.schema, headerName, results)
-
+                    schemaValidator.validate(schemaInterface.schema, contextString, results)
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaInterface.reference, "Message Header", results)
-
+                    referenceResolver.resolve(schemaInterface.reference, contextString, results)
                 is SchemaInterface.MultiFormatSchemaInline -> {
                     results.warn(
-                        "Message '${messageName}' MultiFormatSchema in headers are not validated (header '$headerName').",
+                        "$contextString MultiFormatSchema in headers are not validated (header '$headerName').",
                         asyncApiContext.getLine(node, node::headers)
                     )
                 }
-
                 is SchemaInterface.BooleanSchema -> {}
             }
         }
     }
 
-    private fun validateTraits(node: Message, messageName: String, results: ValidationResults) {
-        val traits = node.traits
-            ?: return
-        if (traits.isEmpty()) {
-            return
-        }
-        traits.forEach { trait ->
+    private fun validateTraits(node: Message, contextString: String, results: ValidationResults) {
+        val traits = node.traits ?: return
+        if (traits.isEmpty()) return
+        traits.forEachIndexed { index, trait ->
+            val contextString = "$contextString Trait[$index]"
             when (trait) {
                 is MessageTraitInterface.InlineMessageTrait ->
-                    validateTraitInline(trait.trait, messageName, results)
-
+                    messageTraitValidator.validate(trait.trait, contextString, results)
                 is MessageTraitInterface.ReferenceMessageTrait ->
-                    referenceResolver.resolve(trait.reference, "Message Trait", results)
+                    referenceResolver.resolve(trait.reference, contextString, results)
             }
         }
     }
 
-    private fun validateTraitInline(node: MessageTrait, messageName: String, results: ValidationResults) {
-        if (node.headers == null && node.bindings == null) {
-            results.warn(
-                "Message '${messageName}' Trait provides neither 'headers' nor 'bindings' — it might not have any effect.",
-                asyncApiContext.getLine(node, node::headers)
-            )
-        }
-    }
-
-    private fun validateTags(node: Message, messageName: String, results: ValidationResults) {
+    private fun validateTags(node: Message, contextString: String, results: ValidationResults) {
         val tags = node.tags ?: return
-        tags.forEach { tagInterface ->
+        tags.forEachIndexed { index, tagInterface ->
+            val contextString = "$contextString Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, messageName, results)
-
+                    tagValidator.validate(tagInterface.tag, contextString, results)
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, "Message Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
         }
     }
 
-    private fun validateExternalDocs(node: Message, messageName: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Message, contextString: String, results: ValidationResults) {
+        val contextString = "$contextString ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, messageName, results)
-
+                externalDocsValidator.validate(docs.externalDoc, contextString, results)
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, "Message ExternalDocs", results)
-
+                referenceResolver.resolve(docs.reference, contextString, results)
             null -> {}
         }
     }
 
-    private fun validateBindings(node: Message, messageName: String, results: ValidationResults) {
+    private fun validateBindings(node: Message, contextString: String, results: ValidationResults) {
         val bindings = node.bindings ?: return
-        if (bindings.isEmpty()) {
-            results.warn(
-                "Message '$messageName' defines an empty 'bindings' object.",
-                asyncApiContext.getLine(node, node::bindings),
-            )
-            return
-        }
+        if (bindings.isEmpty()) return
         bindings.forEach { (bindingName, bindingInterface) ->
+            val contextString = "$contextString Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, bindingName, results)
-
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, messageName, results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
         }
     }

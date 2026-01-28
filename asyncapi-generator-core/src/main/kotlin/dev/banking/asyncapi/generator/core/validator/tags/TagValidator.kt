@@ -41,7 +41,6 @@ class TagValidator(
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
-
             is ExternalDocInterface.ExternalDocReference ->
                 referenceResolver.resolve(externalDocs.reference, contextString, results)
         }
