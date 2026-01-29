@@ -36,7 +36,6 @@ class AsyncApiValidator(
         return results
     }
 
-
     private fun validateAsyncApiVersion(node: AsyncApiDocument, results: ValidationResults) {
         val asyncApiVersion = node.asyncapi.let(::sanitizeString)
         val versionRegex = Regex("""^\d+\.\d+\.\d+(-[A-Za-z0-9]+)?$""")

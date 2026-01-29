@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.externaldocs
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -10,13 +11,13 @@ class ExternalDocsValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun validateMap(nodeMap: Map<String, ExternalDocInterface>, results: ValidationResults) {
-        for ((externalDocName, node) in nodeMap) {
-            val externalDoc = when (node) {
-                is ExternalDocInterface.ExternalDocInline -> node.externalDoc
-                is ExternalDocInterface.ExternalDocReference -> continue
+    fun validateInterface(node: ExternalDocInterface, contextString: String, results: ValidationResults) {
+        when (node) {
+            is ExternalDocInterface.ExternalDocInline -> {
+                validate(node.externalDoc, contextString, results)
             }
-            validate(externalDoc, externalDocName, results)
+
+            is ExternalDocInterface.ExternalDocReference -> {}
         }
     }
 
@@ -25,24 +26,17 @@ class ExternalDocsValidator(
         if (url.isBlank()) {
             results.error(
                 "$externalDocName 'url' is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::url)
+                asyncApiContext.getLine(node, node::url),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
             )
         } else {
-            val urlRegex = Regex("""^(https?|wss?)://\S+$""")
-            if (!urlRegex.matches(url)) {
+            if (!URL.matches(url)) {
                 results.error(
                     "ExternalDoc '${externalDocName}' 'url' must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url)
+                    asyncApiContext.getLine(node, node::url),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
                 )
             }
-        }
-        val description = node.description?.let(::sanitizeString)
-            ?: return
-        if (description.isBlank()) {
-            results.warn(
-                "ExternalDoc '${externalDocName}' 'description' is empty. Can be omitted if not used.",
-                asyncApiContext.getLine(node, node::description)
-            )
         }
     }
 }

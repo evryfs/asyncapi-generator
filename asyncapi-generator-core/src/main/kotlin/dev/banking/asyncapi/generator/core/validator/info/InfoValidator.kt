@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.SEMANTIC_VERSION
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -23,7 +25,6 @@ class InfoValidator(
     fun validate(node: Info, results: ValidationResults) {
         validateTitle(node, results)
         validateVersion(node, results)
-        validateDescription(node, results)
         validateTermsOfService(node, results)
         validateTags(node, results)
         validateExternalDocs(node, results)
@@ -37,7 +38,8 @@ class InfoValidator(
         if (title.isBlank()) {
             results.error(
                 "The 'title' field in the Info object is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::title)
+                asyncApiContext.getLine(node, node::title),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
@@ -47,52 +49,40 @@ class InfoValidator(
         if (version.isBlank()) {
             results.error(
                 "The 'version' field in the Info object is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::version)
+                asyncApiContext.getLine(node, node::version),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
-        } else if (!Regex("""^[A-Za-z0-9_.-]+$""").matches(version)) {
-            results.warn(
-                "The 'version' field contains unusual characters. Expected alphanumeric with optional '.', '-', or '_'.",
-                asyncApiContext.getLine(node, node::version)
-            )
+            return
         }
-    }
-
-    private fun validateDescription(node: Info, results: ValidationResults) {
-        val description = node.description?.let(::sanitizeString) ?: return
-        if (description.length < 3) {
+        if (!SEMANTIC_VERSION.matches(version)) {
             results.warn(
-                "The 'description' field seems too short to be meaningful.",
-                asyncApiContext.getLine(node, node::description)
+                "The 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
+                asyncApiContext.getLine(node, node::version)
             )
         }
     }
 
     private fun validateTermsOfService(node: Info, results: ValidationResults) {
-        val tos = node.termsOfService?.let(::sanitizeString) ?: return
-        val urlRegex = Regex("""^(https?|wss?)://\S+$""")
-        if (!urlRegex.matches(tos)) {
+        val termsOfService = node.termsOfService?.let(::sanitizeString) ?: return
+        if (!URL.matches(termsOfService)) {
             results.error(
-                "The 'termsOfService' field must be a valid absolute URL. Got '$tos'.",
-                asyncApiContext.getLine(node, node::termsOfService)
+                "The 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
+                asyncApiContext.getLine(node, node::termsOfService),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
 
     private fun validateTags(node: Info, results: ValidationResults) {
         val tags = node.tags ?: return
-        if (tags.isEmpty()) {
-            results.warn(
-                "The 'tags' list is empty. Can omit entirely if unused.",
-                asyncApiContext.getLine(node, node::tags)
-            )
-        } else {
-            tags.forEach { tagInterface ->
-                when (tagInterface) {
-                    is TagInterface.TagInline ->
-                        tagValidator.validate(tagInterface.tag, "info", results)
-                    is TagInterface.TagReference -> {
-                        referenceResolver.resolve(tagInterface.reference, "Info", results)
-                    }
+        tags.forEachIndexed { index, tagInterface ->
+            val contextString = "Info Tag[$index]"
+            when (tagInterface) {
+                is TagInterface.TagInline ->
+                    tagValidator.validate(tagInterface.tag, contextString, results)
+
+                is TagInterface.TagReference -> {
+                    referenceResolver.resolve(tagInterface.reference, contextString, results)
                 }
             }
         }
@@ -100,11 +90,13 @@ class InfoValidator(
 
     private fun validateExternalDocs(node: Info, results: ValidationResults) {
         val externalDocs = node.externalDocs ?: return
+        val contextString = "Info ExternalDocs"
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, "info", results)
+                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
+
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, "Info", results)
+                referenceResolver.resolve(externalDocs.reference, contextString, results)
         }
     }
 }

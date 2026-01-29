@@ -29,11 +29,22 @@ class ChannelValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
+    fun validateInterface(node: ChannelInterface, contextString: String, results: ValidationResults) {
+        when (node) {
+            is ChannelInterface.ChannelInline ->
+                validate(node.channel, contextString, results)
+
+            is ChannelInterface.ChannelReference ->
+                referenceResolver.resolve(node.reference, contextString, results)
+        }
+    }
+
     fun validateChannels(channels: Map<String, ChannelInterface>, results: ValidationResults) {
         channels.forEach { (channelName, channelInterface) ->
             when (channelInterface) {
                 is ChannelInterface.ChannelInline ->
                     validate(channelInterface.channel, channelName, results)
+
                 is ChannelInterface.ChannelReference ->
                     referenceResolver.resolve(channelInterface.reference, "Channel '$channelName'", results)
             }
@@ -42,8 +53,8 @@ class ChannelValidator(
 
     private fun validate(node: Channel, channelName: String, results: ValidationResults) {
         validateAddress(node, channelName, results)
-        validateMessages(node, channelName,results)
-        validateServers(node, channelName,results)
+        validateMessages(node, channelName, results)
+        validateServers(node, channelName, results)
         validateTags(node, channelName, results)
         validateExternalDocs(node, channelName, results)
         validateParameters(node, channelName, results)
@@ -54,7 +65,7 @@ class ChannelValidator(
         val address = node.address?.let(::sanitizeString) ?: return
         if (address.isBlank()) {
             results.warn(
-                "Channel '$channelName' does not define an 'address'. It may be treated as dynamically assigned.",
+                "$channelName does not define an 'address'. It may be treated as dynamically assigned.",
                 asyncApiContext.getLine(node, node::address),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
@@ -62,7 +73,7 @@ class ChannelValidator(
         }
         if (address.contains("?") || address.contains("#")) {
             results.error(
-                "Channel '$channelName' address must not contain query parameters or fragments. Use bindings for that.",
+                "$channelName address must not contain query parameters or fragments. Use bindings for that.",
                 asyncApiContext.getLine(node, node::address),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
@@ -77,7 +88,7 @@ class ChannelValidator(
         val missingDefinitions = addressParameters - definedParameters
         if (missingDefinitions.isNotEmpty()) {
             results.error(
-                "Channel '$channelName' address uses parameters $missingDefinitions which are not defined in channel parameters map.",
+                "$channelName address uses parameters $missingDefinitions which are not defined in channel parameters map.",
                 asyncApiContext.getLine(node, node::address),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
@@ -85,7 +96,7 @@ class ChannelValidator(
         val unusedDefinitions = definedParameters - addressParameters
         if (unusedDefinitions.isNotEmpty()) {
             results.warn(
-                "Channel '$channelName' defines parameters $unusedDefinitions which are not used in the channel address '$address'.",
+                "$channelName defines parameters $unusedDefinitions which are not used in the channel address '$address'.",
                 asyncApiContext.getLine(node, node::parameters),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
@@ -96,7 +107,7 @@ class ChannelValidator(
         val messages = node.messages
         if (messages.isNullOrEmpty()) {
             results.error(
-                "Channel '$channelName' must define at least one message in 'messages'.",
+                "$channelName' must define at least one message in 'messages'.",
                 asyncApiContext.getLine(node, node::messages),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
@@ -104,10 +115,11 @@ class ChannelValidator(
         }
         checkAmbiguity(node, messages, channelName, results)
         messages.forEach { (messageName, messageInterface) ->
-            val contextString = "Channel $channelName Message '$messageName'"
+            val contextString = "$channelName Message '$messageName'"
             when (messageInterface) {
                 is MessageInterface.MessageInline ->
                     messageValidator.validate(messageInterface.message, contextString, results)
+
                 is MessageInterface.MessageReference ->
                     referenceResolver.resolve(messageInterface.reference, contextString, results)
             }
@@ -118,13 +130,13 @@ class ChannelValidator(
         val servers = node.servers ?: return
         if (servers.isEmpty()) {
             results.warn(
-                "Channel '$channelName' defines an empty 'servers' array. It will be available on all servers.",
+                "$channelName defines an empty 'servers' array. It will be available on all servers.",
                 asyncApiContext.getLine(node, node::servers),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
         servers.forEachIndexed { index, reference ->
-            referenceResolver.resolve(reference, "Channel $channelName Server [index=$index]", results)
+            referenceResolver.resolve(reference, "$channelName Server [index=$index]", results)
         }
     }
 
@@ -132,7 +144,7 @@ class ChannelValidator(
         val tags = node.tags ?: return
         if (tags.isEmpty()) {
             results.warn(
-                "Channel '$channelName' defines an empty 'tags' list. Can be omitted if no tags are defined.",
+                "$channelName defines an empty 'tags' list. Can be omitted if no tags are defined.",
                 asyncApiContext.getLine(node, node::tags),
             )
         }
@@ -141,6 +153,7 @@ class ChannelValidator(
             when (tagInterface) {
                 is TagInterface.TagInline ->
                     tagValidator.validate(tagInterface.tag, contextString, results)
+
                 is TagInterface.TagReference ->
                     referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
@@ -151,16 +164,17 @@ class ChannelValidator(
         val parameters = node.parameters ?: return
         if (parameters.isEmpty()) {
             results.warn(
-                "Channel '$channelName' defines an empty 'parameters' map. Can be omitted if no parameters are defined.",
+                "$channelName defines an empty 'parameters' map. Can be omitted if no parameters are defined.",
                 asyncApiContext.getLine(node, node::parameters),
             )
             return
         }
         parameters.forEach { (parameterName, parameterInterface) ->
-            val contextString = "Channel $channelName Parameter '$parameterName'"
+            val contextString = "$channelName Parameter '$parameterName'"
             when (parameterInterface) {
                 is ParameterInterface.ParameterInline ->
                     parameterValidator.validate(parameterInterface.parameter, contextString, results)
+
                 is ParameterInterface.ParameterReference ->
                     referenceResolver.resolve(parameterInterface.reference, contextString, results)
             }
@@ -168,12 +182,14 @@ class ChannelValidator(
     }
 
     private fun validateExternalDocs(node: Channel, channelName: String, results: ValidationResults) {
-        val contextString = "Channel $channelName ExternalDocs"
+        val contextString = "$channelName ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
+
             is ExternalDocInterface.ExternalDocReference ->
                 referenceResolver.resolve(docs.reference, contextString, results)
+
             null -> {}
         }
     }
@@ -182,16 +198,17 @@ class ChannelValidator(
         val bindings = node.bindings ?: return
         if (bindings.isEmpty()) {
             results.warn(
-                "Channel '$channelName' defines an empty 'bindings' object. Can be omitted if no bindings are defined.",
+                "$channelName defines an empty 'bindings' object. Can be omitted if no bindings are defined.",
                 asyncApiContext.getLine(node, node::bindings),
             )
             return
         }
         bindings.forEach { (bindingName, bindingInterface) ->
-            val contextString = "Channel $channelName Binding '$bindingName'"
+            val contextString = "$channelName Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
+
                 is BindingInterface.BindingReference ->
                     referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
@@ -202,7 +219,7 @@ class ChannelValidator(
         node: Channel,
         messages: Map<String, MessageInterface>,
         channelName: String,
-        results: ValidationResults
+        results: ValidationResults,
     ) {
         val refMap = mutableMapOf<String, String>()
         messages.forEach { (msgName, msgInterface) ->
@@ -210,7 +227,7 @@ class ChannelValidator(
                 val ref = msgInterface.reference.ref
                 if (refMap.containsKey(ref)) {
                     results.warn(
-                        "Channel '$channelName' contains ambiguous messages which may be indistinguishable at runtime.",
+                        "$channelName contains ambiguous messages which may be indistinguishable at runtime.",
                         asyncApiContext.getLine(node, node::messages),
                         "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject"
                     )

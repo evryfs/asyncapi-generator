@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.EMAIL
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.info.Contact
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
@@ -18,22 +20,23 @@ class ContactValidator(
                 "The Contact object is defined but all its fields are empty.",
                 asyncApiContext.getLine(node, node::name)
             )
+            return
         }
         url?.let {
-            val urlRegex = Regex("""^(https?)://\S+$""")
-            if (!urlRegex.matches(it)) {
+            if (!URL.matches(it)) {
                 results.error(
                     "The 'url' field in the Contact object must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url)
+                    asyncApiContext.getLine(node, node::url),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }
         }
         email?.let {
-            val emailRegex = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
-            if (!emailRegex.matches(it)) {
+            if (!EMAIL.matches(it)) {
                 results.error(
                     "The 'email' field in the Contact object must be a valid email address.",
-                    asyncApiContext.getLine(node, node::email)
+                    asyncApiContext.getLine(node, node::email),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }
         }

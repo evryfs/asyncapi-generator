@@ -133,7 +133,10 @@ class ComponentValidator(
     }
 
     private fun validateOperations(component: Component, results: ValidationResults) {
-        component.operations?.let { operationValidator.validateOperations(it, results) }
+        component.operations?.forEach { (operationName, operationInterface) ->
+            val contextString = "Component Operation '$operationName'"
+            operationValidator.validateInterface(operationInterface, contextString, results)
+        }
     }
 
     private fun validateServers(component: Component, results: ValidationResults) {
@@ -169,11 +172,17 @@ class ComponentValidator(
     }
 
     private fun validateChannels(component: Component, results: ValidationResults) {
-        component.channels?.let { channelValidator.validateChannels(it, results) }
+        component.channels?.forEach { (channelName, channelInterface) ->
+            val contextString = "Component Channel '$channelName'"
+            channelValidator.validateInterface(channelInterface, contextString, results)
+        }
     }
 
     private fun validateExternalDocs(component: Component, results: ValidationResults) {
-        component.externalDocs?.let { externalDocsValidator.validateMap(it, results) }
+        component.externalDocs?.forEach { (externalDocName, externalDocInterface) ->
+            val contextString = "Component External Doc '$externalDocName'"
+            externalDocsValidator.validateInterface(externalDocInterface, contextString, results)
+        }
     }
 
     private fun validateTags(component: Component, results: ValidationResults) {
