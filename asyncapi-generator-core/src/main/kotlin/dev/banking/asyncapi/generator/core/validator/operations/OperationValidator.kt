@@ -40,18 +40,6 @@ class OperationValidator(
         }
     }
 
-    fun validateOperations(operations: Map<String, OperationInterface>, results: ValidationResults) {
-        operations.forEach { (operationName, operationInterface) ->
-            when (operationInterface) {
-                is OperationInterface.OperationInline ->
-                    validate(operationInterface.operation, operationName, results)
-
-                is OperationInterface.OperationReference ->
-                    referenceResolver.resolve(operationInterface.reference, "Operation", results)
-            }
-        }
-    }
-
     private fun validate(node: Operation, contextString: String, results: ValidationResults) {
         validateAction(node, contextString, results)
         validateChannel(node, contextString, results)

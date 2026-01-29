@@ -11,13 +11,13 @@ class ContactValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun validate(node: Contact, results: ValidationResults) {
+    fun validate(node: Contact, contextString: String, results: ValidationResults) {
         val name = node.name?.let(::sanitizeString)
         val url = node.url?.let(::sanitizeString)
         val email = node.email?.let(::sanitizeString)
         if (name.isNullOrBlank() && url.isNullOrBlank() && email.isNullOrBlank()) {
             results.warn(
-                "The Contact object is defined but all its fields are empty.",
+                "$contextString is defined but all its fields are empty.",
                 asyncApiContext.getLine(node, node::name)
             )
             return
@@ -25,7 +25,7 @@ class ContactValidator(
         url?.let {
             if (!URL.matches(it)) {
                 results.error(
-                    "The 'url' field in the Contact object must be a valid absolute URL.",
+                    "$contextString 'url' field must be a valid absolute URL.",
                     asyncApiContext.getLine(node, node::url),
                     "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
@@ -34,7 +34,7 @@ class ContactValidator(
         email?.let {
             if (!EMAIL.matches(it)) {
                 results.error(
-                    "The 'email' field in the Contact object must be a valid email address.",
+                    "$contextString 'email' field must be a valid email address.",
                     asyncApiContext.getLine(node, node::email),
                     "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )

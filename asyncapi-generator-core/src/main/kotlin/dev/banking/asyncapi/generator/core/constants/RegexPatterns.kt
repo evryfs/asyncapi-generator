@@ -31,6 +31,12 @@ object RegexPatterns {
     val HTTP_URL = Regex("""^(https?)://\S+$""")
 
     /**
+     * Matches any character that is NOT a letter (A-Z, a-z) or a digit (0-9).
+     * Typically used as a delimiter pattern to split strings into words for case conversion.
+     */
+    val NON_ALPHANUMERIC = Regex("[^A-Za-z0-9]")
+
+    /**
      * Matches Semantic Versioning strings (SemVer 2.0.0).
      *
      * Validates that the version follows the `MAJOR.MINOR.PATCH` format, optionally followed

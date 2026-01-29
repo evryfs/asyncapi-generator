@@ -16,6 +16,13 @@ class TagValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
+    fun validateInterface(node: TagInterface, contextString: String, results: ValidationResults) {
+        when (node) {
+            is TagInterface.TagInline -> validate(node.tag, contextString, results)
+            is TagInterface.TagReference -> referenceResolver.resolve(node.reference, contextString, results)
+        }
+    }
+
     fun validateMap(nodes: Map<String, TagInterface>, results: ValidationResults) {
         nodes.forEach { (name, node) ->
             val tag = (node as TagInterface.TagInline).tag

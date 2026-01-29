@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.parameters
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRESSION_PARAMETER
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
@@ -13,81 +14,62 @@ class ParameterValidator(
 
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(parameterInterface: ParameterInterface, parameterName: String, results: ValidationResults) {
+    fun validateInterface(parameterInterface: ParameterInterface, contextString: String, results: ValidationResults) {
         when (parameterInterface) {
             is ParameterInterface.ParameterInline ->
-                validate(parameterInterface.parameter, parameterName, results)
+                validate(parameterInterface.parameter, contextString, results)
             is ParameterInterface.ParameterReference ->
-                referenceResolver.resolve(parameterInterface.reference, "Parameter", results)
+                referenceResolver.resolve(parameterInterface.reference, contextString, results)
         }
     }
 
-    fun validate(node: Parameter, parameterName: String, results: ValidationResults) {
-        validateEnum(node, parameterName, results)
-        validateDefault(node, parameterName, results)
-        validateExamples(node, parameterName, results)
-        validateLocation(node, parameterName, results)
+    fun validate(node: Parameter, contextString: String, results: ValidationResults) {
+        validateEnum(node, contextString, results)
+        validateDefault(node, contextString, results)
+        validateExamples(node, contextString, results)
+        validateLocation(node, contextString, results)
     }
 
-    private fun validateEnum(node: Parameter, parameterName: String, results: ValidationResults) {
+    private fun validateEnum(node: Parameter, contextString: String, results: ValidationResults) {
         val enum = node.enum?.map { enum -> enum.let(::sanitizeString) } ?: return
-        if (enum.isEmpty()) {
-            results.warn(
-                "$parameterName 'enum' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::enum)
-            )
-        }
         if (enum.distinct().size != enum.size) {
             results.warn(
-                "$parameterName 'enum' contains duplicate values.",
-                asyncApiContext.getLine(node, node::enum)
+                "$contextString 'enum' contains duplicate values.",
+                asyncApiContext.getLine(node, node::enum),
             )
         }
     }
 
-    private fun validateDefault(node: Parameter, parameterName: String, results: ValidationResults) {
+    private fun validateDefault(node: Parameter, contextString: String, results: ValidationResults) {
         val default = node.default?.let(::sanitizeString) ?: return
         val enum = node.enum?.map { enum -> enum.let(::sanitizeString) } ?: return
         if (!enum.contains(default)) {
             results.error(
-                "$parameterName 'default' value ('$default') is not included in the allowed enum values.",
-                asyncApiContext.getLine(node, node::default)
+                "$contextString 'default' value ('$default') is not included in the allowed enum values.",
+                asyncApiContext.getLine(node, node::default),
             )
         }
     }
 
-    private fun validateExamples(node: Parameter, parameterName: String, results: ValidationResults) {
+    private fun validateExamples(node: Parameter, contextString: String, results: ValidationResults) {
         val examples = node.examples ?: return
-        if (examples.isEmpty()) {
-            results.warn(
-                "$parameterName 'examples' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::examples)
-            )
-        }
         val enum = node.enum
         if (enum != null && examples.any { it !in enum }) {
             results.warn(
-                "Some Parameter 'examples' are not part of the defined enum values.",
-                asyncApiContext.getLine(node, node::examples)
+                "$contextString 'examples' are not part of the defined enum values.",
+                asyncApiContext.getLine(node, node::examples),
             )
         }
     }
 
-    private fun validateLocation(node: Parameter, parameterName: String, results: ValidationResults) {
-        val location = node.location?.let(::sanitizeString)
-        if (location.isNullOrBlank()) {
-            results.warn(
-                "$parameterName is missing a 'location' expression — runtime substitution may fail.",
-                asyncApiContext.getLine(node, node::location),
-            )
-            return
-        }
-        val runtimeRegex = Regex("""^\$(message|context)(\.[A-Za-z0-9_-]+)*(#/[-A-Za-z0-9_/]+)?$""")
-        if (!runtimeRegex.matches(location)) {
+    private fun validateLocation(node: Parameter, contextString: String, results: ValidationResults) {
+        val location = node.location?.let(::sanitizeString) ?: return
+        if (!RUNTIME_EXPRESSION_PARAMETER.matches(location)) {
             results.error(
-                $$"$$parameterName invalid 'location' expression '$$location'. Must be a valid " +
+                $$"$$contextString invalid 'location' expression '$$location'. Must be a valid " +
                     $$"runtime expression (e.g., $message.header#/param).",
-                asyncApiContext.getLine(node, node::location)
+                asyncApiContext.getLine(node, node::location),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parameterObject",
             )
         }
     }

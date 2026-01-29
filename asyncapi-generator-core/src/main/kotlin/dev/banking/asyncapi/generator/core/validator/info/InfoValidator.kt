@@ -22,33 +22,33 @@ class InfoValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validate(node: Info, results: ValidationResults) {
-        validateTitle(node, results)
-        validateVersion(node, results)
-        validateTermsOfService(node, results)
-        validateTags(node, results)
-        validateExternalDocs(node, results)
+    fun validate(node: Info, contextString: String, results: ValidationResults) {
+        validateTitle(node, contextString, results)
+        validateVersion(node, contextString, results)
+        validateTermsOfService(node, contextString, results)
+        validateTags(node, contextString, results)
+        validateExternalDocs(node, contextString, results)
 
-        node.contact?.let { contactValidator.validate(it, results) }
-        node.license?.let { licenseValidator.validate(it, results) }
+        node.contact?.let { contactValidator.validate(it, contextString, results) }
+        node.license?.let { licenseValidator.validate(it, contextString, results) }
     }
 
-    private fun validateTitle(node: Info, results: ValidationResults) {
+    private fun validateTitle(node: Info, contextString: String, results: ValidationResults) {
         val title = node.title.let(::sanitizeString)
         if (title.isBlank()) {
             results.error(
-                "The 'title' field in the Info object is required and cannot be empty.",
+                "$contextString 'title' field is required and cannot be empty.",
                 asyncApiContext.getLine(node, node::title),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
 
-    private fun validateVersion(node: Info, results: ValidationResults) {
+    private fun validateVersion(node: Info, contextString: String, results: ValidationResults) {
         val version = node.version.let(::sanitizeString)
         if (version.isBlank()) {
             results.error(
-                "The 'version' field in the Info object is required and cannot be empty.",
+                "$contextString 'version' field is required and cannot be empty.",
                 asyncApiContext.getLine(node, node::version),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
@@ -56,27 +56,27 @@ class InfoValidator(
         }
         if (!SEMANTIC_VERSION.matches(version)) {
             results.warn(
-                "The 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
+                "$contextString 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
                 asyncApiContext.getLine(node, node::version)
             )
         }
     }
 
-    private fun validateTermsOfService(node: Info, results: ValidationResults) {
+    private fun validateTermsOfService(node: Info, contextString: String, results: ValidationResults) {
         val termsOfService = node.termsOfService?.let(::sanitizeString) ?: return
         if (!URL.matches(termsOfService)) {
             results.error(
-                "The 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
+                "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
                 asyncApiContext.getLine(node, node::termsOfService),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
 
-    private fun validateTags(node: Info, results: ValidationResults) {
+    private fun validateTags(node: Info, contextString: String, results: ValidationResults) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
-            val contextString = "Info Tag[$index]"
+            val contextString = "$contextString Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
                     tagValidator.validate(tagInterface.tag, contextString, results)
@@ -88,9 +88,9 @@ class InfoValidator(
         }
     }
 
-    private fun validateExternalDocs(node: Info, results: ValidationResults) {
+    private fun validateExternalDocs(node: Info, contextString: String, results: ValidationResults) {
         val externalDocs = node.externalDocs ?: return
-        val contextString = "Info ExternalDocs"
+        val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)

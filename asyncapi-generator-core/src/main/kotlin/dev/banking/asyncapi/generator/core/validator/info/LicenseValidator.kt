@@ -10,11 +10,11 @@ class LicenseValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun validate(node: License, results: ValidationResults) {
+    fun validate(node: License, contextString: String, results: ValidationResults) {
         val name = node.name.let(::sanitizeString)
         if (name.isBlank()) {
             results.error(
-                "The 'name' field in the License object is required and cannot be empty.",
+                "$contextString 'name' field is required and cannot be empty.",
                 asyncApiContext.getLine(node, node::name),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
             )
@@ -24,7 +24,7 @@ class LicenseValidator(
             val url = it.trim().trim('"', '\'')
             if (!URL.matches(url)) {
                 results.error(
-                    "The 'url' field in the License object must be a valid absolute URL.",
+                    "$contextString 'url' field must be a valid absolute URL.",
                     asyncApiContext.getLine(node, node::url),
                     "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
                 )

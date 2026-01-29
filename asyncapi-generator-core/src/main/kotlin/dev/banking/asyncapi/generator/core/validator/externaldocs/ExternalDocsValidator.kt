@@ -21,18 +21,18 @@ class ExternalDocsValidator(
         }
     }
 
-    fun validate(node: ExternalDoc, externalDocName: String, results: ValidationResults) {
+    fun validate(node: ExternalDoc, contextString: String, results: ValidationResults) {
         val url = node.url.let(::sanitizeString)
         if (url.isBlank()) {
             results.error(
-                "$externalDocName 'url' is required and cannot be empty.",
+                "$contextString 'url' is required and cannot be empty.",
                 asyncApiContext.getLine(node, node::url),
                 "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
             )
         } else {
             if (!URL.matches(url)) {
                 results.error(
-                    "ExternalDoc '${externalDocName}' 'url' must be a valid absolute URL.",
+                    "ExternalDoc '${contextString}' 'url' must be a valid absolute URL.",
                     asyncApiContext.getLine(node, node::url),
                     "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
                 )
