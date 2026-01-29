@@ -16,7 +16,6 @@ class ExternalDocsValidator(
             is ExternalDocInterface.ExternalDocInline -> {
                 validate(node.externalDoc, contextString, results)
             }
-
             is ExternalDocInterface.ExternalDocReference -> {}
         }
     }

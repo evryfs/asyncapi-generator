@@ -23,13 +23,6 @@ class TagValidator(
         }
     }
 
-    fun validateMap(nodes: Map<String, TagInterface>, results: ValidationResults) {
-        nodes.forEach { (name, node) ->
-            val tag = (node as TagInterface.TagInline).tag
-            validate(tag, name, results)
-        }
-    }
-
     fun validate(node: Tag, contextString: String, results: ValidationResults) {
         val name = node.name.let(::sanitizeString)
         if (name.isBlank()) {

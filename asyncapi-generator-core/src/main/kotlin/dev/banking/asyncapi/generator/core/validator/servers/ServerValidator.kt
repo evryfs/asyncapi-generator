@@ -42,7 +42,6 @@ class ServerValidator(
     private fun validate(node: Server, contextString: String, results: ValidationResults) {
         validateHost(node, contextString, results)
         validateProtocol(node, contextString, results)
-        validateProtocolVersion(node, contextString, results)
         validateVariables(node, contextString, results)
         validateSecurity(node, contextString, results)
         validateTags(node, contextString, results)
@@ -55,7 +54,8 @@ class ServerValidator(
         if (host.isBlank()) {
             results.error(
                 "$contextString must define a non-empty 'host'.",
-                asyncApiContext.getLine(node, node::host)
+                asyncApiContext.getLine(node, node::host),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         } else {
             if (host.startsWith("http://") || host.startsWith("https://")) {
@@ -83,7 +83,8 @@ class ServerValidator(
         if (missing.isNotEmpty()) {
             results.error(
                 "$contextString host uses variables $missing which are not defined in 'variables'.",
-                asyncApiContext.getLine(node, node::host)
+                asyncApiContext.getLine(node, node::host),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
 
@@ -101,17 +102,8 @@ class ServerValidator(
         if (protocol.isBlank()) {
             results.error(
                 "$contextString must define the 'protocol' it supports.",
-                asyncApiContext.getLine(node, node::protocol)
-            )
-        }
-    }
-
-    private fun validateProtocolVersion(node: Server, contextString: String, results: ValidationResults) {
-        val version = node.protocolVersion?.let(::sanitizeString) ?: return
-        if (version.isBlank()) {
-            results.warn(
-                "$contextString defines an empty 'protocolVersion' — omit if unknown.",
-                asyncApiContext.getLine(node, node::protocolVersion)
+                asyncApiContext.getLine(node, node::protocol),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
     }

@@ -31,14 +31,16 @@ class ServerVariableValidator(
         if (default == null) {
             results.error(
                 "$contextString must specify a 'default' value.",
-                asyncApiContext.getLine(node, node::default)
+                asyncApiContext.getLine(node, node::default),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
             return
         }
         if (enum != null && !enum.contains(default)) {
             results.error(
                 "$contextString 'default' ('$default') is not one of the allowed enum values.",
-                asyncApiContext.getLine(node, node::default)
+                asyncApiContext.getLine(node, node::default),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
     }
@@ -48,14 +50,16 @@ class ServerVariableValidator(
         if (examples.isEmpty()) {
             results.warn(
                 "$contextString 'examples' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::examples)
+                asyncApiContext.getLine(node, node::examples),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
         val enum = node.enum?.map { enum -> enum.let(::sanitizeString) }
         if (enum != null && examples.any { it !in enum }) {
             results.warn(
                 "$contextString, some 'examples' values are not included in the allowed enum values.",
-                asyncApiContext.getLine(node, node::examples)
+                asyncApiContext.getLine(node, node::examples),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
     }
