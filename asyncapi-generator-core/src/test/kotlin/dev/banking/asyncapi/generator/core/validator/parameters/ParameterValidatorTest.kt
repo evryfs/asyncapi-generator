@@ -24,6 +24,6 @@ class ParameterValidatorTest : AbstractValidatorTest() {
 
         assertTrue(results.hasWarnings(), "Expected warnings for non-critical issues.")
         val warnings = results.warnings.map { it.message }
-        assertEquals(5, warnings.size, "Expected 5 validation warnings.")
+        assertEquals(4, warnings.size, "Expected 4 validation warnings.")
     }
 }

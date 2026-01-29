@@ -27,12 +27,10 @@ class ParameterValidator(
         validateDefault(node, parameterName, results)
         validateExamples(node, parameterName, results)
         validateLocation(node, parameterName, results)
-        validateDescription(node, parameterName, results)
     }
 
     private fun validateEnum(node: Parameter, parameterName: String, results: ValidationResults) {
-        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) }
-            ?: return
+        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) } ?: return
         if (enum.isEmpty()) {
             results.warn(
                 "$parameterName 'enum' list is empty — omit it if unused.",
@@ -48,13 +46,11 @@ class ParameterValidator(
     }
 
     private fun validateDefault(node: Parameter, parameterName: String, results: ValidationResults) {
-        val default = node.default?.let(::sanitizeString)
-            ?: return
-        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) }
-            ?: return
+        val default = node.default?.let(::sanitizeString) ?: return
+        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) } ?: return
         if (!enum.contains(default)) {
             results.error(
-                "Parameter '$parameterName' 'default' value ('$default') is not included in the allowed enum values.",
+                "$parameterName 'default' value ('$default') is not included in the allowed enum values.",
                 asyncApiContext.getLine(node, node::default)
             )
         }
@@ -64,7 +60,7 @@ class ParameterValidator(
         val examples = node.examples ?: return
         if (examples.isEmpty()) {
             results.warn(
-                "Parameter '$parameterName' 'examples' list is empty — omit it if unused.",
+                "$parameterName 'examples' list is empty — omit it if unused.",
                 asyncApiContext.getLine(node, node::examples)
             )
         }
@@ -81,7 +77,7 @@ class ParameterValidator(
         val location = node.location?.let(::sanitizeString)
         if (location.isNullOrBlank()) {
             results.warn(
-                "Parameter '$parameterName' is missing a 'location' expression — runtime substitution may fail.",
+                "$parameterName is missing a 'location' expression — runtime substitution may fail.",
                 asyncApiContext.getLine(node, node::location),
             )
             return
@@ -89,20 +85,9 @@ class ParameterValidator(
         val runtimeRegex = Regex("""^\$(message|context)(\.[A-Za-z0-9_-]+)*(#/[-A-Za-z0-9_/]+)?$""")
         if (!runtimeRegex.matches(location)) {
             results.error(
-                $$"Parameter '$$parameterName' invalid 'location' expression '$$location'. Must be a valid " +
+                $$"$$parameterName invalid 'location' expression '$$location'. Must be a valid " +
                     $$"runtime expression (e.g., $message.header#/param).",
                 asyncApiContext.getLine(node, node::location)
-            )
-        }
-    }
-
-    private fun validateDescription(node: Parameter, parameterName: String, results: ValidationResults) {
-        val description = node.description?.let(::sanitizeString)
-            ?: return
-        if (description.length < 3) {
-            results.warn(
-                "Parameter '$parameterName' description is too short to be meaningful.",
-                asyncApiContext.getLine(node, node::description)
             )
         }
     }

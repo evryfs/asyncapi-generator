@@ -30,10 +30,9 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
         assertFalse(validationResults.hasErrors(), "Should not have errors for unused parameter (only warning).")
         assertTrue(validationResults.hasWarnings(), "Should have warnings.")
-        validationResults.logWarnings()
 
         val warnings = validationResults.warnings.map { it.message }
-        assertEquals(3, warnings.size, "Expected 3 warning for unused parameter.")
+        assertEquals(2, warnings.size, "Expected 2 warning for unused parameter.")
     }
 
     @Test
@@ -44,9 +43,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         assertFalse(validationResults.hasErrors(), "Ambiguity should not be a hard error.")
         assertTrue(validationResults.hasWarnings(), "Should trigger a warning for ambiguous messages.")
 
-        validationResults.logWarnings()
-
         val warnings = validationResults.warnings.map { it.message }
-        assertEquals(2, warnings.size, "Expected 2 warnings.")
+        assertEquals(1, warnings.size, "Expected 1 warnings.")
     }
 }
