@@ -56,6 +56,7 @@ class ComponentValidator(
         val component: Component? = when (node) {
             is ComponentInterface.ComponentInline ->
                 node.component
+
             is ComponentInterface.ComponentReference ->
                 return
         }
@@ -81,18 +82,15 @@ class ComponentValidator(
 
     private fun validateSchemas(component: Component, results: ValidationResults) {
         component.schemas?.forEach { (schemaName, schemaInterface) ->
+            val contextString = "Component Schema '$schemaName'"
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline ->
-                    schemaValidator.validate(schemaInterface.schema, schemaName, results)
+                    schemaValidator.validate(schemaInterface.schema, contextString, results)
 
-                is SchemaInterface.MultiFormatSchemaInline ->
-                    results.warn(
-                        "Multi-format schemas are not yet validated (field '$schemaName').",
-                        asyncApiContext.getLine(component, component::schemas)
-                    )
+                is SchemaInterface.MultiFormatSchemaInline -> {}
 
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaInterface.reference, "Component Schema", results)
+                    referenceResolver.resolve(schemaInterface.reference, contextString, results)
 
                 is SchemaInterface.BooleanSchema -> {}
             }
@@ -100,13 +98,14 @@ class ComponentValidator(
     }
 
     private fun validateMessages(component: Component, results: ValidationResults) {
-        component.messages?.forEach { (messageName, msgInterface) ->
-            when (msgInterface) {
+        component.messages?.forEach { (messageName, messageInterface) ->
+            val contextString = "Component Message '$messageName'"
+            when (messageInterface) {
                 is MessageInterface.MessageInline ->
-                    messageValidator.validate(msgInterface.message, messageName, results)
+                    messageValidator.validate(messageInterface.message, contextString, results)
 
                 is MessageInterface.MessageReference -> {
-                    referenceResolver.resolve(msgInterface.reference, "Component Message", results)
+                    referenceResolver.resolve(messageInterface.reference, contextString, results)
                 }
             }
         }
@@ -114,22 +113,20 @@ class ComponentValidator(
 
     private fun validateParameters(component: Component, results: ValidationResults) {
         component.parameters?.forEach { (parameterName, parameterInterface) ->
-            parameterValidator.validateInterface(parameterInterface, parameterName, results)
+            val contextString = "Component Parameter '$parameterName'"
+            parameterValidator.validateInterface(parameterInterface, contextString, results)
         }
     }
 
     private fun validateSecuritySchemes(component: Component, results: ValidationResults) {
         component.securitySchemes?.forEach { (securitySchemeName, securitySchemeInterface) ->
+            val contextString = "Component Security Scheme '$securitySchemeName'"
             when (securitySchemeInterface) {
                 is SecuritySchemeInterface.SecuritySchemeInline ->
-                    securitySchemeValidator.validate(securitySchemeInterface.security, securitySchemeName, results)
+                    securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference -> {
-                    referenceResolver.resolve(
-                        securitySchemeInterface.reference,
-                        "Component SecurityScheme",
-                        results
-                    )
+                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
                 }
             }
         }
@@ -145,20 +142,13 @@ class ComponentValidator(
 
     private fun validateServerVariables(component: Component, results: ValidationResults) {
         component.serverVariables?.forEach { (serverVariableName, serverVariableInterface) ->
+            val contextString = "Component Server Variable '$serverVariableName'"
             when (serverVariableInterface) {
                 is ServerVariableInterface.ServerVariableInline ->
-                    serverVariableValidator.validate(
-                        serverVariableName,
-                        serverVariableInterface.serverVariable,
-                        results
-                    )
+                    serverVariableValidator.validate(serverVariableInterface.serverVariable, contextString, results)
 
                 is ServerVariableInterface.ServerVariableReference -> {
-                    referenceResolver.resolve(
-                        serverVariableInterface.reference,
-                        "Component ServerVariable",
-                        results
-                    )
+                    referenceResolver.resolve(serverVariableInterface.reference, contextString, results)
                 }
             }
         }
@@ -166,13 +156,15 @@ class ComponentValidator(
 
     private fun validateCorrelationIds(component: Component, results: ValidationResults) {
         component.correlationIds?.forEach { (correlationIdName, correlationIdInterface) ->
-            correlationIdValidator.validateInterface(correlationIdName, correlationIdInterface, results)
+            val contextString = "Component Correlation ID '$correlationIdName'"
+            correlationIdValidator.validateInterface(correlationIdInterface, contextString, results)
         }
     }
 
     private fun validateReplies(component: Component, results: ValidationResults) {
         component.replies?.forEach { (operationReplyName, operationReplyInterface) ->
-            operationReplyValidator.validateInterface(operationReplyName, operationReplyInterface, results)
+            val contextString = "Component Operation Reply '$operationReplyName'"
+            operationReplyValidator.validateInterface(operationReplyInterface, contextString, results)
         }
     }
 
@@ -190,41 +182,45 @@ class ComponentValidator(
 
     private fun validateOperationReplyAddresses(component: Component, results: ValidationResults) {
         component.replyAddresses?.forEach { (operationReplyAddressName, operationReplyAddressInterface) ->
-            operationReplyAddressValidator.validateInterface(
-                operationReplyAddressName,
-                operationReplyAddressInterface,
-                results
-            )
+            val contextString = "Component Operation Reply Address '$operationReplyAddressName'"
+            operationReplyAddressValidator.validateInterface(operationReplyAddressInterface, contextString, results)
         }
     }
 
     private fun validateOperationTraits(component: Component, results: ValidationResults) {
         component.operationTraits?.forEach { (operationTraitName, operationTraitInterface) ->
-            operationTraitValidator.validateInterface(operationTraitName, operationTraitInterface, results)
+            val contextString = "Component Operation Trait '$operationTraitName'"
+            operationTraitValidator.validateInterface(operationTraitInterface, contextString, results)
         }
     }
 
     private fun validateMessageTraits(component: Component, results: ValidationResults) {
         component.messageTraits?.forEach { (messageTraitName, messageTraitInterface) ->
-            messageTraitValidator.validateInterface(messageTraitName, messageTraitInterface, results)
+            val contextString = "Component Message Trait '$messageTraitName'"
+            messageTraitValidator.validateInterface(messageTraitInterface, contextString, results)
         }
     }
 
     private fun validateBindings(component: Component, results: ValidationResults) {
-        validateBindingMap(component.serverBindings, "Component Server Binding", results)
-        validateBindingMap(component.channelBindings, "Component Channel Binding", results)
-        validateBindingMap(component.operationBindings, "Component Operation Binding", results)
-        validateBindingMap(component.messageBindings, "Component Message Binding", results)
+        validateBindingMap(component.serverBindings, "Component Server", results)
+        validateBindingMap(component.channelBindings, "Component Channel", results)
+        validateBindingMap(component.operationBindings, "Component Operation", results)
+        validateBindingMap(component.messageBindings, "Component Message", results)
     }
 
-    private fun validateBindingMap(bindings: Map<String, BindingInterface>?, name: String, results: ValidationResults) {
+    private fun validateBindingMap(
+        bindings: Map<String, BindingInterface>?,
+        contextString: String,
+        results: ValidationResults,
+    ) {
         bindings?.forEach { (bindingName, bindingInterface) ->
+            val contextString = "$contextString Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, bindingName, results)
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, name, results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
         }
     }

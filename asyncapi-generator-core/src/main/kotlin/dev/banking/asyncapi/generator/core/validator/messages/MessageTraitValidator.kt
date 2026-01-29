@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.MIME_TYPE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -27,51 +28,47 @@ class MessageTraitValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(messageTraitName: String, node: MessageTraitInterface, results: ValidationResults) {
+    fun validateInterface(node: MessageTraitInterface, contextString: String, results: ValidationResults) {
         when (node) {
             is MessageTraitInterface.InlineMessageTrait ->
-                validate(node.trait, messageTraitName, results)
+                validate(node.trait, contextString, results)
 
             is MessageTraitInterface.ReferenceMessageTrait ->
-                referenceResolver.resolve(node.reference, "Message Trait", results)
+                referenceResolver.resolve(node.reference, contextString, results)
         }
     }
 
-    fun validate(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        validateMeaningfulContent(node, messageTraitName, results)
-        validateHeaders(node, messageTraitName, results)
-        validateContentType(node, messageTraitName, results)
-        validateName(node, messageTraitName, results)
-        validateTitle(node, messageTraitName, results)
-        validateSummary(node, messageTraitName, results)
-        validateDescription(node, messageTraitName, results)
-        validateTags(node, messageTraitName, results)
-        validateExternalDocs(node, messageTraitName, results)
-        validateBindings(node, messageTraitName, results)
-        validateExamples(node, messageTraitName, results)
+    fun validate(node: MessageTrait, contextString: String, results: ValidationResults) {
+        validateMeaningfulContent(node, contextString, results)
+        validateHeaders(node, contextString, results)
+        validateContentType(node, contextString, results)
+        validateTags(node, contextString, results)
+        validateExternalDocs(node, contextString, results)
+        validateBindings(node, contextString, results)
 
-
-        node.correlationId?.let { correlationIdValidator.validateInterface(messageTraitName, it, results) }
+        node.correlationId?.let { correlationIdValidator.validateInterface(it, contextString, results) }
     }
 
-    private fun validateMeaningfulContent(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
+    private fun validateMeaningfulContent(node: MessageTrait, contextString: String, results: ValidationResults) {
         if (node.headers == null && node.bindings == null && node.correlationId == null && node.contentType == null) {
             results.warn(
-                "MessageTrait '$messageTraitName' provides neither 'headers', 'bindings', 'correlationId', nor 'contentType' — it might not have any effect.",
+                "$contextString provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'" +
+                    " — it might not have any effect.",
                 asyncApiContext.getLine(node, node::headers)
             )
         }
     }
 
-    private fun validateHeaders(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
+    private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationResults) {
         val headers = node.headers ?: return
         headers.forEach { (schemaName, schemaInterface) ->
+            val contextString = "$contextString Header Schema '$schemaName'"
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline ->
-                    schemaValidator.validate(schemaInterface.schema, schemaName, results)
+                    schemaValidator.validate(schemaInterface.schema, contextString, results)
 
                 is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaInterface.reference, messageTraitName, results)
+                    referenceResolver.resolve(schemaInterface.reference, contextString, results)
 
                 is SchemaInterface.MultiFormatSchemaInline -> {}
                 is SchemaInterface.BooleanSchema -> {}
@@ -79,126 +76,54 @@ class MessageTraitValidator(
         }
     }
 
-    private fun validateContentType(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
+    private fun validateContentType(node: MessageTrait, contextString: String, results: ValidationResults) {
         val contentType = node.contentType?.let(::sanitizeString) ?: return
-        val mimeRegex = Regex("""^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$""")
-        if (!mimeRegex.matches(contentType)) {
+        if (!MIME_TYPE.matches(contentType)) {
             results.error(
-                "Message trait '$messageTraitName' invalid 'contentType' value '$contentType'. " +
-                    "Expected a valid MIME type, e.g., 'application/json'.",
-                asyncApiContext.getLine(node, node::contentType)
+                "$contextString invalid 'contentType' value '$contentType'. Expected a valid MIME type, e.g., 'application/json'.",
+                asyncApiContext.getLine(node, node::contentType),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject"
             )
         }
     }
 
-    private fun validateName(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val name = node.name?.let(::sanitizeString)
-            ?: return
-        if (name.isBlank()) {
-            results.warn(
-                "Message trait '$messageTraitName' 'name' is empty — omit if unused.",
-                asyncApiContext.getLine(node, node::name),
-            )
-        }
-    }
-
-    private fun validateTitle(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val title = node.title?.let(::sanitizeString)
-            ?: return
-        if (title.isBlank()) {
-            results.warn(
-                "Message trait '$messageTraitName' 'title' is empty — omit if unused.",
-                asyncApiContext.getLine(node, node::title),
-            )
-        }
-    }
-
-    private fun validateSummary(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val summary = node.summary?.let(::sanitizeString)
-        summary?.length?.let {
-            if (it < 3) {
-                results.warn(
-                    "Message trait '$messageTraitName' 'summary' is too short to be meaningful.",
-                    asyncApiContext.getLine(node, node::summary)
-                )
-            }
-        }
-    }
-
-    private fun validateDescription(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val description = node.description?.let(::sanitizeString)
-        description?.length?.let {
-            if (it < 3) {
-                results.warn(
-                    "Message trait '$messageTraitName' 'description' is too short to be meaningful.",
-                    asyncApiContext.getLine(node, node::description)
-                )
-            }
-        }
-    }
-
-    private fun validateTags(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val tags = node.tags
-            ?: return
-        if (tags.isEmpty()) {
-            results.warn(
-                "Message trait '$messageTraitName' 'tags' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::tags)
-            )
-            return
-        }
-        tags.forEach { tagInterface ->
+    private fun validateTags(node: MessageTrait, contextString: String, results: ValidationResults) {
+        val tags = node.tags ?: return
+        tags.forEachIndexed { index, tagInterface ->
+            val contextString = "$contextString Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, messageTraitName, results)
+                    tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, "Message Trait Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
         }
     }
 
-    private fun validateExternalDocs(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val externalDocs = node.externalDocs
-            ?: return
+    private fun validateExternalDocs(node: MessageTrait, contextString: String, results: ValidationResults) {
+        val externalDocs = node.externalDocs ?: return
+        val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, messageTraitName, results)
+                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(
-                    externalDocs.reference,
-                    "Message Trait ExternalDocs",
-                    results
-                )
+                referenceResolver.resolve(externalDocs.reference, contextString, results)
         }
     }
 
-    private fun validateBindings(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val bindings = node.bindings
-            ?: return
-        if (bindings.isEmpty()) {
-            return
-        }
+    private fun validateBindings(node: MessageTrait, contextString: String, results: ValidationResults) {
+        val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
+            val contextString = "$contextString Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, bindingName, results)
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, messageTraitName, results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
-        }
-    }
-
-    private fun validateExamples(node: MessageTrait, messageTraitName: String, results: ValidationResults) {
-        val examples = node.examples
-            ?: return
-        if (examples.isEmpty()) {
-            results.warn(
-                "Message trait '$messageTraitName' 'examples' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::examples)
-            )
         }
     }
 }

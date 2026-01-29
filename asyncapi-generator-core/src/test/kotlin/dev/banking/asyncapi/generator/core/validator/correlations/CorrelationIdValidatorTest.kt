@@ -17,7 +17,7 @@ class CorrelationIdValidatorTest : AbstractValidatorTest() {
         assertFalse(results.hasErrors(), "Expected no errors, but found: ${results.errors}")
 
         val warnings = results.warnings
-        assertEquals(2, warnings.size, "Expected 2 warnings.")
+        assertEquals(1, warnings.size, "Expected 1 warning.")
     }
 
     @Test

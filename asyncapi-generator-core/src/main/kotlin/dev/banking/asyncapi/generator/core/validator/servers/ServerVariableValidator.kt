@@ -9,7 +9,7 @@ class ServerVariableValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun validate(serverVariableName: String, node: ServerVariable, results: ValidationResults) {
+    fun validate(node: ServerVariable, serverVariableName: String, results: ValidationResults) {
         validateEnum(node, serverVariableName, results)
         validateDefault(node, serverVariableName, results)
         validateExamples(node, serverVariableName, results)

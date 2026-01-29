@@ -129,7 +129,7 @@ class ServerValidator(
         variables.forEach { (varName, variableInterface) ->
             when (variableInterface) {
                 is ServerVariableInterface.ServerVariableInline ->
-                    serverVariableValidator.validate(varName, variableInterface.serverVariable, results)
+                    serverVariableValidator.validate(variableInterface.serverVariable, varName, results)
 
                 is ServerVariableInterface.ServerVariableReference ->
                     referenceResolver.resolve(variableInterface.reference, "Server Variable", results)
