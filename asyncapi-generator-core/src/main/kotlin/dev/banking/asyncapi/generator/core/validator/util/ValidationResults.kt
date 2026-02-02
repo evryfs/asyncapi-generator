@@ -39,7 +39,7 @@ class ValidationResults(
         if (_warnings.isNotEmpty()) {
             logger.warn(
                 buildString {
-                    appendLine("Schema validation found ${_warnings.size} warning(s):")
+                    appendLine("Validation found ${_warnings.size} warning(s):")
                     appendLine()
                     _warnings.forEach { warning ->
                         appendLine(">> ${warning.message}")

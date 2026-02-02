@@ -10,7 +10,7 @@ sealed class AsyncApiValidateException(message: String) : Exception(message) {
         val context: AsyncApiContext
     ) : AsyncApiValidateException(
         buildString {
-            appendLine("Schema validation failed with ${errors.size} error(s):")
+            appendLine("Validation failed with ${errors.size} error(s):")
             appendLine()
             errors.forEach { err ->
                 appendLine(">> ${err.message}")
