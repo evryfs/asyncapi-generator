@@ -13,7 +13,6 @@ import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsVa
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class OperationTraitValidator(
     val asyncApiContext: AsyncApiContext,
@@ -25,127 +24,73 @@ class OperationTraitValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(operationTraitName: String, node: OperationTraitInterface, results: ValidationResults) {
+    fun validateInterface(node: OperationTraitInterface, contextString: String, results: ValidationResults) {
         when (node) {
             is OperationTraitInterface.OperationTraitInline ->
-                validate(node.operationTrait, operationTraitName, results)
+                validate(node.operationTrait, contextString, results)
 
             is OperationTraitInterface.OperationTraitReference ->
-                referenceResolver.resolve(operationTraitName, node.reference, "Operation Trait", results)
+                referenceResolver.resolve(node.reference, contextString, results)
         }
     }
 
-    fun validate(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        validateTitle(node, operationTraitName, results)
-        validateSummary(node, operationTraitName, results)
-        validateDescription(node, operationTraitName, results)
-        validateSecurity(node, operationTraitName, results)
-        validateTags(node, operationTraitName, results)
-        validateExternalDocs(node, operationTraitName, results)
-        validateBindings(node, operationTraitName, results)
+    fun validate(node: OperationTrait, contextString: String, results: ValidationResults) {
+        validateSecurity(node, contextString, results)
+        validateTags(node, contextString, results)
+        validateExternalDocs(node, contextString, results)
+        validateBindings(node, contextString, results)
     }
 
-    private fun validateTitle(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        val title = node.title?.let(::sanitizeString)
-            ?: return
-        if (title.isBlank()) {
-            results.warn(
-                "Operation trait '$operationTraitName' 'title' is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::title)
-            )
-        }
-    }
-
-    private fun validateSummary(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        val summary = node.summary?.let(::sanitizeString)
-        summary?.length?.let {
-            if (it < 3) {
-                results.warn(
-                    "Operation trait '$operationTraitName' 'summary' is too short to be meaningful.",
-                    asyncApiContext.getLine(node, node::summary)
-                )
-            }
-        }
-    }
-
-    private fun validateDescription(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        val description = node.description?.let(::sanitizeString)
-        description?.length?.let {
-            if (it < 3) {
-                results.warn(
-                    "Operation trait '$operationTraitName' 'description' is too short to be meaningful.",
-                    asyncApiContext.getLine(node, node::description)
-                )
-            }
-        }
-    }
-
-    private fun validateSecurity(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        val securitySchemes = node.security
-            ?: return
-        if (securitySchemes.isEmpty()) {
-            results.warn(
-                "Operation trait '$operationTraitName' 'security' list is empty — omit if unused.",
-                asyncApiContext.getLine(node, node::security)
-            )
-            return
-        }
+    private fun validateSecurity(node: OperationTrait, contextString: String, results: ValidationResults) {
+        val securitySchemes = node.security ?: return
         securitySchemes.forEach { (securitySchemeName, securitySchemeInterface) ->
+            val contextString = "$contextString Security Scheme '$securitySchemeName'"
             when (securitySchemeInterface) {
                 is SecuritySchemeInterface.SecuritySchemeInline ->
-                    securitySchemeValidator.validate(securitySchemeInterface.security, securitySchemeName, results)
+                    securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
+
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(securitySchemeName, securitySchemeInterface.reference, operationTraitName, results)
+                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
             }
         }
     }
 
-    private fun validateTags(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
+    private fun validateTags(node: OperationTrait, contextString: String, results: ValidationResults) {
         val tags = node.tags ?: return
-        if (tags.isEmpty()) {
-            results.warn(
-                "Operation trait 'tags' list is empty — omit it if unused.",
-                asyncApiContext.getLine(node, node::tags)
-            )
-            return
-        }
-
-        tags.forEach { tagInterface ->
+        tags.forEachIndexed { index, tagInterface ->
+            val contextString = "$contextString Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, operationTraitName, results)
+                    tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(operationTraitName, tagInterface.reference, "Operation Trait Tag", results)
+                    referenceResolver.resolve(tagInterface.reference, contextString, results)
             }
         }
     }
 
-    private fun validateExternalDocs(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: OperationTrait, contextString: String, results: ValidationResults) {
         val externalDocs = node.externalDocs ?: return
+        val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, operationTraitName, results)
+                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(operationTraitName, externalDocs.reference, "Operation Trait ExternalDocs", results)
+                referenceResolver.resolve(externalDocs.reference, contextString, results)
         }
     }
 
-    private fun validateBindings(node: OperationTrait, operationTraitName: String, results: ValidationResults) {
-        val bindings = node.bindings
-            ?: return
-        if (bindings.isEmpty()) {
-            return
-        }
-
+    private fun validateBindings(node: OperationTrait, contextString: String, results: ValidationResults) {
+        val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
+            val contextString = "$contextString Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingName, bindingInterface.binding, results)
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingName, bindingInterface.reference, operationTraitName, results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
         }
     }

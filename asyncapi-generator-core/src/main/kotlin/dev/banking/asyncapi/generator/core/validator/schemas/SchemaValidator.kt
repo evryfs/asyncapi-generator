@@ -20,123 +20,113 @@ class SchemaValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(schemaName: String, schemaInterface: SchemaInterface, results: ValidationResults) {
+    fun validateInterface(schemaInterface: SchemaInterface, contextString: String, results: ValidationResults) {
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
-                validate(schemaInterface.schema, schemaName, results)
+                validate(schemaInterface.schema, contextString, results)
 
             is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(schemaName, schemaInterface.reference, "Schema", results)
+                referenceResolver.resolve(schemaInterface.reference, contextString, results)
 
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
         }
     }
 
-    fun validate(node: Schema, schemaName: String, results: ValidationResults) {
-        validateType(node, schemaName, results)
-        validateEnum(node, schemaName, results)
-        validateConst(node, schemaName, results)
-        validateNumericRange(node, schemaName, results)
-        validateStringLength(node, schemaName, results)
-        validatePattern(node, schemaName, results)
-        validateArray(node, schemaName, results)
-        validateObject(node, schemaName, results)
-        validateComposition(node, schemaName, results)
-        validateDefaultValue(node, schemaName, results)
-        validateDiscriminator(node, schemaName, results)
-        validateExternalDocs(node, schemaName, results)
-        validateBindings(node, schemaName, results)
+    fun validate(node: Schema, contextString: String, results: ValidationResults) {
+        validateType(node, contextString, results)
+        validateEnum(node, contextString, results)
+        validateConst(node, contextString, results)
+        validateNumericRange(node, contextString, results)
+        validateStringLength(node, contextString, results)
+        validatePattern(node, contextString, results)
+        validateArray(node, contextString, results)
+        validateObject(node, contextString, results)
+        validateComposition(node, contextString, results)
+        validateDefaultValue(node, contextString, results)
+        validateDiscriminator(node, contextString, results)
+        validateExternalDocs(node, contextString, results)
+        validateBindings(node, contextString, results)
 
         // Recursive validation for nested schemas
-        node.properties?.forEach { (name, sub) -> validateInterface(name, sub, results) }
-        node.definitions?.forEach { (name, sub) -> validateInterface(name, sub, results) }
-        node.items?.let { validateInterface(schemaName, it, results) }
-        node.additionalItems?.let { validateInterface(schemaName, it, results) }
-        node.additionalProperties?.let { validateInterface(schemaName, it, results) }
-        node.contains?.let { validateInterface(schemaName, it, results) }
-        node.propertyNames?.let { validateInterface(schemaName, it, results) }
+        node.properties?.forEach { (name, subSchema) -> validateInterface(subSchema, name, results) }
+        node.definitions?.forEach { (name, subSchema) -> validateInterface(subSchema, name, results) }
+        node.items?.let { validateInterface(it, contextString, results) }
+        node.additionalItems?.let { validateInterface(it, contextString, results) }
+        node.additionalProperties?.let { validateInterface(it, contextString, results) }
+        node.contains?.let { validateInterface(it, contextString, results) }
+        node.propertyNames?.let { validateInterface(it, contextString, results) }
 
-        node.allOf?.forEach { sub -> validateInterface(schemaName, sub, results) }
-        node.anyOf?.forEach { sub -> validateInterface(schemaName, sub, results) }
-        node.oneOf?.forEach { sub -> validateInterface(schemaName, sub, results) }
+        node.allOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.anyOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.oneOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
 
-        node.not?.let { sub -> validateInterface(schemaName, sub, results) }
-        node.ifSchema?.let { sub -> validateInterface(schemaName, sub, results) }
-        node.thenSchema?.let { sub -> validateInterface(schemaName, sub, results) }
-        node.elseSchema?.let { sub -> validateInterface(schemaName, sub, results) }
+        node.not?.let { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.ifSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.thenSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.elseSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
     }
 
-    private fun validateType(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateType(node: Schema, contextString: String, results: ValidationResults) {
         val type = node.type?.let(::sanitizeAny) ?: return
-
-        val allowedPrimitiveTypes = setOf(
-            "string", "number", "integer", "boolean", "array", "object", "null"
-        )
-
+        val allowedTypes = setOf("string", "number", "integer", "boolean", "array", "object", "null")
+        val contextString = "$contextString Schema"
         when (type) {
             is String -> {
-                if (type.lowercase() !in allowedPrimitiveTypes) {
+                if (type.lowercase() !in allowedTypes) {
                     results.error(
-                        "Schema '$schemaName' type '$type' is not valid. Must be one of: ${allowedPrimitiveTypes.joinToString()}",
-                        asyncApiContext.getLine(node, node::type)
+                        "$contextString type '$type' is not valid. Must be one of: ${allowedTypes.joinToString()}",
+                        asyncApiContext.getLine(node, node::type),
+                        "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
             }
 
             is List<*> -> {
-                // Trim quotes and lowercase each element in the list before validation
                 val typeList = type.mapNotNull { item -> (item?.let(::sanitizeAny) as String).lowercase() }
-
                 if (typeList.size != type.size) {
                     results.error(
-                        "Schema '$schemaName' all elements in 'type' array must be strings. Found non-string elements.",
-                        asyncApiContext.getLine(node, node::type)
+                        "$contextString all elements in 'type' array must be strings. Found non-string elements.",
+                        asyncApiContext.getLine(node, node::type),
+                        "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
-                    return
                 }
-
-                val invalidTypes = typeList.filter { it !in allowedPrimitiveTypes }
+                val invalidTypes = typeList.filter { it !in allowedTypes }
                 if (invalidTypes.isNotEmpty()) {
                     results.error(
-                        "Schema '$schemaName' types ${invalidTypes.joinToString()} are not valid. Must be one of: ${allowedPrimitiveTypes.joinToString()}",
-                        asyncApiContext.getLine(node, node::type)
-                    )
-                }
-
-                val nullCount = typeList.count { it == "null" }
-                if (nullCount > 1) {
-                    results.error(
-                        "Schema '$schemaName''type' array must contain 'null' at most once.",
-                        asyncApiContext.getLine(node, node::type)
-                    )
-                }
-
-                val nonNullTypes = typeList.filter { it != "null" }
-                if (nonNullTypes.size > 1) {
-                    results.error(
-                        "Schema '$schemaName' - If 'type' is an array, it should contain at most one non-'null' type. Found: ${nonNullTypes.joinToString()}",
-                        asyncApiContext.getLine(node, node::type)
+                        "$contextString types ${invalidTypes.joinToString()} are not valid. Must be one " +
+                            "of: ${allowedTypes.joinToString()}",
+                        asyncApiContext.getLine(node, node::type),
+                        "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
             }
 
             else -> {
+                val invalidType = type::class.simpleName
                 results.error(
-                    "Schema '$schemaName' 'type' field must be a string or an array of strings. Found: ${type::class.simpleName}",
-                    asyncApiContext.getLine(node, node::type)
+                    "$contextString 'type' field must be a string or an array of strings. Found: $invalidType",
+                    asyncApiContext.getLine(node, node::type),
+                    "https://www.learnjsonschema.com/draft7/validation/type/",
                 )
             }
         }
     }
 
-
-    private fun validateEnum(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateEnum(node: Schema, contextString: String, results: ValidationResults) {
         val enum = node.enum?.map { enum -> enum?.let(::sanitizeAny) } ?: return
         if (enum.isEmpty()) {
-            results.warn(
-                "Schema '$schemaName' 'enum' is empty — omit it if unused.",
+            results.error(
+                "$contextString 'enum' must be a non-empty array of unique values.",
                 asyncApiContext.getLine(node, node::enum),
+                "https://www.learnjsonschema.com/draft7/validation/enum/",
+            )
+        }
+        if (enum.distinct().size != enum.size) {
+            results.warn(
+                "$contextString 'enum' contains duplicate values.",
+                asyncApiContext.getLine(node, node::enum),
+                "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
     }
@@ -146,13 +136,14 @@ class SchemaValidator(
         val type = node.type?.let(::sanitizeAny) ?: return
         if (!isDefaultCompatible(const, type)) {
             results.error(
-                "Schema '$schemaName' 'const' value '$const' does not match declared type '$type'.",
+                "$schemaName 'const' value '$const' does not match declared type '$type'.",
                 asyncApiContext.getLine(node, node::const),
+                "https://www.learnjsonschema.com/draft7/validation/const/"
             )
         }
     }
 
-    private fun validateNumericRange(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateNumericRange(node: Schema, contextString: String, results: ValidationResults) {
         val minimum = node.minimum?.toDouble()
         val maximum = node.maximum?.toDouble()
         val exclusiveMinimum = node.exclusiveMinimum?.toDouble()
@@ -160,182 +151,258 @@ class SchemaValidator(
 
         if (minimum != null && maximum != null && minimum > maximum) {
             results.error(
-                "Schema '$schemaName' 'minimum' ($minimum) cannot be greater than 'maximum' ($maximum).",
-                asyncApiContext.getLine(node, node::minimum)
+                "$contextString 'minimum' ($minimum) cannot be greater than 'maximum' ($maximum).",
+                asyncApiContext.getLine(node, node::minimum),
+                "https://www.learnjsonschema.com/draft7/validation/minimum/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/maximum/"
             )
         }
         if (exclusiveMinimum != null && exclusiveMaximum != null && exclusiveMinimum > exclusiveMaximum) {
             results.error(
-                "Schema '$schemaName''exclusiveMinimum' ($exclusiveMinimum) cannot be greater than 'exclusiveMaximum' ($exclusiveMaximum).",
-                asyncApiContext.getLine(node, node::exclusiveMinimum)
+                "$contextString 'exclusiveMinimum' ($exclusiveMinimum) cannot be greater than " +
+                    "'exclusiveMaximum' ($exclusiveMaximum).",
+                asyncApiContext.getLine(node, node::exclusiveMinimum),
+                "https://www.learnjsonschema.com/draft7/validation/exclusiveminimum/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/exclusivemaximum/"
             )
         }
         // Warn when both inclusive and exclusive bounds are present.
         if (minimum != null && node.exclusiveMinimum != null) {
             results.warn(
-                "Schema '$schemaName' defines both 'minimum' and 'exclusiveMinimum'. See Json Schema draft-07+ documentation.",
-                asyncApiContext.getLine(node, node::exclusiveMinimum)
+                "$contextString defines both 'minimum' and 'exclusiveMinimum'. only 'minimum' will be used.",
+                asyncApiContext.getLine(node, node::exclusiveMinimum),
+                "https://www.learnjsonschema.com/draft7/validation/minimum/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/exclusiveminimum/"
             )
         }
         if (maximum != null && node.exclusiveMaximum != null) {
             results.warn(
-                "Schema '$schemaName' defines both 'maximum' and 'exclusiveMaximum'. See Json Schema draft-07+ documentation.",
-                asyncApiContext.getLine(node, node::exclusiveMaximum)
+                "$contextString defines both 'maximum' and 'exclusiveMaximum'. only 'maximum' will be used.",
+                asyncApiContext.getLine(node, node::exclusiveMaximum),
+                "https://www.learnjsonschema.com/draft7/validation/maximum/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/exclusivemaximum/"
             )
         }
         node.multipleOf?.let {
             if (it.toDouble() <= 0.0) {
                 results.error(
-                    "Schema '$schemaName' 'multipleOf' must be greater than zero.",
-                    asyncApiContext.getLine(node, node::multipleOf)
+                    "$contextString 'multipleOf' must be greater than zero.",
+                    asyncApiContext.getLine(node, node::multipleOf),
+                    "https://www.learnjsonschema.com/draft7/validation/multipleof/"
                 )
             }
         }
     }
 
-    private fun validateStringLength(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateStringLength(node: Schema, contextString: String, results: ValidationResults) {
         val min = node.minLength?.toInt()
         val max = node.maxLength?.toInt()
-        if (min != null && max != null && min > max) {
+        if (min == null || max == null) return
+        if (min < 0) {
             results.error(
-                "Schema '$schemaName' 'minLength' ($min) cannot be greater than 'maxLength' ($max).",
-                asyncApiContext.getLine(node, node::minLength)
+                "$contextString 'minLength' ($min) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::minLength),
+                "https://www.learnjsonschema.com/draft7/validation/minlength/",
+            )
+        }
+        if (max < 0) {
+            results.error(
+                "$contextString 'maxLength' ($max) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::maxLength),
+                "https://www.learnjsonschema.com/draft7/validation/maxlength/",
+            )
+        }
+        if (min > max) {
+            results.error(
+                "$contextString 'minLength' ($min) cannot be greater than 'maxLength' ($max).",
+                asyncApiContext.getLine(node, node::minLength),
+                "https://www.learnjsonschema.com/draft7/validation/minlength/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/maxlength/",
             )
         }
     }
 
-    private fun validatePattern(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validatePattern(node: Schema, contextString: String, results: ValidationResults) {
         val pattern = node.pattern?.let(::sanitizeString) ?: return
         try {
             Regex(pattern)
         } catch (ex: Exception) {
             results.error(
-                "Schema '$schemaName' invalid regex pattern in 'pattern': $pattern (${ex.message})",
-                asyncApiContext.getLine(node, node::pattern)
+                "$contextString invalid regex pattern in 'pattern': $pattern (${ex.message})",
+                asyncApiContext.getLine(node, node::pattern),
             )
         }
     }
 
-    private fun validateArray(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateArray(node: Schema, contextString: String, results: ValidationResults) {
         val minItems = node.minItems?.toInt()
         val maxItems = node.maxItems?.toInt()
-        if (minItems != null && maxItems != null && minItems > maxItems) {
+        if (minItems == null || maxItems == null) return
+        if (minItems < 0) {
             results.error(
-                "Schema '$schemaName' 'minItems' ($minItems) cannot be greater than 'maxItems' ($maxItems).",
-                asyncApiContext.getLine(node, node::minItems)
+                "$contextString 'minItems' ($minItems) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::minItems),
+                "https://www.learnjsonschema.com/draft7/validation/minitems/"
+            )
+        }
+        if (maxItems < 0) {
+            results.error(
+                "$contextString 'maxItems' ($maxItems) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::maxItems),
+                "https://www.learnjsonschema.com/draft7/validation/maxitems/"
+            )
+        }
+        if (minItems > maxItems) {
+            results.error(
+                "$contextString 'minItems' ($minItems) cannot be greater than 'maxItems' ($maxItems).",
+                asyncApiContext.getLine(node, node::minItems),
+                "https://www.learnjsonschema.com/draft7/validation/minitems/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/maxitems/"
             )
         }
     }
 
-    private fun validateObject(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateObject(node: Schema, contextString: String, results: ValidationResults) {
         val minProps = node.minProperties?.toInt()
         val maxProps = node.maxProperties?.toInt()
-        if (minProps != null && maxProps != null && minProps > maxProps) {
+        if (minProps != null && minProps < 0) {
             results.error(
-                "Schema '$schemaName' 'minProperties' ($minProps) cannot be greater than 'maxProperties' ($maxProps).",
-                asyncApiContext.getLine(node, node::minProperties)
+                "$contextString 'minProperties' ($minProps) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::minProperties),
+                "https://www.learnjsonschema.com/draft7/validation/minproperties/",
             )
         }
-        val required = node.required?.map { item -> item.let(::sanitizeString) }
-        required?.let {
-            if (it.isEmpty()) {
-                results.warn(
-                    "Schema '$schemaName' defines an empty 'required' list — omit it if unused.",
-                    asyncApiContext.getLine(node, node::required)
-                )
-            }
+        if (maxProps != null && maxProps < 0) {
+            results.error(
+                "$contextString 'maxProperties' ($maxProps) cannot be a negative value.",
+                asyncApiContext.getLine(node, node::maxProperties),
+                "https://www.learnjsonschema.com/draft7/validation/maxproperties/",
+            )
+        }
+        if (minProps != null && maxProps != null && minProps > maxProps) {
+            results.error(
+                "$contextString 'minProperties' ($minProps) cannot be greater than 'maxProperties' ($maxProps).",
+                asyncApiContext.getLine(node, node::minProperties),
+                "https://www.learnjsonschema.com/draft7/validation/minproperties/, " +
+                    "https://www.learnjsonschema.com/draft7/validation/maxproperties/",
+            )
+        }
+        val required = node.required?.map { item -> item.let(::sanitizeString) } ?: return
+        if (required.isEmpty()) {
+            results.warn(
+                "$contextString defines an empty 'required' list — omit it if unused.",
+                asyncApiContext.getLine(node, node::required),
+                "https://www.learnjsonschema.com/draft7/validation/required/",
+            )
+        }
+        if (required.distinct().size != required.size) {
+            results.error(
+                "$contextString 'required' contains duplicate property names.",
+                asyncApiContext.getLine(node, node::required),
+                "https://www.learnjsonschema.com/draft7/validation/required/",
+            )
+        }
+        val definedProperties = node.properties?.keys ?: emptySet()
+        // This is a shallow check. It doesn't check 'allOf' or 'patternProperties'.
+        // That's why we use a Warning, not an Error.
+        val missing = required.filter { it !in definedProperties }
+        if (missing.isNotEmpty()) {
+            results.warn(
+                "$contextString lists required properties $missing that are not defined in 'properties'. Ensure " +
+                    "they are defined in 'allOf' or 'additionalProperties', otherwise generation may fail.",
+                asyncApiContext.getLine(node, node::required),
+                "https://www.learnjsonschema.com/draft7/validation/required/",
+            )
         }
     }
 
-    private fun validateComposition(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateComposition(node: Schema, contextString: String, results: ValidationResults) {
         val compositionCount = listOfNotNull(node.allOf, node.anyOf, node.oneOf).count { it.isNotEmpty() }
         if (compositionCount > 1) {
             results.warn(
-                "Schema '$schemaName' uses multiple composition keywords ('allOf', 'anyOf', 'oneOf'). " +
-                    "This can lead to ambiguous validation behavior.",
-                asyncApiContext.getLine(node, node::allOf)
+                "$contextString uses multiple composition keywords ('allOf', 'anyOf', 'oneOf'). This can lead to " +
+                    "ambiguous validation behavior.",
+                asyncApiContext.getLine(node, node::allOf),
             )
         }
     }
 
-    private fun validateDefaultValue(node: Schema, schemaName: String, results: ValidationResults) {
-        val default = node.default?.let(::sanitizeAny)
-            ?: return
-        val type = node.type?.let(::sanitizeAny)
-            ?: return
+    private fun validateDefaultValue(node: Schema, contextString: String, results: ValidationResults) {
+        val default = node.default?.let(::sanitizeAny) ?: return
+        val type = node.type?.let(::sanitizeAny) ?: return
         if (!isDefaultCompatible(default, type)) {
             results.error(
-                "Schema '$schemaName' default value '$default' does not match declared type '$type'.",
-                asyncApiContext.getLine(node, node::default)
+                "$contextString default value '$default' does not match declared type '$type'.",
+                asyncApiContext.getLine(node, node::default),
             )
         }
     }
 
-    private fun validateDiscriminator(node: Schema, schemaName: String, results: ValidationResults) {
-        val discriminator = node.discriminator?.let(::sanitizeString)
-            ?: return
+    private fun validateDiscriminator(node: Schema, contextString: String, results: ValidationResults) {
+        val discriminator = node.discriminator?.let(::sanitizeString) ?: return
         val required = node.required?.map { item -> item.let(::sanitizeString) }
         val properties = node.properties?.keys?.map { key -> key.let(::sanitizeString) }
         required?.contains(discriminator)?.let {
             if (!it) {
                 results.error(
-                    "Schema '$schemaName' discriminator property '$discriminator' must be listed in 'required'.",
-                    asyncApiContext.getLine(node, node::discriminator)
+                    "$contextString discriminator property '$discriminator' must be listed in 'required'.",
+                    asyncApiContext.getLine(node, node::discriminator),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
                 )
             }
         }
         properties?.contains(discriminator)?.let {
             if (!it) {
                 results.error(
-                    "Schema '$schemaName' discriminator property '$discriminator' must exist in 'properties'.",
-                    asyncApiContext.getLine(node, node::discriminator)
+                    "$contextString discriminator property '$discriminator' must exist in 'properties'.",
+                    asyncApiContext.getLine(node, node::discriminator),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
                 )
             }
         }
     }
 
-    private fun validateExternalDocs(node: Schema, schemaName: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Schema, contextString: String, results: ValidationResults) {
+        val contextString = "$contextString ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, schemaName, results)
+                externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(schemaName, docs.reference, "Schema ExternalDocs", results)
+                referenceResolver.resolve(docs.reference, contextString, results)
 
             null -> {}
         }
     }
 
-    private fun validateBindings(node: Schema, schemaName: String, results: ValidationResults) {
-        val bindings = node.bindings
-            ?: return
-        if (bindings.isEmpty()) {
-            results.warn(
-                "Schema '$schemaName' defines an empty 'bindings' object.",
-                asyncApiContext.getLine(node, node::bindings)
-            )
-            return
-        }
+    private fun validateBindings(node: Schema, contextString: String, results: ValidationResults) {
+        val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
+            val contextString = "$contextString Binding '$bindingName'"
             when (bindingInterface) {
                 is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingName, bindingInterface.binding, results)
+                    bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(schemaName, bindingInterface.reference, "Schema Binding", results)
+                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
             }
         }
     }
 
-    private fun isDefaultCompatible(default: Any?, type: Any): Boolean =
-        when (type) {
-            "string" -> default is String
-            "number" -> default is Number
-            "integer" -> default is Int || default is Long
-            "boolean" -> default is Boolean
-            "array" -> default is List<*>
-            "object" -> default is Map<*, *>
-            "null" -> default == null
+    private fun isDefaultCompatible(value: Any?, type: Any?): Boolean {
+        if (type == null) return true
+        if (type is List<*>) {
+            return type.any { isDefaultCompatible(value, it) }
+        }
+        return when (type.toString().lowercase()) {
+            "string" -> value is String
+            "number" -> value is Number
+            "integer" -> value is Int || value is Long || (value is Number && value.toDouble() % 1.0 == 0.0)
+            "boolean" -> value is Boolean
+            "array" -> value is List<*>
+            "object" -> value is Map<*, *>
+            "null" -> value == null
             else -> true
         }
+    }
 }

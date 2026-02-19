@@ -30,7 +30,7 @@ class AsyncApiContext {
     }
 
     fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
-        return modelRepository.getLine(model, property)
+        return modelRepository.getLine(model, property) ?: modelRepository.getLine(model)
     }
 
     fun pathSnippet(path: String, contextLines: Int = 3): String {

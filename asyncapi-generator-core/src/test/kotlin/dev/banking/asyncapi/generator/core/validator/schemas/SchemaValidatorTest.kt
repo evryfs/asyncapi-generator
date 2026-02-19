@@ -79,12 +79,14 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     fun `schema with ambiguous composition or empty fields triggers warnings`() {
         val document = parse("src/test/resources/validator/schemas/asyncapi_validator_schema_warnings.yaml")
         val results = asyncApiValidator.validate(document)
-
-        assertFalse(results.hasErrors(), "Should not have errors for warnings.")
+        assertFailsWith<AsyncApiValidateException.ValidateError> {
+            results.throwErrors()
+        }
+        assertTrue(results.hasErrors(), "Should have errors.")
         assertTrue(results.hasWarnings(), "Should have warnings.")
 
         val warnings = results.warnings
-        assertEquals(4, warnings.size, "Expected 3 warnings for incompatible composition values.")
+        assertEquals(2, warnings.size, "Expected 2 warnings for incompatible composition values.")
     }
 
     @Test

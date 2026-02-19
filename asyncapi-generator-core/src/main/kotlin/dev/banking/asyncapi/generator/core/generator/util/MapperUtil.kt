@@ -1,9 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.util
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.NON_ALPHANUMERIC
+
 object MapperUtil {
 
     fun toPascalCase(raw: String): String =
-        raw.split(Regex("[^A-Za-z0-9]"))
+        raw.split(NON_ALPHANUMERIC)
             .filter { it.isNotBlank() }
             .joinToString("") { part ->
                 part.replaceFirstChar { it.uppercase() }

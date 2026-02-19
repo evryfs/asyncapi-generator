@@ -67,7 +67,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val asyncApiDocument = parser.parse(root)
         val validationErrors = validator.validate(asyncApiDocument)
 
-        validationErrors.throwWarnings()
+        validationErrors.logWarnings()
         validationErrors.throwErrors()
 
         val bundled = bundler.bundle(asyncApiDocument)

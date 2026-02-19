@@ -20,9 +20,5 @@ class TagValidatorTest : AbstractValidatorTest() {
             results.throwErrors()
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (empty name).")
-
-        assertTrue(results.hasWarnings(), "Should have warnings.")
-        val warnings = results.warnings
-        assertEquals(1, warnings.size, "Expected 1 warning (short description).")
     }
 }

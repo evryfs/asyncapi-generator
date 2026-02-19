@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
+import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.info.License
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
@@ -9,22 +10,23 @@ class LicenseValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun validate(node: License, results: ValidationResults) {
+    fun validate(node: License, contextString: String, results: ValidationResults) {
         val name = node.name.let(::sanitizeString)
         if (name.isBlank()) {
             results.error(
-                "The 'name' field in the License object is required and cannot be empty.",
-                asyncApiContext.getLine(node, node::name)
+                "$contextString 'name' field is required and cannot be empty.",
+                asyncApiContext.getLine(node, node::name),
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
             )
         }
         val url = node.url?.let(::sanitizeString)
         url?.let {
             val url = it.trim().trim('"', '\'')
-            val urlRegex = Regex("""^(https?|wss?)://\S+$""")
-            if (!urlRegex.matches(url)) {
+            if (!URL.matches(url)) {
                 results.error(
-                    "The 'url' field in the License object must be a valid absolute URL.",
-                    asyncApiContext.getLine(node, node::url)
+                    "$contextString 'url' field must be a valid absolute URL.",
+                    asyncApiContext.getLine(node, node::url),
+                    "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
                 )
             }
         }

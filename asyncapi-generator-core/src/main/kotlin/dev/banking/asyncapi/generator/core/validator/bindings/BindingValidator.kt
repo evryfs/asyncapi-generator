@@ -16,10 +16,10 @@ class BindingValidator(
         // Add "http", "amqp", "mqtt" here
     )
 
-    fun validate(bindingName: String, binding: Binding, results: ValidationResults) {
+    fun validate(binding: Binding, bindingName: String, results: ValidationResults) {
         if (binding.content.isEmpty()) {
             results.warn(
-                "Binding '$bindingName' is empty — no protocol-specific binding properties are defined.",
+                "$bindingName is empty — no protocol-specific binding properties are defined.",
                 asyncApiContext.getLine(binding, binding::content)
             )
             return

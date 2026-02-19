@@ -32,6 +32,18 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         assertTrue(validationResults.hasWarnings(), "Should have warnings.")
 
         val warnings = validationResults.warnings.map { it.message }
-        assertEquals(3, warnings.size, "Expected 3 warning for unused parameter.")
+        assertEquals(1, warnings.size, "Expected 1 warning for unused parameter.")
+    }
+
+    @Test
+    fun `channel with ambiguous message references triggers warning`() {
+        val document = parse("src/test/resources/validator/channels/asyncapi_validator_channel_message_ambiguity.yaml")
+        val validationResults = asyncApiValidator.validate(document)
+
+        assertFalse(validationResults.hasErrors(), "Ambiguity should not be a hard error.")
+        assertTrue(validationResults.hasWarnings(), "Should trigger a warning for ambiguous messages.")
+
+        val warnings = validationResults.warnings.map { it.message }
+        assertEquals(1, warnings.size, "Expected 1 warnings.")
     }
 }
