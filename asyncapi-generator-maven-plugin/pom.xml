@@ -120,6 +120,30 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-invoker-plugin</artifactId>
+                <version>3.9.1</version>
+                <configuration>
+                    <projectsDirectory>src/test/it</projectsDirectory>
+                    <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+                    <localRepositoryPath>${project.build.directory}/it-repo</localRepositoryPath>
+                    <goals>
+                        <goal>clean</goal>
+                        <goal>verify</goal>
+                    </goals>
+                    <streamLogs>true</streamLogs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <goals>
+                            <goal>install</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
                 <version>${central.publishing.maven.plugin.version}</version>
