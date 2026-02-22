@@ -32,6 +32,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         .file(canBeFile = false)
         .default(File("./generated"))
 
+    private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
+        .file(canBeDir = false)
+
     private val generator by option("--generator", "-g", help = "Target language (KOTLIN, JAVA)")
         .choice(
             "kotlin" to KOTLIN,
@@ -40,7 +43,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         .default(KOTLIN)
 
     private val modelPackage by option("--model-package", help = "Package for generated models")
-        .required()
 
     private val clientPackage by option(
         "--client-package",
@@ -76,34 +78,56 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
         val bundler = AsyncApiBundler()
         val bundledDoc = bundler.bundle(document)
-
-        val effClientPackage = clientPackage ?: modelPackage
-        val effSchemaPackage = schemaPackage ?: modelPackage
-
-        val sourceRootName = if (generator == KOTLIN) {
-            "src/main/kotlin"
-        } else {
-            "src/main/java"
+        outputFile?.let { file ->
+            AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
-        val sourceRoot = output.resolve(sourceRootName)
         val configOptions = parseConfigOptions(configOptionsRaw)
+
         val clientType = configOptions["client.type"]
         val schemaType = configOptions["schema.type"]
-        val options = GeneratorOptions(
-            generatorName = generator,
-            modelPackage = modelPackage,
-            clientPackage = effClientPackage,
-            schemaPackage = effSchemaPackage,
-            outputDir = sourceRoot,
-            generateModels = true,
-            generateSpringKafkaClient = clientType == "spring-kafka",
-            generateQuarkusKafkaClient = clientType == "quarkus-kafka",
-            generateAvroSchema = schemaType == "avro"
-        )
+        val modelNoArgAnnotation = configOptions["model.noArgAnnotation"]
 
-        val coreGenerator = AsyncApiGenerator()
-        coreGenerator.generate(bundledDoc, options)
+        val hasModelPackage = modelPackage != null
+        val hasClientPackage = clientPackage != null
+        val hasSchemaPackage = schemaPackage != null
 
+        if (clientType != null && !hasClientPackage) {
+            throw IllegalArgumentException("client.type requires --client-package")
+        }
+
+        if (schemaType != null && !hasSchemaPackage) {
+            throw IllegalArgumentException("schema.type requires --schema-package")
+        }
+
+        if (modelNoArgAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("model.noArgAnnotation requires --model-package")
+        }
+
+        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
+            val effectiveModelPackage = modelPackage ?: "unused"
+            val effectiveClientPackage = clientPackage ?: "unused"
+            val effectiveSchemaPackage = schemaPackage ?: "unused"
+            val sourceRootName = if (generator == KOTLIN) {
+                "src/main/kotlin"
+            } else {
+                "src/main/java"
+            }
+            val sourceRoot = output.resolve(sourceRootName)
+            val options = GeneratorOptions(
+                generatorName = generator,
+                modelPackage = effectiveModelPackage,
+                clientPackage = effectiveClientPackage,
+                schemaPackage = effectiveSchemaPackage,
+                outputDir = sourceRoot,
+                generateModels = hasModelPackage,
+                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                configOptions = configOptions
+            )
+            val coreGenerator = AsyncApiGenerator()
+            coreGenerator.generate(bundledDoc, options)
+        }
         echo("Generation complete.")
     }
     private fun parseConfigOptions(raw: List<String>): Map<String, String> {
