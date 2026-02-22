@@ -31,8 +31,7 @@ class AsyncApiPlugin : Plugin<Project> {
             clientPackage.set(extension.clientPackage)
             schemaPackage.set(extension.schemaPackage)
             generatorName.set(extension.generatorName)
-            configuration.set(extension.configuration)
-            experimental.set(extension.experimental)
+            configOptions.set(extension.configOptions)
         }
 
         // Register Source Set (Standard Gradle way to make generated code usable)
@@ -47,4 +46,3 @@ class AsyncApiPlugin : Plugin<Project> {
         }
     }
 }
-
