@@ -44,9 +44,8 @@ object MavenTestHelper {
     fun Mojo.generatorName(value: String) {
         writeField("generatorName", value)
     }
-
-    fun Mojo.configuration(value: Map<String, String>) {
-        writeField("configuration", value)
+    fun Mojo.configOptions(value: Map<String, String>) {
+        writeField("configOptions", value)
     }
 
     fun Mojo.experimental(value: Map<String, String>) {

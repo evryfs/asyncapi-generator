@@ -45,11 +45,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     private var schemaPackage: String? = null
 
     @Parameter
-    private var configuration: Map<String, String> = emptyMap()
-
-    @Parameter
-    private var experimental: Map<String, String> = emptyMap()
-
+    private var configOptions: Map<String, String> = emptyMap()
     private val context = AsyncApiContext()
     private val parser = AsyncApiParser(context)
     private val validator = AsyncApiValidator(context)
@@ -84,19 +80,18 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 "Invalid generatorName '$generatorName'. Supported values: ${GeneratorName.entries.joinToString(", ")}"
             )
         }
-
+        val clientType = configOptions["client.type"]
+        val schemaType = configOptions["schema.type"]
         val options = GeneratorOptions(
             generatorName = targetLanguage,
             modelPackage = modelPackage,
             clientPackage = clientPackage ?: modelPackage,
             schemaPackage = schemaPackage ?: modelPackage,
             outputDir = outputDir,
-
-            generateModels = configuration["generateModels"]?.toBoolean() ?: true,
-            generateSpringKafkaClient = configuration["generateSpringKafkaClient"]?.toBoolean() ?: false,
-            generateQuarkusKafkaClient = configuration["generateQuarkusKafkaClient"]?.toBoolean() ?: false,
-            generateAvroSchema = configuration["generateAvroSchema"]?.toBoolean() ?: false,
-
+            generateModels = true,
+            generateSpringKafkaClient = clientType == "spring-kafka",
+            generateQuarkusKafkaClient = clientType == "quarkus-kafka",
+            generateAvroSchema = schemaType == "avro",
         )
         generator.generate(bundled, options)
 
