@@ -39,6 +39,33 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate models only when no client or schema type is set`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  outputDir.set(layout.buildDirectory.dir("generated"))
+                  modelPackage.set("com.example.model")
+                  clientPackage.set("com.example.client")
+                  schemaPackage.set("com.example.schema")
+                  generatorName.set("kotlin")
+              }""")
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val modelDir = File(projectDir, "build/generated/src/main/kotlin/com/example/model")
+        val clientDir = File(projectDir, "build/generated/src/main/kotlin/com/example/client")
+        val schemaDir = File(projectDir, "build/generated/src/main/kotlin/com/example/schema")
+        assertTrue(modelDir.exists(), "Model directory should exist")
+        assertTrue(!clientDir.exists(), "Client directory should not exist without client.type")
+        assertTrue(!schemaDir.exists(), "Schema directory should not exist without schema.type")
+    }
+
+    @Test
     fun `should generate kotlin kafka client from generic kafka yaml`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 
@@ -56,9 +83,8 @@ class AsyncApiPluginTest {
                   modelPackage.set("com.example.kafka.model")
                   clientPackage.set("com.example.kafka.client")
                   generatorName.set("kotlin")
-
-                  configuration.set(mapOf(
-                      "generateSpringKafkaClient" to "true"
+                  configOptions.set(mapOf(
+                      "client.type" to "spring-kafka"
                   ))
               }""")
 
@@ -89,9 +115,8 @@ class AsyncApiPluginTest {
                   modelPackage.set("com.example.kafka.model")
                   clientPackage.set("com.example.kafka.client")
                   generatorName.set("java")
-
-                  configuration.set(mapOf(
-                      "generateSpringKafkaClient" to "true"
+                  configOptions.set(mapOf(
+                      "client.type" to "spring-kafka"
                   ))
               }""")
 
@@ -127,6 +152,31 @@ class AsyncApiPluginTest {
         val bundledFile = File(projectDir, "build/bundled.yaml")
         assertTrue(bundledFile.exists(), "Bundled file should exist")
         assertTrue(bundledFile.length() > 0, "Bundled file should not be empty")
+    }
+
+    @Test
+    fun `should generate avro schema when schema type is avro`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  outputDir.set(layout.buildDirectory.dir("generated"))
+                  modelPackage.set("com.example.avro.model")
+                  schemaPackage.set("com.example.avro.schema")
+                  generatorName.set("kotlin")
+                  configOptions.set(mapOf(
+                      "schema.type" to "avro"
+                  ))
+              }""")
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaDir = File(projectDir, "build/generated/src/main/kotlin/com/example/avro/schema")
+        assertTrue(schemaDir.exists(), "Schema directory should exist")
     }
 
     @Test
