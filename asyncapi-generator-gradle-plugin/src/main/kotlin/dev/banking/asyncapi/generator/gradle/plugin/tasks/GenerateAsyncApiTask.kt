@@ -103,7 +103,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             generateSpringKafkaClient = clientType == "spring-kafka",
             generateQuarkusKafkaClient = clientType == "quarkus-kafka",
             generateAvroSchema = schemaType == "avro",
-            experimental = emptyMap()
         )
 
         generator.generate(bundled, options)

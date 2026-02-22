@@ -71,7 +71,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
 
         outputFile?.let { file ->
             log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
-            AsyncApiRegistry.writeYaml(outputDir.resolve(file), bundled)
+            AsyncApiRegistry.writeYaml(file, bundled)
         }
 
         val targetLanguage = try {
