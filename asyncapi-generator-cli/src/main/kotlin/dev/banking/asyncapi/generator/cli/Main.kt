@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
@@ -51,11 +51,10 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "--schema-package",
         help = "Namespace for Avro schemas (defaults to model-package)"
     )
-
-    private val models by option("--models", help = "Generate data models").flag(default = true)
-    private val avro by option("--avro", help = "Generate Avro schemas").flag()
-    private val springKafka by option("--spring-kafka", help = "Generate Spring Kafka clients").flag()
-
+    private val configOptionsRaw by option(
+        "--config-option",
+        help = "Additional generator options (key=value). Repeatable."
+    ).multiple()
     override fun run() {
         echo("Generating AsyncAPI code from $input...")
 
@@ -87,22 +86,41 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             "src/main/java"
         }
         val sourceRoot = output.resolve(sourceRootName)
-
+        val configOptions = parseConfigOptions(configOptionsRaw)
+        val clientType = configOptions["client.type"]
+        val schemaType = configOptions["schema.type"]
         val options = GeneratorOptions(
             generatorName = generator,
             modelPackage = modelPackage,
             clientPackage = effClientPackage,
             schemaPackage = effSchemaPackage,
             outputDir = sourceRoot,
-            generateModels = models,
-            generateSpringKafkaClient = springKafka,
-            generateQuarkusKafkaClient = false, // Not exposed in CLI yet
-            generateAvroSchema = avro
+            generateModels = true,
+            generateSpringKafkaClient = clientType == "spring-kafka",
+            generateQuarkusKafkaClient = clientType == "quarkus-kafka",
+            generateAvroSchema = schemaType == "avro"
         )
 
         val coreGenerator = AsyncApiGenerator()
         coreGenerator.generate(bundledDoc, options)
 
         echo("Generation complete.")
+    }
+    private fun parseConfigOptions(raw: List<String>): Map<String, String> {
+        if (raw.isEmpty()) return emptyMap()
+        val result = mutableMapOf<String, String>()
+        raw.forEach { entry ->
+            val idx = entry.indexOf("=")
+            require(idx > 0 && idx < entry.length - 1) {
+                "Invalid --config-option '$entry'. Expected key=value."
+            }
+            val key = entry.take(idx).trim()
+            val value = entry.substring(idx + 1).trim()
+            require(key.isNotEmpty() && value.isNotEmpty()) {
+                "Invalid --config-option '$entry'. Expected key=value."
+            }
+            result[key] = value
+        }
+        return result
     }
 }

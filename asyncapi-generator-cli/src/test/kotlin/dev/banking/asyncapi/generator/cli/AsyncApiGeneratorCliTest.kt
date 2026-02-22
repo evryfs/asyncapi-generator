@@ -26,7 +26,7 @@ class AsyncApiGeneratorCliTest {
                 "--model-package", "com.example.cli.model",
                 "--client-package", "com.example.cli.client",
                 "--generator", "kotlin",
-                "--spring-kafka"
+                "--config-option", "client.type=spring-kafka"
             )
         )
         val packageDir = outputDir.resolve("src/main/kotlin/com/example/cli/client")
@@ -50,7 +50,23 @@ class AsyncApiGeneratorCliTest {
         assertTrue(packageDir.exists(), "Java output directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output should not be empty")
     }
-
+    @Test
+    fun `should generate avro schema when schema type is avro`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputDir = tempDir.toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "-o", outputDir.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--schema-package", "com.example.cli.schema",
+                "-g", "kotlin",
+                "--config-option", "schema.type=avro"
+            )
+        )
+        val schemaDir = outputDir.resolve("src/main/kotlin/com/example/cli/schema")
+        assertTrue(schemaDir.exists(), "Schema output directory should exist")
+    }
     @Test
     fun `should fail if input file is missing`(@TempDir tempDir: Path) {
         val outputDir = tempDir.toFile()
