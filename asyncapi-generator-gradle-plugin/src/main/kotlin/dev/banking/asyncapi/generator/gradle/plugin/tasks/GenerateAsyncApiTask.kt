@@ -47,11 +47,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val configuration: MapProperty<String, String>
-
-    @get:Input
-    @get:Optional
-    abstract val experimental: MapProperty<String, String>
+    abstract val configOptions: MapProperty<String, String>
 
     @TaskAction
     fun generate() {
@@ -91,8 +87,9 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             JAVA -> "src/main/java"
         }
         val sourceRoot = outputDir.get().asFile.resolve(sourceRootName)
-
-        val configMap = configuration.getOrElse(emptyMap())
+        val configMap = configOptions.getOrElse(emptyMap())
+        val clientType = configMap["client.type"]
+        val schemaType = configMap["schema.type"]
         val effectiveClientPackage = if (clientPackage.isPresent) clientPackage.get() else modelPackage.get()
         val effectiveSchemaPackage = if (schemaPackage.isPresent) schemaPackage.get() else modelPackage.get()
 
@@ -102,13 +99,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             clientPackage = effectiveClientPackage,
             schemaPackage = effectiveSchemaPackage,
             outputDir = sourceRoot,
-
-            generateModels = configMap["generateModels"]?.toBoolean() ?: true,
-            generateSpringKafkaClient = configMap["generateSpringKafkaClient"]?.toBoolean() ?: false,
-            generateQuarkusKafkaClient = configMap["generateQuarkusKafkaClient"]?.toBoolean() ?: false,
-            generateAvroSchema = configMap["generateAvroSchema"]?.toBoolean() ?: false,
-
-            experimental = experimental.getOrElse(emptyMap())
+            generateModels = true,
+            generateSpringKafkaClient = clientType == "spring-kafka",
+            generateQuarkusKafkaClient = clientType == "quarkus-kafka",
+            generateAvroSchema = schemaType == "avro",
+            experimental = emptyMap()
         )
 
         generator.generate(bundled, options)
