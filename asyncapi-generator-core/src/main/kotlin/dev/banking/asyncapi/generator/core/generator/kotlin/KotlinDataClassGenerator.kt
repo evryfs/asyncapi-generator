@@ -46,7 +46,8 @@ class KotlinDataClassGenerator(
             classDocLines = model.description,
             fields = fields,
             imports = imports,
-            implementsClause = implementsClause
+            implementsClause = implementsClause,
+            classAnnotations = model.classAnnotations
         )
 
         val writer = StringWriter()
