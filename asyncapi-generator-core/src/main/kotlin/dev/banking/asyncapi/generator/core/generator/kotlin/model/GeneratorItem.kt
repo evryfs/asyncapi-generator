@@ -11,6 +11,7 @@ sealed interface GeneratorItem {
         override val description: List<String>,
         val properties: List<PropertyModel>,
         val parentInterfaces: List<String>,
+        val classAnnotations: List<String> = emptyList(),
     ) : GeneratorItem
 
     data class EnumClassModel(
