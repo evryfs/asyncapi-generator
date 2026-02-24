@@ -27,7 +27,7 @@ jobs:
           gpg-passphrase: GPG_PASSPHRASE
 
       - name: Set Release Version
-        run: |
+        run: >
           # 1. Update Maven versions
           mvn -B 
             -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn 
@@ -47,7 +47,7 @@ jobs:
           # Pass GPG secrets for Gradle signing
           OSSRH_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           OSSRH_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
+        run: >
           # -P release activates the profile with GPG signing and central-publishing
           # -DskipTests speeds up the release if CI/Build workflow already verified it
           mvn -B 
