@@ -33,7 +33,9 @@ class KotlinDataClassGenerator(
                )
            }
 
-        val imports = importMapper.computeImports(model.name, model.properties)
+        val imports = (importMapper.computeImports(model.name, model.properties) + model.classAnnotationImports)
+            .distinct()
+            .sorted()
         val implementsClause = if (model.parentInterfaces.isNotEmpty()) {
             " : " + model.parentInterfaces.joinToString(", ")
         } else {
@@ -46,7 +48,8 @@ class KotlinDataClassGenerator(
             classDocLines = model.description,
             fields = fields,
             imports = imports,
-            implementsClause = implementsClause
+            implementsClause = implementsClause,
+            classAnnotations = model.classAnnotations
         )
 
         val writer = StringWriter()

@@ -10,6 +10,7 @@ class KotlinGeneratorModelFactory(
     val packageName: String,
     val context: GeneratorContext,
     val polymorphicRelationships: Map<String, List<String>>,
+    val annotation: String? = null,
 ) {
     private val propertyFactory = PropertyFactory(context)
 
@@ -38,12 +39,20 @@ class KotlinGeneratorModelFactory(
                 val properties = schema.properties?.map { (propName, propSchema) ->
                     propertyFactory.createProperty(propName, propSchema, schema.required ?: emptyList())
                 } ?: emptyList()
+                val (classAnnotations, classAnnotationImports) = if (annotation.isNullOrBlank()) {
+                    emptyList<String>() to emptyList()
+                } else {
+                    val shortName = annotation.substringAfterLast(".")
+                    listOf("@$shortName") to listOf(annotation)
+                }
                 GeneratorItem.DataClassModel(
                     name = name,
                     packageName = packageName,
                     description = description,
                     properties = properties,
-                    parentInterfaces = polymorphicRelationships[name] ?: emptyList()
+                    parentInterfaces = polymorphicRelationships[name] ?: emptyList(),
+                    classAnnotations = classAnnotations,
+                    classAnnotationImports = classAnnotationImports
                 )
             }
             else -> null // This schema type does not result in its own generated file (e.g., a primitive type alias)
