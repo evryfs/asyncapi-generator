@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
@@ -32,6 +32,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         .file(canBeFile = false)
         .default(File("./generated"))
 
+    private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
+        .file(canBeDir = false)
+
     private val generator by option("--generator", "-g", help = "Target language (KOTLIN, JAVA)")
         .choice(
             "kotlin" to KOTLIN,
@@ -40,7 +43,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         .default(KOTLIN)
 
     private val modelPackage by option("--model-package", help = "Package for generated models")
-        .required()
 
     private val clientPackage by option(
         "--client-package",
@@ -51,11 +53,10 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "--schema-package",
         help = "Namespace for Avro schemas (defaults to model-package)"
     )
-
-    private val models by option("--models", help = "Generate data models").flag(default = true)
-    private val avro by option("--avro", help = "Generate Avro schemas").flag()
-    private val springKafka by option("--spring-kafka", help = "Generate Spring Kafka clients").flag()
-
+    private val configOptionsRaw by option(
+        "--config-option",
+        help = "Additional generator options (key=value). Repeatable."
+    ).multiple()
     override fun run() {
         echo("Generating AsyncAPI code from $input...")
 
@@ -77,32 +78,73 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
         val bundler = AsyncApiBundler()
         val bundledDoc = bundler.bundle(document)
-
-        val effClientPackage = clientPackage ?: modelPackage
-        val effSchemaPackage = schemaPackage ?: modelPackage
-
-        val sourceRootName = if (generator == KOTLIN) {
-            "src/main/kotlin"
-        } else {
-            "src/main/java"
+        outputFile?.let { file ->
+            AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
-        val sourceRoot = output.resolve(sourceRootName)
+        val configOptions = parseConfigOptions(configOptionsRaw)
 
-        val options = GeneratorOptions(
-            generatorName = generator,
-            modelPackage = modelPackage,
-            clientPackage = effClientPackage,
-            schemaPackage = effSchemaPackage,
-            outputDir = sourceRoot,
-            generateModels = models,
-            generateSpringKafkaClient = springKafka,
-            generateQuarkusKafkaClient = false, // Not exposed in CLI yet
-            generateAvroSchema = avro
-        )
+        val clientType = configOptions["client.type"]
+        val schemaType = configOptions["schema.type"]
+        val modelAnnotation = configOptions["model.annotation"]
 
-        val coreGenerator = AsyncApiGenerator()
-        coreGenerator.generate(bundledDoc, options)
+        val hasModelPackage = modelPackage != null
+        val hasClientPackage = clientPackage != null
+        val hasSchemaPackage = schemaPackage != null
 
+        if (clientType != null && !hasClientPackage) {
+            throw IllegalArgumentException("client.type requires --client-package")
+        }
+
+        if (schemaType != null && !hasSchemaPackage) {
+            throw IllegalArgumentException("schema.type requires --schema-package")
+        }
+
+        if (modelAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("model.annotation requires --model-package")
+        }
+
+        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
+            val effectiveModelPackage = modelPackage ?: "unused"
+            val effectiveClientPackage = clientPackage ?: "unused"
+            val effectiveSchemaPackage = schemaPackage ?: "unused"
+            val sourceRootName = if (generator == KOTLIN) {
+                "src/main/kotlin"
+            } else {
+                "src/main/java"
+            }
+            val sourceRoot = output.resolve(sourceRootName)
+            val options = GeneratorOptions(
+                generatorName = generator,
+                modelPackage = effectiveModelPackage,
+                clientPackage = effectiveClientPackage,
+                schemaPackage = effectiveSchemaPackage,
+                outputDir = sourceRoot,
+                generateModels = hasModelPackage,
+                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                configOptions = configOptions
+            )
+            val coreGenerator = AsyncApiGenerator()
+            coreGenerator.generate(bundledDoc, options)
+        }
         echo("Generation complete.")
+    }
+    private fun parseConfigOptions(raw: List<String>): Map<String, String> {
+        if (raw.isEmpty()) return emptyMap()
+        val result = mutableMapOf<String, String>()
+        raw.forEach { entry ->
+            val idx = entry.indexOf("=")
+            require(idx > 0 && idx < entry.length - 1) {
+                "Invalid --config-option '$entry'. Expected key=value."
+            }
+            val key = entry.take(idx).trim()
+            val value = entry.substring(idx + 1).trim()
+            require(key.isNotEmpty() && value.isNotEmpty()) {
+                "Invalid --config-option '$entry'. Expected key=value."
+            }
+            result[key] = value
+        }
+        return result
     }
 }

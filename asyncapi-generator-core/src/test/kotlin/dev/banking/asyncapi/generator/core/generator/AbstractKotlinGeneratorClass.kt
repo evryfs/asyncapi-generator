@@ -27,6 +27,7 @@ abstract class AbstractKotlinGeneratorClass {
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
+        configOptions: Map<String, String> = emptyMap(),
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
         val asyncApi = parser.parse(root)
@@ -44,6 +45,7 @@ abstract class AbstractKotlinGeneratorClass {
             generateModels = generateModels,
             generateSpringKafkaClient = generateSpringKafkaClient,
             generateQuarkusKafkaClient = generateQuarkusKafkaClient,
+            configOptions = configOptions,
         )
         generator.generate(
             asyncApiDocument = bundled,

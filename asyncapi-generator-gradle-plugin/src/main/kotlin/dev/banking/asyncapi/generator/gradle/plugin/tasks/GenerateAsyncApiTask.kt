@@ -32,6 +32,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     abstract val outputDir: DirectoryProperty
 
     @get:Input
+    @get:Optional
     abstract val modelPackage: Property<String>
 
     @get:Input
@@ -47,11 +48,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val configuration: MapProperty<String, String>
-
-    @get:Input
-    @get:Optional
-    abstract val experimental: MapProperty<String, String>
+    abstract val configOptions: MapProperty<String, String>
 
     @TaskAction
     fun generate() {
@@ -91,28 +88,47 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             JAVA -> "src/main/java"
         }
         val sourceRoot = outputDir.get().asFile.resolve(sourceRootName)
+        val configMap = configOptions.getOrElse(emptyMap())
 
-        val configMap = configuration.getOrElse(emptyMap())
-        val effectiveClientPackage = if (clientPackage.isPresent) clientPackage.get() else modelPackage.get()
-        val effectiveSchemaPackage = if (schemaPackage.isPresent) schemaPackage.get() else modelPackage.get()
+        val clientType = configMap["client.type"]
+        val schemaType = configMap["schema.type"]
+        val modelAnnotation = configMap["model.annotation"]
 
-        val options = GeneratorOptions(
-            generatorName = targetLanguage,
-            modelPackage = modelPackage.get(),
-            clientPackage = effectiveClientPackage,
-            schemaPackage = effectiveSchemaPackage,
-            outputDir = sourceRoot,
+        val hasModelPackage = modelPackage.isPresent
+        val hasClientPackage = clientPackage.isPresent
+        val hasSchemaPackage = schemaPackage.isPresent
 
-            generateModels = configMap["generateModels"]?.toBoolean() ?: true,
-            generateSpringKafkaClient = configMap["generateSpringKafkaClient"]?.toBoolean() ?: false,
-            generateQuarkusKafkaClient = configMap["generateQuarkusKafkaClient"]?.toBoolean() ?: false,
-            generateAvroSchema = configMap["generateAvroSchema"]?.toBoolean() ?: false,
+        if (clientType != null && !hasClientPackage) {
+            throw IllegalArgumentException("client.type requires clientPackage")
+        }
 
-            experimental = experimental.getOrElse(emptyMap())
-        )
+        if (schemaType != null && !hasSchemaPackage) {
+            throw IllegalArgumentException("schema.type requires schemaPackage")
+        }
 
-        generator.generate(bundled, options)
+        if (modelAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("model.annotation requires modelPackage")
+        }
 
+        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
+            val effectiveModelPackage = if (hasModelPackage) modelPackage.get() else "unused"
+            val effectiveClientPackage = if (hasClientPackage) clientPackage.get() else "unused"
+            val effectiveSchemaPackage = if (hasSchemaPackage) schemaPackage.get() else "unused"
+
+            val options = GeneratorOptions(
+                generatorName = targetLanguage,
+                modelPackage = effectiveModelPackage,
+                clientPackage = effectiveClientPackage,
+                schemaPackage = effectiveSchemaPackage,
+                outputDir = sourceRoot,
+                generateModels = hasModelPackage,
+                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                configOptions = configMap
+            )
+            generator.generate(bundled, options)
+        }
         logger.lifecycle("asyncapi-generator-gradle-plugin completed")
     }
 }

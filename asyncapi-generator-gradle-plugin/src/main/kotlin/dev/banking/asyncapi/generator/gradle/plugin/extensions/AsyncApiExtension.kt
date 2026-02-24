@@ -18,7 +18,5 @@ abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
 
     val generatorName: Property<String> = objects.property(String::class.java)
 
-    val configuration: MapProperty<String, String> = objects.mapProperty(String::class.java, String::class.java)
-    val experimental: MapProperty<String, String> = objects.mapProperty(String::class.java, String::class.java)
+    val configOptions: MapProperty<String, String> = objects.mapProperty(String::class.java, String::class.java)
 }
-
