@@ -26,6 +26,9 @@ jobs:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
 
+      - name: Run Unit Tests
+        run: mvn verify --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
       - name: Set Release Version
         run: |
           # 1. Update Maven versions
@@ -56,4 +59,5 @@ jobs:
             clean \
             deploy \
             -P release \
-            -DskipTests
+            -DskipTests \
+            -Dinvoker.skip=true
