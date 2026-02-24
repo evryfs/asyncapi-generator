@@ -7,4 +7,5 @@ data class KotlinClassTemplate(
     val fields: List<Map<String, Any?>>,
     val imports: List<String> = emptyList(),
     val implementsClause: String = "",
+    val classAnnotations: List<String> = emptyList(),
 )
