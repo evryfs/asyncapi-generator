@@ -18,7 +18,8 @@ class AsyncApiPluginTest {
         val specsDir = File(projectDir, "specs").apply { mkdirs() }
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
@@ -26,7 +27,8 @@ class AsyncApiPluginTest {
 
                   modelPackage.set("com.example.model")
                   generatorName.set("kotlin")
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
@@ -39,13 +41,60 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should allow bundle-only output with no packages`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("api.yaml"))
+                  outputDir.set(layout.buildDirectory.dir("generated"))
+                  outputFile.set(layout.buildDirectory.file("bundled.yaml"))
+                  generatorName.set("kotlin")
+                  // no modelPackage/clientPackage/schemaPackage set
+              }"""
+        )
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val bundledFile = File(projectDir, "build/bundled.yaml")
+        assertTrue(bundledFile.exists(), "Bundled file should exist")
+        assertTrue(bundledFile.length() > 0, "Bundled file should not be empty")
+        val generatedPackageRoot = File(projectDir, "build/generated/src/main/kotlin/com")
+        assertTrue(!generatedPackageRoot.exists(), "No code should be generated when packages are not set")
+    }
+
+    @Test
+    fun `should fail if client type is set without client package`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
+        GradleTestHelper.writeBuildScript(projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("api.yaml"))
+                  outputDir.set(layout.buildDirectory.dir("generated"))
+                  modelPackage.set("com.example.model")
+                  generatorName.set("kotlin")
+                  configOptions.set(mapOf(
+                      "client.type" to "spring-kafka"
+                  ))
+              }""")
+        val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
+        assertTrue(result.output.contains("client.type requires clientPackage"))
+    }
+
+    @Test
     fun `should generate models only when no client or schema type is set`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")
         val yamlFile = File(yamlUrl.toURI())
         val specsDir = File(projectDir, "specs").apply { mkdirs() }
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
@@ -54,7 +103,8 @@ class AsyncApiPluginTest {
                   clientPackage.set("com.example.client")
                   schemaPackage.set("com.example.schema")
                   generatorName.set("kotlin")
-              }""")
+              }"""
+        )
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
         val modelDir = File(projectDir, "build/generated/src/main/kotlin/com/example/model")
@@ -74,7 +124,8 @@ class AsyncApiPluginTest {
         val specsDir = File(projectDir, "specs").apply { mkdirs() }
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
@@ -86,7 +137,8 @@ class AsyncApiPluginTest {
                   configOptions.set(mapOf(
                       "client.type" to "spring-kafka"
                   ))
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
@@ -106,7 +158,8 @@ class AsyncApiPluginTest {
         val specsDir = File(projectDir, "specs").apply { mkdirs() }
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
@@ -118,7 +171,8 @@ class AsyncApiPluginTest {
                   configOptions.set(mapOf(
                       "client.type" to "spring-kafka"
                   ))
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
@@ -135,7 +189,8 @@ class AsyncApiPluginTest {
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("api.yaml"))
@@ -144,7 +199,8 @@ class AsyncApiPluginTest {
 
                   modelPackage.set("com.example.bundled")
                   generatorName.set("kotlin")
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
@@ -161,7 +217,8 @@ class AsyncApiPluginTest {
         val yamlFile = File(yamlUrl.toURI())
         val specsDir = File(projectDir, "specs").apply { mkdirs() }
         yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("specs/api.yaml"))
@@ -172,7 +229,8 @@ class AsyncApiPluginTest {
                   configOptions.set(mapOf(
                       "schema.type" to "avro"
                   ))
-              }""")
+              }"""
+        )
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
         val schemaDir = File(projectDir, "build/generated/src/main/kotlin/com/example/avro/schema")
@@ -183,14 +241,16 @@ class AsyncApiPluginTest {
     fun `should fail if input file is missing`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("missing.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
                   modelPackage.set("com.example.fail")
                   generatorName.set("kotlin")
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
@@ -203,14 +263,16 @@ class AsyncApiPluginTest {
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_valid_content_kotlin.yaml")
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
 
-        GradleTestHelper.writeBuildScript(projectDir, """
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
               plugins { id("dev.banking.asyncapi.generator") }
               asyncapiGenerate {
                   inputFile.set(file("api.yaml"))
                   outputDir.set(layout.buildDirectory.dir("generated"))
                   modelPackage.set("com.example.fail")
                   generatorName.set("python") // Invalid
-              }""")
+              }"""
+        )
 
         val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)

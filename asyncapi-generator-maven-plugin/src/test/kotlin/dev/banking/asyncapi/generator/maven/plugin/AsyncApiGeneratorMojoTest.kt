@@ -43,9 +43,11 @@ class AsyncApiGeneratorMojoTest {
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
             generatorName("kotlin")
-            configOptions(mapOf(
-                "client.type" to "spring-kafka"
-            ))
+            configOptions(
+                mapOf(
+                    "client.type" to "spring-kafka"
+                )
+            )
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
@@ -60,9 +62,11 @@ class AsyncApiGeneratorMojoTest {
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
             generatorName("java")
-            configOptions(mapOf(
-                "client.type" to "spring-kafka"
-            ))
+            configOptions(
+                mapOf(
+                    "client.type" to "spring-kafka"
+                )
+            )
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
@@ -77,7 +81,7 @@ class AsyncApiGeneratorMojoTest {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
             outputDir(outputPath("target/generated-sources/asyncapi"))
-            outputFile(File("bundled/asyncapi.bundled.yaml"))
+            outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml"))
             modelPackage("com.example.bundled")
             generatorName("kotlin")
         }.execute()
@@ -95,12 +99,33 @@ class AsyncApiGeneratorMojoTest {
             modelPackage("com.example.avro.model")
             schemaPackage("com.example.avro.schema")
             generatorName("kotlin")
-            configOptions(mapOf(
-                "schema.type" to "avro"
-            ))
+            configOptions(
+                mapOf(
+                    "schema.type" to "avro"
+                )
+            )
         }.execute()
         val schemaDir = File("target/generated-sources/asyncapi/com/example/avro/schema")
         assertTrue(schemaDir.exists(), "Schema directory should exist")
+    }
+
+    @Test
+    fun `should allow bundle-only output with no packages`() {
+        val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml")
+        if (bundledFile.exists()) bundledFile.delete()
+        val bundleOnlyOutputDir = outputPath("target/generated-sources/asyncapi-bundle-only")
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDir(bundleOnlyOutputDir)
+            outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml"))
+            generatorName("kotlin")
+            // no modelPackage/clientPackage/schemaPackage set
+        }.execute()
+        assertTrue(bundledFile.exists(), "Bundled output file should exist")
+        assertTrue(bundledFile.length() > 0, "Bundled output file should not be empty")
+        val generatedPackageRoot = bundleOnlyOutputDir.resolve("com")
+        assertTrue(!generatedPackageRoot.exists(), "No code should be generated when packages are not set")
     }
 
     @Test

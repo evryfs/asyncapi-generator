@@ -14,7 +14,6 @@ data class GeneratorOptions(
     val generateSpringKafkaClient: Boolean = false,
     val generateQuarkusKafkaClient: Boolean = false,
     val generateAvroSchema: Boolean = false,
-
-    // Experimental options
-    val experimental: Map<String, String> = emptyMap()
+    // Flat config options (for future use)
+    val configOptions: Map<String, String> = emptyMap()
 )

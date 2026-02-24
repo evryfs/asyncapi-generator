@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.cli
 
 import com.github.ajalt.clikt.core.BadParameterValue
-import com.github.ajalt.clikt.core.MissingOption
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.parse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -70,6 +69,67 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should allow bundle-only output with no packages`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputFile = tempDir.resolve("bundled.yaml").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--output-file", outputFile.absolutePath
+            )
+        )
+        assertTrue(outputFile.exists(), "Bundled output file should exist")
+        assertTrue(outputFile.length() > 0, "Bundled output file should not be empty")
+    }
+
+    @Test
+    fun `should fail if client type is set without client package`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputDir = tempDir.toFile()
+        assertFailsWith<UsageError> {
+            cli.parse(
+                arrayOf(
+                    "-i", inputFile.absolutePath,
+                    "-o", outputDir.absolutePath,
+                    "--model-package", "com.example.cli.model",
+                    "--config-option", "client.type=spring-kafka"
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should fail if schema type is set without schema package`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputDir = tempDir.toFile()
+        assertFailsWith<UsageError> {
+            cli.parse(
+                arrayOf(
+                    "-i", inputFile.absolutePath,
+                    "-o", outputDir.absolutePath,
+                    "--model-package", "com.example.cli.model",
+                    "--config-option", "schema.type=avro"
+                )
+            )
+        }
+    }
+
+    @Test
+    fun `should fail if model no-arg annotation is set without model package`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputDir = tempDir.toFile()
+        assertFailsWith<UsageError> {
+            cli.parse(
+                arrayOf(
+                    "-i", inputFile.absolutePath,
+                    "-o", outputDir.absolutePath,
+                    "--config-option", "model.annotation=com.example.NoArg"
+                )
+            )
+        }
+    }
+
+    @Test
     fun `should fail if config option format is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputDir = tempDir.toFile()
@@ -80,7 +140,7 @@ class AsyncApiGeneratorCliTest {
                     "-o", outputDir.absolutePath,
                     "--model-package", "com.example.cli.model",
                     "-g", "kotlin",
-                    "--config-option", "client.type" // Missing '=' and value
+                    "--config-option", "client.type"
                 )
             )
         }
@@ -92,7 +152,7 @@ class AsyncApiGeneratorCliTest {
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
-                    "-i", "non_existent.yaml", // Missing file
+                    "-i", "non_existent.yaml",
                     "-o", outputDir.absolutePath,
                     "--model-package", "com.example.cli.model"
                 )
@@ -101,18 +161,18 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if model package is not provided`(@TempDir tempDir: Path) {
+    fun `should fail if model package is not provided and no bundle output is requested`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputDir = tempDir.toFile()
-        assertFailsWith<MissingOption> {
-            cli.parse(
-                arrayOf(
-                    "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
-                    "-g", "kotlin"
-                )
+        // No modelPackage, no clientPackage, no schemaPackage, and no outputFile
+        // This should be allowed but results in no codegen and no bundle output; still a valid invocation.
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "-o", outputDir.absolutePath,
+                "-g", "kotlin"
             )
-        }
+        )
     }
 
     @Test

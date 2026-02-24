@@ -48,10 +48,6 @@ object MavenTestHelper {
         writeField("configOptions", value)
     }
 
-    fun Mojo.experimental(value: Map<String, String>) {
-        writeField("experimental", value)
-    }
-
     private fun Mojo.writeField(name: String, value: Any?) {
         val field = this.javaClass.getDeclaredField(name)
         field.isAccessible = true
