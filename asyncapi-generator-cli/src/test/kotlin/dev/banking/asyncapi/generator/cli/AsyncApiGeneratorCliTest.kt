@@ -123,7 +123,7 @@ class AsyncApiGeneratorCliTest {
                 arrayOf(
                     "-i", inputFile.absolutePath,
                     "-o", outputDir.absolutePath,
-                    "--config-option", "model.noArgAnnotation=com.example.NoArg"
+                    "--config-option", "model.annotation=com.example.NoArg"
                 )
             )
         }

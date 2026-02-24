@@ -85,7 +85,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
         val clientType = configOptions["client.type"]
         val schemaType = configOptions["schema.type"]
-        val modelNoArgAnnotation = configOptions["model.noArgAnnotation"]
+        val modelAnnotation = configOptions["model.annotation"]
 
         val hasModelPackage = modelPackage != null
         val hasClientPackage = clientPackage != null
@@ -99,8 +99,8 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             throw IllegalArgumentException("schema.type requires --schema-package")
         }
 
-        if (modelNoArgAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("model.noArgAnnotation requires --model-package")
+        if (modelAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("model.annotation requires --model-package")
         }
 
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {

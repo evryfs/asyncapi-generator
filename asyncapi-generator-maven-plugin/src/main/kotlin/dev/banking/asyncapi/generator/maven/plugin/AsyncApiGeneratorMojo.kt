@@ -83,7 +83,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         }
         val clientType = configOptions["client.type"]
         val schemaType = configOptions["schema.type"]
-        val modelNoArgAnnotation = configOptions["model.noArgAnnotation"]
+        val modelAnnotation = configOptions["model.annotation"]
 
         val hasModelPackage = modelPackage != null
         val hasClientPackage = clientPackage != null
@@ -97,8 +97,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             throw MojoExecutionException("schema.type requires schemaPackage")
         }
 
-        if (modelNoArgAnnotation != null && !hasModelPackage) {
-            throw MojoExecutionException("model.noArgAnnotation requires modelPackage")
+        if (modelAnnotation != null && !hasModelPackage) {
+            throw MojoExecutionException("model.annotation requires modelPackage")
         }
 
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {

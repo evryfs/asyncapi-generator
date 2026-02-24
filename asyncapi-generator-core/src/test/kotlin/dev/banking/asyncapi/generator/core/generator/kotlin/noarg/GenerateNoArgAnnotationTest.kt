@@ -15,17 +15,12 @@ class GenerateNoArgAnnotationTest : AbstractKotlinGeneratorClass() {
             generated = "NullableObject.kt",
             modelPackage = "dev.banking.asyncapi.generator.core.model.generated.noarg",
             configOptions = mapOf(
-                "model.noArgAnnotation" to "com.example.NoArg"
+                "model.annotation" to "com.example.NoArg"
             )
         )
-        assertTrue(
-            generated.contains("@com.example.NoArg"),
-            "Expected NoArg annotation to be present in generated Kotlin Data Class"
-        )
-        assertTrue(
-            generated.contains("data class NullableObject"),
-            "Expected data class declaration to be present"
-        )
+        assertTrue(generated.contains("import com.example.NoArg"))
+        assertTrue(generated.contains("@NoArg"))
+        assertTrue(generated.contains("data class NullableObject"))
     }
 
     @Test

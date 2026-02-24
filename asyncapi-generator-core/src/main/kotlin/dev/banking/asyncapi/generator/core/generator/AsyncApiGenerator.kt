@@ -41,12 +41,12 @@ class AsyncApiGenerator {
         when (generatorOptions.generatorName) {
             KOTLIN -> {
                 if (generatorOptions.generateModels) {
-                    val noArgAnnotation = generatorOptions.configOptions["model.noArgAnnotation"]
+                    val annotation = generatorOptions.configOptions["model.annotation"]
                     val factory = KotlinGeneratorModelFactory(
                         generatorOptions.modelPackage,
                         context,
                         polymorphic,
-                        noArgAnnotation
+                        annotation
                     )
                     val kotlinGenerationModel = analyzedSchemas.mapNotNull { (name, schema) ->
                         factory.create(name, schema)

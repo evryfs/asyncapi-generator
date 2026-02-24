@@ -12,6 +12,7 @@ sealed interface GeneratorItem {
         val properties: List<PropertyModel>,
         val parentInterfaces: List<String>,
         val classAnnotations: List<String> = emptyList(),
+        val classAnnotationImports: List<String> = emptyList(),
     ) : GeneratorItem
 
     data class EnumClassModel(

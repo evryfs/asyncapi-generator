@@ -92,7 +92,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
         val clientType = configMap["client.type"]
         val schemaType = configMap["schema.type"]
-        val modelNoArgAnnotation = configMap["model.noArgAnnotation"]
+        val modelAnnotation = configMap["model.annotation"]
 
         val hasModelPackage = modelPackage.isPresent
         val hasClientPackage = clientPackage.isPresent
@@ -106,8 +106,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             throw IllegalArgumentException("schema.type requires schemaPackage")
         }
 
-        if (modelNoArgAnnotation != null && !hasModelPackage) {
-            throw IllegalArgumentException("model.noArgAnnotation requires modelPackage")
+        if (modelAnnotation != null && !hasModelPackage) {
+            throw IllegalArgumentException("model.annotation requires modelPackage")
         }
 
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
