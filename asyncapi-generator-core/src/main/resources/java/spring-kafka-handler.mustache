@@ -11,6 +11,6 @@ import {{{.}}};
  */
 public interface {{name}} {
 {{#methods}}
-    void {{methodName}}(KafkaMessage<{{payloadType}}> message);
+    void {{methodName}}(ConsumerRecord<String, {{payloadType}}> record);
 {{/methods}}
 }
