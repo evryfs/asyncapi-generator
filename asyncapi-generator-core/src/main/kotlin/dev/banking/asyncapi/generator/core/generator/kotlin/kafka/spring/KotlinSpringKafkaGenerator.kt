@@ -15,12 +15,8 @@ class KotlinSpringKafkaGenerator(
     private val handlerGenerator = KotlinSpringKafkaHandlerGenerator(outputDir)
     private val listenerGenerator = KotlinSpringKafkaListenerGenerator(outputDir)
     private val producerGenerator = KotlinSpringKafkaProducerGenerator(outputDir)
-    private val messageGenerator = KotlinSpringKafkaMessageGenerator(outputDir, clientPackage)
 
     fun generate(channels: List<AnalyzedChannel>) {
-        if (channels.isNotEmpty()) {
-            messageGenerator.generate()
-        }
         channels.forEach { channel ->
             val items = modelFactory.create(channel)
             items.forEach { item ->
