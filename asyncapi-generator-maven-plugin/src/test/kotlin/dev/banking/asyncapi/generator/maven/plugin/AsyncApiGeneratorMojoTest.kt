@@ -1,15 +1,16 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.configOptions
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDir
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.resourceOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
@@ -25,7 +26,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            outputDir(outputPath("target/generated-sources/asyncapi"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.example.model")
             generatorName("kotlin")
         }.execute()
@@ -39,7 +41,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDir(outputPath("target/generated-sources/asyncapi"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
             generatorName("kotlin")
@@ -58,7 +61,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDir(outputPath("target/generated-sources/asyncapi"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
             generatorName("java")
@@ -80,7 +84,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDir(outputPath("target/generated-sources/asyncapi"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml"))
             modelPackage("com.example.bundled")
             generatorName("kotlin")
@@ -95,7 +100,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDir(outputPath("target/generated-sources/asyncapi"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.example.avro.model")
             schemaPackage("com.example.avro.schema")
             generatorName("kotlin")
@@ -105,7 +111,7 @@ class AsyncApiGeneratorMojoTest {
                 )
             )
         }.execute()
-        val schemaDir = File("target/generated-sources/asyncapi/com/example/avro/schema")
+        val schemaDir = File("target/generated-resources/asyncapi/com/example/avro/schema")
         assertTrue(schemaDir.exists(), "Schema directory should exist")
     }
 
@@ -117,7 +123,8 @@ class AsyncApiGeneratorMojoTest {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDir(bundleOnlyOutputDir)
+            codegenOutputDirectory(bundleOnlyOutputDir)
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml"))
             generatorName("kotlin")
             // no modelPackage/clientPackage/schemaPackage set
@@ -133,7 +140,8 @@ class AsyncApiGeneratorMojoTest {
         val mojo = AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(File("src/test/resources/non_existent.yaml"))
-            outputDir(outputPath("target/should-fail"))
+            codegenOutputDirectory(outputPath("target/should-fail"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.fail")
         }
         assertThrows<MojoExecutionException> {
@@ -146,7 +154,8 @@ class AsyncApiGeneratorMojoTest {
         val mojo = AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            outputDir(outputPath("target/should-fail-gen"))
+            codegenOutputDirectory(outputPath("target/should-fail-gen"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             modelPackage("com.fail")
             generatorName("invalid-lang")
         }

@@ -32,8 +32,11 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(property = "outputFile")
     private var outputFile: File? = null
 
-    @Parameter(property = "outputDir", defaultValue = "\${project.build.directory}/generated-sources/asyncapi")
-    private lateinit var outputDir: File
+    @Parameter(property = "codegenOutputDirectory", defaultValue = "\${project.build.directory}/generated-sources/asyncapi")
+    private lateinit var codegenOutputDirectory: File
+
+    @Parameter(property = "resourceOutputDirectory", defaultValue = "\${project.build.directory}/generated-resources/asyncapi")
+    private lateinit var resourceOutputDirectory: File
 
     @Parameter(property = "modelPackage")
     private var modelPackage: String? = null
@@ -112,7 +115,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 modelPackage = effectiveModelPackage,
                 clientPackage = effectiveClientPackage,
                 schemaPackage = effectiveSchemaPackage,
-                outputDir = outputDir,
+                codegenOutputDirectory = codegenOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
                 generateModels = hasModelPackage,
                 generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
                 generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
@@ -122,7 +126,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             generator.generate(bundled, options)
         }
 
-        project.addCompileSourceRoot(outputDir.absolutePath)
+        project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
         log.info("asyncapi-generator-maven-plugin completed successfully")
     }
 }

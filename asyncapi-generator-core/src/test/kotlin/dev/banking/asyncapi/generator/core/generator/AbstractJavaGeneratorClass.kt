@@ -19,7 +19,8 @@ abstract class AbstractJavaGeneratorClass {
 
     protected fun generateElement(
         yaml: File,
-        outputDir: File = File("target/generated-sources/asyncapi"),
+        codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
+        resourceOutputDirectory: File = File("target/generated-resources/asyncapi"),
         generated: String? = null,
         modelPackage: String,
         clientPackage: String? = null,
@@ -40,7 +41,8 @@ abstract class AbstractJavaGeneratorClass {
             modelPackage = modelPackage,
             clientPackage = clientPackage ?: modelPackage,
             schemaPackage = schemaPackage ?: modelPackage,
-            outputDir = outputDir,
+            codegenOutputDirectory = codegenOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
             generateModels = generateModels,
             generateSpringKafkaClient = generateSpringKafkaClient,
             generateQuarkusKafkaClient = generateQuarkusKafkaClient,
@@ -52,7 +54,7 @@ abstract class AbstractJavaGeneratorClass {
 
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')
-            val output = outputDir
+            val output = codegenOutputDirectory
                 .resolve(modelPath)
                 .resolve(generated)
             return output.readText()

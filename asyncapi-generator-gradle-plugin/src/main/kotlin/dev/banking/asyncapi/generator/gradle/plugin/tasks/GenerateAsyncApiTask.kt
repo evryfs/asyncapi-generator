@@ -29,7 +29,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     abstract val outputFile: RegularFileProperty
 
     @get:OutputDirectory
-    abstract val outputDir: DirectoryProperty
+    abstract val codegenOutputDirectory: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val resourceOutputDirectory: DirectoryProperty
 
     @get:Input
     @get:Optional
@@ -87,7 +90,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             KOTLIN -> "src/main/kotlin"
             JAVA -> "src/main/java"
         }
-        val sourceRoot = outputDir.get().asFile.resolve(sourceRootName)
+        val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
         val configMap = configOptions.getOrElse(emptyMap())
 
         val clientType = configMap["client.type"]
@@ -120,7 +123,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 modelPackage = effectiveModelPackage,
                 clientPackage = effectiveClientPackage,
                 schemaPackage = effectiveSchemaPackage,
-                outputDir = sourceRoot,
+                codegenOutputDirectory = codegenSourceRoot,
+                resourceOutputDirectory = resourceOutputDirectory.get().asFile,
                 generateModels = hasModelPackage,
                 generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
                 generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",

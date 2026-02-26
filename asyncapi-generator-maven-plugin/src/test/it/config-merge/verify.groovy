@@ -1,12 +1,13 @@
-def base = new File(basedir, "target/generated-sources/asyncapi")
+def codegenBase = new File(basedir, "target/generated-sources/asyncapi")
+def resourceBase = new File(basedir, "target/generated-resources/asyncapi")
 
 // define where the generated files should be for each contract, based on the configuration in the pom.xml
-def aClientDir = new File(base, "com/example/a/client")
-def aSchemaDir = new File(base, "com/example/a/schema")
-def bClientDir = new File(base, "com/example/b/client")
-def bSchemaDir = new File(base, "com/example/b/schema")
-def aModelDir = new File(base, "com/example/a/model")
-def bModelDir = new File(base, "com/example/b/model")
+def aClientDir = new File(codegenBase, "com/example/a/client")
+def aSchemaDir = new File(resourceBase, "com/example/a/schema")
+def bClientDir = new File(codegenBase, "com/example/b/client")
+def bSchemaDir = new File(resourceBase, "com/example/b/schema")
+def aModelDir = new File(codegenBase, "com/example/a/model")
+def bModelDir = new File(codegenBase, "com/example/b/model")
 
 // assert that the expected directories exist or do not exist based on the configuration in the pom.xml
 assert aModelDir.exists() : "Expected model directory for contract A"

@@ -25,8 +25,12 @@ object MavenTestHelper {
         writeField("outputFile", value)
     }
 
-    fun Mojo.outputDir(value: Any) {
-        writeField("outputDir", value)
+    fun Mojo.codegenOutputDirectory(value: Any) {
+        writeField("codegenOutputDirectory", value)
+    }
+
+    fun Mojo.resourceOutputDirectory(value: Any) {
+        writeField("resourceOutputDirectory", value)
     }
 
     fun Mojo.modelPackage(value: Any) {
@@ -44,6 +48,7 @@ object MavenTestHelper {
     fun Mojo.generatorName(value: String) {
         writeField("generatorName", value)
     }
+
     fun Mojo.configOptions(value: Map<String, String>) {
         writeField("configOptions", value)
     }

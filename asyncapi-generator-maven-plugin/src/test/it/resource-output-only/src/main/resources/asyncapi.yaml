@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Resource Output Only
+  version: 1.0.0
+channels:
+  sample:
+    address: test.resource.v1
+    messages:
+      - $ref: '#/components/messages/SampleMessage'
+components:
+  messages:
+    SampleMessage:
+      name: SampleMessage
+      payload:
+        $ref: '#/components/schemas/SampleMessage'
+  schemas:
+    SampleMessage:
+      type: object
+      properties:
+        id:
+          type: string
+      required: [id]
