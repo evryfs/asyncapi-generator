@@ -15,7 +15,7 @@ import {{{.}}}
  */
 @Component
 class {{name}}(
-    private val kafkaTemplate: KafkaTemplate<String, Any>
+    private val kafkaTemplate: KafkaTemplate<String, {{kafkaValueType}}>
 ) {
     private val log = LoggerFactory.getLogger({{name}}::class.java)
 

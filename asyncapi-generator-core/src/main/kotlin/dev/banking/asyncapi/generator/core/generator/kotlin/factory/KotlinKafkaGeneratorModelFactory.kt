@@ -76,6 +76,8 @@ class KotlinKafkaGeneratorModelFactory(
                     keyType = "String"
                 )
             }
+            val payloadTypes = sendMethods.map { it.payloadType }.distinct()
+            val kafkaValueType = if (payloadTypes.size == 1) payloadTypes.first() else "Any"
             items.add(
                 GeneratorItem.KafkaProducerClass(
                     name = producerName,
@@ -83,6 +85,7 @@ class KotlinKafkaGeneratorModelFactory(
                     description = toKDocLines("Producer for topic '${channel.topic}'"),
                     topic = channel.topic,
                     sendMethods = sendMethods,
+                    kafkaValueType = kafkaValueType,
                     imports = imports,
                 )
             )

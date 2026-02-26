@@ -18,9 +18,9 @@ import {{{.}}};
 public class {{name}} {
 
     private static final Logger log = LoggerFactory.getLogger({{name}}.class);
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate;
 
-    public {{name}}(KafkaTemplate<String, Object> kafkaTemplate) {
+    public {{name}}(KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
