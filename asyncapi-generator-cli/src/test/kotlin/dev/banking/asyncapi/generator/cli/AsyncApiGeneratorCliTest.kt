@@ -17,18 +17,18 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate kotlin code from valid input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         cli.parse(
             arrayOf(
                 "--input", inputFile.absolutePath,
-                "--output", outputDir.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
                 "--model-package", "com.example.cli.model",
                 "--client-package", "com.example.cli.client",
                 "--generator", "kotlin",
                 "--config-option", "client.type=spring-kafka"
             )
         )
-        val packageDir = outputDir.resolve("src/main/kotlin/com/example/cli/client")
+        val packageDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
         assertTrue(packageDir.exists(), "Output package directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output directory should contain generated files")
     }
@@ -36,16 +36,16 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate java code from valid input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "-o", outputDir.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
                 "--model-package", "com.example.cli.model",
                 "-g", "java"
             )
         )
-        val packageDir = outputDir.resolve("src/main/java/com/example/cli/model")
+        val packageDir = codegenDir.resolve("src/main/java/com/example/cli/model")
         assertTrue(packageDir.exists(), "Java output directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output should not be empty")
     }
@@ -53,19 +53,22 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate avro schema when schema type is avro`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "-o", outputDir.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
                 "--model-package", "com.example.cli.model",
                 "--schema-package", "com.example.cli.schema",
                 "-g", "kotlin",
                 "--config-option", "schema.type=avro"
             )
         )
-        val schemaDir = outputDir.resolve("src/main/kotlin/com/example/cli/schema")
+        val schemaDir = resourceDir.resolve("com/example/cli/schema")
         assertTrue(schemaDir.exists(), "Schema output directory should exist")
+        assertTrue(schemaDir.list()?.isNotEmpty() == true, "Schema directory should not be empty")
     }
 
     @Test
@@ -85,12 +88,12 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if client type is set without client package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--model-package", "com.example.cli.model",
                     "--config-option", "client.type=spring-kafka"
                 )
@@ -101,12 +104,12 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if schema type is set without schema package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--model-package", "com.example.cli.model",
                     "--config-option", "schema.type=avro"
                 )
@@ -115,14 +118,14 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if model no-arg annotation is set without model package`(@TempDir tempDir: Path) {
+    fun `should fail if model annotation is set without model package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--config-option", "model.annotation=com.example.NoArg"
                 )
             )
@@ -132,12 +135,12 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if config option format is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--model-package", "com.example.cli.model",
                     "-g", "kotlin",
                     "--config-option", "client.type"
@@ -148,12 +151,12 @@ class AsyncApiGeneratorCliTest {
 
     @Test
     fun `should fail if input file is missing`(@TempDir tempDir: Path) {
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", "non_existent.yaml",
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--model-package", "com.example.cli.model"
                 )
             )
@@ -161,29 +164,14 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if model package is not provided and no bundle output is requested`(@TempDir tempDir: Path) {
-        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
-        // No modelPackage, no clientPackage, no schemaPackage, and no outputFile
-        // This should be allowed but results in no codegen and no bundle output; still a valid invocation.
-        cli.parse(
-            arrayOf(
-                "-i", inputFile.absolutePath,
-                "-o", outputDir.absolutePath,
-                "-g", "kotlin"
-            )
-        )
-    }
-
-    @Test
     fun `should fail if generator name is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDir = tempDir.toFile()
+        val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<BadParameterValue> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "-o", outputDir.absolutePath,
+                    "--codegen-output", codegenDir.absolutePath,
                     "--model-package", "com.example.cli.model",
                     "-g", "invalid-gen"
                 )

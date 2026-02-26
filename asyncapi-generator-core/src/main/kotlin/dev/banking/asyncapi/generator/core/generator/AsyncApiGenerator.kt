@@ -53,7 +53,7 @@ class AsyncApiGenerator {
                     }
                     val kotlinModelGenerator = KotlinGenerator(
                         packageName = generatorOptions.modelPackage,
-                        outputDir = generatorOptions.outputDir,
+                        outputDir = generatorOptions.codegenOutputDirectory,
                         generationModel = kotlinGenerationModel,
                     )
                     kotlinModelGenerator.generate()
@@ -61,7 +61,7 @@ class AsyncApiGenerator {
 
                 if (generatorOptions.generateSpringKafkaClient) {
                     val kafkaGenerator = KotlinSpringKafkaGenerator(
-                        outputDir = generatorOptions.outputDir,
+                        outputDir = generatorOptions.codegenOutputDirectory,
                         clientPackage = generatorOptions.clientPackage,
                         modelPackage = generatorOptions.modelPackage,
                     )
@@ -81,14 +81,14 @@ class AsyncApiGenerator {
                     }
                     val javaGenerator = JavaGenerator(
                         packageName = generatorOptions.modelPackage,
-                        outputDir = generatorOptions.outputDir,
+                        outputDir = generatorOptions.codegenOutputDirectory,
                         generationModel = javaGenerationModel,
                     )
                     javaGenerator.generate()
                 }
                 if (generatorOptions.generateSpringKafkaClient) {
                     val kafkaGenerator = JavaSpringKafkaGenerator(
-                        outputDir = generatorOptions.outputDir,
+                        outputDir = generatorOptions.codegenOutputDirectory,
                         clientPackage = generatorOptions.clientPackage,
                         modelPackage = generatorOptions.modelPackage,
                     )
@@ -103,7 +103,7 @@ class AsyncApiGenerator {
 
         if (generatorOptions.generateAvroSchema) {
             val avroGenerator = AvroGenerator(
-                outputDir = generatorOptions.outputDir,
+                outputDir = generatorOptions.resourceOutputDirectory,
                 packageName = generatorOptions.schemaPackage,
             )
             avroGenerator.generate(analyzedSchemas)

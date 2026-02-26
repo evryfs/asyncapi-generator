@@ -10,7 +10,8 @@ import javax.inject.Inject
 abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
     val inputFile: RegularFileProperty = objects.fileProperty()
     val outputFile: RegularFileProperty = objects.fileProperty()
-    val outputDir: DirectoryProperty = objects.directoryProperty()
+    val codegenOutputDirectory: DirectoryProperty = objects.directoryProperty()
+    val resourceOutputDirectory: DirectoryProperty = objects.directoryProperty()
 
     val modelPackage: Property<String> = objects.property(String::class.java)
     val clientPackage: Property<String> = objects.property(String::class.java)

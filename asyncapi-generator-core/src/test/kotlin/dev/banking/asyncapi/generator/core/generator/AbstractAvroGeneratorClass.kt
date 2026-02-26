@@ -19,7 +19,8 @@ abstract class AbstractAvroGeneratorClass {
 
     protected fun generateAvro(
         yaml: File,
-        outputDir: File = File("target/generated-sources/asyncapi"),
+        codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
+        resourceOutputDirectory: File = File("target/generated-resources/asyncapi"),
         packageName: String,
         schema: String? = null,
     ): String {
@@ -36,7 +37,8 @@ abstract class AbstractAvroGeneratorClass {
             modelPackage = packageName,
             clientPackage = packageName,
             schemaPackage = packageName,
-            outputDir = outputDir,
+            codegenOutputDirectory = codegenOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
             generateModels = false,
             generateSpringKafkaClient = false,
             generateAvroSchema = true,
@@ -49,7 +51,7 @@ abstract class AbstractAvroGeneratorClass {
 
         if (schema != null) {
             val packagePath = packageName.replace('.', '/')
-            val output = outputDir
+            val output = resourceOutputDirectory
                 .resolve(packagePath)
                 .resolve(schema)
             if (output.exists()) return output.readText()

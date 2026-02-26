@@ -20,7 +20,7 @@ class AvroEnumTest : AbstractAvroGeneratorClass() {
         assertTrue(content.contains("\"type\": [\"null\", \"com.example.avro.TaskStatus\"]"), "TaskStatus reference missing")
         assertTrue(content.contains("\"type\": [\"null\", \"com.example.avro.Priority\"]"), "Priority reference missing")
 
-        val statusFile = File("target/generated-sources/asyncapi/com/example/avro/TaskStatus.avsc")
+        val statusFile = File("target/generated-resources/asyncapi/com/example/avro/TaskStatus.avsc")
         assertTrue(statusFile.exists(), "TaskStatus.avsc missing")
         val statusContent = statusFile.readText()
 
@@ -28,7 +28,7 @@ class AvroEnumTest : AbstractAvroGeneratorClass() {
         assertTrue(statusContent.contains("\"symbols\": ["), "TaskStatus symbols missing")
         assertTrue(statusContent.contains("\"OPEN\""), "Symbol OPEN missing")
 
-        val priorityFile = File("target/generated-sources/asyncapi/com/example/avro/Priority.avsc")
+        val priorityFile = File("target/generated-resources/asyncapi/com/example/avro/Priority.avsc")
         assertTrue(priorityFile.exists(), "Priority.avsc missing")
         val priorityContent = priorityFile.readText()
 

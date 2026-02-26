@@ -7,7 +7,8 @@ data class GeneratorOptions(
     val modelPackage: String,
     val clientPackage: String,
     val schemaPackage: String,
-    val outputDir: File,
+    val codegenOutputDirectory: File,
+    val resourceOutputDirectory: File,
 
     // Feature Flags
     val generateModels: Boolean = true,

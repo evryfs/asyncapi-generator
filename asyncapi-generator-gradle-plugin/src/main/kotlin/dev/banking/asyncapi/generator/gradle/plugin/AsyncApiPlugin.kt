@@ -15,18 +15,17 @@ class AsyncApiPlugin : Plugin<Project> {
             project.objects
         )
 
-        val task = project.tasks.register<GenerateAsyncApiTask>("generateAsyncApi") {
-            group = "code generation"
-            description = "Generates source code and clients from an AsyncAPI specification"
+        extension.inputFile.convention(project.layout.projectDirectory.file("src/main/resources/asyncapi.yaml"))
+        extension.codegenOutputDirectory.convention(project.layout.buildDirectory.dir("generated/asyncapi"))
+        extension.resourceOutputDirectory.convention(project.layout.buildDirectory.dir("generated-resources/asyncapi"))
+        extension.generatorName.convention("kotlin")
 
-            inputFile.convention(project.layout.projectDirectory.file("src/main/resources/asyncapi.yaml"))
-            outputDir.convention(project.layout.buildDirectory.dir("generated/asyncapi"))
-            modelPackage.convention("com.example.asyncapi.model")
-            generatorName.convention("kotlin")
+        val task = project.tasks.register<GenerateAsyncApiTask>("generateAsyncApi") {
 
             inputFile.set(extension.inputFile)
             outputFile.set(extension.outputFile)
-            outputDir.set(extension.outputDir)
+            codegenOutputDirectory.set(extension.codegenOutputDirectory)
+            resourceOutputDirectory.set(extension.resourceOutputDirectory)
             modelPackage.set(extension.modelPackage)
             clientPackage.set(extension.clientPackage)
             schemaPackage.set(extension.schemaPackage)
@@ -40,8 +39,8 @@ class AsyncApiPlugin : Plugin<Project> {
             if (javaPluginExtension != null) {
                 val sourceSet = javaPluginExtension.sourceSets.getByName("main")
 
-                sourceSet.java.srcDir(task.map { it.outputDir.dir("src/main/kotlin") })
-                sourceSet.java.srcDir(task.map { it.outputDir.dir("src/main/java") })
+                sourceSet.java.srcDir(task.map { it.codegenOutputDirectory.dir("src/main/kotlin") })
+                sourceSet.java.srcDir(task.map { it.codegenOutputDirectory.dir("src/main/java") })
             }
         }
     }

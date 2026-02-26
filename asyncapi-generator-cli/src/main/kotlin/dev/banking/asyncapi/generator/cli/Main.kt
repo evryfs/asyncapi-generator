@@ -27,11 +27,12 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val input by option("--input", "-i", help = "Path to AsyncAPI YAML file")
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .required()
-
-    private val output by option("--output", "-o", help = "Output directory")
+    private val codegenOutputDirectory by option("--codegen-output", help = "Codegen output directory")
         .file(canBeFile = false)
-        .default(File("./generated"))
-
+        .default(File("./generated-sources/asyncapi"))
+    private val resourceOutputDirectory by option("--resource-output", help = "Resource output directory")
+        .file(canBeFile = false)
+        .default(File("./generated-resources/asyncapi"))
     private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
         .file(canBeDir = false)
 
@@ -57,6 +58,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "--config-option",
         help = "Additional generator options (key=value). Repeatable."
     ).multiple()
+
     override fun run() {
         echo("Generating AsyncAPI code from $input...")
 
@@ -71,6 +73,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         if (results.hasWarnings()) {
             results.warnings.forEach { echo("WARN: ${it.message}") }
         }
+
         if (results.hasErrors()) {
             results.errors.forEach { echo("ERROR: ${it.message}") }
             throw RuntimeException("Validation failed with ${results.errors.size} errors.")
@@ -112,13 +115,14 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             } else {
                 "src/main/java"
             }
-            val sourceRoot = output.resolve(sourceRootName)
+            val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
             val options = GeneratorOptions(
                 generatorName = generator,
                 modelPackage = effectiveModelPackage,
                 clientPackage = effectiveClientPackage,
                 schemaPackage = effectiveSchemaPackage,
-                outputDir = sourceRoot,
+                codegenOutputDirectory = sourceRoot,
+                resourceOutputDirectory = resourceOutputDirectory,
                 generateModels = hasModelPackage,
                 generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
                 generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
@@ -130,6 +134,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         }
         echo("Generation complete.")
     }
+
     private fun parseConfigOptions(raw: List<String>): Map<String, String> {
         if (raw.isEmpty()) return emptyMap()
         val result = mutableMapOf<String, String>()
