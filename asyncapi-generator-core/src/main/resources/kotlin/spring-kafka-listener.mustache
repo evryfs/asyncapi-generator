@@ -26,27 +26,12 @@ class {{name}}(
     @KafkaListener(topics = ["{{topic}}"], groupId = "{{groupId}}")
     fun listen(record: ConsumerRecord<String, Any>) {
         val payload = record.value()
-
-        // Convert headers to Map<String, Any>
-        val headers = record.headers().associate { it.key() to String(it.value()) }
-
         when (payload) {
             {{#messageDispatches}}
             is {{payloadType}} -> {
                 log.debug("Dispatching {{payloadType}} from topic {{topic}}")
 
-                // Wrap in KafkaMessage
-                val message = KafkaMessage(
-                    payload = payload,
-                    key = record.key(),
-                    headers = headers,
-                    topic = record.topic(),
-                    partition = record.partition(),
-                    offset = record.offset(),
-                    timestamp = record.timestamp()
-                )
-
-                handler.{{methodName}}(message)
+                handler.{{methodName}}(record as ConsumerRecord<String, {{payloadType}}>)
             }
             {{/messageDispatches}}
             else -> {

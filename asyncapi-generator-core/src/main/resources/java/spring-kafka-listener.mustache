@@ -32,32 +32,16 @@ public class {{name}} {
     @KafkaListener(topics = "{{topic}}", groupId = "${spring.kafka.consumer.group-id}")
     public void listen(ConsumerRecord<String, Object> record) {
         Object payload = record.value();
-        String key = record.key();
-
-        Map<String, Object> headers = new HashMap<>();
-        for (Header header : record.headers()) {
-            headers.put(header.key(), new String(header.value()));
-        }
-
         {{#messageDispatches}}
         if (payload instanceof {{payloadType}}) {
             log.debug("Dispatching {{payloadType}} from topic {{topic}}");
 
-            KafkaMessage<{{payloadType}}> message = new KafkaMessage<>(
-                ({{payloadType}}) payload,
-                key,
-                headers,
-                record.topic(),
-                record.partition(),
-                record.offset(),
-                record.timestamp()
-            );
-
-            handler.{{methodName}}(message);
+            ConsumerRecord<String, {{payloadType}}> typedRecord =
+                (ConsumerRecord<String, {{payloadType}}>) (ConsumerRecord) record;
+            handler.{{methodName}}(typedRecord);
             return;
         }
         {{/messageDispatches}}
-
         log.warn("Received unknown message type on topic {{topic}}: {}", payload.getClass().getName());
     }
 }
