@@ -18,7 +18,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             modelPackage = modelPackage,
             clientPackage = clientPackage,
             generateModels = true,
-            generateSpringKafkaClient = true
+            generateSpringKafkaClient = true,
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
@@ -37,7 +37,28 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val userListenerContent = clientDir.resolve("UserEventsListener.kt").readText()
         assertTrue(userListenerContent.contains("is UserSignedUp"), "Listener dispatch missing UserSignedUp")
         assertTrue(userListenerContent.contains("import $modelPackage.UserSignedUp"), "Missing correct Model Import")
-        assertTrue(userListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"), "Missing ConditionalOnBean import")
+        assertTrue(
+            userListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
+            "Missing ConditionalOnBean import",
+        )
         assertTrue(userListenerContent.contains("@ConditionalOnBean(UserEventsHandler::class)"), "Missing @ConditionalOnBean annotation")
+
+        val userProducerContent = clientDir.resolve("UserEventsProducer.kt").readText()
+        assertTrue(
+            userProducerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
+            "Missing @ConditionalOnProperty annotation",
+        )
+        assertTrue(
+            userProducerContent.contains("@Value(\"\\\${kafka.topics.userEvents.topic}\")"),
+            "Producer should read topic from kafka.topics.userEvents.topic",
+        )
+        assertTrue(
+            userListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
+            "Listener should be conditional on topic property",
+        )
+        assertTrue(
+            userListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
+            "Listener should read topic from kafka.topics.userEvents.topic",
+        )
     }
 }

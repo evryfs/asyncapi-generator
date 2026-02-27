@@ -9,12 +9,13 @@ data class GeneratorOptions(
     val schemaPackage: String,
     val codegenOutputDirectory: File,
     val resourceOutputDirectory: File,
-
+    val kafkaTopicsPropertyPrefix: String = "kafka.topics",
+    val kafkaTopicsPropertySuffix: String = "topic",
     // Feature Flags
     val generateModels: Boolean = true,
     val generateSpringKafkaClient: Boolean = false,
     val generateQuarkusKafkaClient: Boolean = false,
     val generateAvroSchema: Boolean = false,
     // Flat config options (for future use)
-    val configOptions: Map<String, String> = emptyMap()
+    val configOptions: Map<String, String> = emptyMap(),
 )

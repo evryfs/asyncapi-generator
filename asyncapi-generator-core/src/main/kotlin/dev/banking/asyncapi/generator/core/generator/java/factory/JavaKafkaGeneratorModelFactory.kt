@@ -9,50 +9,56 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
 
 class JavaKafkaGeneratorModelFactory(
     private val packageName: String,
-    private val modelPackage: String
+    private val modelPackage: String,
+    private val topicPropertyPrefix: String,
+    private val topicPropertySuffix: String,
 ) {
-
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         val items = mutableListOf<GeneratorItem>()
         val baseName = MapperUtil.toPascalCase(channel.channelName)
 
-        val baseImports = if (packageName != modelPackage) {
-            channel.messages.mapNotNull { msg ->
-                val type = resolvePayloadType(msg)
-                if (isPrimitive(type)) null else "$modelPackage.$type"
+        val baseImports =
+            if (packageName != modelPackage) {
+                channel.messages.mapNotNull { msg ->
+                    val type = resolvePayloadType(msg)
+                    if (isPrimitive(type)) null else "$modelPackage.$type"
+                }
+            } else {
+                emptyList()
             }
-        } else {
-            emptyList()
-        }
-        val imports = (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord")
-            .distinct()
-            .sorted()
+        val imports =
+            (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord")
+                .distinct()
+                .sorted()
 
         if (channel.isConsumer) {
+            val topicPropertyKey = topicPropertyKey(channel.channelName)
             val handlerName = "${baseName}Handler"
-            val handlerMethods = channel.messages.map { msg ->
-                GeneratorItem.HandlerMethod(
-                    methodName = "on${msg.name}",
-                    payloadType = resolvePayloadType(msg)
-                )
-            }
+            val handlerMethods =
+                channel.messages.map { msg ->
+                    GeneratorItem.HandlerMethod(
+                        methodName = "on${msg.name}",
+                        payloadType = resolvePayloadType(msg),
+                    )
+                }
             items.add(
                 GeneratorItem.KafkaHandlerInterface(
                     name = handlerName,
                     packageName = packageName,
                     description = DocumentationUtils.toJavaDocLines("Handler for messages on topic '${channel.topic}'"),
                     methods = handlerMethods,
-                    imports = imports
-                )
+                    imports = imports,
+                ),
             )
 
             val listenerName = "${baseName}Listener"
-            val dispatches = channel.messages.map { msg ->
-                GeneratorItem.MessageDispatch(
-                    payloadType = resolvePayloadType(msg),
-                    methodName = "on${msg.name}"
-                )
-            }
+            val dispatches =
+                channel.messages.map { msg ->
+                    GeneratorItem.MessageDispatch(
+                        payloadType = resolvePayloadType(msg),
+                        methodName = "on${msg.name}",
+                    )
+                }
             items.add(
                 GeneratorItem.KafkaListenerClass(
                     name = listenerName,
@@ -62,19 +68,22 @@ class JavaKafkaGeneratorModelFactory(
                     groupId = "\${spring.kafka.consumer.group-id}",
                     handlerInterface = handlerName,
                     messageDispatches = dispatches,
-                    imports = imports
-                )
+                    imports = imports,
+                    topicPropertyKey = topicPropertyKey,
+                ),
             )
         }
 
         if (channel.isProducer) {
+            val topicPropertyKey = topicPropertyKey(channel.channelName)
             val producerName = "${baseName}Producer"
-            val sendMethods = channel.messages.map { msg ->
-                GeneratorItem.SendMethod(
-                    methodName = "send${msg.name}",
-                    payloadType = resolvePayloadType(msg)
-                )
-            }
+            val sendMethods =
+                channel.messages.map { msg ->
+                    GeneratorItem.SendMethod(
+                        methodName = "send${msg.name}",
+                        payloadType = resolvePayloadType(msg),
+                    )
+                }
             val payloadTypes = sendMethods.map { it.payloadType }.distinct()
             val kafkaValueType = if (payloadTypes.size == 1) payloadTypes.first() else "Object"
             items.add(
@@ -85,24 +94,28 @@ class JavaKafkaGeneratorModelFactory(
                     topic = channel.topic,
                     sendMethods = sendMethods,
                     kafkaValueType = kafkaValueType,
-                    imports = imports
-                )
+                    imports = imports,
+                    topicPropertyKey = topicPropertyKey,
+                ),
             )
         }
         return items
     }
 
-    private fun resolvePayloadType(msg: AnalyzedMessage): String {
-        return when (msg.schema.type.getPrimaryType()) {
+    private fun topicPropertyKey(channelName: String): String {
+        val suffix = if (topicPropertySuffix.isBlank()) "" else ".$topicPropertySuffix"
+        return "$topicPropertyPrefix.$channelName$suffix"
+    }
+
+    private fun resolvePayloadType(msg: AnalyzedMessage): String =
+        when (msg.schema.type.getPrimaryType()) {
             "string" -> "String"
             "integer" -> "Integer"
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
             else -> msg.name
         }
-    }
 
-    private fun isPrimitive(type: String): Boolean {
-        return type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal")
-    }
+    private fun isPrimitive(type: String): Boolean =
+        type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal")
 }

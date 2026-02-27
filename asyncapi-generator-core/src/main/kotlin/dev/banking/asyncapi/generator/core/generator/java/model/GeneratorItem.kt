@@ -10,14 +10,14 @@ sealed interface GeneratorItem {
         override val packageName: String,
         override val description: List<String>,
         val properties: List<PropertyModel>,
-        val implementsInterfaces: List<String> = emptyList()
+        val implementsInterfaces: List<String> = emptyList(),
     ) : GeneratorItem
 
     data class EnumModel(
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-        val values: List<String>
+        val values: List<String>,
     ) : GeneratorItem
 
     data class InterfaceModel(
@@ -25,11 +25,11 @@ sealed interface GeneratorItem {
         override val packageName: String,
         override val description: List<String>,
         val discriminator: String? = null,
-        val subTypes: List<SubType> = emptyList()
+        val subTypes: List<SubType> = emptyList(),
     ) : GeneratorItem {
         data class SubType(
             val name: String,
-            val type: String
+            val type: String,
         )
     }
 
@@ -38,7 +38,7 @@ sealed interface GeneratorItem {
         override val packageName: String,
         override val description: List<String>,
         val methods: List<HandlerMethod>,
-        val imports: List<String> = emptyList()
+        val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
     data class KafkaListenerClass(
@@ -49,7 +49,8 @@ sealed interface GeneratorItem {
         val groupId: String,
         val handlerInterface: String,
         val messageDispatches: List<MessageDispatch>,
-        val imports: List<String> = emptyList()
+        val imports: List<String> = emptyList(),
+        val topicPropertyKey: String,
     ) : GeneratorItem
 
     data class KafkaProducerClass(
@@ -59,21 +60,22 @@ sealed interface GeneratorItem {
         val topic: String,
         val sendMethods: List<SendMethod>,
         val kafkaValueType: String,
-        val imports: List<String> = emptyList()
+        val imports: List<String> = emptyList(),
+        val topicPropertyKey: String,
     ) : GeneratorItem
 
     data class HandlerMethod(
         val methodName: String,
-        val payloadType: String
+        val payloadType: String,
     )
 
     data class MessageDispatch(
         val payloadType: String,
-        val methodName: String
+        val methodName: String,
     )
 
     data class SendMethod(
         val methodName: String,
-        val payloadType: String
+        val payloadType: String,
     )
 }

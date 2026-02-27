@@ -19,7 +19,6 @@ import java.util.Locale
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
 class AsyncApiGeneratorMojo : AbstractMojo() {
-
     @Parameter(defaultValue = "\${project}", readonly = true)
     private lateinit var project: MavenProject
 
@@ -87,6 +86,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         val clientType = configOptions["client.type"]
         val schemaType = configOptions["schema.type"]
         val modelAnnotation = configOptions["model.annotation"]
+        val prefixOverride = configOptions["kafka.topics.property.prefix"]
+        val suffixOverride = configOptions["kafka.topics.property.suffix"]
 
         val hasModelPackage = modelPackage != null
         val hasClientPackage = clientPackage != null
@@ -104,8 +105,11 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             throw MojoExecutionException("model.annotation requires modelPackage")
         }
 
-        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
+        if (prefixOverride != null && prefixOverride.isBlank()) {
+            throw MojoExecutionException("kafka.topics.property.prefix cannot be empty")
+        }
 
+        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
             val effectiveModelPackage = modelPackage ?: "unused"
             val effectiveClientPackage = clientPackage ?: "unused"
             val effectiveSchemaPackage = schemaPackage ?: "unused"
@@ -117,11 +121,13 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 schemaPackage = effectiveSchemaPackage,
                 codegenOutputDirectory = codegenOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
+                kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
+                kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
                 generateModels = hasModelPackage,
                 generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
                 generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
                 generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                configOptions = configOptions
+                configOptions = configOptions,
             )
             generator.generate(bundled, options)
         }
