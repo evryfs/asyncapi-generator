@@ -1,0 +1,37 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dev.banking.asyncapi.generator.it</groupId>
+    <artifactId>kafka-topics-empty-suffix</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.banking.asyncapi.generator</groupId>
+                <artifactId>asyncapi-generator-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>kafka-topics-empty-suffix</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
+                            <generatorName>kotlin</generatorName>
+                            <modelPackage>com.example.codegen.model</modelPackage>
+                            <clientPackage>com.example.codegen.client</clientPackage>
+                            <configOptions>
+                                <client.type>spring-kafka</client.type>
+                                <kafka.topics.property.prefix>my.property</kafka.topics.property.prefix>
+                                <kafka.topics.property.suffix></kafka.topics.property.suffix>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
