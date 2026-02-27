@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
-
     val asyncApiContext = AsyncApiContext()
     val parser = AsyncApiParser(asyncApiContext)
     val bundler = AsyncApiBundler()
@@ -28,6 +27,8 @@ abstract class AbstractKotlinGeneratorClass {
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
+        kafkaTopicsPropertyPrefix: String = "kafka.topics",
+        kafkaTopicsPropertySuffix: String = "topic",
         configOptions: Map<String, String> = emptyMap(),
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
@@ -37,27 +38,31 @@ abstract class AbstractKotlinGeneratorClass {
             throwErrors()
         }
         val bundled = bundler.bundle(asyncApi)
-        val generatorOptions = GeneratorOptions(
-            generatorName = GeneratorName.KOTLIN,
-            modelPackage = modelPackage,
-            clientPackage = clientPackage ?: modelPackage,
-            schemaPackage = schemaPackage ?: modelPackage,
-            codegenOutputDirectory = codegenOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-            generateModels = generateModels,
-            generateSpringKafkaClient = generateSpringKafkaClient,
-            generateQuarkusKafkaClient = generateQuarkusKafkaClient,
-            configOptions = configOptions,
-        )
+        val generatorOptions =
+            GeneratorOptions(
+                generatorName = GeneratorName.KOTLIN,
+                modelPackage = modelPackage,
+                clientPackage = clientPackage ?: modelPackage,
+                schemaPackage = schemaPackage ?: modelPackage,
+                codegenOutputDirectory = codegenOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
+                kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix,
+                generateModels = generateModels,
+                generateSpringKafkaClient = generateSpringKafkaClient,
+                generateQuarkusKafkaClient = generateQuarkusKafkaClient,
+                configOptions = configOptions,
+            )
         generator.generate(
             asyncApiDocument = bundled,
             generatorOptions = generatorOptions,
         )
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')
-            val output = codegenOutputDirectory
-                .resolve(modelPath)
-                .resolve(generated)
+            val output =
+                codegenOutputDirectory
+                    .resolve(modelPath)
+                    .resolve(generated)
             return output.readText()
         }
         return ""

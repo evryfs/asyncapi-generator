@@ -61,4 +61,34 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             "Listener should read topic from kafka.topics.userEvents.topic",
         )
     }
+
+    @Test
+    fun `should apply custom topic property prefix and suffix`() {
+        val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
+        val modelPackage = "dev.banking.ace.userservice.v1.model"
+        val clientPackage = "dev.banking.ace.userservice.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi-prefix-suffix")
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+            codegenOutputDirectory = outputDir,
+            kafkaTopicsPropertyPrefix = "my.property",
+            kafkaTopicsPropertySuffix = "name",
+        )
+        val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
+        val producerContent = clientDir.resolve("UserEventsProducer.kt").readText()
+        val listenerContent = clientDir.resolve("UserEventsListener.kt").readText()
+        assertTrue(
+            producerContent.contains("@Value(\"\\\${my.property.userEvents.name}\")"),
+            "Producer should use custom topic property key",
+        )
+        assertTrue(
+            listenerContent.contains("@KafkaListener(topics = [\"\\\${my.property.userEvents.name}\"]"),
+            "Listener should use custom topic property key",
+        )
+    }
 }

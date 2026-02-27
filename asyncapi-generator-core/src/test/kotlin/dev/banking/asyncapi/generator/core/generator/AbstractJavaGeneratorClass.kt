@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
 
 abstract class AbstractJavaGeneratorClass {
-
     protected val asyncApiContext = AsyncApiContext()
     protected val parser = AsyncApiParser(asyncApiContext)
     protected val bundler = AsyncApiBundler()
@@ -28,6 +27,8 @@ abstract class AbstractJavaGeneratorClass {
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
+        kafkaTopicsPropertyPrefix: String = "kafka.topics",
+        kafkaTopicsPropertySuffix: String = "topic",
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
         val asyncApi = parser.parse(root)
@@ -43,6 +44,8 @@ abstract class AbstractJavaGeneratorClass {
             schemaPackage = schemaPackage ?: modelPackage,
             codegenOutputDirectory = codegenOutputDirectory,
             resourceOutputDirectory = resourceOutputDirectory,
+            kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
+            kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix,
             generateModels = generateModels,
             generateSpringKafkaClient = generateSpringKafkaClient,
             generateQuarkusKafkaClient = generateQuarkusKafkaClient,
@@ -54,26 +57,29 @@ abstract class AbstractJavaGeneratorClass {
 
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')
-            val output = codegenOutputDirectory
-                .resolve(modelPath)
-                .resolve(generated)
+            val output =
+                codegenOutputDirectory
+                    .resolve(modelPath)
+                    .resolve(generated)
             return output.readText()
         }
         return ""
     }
 
-    protected fun extractImports(source: String): String {
-        return source.lineSequence()
+    protected fun extractImports(source: String): String =
+        source
+            .lineSequence()
             .filter { it.startsWith("import ") }
             .sorted()
             .joinToString("\n")
             .trimEnd()
-    }
 
     protected fun extractClassBody(source: String): String {
-        val classStart = source.indexOf("public class")
-            .let { if (it == -1) source.indexOf("public enum") else it }
-            .let { if (it == -1) source.indexOf("public interface") else it }
+        val classStart =
+            source
+                .indexOf("public class")
+                .let { if (it == -1) source.indexOf("public enum") else it }
+                .let { if (it == -1) source.indexOf("public interface") else it }
 
         if (classStart == -1) {
             val packageEnd = source.indexOf("package ")
