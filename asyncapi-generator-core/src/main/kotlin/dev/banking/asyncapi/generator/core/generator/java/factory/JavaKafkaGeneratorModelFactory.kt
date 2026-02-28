@@ -72,28 +72,27 @@ class JavaKafkaGeneratorModelFactory(
 
         if (channel.isProducer) {
             val topicPropertyKey = topicPropertyKey(channel.channelName)
-            val producerName = "${baseName}Producer"
-            val sendMethods =
-                channel.messages.map { msg ->
-                    GeneratorItem.SendMethod(
-                        methodName = "send${msg.name}",
-                        payloadType = resolvePayloadType(msg),
+            val topicPrefix = "Topic$baseName"
+            channel.messages.forEach { msg ->
+                val payloadType = resolvePayloadType(msg)
+                val sendMethod = GeneratorItem.SendMethod(
+                    methodName = "send${msg.name}",
+                    payloadType = payloadType,
+                )
+                val producerName = "${topicPrefix}Producer${msg.name}"
+                items.add(
+                    GeneratorItem.KafkaProducerClass(
+                        name = producerName,
+                        packageName = packageName,
+                        description = DocumentationUtils.toJavaDocLines("Producer for topic '${channel.topic}'"),
+                        topic = channel.topic,
+                        sendMethods = listOf(sendMethod),
+                        kafkaValueType = payloadType,
+                        imports = imports,
+                        topicPropertyKey = topicPropertyKey,
                     )
-                }
-            val payloadTypes = sendMethods.map { it.payloadType }.distinct()
-            val kafkaValueType = if (payloadTypes.size == 1) payloadTypes.first() else "Object"
-            items.add(
-                GeneratorItem.KafkaProducerClass(
-                    name = producerName,
-                    packageName = packageName,
-                    description = DocumentationUtils.toJavaDocLines("Producer for topic '${channel.topic}'"),
-                    topic = channel.topic,
-                    sendMethods = sendMethods,
-                    kafkaValueType = kafkaValueType,
-                    imports = imports,
-                    topicPropertyKey = topicPropertyKey,
-                ),
-            )
+                )
+            }
         }
         return items
     }

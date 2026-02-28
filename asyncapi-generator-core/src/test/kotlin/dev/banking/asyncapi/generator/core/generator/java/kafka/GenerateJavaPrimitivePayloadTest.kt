@@ -9,6 +9,7 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateJavaPrimitivePayloadTest {
+
     @Test
     fun `should generate typed KafkaTemplate for single string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
@@ -34,7 +35,8 @@ class GenerateJavaPrimitivePayloadTest {
                 "topic",
             )
         generator.generate(listOf(channel))
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicProducer.java")
+        val producerFile =
+            outputDir.resolve(packageName.replace('.', '/') + "/TopicSimpleTopicProducerSimpleStringMessage.java")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -44,7 +46,7 @@ class GenerateJavaPrimitivePayloadTest {
     }
 
     @Test
-    fun `should use Object KafkaTemplate for multiple payloads`() {
+    fun `should generate one producer per payload for multiple messages`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive.multi"
         val stringSchema = Schema(type = "string")
@@ -70,12 +72,21 @@ class GenerateJavaPrimitivePayloadTest {
                 "topic",
             )
         generator.generate(listOf(channel))
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/MultiTopicProducer.java")
-        assertTrue(producerFile.exists(), "Producer should be generated")
-        val producerContent = producerFile.readText()
+        val producerFileA =
+            outputDir.resolve(packageName.replace('.', '/') + "/TopicMultiTopicProducerStringMessage.java")
+        val producerFileB =
+            outputDir.resolve(packageName.replace('.', '/') + "/TopicMultiTopicProducerIntMessage.java")
+        assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
+        assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
+        val producerContentA = producerFileA.readText()
+        val producerContentB = producerFileB.readText()
         assertTrue(
-            producerContent.contains("KafkaTemplate<String, Object>"),
-            "Producer should use Object KafkaTemplate for multiple payloads",
+            producerContentA.contains("KafkaTemplate<String, String>"),
+            "StringMessage producer should use typed KafkaTemplate",
+        )
+        assertTrue(
+            producerContentB.contains("KafkaTemplate<String, Integer>"),
+            "IntMessage producer should use typed KafkaTemplate",
         )
     }
 }

@@ -46,7 +46,8 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
             clientDir.resolve("TopicUserEventsHandlerUserLoggedIn.java").exists(),
             "UserLoggedIn Handler missing"
         )
-        assertTrue(clientDir.resolve("UserEventsProducer.java").exists(), "Producer missing")
+        assertTrue(clientDir.resolve("TopicUserEventsProducerUserSignedUp.java").exists(), "UserSignedUp Producer missing")
+        assertTrue(clientDir.resolve("TopicUserEventsProducerUserLoggedIn.java").exists(), "UserLoggedIn Producer missing")
         val userSignedUpListenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.java").readText()
         assertTrue(
             userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
@@ -61,7 +62,7 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
             userSignedUpListenerContent.contains("@ConditionalOnBean(TopicUserEventsHandlerUserSignedUp.class)"),
             "Missing @ConditionalOnBean annotation",
         )
-        val userProducerContent = clientDir.resolve("UserEventsProducer.java").readText()
+        val userProducerContent = clientDir.resolve("TopicUserEventsProducerUserSignedUp.java").readText()
         assertTrue(
             userProducerContent.contains("@ConditionalOnProperty(name = \"kafka.topics.userEvents.topic\")"),
             "Missing @ConditionalOnProperty annotation",
@@ -102,7 +103,7 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
             kafkaTopicsPropertySuffix = "name",
         )
         val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
-        val producerContent = clientDir.resolve("UserEventsProducer.java").readText()
+        val producerContent = clientDir.resolve("TopicUserEventsProducerUserSignedUp.java").readText()
         val listenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.java").readText()
         assertTrue(
             producerContent.contains("@Value(\"\${my.property.userEvents.name}\")"),

@@ -40,7 +40,8 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             "UserLoggedIn Listener missing"
         )
         assertTrue(clientDir.resolve("TopicUserEventsHandlerUserLoggedIn.kt").exists(), "UserLoggedIn Handler missing")
-        assertTrue(clientDir.resolve("UserEventsProducer.kt").exists(), "UserEvents Producer missing")
+        assertTrue(clientDir.resolve("TopicUserEventsProducerUserSignedUp.kt").exists(), "UserSignedUp Producer missing")
+        assertTrue(clientDir.resolve("TopicUserEventsProducerUserLoggedIn.kt").exists(), "UserLoggedIn Producer missing")
         val userSignedUpListenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
         assertTrue(
             userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
@@ -58,7 +59,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             userSignedUpListenerContent.contains("@ConditionalOnBean(TopicUserEventsHandlerUserSignedUp::class)"),
             "Missing @ConditionalOnBean annotation",
         )
-        val userProducerContent = clientDir.resolve("UserEventsProducer.kt").readText()
+        val userProducerContent = clientDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
         assertTrue(
             userProducerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
             "Missing @ConditionalOnProperty annotation",
@@ -95,7 +96,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             kafkaTopicsPropertySuffix = "name",
         )
         val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
-        val producerContent = clientDir.resolve("UserEventsProducer.kt").readText()
+        val producerContent = clientDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
         val listenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
         assertTrue(
             producerContent.contains("@Value(\"\\\${my.property.userEvents.name}\")"),
