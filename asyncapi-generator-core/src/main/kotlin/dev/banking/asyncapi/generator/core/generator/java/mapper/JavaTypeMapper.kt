@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java.mapper
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
@@ -19,7 +20,7 @@ class JavaTypeMapper(val context: GeneratorContext) {
 
     fun mapJavaType(propertyName: String, schema: Schema?): String {
         if (schema == null) return "Object"
-
+        if (schema.type.hasMultipleNonNullTypes()) return "Object"
         for (mapper in mappers) {
             val mappedType = mapper.map(schema, propertyName, this)
             if (mappedType != null) {
