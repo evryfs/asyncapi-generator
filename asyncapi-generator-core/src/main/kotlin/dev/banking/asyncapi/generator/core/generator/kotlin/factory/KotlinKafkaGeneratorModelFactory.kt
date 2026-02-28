@@ -33,45 +33,42 @@ class KotlinKafkaGeneratorModelFactory(
 
         if (channel.isConsumer) {
             val topicPropertyKey = topicPropertyKey(channel.channelName)
-            val handlerName = "${baseName}Handler"
-            val handlerMethods =
-                channel.messages.map { msg ->
-                    GeneratorItem.HandlerMethod(
-                        methodName = "on${msg.name}",
-                        payloadType = resolvePayloadType(msg),
-                        keyType = "String?",
+            val topicPrefix = "Topic$baseName"
+            channel.messages.forEach { msg ->
+                val payloadType = resolvePayloadType(msg)
+                val methodName = "on${msg.name}"
+                val handlerName = "${topicPrefix}Handler${msg.name}"
+                items.add(
+                    GeneratorItem.KafkaHandlerInterface(
+                        name = handlerName,
+                        packageName = packageName,
+                        description = toKDocLines("Handler for messages on topic '${channel.topic}'"),
+                        methods = listOf(
+                            GeneratorItem.HandlerMethod(
+                                methodName = methodName,
+                                payloadType = payloadType,
+                                keyType = "String?",
+                            )
+                        ),
+                        imports = imports,
                     )
-                }
-            items.add(
-                GeneratorItem.KafkaHandlerInterface(
-                    name = handlerName,
-                    packageName = packageName,
-                    description = toKDocLines("Handler for messages on topic '${channel.topic}'"),
-                    methods = handlerMethods,
-                    imports = imports,
-                ),
-            )
-            val listenerName = "${baseName}Listener"
-            val dispatches =
-                channel.messages.map { msg ->
-                    GeneratorItem.MessageDispatch(
-                        payloadType = resolvePayloadType(msg),
-                        methodName = "on${msg.name}",
+                )
+                val listenerName = "${topicPrefix}Listener${msg.name}"
+                items.add(
+                    GeneratorItem.KafkaListenerClass(
+                        name = listenerName,
+                        packageName = packageName,
+                        description = toKDocLines("Spring Kafka Listener for topic '${channel.topic}'"),
+                        topic = channel.topic,
+                        groupId = "\\\${spring.kafka.consumer.group-id}",
+                        handlerInterface = handlerName,
+                        payloadType = payloadType,
+                        methodName = methodName,
+                        imports = imports,
+                        topicPropertyKey = topicPropertyKey,
                     )
-                }
-            items.add(
-                GeneratorItem.KafkaListenerClass(
-                    name = listenerName,
-                    packageName = packageName,
-                    description = toKDocLines("Spring Kafka Listener for topic '${channel.topic}'"),
-                    topic = channel.topic,
-                    groupId = "\\\${spring.kafka.consumer.group-id}",
-                    handlerInterface = handlerName,
-                    messageDispatches = dispatches,
-                    imports = imports,
-                    topicPropertyKey = topicPropertyKey,
-                ),
-            )
+                )
+            }
         }
 
         if (channel.isProducer) {
@@ -117,5 +114,6 @@ class KotlinKafkaGeneratorModelFactory(
             else -> msg.name // Object types use the Class Name
         }
 
-    private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
+    private fun isPrimitive(type: String): Boolean =
+        type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
 }

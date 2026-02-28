@@ -30,19 +30,34 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.kt").exists(), "UserLoggedIn model missing")
 
         val clientDir = outputDir.resolve(clientPath)
-        assertTrue(clientDir.resolve("UserEventsListener.kt").exists(), "UserEvents Listener missing")
-        assertTrue(clientDir.resolve("UserEventsHandler.kt").exists(), "UserEvents Handler missing")
-        assertTrue(clientDir.resolve("UserEventsProducer.kt").exists(), "UserEvents Producer missing")
-
-        val userListenerContent = clientDir.resolve("UserEventsListener.kt").readText()
-        assertTrue(userListenerContent.contains("is UserSignedUp"), "Listener dispatch missing UserSignedUp")
-        assertTrue(userListenerContent.contains("import $modelPackage.UserSignedUp"), "Missing correct Model Import")
         assertTrue(
-            userListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
+            clientDir.resolve("TopicUserEventsListenerUserSignedUp.kt").exists(),
+            "UserSignedUp Listener missing"
+        )
+        assertTrue(clientDir.resolve("TopicUserEventsHandlerUserSignedUp.kt").exists(), "UserSignedUp Handler missing")
+        assertTrue(
+            clientDir.resolve("TopicUserEventsListenerUserLoggedIn.kt").exists(),
+            "UserLoggedIn Listener missing"
+        )
+        assertTrue(clientDir.resolve("TopicUserEventsHandlerUserLoggedIn.kt").exists(), "UserLoggedIn Handler missing")
+        assertTrue(clientDir.resolve("UserEventsProducer.kt").exists(), "UserEvents Producer missing")
+        val userSignedUpListenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
+        assertTrue(
+            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
+            "Listener should be typed to UserSignedUp"
+        )
+        assertTrue(
+            userSignedUpListenerContent.contains("import $modelPackage.UserSignedUp"),
+            "Missing correct Model Import"
+        )
+        assertTrue(
+            userSignedUpListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
             "Missing ConditionalOnBean import",
         )
-        assertTrue(userListenerContent.contains("@ConditionalOnBean(UserEventsHandler::class)"), "Missing @ConditionalOnBean annotation")
-
+        assertTrue(
+            userSignedUpListenerContent.contains("@ConditionalOnBean(TopicUserEventsHandlerUserSignedUp::class)"),
+            "Missing @ConditionalOnBean annotation",
+        )
         val userProducerContent = clientDir.resolve("UserEventsProducer.kt").readText()
         assertTrue(
             userProducerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
@@ -53,11 +68,11 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             "Producer should read topic from kafka.topics.userEvents.topic",
         )
         assertTrue(
-            userListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
+            userSignedUpListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
             "Listener should be conditional on topic property",
         )
         assertTrue(
-            userListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
+            userSignedUpListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
             "Listener should read topic from kafka.topics.userEvents.topic",
         )
     }
@@ -81,7 +96,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         )
         val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
         val producerContent = clientDir.resolve("UserEventsProducer.kt").readText()
-        val listenerContent = clientDir.resolve("UserEventsListener.kt").readText()
+        val listenerContent = clientDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
         assertTrue(
             producerContent.contains("@Value(\"\\\${my.property.userEvents.name}\")"),
             "Producer should use custom topic property key",

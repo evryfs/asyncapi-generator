@@ -10,6 +10,7 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
+
     @Test
     fun `should generate client for primitive string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
@@ -37,7 +38,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             )
         generator.generate(listOf(channel))
 
-        val handlerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicHandler.kt")
+        val handlerFile = outputDir.resolve(packageName.replace('.', '/') + "/TopicSimpleTopicHandlerSimpleStringMessage.kt")
         assertTrue(handlerFile.exists())
 
         val content = handlerFile.readText()

@@ -33,45 +33,41 @@ class JavaKafkaGeneratorModelFactory(
 
         if (channel.isConsumer) {
             val topicPropertyKey = topicPropertyKey(channel.channelName)
-            val handlerName = "${baseName}Handler"
-            val handlerMethods =
-                channel.messages.map { msg ->
-                    GeneratorItem.HandlerMethod(
-                        methodName = "on${msg.name}",
-                        payloadType = resolvePayloadType(msg),
+            val topicPrefix = "Topic$baseName"
+            channel.messages.forEach { msg ->
+                val payloadType = resolvePayloadType(msg)
+                val methodName = "on${msg.name}"
+                val handlerName = "${topicPrefix}Handler${msg.name}"
+                items.add(
+                    GeneratorItem.KafkaHandlerInterface(
+                        name = handlerName,
+                        packageName = packageName,
+                        description = DocumentationUtils.toJavaDocLines("Handler for messages on topic '${channel.topic}'"),
+                        methods = listOf(
+                            GeneratorItem.HandlerMethod(
+                                methodName = methodName,
+                                payloadType = payloadType,
+                            )
+                        ),
+                        imports = imports,
                     )
-                }
-            items.add(
-                GeneratorItem.KafkaHandlerInterface(
-                    name = handlerName,
-                    packageName = packageName,
-                    description = DocumentationUtils.toJavaDocLines("Handler for messages on topic '${channel.topic}'"),
-                    methods = handlerMethods,
-                    imports = imports,
-                ),
-            )
-
-            val listenerName = "${baseName}Listener"
-            val dispatches =
-                channel.messages.map { msg ->
-                    GeneratorItem.MessageDispatch(
-                        payloadType = resolvePayloadType(msg),
-                        methodName = "on${msg.name}",
+                )
+                val listenerName = "${topicPrefix}Listener${msg.name}"
+                items.add(
+                    GeneratorItem.KafkaListenerClass(
+                        name = listenerName,
+                        packageName = packageName,
+                        description = DocumentationUtils.toJavaDocLines("Spring Kafka Listener for topic '${channel.topic}'"),
+                        topic = channel.topic,
+                        groupId = "\${spring.kafka.consumer.group-id}",
+                        handlerInterface = handlerName,
+                        payloadType = payloadType,
+                        methodName = methodName,
+                        imports = imports,
+                        topicPropertyKey = topicPropertyKey,
                     )
-                }
-            items.add(
-                GeneratorItem.KafkaListenerClass(
-                    name = listenerName,
-                    packageName = packageName,
-                    description = DocumentationUtils.toJavaDocLines("Spring Kafka Listener for topic '${channel.topic}'"),
-                    topic = channel.topic,
-                    groupId = "\${spring.kafka.consumer.group-id}",
-                    handlerInterface = handlerName,
-                    messageDispatches = dispatches,
-                    imports = imports,
-                    topicPropertyKey = topicPropertyKey,
-                ),
-            )
+                )
+            }
         }
 
         if (channel.isProducer) {
