@@ -1,11 +1,12 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
-import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -18,7 +19,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 class MessageValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagValidator = TagValidator(asyncApiContext)
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val schemaValidator = SchemaValidator(asyncApiContext)
@@ -51,7 +51,8 @@ class MessageValidator(
     }
 
     private fun validateHeaders(node: Message, contextString: String, results: ValidationResults) {
-        val headers = node.headers ?: return
+        val headersSchema = node.headers ?: return
+        val headers = extractHeaderProperties(headersSchema)
         headers.forEach { (headerName, schemaInterface) ->
             val contextString = "$contextString Header '$headerName'"
             when (schemaInterface) {
@@ -64,7 +65,7 @@ class MessageValidator(
                 is SchemaInterface.MultiFormatSchemaInline -> {
                     results.warn(
                         "$contextString MultiFormatSchema in headers are not validated (header '$headerName').",
-                        asyncApiContext.getLine(node, node::headers)
+                        asyncApiContext.getLine(node, node::headers),
                     )
                 }
 
@@ -129,4 +130,19 @@ class MessageValidator(
             }
         }
     }
+
+    private fun extractHeaderProperties(schemaInterface: SchemaInterface): Map<String, SchemaInterface> =
+        when (schemaInterface) {
+            is SchemaInterface.SchemaInline -> {
+                val schema = schemaInterface.schema
+                if (schema.type.getPrimaryType() == "object") schema.properties ?: emptyMap() else emptyMap()
+            }
+
+            is SchemaInterface.SchemaReference -> {
+                val schema = schemaInterface.reference.model as? Schema
+                if (schema?.type.getPrimaryType() == "object") schema?.properties ?: emptyMap() else emptyMap()
+            }
+
+            else -> emptyMap()
+        }
 }
