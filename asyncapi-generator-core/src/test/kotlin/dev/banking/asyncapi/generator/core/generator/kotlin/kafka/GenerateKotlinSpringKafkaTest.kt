@@ -30,7 +30,6 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.kt").exists(), "UserLoggedIn model missing")
 
         val clientDir = outputDir.resolve(clientPath)
-        assertTrue(clientDir.resolve("KafkaMessage.kt").exists(), "KafkaMessage wrapper missing")
         assertTrue(clientDir.resolve("UserEventsListener.kt").exists(), "UserEvents Listener missing")
         assertTrue(clientDir.resolve("UserEventsHandler.kt").exists(), "UserEvents Handler missing")
         assertTrue(clientDir.resolve("UserEventsProducer.kt").exists(), "UserEvents Producer missing")

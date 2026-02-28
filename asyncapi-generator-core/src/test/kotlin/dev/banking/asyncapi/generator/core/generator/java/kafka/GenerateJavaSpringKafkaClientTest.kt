@@ -30,7 +30,6 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.java").exists(), "Model UserLoggedIn missing")
 
         val clientDir = outputDir.resolve(clientPath)
-        assertTrue(clientDir.resolve("KafkaMessage.java").exists(), "KafkaMessage missing")
         assertTrue(clientDir.resolve("UserEventsListener.java").exists(), "Listener missing")
         assertTrue(clientDir.resolve("UserEventsHandler.java").exists(), "Handler missing")
         assertTrue(clientDir.resolve("UserEventsProducer.java").exists(), "Producer missing")

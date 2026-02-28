@@ -11,6 +11,6 @@ import {{{.}}}
  */
 interface {{name}} {
 {{#methods}}
-    fun {{methodName}}(message: KafkaMessage<{{payloadType}}>)
+    fun {{methodName}}(record: ConsumerRecord<String, {{payloadType}}>)
 {{/methods}}
 }

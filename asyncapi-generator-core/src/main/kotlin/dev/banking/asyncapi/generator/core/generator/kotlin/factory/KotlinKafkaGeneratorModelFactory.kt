@@ -16,14 +16,17 @@ class KotlinKafkaGeneratorModelFactory(
         val items = mutableListOf<GeneratorItem>()
         val baseName = MapperUtil.toPascalCase(channel.channelName)
 
-        val imports = if (packageName != modelPackage) {
+        val baseImports = if (packageName != modelPackage) {
             channel.messages.mapNotNull { msg ->
                 val type = resolvePayloadType(msg)
                 if (isPrimitive(type)) null else "$modelPackage.$type"
-            }.distinct().sorted()
+            }
         } else {
             emptyList()
         }
+        val imports = (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord")
+            .distinct()
+            .sorted()
 
         if (channel.isConsumer) {
             val handlerName = "${baseName}Handler"

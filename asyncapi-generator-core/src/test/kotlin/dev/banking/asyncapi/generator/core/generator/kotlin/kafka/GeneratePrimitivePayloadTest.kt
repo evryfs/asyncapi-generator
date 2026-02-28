@@ -33,6 +33,9 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
         assertTrue(handlerFile.exists())
 
         val content = handlerFile.readText()
-        assertTrue(content.contains("fun onSimpleStringMessage(message: KafkaMessage<String>)"), "Should use String type")
+        assertTrue(
+            content.contains("fun onSimpleStringMessage(record: ConsumerRecord<String, String>)"),
+            "Should use ConsumerRecord with String payload"
+        )
     }
 }
