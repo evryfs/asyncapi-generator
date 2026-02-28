@@ -26,8 +26,7 @@ components:
       name: InlineTraitMessage
       traits:
         - headers:
-            X-Trace-ID: # Header Name
-              type: string # Header Schem
+            type: string # Header Schema
 
   schemas:
     MySchema:

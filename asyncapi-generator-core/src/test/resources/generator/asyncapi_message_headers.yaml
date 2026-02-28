@@ -1,0 +1,28 @@
+asyncapi: 3.0.0
+info:
+  title: Header DTO test
+  version: 1.0.0
+channels:
+  userEvents:
+    address: user.events.v1
+    messages:
+      UserSignup:
+        $ref: "#/components/messages/UserSignup"
+components:
+  messages:
+    UserSignup:
+      name: UserSignup
+      headers:
+        type: object
+        properties:
+          correlationId:
+            description: Correlation ID set by application
+            type: string
+          applicationInstanceId:
+            description: Unique identifier for a given instance of the publishing application
+            type: string
+      payload:
+        type: object
+        properties:
+          user:
+            type: string

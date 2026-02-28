@@ -26,19 +26,9 @@ class {{name}}(
     private val log = LoggerFactory.getLogger({{name}}::class.java)
 {{=<% %>=}}
     @KafkaListener(topics = ["\${<%topicPropertyKey%>}"], groupId = "<%groupId%>")
-<%={{ }}=%>    fun listen(record: ConsumerRecord<String, Any>) {
-        val payload = record.value()
-        when (payload) {
-            {{#messageDispatches}}
-            is {{payloadType}} -> {
-                log.debug("Dispatching {{payloadType}} from topic {{topic}}")
-
-                handler.{{methodName}}(record as ConsumerRecord<String, {{payloadType}}>)
-            }
-            {{/messageDispatches}}
-            else -> {
-                log.warn("Received unknown message type on topic {{topic}}: {}", payload::class.java.name)
-            }
+<%={{ }}=%>    fun listen(record: ConsumerRecord<String, {{payloadType}}>) {
+            log.debug("Dispatching {{payloadType}} from topic {{topic}}")
+            handler.{{methodName}}(record)
         }
     }
 }

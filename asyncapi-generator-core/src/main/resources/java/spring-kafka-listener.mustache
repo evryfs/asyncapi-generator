@@ -30,18 +30,8 @@ public class {{name}} {
 
     {{=<% %>=}}
     @KafkaListener(topics = "${<%topicPropertyKey%>}", groupId = "<%groupId%>")
-    <%={{ }}=%>    public void listen(ConsumerRecord<String, Object> record) {
-        Object payload = record.value();
-        {{#messageDispatches}}
-        if (payload instanceof {{payloadType}}) {
-            log.debug("Dispatching {{payloadType}} from topic {{topic}}");
-
-            ConsumerRecord<String, {{payloadType}}> typedRecord =
-                (ConsumerRecord<String, {{payloadType}}>) (ConsumerRecord) record;
-            handler.{{methodName}}(typedRecord);
-            return;
-        }
-        {{/messageDispatches}}
-        log.warn("Received unknown message type on topic {{topic}}: {}", payload.getClass().getName());
+    <%={{ }}=%>    public void listen(ConsumerRecord<String, {{payloadType}}> record) {
+        log.debug("Dispatching {{payloadType}} from topic {{topic}}");
+        handler.{{methodName}}(record);
     }
 }

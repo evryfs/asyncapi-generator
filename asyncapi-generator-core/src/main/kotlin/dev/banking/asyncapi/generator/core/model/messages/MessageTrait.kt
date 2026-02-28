@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
 data class MessageTrait(
-    val headers: Map<String, SchemaInterface>? = null,
+    val headers: SchemaInterface? = null,
     val correlationId: CorrelationIdInterface? = null,
     val contentType: String? = null,
     val name: String? = null,

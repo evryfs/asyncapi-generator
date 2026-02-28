@@ -11,7 +11,8 @@ object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): Map<String, Schema> {
         val collectedSchemas = mutableMapOf<String, Schema>()
-        val componentNode = (asyncApiDocument.components as? ComponentInterface.ComponentInline)?.component ?: return emptyMap()
+        val componentNode = (asyncApiDocument.components as? ComponentInterface.ComponentInline)?.component
+            ?: return emptyMap()
 
         componentNode.schemas?.forEach { (name, schemaInterface) ->
             if (schemaInterface is SchemaInterface.SchemaInline) {
