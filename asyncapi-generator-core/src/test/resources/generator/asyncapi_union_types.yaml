@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Union Types
+  version: 1.0.0
+components:
+  schemas:
+    UnionTypes:
+      type: object
+      required:
+        - stringOrArray
+        - arrayOrNull
+        - stringArrayOrNull
+      properties:
+        stringOrArray:
+          type: [string, array]
+          items:
+            type: string
+        arrayOrNull:
+          type: [array, "null"]
+          items:
+            type: string
+        stringArrayOrNull:
+          type: [string, array, "null"]
+          items:
+            type: string
+        stringOrNull:
+          type: [string, "null"]

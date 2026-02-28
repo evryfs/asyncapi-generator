@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.util
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.NON_ALPHANUMERIC
+import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility
 
 object MapperUtil {
 
@@ -13,13 +14,33 @@ object MapperUtil {
 
     fun Any?.getPrimaryType(): String? {
         return when (this) {
-            is String -> this
-            is List<*> -> this.firstOrNull { it is String && it != "null" } as? String
+            is String -> ValidatorUtility.sanitizeString(this)
+            is List<*> -> this
+                .filterIsInstance<String>()
+                .map { ValidatorUtility.sanitizeString(it) }
+                .firstOrNull { !it.equals("null", ignoreCase = true) }
+
             else -> null
         }
     }
 
     fun Any?.isTypeNullable(): Boolean {
-        return this is List<*> && this.any { it == "null" }
+        return when (this) {
+            is String -> ValidatorUtility.sanitizeString(this).equals("null", ignoreCase = true)
+            is List<*> -> this
+                .filterIsInstance<String>()
+                .any { ValidatorUtility.sanitizeString(it).equals("null", ignoreCase = true) }
+
+            else -> false
+        }
     }
+
+    fun Any?.hasMultipleNonNullTypes(): Boolean {
+        val types = (this as? List<*>)?.filterIsInstance<String>()
+            ?.map { ValidatorUtility.sanitizeString(it) }
+            ?.filter { !it.equals("null", ignoreCase = true) }
+            ?: return false
+        return types.distinct().size > 1
+    }
+
 }
