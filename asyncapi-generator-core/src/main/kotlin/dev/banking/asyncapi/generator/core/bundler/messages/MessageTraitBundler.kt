@@ -51,7 +51,7 @@ class MessageTraitBundler {
     }
 
     private fun bundleTrait(trait: MessageTrait, visited: Set<String>): MessageTrait {
-        val bundledHeaders = schemaBundler.bundleMap(trait.headers, visited)
+        val bundledHeaders =  trait.headers?.let { schemaBundler.bundle(it, visited) }
         val bundledCorrelationId = trait.correlationId?.let { correlationIdBundler.bundle(it, visited) }
         val bundledTags = tagBundler.bundleList(trait.tags, visited)
         val bundledExternalDocs = trait.externalDocs?.let { externalDocsBundler.bundle(it, visited) }

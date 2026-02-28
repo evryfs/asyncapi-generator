@@ -2,10 +2,12 @@ package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.MIME_TYPE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -54,13 +56,14 @@ class MessageTraitValidator(
             results.warn(
                 "$contextString provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'" +
                     " — it might not have any effect.",
-                asyncApiContext.getLine(node, node::headers)
+                asyncApiContext.getLine(node, node::headers),
             )
         }
     }
 
     private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationResults) {
-        val headers = node.headers ?: return
+        val headersSchema = node.headers ?: return
+        val headers = extractHeaderProperties(headersSchema)
         headers.forEach { (schemaName, schemaInterface) ->
             val contextString = "$contextString Header Schema '$schemaName'"
             when (schemaInterface) {
@@ -82,7 +85,7 @@ class MessageTraitValidator(
             results.error(
                 "$contextString invalid 'contentType' value '$contentType'. Expected a valid MIME type, e.g., 'application/json'.",
                 asyncApiContext.getLine(node, node::contentType),
-                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject"
+                "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject",
             )
         }
     }
@@ -126,4 +129,19 @@ class MessageTraitValidator(
             }
         }
     }
+
+    private fun extractHeaderProperties(schemaInterface: SchemaInterface): Map<String, SchemaInterface> =
+        when (schemaInterface) {
+            is SchemaInterface.SchemaInline -> {
+                val schema = schemaInterface.schema
+                if (schema.type.getPrimaryType() == "object") schema.properties ?: emptyMap() else emptyMap()
+            }
+
+            is SchemaInterface.SchemaReference -> {
+                val schema = schemaInterface.reference.model as? Schema
+                if (schema?.type.getPrimaryType() == "object") schema?.properties ?: emptyMap() else emptyMap()
+            }
+
+            else -> emptyMap()
+        }
 }
