@@ -16,6 +16,9 @@ class KotlinKafkaGeneratorModelFactory(
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         val items = mutableListOf<GeneratorItem>()
         val baseName = MapperUtil.toPascalCase(channel.channelName)
+        val handlerPackage = "$packageName.handler"
+        val listenerPackage = "$packageName.listener"
+        val producerPackage = "$packageName.producer"
 
         val baseImports =
             if (packageName != modelPackage) {
@@ -41,32 +44,34 @@ class KotlinKafkaGeneratorModelFactory(
                 items.add(
                     GeneratorItem.KafkaHandlerInterface(
                         name = handlerName,
-                        packageName = packageName,
+                        packageName = handlerPackage,
                         description = toKDocLines("Handler for messages on topic '${channel.topic}'"),
-                        methods = listOf(
-                            GeneratorItem.HandlerMethod(
-                                methodName = methodName,
-                                payloadType = payloadType,
-                                keyType = "String?",
-                            )
-                        ),
+                        methods =
+                            listOf(
+                                GeneratorItem.HandlerMethod(
+                                    methodName = methodName,
+                                    payloadType = payloadType,
+                                    keyType = "String?",
+                                ),
+                            ),
                         imports = imports,
-                    )
+                    ),
                 )
                 val listenerName = "${topicPrefix}Listener${msg.name}"
+                val listenerImports = (imports + "$handlerPackage.$handlerName").distinct().sorted()
                 items.add(
                     GeneratorItem.KafkaListenerClass(
                         name = listenerName,
-                        packageName = packageName,
+                        packageName = listenerPackage,
                         description = toKDocLines("Spring Kafka Listener for topic '${channel.topic}'"),
                         topic = channel.topic,
                         groupId = "\\\${spring.kafka.consumer.group-id}",
                         handlerInterface = handlerName,
                         payloadType = payloadType,
                         methodName = methodName,
-                        imports = imports,
+                        imports = listenerImports,
                         topicPropertyKey = topicPropertyKey,
-                    )
+                    ),
                 )
             }
         }
@@ -76,23 +81,24 @@ class KotlinKafkaGeneratorModelFactory(
             val topicPrefix = "Topic$baseName"
             channel.messages.forEach { msg ->
                 val payloadType = resolvePayloadType(msg)
-                val sendMethod = GeneratorItem.SendMethod(
-                    methodName = "send${msg.name}",
-                    payloadType = payloadType,
-                    keyType = "String",
-                )
+                val sendMethod =
+                    GeneratorItem.SendMethod(
+                        methodName = "send${msg.name}",
+                        payloadType = payloadType,
+                        keyType = "String",
+                    )
                 val producerName = "${topicPrefix}Producer${msg.name}"
                 items.add(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
-                        packageName = packageName,
+                        packageName = producerPackage,
                         description = toKDocLines("Producer for topic '${channel.topic}'"),
                         topic = channel.topic,
                         sendMethods = listOf(sendMethod),
                         kafkaValueType = payloadType,
                         imports = imports,
                         topicPropertyKey = topicPropertyKey,
-                    )
+                    ),
                 )
             }
         }
@@ -113,6 +119,5 @@ class KotlinKafkaGeneratorModelFactory(
             else -> msg.name // Object types use the Class Name
         }
 
-    private fun isPrimitive(type: String): Boolean =
-        type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
+    private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
 }

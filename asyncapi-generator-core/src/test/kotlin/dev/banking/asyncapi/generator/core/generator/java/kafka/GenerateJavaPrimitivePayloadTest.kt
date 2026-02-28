@@ -9,7 +9,6 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateJavaPrimitivePayloadTest {
-
     @Test
     fun `should generate typed KafkaTemplate for single string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
@@ -36,7 +35,7 @@ class GenerateJavaPrimitivePayloadTest {
             )
         generator.generate(listOf(channel))
         val producerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/TopicSimpleTopicProducerSimpleStringMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicSimpleTopicProducerSimpleStringMessage.java")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -73,9 +72,9 @@ class GenerateJavaPrimitivePayloadTest {
             )
         generator.generate(listOf(channel))
         val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/TopicMultiTopicProducerStringMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.java")
         val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/TopicMultiTopicProducerIntMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.java")
         assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
         assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
         val producerContentA = producerFileA.readText()
