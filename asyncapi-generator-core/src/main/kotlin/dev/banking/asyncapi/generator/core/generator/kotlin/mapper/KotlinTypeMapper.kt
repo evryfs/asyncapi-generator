@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.mapper
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
@@ -21,14 +22,14 @@ class KotlinTypeMapper(
 
     fun mapKotlinType(propertyName: String, schema: Schema?): String {
         if (schema == null) return "Any"
-
+        // Strict JSON Schema: if multiple non-null types, fall back to Any
+        if (schema.type.hasMultipleNonNullTypes()) return "Any"
         for (mapper in mappers) {
             val mappedType = mapper.map(schema, propertyName, this)
             if (mappedType != null) {
                 return mappedType
             }
         }
-
         return "Any"
     }
 
