@@ -4,6 +4,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 {{#imports}}
 import {{{.}}};
@@ -15,19 +17,24 @@ import {{{.}}};
 {{/description}}
  */
 @Component
+@ConditionalOnProperty(name = "{{topicPropertyKey}}")
 public class {{name}} {
 
     private static final Logger log = LoggerFactory.getLogger({{name}}.class);
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate;
 
-    public {{name}}(KafkaTemplate<String, Object> kafkaTemplate) {
+    {{=<% %>=}}
+    @Value("${<%topicPropertyKey%>}")
+    private String topic;
+    <%={{ }}=%>
+    public {{name}}(KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     {{#sendMethods}}
     public void {{methodName}}(String key, {{payloadType}} message) {
-        log.info("Sending {{payloadType}} to topic={{topic}}, key={}", key);
-        kafkaTemplate.send(new ProducerRecord<>("{{topic}}", key, message));
+        log.info("Sending {{payloadType}} to topic={}, key={}", topic, key);
+        kafkaTemplate.send(new ProducerRecord<>(topic, key, message));
     }
     {{/sendMethods}}
 }

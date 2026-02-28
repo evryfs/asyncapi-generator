@@ -1,14 +1,12 @@
 package {{packageName}};
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.header.Header;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 {{#imports}}
 import {{.}};
 {{/imports}}
@@ -20,6 +18,7 @@ import {{.}};
  */
 @Component
 @ConditionalOnBean({{handlerInterface}}.class)
+@ConditionalOnProperty(name = "{{topicPropertyKey}}")
 public class {{name}} {
 
     private static final Logger log = LoggerFactory.getLogger({{name}}.class);
@@ -29,8 +28,9 @@ public class {{name}} {
         this.handler = handler;
     }
 
-    @KafkaListener(topics = "{{topic}}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listen(ConsumerRecord<String, Object> record) {
+    {{=<% %>=}}
+    @KafkaListener(topics = "${<%topicPropertyKey%>}", groupId = "<%groupId%>")
+    <%={{ }}=%>    public void listen(ConsumerRecord<String, Object> record) {
         Object payload = record.value();
         {{#messageDispatches}}
         if (payload instanceof {{payloadType}}) {

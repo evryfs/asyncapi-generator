@@ -10,7 +10,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateKotlinSpringKafkaOperationsTest {
-
     private val outputDir = File("target/test-output/kafka-ops")
     private val packageName = "com.example.kafka"
     private val dummyMessage = AnalyzedMessage("TestEvent", Schema(type = "string"))
@@ -19,15 +18,23 @@ class GenerateKotlinSpringKafkaOperationsTest {
     fun `should generate ONLY producer when isProducer=true`() {
         outputDir.deleteRecursively()
 
-        val channel = AnalyzedChannel(
-            channelName = "events",
-            topic = "topic",
-            isProducer = true,
-            isConsumer = false,
-            messages = listOf(dummyMessage)
-        )
+        val channel =
+            AnalyzedChannel(
+                channelName = "events",
+                topic = "topic",
+                isProducer = true,
+                isConsumer = false,
+                messages = listOf(dummyMessage),
+            )
 
-        val generator = KotlinSpringKafkaGenerator(outputDir, packageName, packageName)
+        val generator =
+            KotlinSpringKafkaGenerator(
+                outputDir,
+                packageName,
+                packageName,
+                "kafka.topics",
+                "topic",
+            )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
@@ -40,15 +47,23 @@ class GenerateKotlinSpringKafkaOperationsTest {
     fun `should generate ONLY listener when isConsumer=true`() {
         outputDir.deleteRecursively()
 
-        val channel = AnalyzedChannel(
-            channelName = "events",
-            topic = "topic",
-            isProducer = false,
-            isConsumer = true,
-            messages = listOf(dummyMessage)
-        )
+        val channel =
+            AnalyzedChannel(
+                channelName = "events",
+                topic = "topic",
+                isProducer = false,
+                isConsumer = true,
+                messages = listOf(dummyMessage),
+            )
 
-        val generator = KotlinSpringKafkaGenerator(outputDir, packageName, packageName)
+        val generator =
+            KotlinSpringKafkaGenerator(
+                outputDir,
+                packageName,
+                packageName,
+                "kafka.topics",
+                "topic",
+            )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
@@ -61,15 +76,23 @@ class GenerateKotlinSpringKafkaOperationsTest {
     fun `should generate BOTH when flags are true`() {
         outputDir.deleteRecursively()
 
-        val channel = AnalyzedChannel(
-            channelName = "events",
-            topic = "topic",
-            isProducer = true,
-            isConsumer = true,
-            messages = listOf(dummyMessage)
-        )
+        val channel =
+            AnalyzedChannel(
+                channelName = "events",
+                topic = "topic",
+                isProducer = true,
+                isConsumer = true,
+                messages = listOf(dummyMessage),
+            )
 
-        val generator = KotlinSpringKafkaGenerator(outputDir, packageName, packageName)
+        val generator =
+            KotlinSpringKafkaGenerator(
+                outputDir,
+                packageName,
+                packageName,
+                "kafka.topics",
+                "topic",
+            )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
@@ -81,15 +104,23 @@ class GenerateKotlinSpringKafkaOperationsTest {
     fun `should generate NONE when flags are false (Edge Case)`() {
         outputDir.deleteRecursively()
 
-        val channel = AnalyzedChannel(
-            channelName = "events",
-            topic = "topic",
-            isProducer = false,
-            isConsumer = false,
-            messages = listOf(dummyMessage)
-        )
+        val channel =
+            AnalyzedChannel(
+                channelName = "events",
+                topic = "topic",
+                isProducer = false,
+                isConsumer = false,
+                messages = listOf(dummyMessage),
+            )
 
-        val generator = KotlinSpringKafkaGenerator(outputDir, packageName, packageName)
+        val generator =
+            KotlinSpringKafkaGenerator(
+                outputDir,
+                packageName,
+                packageName,
+                "kafka.topics",
+                "topic",
+            )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')

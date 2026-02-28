@@ -20,7 +20,6 @@ import java.util.Locale
 import kotlin.text.get
 
 abstract class GenerateAsyncApiTask : DefaultTask() {
-
     @get:InputFile
     abstract val inputFile: RegularFileProperty
 
@@ -79,23 +78,27 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
 
         val genNameString = generatorName.get()
-        val targetLanguage = try {
-            GeneratorName.valueOf(genNameString.uppercase(Locale.getDefault()))
-        } catch (_: IllegalArgumentException) {
-            throw IllegalArgumentException("Invalid generatorName '$genNameString'. Supported values: ${GeneratorName.entries}")
-        }
+        val targetLanguage =
+            try {
+                GeneratorName.valueOf(genNameString.uppercase(Locale.getDefault()))
+            } catch (_: IllegalArgumentException) {
+                throw IllegalArgumentException("Invalid generatorName '$genNameString'. Supported values: ${GeneratorName.entries}")
+            }
 
         // Calculate Source Root
-        val sourceRootName = when(targetLanguage) {
-            KOTLIN -> "src/main/kotlin"
-            JAVA -> "src/main/java"
-        }
+        val sourceRootName =
+            when (targetLanguage) {
+                KOTLIN -> "src/main/kotlin"
+                JAVA -> "src/main/java"
+            }
         val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
         val configMap = configOptions.getOrElse(emptyMap())
 
         val clientType = configMap["client.type"]
         val schemaType = configMap["schema.type"]
         val modelAnnotation = configMap["model.annotation"]
+        val prefixOverride = configMap["kafka.topics.property.prefix"]
+        val suffixOverride = configMap["kafka.topics.property.suffix"]
 
         val hasModelPackage = modelPackage.isPresent
         val hasClientPackage = clientPackage.isPresent
@@ -113,24 +116,31 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             throw IllegalArgumentException("model.annotation requires modelPackage")
         }
 
+        if (prefixOverride != null && prefixOverride.isBlank()) {
+            throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
+        }
+
         if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
             val effectiveModelPackage = if (hasModelPackage) modelPackage.get() else "unused"
             val effectiveClientPackage = if (hasClientPackage) clientPackage.get() else "unused"
             val effectiveSchemaPackage = if (hasSchemaPackage) schemaPackage.get() else "unused"
 
-            val options = GeneratorOptions(
-                generatorName = targetLanguage,
-                modelPackage = effectiveModelPackage,
-                clientPackage = effectiveClientPackage,
-                schemaPackage = effectiveSchemaPackage,
-                codegenOutputDirectory = codegenSourceRoot,
-                resourceOutputDirectory = resourceOutputDirectory.get().asFile,
-                generateModels = hasModelPackage,
-                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
-                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
-                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                configOptions = configMap
-            )
+            val options =
+                GeneratorOptions(
+                    generatorName = targetLanguage,
+                    modelPackage = effectiveModelPackage,
+                    clientPackage = effectiveClientPackage,
+                    schemaPackage = effectiveSchemaPackage,
+                    codegenOutputDirectory = codegenSourceRoot,
+                    resourceOutputDirectory = resourceOutputDirectory.get().asFile,
+                    kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
+                    kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
+                    generateModels = hasModelPackage,
+                    generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                    generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                    generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                    configOptions = configMap,
+                )
             generator.generate(bundled, options)
         }
         logger.lifecycle("asyncapi-generator-gradle-plugin completed")

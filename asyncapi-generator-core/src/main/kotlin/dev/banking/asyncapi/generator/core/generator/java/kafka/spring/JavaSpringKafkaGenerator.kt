@@ -8,9 +8,17 @@ import java.io.File
 class JavaSpringKafkaGenerator(
     outputDir: File,
     clientPackage: String,
-    modelPackage: String
+    modelPackage: String,
+    topicPropertyPrefix: String,
+    topicPropertySuffix: String,
 ) {
-    private val modelFactory = JavaKafkaGeneratorModelFactory(clientPackage, modelPackage)
+    private val modelFactory =
+        JavaKafkaGeneratorModelFactory(
+            clientPackage,
+            modelPackage,
+            topicPropertyPrefix,
+            topicPropertySuffix,
+        )
 
     private val handlerGenerator = JavaSpringKafkaHandlerGenerator(outputDir)
     private val listenerGenerator = JavaSpringKafkaListenerGenerator(outputDir)

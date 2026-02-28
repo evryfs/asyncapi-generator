@@ -1,20 +1,18 @@
-package dev.banking.asyncapi.generator.core.generator.kotlin.kafka
+package dev.banking.asyncapi.generator.core.generator.java.kafka
 
-import dev.banking.asyncapi.generator.core.generator.AbstractKotlinGeneratorClass
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
+class GenerateJavaPrimitivePayloadTest {
     @Test
-    fun `should generate client for primitive string payload`() {
+    fun `should generate typed KafkaTemplate for single string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive"
-
         val stringSchema = Schema(type = "string")
         val channel =
             AnalyzedChannel(
@@ -28,7 +26,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                     ),
             )
         val generator =
-            KotlinSpringKafkaGenerator(
+            JavaSpringKafkaGenerator(
                 outputDir,
                 packageName,
                 packageName,
@@ -36,16 +34,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 "topic",
             )
         generator.generate(listOf(channel))
-
-        val handlerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicHandler.kt")
-        assertTrue(handlerFile.exists())
-
-        val content = handlerFile.readText()
-        assertTrue(
-            content.contains("fun onSimpleStringMessage(record: ConsumerRecord<String, String>)"),
-            "Should use ConsumerRecord with String payload",
-        )
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicProducer.kt")
+        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicProducer.java")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -55,7 +44,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     }
 
     @Test
-    fun `should use Any KafkaTemplate for multiple payloads`() {
+    fun `should use Object KafkaTemplate for multiple payloads`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive.multi"
         val stringSchema = Schema(type = "string")
@@ -73,7 +62,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                     ),
             )
         val generator =
-            KotlinSpringKafkaGenerator(
+            JavaSpringKafkaGenerator(
                 outputDir,
                 packageName,
                 packageName,
@@ -81,12 +70,12 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 "topic",
             )
         generator.generate(listOf(channel))
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/MultiTopicProducer.kt")
+        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/MultiTopicProducer.java")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
-            producerContent.contains("KafkaTemplate<String, Any>"),
-            "Producer should use Any KafkaTemplate for multiple payloads",
+            producerContent.contains("KafkaTemplate<String, Object>"),
+            "Producer should use Object KafkaTemplate for multiple payloads",
         )
     }
 }

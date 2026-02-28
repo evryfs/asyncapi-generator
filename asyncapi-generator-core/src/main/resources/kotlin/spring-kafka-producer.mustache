@@ -3,6 +3,8 @@ package {{packageName}}
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 {{#imports}}
 import {{{.}}}
@@ -14,15 +16,19 @@ import {{{.}}}
 {{/description}}
  */
 @Component
+@ConditionalOnProperty(name = ["{{topicPropertyKey}}"])
 class {{name}}(
-    private val kafkaTemplate: KafkaTemplate<String, Any>
+    private val kafkaTemplate: KafkaTemplate<String, {{kafkaValueType}}>
 ) {
     private val log = LoggerFactory.getLogger({{name}}::class.java)
-
+    {{=<% %>=}}
+    @Value("\${<%topicPropertyKey%>}")
+    private lateinit var topic: String
+    <%={{ }}=%>
     {{#sendMethods}}
     fun {{methodName}}(key: String, message: {{payloadType}}) {
-        log.info("Sending {{payloadType}} to topic={{topic}}, key={}", key)
-        kafkaTemplate.send(ProducerRecord("{{topic}}", key, message))
+        log.info("Sending {{payloadType}} to topic={}, key={}", topic, key)
+        kafkaTemplate.send(ProducerRecord(topic, key, message))
     }
     {{/sendMethods}}
 }

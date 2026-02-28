@@ -19,11 +19,9 @@ import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
 
-fun main(args: Array<String>) =
-    AsyncApiGeneratorCli().main(args)
+fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
-
     private val input by option("--input", "-i", help = "Path to AsyncAPI YAML file")
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .required()
@@ -39,24 +37,31 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val generator by option("--generator", "-g", help = "Target language (KOTLIN, JAVA)")
         .choice(
             "kotlin" to KOTLIN,
-            "java" to JAVA
-        )
-        .default(KOTLIN)
+            "java" to JAVA,
+        ).default(KOTLIN)
 
     private val modelPackage by option("--model-package", help = "Package for generated models")
 
     private val clientPackage by option(
         "--client-package",
-        help = "Package for generated clients (defaults to model-package)"
+        help = "Package for generated clients (defaults to model-package)",
     )
 
     private val schemaPackage by option(
         "--schema-package",
-        help = "Namespace for Avro schemas (defaults to model-package)"
+        help = "Namespace for Avro schemas (defaults to model-package)",
+    )
+    private val kafkaTopicsPropertyPrefix by option(
+        "--kafka-topics-property-prefix",
+        help = "Kafka topic property prefix (default: kafka.topics)",
+    )
+    private val kafkaTopicsPropertySuffix by option(
+        "--kafka-topics-property-suffix",
+        help = "Kafka topic property suffix (default: topic)",
     )
     private val configOptionsRaw by option(
         "--config-option",
-        help = "Additional generator options (key=value). Repeatable."
+        help = "Additional generator options (key=value). Repeatable.",
     ).multiple()
 
     override fun run() {
@@ -110,25 +115,29 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             val effectiveModelPackage = modelPackage ?: "unused"
             val effectiveClientPackage = clientPackage ?: "unused"
             val effectiveSchemaPackage = schemaPackage ?: "unused"
-            val sourceRootName = if (generator == KOTLIN) {
-                "src/main/kotlin"
-            } else {
-                "src/main/java"
-            }
+            val sourceRootName =
+                if (generator == KOTLIN) {
+                    "src/main/kotlin"
+                } else {
+                    "src/main/java"
+                }
             val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
-            val options = GeneratorOptions(
-                generatorName = generator,
-                modelPackage = effectiveModelPackage,
-                clientPackage = effectiveClientPackage,
-                schemaPackage = effectiveSchemaPackage,
-                codegenOutputDirectory = sourceRoot,
-                resourceOutputDirectory = resourceOutputDirectory,
-                generateModels = hasModelPackage,
-                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
-                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
-                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                configOptions = configOptions
-            )
+            val options =
+                GeneratorOptions(
+                    generatorName = generator,
+                    modelPackage = effectiveModelPackage,
+                    clientPackage = effectiveClientPackage,
+                    schemaPackage = effectiveSchemaPackage,
+                    codegenOutputDirectory = sourceRoot,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix ?: "kafka.topics",
+                    kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix ?: "topic",
+                    generateModels = hasModelPackage,
+                    generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                    generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                    generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                    configOptions = configOptions,
+                )
             val coreGenerator = AsyncApiGenerator()
             coreGenerator.generate(bundledDoc, options)
         }

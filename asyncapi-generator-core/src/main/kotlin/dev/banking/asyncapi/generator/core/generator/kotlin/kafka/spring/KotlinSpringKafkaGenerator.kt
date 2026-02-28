@@ -9,9 +9,16 @@ class KotlinSpringKafkaGenerator(
     outputDir: File,
     clientPackage: String,
     modelPackage: String,
+    topicPropertyPrefix: String,
+    topicPropertySuffix: String,
 ) {
-
-    private val modelFactory = KotlinKafkaGeneratorModelFactory(clientPackage, modelPackage)
+    private val modelFactory =
+        KotlinKafkaGeneratorModelFactory(
+            clientPackage,
+            modelPackage,
+            topicPropertyPrefix,
+            topicPropertySuffix,
+        )
     private val handlerGenerator = KotlinSpringKafkaHandlerGenerator(outputDir)
     private val listenerGenerator = KotlinSpringKafkaListenerGenerator(outputDir)
     private val producerGenerator = KotlinSpringKafkaProducerGenerator(outputDir)

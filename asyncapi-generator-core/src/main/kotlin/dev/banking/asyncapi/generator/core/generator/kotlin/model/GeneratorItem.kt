@@ -45,6 +45,7 @@ sealed interface GeneratorItem {
         val handlerInterface: String, // The interface to inject
         val messageDispatches: List<MessageDispatch>,
         val imports: List<String> = emptyList(),
+        val topicPropertyKey: String,
     ) : GeneratorItem
 
     data class KafkaProducerClass(
@@ -53,7 +54,9 @@ sealed interface GeneratorItem {
         override val description: List<String>,
         val topic: String,
         val sendMethods: List<SendMethod>,
+        val kafkaValueType: String,
         val imports: List<String> = emptyList(),
+        val topicPropertyKey: String,
     ) : GeneratorItem
 
     data class HandlerMethod(
