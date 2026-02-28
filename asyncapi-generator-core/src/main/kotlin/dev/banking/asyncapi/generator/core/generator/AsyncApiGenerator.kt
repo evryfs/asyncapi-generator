@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.loader.AsyncApiSchemaLoader
+import dev.banking.asyncapi.generator.core.generator.loader.HeaderSchemaCollector
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
@@ -65,6 +66,24 @@ class AsyncApiGenerator {
                     if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
                         throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
                     }
+                    val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
+                    if (headerSchemas.isNotEmpty()) {
+                        val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
+                        val headerFactory = KotlinGeneratorModelFactory(
+                            packageName = "${generatorOptions.clientPackage}.header",
+                            context = headerContext,
+                            polymorphicRelationships = polymorphic,
+                            annotation = null,
+                        )
+                        val headerModels = headerSchemas.mapNotNull { (name, schema) ->
+                            headerFactory.create(name, schema)
+                        }
+                        KotlinGenerator(
+                            packageName = "${generatorOptions.clientPackage}.header",
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            generationModel = headerModels,
+                        ).generate()
+                    }
                     val kafkaGenerator =
                         KotlinSpringKafkaGenerator(
                             outputDir = generatorOptions.codegenOutputDirectory,
@@ -99,6 +118,23 @@ class AsyncApiGenerator {
                 if (generatorOptions.generateSpringKafkaClient) {
                     if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
                         throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
+                    }
+                    val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
+                    if (headerSchemas.isNotEmpty()) {
+                        val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
+                        val headerFactory = JavaGeneratorModelFactory(
+                            packageName = "${generatorOptions.clientPackage}.header",
+                            context = headerContext,
+                            polymorphicRelationships = polymorphic,
+                        )
+                        val headerModels = headerSchemas.mapNotNull { (name, schema) ->
+                            headerFactory.create(name, schema)
+                        }
+                        JavaGenerator(
+                            packageName = "${generatorOptions.clientPackage}.header",
+                            outputDir = generatorOptions.codegenOutputDirectory,
+                            generationModel = headerModels,
+                        ).generate()
                     }
                     val kafkaGenerator =
                         JavaSpringKafkaGenerator(
