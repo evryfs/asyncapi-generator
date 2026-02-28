@@ -42,7 +42,7 @@ class MessageParser(
                         summary = node.optional("summary")?.coerce<String>(),
                         description = node.optional("description")?.coerce<String>(),
                         contentType = node.optional("contentType")?.coerce<String>(),
-                        headers = node.optional("headers")?.let(schemaParser::parseMap),
+                        headers = node.optional("headers")?.let(schemaParser::parseElement),
                         payload = node.optional("payload")?.let(schemaParser::parseElement),
                         correlationId = node.optional("correlationId")?.let(correlationIdParser::parseElement),
                         tags = node.optional("tags")?.let(tagParser::parseList),

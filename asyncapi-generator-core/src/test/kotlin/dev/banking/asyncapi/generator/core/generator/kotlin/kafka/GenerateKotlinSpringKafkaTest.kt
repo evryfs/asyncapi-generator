@@ -6,7 +6,6 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
-
     @Test
     fun `should generate full spring kafka ecosystem`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
@@ -30,20 +29,39 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.kt").exists(), "UserLoggedIn model missing")
 
         val clientDir = outputDir.resolve(clientPath)
-        assertTrue(clientDir.resolve("UserEventsListener.kt").exists(), "UserEvents Listener missing")
-        assertTrue(clientDir.resolve("UserEventsHandler.kt").exists(), "UserEvents Handler missing")
-        assertTrue(clientDir.resolve("UserEventsProducer.kt").exists(), "UserEvents Producer missing")
-
-        val userListenerContent = clientDir.resolve("UserEventsListener.kt").readText()
-        assertTrue(userListenerContent.contains("is UserSignedUp"), "Listener dispatch missing UserSignedUp")
-        assertTrue(userListenerContent.contains("import $modelPackage.UserSignedUp"), "Missing correct Model Import")
+        val handlerDir = clientDir.resolve("handler")
+        val listenerDir = clientDir.resolve("listener")
+        val producerDir = clientDir.resolve("producer")
         assertTrue(
-            userListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
+            listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").exists(),
+            "UserSignedUp Listener missing",
+        )
+        assertTrue(handlerDir.resolve("TopicUserEventsHandlerUserSignedUp.kt").exists(), "UserSignedUp Handler missing")
+        assertTrue(
+            listenerDir.resolve("TopicUserEventsListenerUserLoggedIn.kt").exists(),
+            "UserLoggedIn Listener missing",
+        )
+        assertTrue(handlerDir.resolve("TopicUserEventsHandlerUserLoggedIn.kt").exists(), "UserLoggedIn Handler missing")
+        assertTrue(producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").exists(), "UserSignedUp Producer missing")
+        assertTrue(producerDir.resolve("TopicUserEventsProducerUserLoggedIn.kt").exists(), "UserLoggedIn Producer missing")
+        val userSignedUpListenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
+        assertTrue(
+            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
+            "Listener should be typed to UserSignedUp",
+        )
+        assertTrue(
+            userSignedUpListenerContent.contains("import $modelPackage.UserSignedUp"),
+            "Missing correct Model Import",
+        )
+        assertTrue(
+            userSignedUpListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
             "Missing ConditionalOnBean import",
         )
-        assertTrue(userListenerContent.contains("@ConditionalOnBean(UserEventsHandler::class)"), "Missing @ConditionalOnBean annotation")
-
-        val userProducerContent = clientDir.resolve("UserEventsProducer.kt").readText()
+        assertTrue(
+            userSignedUpListenerContent.contains("@ConditionalOnBean(TopicUserEventsHandlerUserSignedUp::class)"),
+            "Missing @ConditionalOnBean annotation",
+        )
+        val userProducerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
         assertTrue(
             userProducerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
             "Missing @ConditionalOnProperty annotation",
@@ -53,11 +71,11 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             "Producer should read topic from kafka.topics.userEvents.topic",
         )
         assertTrue(
-            userListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
+            userSignedUpListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents.topic\"])"),
             "Listener should be conditional on topic property",
         )
         assertTrue(
-            userListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
+            userSignedUpListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
             "Listener should read topic from kafka.topics.userEvents.topic",
         )
     }
@@ -80,8 +98,10 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             kafkaTopicsPropertySuffix = "name",
         )
         val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
-        val producerContent = clientDir.resolve("UserEventsProducer.kt").readText()
-        val listenerContent = clientDir.resolve("UserEventsListener.kt").readText()
+        val producerDir = clientDir.resolve("producer")
+        val listenerDir = clientDir.resolve("listener")
+        val producerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
+        val listenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
         assertTrue(
             producerContent.contains("@Value(\"\\\${my.property.userEvents.name}\")"),
             "Producer should use custom topic property key",

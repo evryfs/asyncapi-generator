@@ -43,23 +43,21 @@ fun lightMeasured() = Message(
         )
     ),
 
-    headers = mapOf(
-        "my-app-header" to SchemaInterface.SchemaInline(
-            Schema(
-                type = "object",
-                required = listOf("correlationId"),
-                properties = mapOf(
-                    "correlationId" to SchemaInterface.SchemaInline(
-                        Schema(
-                            type = "string",
-                            description = "Correlation ID set by application"
-                        )
-                    ),
-                    "applicationInstanceId" to SchemaInterface.SchemaInline(
-                        Schema(
-                            type = "string",
-                            description = "Unique identifier for a given instance of the publishing application"
-                        )
+    headers = SchemaInterface.SchemaInline(
+        Schema(
+            type = "object",
+            required = listOf("correlationId"),
+            properties = mapOf(
+                "correlationId" to SchemaInterface.SchemaInline(
+                    Schema(
+                        type = "string",
+                        description = "Correlation ID set by application"
+                    )
+                ),
+                "applicationInstanceId" to SchemaInterface.SchemaInline(
+                    Schema(
+                        type = "string",
+                        description = "Unique identifier for a given instance of the publishing application"
                     )
                 )
             )
@@ -170,10 +168,8 @@ fun inlineTraitMessage() = Message(
     traits = listOf(
         MessageTraitInterface.InlineMessageTrait(
             MessageTrait(
-                headers = mapOf(
-                    "X-Trace-ID" to SchemaInterface.SchemaInline(
-                        Schema(type = "string")
-                    )
+                headers = SchemaInterface.SchemaInline(
+                    Schema(type = "string")
                 )
             )
         )

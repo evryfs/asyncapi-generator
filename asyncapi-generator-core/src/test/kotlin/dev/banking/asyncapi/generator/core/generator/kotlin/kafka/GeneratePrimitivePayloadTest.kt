@@ -14,7 +14,6 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     fun `should generate client for primitive string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive"
-
         val stringSchema = Schema(type = "string")
         val channel =
             AnalyzedChannel(
@@ -36,8 +35,8 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 "topic",
             )
         generator.generate(listOf(channel))
-
-        val handlerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicHandler.kt")
+        val handlerFile =
+            outputDir.resolve(packageName.replace('.', '/') + "/handler/TopicSimpleTopicHandlerSimpleStringMessage.kt")
         assertTrue(handlerFile.exists())
 
         val content = handlerFile.readText()
@@ -45,7 +44,8 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             content.contains("fun onSimpleStringMessage(record: ConsumerRecord<String, String>)"),
             "Should use ConsumerRecord with String payload",
         )
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/SimpleTopicProducer.kt")
+        val producerFile =
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicSimpleTopicProducerSimpleStringMessage.kt")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -55,7 +55,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     }
 
     @Test
-    fun `should use Any KafkaTemplate for multiple payloads`() {
+    fun `should generate one producer per payload for multiple messages`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive.multi"
         val stringSchema = Schema(type = "string")
@@ -81,12 +81,21 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 "topic",
             )
         generator.generate(listOf(channel))
-        val producerFile = outputDir.resolve(packageName.replace('.', '/') + "/MultiTopicProducer.kt")
-        assertTrue(producerFile.exists(), "Producer should be generated")
-        val producerContent = producerFile.readText()
+        val producerFileA =
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.kt")
+        val producerFileB =
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.kt")
+        assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
+        assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
+        val producerContentA = producerFileA.readText()
+        val producerContentB = producerFileB.readText()
         assertTrue(
-            producerContent.contains("KafkaTemplate<String, Any>"),
-            "Producer should use Any KafkaTemplate for multiple payloads",
+            producerContentA.contains("KafkaTemplate<String, String>"),
+            "StringMessage producer should use typed KafkaTemplate",
+        )
+        assertTrue(
+            producerContentB.contains("KafkaTemplate<String, Int>"),
+            "IntMessage producer should use typed KafkaTemplate",
         )
     }
 }

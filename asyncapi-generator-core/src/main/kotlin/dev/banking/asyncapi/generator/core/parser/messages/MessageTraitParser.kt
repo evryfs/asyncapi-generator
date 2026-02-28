@@ -48,7 +48,7 @@ class MessageTraitParser(
         } else {
             MessageTraitInterface.InlineMessageTrait(
                 MessageTrait(
-                    headers = parserNode.optional("headers")?.let(schemaParser::parseMap),
+                    headers = parserNode.optional("headers")?.let(schemaParser::parseElement),
                     correlationId = parserNode.optional("correlationId")?.let(correlationIdParser::parseElement),
                     contentType = parserNode.optional("contentType")?.coerce<String>(),
                     name = parserNode.optional("name")?.coerce<String>(),

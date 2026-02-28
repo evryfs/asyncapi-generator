@@ -43,7 +43,8 @@ sealed interface GeneratorItem {
         val topic: String,
         val groupId: String,
         val handlerInterface: String, // The interface to inject
-        val messageDispatches: List<MessageDispatch>,
+        val payloadType: String,
+        val methodName: String,
         val imports: List<String> = emptyList(),
         val topicPropertyKey: String,
     ) : GeneratorItem

@@ -47,8 +47,8 @@ class MessagesBundler {
         }
 
     private fun bundleMessage(message: Message, visited: Set<String>): Message {
-        val bundledHeaders = schemaBundler.bundleMap(message.headers, visited)
-        val bundledPayload = schemaBundler.bundle(message.payload, visited)
+        val bundledHeaders =  message.headers?.let { schemaBundler.bundle(it, visited) }
+        val bundledPayload = message.payload?.let { schemaBundler.bundle(it, visited) }
         val bundledCorrelationId = message.correlationId?.let { correlationIdBundler.bundle(it, visited) }
         val bundledTags: List<TagInterface>? = tagBundler.bundleList(message.tags, visited)
         val bundledExternalDocs = message.externalDocs?.let { externalDocsBundler.bundle(it, visited) }
