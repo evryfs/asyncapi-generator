@@ -29,6 +29,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.kt").exists(), "UserLoggedIn model missing")
 
         val clientDir = outputDir.resolve(clientPath)
+        val autoconfigDir = clientDir.resolve("config")
         val handlerDir = clientDir.resolve("handler")
         val listenerDir = clientDir.resolve("listener")
         val producerDir = clientDir.resolve("producer")
@@ -77,6 +78,22 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(
             userSignedUpListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents.topic}\"]"),
             "Listener should read topic from kafka.topics.userEvents.topic",
+        )
+
+        val autoConfigContent = autoconfigDir.resolve("AsyncApiKafkaAutoConfiguration.kt").readText()
+        assertTrue(autoConfigContent.contains("@ComponentScan"), "Auto-configuration should include ComponentScan")
+        assertTrue(
+            autoConfigContent.contains("basePackages = [\"$clientPackage\"]"),
+            "Auto-configuration should scan the client package",
+        )
+
+        val importsFile =
+            File("target/generated-resources/asyncapi/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
+        assertTrue(importsFile.exists(), "Auto-configuration imports file should be generated")
+        val importsContent = importsFile.readText()
+        assertTrue(
+            importsContent.contains("$clientPackage.config.AsyncApiKafkaAutoConfiguration"),
+            "Auto-configuration imports should include generated config",
         )
     }
 
