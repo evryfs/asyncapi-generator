@@ -69,15 +69,17 @@ class AsyncApiGenerator {
                     val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
                     if (headerSchemas.isNotEmpty()) {
                         val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
-                        val headerFactory = KotlinGeneratorModelFactory(
-                            packageName = "${generatorOptions.clientPackage}.header",
-                            context = headerContext,
-                            polymorphicRelationships = polymorphic,
-                            annotation = null,
-                        )
-                        val headerModels = headerSchemas.mapNotNull { (name, schema) ->
-                            headerFactory.create(name, schema)
-                        }
+                        val headerFactory =
+                            KotlinGeneratorModelFactory(
+                                packageName = "${generatorOptions.clientPackage}.header",
+                                context = headerContext,
+                                polymorphicRelationships = polymorphic,
+                                annotation = null,
+                            )
+                        val headerModels =
+                            headerSchemas.mapNotNull { (name, schema) ->
+                                headerFactory.create(name, schema)
+                            }
                         KotlinGenerator(
                             packageName = "${generatorOptions.clientPackage}.header",
                             outputDir = generatorOptions.codegenOutputDirectory,
@@ -91,6 +93,7 @@ class AsyncApiGenerator {
                             modelPackage = generatorOptions.modelPackage,
                             topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
                             topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
+                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
                         )
                     kafkaGenerator.generate(analyzedChannels)
                 }
@@ -122,14 +125,16 @@ class AsyncApiGenerator {
                     val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
                     if (headerSchemas.isNotEmpty()) {
                         val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
-                        val headerFactory = JavaGeneratorModelFactory(
-                            packageName = "${generatorOptions.clientPackage}.header",
-                            context = headerContext,
-                            polymorphicRelationships = polymorphic,
-                        )
-                        val headerModels = headerSchemas.mapNotNull { (name, schema) ->
-                            headerFactory.create(name, schema)
-                        }
+                        val headerFactory =
+                            JavaGeneratorModelFactory(
+                                packageName = "${generatorOptions.clientPackage}.header",
+                                context = headerContext,
+                                polymorphicRelationships = polymorphic,
+                            )
+                        val headerModels =
+                            headerSchemas.mapNotNull { (name, schema) ->
+                                headerFactory.create(name, schema)
+                            }
                         JavaGenerator(
                             packageName = "${generatorOptions.clientPackage}.header",
                             outputDir = generatorOptions.codegenOutputDirectory,
@@ -143,6 +148,7 @@ class AsyncApiGenerator {
                             modelPackage = generatorOptions.modelPackage,
                             topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
                             topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
+                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
                         )
                     kafkaGenerator.generate(analyzedChannels)
                 }

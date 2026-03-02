@@ -70,11 +70,6 @@ sealed interface GeneratorItem {
         val payloadType: String,
     )
 
-    data class MessageDispatch(
-        val payloadType: String,
-        val methodName: String,
-    )
-
     data class SendMethod(
         val methodName: String,
         val payloadType: String,

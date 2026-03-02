@@ -33,6 +33,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName,
                 "kafka.topics",
                 "topic",
+                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val handlerFile =
@@ -79,6 +80,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName,
                 "kafka.topics",
                 "topic",
+                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =

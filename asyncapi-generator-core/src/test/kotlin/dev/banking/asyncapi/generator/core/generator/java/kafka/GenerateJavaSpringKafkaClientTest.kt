@@ -29,6 +29,7 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         assertTrue(modelDir.resolve("UserLoggedIn.java").exists(), "Model UserLoggedIn missing")
 
         val clientDir = outputDir.resolve(clientPath)
+        val autoconfigDir = clientDir.resolve("config")
         val handlerDir = clientDir.resolve("handler")
         val listenerDir = clientDir.resolve("listener")
         val producerDir = clientDir.resolve("producer")
@@ -84,6 +85,22 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         assertTrue(
             userSignedUpListenerContent.contains("groupId = \"\${spring.kafka.consumer.group-id}\""),
             "Listener should use Spring groupId placeholder",
+        )
+
+        val autoConfigContent = autoconfigDir.resolve("AsyncApiKafkaAutoConfiguration.java").readText()
+        assertTrue(autoConfigContent.contains("@ComponentScan"), "Auto-configuration should include ComponentScan")
+        assertTrue(
+            autoConfigContent.contains("basePackages = \"$clientPackage\""),
+            "Auto-configuration should scan the client package",
+        )
+
+        val importsFile =
+            File("target/generated-resources/asyncapi/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
+        assertTrue(importsFile.exists(), "Auto-configuration imports file should be generated")
+        val importsContent = importsFile.readText()
+        assertTrue(
+            importsContent.contains("$clientPackage.config.AsyncApiKafkaAutoConfiguration"),
+            "Auto-configuration imports should include generated config",
         )
     }
 

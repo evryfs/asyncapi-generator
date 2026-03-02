@@ -32,6 +32,7 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
                 "kafka.topics",
                 "topic",
+                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFile =
@@ -69,6 +70,7 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
                 "kafka.topics",
                 "topic",
+                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =

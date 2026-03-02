@@ -1,0 +1,8 @@
+package {{packageName}}
+
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.boot.autoconfigure.AutoConfiguration
+
+@AutoConfiguration
+@ComponentScan(basePackages = ["{{clientPackage}}"])
+class {{className}}
