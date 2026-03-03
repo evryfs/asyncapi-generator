@@ -31,10 +31,16 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(property = "outputFile")
     private var outputFile: File? = null
 
-    @Parameter(property = "codegenOutputDirectory", defaultValue = "\${project.build.directory}/generated-sources/asyncapi")
+    @Parameter(
+        property = "codegenOutputDirectory",
+        defaultValue = "\${project.build.directory}/generated-sources/asyncapi"
+    )
     private lateinit var codegenOutputDirectory: File
 
-    @Parameter(property = "resourceOutputDirectory", defaultValue = "\${project.build.directory}/generated-resources/asyncapi")
+    @Parameter(
+        property = "resourceOutputDirectory",
+        defaultValue = "\${project.build.directory}/generated-resources/asyncapi"
+    )
     private lateinit var resourceOutputDirectory: File
 
     @Parameter(property = "modelPackage")
@@ -124,7 +130,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
                 kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
                 generateModels = hasModelPackage,
-                generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
                 generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
                 generateAvroSchema = hasSchemaPackage && schemaType == "avro",
                 configOptions = configOptions,

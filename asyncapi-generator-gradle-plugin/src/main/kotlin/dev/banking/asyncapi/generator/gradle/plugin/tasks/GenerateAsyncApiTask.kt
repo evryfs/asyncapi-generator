@@ -136,7 +136,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
                     kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
                     generateModels = hasModelPackage,
-                    generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                    generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
                     generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
                     generateAvroSchema = hasSchemaPackage && schemaType == "avro",
                     configOptions = configMap,
