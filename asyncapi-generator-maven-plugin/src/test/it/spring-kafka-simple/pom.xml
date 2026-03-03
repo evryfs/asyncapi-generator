@@ -1,0 +1,35 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dev.banking.asyncapi.generator.it</groupId>
+    <artifactId>spring-kafka-simple</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.banking.asyncapi.generator</groupId>
+                <artifactId>asyncapi-generator-maven-plugin</artifactId>
+                <version>1.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <id>spring-kafka-simple</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
+                            <generatorName>kotlin</generatorName>
+                            <modelPackage>com.example.simple.model</modelPackage>
+                            <clientPackage>com.example.simple.client</clientPackage>
+                            <configOptions>
+                                <client.type>spring-kafka-simple</client.type>
+                            </configOptions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

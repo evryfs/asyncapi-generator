@@ -1,0 +1,19 @@
+asyncapi: 3.0.0
+info:
+  title: Spring Kafka Simple IT
+  version: 1.0.0
+channels:
+  userEvents:
+    address: user.events.v1
+    messages:
+      UserSignedUp:
+        $ref: "#/components/messages/UserSignedUp"
+components:
+  messages:
+    UserSignedUp:
+      name: UserSignedUp
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
