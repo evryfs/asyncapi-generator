@@ -1,0 +1,21 @@
+package {{packageName}}
+
+{{#imports}}
+import {{{.}}}
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+class {{name}}(
+    private val kafkaTemplate: KafkaTemplate<String, {{kafkaValueType}}>,
+    private val topic: String
+) {
+    {{#sendMethods}}
+    fun {{methodName}}(key: String, message: {{payloadType}}) {
+        kafkaTemplate.send(ProducerRecord(topic, key, message))
+    }
+    {{/sendMethods}}
+}

@@ -31,7 +31,6 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
@@ -69,7 +68,6 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))

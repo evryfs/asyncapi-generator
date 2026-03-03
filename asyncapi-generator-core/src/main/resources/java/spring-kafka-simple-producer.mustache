@@ -1,0 +1,27 @@
+package {{packageName}};
+
+{{#imports}}
+import {{{.}}};
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+public class {{name}} {
+
+    private final KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate;
+    private final String topic;
+
+    public {{name}}(KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate, String topic) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.topic = topic;
+    }
+
+    {{#sendMethods}}
+    public void {{methodName}}(String key, {{payloadType}} message) {
+        kafkaTemplate.send(new ProducerRecord<>(topic, key, message));
+    }
+    {{/sendMethods}}
+}

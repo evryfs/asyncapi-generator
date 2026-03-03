@@ -10,7 +10,6 @@ data class GeneratorOptions(
     val codegenOutputDirectory: File,
     val resourceOutputDirectory: File,
     val kafkaTopicsPropertyPrefix: String = "kafka.topics",
-    val kafkaTopicsPropertySuffix: String = "topic",
     // Feature Flags
     val generateModels: Boolean = true,
     val generateSpringKafkaClient: Boolean = false,

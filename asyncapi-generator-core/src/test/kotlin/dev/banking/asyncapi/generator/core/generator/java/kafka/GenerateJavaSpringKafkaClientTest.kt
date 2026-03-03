@@ -9,8 +9,8 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
     @Test
     fun `should generate full spring kafka ecosystem for Java`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
-        val modelPackage = "dev.banking.ace.userservice.v1.model"
-        val clientPackage = "dev.banking.ace.userservice.v1.client"
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
 
         generateElement(
             yaml = yaml,
@@ -21,8 +21,8 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val modelPath = "dev/banking/ace/userservice/v1/model"
-        val clientPath = "dev/banking/ace/userservice/v1/client"
+        val modelPath = "dev/banking/test/userservice/v1/model"
+        val clientPath = "dev/banking/test/userservice/v1/client"
 
         val modelDir = outputDir.resolve(modelPath)
         assertTrue(modelDir.resolve("UserSignedUp.java").exists(), "Model UserSignedUp missing")
@@ -67,24 +67,24 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         )
         val userProducerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.java").readText()
         assertTrue(
-            userProducerContent.contains("@ConditionalOnProperty(name = \"kafka.topics.userEvents.topic\")"),
+            userProducerContent.contains("@ConditionalOnProperty(name = \"kafka.topics.userEvents\")"),
             "Missing @ConditionalOnProperty annotation",
         )
         assertTrue(
-            userProducerContent.contains("@Value(\"\${kafka.topics.userEvents.topic}\")"),
-            "Producer should read topic from kafka.topics.userEvents.topic",
+            userProducerContent.contains("@Value(\"\${kafka.topics.userEvents}\")"),
+            "Producer should read topic from kafka.topics.userEvents",
         )
         assertTrue(
-            userSignedUpListenerContent.contains("@ConditionalOnProperty(name = \"kafka.topics.userEvents.topic\")"),
+            userSignedUpListenerContent.contains("@ConditionalOnProperty(name = \"kafka.topics.userEvents\")"),
             "Listener should be conditional on topic property",
         )
         assertTrue(
-            userSignedUpListenerContent.contains("@KafkaListener(topics = \"\${kafka.topics.userEvents.topic}\""),
-            "Listener should read topic from kafka.topics.userEvents.topic",
+            userSignedUpListenerContent.contains("@KafkaListener(topics = \"\${kafka.topics.userEvents}\""),
+            "Listener should read topic from kafka.topics.userEvents",
         )
         assertTrue(
             userSignedUpListenerContent.contains("groupId = \"\${spring.kafka.consumer.group-id}\""),
-            "Listener should use Spring groupId placeholder",
+            "Listener should use Spring groupId pltestholder",
         )
 
         val autoConfigContent = autoconfigDir.resolve("AsyncApiKafkaAutoConfiguration.java").readText()
@@ -105,11 +105,11 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
     }
 
     @Test
-    fun `should apply custom topic property prefix and suffix for Java`() {
+    fun `should apply custom topic property prefix for Java`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
-        val modelPackage = "dev.banking.ace.userservice.v1.model"
-        val clientPackage = "dev.banking.ace.userservice.v1.client"
-        val outputDir = File("target/generated-sources/asyncapi-prefix-suffix-java")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi")
 
         generateElement(
             yaml = yaml,
@@ -119,19 +119,18 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
             generateSpringKafkaClient = true,
             codegenOutputDirectory = outputDir,
             kafkaTopicsPropertyPrefix = "my.property",
-            kafkaTopicsPropertySuffix = "name",
         )
-        val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val producerDir = clientDir.resolve("producer")
         val listenerDir = clientDir.resolve("listener")
         val producerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.java").readText()
         val listenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.java").readText()
         assertTrue(
-            producerContent.contains("@Value(\"\${my.property.userEvents.name}\")"),
+            producerContent.contains("@Value(\"\${my.property.userEvents}\")"),
             "Producer should use custom topic property key",
         )
         assertTrue(
-            listenerContent.contains("@KafkaListener(topics = \"\${my.property.userEvents.name}\""),
+            listenerContent.contains("@KafkaListener(topics = \"\${my.property.userEvents}\""),
             "Listener should use custom topic property key",
         )
     }

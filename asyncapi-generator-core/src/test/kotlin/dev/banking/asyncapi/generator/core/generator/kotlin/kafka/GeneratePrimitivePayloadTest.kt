@@ -32,7 +32,6 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
@@ -79,7 +78,6 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
