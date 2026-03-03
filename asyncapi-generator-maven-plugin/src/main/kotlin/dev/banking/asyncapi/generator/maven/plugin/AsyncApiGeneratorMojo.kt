@@ -33,13 +33,13 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
 
     @Parameter(
         property = "codegenOutputDirectory",
-        defaultValue = "\${project.build.directory}/generated-sources/asyncapi"
+        defaultValue = "\${project.build.directory}/generated-sources/asyncapi",
     )
     private lateinit var codegenOutputDirectory: File
 
     @Parameter(
         property = "resourceOutputDirectory",
-        defaultValue = "\${project.build.directory}/generated-resources/asyncapi"
+        defaultValue = "\${project.build.directory}/generated-resources/asyncapi",
     )
     private lateinit var resourceOutputDirectory: File
 
@@ -82,18 +82,18 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             AsyncApiRegistry.writeYaml(file, bundled)
         }
 
-        val targetLanguage = try {
-            GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
-        } catch (_: IllegalArgumentException) {
-            throw MojoExecutionException(
-                "Invalid generatorName '$generatorName'. Supported values: ${GeneratorName.entries.joinToString(", ")}"
-            )
-        }
+        val targetLanguage =
+            try {
+                GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
+            } catch (_: IllegalArgumentException) {
+                throw MojoExecutionException(
+                    "Invalid generatorName '$generatorName'. Supported values: ${GeneratorName.entries.joinToString(", ")}",
+                )
+            }
         val clientType = configOptions["client.type"]
         val schemaType = configOptions["schema.type"]
         val modelAnnotation = configOptions["model.annotation"]
         val prefixOverride = configOptions["kafka.topics.property.prefix"]
-        val suffixOverride = configOptions["kafka.topics.property.suffix"]
 
         val hasModelPackage = modelPackage != null
         val hasClientPackage = clientPackage != null
@@ -120,21 +120,21 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             val effectiveClientPackage = clientPackage ?: "unused"
             val effectiveSchemaPackage = schemaPackage ?: "unused"
 
-            val options = GeneratorOptions(
-                generatorName = targetLanguage,
-                modelPackage = effectiveModelPackage,
-                clientPackage = effectiveClientPackage,
-                schemaPackage = effectiveSchemaPackage,
-                codegenOutputDirectory = codegenOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
-                kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
-                kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
-                generateModels = hasModelPackage,
-                generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
-                generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
-                generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                configOptions = configOptions,
-            )
+            val options =
+                GeneratorOptions(
+                    generatorName = targetLanguage,
+                    modelPackage = effectiveModelPackage,
+                    clientPackage = effectiveClientPackage,
+                    schemaPackage = effectiveSchemaPackage,
+                    codegenOutputDirectory = codegenOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
+                    generateModels = hasModelPackage,
+                    generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
+                    generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                    generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                    configOptions = configOptions,
+                )
             generator.generate(bundled, options)
         }
 

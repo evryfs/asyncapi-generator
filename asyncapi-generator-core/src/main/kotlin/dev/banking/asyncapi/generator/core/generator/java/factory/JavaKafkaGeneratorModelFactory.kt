@@ -11,7 +11,6 @@ class JavaKafkaGeneratorModelFactory(
     private val packageName: String,
     private val modelPackage: String,
     private val topicPropertyPrefix: String,
-    private val topicPropertySuffix: String,
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         val items = mutableListOf<GeneratorItem>()
@@ -103,10 +102,7 @@ class JavaKafkaGeneratorModelFactory(
         return items
     }
 
-    private fun topicPropertyKey(channelName: String): String {
-        val suffix = if (topicPropertySuffix.isBlank()) "" else ".$topicPropertySuffix"
-        return "$topicPropertyPrefix.$channelName$suffix"
-    }
+    private fun topicPropertyKey(channelName: String): String = "$topicPropertyPrefix.$channelName"
 
     private fun resolvePayloadType(msg: AnalyzedMessage): String =
         when (msg.schema.type.getPrimaryType()) {

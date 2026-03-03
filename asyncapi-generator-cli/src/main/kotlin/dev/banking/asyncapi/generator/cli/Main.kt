@@ -55,10 +55,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "--kafka-topics-property-prefix",
         help = "Kafka topic property prefix (default: kafka.topics)",
     )
-    private val kafkaTopicsPropertySuffix by option(
-        "--kafka-topics-property-suffix",
-        help = "Kafka topic property suffix (default: topic)",
-    )
     private val configOptionsRaw by option(
         "--config-option",
         help = "Additional generator options (key=value). Repeatable.",
@@ -131,7 +127,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     codegenOutputDirectory = sourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory,
                     kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix ?: "kafka.topics",
-                    kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix ?: "topic",
                     generateModels = hasModelPackage,
                     generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
                     generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",

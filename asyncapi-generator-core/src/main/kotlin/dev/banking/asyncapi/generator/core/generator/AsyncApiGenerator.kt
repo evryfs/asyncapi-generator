@@ -104,7 +104,6 @@ class AsyncApiGenerator {
                                 clientPackage = generatorOptions.clientPackage,
                                 modelPackage = generatorOptions.modelPackage,
                                 topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                                topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
                                 resourceOutputDir = generatorOptions.resourceOutputDirectory,
                             )
                         kafkaGenerator.generate(analyzedChannels)
@@ -170,7 +169,6 @@ class AsyncApiGenerator {
                                 clientPackage = generatorOptions.clientPackage,
                                 modelPackage = generatorOptions.modelPackage,
                                 topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                                topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
                                 resourceOutputDir = generatorOptions.resourceOutputDirectory,
                             )
                         kafkaGenerator.generate(analyzedChannels)

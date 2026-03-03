@@ -12,7 +12,6 @@ class JavaSpringKafkaGenerator(
     private val clientPackage: String,
     modelPackage: String,
     topicPropertyPrefix: String,
-    topicPropertySuffix: String,
     resourceOutputDir: File,
 ) {
     private val modelFactory =
@@ -20,7 +19,6 @@ class JavaSpringKafkaGenerator(
             this.clientPackage,
             modelPackage,
             topicPropertyPrefix,
-            topicPropertySuffix,
         )
 
     private val handlerGenerator = JavaSpringKafkaHandlerGenerator(outputDir)
@@ -48,7 +46,7 @@ class JavaSpringKafkaGenerator(
                     is GeneratorItem.KafkaHandlerInterface -> handlerGenerator.generate(item)
                     is GeneratorItem.KafkaListenerClass -> listenerGenerator.generate(item)
                     is GeneratorItem.KafkaProducerClass -> producerGenerator.generate(item)
-                    else -> { /* Ignore */
+                    else -> { // Ignore
                     }
                 }
             }

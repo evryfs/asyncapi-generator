@@ -28,7 +28,6 @@ abstract class AbstractKotlinGeneratorClass {
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
         kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        kafkaTopicsPropertySuffix: String = "topic",
         configOptions: Map<String, String> = emptyMap(),
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
@@ -47,7 +46,6 @@ abstract class AbstractKotlinGeneratorClass {
                 codegenOutputDirectory = codegenOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
                 kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
-                kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix,
                 generateModels = generateModels,
                 generateSpringKafkaClient = generateSpringKafkaClient,
                 generateQuarkusKafkaClient = generateQuarkusKafkaClient,

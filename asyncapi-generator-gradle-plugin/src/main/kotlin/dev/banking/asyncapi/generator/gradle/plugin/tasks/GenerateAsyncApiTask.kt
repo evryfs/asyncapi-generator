@@ -98,7 +98,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val schemaType = configMap["schema.type"]
         val modelAnnotation = configMap["model.annotation"]
         val prefixOverride = configMap["kafka.topics.property.prefix"]
-        val suffixOverride = configMap["kafka.topics.property.suffix"]
 
         val hasModelPackage = modelPackage.isPresent
         val hasClientPackage = clientPackage.isPresent
@@ -134,7 +133,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     codegenOutputDirectory = codegenSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
                     kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
-                    kafkaTopicsPropertySuffix = suffixOverride ?: "topic",
                     generateModels = hasModelPackage,
                     generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
                     generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",

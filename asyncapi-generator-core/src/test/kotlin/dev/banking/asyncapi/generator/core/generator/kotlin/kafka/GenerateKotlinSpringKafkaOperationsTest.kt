@@ -33,7 +33,6 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
@@ -63,7 +62,6 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
@@ -93,7 +91,6 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
@@ -122,7 +119,6 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 packageName,
                 packageName,
                 "kafka.topics",
-                "topic",
                 File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))

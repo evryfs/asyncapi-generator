@@ -28,7 +28,6 @@ abstract class AbstractJavaGeneratorClass {
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
         kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        kafkaTopicsPropertySuffix: String = "topic",
         configOptions: Map<String, String> = emptyMap(),
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
@@ -38,20 +37,20 @@ abstract class AbstractJavaGeneratorClass {
             throwErrors()
         }
         val bundled = bundler.bundle(asyncApi)
-        val generatorOptions = GeneratorOptions(
-            generatorName = GeneratorName.JAVA,
-            modelPackage = modelPackage,
-            clientPackage = clientPackage ?: modelPackage,
-            schemaPackage = schemaPackage ?: modelPackage,
-            codegenOutputDirectory = codegenOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-            kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
-            kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix,
-            generateModels = generateModels,
-            generateSpringKafkaClient = generateSpringKafkaClient,
-            generateQuarkusKafkaClient = generateQuarkusKafkaClient,
-            configOptions = configOptions,
-        )
+        val generatorOptions =
+            GeneratorOptions(
+                generatorName = GeneratorName.JAVA,
+                modelPackage = modelPackage,
+                clientPackage = clientPackage ?: modelPackage,
+                schemaPackage = schemaPackage ?: modelPackage,
+                codegenOutputDirectory = codegenOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix,
+                generateModels = generateModels,
+                generateSpringKafkaClient = generateSpringKafkaClient,
+                generateQuarkusKafkaClient = generateQuarkusKafkaClient,
+                configOptions = configOptions,
+            )
         generator.generate(
             asyncApiDocument = bundled,
             generatorOptions = generatorOptions,
