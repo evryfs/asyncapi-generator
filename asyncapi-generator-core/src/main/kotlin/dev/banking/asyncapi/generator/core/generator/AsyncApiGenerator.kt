@@ -7,9 +7,11 @@ import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.loader.AsyncApiSchemaLoader
 import dev.banking.asyncapi.generator.core.generator.loader.HeaderSchemaCollector
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
@@ -86,16 +88,27 @@ class AsyncApiGenerator {
                             generationModel = headerModels,
                         ).generate()
                     }
-                    val kafkaGenerator =
-                        KotlinSpringKafkaGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                            topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
-                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                        )
-                    kafkaGenerator.generate(analyzedChannels)
+                    val clientType = generatorOptions.configOptions["client.type"]
+                    if (clientType == "spring-kafka-simple") {
+                        val kafkaGenerator =
+                            KotlinSpringKafkaSimpleGenerator(
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                clientPackage = generatorOptions.clientPackage,
+                                modelPackage = generatorOptions.modelPackage,
+                            )
+                        kafkaGenerator.generate(analyzedChannels)
+                    } else {
+                        val kafkaGenerator =
+                            KotlinSpringKafkaGenerator(
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                clientPackage = generatorOptions.clientPackage,
+                                modelPackage = generatorOptions.modelPackage,
+                                topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
+                                topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
+                                resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                            )
+                        kafkaGenerator.generate(analyzedChannels)
+                    }
                 }
 
                 if (generatorOptions.generateQuarkusKafkaClient) {
@@ -141,16 +154,27 @@ class AsyncApiGenerator {
                             generationModel = headerModels,
                         ).generate()
                     }
-                    val kafkaGenerator =
-                        JavaSpringKafkaGenerator(
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            clientPackage = generatorOptions.clientPackage,
-                            modelPackage = generatorOptions.modelPackage,
-                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                            topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
-                            resourceOutputDir = generatorOptions.resourceOutputDirectory,
-                        )
-                    kafkaGenerator.generate(analyzedChannels)
+                    val clientType = generatorOptions.configOptions["client.type"]
+                    if (clientType == "spring-kafka-simple") {
+                        val kafkaGenerator =
+                            JavaSpringKafkaSimpleGenerator(
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                clientPackage = generatorOptions.clientPackage,
+                                modelPackage = generatorOptions.modelPackage,
+                            )
+                        kafkaGenerator.generate(analyzedChannels)
+                    } else {
+                        val kafkaGenerator =
+                            JavaSpringKafkaGenerator(
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                clientPackage = generatorOptions.clientPackage,
+                                modelPackage = generatorOptions.modelPackage,
+                                topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
+                                topicPropertySuffix = generatorOptions.kafkaTopicsPropertySuffix,
+                                resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                            )
+                        kafkaGenerator.generate(analyzedChannels)
+                    }
                 }
 
                 if (generatorOptions.generateQuarkusKafkaClient) {

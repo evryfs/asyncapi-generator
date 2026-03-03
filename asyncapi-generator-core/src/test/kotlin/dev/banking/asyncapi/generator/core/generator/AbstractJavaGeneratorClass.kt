@@ -29,6 +29,7 @@ abstract class AbstractJavaGeneratorClass {
         generateQuarkusKafkaClient: Boolean = false,
         kafkaTopicsPropertyPrefix: String = "kafka.topics",
         kafkaTopicsPropertySuffix: String = "topic",
+        configOptions: Map<String, String> = emptyMap(),
     ): String {
         val root = AsyncApiRegistry.readYaml(yaml, asyncApiContext)
         val asyncApi = parser.parse(root)
@@ -49,6 +50,7 @@ abstract class AbstractJavaGeneratorClass {
             generateModels = generateModels,
             generateSpringKafkaClient = generateSpringKafkaClient,
             generateQuarkusKafkaClient = generateQuarkusKafkaClient,
+            configOptions = configOptions,
         )
         generator.generate(
             asyncApiDocument = bundled,
