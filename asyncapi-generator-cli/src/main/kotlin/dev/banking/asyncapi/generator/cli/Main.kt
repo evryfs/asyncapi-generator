@@ -133,7 +133,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     kafkaTopicsPropertyPrefix = kafkaTopicsPropertyPrefix ?: "kafka.topics",
                     kafkaTopicsPropertySuffix = kafkaTopicsPropertySuffix ?: "topic",
                     generateModels = hasModelPackage,
-                    generateSpringKafkaClient = hasClientPackage && clientType == "spring-kafka",
+                    generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
                     generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
                     generateAvroSchema = hasSchemaPackage && schemaType == "avro",
                     configOptions = configOptions,
