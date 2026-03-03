@@ -1,0 +1,23 @@
+package {{packageName}}
+
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.springframework.kafka.core.KafkaTemplate
+{{#imports}}
+import {{{.}}}
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+class {{name}}(
+    private val kafkaTemplate: KafkaTemplate<String, {{kafkaValueType}}>,
+    private val topic: String
+) {
+    {{#sendMethods}}
+    fun {{methodName}}(key: String, message: {{payloadType}}) {
+        kafkaTemplate.send(ProducerRecord(topic, key, message))
+    }
+    {{/sendMethods}}
+}

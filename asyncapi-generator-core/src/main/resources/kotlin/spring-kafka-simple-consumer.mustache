@@ -1,0 +1,17 @@
+package {{packageName}}
+
+import org.apache.kafka.clients.consumer.ConsumerRecord
+{{#imports}}
+import {{{.}}}
+{{/imports}}
+
+/**
+{{#description}}
+ * {{{.}}}
+{{/description}}
+ */
+interface {{name}} {
+{{#methods}}
+    fun {{methodName}}(record: ConsumerRecord<String, {{payloadType}}>) { }
+{{/methods}}
+}
