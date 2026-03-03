@@ -9,8 +9,8 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should generate full spring kafka ecosystem`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
-        val modelPackage = "dev.banking.ace.userservice.v1.model"
-        val clientPackage = "dev.banking.ace.userservice.v1.client"
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
 
         generateElement(
             yaml = yaml,
@@ -21,8 +21,8 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val modelPath = "dev/banking/ace/userservice/v1/model"
-        val clientPath = "dev/banking/ace/userservice/v1/client"
+        val modelPath = "dev/banking/test/userservice/v1/model"
+        val clientPath = "dev/banking/test/userservice/v1/client"
 
         val modelDir = outputDir.resolve(modelPath)
         assertTrue(modelDir.resolve("UserSignedUp.kt").exists(), "UserSignedUp model missing")
@@ -100,9 +100,9 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should apply custom topic property prefix and suffix`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
-        val modelPackage = "dev.banking.ace.userservice.v1.model"
-        val clientPackage = "dev.banking.ace.userservice.v1.client"
-        val outputDir = File("target/generated-sources/asyncapi-prefix-suffix")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi")
 
         generateElement(
             yaml = yaml,
@@ -114,7 +114,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             kafkaTopicsPropertyPrefix = "my.property",
             kafkaTopicsPropertySuffix = "name",
         )
-        val clientDir = outputDir.resolve("dev/banking/ace/userservice/v1/client")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val producerDir = clientDir.resolve("producer")
         val listenerDir = clientDir.resolve("listener")
         val producerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()

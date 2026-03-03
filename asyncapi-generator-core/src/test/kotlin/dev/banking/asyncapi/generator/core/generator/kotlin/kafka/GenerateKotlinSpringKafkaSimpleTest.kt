@@ -9,8 +9,8 @@ class GenerateKotlinSpringKafkaSimpleTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should generate simple spring kafka client`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
-        val modelPackage = "dev.banking.ace.userservice.v1.model"
-        val clientPackage = "dev.banking.ace.userservice.v1.client"
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
 
         generateElement(
             yaml = yaml,
@@ -22,7 +22,7 @@ class GenerateKotlinSpringKafkaSimpleTest : AbstractKotlinGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val clientPath = "dev/banking/ace/userservice/v1/client"
+        val clientPath = "dev/banking/test/userservice/v1/client"
         val producerDir = outputDir.resolve("$clientPath/producer")
         val consumerDir = outputDir.resolve("$clientPath/consumer")
 
