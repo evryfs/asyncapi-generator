@@ -83,6 +83,7 @@ fun simpleString() = Schema(
     type = "string",
     format = "uuid",
     default = "\"abc123",
+    defaultSet = true,
     examples = listOf("\"abc123", "\"def456"),
     pattern = "\"^[a-zA-Z0-9_-]+$",
     enum = listOf("\"abc123", "\"def456"),
@@ -96,6 +97,7 @@ fun simpleNumber() = Schema(
     description = "A number with range and divisibility",
     type = "number",
     default = 2.5,
+    defaultSet = true,
     examples = listOf(0.5, 2, 9.5),
     multipleOf = 0.5,
     exclusiveMaximum = 10,
@@ -121,7 +123,7 @@ fun complexObject() = Schema(
     required = listOf("name", "age"),
     properties = mapOf(
         "name" to SchemaInterface.SchemaInline(Schema(type = "string", minLength = 1)),
-        "age" to SchemaInterface.SchemaInline(Schema(type = "integer", default = 18, minimum = 0)),
+        "age" to SchemaInterface.SchemaInline(Schema(type = "integer", default = 18, defaultSet = true, minimum = 0)),
         "email" to SchemaInterface.SchemaInline(Schema(type = "string", format = "email", readOnly = true)),
         "password" to SchemaInterface.SchemaInline(Schema(type = "string", writeOnly = true)),
         "nickname" to SchemaInterface.SchemaInline(Schema(type = "string", nullable = true))
@@ -149,7 +151,7 @@ fun composedSchema() = Schema(
         SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber")),
         SchemaInterface.SchemaInline(Schema(type = "boolean"))
     ),
-    not = SchemaInterface.SchemaInline(Schema(type = "null"))
+    not = SchemaInterface.SchemaInline(Schema(type = null))
 )
 
 
@@ -227,7 +229,8 @@ fun simpleObject() = Schema(
         "active" to SchemaInterface.SchemaInline(
             Schema(
                 type = "boolean",
-                default = true
+                default = true,
+                defaultSet = true
             )
         )
     )
@@ -326,6 +329,7 @@ fun enumAndConst() = Schema(
     enum = listOf("red", "green", "blue"),
     const = "red",
     default = "red",
+    defaultSet = true,
     pattern = "\"^(red|green|blue)$",
     examples = listOf("red", "green"),
     deprecated = false,

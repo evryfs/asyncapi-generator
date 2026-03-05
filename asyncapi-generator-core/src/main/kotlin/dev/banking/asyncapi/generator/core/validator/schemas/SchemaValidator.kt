@@ -288,6 +288,17 @@ class SchemaValidator(
             )
         }
         val required = node.required?.map { item -> item.let(::sanitizeString) } ?: return
+        node.properties?.forEach { (propName, propSchema) ->
+            if (propName in required) {
+                val schema = (propSchema as? SchemaInterface.SchemaInline)?.schema
+                if (schema != null && schema.defaultSet && schema.default == null) {
+                    results.error(
+                        "$contextString property '$propName' is required but has default: null.",
+                        asyncApiContext.getLine(schema, schema::default),
+                    )
+                }
+            }
+        }
         if (required.isEmpty()) {
             results.warn(
                 "$contextString defines an empty 'required' list — omit it if unused.",

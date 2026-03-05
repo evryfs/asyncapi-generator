@@ -98,4 +98,15 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         }
         assertEquals(2, exception.errors.size)
     }
+
+    @Test
+    fun `schema with required property default null throws validation error`() {
+        val document =
+            parse("src/test/resources/validator/schemas/asyncapi_validator_schema_default_null_required.yaml")
+        val results = asyncApiValidator.validate(document)
+        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
+            results.throwErrors()
+        }
+        assertEquals(1, exception.errors.size)
+    }
 }

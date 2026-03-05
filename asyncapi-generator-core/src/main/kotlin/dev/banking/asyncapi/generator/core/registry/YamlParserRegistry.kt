@@ -12,6 +12,7 @@ import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
+import org.yaml.snakeyaml.nodes.Tag
 
 object YamlParserRegistry {
 
@@ -50,6 +51,9 @@ object YamlParserRegistry {
     }
 
     private fun parseScalar(node: ScalarNode): Any? {
+        if (node.tag == Tag.NULL) {
+            return null
+        }
         val prefix = when (node.scalarStyle) {
             LITERAL -> "|"
             FOLDED -> ">"

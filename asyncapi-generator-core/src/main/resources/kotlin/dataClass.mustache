@@ -29,7 +29,7 @@ data class {{className}}(
 {{#annotations}}
     {{{.}}}
 {{/annotations}}
-    val {{name}}: {{{type}}}{{#nullable}}?{{/nullable}}{{#defaultValue}} = {{defaultValue}}{{/defaultValue}}{{^defaultValue}}{{#nullable}} = null{{/nullable}}{{/defaultValue}}{{^last}},{{/last}}
+    val {{name}}: {{{type}}}{{#nullable}}?{{/nullable}}{{#defaultValue}} = {{{defaultValue}}}{{/defaultValue}}{{^defaultValue}}{{#nullable}} = null{{/nullable}}{{/defaultValue}}{{^last}},{{/last}}
 {{/fields}}
 ){{implementsClause}} {
 }

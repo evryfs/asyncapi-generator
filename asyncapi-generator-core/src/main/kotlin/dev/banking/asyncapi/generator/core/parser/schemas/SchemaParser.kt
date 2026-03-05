@@ -71,7 +71,11 @@ class SchemaParser(
         val description = parserNode.optional("description")?.coerce<String>()
         val type = parserNode.optional("type")?.coerce<Any>()
         val format = parserNode.optional("format")?.coerce<String>()
-        val default = parserNode.optional("default")?.coerce<Any>()
+
+        val defaultNode = extractDefaultNode(parserNode)
+        val default = defaultNode?.normalize(defaultNode.node)
+        val defaultSet = defaultNode != null
+
         val examples = parserNode.optional("examples")?.coerce<List<Any?>>()
 
         val multipleOf = parserNode.optional("multipleOf")?.coerce<Number>()
@@ -137,6 +141,7 @@ class SchemaParser(
                 type = type,
                 format = format,
                 default = default,
+                defaultSet = defaultSet,
                 examples = examples,
                 multipleOf = multipleOf,
                 maximum = maximum,
@@ -181,6 +186,15 @@ class SchemaParser(
                 bindings = bindings
             ).also { asyncApiContext.register(it, parserNode) }
         )
+    }
+
+    private fun extractDefaultNode(parserNode: ParserNode): ParserNode? {
+        val currentMap = parserNode.node as? Map<*, *>
+        return if (currentMap != null && currentMap.containsKey("default")) {
+            ParserNode("default", currentMap["default"], "${parserNode.path}.default", parserNode.context)
+        } else {
+            null
+        }
     }
 
     private fun isBooleanSchema(node: ParserNode): Boolean {
