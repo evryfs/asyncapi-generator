@@ -50,7 +50,7 @@ class GenerateStringDefaultValueTest : AbstractKotlinGeneratorClass() {
             """
             data class UserSignedUp(
 
-                val userId: String = null,
+                val userId: String = "null",
 
                 @field:Email
                 val email: String,

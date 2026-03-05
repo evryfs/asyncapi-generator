@@ -9,7 +9,7 @@ components:
       properties:
         userId:
           type: string
-          default: null
+          default: "null"
         email:
           type: string
           format: email

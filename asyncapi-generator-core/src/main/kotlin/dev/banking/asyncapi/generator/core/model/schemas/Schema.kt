@@ -13,6 +13,7 @@ data class Schema(
     val type: Any? = null, // so sad - https://www.learnjsonschema.com/draft7/validation/type/ - can be string or array of strings
     val format: String? = null,
     val default: Any? = null,
+    val defaultSet: Boolean = false, // to distinguish between explicit 'default: null' and default not set
     val examples: List<Any?>? = null,
 
     val multipleOf: Number? = null,
