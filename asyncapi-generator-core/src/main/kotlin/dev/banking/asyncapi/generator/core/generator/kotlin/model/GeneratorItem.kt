@@ -5,6 +5,14 @@ sealed interface GeneratorItem {
     val packageName: String
     val description: List<String>
 
+    data class TypeAliasModel(
+        override val name: String,
+        override val packageName: String,
+        override val description: List<String>,
+        val aliasType: String,
+        val imports: List<String> = emptyList(),
+    ) : GeneratorItem
+
     data class DataClassModel(
         override val name: String,
         override val packageName: String,
