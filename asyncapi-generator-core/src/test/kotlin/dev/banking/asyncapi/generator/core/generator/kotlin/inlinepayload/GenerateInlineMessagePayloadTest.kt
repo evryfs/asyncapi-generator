@@ -11,14 +11,14 @@ class GenerateInlineMessagePayloadTest : AbstractKotlinGeneratorClass() {
         val generated =
             generateElement(
                 yaml = File("src/test/resources/generator/asyncapi_inline_message_payload_properties.yaml"),
-                generated = "UserSignup.kt",
+                generated = "UserSignupPayload.kt",
                 modelPackage = "dev.banking.asyncapi.generator.core.model.generated.inlinepayload",
             )
         val dataClass = extractElement(generated)
 
         val expected =
             """
-            data class UserSignup(
+            data class UserSignupPayload(
 
                 @field:Valid
                 val user: UserCreate? = null,

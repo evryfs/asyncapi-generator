@@ -38,8 +38,8 @@ class KotlinKafkaGeneratorModelFactory(
             val topicPrefix = "Topic$baseName"
             channel.messages.forEach { msg ->
                 val payloadType = resolvePayloadType(msg)
-                val methodName = "on${msg.name}"
-                val handlerName = "${topicPrefix}Handler${msg.name}"
+                val methodName = "on${msg.messageName}"
+                val handlerName = "${topicPrefix}Handler${msg.messageName}"
                 items.add(
                     GeneratorItem.KafkaHandlerInterface(
                         name = handlerName,
@@ -56,7 +56,7 @@ class KotlinKafkaGeneratorModelFactory(
                         imports = imports,
                     ),
                 )
-                val listenerName = "${topicPrefix}Listener${msg.name}"
+                val listenerName = "${topicPrefix}Listener${msg.messageName}"
                 val listenerImports = (imports + "$handlerPackage.$handlerName").distinct().sorted()
                 items.add(
                     GeneratorItem.KafkaListenerClass(
@@ -82,11 +82,11 @@ class KotlinKafkaGeneratorModelFactory(
                 val payloadType = resolvePayloadType(msg)
                 val sendMethod =
                     GeneratorItem.SendMethod(
-                        methodName = "send${msg.name}",
+                        methodName = "send${msg.messageName}",
                         payloadType = payloadType,
                         keyType = "String",
                     )
-                val producerName = "${topicPrefix}Producer${msg.name}"
+                val producerName = "${topicPrefix}Producer${msg.messageName}"
                 items.add(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
@@ -112,7 +112,7 @@ class KotlinKafkaGeneratorModelFactory(
             "integer" -> "Int" // Simplified, could check format for Long
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
-            else -> msg.name // Object types use the Class Name
+            else -> msg.payloadTypeName // Object types use the Class Name
         }
 
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")

@@ -9,6 +9,7 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateJavaPrimitivePayloadTest {
+
     @Test
     fun `should generate typed KafkaTemplate for single string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
@@ -22,7 +23,11 @@ class GenerateJavaPrimitivePayloadTest {
                 isConsumer = true,
                 messages =
                     listOf(
-                        AnalyzedMessage("SimpleStringMessage", stringSchema),
+                        AnalyzedMessage(
+                            messageName = "SimpleStringMessage",
+                            payloadTypeName = "SimpleStringMessagePayload",
+                            schema = stringSchema
+                        )
                     ),
             )
         val generator =
@@ -35,7 +40,12 @@ class GenerateJavaPrimitivePayloadTest {
             )
         generator.generate(listOf(channel))
         val producerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicSimpleTopicProducerSimpleStringMessage.java")
+            outputDir.resolve(
+                packageName.replace(
+                    '.',
+                    '/'
+                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.java"
+            )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -58,8 +68,16 @@ class GenerateJavaPrimitivePayloadTest {
                 isConsumer = true,
                 messages =
                     listOf(
-                        AnalyzedMessage("StringMessage", stringSchema),
-                        AnalyzedMessage("IntMessage", intSchema),
+                        AnalyzedMessage(
+                            messageName = "StringMessage",
+                            payloadTypeName = "StringMessagePayload",
+                            schema = stringSchema,
+                        ),
+                        AnalyzedMessage(
+                            messageName = "IntMessage",
+                            payloadTypeName = "IntMessagePayload",
+                            schema = intSchema,
+                        ),
                     ),
             )
         val generator =

@@ -38,8 +38,8 @@ class JavaKafkaGeneratorModelFactory(
             val topicPrefix = "Topic$baseName"
             channel.messages.forEach { msg ->
                 val payloadType = resolvePayloadType(msg)
-                val methodName = "on${msg.name}"
-                val handlerName = "${topicPrefix}Handler${msg.name}"
+                val methodName = "on${msg.messageName}"
+                val handlerName = "${topicPrefix}Handler${msg.messageName}"
                 items.add(
                     GeneratorItem.KafkaHandlerInterface(
                         name = handlerName,
@@ -55,7 +55,7 @@ class JavaKafkaGeneratorModelFactory(
                         imports = imports,
                     ),
                 )
-                val listenerName = "${topicPrefix}Listener${msg.name}"
+                val listenerName = "${topicPrefix}Listener${msg.messageName}"
                 val listenerImports = (imports + "$handlerPackage.$handlerName").distinct().sorted()
                 items.add(
                     GeneratorItem.KafkaListenerClass(
@@ -81,10 +81,10 @@ class JavaKafkaGeneratorModelFactory(
                 val payloadType = resolvePayloadType(msg)
                 val sendMethod =
                     GeneratorItem.SendMethod(
-                        methodName = "send${msg.name}",
+                        methodName = "send${msg.messageName}",
                         payloadType = payloadType,
                     )
-                val producerName = "${topicPrefix}Producer${msg.name}"
+                val producerName = "${topicPrefix}Producer${msg.messageName}"
                 items.add(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
@@ -110,7 +110,7 @@ class JavaKafkaGeneratorModelFactory(
             "integer" -> "Integer"
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
-            else -> msg.name
+            else -> msg.payloadTypeName
         }
 
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal")

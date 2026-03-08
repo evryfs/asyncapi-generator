@@ -23,7 +23,11 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 isConsumer = true,
                 messages =
                     listOf(
-                        AnalyzedMessage("SimpleStringMessage", stringSchema),
+                        AnalyzedMessage(
+                            messageName = "SimpleStringMessage",
+                            payloadTypeName = "SimpleStringMessagePayload",
+                            schema = stringSchema,
+                        ),
                     ),
             )
         val generator =
@@ -45,7 +49,12 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             "Should use ConsumerRecord with String payload",
         )
         val producerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicSimpleTopicProducerSimpleStringMessage.kt")
+            outputDir.resolve(
+                packageName.replace(
+                    '.',
+                    '/'
+                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.kt"
+            )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
@@ -68,8 +77,16 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 isConsumer = true,
                 messages =
                     listOf(
-                        AnalyzedMessage("StringMessage", stringSchema),
-                        AnalyzedMessage("IntMessage", intSchema),
+                        AnalyzedMessage(
+                            messageName = "StringMessage",
+                            payloadTypeName = "StringMessagePayload",
+                            schema = stringSchema,
+                        ),
+                        AnalyzedMessage(
+                            messageName = "IntMessage",
+                            payloadTypeName = "IntMessagePayload",
+                            schema = intSchema,
+                        ),
                     ),
             )
         val generator =

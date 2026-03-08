@@ -25,8 +25,8 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         val clientPath = "dev/banking/test/userservice/v1/client"
 
         val modelDir = outputDir.resolve(modelPath)
-        assertTrue(modelDir.resolve("UserSignedUp.java").exists(), "Model UserSignedUp missing")
-        assertTrue(modelDir.resolve("UserLoggedIn.java").exists(), "Model UserLoggedIn missing")
+        assertTrue(modelDir.resolve("UserSignedUpPayload.java").exists(), "Model UserSignedUpPayload missing")
+        assertTrue(modelDir.resolve("UserLoggedInPayload.java").exists(), "Model UserLoggedInPayload missing")
 
         val clientDir = outputDir.resolve(clientPath)
         val autoconfigDir = clientDir.resolve("config")
@@ -53,10 +53,10 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         assertTrue(producerDir.resolve("TopicUserEventsProducerUserLoggedIn.java").exists(), "UserLoggedIn Producer missing")
         val userSignedUpListenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.java").readText()
         assertTrue(
-            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
+            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"),
             "Listener should be typed to UserSignedUp",
         )
-        assertTrue(userSignedUpListenerContent.contains("import $modelPackage.UserSignedUp;"), "Import missing")
+        assertTrue(userSignedUpListenerContent.contains("import $modelPackage.UserSignedUpPayload;"), "Import missing")
         assertTrue(
             userSignedUpListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;"),
             "Missing ConditionalOnBean import",

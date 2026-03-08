@@ -8,9 +8,5 @@ channels:
       DlqEvent:
         name: Dead Letter Queue Event
         payload:
-          $ref: '#/components/schemas/DeadLetterQueueEvent'
-components:
-  schemas:
-    DeadLetterQueueEvent:
-      type: object
-      additionalProperties: true
+          type: object
+          additionalProperties: true
