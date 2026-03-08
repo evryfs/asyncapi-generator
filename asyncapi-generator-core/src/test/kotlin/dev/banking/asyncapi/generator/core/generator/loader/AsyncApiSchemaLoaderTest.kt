@@ -37,7 +37,7 @@ class AsyncApiSchemaLoaderTest {
         )
         val doc = docWithComponents(components)
         val loaded = AsyncApiSchemaLoader.load(doc)
-        assertTrue(loaded.containsKey("UserSignedUp"))
+        assertTrue(loaded.containsKey("UserSignedUpPayload"))
     }
 
     private fun docWithComponents(component: Component): AsyncApiDocument {

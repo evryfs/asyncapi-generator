@@ -12,7 +12,13 @@ import kotlin.test.assertTrue
 class GenerateKotlinSpringKafkaOperationsTest {
     private val outputDir = File("target/test-output/kafka-ops")
     private val packageName = "com.example.kafka"
-    private val dummyMessage = AnalyzedMessage("TestEvent", Schema(type = "string"))
+    private val dummyMessage = AnalyzedMessage(
+        messageName = "TestEvent",
+        payloadTypeName = "TestEventPayload",
+        schema = Schema(
+            type = "string",
+        )
+    )
 
     @Test
     fun `should generate ONLY producer when isProducer=true`() {
@@ -38,9 +44,18 @@ class GenerateKotlinSpringKafkaOperationsTest {
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
-        assertTrue(outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(), "Producer should exist")
-        assertFalse(outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(), "Listener should NOT exist")
-        assertFalse(outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(), "Handler should NOT exist")
+        assertTrue(
+            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            "Producer should exist"
+        )
+        assertFalse(
+            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            "Listener should NOT exist"
+        )
+        assertFalse(
+            outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(),
+            "Handler should NOT exist"
+        )
     }
 
     @Test
@@ -67,9 +82,18 @@ class GenerateKotlinSpringKafkaOperationsTest {
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
-        assertFalse(outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(), "Producer should NOT exist")
-        assertTrue(outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(), "Listener should exist")
-        assertTrue(outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(), "Handler should exist")
+        assertFalse(
+            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            "Producer should NOT exist"
+        )
+        assertTrue(
+            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            "Listener should exist"
+        )
+        assertTrue(
+            outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(),
+            "Handler should exist"
+        )
     }
 
     @Test
@@ -96,8 +120,14 @@ class GenerateKotlinSpringKafkaOperationsTest {
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
-        assertTrue(outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(), "Producer should exist")
-        assertTrue(outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(), "Listener should exist")
+        assertTrue(
+            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            "Producer should exist"
+        )
+        assertTrue(
+            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            "Listener should exist"
+        )
     }
 
     @Test
@@ -124,7 +154,13 @@ class GenerateKotlinSpringKafkaOperationsTest {
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
-        assertFalse(outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(), "Producer should NOT exist")
-        assertFalse(outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(), "Listener should NOT exist")
+        assertFalse(
+            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            "Producer should NOT exist"
+        )
+        assertFalse(
+            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            "Listener should NOT exist"
+        )
     }
 }

@@ -25,8 +25,8 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val clientPath = "dev/banking/test/userservice/v1/client"
 
         val modelDir = outputDir.resolve(modelPath)
-        assertTrue(modelDir.resolve("UserSignedUp.kt").exists(), "UserSignedUp model missing")
-        assertTrue(modelDir.resolve("UserLoggedIn.kt").exists(), "UserLoggedIn model missing")
+        assertTrue(modelDir.resolve("UserSignedUpPayload.kt").exists(), "UserSignedUpPayload model missing")
+        assertTrue(modelDir.resolve("UserLoggedInPayload.kt").exists(), "UserLoggedInPayload model missing")
 
         val clientDir = outputDir.resolve(clientPath)
         val autoconfigDir = clientDir.resolve("config")
@@ -47,7 +47,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerDir.resolve("TopicUserEventsProducerUserLoggedIn.kt").exists(), "UserLoggedIn Producer missing")
         val userSignedUpListenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
         assertTrue(
-            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUp>"),
+            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"),
             "Listener should be typed to UserSignedUp",
         )
         assertTrue(

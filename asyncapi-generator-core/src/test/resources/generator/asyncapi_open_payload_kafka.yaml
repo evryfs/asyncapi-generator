@@ -1,0 +1,16 @@
+asyncapi: 3.0.0
+info:
+  title: Open Payload Kafka
+  version: 1.0.0
+channels:
+  user.dlq:
+    messages:
+      DlqEvent:
+        name: Dead Letter Queue Event
+        payload:
+          $ref: '#/components/schemas/DeadLetterQueueEvent'
+components:
+  schemas:
+    DeadLetterQueueEvent:
+      type: object
+      additionalProperties: true

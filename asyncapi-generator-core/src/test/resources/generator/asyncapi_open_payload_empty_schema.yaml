@@ -1,0 +1,7 @@
+asyncapi: 3.0.0
+info:
+  title: Open Payload Empty Schema
+  version: 1.0.0
+components:
+  schemas:
+    DlqPayload: {}

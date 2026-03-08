@@ -30,7 +30,7 @@ class GenerateJavaSpringKafkaSimpleTest : AbstractJavaGeneratorClass() {
         assertTrue(producerFile.exists(), "Simple producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(producerContent.contains("class UserEventsProducerUserSignedUp"))
-        assertTrue(producerContent.contains("KafkaTemplate<String, UserSignedUp>"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserSignedUpPayload>"))
         assertTrue(producerContent.contains("sendUserSignedUp"))
         assertTrue(!producerContent.contains("@Component"), "Simple producer should not be annotated")
 
@@ -39,7 +39,7 @@ class GenerateJavaSpringKafkaSimpleTest : AbstractJavaGeneratorClass() {
         val consumerContent = consumerFile.readText()
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
         assertTrue(consumerContent.contains("default void onUserSignedUp"))
-        assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUp>"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"))
         assertTrue(!consumerContent.contains("@KafkaListener"), "Simple consumer should not be annotated")
     }
 }

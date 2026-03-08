@@ -33,7 +33,7 @@ class KotlinSpringKafkaSimpleModelFactory(
             val methods =
                 channel.messages.map { msg ->
                     GeneratorItem.HandlerMethod(
-                        methodName = "on${msg.name}",
+                        methodName = "on${msg.messageName}",
                         payloadType = resolvePayloadType(msg),
                         keyType = "String?",
                     )
@@ -58,11 +58,11 @@ class KotlinSpringKafkaSimpleModelFactory(
                 val payloadType = resolvePayloadType(msg)
                 val sendMethod =
                     GeneratorItem.SendMethod(
-                        methodName = "send${msg.name}",
+                        methodName = "send${msg.messageName}",
                         payloadType = payloadType,
                         keyType = "String",
                     )
-                val producerName = "${baseName}Producer${msg.name}"
+                val producerName = "${baseName}Producer${msg.messageName}"
                 items.add(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
@@ -87,7 +87,7 @@ class KotlinSpringKafkaSimpleModelFactory(
             "integer" -> "Int"
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
-            else -> msg.name
+            else -> msg.payloadTypeName
         }
 
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
