@@ -11,14 +11,18 @@ import kotlin.text.trimStart
 class JavaGeneratorModelFactory(
     val packageName: String,
     val context: GeneratorContext,
-    val polymorphicRelationships: Map<String, List<String>>
+    val polymorphicRelationships: Map<String, List<String>>,
 ) {
     private val propertyFactory = PropertyFactory(context)
 
-    fun create(name: String, schema: Schema): GeneratorItem? {
+    fun create(
+        name: String,
+        schema: Schema,
+    ): GeneratorItem? {
         val isUnionType = !schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty()
         val isEnum = schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty()
         val isObject = schema.type.getPrimaryType() == "object"
+        val isOpenPayload = isOpenPayloadSchema(schema)
 
         val description = DocumentationUtils.toJavaDocLines(schema.description)
 
@@ -66,23 +70,50 @@ class JavaGeneratorModelFactory(
                     packageName = packageName,
                     description = description,
                     discriminator = discriminatorPropertyName,
-                    subTypes = subTypes
+                    subTypes = subTypes,
                 )
             }
+
+            isOpenPayload -> null
             isObject -> {
-                val properties = schema.properties?.map { (propName, propSchema) ->
-                    propertyFactory.createProperty(propName, propSchema, schema.required ?: emptyList())
-                } ?: emptyList()
+                val properties =
+                    schema.properties?.map { (propName, propSchema) ->
+                        propertyFactory.createProperty(propName, propSchema, schema.required ?: emptyList())
+                    } ?: emptyList()
                 val interfaces = (polymorphicRelationships[name] ?: emptyList()) + "Serializable"
                 GeneratorItem.ClassModel(
                     name = name,
                     packageName = packageName,
                     description = description,
                     properties = properties,
-                    implementsInterfaces = interfaces
+                    implementsInterfaces = interfaces,
                 )
             }
+
             else -> null
+        }
+    }
+
+    private fun isOpenPayloadSchema(schema: Schema): Boolean {
+        if (schema.type == null) {
+            return schema.properties.isNullOrEmpty() &&
+                schema.additionalProperties == null &&
+                schema.enum.isNullOrEmpty() &&
+                schema.oneOf.isNullOrEmpty() &&
+                schema.anyOf.isNullOrEmpty() &&
+                schema.allOf.isNullOrEmpty()
+        }
+        if (schema.type.getPrimaryType() != "object") return false
+        if (!schema.properties.isNullOrEmpty()) return false
+        return when (val additional = schema.additionalProperties) {
+            null -> true
+            is SchemaInterface.BooleanSchema -> additional.value
+            is SchemaInterface.SchemaInline ->
+                additional.schema.type == null &&
+                    additional.schema.properties.isNullOrEmpty() &&
+                    additional.schema.additionalProperties == null
+
+            else -> false
         }
     }
 }
