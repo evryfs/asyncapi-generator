@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import org.assertj.core.api.Assertions.assertThat
@@ -276,7 +277,7 @@ class SchemaParserTest : AbstractParserTest() {
         val root = readYaml("src/test/resources/schemas/asyncapi_schema_parser_assertion.yaml")
         val node = root.mandatory("components").mandatory("schemas").mandatory("UserRef")
         val nestedObjectSchema = (parser.parseElement(node) as SchemaInterface.SchemaReference).reference
-        val expectedSchema = Reference(ref = "\"#/components/schemas/SimpleObject")
+        val expectedSchema = Reference(ref = "\"#/components/schemas/SimpleObject", referenceCategoryKey = SCHEMA)
         assertThat(expectedSchema)
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")

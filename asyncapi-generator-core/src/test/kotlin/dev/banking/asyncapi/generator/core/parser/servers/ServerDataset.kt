@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
-import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
@@ -76,4 +76,4 @@ fun mtlsConnections() = Server(
     )
 )
 
-fun stagingReference() = Reference("'#/components/servers/stagingServer")
+fun stagingReference() = Reference("'#/components/servers/stagingServer", referenceCategoryKey = SERVER)

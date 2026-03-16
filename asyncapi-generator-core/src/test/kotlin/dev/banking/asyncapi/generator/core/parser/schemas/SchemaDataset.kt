@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -24,7 +26,7 @@ fun lightMeasuredPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt")
+            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -41,7 +43,7 @@ fun turnOnOffPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt")
+            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -59,7 +61,7 @@ fun dimLightPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("'#/components/schemas/sentAt")
+            Reference("'#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
         )
     )
 )
@@ -72,8 +74,8 @@ fun sentAt() = Schema(
 
 fun commandPayload() = Schema(
     oneOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/turnOnOffPayload")),
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/dimLightPayload"))
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/turnOnOffPayload", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/dimLightPayload", referenceCategoryKey = SCHEMA))
     )
 )
 
@@ -140,15 +142,15 @@ fun composedSchema() = Schema(
     description = "Example demonstrating allOf, anyOf, oneOf, and not",
     examples = listOf("\"some value"),
     allOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString")),
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber"))
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
     ),
     anyOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString")),
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)),
         SchemaInterface.SchemaInline(Schema(type = "boolean"))
     ),
     oneOf = listOf(
-        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber")),
+        SchemaInterface.SchemaReference(Reference("'#/components/schemas/simpleNumber", referenceCategoryKey = SCHEMA)),
         SchemaInterface.SchemaInline(Schema(type = "boolean"))
     ),
     not = SchemaInterface.SchemaInline(Schema(type = null))
@@ -204,7 +206,7 @@ fun asyncApiSpecific() = Schema(
 
 )
 
-fun referencedSchema() = Reference("'#/components/schemas/simpleString")
+fun referencedSchema() = Reference("'#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)
 
 fun allowAnything() = SchemaInterface.BooleanSchema(value = true)
 

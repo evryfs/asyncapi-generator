@@ -13,16 +13,23 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 
 fun receiveLightMeasurement() = Operation(
     action = "receive",
     summary = "Inform about environmental lighting conditions of a particular streetlight.",
-    channel = Reference(ref = "'#/channels/lightingMeasured"),
+    channel = Reference(ref = "'#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
     messages = listOf(
-        Reference(ref = "'#/components/messages/lightMeasured")
+        Reference(ref = "'#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
     ),
     traits = listOf(
-        OperationTraitInterface.OperationTraitReference(reference = Reference(ref = "'#/components/operationTraits/kafka"))
+        OperationTraitInterface.OperationTraitReference(
+            reference = Reference(
+                ref = "'#/components/operationTraits/kafka",
+                referenceCategoryKey = OPERATION_TRAIT
+            )
+        )
     ),
     externalDocs = ExternalDocInterface.ExternalDocInline(
         externalDoc = ExternalDoc(
@@ -36,9 +43,9 @@ fun receiveLightMeasurement() = Operation(
                     location = $$"'$message.header#/replyTo"
                 )
             ),
-            channel = Reference(ref = "'#/channels/lightingMeasured"),
+            channel = Reference(ref = "'#/channels/lightingMeasured", referenceCategoryKey = REFERENCE),
             messages = listOf(
-                Reference(ref = "'#/components/messages/lightMeasured")
+                Reference(ref = "'#/components/messages/lightMeasured", referenceCategoryKey = REFERENCE)
             )
         )
     )
@@ -46,9 +53,9 @@ fun receiveLightMeasurement() = Operation(
 
 fun turnOn() = Operation(
     action = "send",
-    channel = Reference(ref = "'#/channels/lightTurnOn"),
+    channel = Reference(ref = "'#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
     messages = listOf(
-        Reference(ref = "'#/components/messages/turnOn")
+        Reference(ref = "'#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
     ),
     bindings = mapOf(
         "amqp" to BindingInterface.BindingInline(
@@ -56,7 +63,12 @@ fun turnOn() = Operation(
         )
     ),
     traits = listOf(
-        OperationTraitInterface.OperationTraitReference(reference = Reference(ref = "'#/components/operationTraits/kafka"))
+        OperationTraitInterface.OperationTraitReference(
+            reference = Reference(
+                ref = "'#/components/operationTraits/kafka",
+                referenceCategoryKey = OPERATION_TRAIT
+            )
+        )
     ),
     tags = listOf(
         TagInterface.TagInline(tag = Tag(name = "user")),
@@ -85,9 +97,9 @@ fun turnOn() = Operation(
                     location = $$"\"$message.header#/replyTo"
                 )
             ),
-            channel = Reference(ref = "\"#/channels/lightTurnOn"),
+            channel = Reference(ref = "\"#/channels/lightTurnOn", referenceCategoryKey = REFERENCE),
             messages = listOf(
-                Reference(ref = "\"#/components/messages/turnOn")
+                Reference(ref = "\"#/components/messages/turnOn", referenceCategoryKey = REFERENCE)
             )
         )
     )

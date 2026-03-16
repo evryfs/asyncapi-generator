@@ -7,18 +7,21 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
 
 fun lightingMeasured() = Channel(
     address = "'smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured",
     description = "The topic on which measured values may be produced and consumed.",
     messages = mapOf(
         "lightMeasured" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/lightMeasured")
+            Reference("'#/components/messages/lightMeasured", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
         "streetlightId" to ParameterInterface.ParameterReference(
-            Reference("'#/components/parameters/streetlightId")
+            Reference("'#/components/parameters/streetlightId", referenceCategoryKey = PARAMETER)
         )
     ),
     bindings = mapOf(
@@ -38,12 +41,12 @@ fun lightTurnOn() = Channel(
     address = "'smartylighting.streetlights.1.0.action.{streetlightId}.turn.on",
     messages = mapOf(
         "turnOn" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/turnOnOff")
+            Reference("'#/components/messages/turnOnOff", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
         "streetlightId" to ParameterInterface.ParameterReference(
-            Reference("'#/components/parameters/streetlightId")
+            Reference("'#/components/parameters/streetlightId", referenceCategoryKey = PARAMETER)
         )
     )
 )
@@ -52,12 +55,12 @@ fun lightTurnOff() = Channel(
     address = "'smartylighting.streetlights.1.0.action.{streetlightId}.turn.off",
     messages = mapOf(
         "turnOff" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/turnOnOff")
+            Reference("'#/components/messages/turnOnOff", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
         "streetlightId" to ParameterInterface.ParameterReference(
-            Reference("'#/components/parameters/streetlightId")
+            Reference("'#/components/parameters/streetlightId", referenceCategoryKey = PARAMETER)
         )
     )
 )
@@ -66,12 +69,12 @@ fun lightsDim() = Channel(
     address = "'smartylighting.streetlights.1.0.action.{streetlightId}.dim",
     messages = mapOf(
         "dimLight" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/dimLight")
+            Reference("'#/components/messages/dimLight", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
         "streetlightId" to ParameterInterface.ParameterReference(
-            Reference("'#/components/parameters/streetlightId")
+            Reference("'#/components/parameters/streetlightId", referenceCategoryKey = PARAMETER)
         )
     )
 )
@@ -81,7 +84,7 @@ fun lightStatus() = Channel(
     description = "The topic reporting light status by city.",
     messages = mapOf(
         "lightStatusMessage" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/lightMeasured")
+            Reference("'#/components/messages/lightMeasured", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
@@ -102,7 +105,7 @@ fun maintenanceRequest() = Channel(
     description = "Command topic for maintenance requests.",
     messages = mapOf(
         "maintenanceMessage" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/turnOnOff")
+            Reference("'#/components/messages/turnOnOff", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
@@ -121,12 +124,12 @@ fun cityLights() = Channel(
     description = "Channel for controlling individual lights in a city.",
     messages = mapOf(
         "dimLight" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/dimLight")
+            Reference("'#/components/messages/dimLight", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
         "cityId" to ParameterInterface.ParameterReference(
-            Reference("'#/components/parameters/cityId")
+            Reference("'#/components/parameters/cityId", referenceCategoryKey = PARAMETER)
         ),
         "lightId" to ParameterInterface.ParameterInline(
             Parameter(
@@ -144,7 +147,7 @@ fun powerStatus() = Channel(
     description = "Channel for power status updates.",
     messages = mapOf(
         "powerMessage" to MessageInterface.MessageReference(
-            Reference("'#/components/messages/lightMeasured")
+            Reference("'#/components/messages/lightMeasured", referenceCategoryKey = MESSAGE)
         )
     ),
     parameters = mapOf(
