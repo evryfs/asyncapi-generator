@@ -13,7 +13,7 @@ components:
         - username
       properties:
         id:
-          $ref: 'asyncapi_multifile_examples_properties.yaml#/id'
+          $ref: 'asyncapi_multifile_example_properties.yaml#/id'
         username:
           type: string
           minLength: 3
@@ -34,8 +34,8 @@ components:
         - actor
       properties:
         timestamp:
-          $ref: 'asyncapi_multifile_examples_properties.yaml#/timestamp'
+          $ref: 'asyncapi_multifile_example_properties.yaml#/timestamp'
         actor:
-          $ref: 'asyncapi_multifile_examples_properties.yaml#/actor'
+          $ref: 'asyncapi_multifile_example_properties.yaml#/actor'
         reason:
-          $ref: 'asyncapi_multifile_examples_properties.yaml#/reason'
+          $ref: 'asyncapi_multifile_example_properties.yaml#/reason'

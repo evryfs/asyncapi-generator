@@ -1,0 +1,5 @@
+testChannel:
+  address: "example.topic"
+  messages:
+    testMessage:
+      $ref: "asyncapi_multifile_example_main.yaml#/components/messages/testMessage"
