@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
@@ -12,8 +12,8 @@ class AsyncApiExternalContext(
 
     private val loadedFiles = mutableSetOf<String>()  // absolute paths
 
-    fun loadExternal(ref: String) {
-        val clean = ref.trim().trimStart('\'', '"', '|', '>')
+    fun loadExternal(reference: Reference) {
+        val clean = reference.ref.trim().trimStart('\'', '"', '|', '>')
         if (clean.isEmpty()) {
             return
         }
@@ -39,7 +39,10 @@ class AsyncApiExternalContext(
             result.logWarnings()
             result.throwErrors()
         } else {
-            SchemaParser(context).parseMap(rootNode)
+            ExternalFragmentProcessor(context).parseAndValidate(
+                rootNode = rootNode,
+                reference = reference
+            )
         }
     }
 }

@@ -18,4 +18,5 @@ enum class ReferenceCategoryKey {
     EXTERNAL_DOC,
     TAG,
     BINDING,
+    COMPONENT,
 }
