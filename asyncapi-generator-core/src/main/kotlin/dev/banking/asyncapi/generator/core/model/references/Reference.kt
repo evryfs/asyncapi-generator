@@ -11,6 +11,8 @@ data class Reference(
     var model: Any? = null, // The actual model being referenced (if resolved)
     @get:JsonIgnore
     var sourceId: String? = null,
+    @get:JsonIgnore
+    var referenceCategoryKey: ReferenceCategoryKey? = null, // External fragment loading needs explicit expected type, path-guessing is brittle.
 ) {
 
     @get:JsonIgnore

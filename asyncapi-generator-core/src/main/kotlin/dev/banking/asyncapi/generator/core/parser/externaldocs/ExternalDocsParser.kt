@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 
 class ExternalDocsParser(
     val asyncApiContext: AsyncApiContext,
@@ -22,7 +23,8 @@ class ExternalDocsParser(
         node.optional($$"$ref")?.coerce<String>()?.let { reference ->
             return ExternalDocInterface.ExternalDocReference(
                 Reference(
-                    ref = reference
+                    ref = reference,
+                    referenceCategoryKey = EXTERNAL_DOC
                 ).also { asyncApiContext.register(it, node) }
             )
         }

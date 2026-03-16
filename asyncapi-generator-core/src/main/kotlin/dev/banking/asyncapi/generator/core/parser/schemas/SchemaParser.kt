@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import kotlin.String
 import kotlin.collections.Map
 
@@ -38,6 +39,7 @@ class SchemaParser(
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = SCHEMA
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
@@ -60,6 +62,7 @@ class SchemaParser(
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = SCHEMA
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

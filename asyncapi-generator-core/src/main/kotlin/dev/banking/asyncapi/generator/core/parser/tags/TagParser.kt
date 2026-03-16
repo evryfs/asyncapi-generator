@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 
 class TagParser(
@@ -34,7 +35,8 @@ class TagParser(
         val tagInterface = if (reference != null) {
             TagInterface.TagReference(
                 Reference(
-                    ref = reference
+                    ref = reference,
+                    referenceCategoryKey = TAG
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {

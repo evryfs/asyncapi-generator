@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 
 class BindingParser(
     val asyncApiContext: AsyncApiContext,
@@ -18,7 +19,8 @@ class BindingParser(
             val binding = if (reference != null) {
                 BindingInterface.BindingReference(
                     Reference(
-                        ref = reference
+                        ref = reference,
+                        referenceCategoryKey = BINDING
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {

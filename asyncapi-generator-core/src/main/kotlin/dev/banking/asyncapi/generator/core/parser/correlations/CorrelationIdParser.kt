@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInter
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
 
 class CorrelationIdParser(
     val asyncApiContext: AsyncApiContext,
@@ -23,6 +24,7 @@ class CorrelationIdParser(
             return CorrelationIdInterface.CorrelationIdReference(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = CORRELATION_ID
                 ).also { asyncApiContext.register(it, node) }
             )
         }

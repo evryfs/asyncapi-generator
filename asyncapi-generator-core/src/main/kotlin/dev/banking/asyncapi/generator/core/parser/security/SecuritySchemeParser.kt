@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 
 class SecuritySchemeParser(
     val asyncApiContext: AsyncApiContext,
@@ -30,7 +31,8 @@ class SecuritySchemeParser(
         parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
             return SecuritySchemeInterface.SecuritySchemeReference(
                 Reference(
-                    ref = reference
+                    ref = reference,
+                    referenceCategoryKey = SECURITY_SCHEME
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

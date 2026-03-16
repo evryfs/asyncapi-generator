@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 
 class ServerVariableParser(
     val asyncApiContext: AsyncApiContext,
@@ -18,7 +19,8 @@ class ServerVariableParser(
             val serverVariable = if (reference != null) {
                 ServerVariableInterface.ServerVariableReference(
                     Reference(
-                        ref = reference
+                        ref = reference,
+                        referenceCategoryKey = SERVER_VARIABLE
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {
