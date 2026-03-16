@@ -46,7 +46,6 @@ channels:
             email:
               description: Optional email address
               type: string
-        name: "testMessage"
   auditChannel:
     address: "example.audit"
     messages:

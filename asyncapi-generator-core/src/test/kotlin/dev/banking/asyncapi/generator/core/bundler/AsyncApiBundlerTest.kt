@@ -2,8 +2,10 @@ package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -95,11 +97,13 @@ class AsyncApiBundlerTest {
         assertFalse(validated.hasWarnings(), "Expected no validation warnings: ${validated.warnings}")
         val bundled = bundler.bundle(parsed)
 
-        val channel = bundled.channels!!["testChannel"] as ChannelInterface.ChannelInline
-        val messageRef = channel.channel.messages!!["testMessage"] as MessageInterface.MessageReference
+        val channelRef = bundled.channels!!["testChannel"] as ChannelInterface.ChannelReference
+        val bundledChannel = channelRef.reference.model as Channel
+        val messageInline = bundledChannel.messages!!["testMessage"] as MessageInterface.MessageInline
 
-        assertThat(messageRef.reference.inline).isTrue()
-        assertThat(messageRef.reference.model).isNotNull
+        assertThat(channelRef.reference.inline).isTrue()
+        assertThat(channelRef.reference.model).isNotNull
+        assertThat(messageInline.message.payload).isInstanceOf(SchemaInterface.SchemaInline::class.java)
     }
 
     private fun expectedSingleFileBundled(file: File): AsyncApiDocument {
