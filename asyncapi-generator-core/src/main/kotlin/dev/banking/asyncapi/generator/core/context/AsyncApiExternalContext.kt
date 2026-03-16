@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import java.io.File
@@ -31,13 +32,14 @@ class AsyncApiExternalContext(
         }
         val rootNode = AsyncApiRegistry.readYaml(externalFile, context)
 
-        val parser = AsyncApiParser(context)
-        val parsed = parser.parse(rootNode)
-
-        val validator = AsyncApiValidator(context)
-        val result = validator.validate(parsed)
-
-        result.logWarnings()
-        result.throwErrors()
+        if (rootNode.optional("asyncapi") != null) {
+            val parser = AsyncApiParser(context)
+            val parsed = parser.parse(rootNode)
+            val result = AsyncApiValidator(context).validate(parsed)
+            result.logWarnings()
+            result.throwErrors()
+        } else {
+            SchemaParser(context).parseMap(rootNode)
+        }
     }
 }

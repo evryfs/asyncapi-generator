@@ -13,8 +13,7 @@ components:
         - username
       properties:
         id:
-          type: integer
-          description: The unique identifier of the user
+          $ref: 'asyncapi_multifile_examples_properties.yaml#/id'
         username:
           type: string
           minLength: 3
@@ -35,12 +34,8 @@ components:
         - actor
       properties:
         timestamp:
-          type: string
-          format: date-time
-          description: When the change was made
+          $ref: 'asyncapi_multifile_examples_properties.yaml#/timestamp'
         actor:
-          type: string
-          description: Who made the change
+          $ref: 'asyncapi_multifile_examples_properties.yaml#/actor'
         reason:
-          type: string
-          description: Optional reason for the change
+          $ref: 'asyncapi_multifile_examples_properties.yaml#/reason'
