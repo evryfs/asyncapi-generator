@@ -1,0 +1,19 @@
+testChannel:
+  address: "example.topic"
+  messages:
+    testMessage:
+      payload:
+        title: Valid User Schema
+        description: Represents a user with valid fields
+        type: object
+        required:
+          - id
+          - username
+        properties:
+          id:
+            $ref: 'properties.yaml#/id'
+          username:
+            type: string
+            minLength: 3
+            maxLength: 20
+            description: Username between 3 and 20 characters

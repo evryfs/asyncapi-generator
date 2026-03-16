@@ -1,0 +1,25 @@
+asyncapi: 3.0.0
+info:
+  title: Multi File Schema Fragment IT
+  version: 1.0.0
+channels:
+  schemaFragmentChannel:
+    address: "example.schema.fragment"
+    messages:
+      userMessage:
+        name: "userMessage"
+        payload:
+          $ref: '#/components/schemas/User'
+components:
+  schemas:
+    User:
+      title: User
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          $ref: 'properties.yaml#/id'
+        username:
+          $ref: 'properties.yaml#/username'
