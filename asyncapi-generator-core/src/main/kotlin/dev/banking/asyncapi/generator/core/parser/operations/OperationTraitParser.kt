@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
 
 class OperationTraitParser(
     val asyncApiContext: AsyncApiContext,
@@ -41,6 +42,7 @@ class OperationTraitParser(
             OperationTraitInterface.OperationTraitReference(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = OPERATION_TRAIT,
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {

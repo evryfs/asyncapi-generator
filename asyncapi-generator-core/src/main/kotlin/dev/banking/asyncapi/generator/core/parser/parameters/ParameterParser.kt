@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
 
 class ParameterParser(
     val asyncApiContext: AsyncApiContext,
@@ -19,6 +20,7 @@ class ParameterParser(
                 ParameterInterface.ParameterReference(
                     Reference(
                         ref = reference,
+                        referenceCategoryKey = PARAMETER,
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.schemas
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -13,7 +14,10 @@ data class Schema(
     val type: Any? = null, // so sad - https://www.learnjsonschema.com/draft7/validation/type/ - can be string or array of strings
     val format: String? = null,
     val default: Any? = null,
+
+    @get:JsonIgnore
     val defaultSet: Boolean = false, // to distinguish between explicit 'default: null' and default not set
+
     val examples: List<Any?>? = null,
 
     val multipleOf: Number? = null,

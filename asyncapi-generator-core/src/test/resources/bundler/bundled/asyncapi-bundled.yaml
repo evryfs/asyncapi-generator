@@ -30,28 +30,22 @@ channels:
           title: Valid User Schema
           description: Represents a user with valid fields
           type: object
-          defaultSet: false
           required: [id, username]
           properties:
             id:
               description: The unique identifier of the user
               type: integer
-              defaultSet: false
             username:
               description: Username between 3 and 20 characters
               type: string
-              defaultSet: false
               maxLength: 20
               minLength: 3
             active:
               description: Whether the user is active
               type: boolean
-              defaultSet: false
             email:
               description: Optional email address
               type: string
-              defaultSet: false
-        name: "testMessage"
   auditChannel:
     address: "example.audit"
     messages:
@@ -60,22 +54,18 @@ channels:
           title: Audit Metadata
           description: Metadata about changes to user records
           type: object
-          defaultSet: false
           required: [timestamp, actor]
           properties:
             timestamp:
               description: When the change was made
               type: string
               format: date-time
-              defaultSet: false
             actor:
               description: Who made the change
               type: string
-              defaultSet: false
             reason:
               description: Optional reason for the change
               type: string
-              defaultSet: false
         name: "auditMessage"
   externalAuditChannel:
     address: "external.audit"
@@ -85,22 +75,18 @@ channels:
           title: Audit Metadata
           description: Metadata about changes to user records
           type: object
-          defaultSet: false
           required: [timestamp, actor]
           properties:
             timestamp:
               description: When the change was made
               type: string
               format: date-time
-              defaultSet: false
             actor:
               description: Who made the change
               type: string
-              defaultSet: false
             reason:
               description: Optional reason for the change
               type: string
-              defaultSet: false
         name: "ExternalAuditMessage"
     description: "External audit events channel defined in shared file"
 components:
@@ -110,47 +96,38 @@ components:
         title: Valid User Schema
         description: Represents a user with valid fields
         type: object
-        defaultSet: false
         required: [id, username]
         properties:
           id:
             description: The unique identifier of the user
             type: integer
-            defaultSet: false
           username:
             description: Username between 3 and 20 characters
             type: string
-            defaultSet: false
             maxLength: 20
             minLength: 3
           active:
             description: Whether the user is active
             type: boolean
-            defaultSet: false
           email:
             description: Optional email address
             type: string
-            defaultSet: false
       name: "testMessage"
     auditMessage:
       payload:
         title: Audit Metadata
         description: Metadata about changes to user records
         type: object
-        defaultSet: false
         required: [timestamp, actor]
         properties:
           timestamp:
             description: When the change was made
             type: string
             format: date-time
-            defaultSet: false
           actor:
             description: Who made the change
             type: string
-            defaultSet: false
           reason:
             description: Optional reason for the change
             type: string
-            defaultSet: false
       name: "auditMessage"

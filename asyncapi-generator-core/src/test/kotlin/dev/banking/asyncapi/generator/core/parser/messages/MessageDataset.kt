@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.parser.messages
 
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.tags.Tag
@@ -11,7 +10,10 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageExample
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
-import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -39,7 +41,7 @@ fun lightMeasured() = Message(
 
     traits = listOf(
         MessageTraitInterface.ReferenceMessageTrait(
-            Reference("'#/components/messageTraits/commonHeaders")
+            Reference("'#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
         )
     ),
 
@@ -65,7 +67,7 @@ fun lightMeasured() = Message(
     ),
 
     payload = SchemaInterface.SchemaReference(
-        Reference("'#/components/schemas/lightMeasuredPayload")
+        Reference("'#/components/schemas/lightMeasuredPayload", referenceCategoryKey = SCHEMA)
     ),
 
     examples = listOf(
@@ -135,26 +137,27 @@ fun turnOnOff() = Message(
     ),
     traits = listOf(
         MessageTraitInterface.ReferenceMessageTrait(
-            Reference("'#/components/messageTraits/commonHeaders")
+            Reference("'#/components/messageTraits/commonHeaders", referenceCategoryKey = MESSAGE_TRAIT)
         )
     )
 )
 
 fun referencedMessage() = Reference(
-    ref = "'#/components/messages/lightMeasured"
+    ref = "'#/components/messages/lightMeasured",
+    referenceCategoryKey = MESSAGE
 )
 
 fun refPayloadMessage() = Message(
     name = "RefPayload",
     payload = SchemaInterface.SchemaReference(
-        Reference("'#/components/schemas/MySchema")
+        Reference("'#/components/schemas/MySchema", referenceCategoryKey = SCHEMA)
     )
 )
 
 fun refCorrelationIdMessage() = Message(
     name = "RefCorrelationId",
     correlationId = CorrelationIdInterface.CorrelationIdReference(
-        Reference("'#/components/correlationIds/myId")
+        Reference("'#/components/correlationIds/myId", referenceCategoryKey = CORRELATION_ID)
     )
 )
 

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.references
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 
 class ReferenceParser(
     val asyncApiContext: AsyncApiContext,
@@ -18,7 +19,8 @@ class ReferenceParser(
     fun parseElement(parserNode: ParserNode): Reference {
         val reference = parserNode.mandatory($$"$ref").coerce<String>()
         return Reference(
-            ref = reference
+            ref = reference,
+            referenceCategoryKey = REFERENCE
         ).also { asyncApiContext.register(it, parserNode) }
     }
 }

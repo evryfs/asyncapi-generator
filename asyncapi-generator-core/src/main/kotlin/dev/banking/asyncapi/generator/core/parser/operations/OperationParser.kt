@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 class OperationParser(
@@ -32,6 +33,7 @@ class OperationParser(
                 OperationInterface.OperationReference(
                     Reference(
                         ref = reference,
+                        referenceCategoryKey = OPERATION
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {

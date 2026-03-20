@@ -17,7 +17,7 @@ class AsyncApiContext {
         modelRepository.register(model, node)
 
         if (model is Reference) {
-            externalLoader.loadExternal(model.ref)
+            externalLoader.loadExternal(model)
         }
     }
 

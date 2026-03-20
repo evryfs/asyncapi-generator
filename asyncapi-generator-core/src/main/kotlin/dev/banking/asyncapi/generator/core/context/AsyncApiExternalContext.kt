@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.context
 
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -11,8 +12,8 @@ class AsyncApiExternalContext(
 
     private val loadedFiles = mutableSetOf<String>()  // absolute paths
 
-    fun loadExternal(ref: String) {
-        val clean = ref.trim().trimStart('\'', '"', '|', '>')
+    fun loadExternal(reference: Reference) {
+        val clean = reference.ref.trim().trimStart('\'', '"', '|', '>')
         if (clean.isEmpty()) {
             return
         }
@@ -31,13 +32,17 @@ class AsyncApiExternalContext(
         }
         val rootNode = AsyncApiRegistry.readYaml(externalFile, context)
 
-        val parser = AsyncApiParser(context)
-        val parsed = parser.parse(rootNode)
-
-        val validator = AsyncApiValidator(context)
-        val result = validator.validate(parsed)
-
-        result.logWarnings()
-        result.throwErrors()
+        if (rootNode.optional("asyncapi") != null) {
+            val parser = AsyncApiParser(context)
+            val parsed = parser.parse(rootNode)
+            val result = AsyncApiValidator(context).validate(parsed)
+            result.logWarnings()
+            result.throwErrors()
+        } else {
+            ExternalFragmentProcessor(context).parseAndValidate(
+                rootNode = rootNode,
+                reference = reference
+            )
+        }
     }
 }

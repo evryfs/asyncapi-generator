@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 class ChannelParser(
@@ -31,7 +32,8 @@ class ChannelParser(
             val channel = if (reference != null) {
                 ChannelInterface.ChannelReference(
                     Reference(
-                        ref = reference
+                        ref = reference,
+                        referenceCategoryKey = CHANNEL
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {

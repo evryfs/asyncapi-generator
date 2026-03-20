@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 
 class OperationReplyAddressParser(
     val asyncApiContext: AsyncApiContext,
@@ -23,6 +24,7 @@ class OperationReplyAddressParser(
             return OperationReplyAddressInterface.OperationReplyAddressReference(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = OPERATION_REPLY_ADDRESS
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

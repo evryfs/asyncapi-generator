@@ -29,15 +29,25 @@ class SchemaBundler {
                 )
             is SchemaInterface.SchemaReference -> {
                 val ref = schemaInterface.reference.ref
+                val keepAsReference = isComponentSchemaRef(ref)
                 if (visited.contains(ref)) {
-                    schemaInterface
+                    if (keepAsReference) {
+                        schemaInterface
+                    } else {
+                        val model = schemaInterface.reference.requireModel<Schema>()
+                        SchemaInterface.SchemaInline(model)
+                    }
                 } else {
                     val model = schemaInterface.reference.requireModel<Schema>()
                     val newVisited = visited + ref
                     val bundled = bundleSchema(model, newVisited)
-                    schemaInterface.reference.model = bundled
-                    schemaInterface.reference.inline()
-                    schemaInterface
+                    if (keepAsReference) {
+                        schemaInterface.reference.model = bundled
+                        schemaInterface.reference.inline()
+                        schemaInterface
+                    } else {
+                        SchemaInterface.SchemaInline(bundled)
+                    }
                 }
             }
             is SchemaInterface.MultiFormatSchemaInline ->
@@ -86,5 +96,10 @@ class SchemaBundler {
             externalDocs = bundledExternalDocs,
             bindings = bundledBindings,
         )
+    }
+
+    private fun isComponentSchemaRef(ref: String): Boolean {
+        val pointer = ref.substringAfter("#", "")
+        return pointer.startsWith("/components/schemas/")
     }
 }

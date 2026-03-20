@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
 
 class MessageTraitParser(
     val asyncApiContext: AsyncApiContext,
@@ -43,6 +44,7 @@ class MessageTraitParser(
             MessageTraitInterface.ReferenceMessageTrait(
                 Reference(
                     ref = reference,
+                    referenceCategoryKey = MESSAGE_TRAIT
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {

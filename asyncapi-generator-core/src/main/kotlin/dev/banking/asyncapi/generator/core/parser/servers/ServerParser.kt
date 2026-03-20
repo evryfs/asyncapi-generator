@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 
 class ServerParser(
@@ -29,6 +30,7 @@ class ServerParser(
                 ServerInterface.ServerReference(
                     Reference(
                         ref = reference,
+                        referenceCategoryKey = SERVER,
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {

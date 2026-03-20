@@ -19,10 +19,7 @@ servers:
       - $ref: 'asyncapi_multifile_example_tags.yaml#/components/tags/mtls'
 channels:
   testChannel:
-    address: "example.topic"
-    messages:
-      testMessage:
-        $ref: "#/components/messages/testMessage"
+    $ref: 'asyncapi_multifile_example_channel.yaml#/testChannel'
   auditChannel:
     address: "example.audit"
     messages:

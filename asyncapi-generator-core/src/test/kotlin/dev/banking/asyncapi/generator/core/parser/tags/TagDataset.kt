@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.tags
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 
 fun inlineTag() = Tag(
@@ -16,4 +17,4 @@ fun inlineTag() = Tag(
     )
 )
 
-fun refTag() = Reference(ref = "'#/components/tags/inlineTag")
+fun refTag() = Reference(ref = "'#/components/tags/inlineTag", referenceCategoryKey = TAG)

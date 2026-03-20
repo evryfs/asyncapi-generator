@@ -1,0 +1,25 @@
+testChannel:
+  address: "example.topic"
+  messages:
+    testMessage:
+      payload:
+        title: Valid User Schema
+        description: Represents a user with valid fields
+        type: object
+        required:
+          - id
+          - username
+        properties:
+          id:
+            $ref: 'asyncapi_multifile_example_properties.yaml#/id'
+          username:
+            type: string
+            minLength: 3
+            maxLength: 20
+            description: Username between 3 and 20 characters
+          active:
+            type: boolean
+            description: Whether the user is active
+          email:
+            type: string
+            description: Optional email address
