@@ -1,0 +1,21 @@
+asyncapi: 3.0.0
+info:
+  title: Message Headers Ref Invalid
+  version: 1.0.0
+components:
+  messages:
+    UserSignup:
+      name: UserSignup
+      headers:
+        $ref: "#/components/schemas/MissingHeaders"
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+  schemas:
+    DefaultHeaders:
+      type: object
+      properties:
+        traceparent:
+          type: string
