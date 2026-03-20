@@ -63,6 +63,9 @@ class MessageTraitValidator(
 
     private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationResults) {
         val headersSchema = node.headers ?: return
+        if (headersSchema is SchemaInterface.SchemaReference) {
+            referenceResolver.resolve(headersSchema.reference, "$contextString Headers", results)
+        }
         val headers = extractHeaderProperties(headersSchema)
         headers.forEach { (schemaName, schemaInterface) ->
             val contextString = "$contextString Header Schema '$schemaName'"

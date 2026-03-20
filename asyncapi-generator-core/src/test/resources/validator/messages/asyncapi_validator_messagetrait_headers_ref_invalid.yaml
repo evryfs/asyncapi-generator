@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Message Trait Headers Ref Invalid
+  version: 1.0.0
+components:
+  messageTraits:
+    DefaultKafkaHeaders:
+      headers:
+        $ref: "#/components/schemas/MissingHeaders"
+  schemas:
+    DefaultHeaders:
+      type: object
+      properties:
+        traceparent:
+          type: string

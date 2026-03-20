@@ -1,0 +1,24 @@
+asyncapi: 3.0.0
+info:
+  title: Message Headers Ref Valid
+  version: 1.0.0
+components:
+  messages:
+    UserSignup:
+      name: UserSignup
+      headers:
+        $ref: "#/components/schemas/DefaultHeaders"
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+  schemas:
+    DefaultHeaders:
+      type: object
+      required:
+        - traceparent
+      properties:
+        traceparent:
+          type: string
+          description: Trace context identifier
