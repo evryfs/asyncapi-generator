@@ -68,27 +68,29 @@ class AsyncApiGenerator {
                     if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
                         throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
                     }
-                    val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
-                    if (headerSchemas.isNotEmpty()) {
-                        val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
-                        val headerFactory =
-                            KotlinGeneratorModelFactory(
-                                packageName = "${generatorOptions.clientPackage}.header",
-                                context = headerContext,
-                                polymorphicRelationships = polymorphic,
-                                annotation = null,
-                            )
-                        val headerModels =
-                            headerSchemas.mapNotNull { (name, schema) ->
-                                headerFactory.create(name, schema)
-                            }
-                        KotlinGenerator(
-                            packageName = "${generatorOptions.clientPackage}.header",
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            generationModel = headerModels,
-                        ).generate()
-                    }
                     val clientType = generatorOptions.configOptions["client.type"]
+                    if (clientType != "spring-kafka-simple") {
+                        val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
+                        if (headerSchemas.isNotEmpty()) {
+                            val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
+                            val headerFactory =
+                                KotlinGeneratorModelFactory(
+                                    packageName = "${generatorOptions.clientPackage}.header",
+                                    context = headerContext,
+                                    polymorphicRelationships = polymorphic,
+                                    annotation = null,
+                                )
+                            val headerModels =
+                                headerSchemas.mapNotNull { (name, schema) ->
+                                    headerFactory.create(name, schema)
+                                }
+                            KotlinGenerator(
+                                packageName = "${generatorOptions.clientPackage}.header",
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                generationModel = headerModels,
+                            ).generate()
+                        }
+                    }
                     if (clientType == "spring-kafka-simple") {
                         val kafkaGenerator =
                             KotlinSpringKafkaSimpleGenerator(
@@ -134,26 +136,28 @@ class AsyncApiGenerator {
                     if (generatorOptions.kafkaTopicsPropertyPrefix.isBlank()) {
                         throw IllegalArgumentException("kafka.topics.property.prefix cannot be empty")
                     }
-                    val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
-                    if (headerSchemas.isNotEmpty()) {
-                        val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
-                        val headerFactory =
-                            JavaGeneratorModelFactory(
-                                packageName = "${generatorOptions.clientPackage}.header",
-                                context = headerContext,
-                                polymorphicRelationships = polymorphic,
-                            )
-                        val headerModels =
-                            headerSchemas.mapNotNull { (name, schema) ->
-                                headerFactory.create(name, schema)
-                            }
-                        JavaGenerator(
-                            packageName = "${generatorOptions.clientPackage}.header",
-                            outputDir = generatorOptions.codegenOutputDirectory,
-                            generationModel = headerModels,
-                        ).generate()
-                    }
                     val clientType = generatorOptions.configOptions["client.type"]
+                    if (clientType != "spring-kafka-simple") {
+                        val headerSchemas = HeaderSchemaCollector.collect(asyncApiDocument)
+                        if (headerSchemas.isNotEmpty()) {
+                            val headerContext = GeneratorContext(analyzedSchemas + headerSchemas)
+                            val headerFactory =
+                                JavaGeneratorModelFactory(
+                                    packageName = "${generatorOptions.clientPackage}.header",
+                                    context = headerContext,
+                                    polymorphicRelationships = polymorphic,
+                                )
+                            val headerModels =
+                                headerSchemas.mapNotNull { (name, schema) ->
+                                    headerFactory.create(name, schema)
+                                }
+                            JavaGenerator(
+                                packageName = "${generatorOptions.clientPackage}.header",
+                                outputDir = generatorOptions.codegenOutputDirectory,
+                                generationModel = headerModels,
+                            ).generate()
+                        }
+                    }
                     if (clientType == "spring-kafka-simple") {
                         val kafkaGenerator =
                             JavaSpringKafkaSimpleGenerator(
