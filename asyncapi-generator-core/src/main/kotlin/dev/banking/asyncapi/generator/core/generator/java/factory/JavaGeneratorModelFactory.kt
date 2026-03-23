@@ -4,6 +4,8 @@ import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidJavaEnumLiteral
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.JavaEnumLiteralCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import kotlin.text.trimStart
@@ -14,6 +16,7 @@ class JavaGeneratorModelFactory(
     val polymorphicRelationships: Map<String, List<String>>,
 ) {
     private val propertyFactory = PropertyFactory(context)
+    private val javaEnumIdentifierRegex = Regex("^[A-Z_][A-Z0-9_]*$")
 
     fun create(
         name: String,
@@ -27,43 +30,49 @@ class JavaGeneratorModelFactory(
         val description = DocumentationUtils.toJavaDocLines(schema.description)
 
         return when {
-            isEnum -> GeneratorItem.EnumModel(
-                name = name,
-                packageName = packageName,
-                description = description,
-                values = schema.enum.map {
-                    it.toString().trimStart('"', '\'', '|', '>').removeSurrounding("\"").uppercase()
-                }
-            )
+            isEnum ->
+                GeneratorItem.EnumModel(
+                    name = name,
+                    packageName = packageName,
+                    description = description,
+                    values = validateAndNormalizeEnumValues(name, schema.enum),
+                )
             isUnionType -> {
                 val discriminatorPropertyName = schema.discriminator
 
-                val subTypes = (schema.oneOf ?: schema.anyOf ?: emptyList())
-                    .mapNotNull { ref ->
-                        if (ref is SchemaInterface.SchemaReference) {
-                            val childSchemaName = ref.reference.ref.substringAfterLast('/')
-                            val childSchema = context.findSchemaByName(childSchemaName)
+                val subTypes =
+                    (schema.oneOf ?: schema.anyOf ?: emptyList())
+                        .mapNotNull { ref ->
+                            if (ref is SchemaInterface.SchemaReference) {
+                                val childSchemaName = ref.reference.ref.substringAfterLast('/')
+                                val childSchema = context.findSchemaByName(childSchemaName)
 
-                            // Attempt to find the discriminator value in the child schema
-                            val discriminatorValue = childSchema?.properties?.get(discriminatorPropertyName)
-                                ?.let {
-                                    when (it) {
-                                        is SchemaInterface.SchemaInline -> it.schema.const?.toString()
-                                            ?: it.schema.enum?.firstOrNull()?.toString()
-                                        else -> null
-                                    }
-                                }?.removeSurrounding("\"")
+                                // Attempt to find the discriminator value in the child schema
+                                val discriminatorValue =
+                                    childSchema
+                                        ?.properties
+                                        ?.get(discriminatorPropertyName)
+                                        ?.let {
+                                            when (it) {
+                                                is SchemaInterface.SchemaInline ->
+                                                    it.schema.const?.toString()
+                                                        ?: it.schema.enum
+                                                            ?.firstOrNull()
+                                                            ?.toString()
+                                                else -> null
+                                            }
+                                        }?.removeSurrounding("\"")
 
-                            if (discriminatorValue != null) {
-                                GeneratorItem.InterfaceModel.SubType(name = discriminatorValue, type = childSchemaName)
+                                if (discriminatorValue != null) {
+                                    GeneratorItem.InterfaceModel.SubType(name = discriminatorValue, type = childSchemaName)
+                                } else {
+                                    // Fallback if discriminator value not found, use schema name
+                                    GeneratorItem.InterfaceModel.SubType(name = childSchemaName, type = childSchemaName)
+                                }
                             } else {
-                                // Fallback if discriminator value not found, use schema name
-                                GeneratorItem.InterfaceModel.SubType(name = childSchemaName, type = childSchemaName)
+                                null // Non-reference schemas for oneOf are not directly supported as subtypes here
                             }
-                        } else {
-                            null // Non-reference schemas for oneOf are not directly supported as subtypes here
                         }
-                    }
 
                 GeneratorItem.InterfaceModel(
                     name = name,
@@ -116,4 +125,47 @@ class JavaGeneratorModelFactory(
             else -> false
         }
     }
+
+    private fun validateAndNormalizeEnumValues(
+        schemaName: String,
+        rawValues: List<Any?>,
+    ): List<String> {
+        val normalizedToOriginals = linkedMapOf<String, MutableList<String>>()
+        val normalizedValues =
+            rawValues.map { raw ->
+                val original = raw.toEnumLiteral()
+                val normalized = normalizeEnumLiteral(original)
+                if (!javaEnumIdentifierRegex.matches(normalized)) {
+                    throw InvalidJavaEnumLiteral(
+                        schemaName = schemaName,
+                        literal = original,
+                        normalized = normalized,
+                        packageName = packageName,
+                    )
+                }
+                normalizedToOriginals.getOrPut(normalized) { mutableListOf() }.add(original)
+                normalized
+            }
+
+        normalizedToOriginals.forEach { (normalized, originals) ->
+            if (originals.size > 1) {
+                throw JavaEnumLiteralCollision(
+                    schemaName = schemaName,
+                    originals = originals,
+                    normalized = normalized,
+                    packageName = packageName,
+                )
+            }
+        }
+
+        return normalizedValues
+    }
+
+    private fun Any?.toEnumLiteral(): String =
+        this
+            .toString()
+            .trimStart('"', '\'', '|', '>')
+            .removeSurrounding("\"")
+
+    private fun normalizeEnumLiteral(value: String): String = value.uppercase()
 }
