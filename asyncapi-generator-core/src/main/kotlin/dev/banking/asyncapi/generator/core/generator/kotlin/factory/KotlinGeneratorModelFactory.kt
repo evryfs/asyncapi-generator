@@ -4,6 +4,8 @@ import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKotlinEnumLiteral
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KotlinEnumLiteralCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -14,6 +16,7 @@ class KotlinGeneratorModelFactory(
     val annotation: String? = null,
 ) {
     private val propertyFactory = PropertyFactory(context)
+    private val kotlinEnumIdentifierRegex = Regex("^[A-Z_][A-Z0-9_]*$")
 
     fun create(
         name: String,
@@ -32,14 +35,7 @@ class KotlinGeneratorModelFactory(
                     name = name,
                     packageName = packageName,
                     description = description,
-                    values =
-                        schema.enum.map {
-                            it
-                                .toString()
-                                .trimStart('"', '\'', '|', '>')
-                                .removeSurrounding("\"")
-                                .uppercase()
-                        },
+                    values = validateAndNormalizeEnumValues(name, schema.enum),
                 )
             isUnionType ->
                 GeneratorItem.SealedInterfaceModel(
@@ -101,4 +97,44 @@ class KotlinGeneratorModelFactory(
             else -> false
         }
     }
+
+    private fun validateAndNormalizeEnumValues(
+        schemaName: String,
+        rawValues: List<Any?>,
+    ): List<String> {
+        val normalizedToOriginals = linkedMapOf<String, MutableList<String>>()
+        val normalizedValues =
+            rawValues.map { raw ->
+                val original = raw.toEnumLiteral()
+                val normalized = normalizeEnumLiteral(original)
+                if (!kotlinEnumIdentifierRegex.matches(normalized)) {
+                    throw InvalidKotlinEnumLiteral(
+                        schemaName = schemaName,
+                        literal = original,
+                        normalized = normalized,
+                        packageName = packageName,
+                    )
+                }
+                normalizedToOriginals.getOrPut(normalized) { mutableListOf() }.add(original)
+                normalized
+            }
+        normalizedToOriginals.forEach { (normalized, originals) ->
+            if (originals.size > 1) {
+                throw KotlinEnumLiteralCollision(
+                    schemaName = schemaName,
+                    originals = originals,
+                    normalized = normalized,
+                    packageName = packageName,
+                )
+            }
+        }
+        return normalizedValues
+    }
+    private fun Any?.toEnumLiteral(): String =
+        this
+            .toString()
+            .trimStart('"', '\'', '|', '>')
+            .removeSurrounding("\"")
+    private fun normalizeEnumLiteral(value: String): String =
+        value.uppercase()
 }
