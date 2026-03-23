@@ -8,10 +8,11 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateEnumStrictValidationTest : AbstractKotlinGeneratorClass() {
+
     @Test
     fun `fails when enum literal contains invalid Kotlin identifier character`() {
         val ex =
-            assertThrows<AsyncApiGeneratorException.InvalidKotlinEnumLiteral> {
+            assertThrows<AsyncApiGeneratorException.InvalidEnum> {
                 generateElement(
                     yaml = File("src/test/resources/generator/asyncapi_enum_invalid_symbol.yaml"),
                     generated = "MyField.kt",
@@ -21,10 +22,11 @@ class GenerateEnumStrictValidationTest : AbstractKotlinGeneratorClass() {
         assertTrue(ex.message!!.contains("MyField"))
         assertTrue(ex.message!!.contains("SECOND_VALUE?"))
     }
+
     @Test
     fun `fails when enum literals collide after normalization`() {
         val ex =
-            assertThrows<AsyncApiGeneratorException.KotlinEnumLiteralCollision> {
+            assertThrows<AsyncApiGeneratorException.EnumLiteralCollision> {
                 generateElement(
                     yaml = File("src/test/resources/generator/asyncapi_enum_collision_case.yaml"),
                     generated = "MyField.kt",

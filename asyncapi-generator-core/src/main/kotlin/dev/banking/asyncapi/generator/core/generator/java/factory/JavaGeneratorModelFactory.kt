@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidJavaEnumLiteral
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.JavaEnumLiteralCollision
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.EnumLiteralCollision
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidEnum
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import kotlin.text.trimStart
@@ -136,10 +136,9 @@ class JavaGeneratorModelFactory(
                 val original = raw.toEnumLiteral()
                 val normalized = normalizeEnumLiteral(original)
                 if (!javaEnumIdentifierRegex.matches(normalized)) {
-                    throw InvalidJavaEnumLiteral(
+                    throw InvalidEnum(
                         schemaName = schemaName,
                         literal = original,
-                        normalized = normalized,
                         packageName = packageName,
                     )
                 }
@@ -149,7 +148,7 @@ class JavaGeneratorModelFactory(
 
         normalizedToOriginals.forEach { (normalized, originals) ->
             if (originals.size > 1) {
-                throw JavaEnumLiteralCollision(
+                throw EnumLiteralCollision(
                     schemaName = schemaName,
                     originals = originals,
                     normalized = normalized,

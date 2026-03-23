@@ -11,7 +11,7 @@ class GenerateEnumStrictValidationTest : AbstractJavaGeneratorClass() {
     @Test
     fun `fails when enum literal contains invalid Java identifier character`() {
         val ex =
-            assertThrows<AsyncApiGeneratorException.InvalidJavaEnumLiteral> {
+            assertThrows<AsyncApiGeneratorException.InvalidEnum> {
                 generateElement(
                     yaml = File("src/test/resources/generator/asyncapi_enum_invalid_symbol.yaml"),
                     generated = "MyField.java",
@@ -21,13 +21,12 @@ class GenerateEnumStrictValidationTest : AbstractJavaGeneratorClass() {
         assertTrue(ex.message!!.contains("MyField"))
         assertTrue(ex.message!!.contains("SECOND_VALUE?"))
         assertTrue(ex.message!!.contains("[A-Z_][A-Z0-9_]*"))
-        assertTrue(ex.message!!.contains("MyField.java"))
     }
 
     @Test
     fun `fails when enum literals collide after normalization`() {
         val ex =
-            assertThrows<AsyncApiGeneratorException.JavaEnumLiteralCollision> {
+            assertThrows<AsyncApiGeneratorException.EnumLiteralCollision> {
                 generateElement(
                     yaml = File("src/test/resources/generator/asyncapi_enum_collision_case.yaml"),
                     generated = "MyField.java",
@@ -37,6 +36,5 @@ class GenerateEnumStrictValidationTest : AbstractJavaGeneratorClass() {
         assertTrue(ex.message!!.contains("MyField"))
         assertTrue(ex.message!!.contains("OPEN"))
         assertTrue(ex.message!!.contains("open"))
-        assertTrue(ex.message!!.contains("MyField.java"))
     }
 }
