@@ -6,15 +6,15 @@ import dev.banking.asyncapi.generator.core.generator.java.mapper.JavaTypeMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.PropertyModel
 import dev.banking.asyncapi.generator.core.generator.java.serialization.SerializationAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class PropertyFactory(
     val context: GeneratorContext,
-    val serializationFramework: String = "jackson"
+    val serializationFramework: String = "jackson",
 ) {
-
     private val typeMapper = JavaTypeMapper(context)
     private val constraintMapper = ConstraintMapper()
     private val serializationAnnotationMapper = SerializationAnnotationMapper(serializationFramework)
@@ -25,9 +25,8 @@ class PropertyFactory(
     fun createProperty(
         propertyName: String,
         propSchemaInterface: SchemaInterface,
-        requiredProperties: List<String>
+        requiredProperties: List<String>,
     ): PropertyModel {
-
         val (finalPropSchema, baseJavaType) = resolveTypeAndSchema(propertyName, propSchemaInterface)
 
         val isRequired = requiredProperties.contains(propertyName)
@@ -55,23 +54,29 @@ class PropertyFactory(
             typeName = baseJavaType,
             getterName = getterName,
             setterName = setterName,
-            annotations = annotations
+            annotations = annotations,
         )
     }
 
     private fun resolveTypeAndSchema(
         propertyName: String,
-        propSchemaInterface: SchemaInterface
-    ): Pair<Schema?, String> {
-        return when (propSchemaInterface) {
+        propSchemaInterface: SchemaInterface,
+    ): Pair<Schema?, String> =
+        when (propSchemaInterface) {
             is SchemaInterface.SchemaInline -> {
                 val schema = propSchemaInterface.schema
                 val type = typeMapper.mapJavaType(propertyName, schema)
                 schema to type
             }
             is SchemaInterface.SchemaReference -> {
-                val type = typeMapper.typeNameFromRef(propSchemaInterface.reference)
-                val schema = context.findSchemaByName(type)
+                val referencedTypeName = typeMapper.typeNameFromRef(propSchemaInterface.reference)
+                val schema = context.findSchemaByName(referencedTypeName)
+                val type =
+                    if (shouldInlineReferencedSchema(schema)) {
+                        typeMapper.mapJavaType(propertyName, schema)
+                    } else {
+                        referencedTypeName
+                    }
                 schema to type
             }
             is SchemaInterface.BooleanSchema -> {
@@ -80,6 +85,15 @@ class PropertyFactory(
             else -> {
                 null to "Object"
             }
+        }
+
+    private fun shouldInlineReferencedSchema(schema: Schema?): Boolean {
+        if (schema == null) return false
+        if (!schema.enum.isNullOrEmpty()) return false
+
+        return when (schema.type.getPrimaryType()) {
+            "string", "number", "integer", "boolean" -> true
+            else -> false
         }
     }
 }

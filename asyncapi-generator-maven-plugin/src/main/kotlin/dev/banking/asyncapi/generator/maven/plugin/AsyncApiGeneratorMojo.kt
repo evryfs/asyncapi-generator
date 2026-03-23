@@ -62,83 +62,77 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     private val generator = AsyncApiGenerator()
 
     override fun execute() {
-        log.info("asyncapi-generator-maven-plugin started")
-
-        if (!inputFile.exists()) {
-            throw MojoExecutionException("Input file not found: $inputFile")
-        }
-
-        val root = AsyncApiRegistry.readYaml(inputFile, context)
-        val asyncApiParsed = parser.parse(root)
-
-        val validationErrors = validator.validate(asyncApiParsed)
-        validationErrors.logWarnings()
-        validationErrors.throwErrors()
-
-        val bundled = bundler.bundle(asyncApiParsed)
-
-        outputFile?.let { file ->
-            log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
-            AsyncApiRegistry.writeYaml(file, bundled)
-        }
-
-        val targetLanguage =
-            try {
-                GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
-            } catch (_: IllegalArgumentException) {
-                throw MojoExecutionException(
-                    "Invalid generatorName '$generatorName'. Supported values: ${GeneratorName.entries.joinToString(", ")}",
-                )
+        try {
+            log.info("asyncapi-generator-maven-plugin started")
+            if (!inputFile.exists()) {
+                throw MojoExecutionException("Input file not found: $inputFile")
             }
-        val clientType = configOptions["client.type"]
-        val schemaType = configOptions["schema.type"]
-        val modelAnnotation = configOptions["model.annotation"]
-        val prefixOverride = configOptions["kafka.topics.property.prefix"]
-
-        val hasModelPackage = modelPackage != null
-        val hasClientPackage = clientPackage != null
-        val hasSchemaPackage = schemaPackage != null
-
-        if (clientType != null && !hasClientPackage) {
-            throw MojoExecutionException("client.type requires clientPackage")
+            val root = AsyncApiRegistry.readYaml(inputFile, context)
+            val asyncApiParsed = parser.parse(root)
+            val validationErrors = validator.validate(asyncApiParsed)
+            validationErrors.logWarnings()
+            validationErrors.throwErrors()
+            val bundled = bundler.bundle(asyncApiParsed)
+            outputFile?.let { file ->
+                log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
+                AsyncApiRegistry.writeYaml(file, bundled)
+            }
+            val targetLanguage =
+                try {
+                    GeneratorName.valueOf(generatorName.uppercase(Locale.getDefault()))
+                } catch (_: IllegalArgumentException) {
+                    throw MojoExecutionException(
+                        "Invalid generatorName '$generatorName'. Supported values: ${
+                            GeneratorName.entries.joinToString(
+                                ", "
+                            )
+                        }",
+                    )
+                }
+            val clientType = configOptions["client.type"]
+            val schemaType = configOptions["schema.type"]
+            val modelAnnotation = configOptions["model.annotation"]
+            val prefixOverride = configOptions["kafka.topics.property.prefix"]
+            val hasModelPackage = modelPackage != null
+            val hasClientPackage = clientPackage != null
+            val hasSchemaPackage = schemaPackage != null
+            if (clientType != null && !hasClientPackage) {
+                throw MojoExecutionException("client.type requires clientPackage")
+            }
+            if (schemaType != null && !hasSchemaPackage) {
+                throw MojoExecutionException("schema.type requires schemaPackage")
+            }
+            if (modelAnnotation != null && !hasModelPackage) {
+                throw MojoExecutionException("model.annotation requires modelPackage")
+            }
+            if (prefixOverride != null && prefixOverride.isBlank()) {
+                throw MojoExecutionException("kafka.topics.property.prefix cannot be empty")
+            }
+            if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
+                val effectiveModelPackage = modelPackage ?: "unused"
+                val effectiveClientPackage = clientPackage ?: "unused"
+                val effectiveSchemaPackage = schemaPackage ?: "unused"
+                val options =
+                    GeneratorOptions(
+                        generatorName = targetLanguage,
+                        modelPackage = effectiveModelPackage,
+                        clientPackage = effectiveClientPackage,
+                        schemaPackage = effectiveSchemaPackage,
+                        codegenOutputDirectory = codegenOutputDirectory,
+                        resourceOutputDirectory = resourceOutputDirectory,
+                        kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
+                        generateModels = hasModelPackage,
+                        generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
+                        generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
+                        generateAvroSchema = hasSchemaPackage && schemaType == "avro",
+                        configOptions = configOptions,
+                    )
+                generator.generate(bundled, options)
+            }
+            project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
+            log.info("asyncapi-generator-maven-plugin completed successfully")
+        } catch (e: Exception) {
+            throw MojoExecutionException(e)
         }
-
-        if (schemaType != null && !hasSchemaPackage) {
-            throw MojoExecutionException("schema.type requires schemaPackage")
-        }
-
-        if (modelAnnotation != null && !hasModelPackage) {
-            throw MojoExecutionException("model.annotation requires modelPackage")
-        }
-
-        if (prefixOverride != null && prefixOverride.isBlank()) {
-            throw MojoExecutionException("kafka.topics.property.prefix cannot be empty")
-        }
-
-        if (hasModelPackage || hasClientPackage || hasSchemaPackage) {
-            val effectiveModelPackage = modelPackage ?: "unused"
-            val effectiveClientPackage = clientPackage ?: "unused"
-            val effectiveSchemaPackage = schemaPackage ?: "unused"
-
-            val options =
-                GeneratorOptions(
-                    generatorName = targetLanguage,
-                    modelPackage = effectiveModelPackage,
-                    clientPackage = effectiveClientPackage,
-                    schemaPackage = effectiveSchemaPackage,
-                    codegenOutputDirectory = codegenOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                    kafkaTopicsPropertyPrefix = prefixOverride ?: "kafka.topics",
-                    generateModels = hasModelPackage,
-                    generateSpringKafkaClient = hasClientPackage && (clientType == "spring-kafka" || clientType == "spring-kafka-simple"),
-                    generateQuarkusKafkaClient = hasClientPackage && clientType == "quarkus-kafka",
-                    generateAvroSchema = hasSchemaPackage && schemaType == "avro",
-                    configOptions = configOptions,
-                )
-            generator.generate(bundled, options)
-        }
-
-        project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
-        log.info("asyncapi-generator-maven-plugin completed successfully")
     }
 }

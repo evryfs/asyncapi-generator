@@ -1,0 +1,34 @@
+asyncapi: 3.0.0
+info:
+  title: Ref Primitive Typing Test
+  version: 1.0.0
+components:
+  schemas:
+    MyField:
+      type: string
+      pattern: "^[0-9]{4,35}$"
+    MyEnum:
+      type: string
+      enum:
+        - OPEN
+        - CLOSED
+    MyObject:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+    MyPayload:
+      type: object
+      required:
+        - myField
+        - myEnum
+        - myObject
+      properties:
+        myField:
+          $ref: "#/components/schemas/MyField"
+        myEnum:
+          $ref: "#/components/schemas/MyEnum"
+        myObject:
+          $ref: "#/components/schemas/MyObject"

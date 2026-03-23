@@ -5,11 +5,10 @@ import kotlin.math.max
 import kotlin.math.min
 
 class SourceRepository {
-
     data class Source(
         val file: File,
         val id: String,
-        val lines: List<String>
+        val lines: List<String>,
     )
 
     // Map of file absolute path → Source
@@ -20,21 +19,31 @@ class SourceRepository {
 
     private lateinit var current: Source
 
-    fun registerSource(file: File, content: String) {
+    fun registerSource(
+        file: File,
+        content: String,
+    ) {
         val id = file.nameWithoutExtension.replace(Regex("[^A-Za-z0-9_]"), "_")
         val src = Source(file = file, id = id, lines = content.lines())
         sources[file.absolutePath] = src
         current = src
     }
 
-    fun registerLine(path: String, line: Int) {
+    fun registerLine(
+        path: String,
+        line: Int,
+    ) {
         lineMap[path] = line
     }
 
     fun getLine(path: String): Int? = lineMap[path]
 
     fun getCurrentFile(): File = current.file
+
+    fun findFileById(id: String): File? = sources.values.firstOrNull { it.id == id }?.file
+
     fun getAllSources(): Collection<Source> = sources.values
+
     fun getAllLines(): Map<String, Int> = lineMap.toMap()
 
     fun fileIdForName(name: String): String? {
@@ -57,20 +66,32 @@ class SourceRepository {
         }
     }
 
-    fun pathSnippet(path: String, contextLines: Int = 3): String {
+    fun pathSnippet(
+        path: String,
+        contextLines: Int = 3,
+    ): String {
         val source = current
         val lines = source.lines
         val line = findNearestLine(path) ?: return "(no line found for $path)"
         return buildSnippet(lines, source.file.name, line, contextLines, path)
     }
 
-    fun lineSnippet(line: Int, contextLines: Int = 3): String {
+    fun lineSnippet(
+        line: Int,
+        contextLines: Int = 3,
+    ): String {
         val source = current
         val lines = source.lines
         return buildSnippet(lines, source.file.name, line, contextLines, "line $line")
     }
 
-    private fun buildSnippet(lines: List<String>, fileName: String, center: Int, context: Int, label: String): String {
+    private fun buildSnippet(
+        lines: List<String>,
+        fileName: String,
+        center: Int,
+        context: Int,
+        label: String,
+    ): String {
         val start = max(0, center - context - 1)
         val end = min(lines.size, center + context)
         return buildString {

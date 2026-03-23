@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.java.kafka
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateJavaSpringKafkaSimpleTest : AbstractJavaGeneratorClass() {
@@ -41,5 +42,25 @@ class GenerateJavaSpringKafkaSimpleTest : AbstractJavaGeneratorClass() {
         assertTrue(consumerContent.contains("default void onUserSignedUp"))
         assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"))
         assertTrue(!consumerContent.contains("@KafkaListener"), "Simple consumer should not be annotated")
+    }
+
+    @Test
+    fun `should not generate header classes for spring kafka simple client in Java`() {
+        val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+            configOptions = mapOf("client.type" to "spring-kafka-simple"),
+        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
+        assertFalse(headerDir.exists(), "Simple spring kafka client should not generate header classes")
     }
 }

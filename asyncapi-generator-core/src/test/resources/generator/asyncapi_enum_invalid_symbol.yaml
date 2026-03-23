@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Enum Invalid Symbol Test
+  version: 1.0.0
+components:
+  schemas:
+    MyField:
+      type: string
+      enum:
+        - FIRST_VALUE
+        - SECOND_VALUE?
