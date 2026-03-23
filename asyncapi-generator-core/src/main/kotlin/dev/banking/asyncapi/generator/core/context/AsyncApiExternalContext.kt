@@ -9,8 +9,7 @@ import java.io.File
 class AsyncApiExternalContext(
     val context: AsyncApiContext,
 ) {
-
-    private val loadedFiles = mutableSetOf<String>()  // absolute paths
+    private val loadedFiles = mutableSetOf<String>() // absolute paths
 
     fun loadExternal(reference: Reference) {
         val clean = reference.ref.trim().trimStart('\'', '"', '|', '>')
@@ -24,7 +23,10 @@ class AsyncApiExternalContext(
         if (docPart.isEmpty()) {
             return
         }
-        val baseFile = context.getCurrentFile()
+        val baseFile =
+            reference.sourceId
+                ?.let(context::findFileById)
+                ?: context.getCurrentFile()
         val externalFile = File(baseFile.parentFile, docPart).canonicalFile
         val key = externalFile.absolutePath
         if (!loadedFiles.add(key)) {
@@ -41,7 +43,7 @@ class AsyncApiExternalContext(
         } else {
             ExternalFragmentProcessor(context).parseAndValidate(
                 rootNode = rootNode,
-                reference = reference
+                reference = reference,
             )
         }
     }

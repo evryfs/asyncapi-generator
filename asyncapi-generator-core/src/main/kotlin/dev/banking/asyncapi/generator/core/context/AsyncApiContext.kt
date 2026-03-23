@@ -13,7 +13,10 @@ class AsyncApiContext {
 
     val externalLoader = AsyncApiExternalContext(this)
 
-    fun register(model: Any, node: ParserNode) {
+    fun register(
+        model: Any,
+        node: ParserNode,
+    ) {
         modelRepository.register(model, node)
 
         if (model is Reference) {
@@ -21,31 +24,38 @@ class AsyncApiContext {
         }
     }
 
-    fun registerSource(file: File, content: String) {
+    fun registerSource(
+        file: File,
+        content: String,
+    ) {
         sourceRepository.registerSource(file, content)
     }
 
-    fun registerLine(path: String, line: Int) {
+    fun registerLine(
+        path: String,
+        line: Int,
+    ) {
         sourceRepository.registerLine(path, line)
     }
 
-    fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
-        return modelRepository.getLine(model, property) ?: modelRepository.getLine(model)
-    }
+    fun <R> getLine(
+        model: Any,
+        property: KProperty0<R>,
+    ): Int? = modelRepository.getLine(model, property) ?: modelRepository.getLine(model)
 
-    fun pathSnippet(path: String, contextLines: Int = 3): String {
-        return sourceRepository.pathSnippet(path, contextLines)
-    }
+    fun pathSnippet(
+        path: String,
+        contextLines: Int = 3,
+    ): String = sourceRepository.pathSnippet(path, contextLines)
 
-    fun validatorSnippet(line: Int, contextLines: Int = 3): String {
-        return sourceRepository.lineSnippet(line, contextLines)
-    }
+    fun validatorSnippet(
+        line: Int,
+        contextLines: Int = 3,
+    ): String = sourceRepository.lineSnippet(line, contextLines)
 
-    fun findReference(reference: Reference): Any? {
-        return modelRepository.findByReference(reference)
-    }
+    fun findReference(reference: Reference): Any? = modelRepository.findByReference(reference)
 
-    fun getCurrentFile(): File {
-        return sourceRepository.getCurrentFile()
-    }
+    fun getCurrentFile(): File = sourceRepository.getCurrentFile()
+
+    fun findFileById(id: String): File? = sourceRepository.findFileById(id)
 }
