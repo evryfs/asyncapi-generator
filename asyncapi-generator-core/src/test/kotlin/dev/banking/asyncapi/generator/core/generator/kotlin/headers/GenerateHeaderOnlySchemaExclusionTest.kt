@@ -18,7 +18,7 @@ class GenerateHeaderOnlySchemaExclusionTest : AbstractKotlinGeneratorClass() {
         )
         val outputDir = File("target/generated-sources/asyncapi")
         val modelDir = outputDir.resolve(modelPackage.replace('.', '/'))
-        assertTrue(modelDir.resolve("AccountUpdatedPayload.kt").exists(), "Payload model should be generated")
-        assertFalse(modelDir.resolve("DefaultHeaders.kt").exists(), "Header-only schema should not be generated as model")
+        assertTrue(modelDir.resolve("GenericMessagePayload.kt").exists(), "Payload model should be generated")
+        assertFalse(modelDir.resolve("CommonHeaders.kt").exists(), "Header-only schema should not be generated as model")
     }
 }
