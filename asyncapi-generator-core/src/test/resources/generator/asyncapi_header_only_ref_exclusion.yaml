@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: Header-only schema exclusion
+  version: 1.0.0
+channels:
+  genericEvents:
+    address: generic.events.v1
+    messages:
+      GenericMessageCreated:
+        name: GenericMessageCreated
+        headers:
+          $ref: "#/components/schemas/CommonHeaders"
+        payload:
+          $ref: "#/components/schemas/GenericMessagePayload"
+components:
+  schemas:
+    CommonHeaders:
+      type: object
+      required:
+        - requestId
+      properties:
+        requestId:
+          type: string
+    GenericMessagePayload:
+      type: object
+      required:
+        - itemId
+      properties:
+        itemId:
+          type: string
