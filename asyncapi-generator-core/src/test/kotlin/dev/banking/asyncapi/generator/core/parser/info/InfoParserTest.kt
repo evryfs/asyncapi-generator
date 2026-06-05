@@ -11,8 +11,9 @@ class InfoParserTest : ParserTestSupport() {
 
     @Test
     fun `parse valid info object`() {
-        val root = readRoot("parser/info/asyncapi_parser_info_valid.yaml")
-        val result = parser.parseMap(root.mandatory("info"))
+        val result = parser.parseMap(
+            readNode("parser/info/asyncapi_parser_info_valid.yaml", "info")
+        )
         val expected = simpleInfo()
         assertThat(result)
             .usingRecursiveComparison()
@@ -22,8 +23,7 @@ class InfoParserTest : ParserTestSupport() {
 
     @Test
     fun `parse Info missing mandatory fields throws RequiredObject`() {
-        val root = readRoot("parser/info/asyncapi_parser_info_invalid.yaml")
-        val infoNode = root.mandatory("info")
+        val infoNode = readNode("parser/info/asyncapi_parser_info_invalid.yaml", "info")
         assertParseFailure<AsyncApiParseException.Mandatory>(
             "Missing mandatory 'title'",
             "asyncapi_parser_info_invalid.yaml",

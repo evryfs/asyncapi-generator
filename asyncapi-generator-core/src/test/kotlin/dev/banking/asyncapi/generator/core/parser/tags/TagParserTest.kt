@@ -13,8 +13,13 @@ class TagParserTest : ParserTestSupport() {
 
     @Test
     fun `parse valid tags`() {
-        val root = readRoot("parser/tags/asyncapi_parser_tag_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("tags"))
+        val result = parser.parseMap(
+            readNode(
+                "parser/tags/asyncapi_parser_tag_valid.yaml",
+                "components",
+                "tags",
+            )
+        )
 
         assertTrue("inlineTag" in result)
         val inlineTag = (result["inlineTag"] as TagInterface.TagInline).tag
@@ -33,9 +38,14 @@ class TagParserTest : ParserTestSupport() {
 
     @Test
     fun `parse tag missing name throws RequiredField`() { // or RequiredObject depending on parser logic
-        val root = readRoot("parser/tags/asyncapi_parser_tag_invalid.yaml")
         assertParseFailure<AsyncApiParseException.Mandatory> {
-            parser.parseMap(root.mandatory("components").mandatory("tags"))
+            parser.parseMap(
+                readNode(
+                    "parser/tags/asyncapi_parser_tag_invalid.yaml",
+                    "components",
+                    "tags",
+                )
+            )
         }
     }
 }

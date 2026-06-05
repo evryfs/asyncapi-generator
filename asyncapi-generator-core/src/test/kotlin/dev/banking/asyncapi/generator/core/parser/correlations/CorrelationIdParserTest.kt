@@ -13,11 +13,12 @@ class CorrelationIdParserTest : ParserTestSupport() {
 
     @Test
     fun `parse inline correlation ID`() {
-        val root = readRoot("parser/correlations/asyncapi_parser_correlationid_valid.yaml")
-        val correlationIdNode = root
-            .mandatory("components")
-            .mandatory("correlationIds")
-            .mandatory("MyCorrelationId")
+        val correlationIdNode = readNode(
+            "parser/correlations/asyncapi_parser_correlationid_valid.yaml",
+            "components",
+            "correlationIds",
+            "MyCorrelationId",
+        )
         val correlationIdInterface = parser.parseElement(correlationIdNode)
         assertTrue(correlationIdInterface is CorrelationIdInterface.CorrelationIdInline)
         assertThat(correlationIdInterface.correlationId)
@@ -28,8 +29,12 @@ class CorrelationIdParserTest : ParserTestSupport() {
 
     @Test
     fun `parse correlation ID missing location throws RequiredObject`() {
-        val root = readRoot("parser/correlations/asyncapi_parser_correlationid_invalid.yaml")
-        val correlationIdNode = root.mandatory("components").mandatory("correlationIds").mandatory("MissingLocationId")
+        val correlationIdNode = readNode(
+            "parser/correlations/asyncapi_parser_correlationid_invalid.yaml",
+            "components",
+            "correlationIds",
+            "MissingLocationId",
+        )
         assertParseFailure<AsyncApiParseException.Mandatory> {
             parser.parseElement(correlationIdNode)
         }
