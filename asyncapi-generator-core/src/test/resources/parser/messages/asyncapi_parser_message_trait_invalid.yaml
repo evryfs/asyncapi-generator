@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Message Trait Parser Test
+  version: 1.0.0
+components:
+  messageTraitCases:
+    InvalidTraitStructure:
+      badTrait: "not-a-map"
+    BooleanContentType:
+      badTrait:
+        contentType: true
+    InvalidExampleStructure:
+      badTrait:
+        examples:
+          - "not-a-map"

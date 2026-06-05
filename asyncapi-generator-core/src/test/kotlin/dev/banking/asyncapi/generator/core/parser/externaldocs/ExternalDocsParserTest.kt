@@ -2,20 +2,23 @@ package dev.banking.asyncapi.generator.core.parser.externaldocs
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class ExternalDocsParserTest : AbstractParserTest() {
+class ExternalDocsParserTest : ParserTestSupport() {
 
     private val parser = ExternalDocsParser(asyncApiContext)
 
     @Test
     fun `parse valid external docs`() {
-        val root = readYaml("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("externalDocs"))
+        val externalDocsNode = readNode(
+            "parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml",
+            "components",
+            "externalDocs",
+        )
+        val result = parser.parseMap(externalDocsNode)
 
         assertTrue("MyExternalDocs" in result)
         val myExternalDocs = (result["MyExternalDocs"] as ExternalDocInterface.ExternalDocInline).externalDoc
@@ -34,9 +37,17 @@ class ExternalDocsParserTest : AbstractParserTest() {
 
     @Test
     fun `parse external docs missing url throws RequiredObject`() {
-        val root = readYaml("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
-        val externalDocsNode = root.mandatory("components").mandatory("externalDocs").mandatory("MissingUrl")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        val externalDocsNode = readNode(
+            "parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml",
+            "components",
+            "externalDocs",
+            "MissingUrl",
+        )
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'url'",
+            "asyncapi_parser_externaldocs_invalid.yaml",
+            "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
+        ) {
             parser.parseElement(externalDocsNode)
         }
     }

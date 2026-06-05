@@ -8,6 +8,12 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 
+/**
+ * Parses AsyncAPI tag objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `TagParserTest`
+ */
 class TagParser(
     val asyncApiContext: AsyncApiContext,
 ) {

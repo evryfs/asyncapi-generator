@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Operation Trait Parser Test
+  version: 1.0.0
+components:
+  operationTraitCases:
+    InvalidTraitStructure:
+      badTrait: "not-a-map"
+    BooleanTitle:
+      badTrait:
+        title: true

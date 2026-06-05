@@ -2,20 +2,23 @@ package dev.banking.asyncapi.generator.core.parser.bindings
 
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class BindingParserTest : AbstractParserTest() {
+class BindingParserTest : ParserTestSupport() {
 
     private val parser = BindingParser(asyncApiContext)
 
     @Test
     fun `parse valid channel bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val bindings = parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
+        val channelBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "channelBindings",
+        )
+        val bindings = parser.parseMap(channelBindingsNode)
         assertTrue("userSignedUpChannel" in bindings)
         val binding = (bindings["userSignedUpChannel"] as BindingInterface.BindingInline).binding
         assertThat(binding)
@@ -26,8 +29,12 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid message bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val bindings = parser.parseMap(root.mandatory("components").mandatory("messageBindings"))
+        val messageBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "messageBindings",
+        )
+        val bindings = parser.parseMap(messageBindingsNode)
         assertTrue("userSignedUpMessage" in bindings)
         val binding = (bindings["userSignedUpMessage"] as BindingInterface.BindingInline).binding
         assertThat(binding)
@@ -38,8 +45,12 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid server bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val bindings = parser.parseMap(root.mandatory("components").mandatory("serverBindings"))
+        val serverBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "serverBindings",
+        )
+        val bindings = parser.parseMap(serverBindingsNode)
         assertTrue("myServerBinding" in bindings)
         val binding = (bindings["myServerBinding"] as BindingInterface.BindingInline).binding
         assertThat(binding)
@@ -50,8 +61,12 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse valid operation bindings`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val bindings = parser.parseMap(root.mandatory("components").mandatory("operationBindings"))
+        val operationBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "operationBindings",
+        )
+        val bindings = parser.parseMap(operationBindingsNode)
         assertTrue("myOperationBinding" in bindings)
         val binding = (bindings["myOperationBinding"] as BindingInterface.BindingInline).binding
         assertThat(binding)
@@ -62,9 +77,17 @@ class BindingParserTest : AbstractParserTest() {
 
     @Test
     fun `parse binding with invalid structure throws UnexpectedValue`() {
-        val root = readYaml("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
-            parser.parseMap(root.mandatory("components").mandatory("channelBindings"))
+        val channelBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_binding_invalid.yaml",
+            "components",
+            "channelBindings",
+        )
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map",
+            "asyncapi_parser_binding_invalid.yaml",
+            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
+        ) {
+            parser.parseMap(channelBindingsNode)
         }
     }
 }

@@ -7,6 +7,13 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 
+/**
+ * Parses AsyncAPI operation reply address objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `OperationReplyAddressParserTest`
+ * - `OperationReplyParserTest`
+ */
 class OperationReplyAddressParser(
     val asyncApiContext: AsyncApiContext,
 ) {

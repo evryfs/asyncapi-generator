@@ -7,6 +7,13 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
 
+/**
+ * Parses AsyncAPI parameter objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ParameterParserTest`
+ * - `ChannelParserTest`
+ */
 class ParameterParser(
     val asyncApiContext: AsyncApiContext,
 ) {

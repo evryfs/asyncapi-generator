@@ -7,6 +7,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 
+/**
+ * Parses AsyncAPI binding objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `BindingParserTest`
+ */
 class BindingParser(
     val asyncApiContext: AsyncApiContext,
 ) {

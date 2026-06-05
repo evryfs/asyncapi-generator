@@ -7,6 +7,12 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 
+/**
+ * Parses AsyncAPI external documentation objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ExternalDocsParserTest`
+ */
 class ExternalDocsParser(
     val asyncApiContext: AsyncApiContext,
 ) {

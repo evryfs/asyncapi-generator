@@ -13,6 +13,12 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
+/**
+ * Parses AsyncAPI channel objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ChannelParserTest`
+ */
 class ChannelParser(
     val asyncApiContext: AsyncApiContext,
 ) {

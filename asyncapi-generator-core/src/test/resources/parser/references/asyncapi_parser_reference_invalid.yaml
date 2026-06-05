@@ -1,0 +1,13 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Reference Parser Test
+  version: 1.0.0
+components:
+  references:
+    MissingReference:
+      summary: "Reference object missing its reference value"
+    NumericReference:
+      $ref: 12345
+    ReferenceList:
+      - payload:
+          type: string

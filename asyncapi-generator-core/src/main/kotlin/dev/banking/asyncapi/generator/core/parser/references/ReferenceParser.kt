@@ -5,6 +5,15 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 
+/**
+ * Parses generic AsyncAPI reference objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ReferenceParserTest`
+ * - `ChannelParserTest`
+ * - `OperationParserTest`
+ * - `OperationReplyParserTest`
+ */
 class ReferenceParser(
     val asyncApiContext: AsyncApiContext,
 ) {

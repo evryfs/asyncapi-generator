@@ -2,20 +2,19 @@ package dev.banking.asyncapi.generator.core.parser.servers
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
-class ServerParserTest : AbstractParserTest() {
+class ServerParserTest : ParserTestSupport() {
 
     private val parser = ServerParser(asyncApiContext)
 
     @Test
     fun parseServers_validate_data_classes() {
-        val root = readYaml("parser/servers/asyncapi_parser_servers_valid.yaml")
-        val result = parser.parseMap(root.mandatory("servers"))
+        val serversNode = readNode("parser/servers/asyncapi_parser_servers_valid.yaml", "servers")
+        val result = parser.parseMap(serversNode)
 
         assertTrue("scram-connections" in result)
         assertTrue("mtls-connections" in result)
@@ -45,9 +44,13 @@ class ServerParserTest : AbstractParserTest() {
 
     @Test
     fun `parse server with invalid variables structure throws UnexpectedValue`() {
-        val root = readYaml("parser/servers/asyncapi_parser_server_invalid.yaml")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
-            parser.parseMap(root.mandatory("servers"))
+        val serversNode = readNode("parser/servers/asyncapi_parser_server_invalid.yaml", "servers")
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map/List",
+            "asyncapi_parser_server_invalid.yaml",
+            "asyncapi_parser_server_invalid.root.servers.InvalidVariables.variables",
+        ) {
+            parser.parseMap(serversNode)
         }
     }
 }

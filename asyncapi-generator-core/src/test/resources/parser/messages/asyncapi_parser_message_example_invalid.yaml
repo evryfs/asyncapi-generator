@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Message Example Parser Test
+  version: 1.0.0
+components:
+  messageExampleCases:
+    InvalidExampleStructure:
+      - "not-a-map"
+    InvalidHeaders:
+      - headers: "not-a-map"
+    BooleanName:
+      - name: true

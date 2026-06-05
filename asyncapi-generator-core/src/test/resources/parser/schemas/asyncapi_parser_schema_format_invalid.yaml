@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Schema Format Parser Test
+  version: 1.0.0
+components:
+  schemas:
+    UnsupportedJsonSchemaFormat:
+      schemaFormat: application/schema+json;version=draft-07
+      schema:
+        type: object
+    UnknownSchemaFormat:
+      schemaFormat: application/unknown
+      schema:
+        type: object
+    NonStringSchemaFormat:
+      schemaFormat: true
+      schema:
+        type: object

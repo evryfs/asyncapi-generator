@@ -9,6 +9,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 
+/**
+ * Parses AsyncAPI security scheme objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `SecuritySchemeParserTest`
+ */
 class SecuritySchemeParser(
     val asyncApiContext: AsyncApiContext,
 ) {

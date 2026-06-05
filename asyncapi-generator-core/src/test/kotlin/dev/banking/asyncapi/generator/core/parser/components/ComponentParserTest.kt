@@ -1,19 +1,19 @@
 package dev.banking.asyncapi.generator.core.parser.components
 
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ComponentParserTest : AbstractParserTest() {
+class ComponentParserTest : ParserTestSupport() {
 
     private val parser = ComponentParser(asyncApiContext)
 
     @Test
     fun `parse components object delegates to all sub-parsers`() {
-        val root = readYaml("parser/components/asyncapi_parser_components_valid.yaml")
-        val result = parser.parseElement(root.mandatory("components"))
+        val componentsNode = readNode("parser/components/asyncapi_parser_components_valid.yaml", "components")
+        val result = parser.parseElement(componentsNode)
 
         assertTrue(result is ComponentInterface.ComponentInline)
         val component = result.component

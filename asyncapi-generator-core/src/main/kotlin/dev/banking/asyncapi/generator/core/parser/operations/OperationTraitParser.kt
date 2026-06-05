@@ -11,6 +11,13 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
 
+/**
+ * Parses AsyncAPI operation trait objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `OperationTraitParserTest`
+ * - `OperationParserTest`
+ */
 class OperationTraitParser(
     val asyncApiContext: AsyncApiContext,
 ) {

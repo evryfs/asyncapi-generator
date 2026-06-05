@@ -9,6 +9,17 @@ import dev.banking.asyncapi.generator.core.parser.info.InfoParser
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 
+/**
+ * Parses a reader-backed parser-node tree into an AsyncAPI document model.
+ *
+ * The parser stage consumes typed [ParserNode] values and maps supported
+ * AsyncAPI structures into [AsyncApiDocument]. It does not read files, detect
+ * input formats, parse YAML or JSON, validate the model, bundle references, or
+ * generate output.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiParserTest`
+ */
 class AsyncApiParser(
     val asyncApiContext: AsyncApiContext,
 ) {

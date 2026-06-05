@@ -12,6 +12,12 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import kotlin.String
 import kotlin.collections.Map
 
+/**
+ * Parses AsyncAPI schema objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `SchemaParserTest`
+ */
 class SchemaParser(
     val asyncApiContext: AsyncApiContext,
 ) {

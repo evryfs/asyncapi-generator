@@ -7,6 +7,12 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
 
+/**
+ * Parses AsyncAPI correlation ID objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `CorrelationIdParserTest`
+ */
 class CorrelationIdParser(
     val asyncApiContext: AsyncApiContext,
 ) {

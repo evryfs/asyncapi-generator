@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Operation Reply Address Parser Test
+  version: 1.0.0
+components:
+  operationReplyAddressCases:
+    MissingLocation:
+      description: "Missing reply address location"
+    BooleanLocation:
+      location: true

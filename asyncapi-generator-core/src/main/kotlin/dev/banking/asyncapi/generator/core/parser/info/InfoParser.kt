@@ -8,6 +8,12 @@ import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 
+/**
+ * Parses the AsyncAPI info object from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `InfoParserTest`
+ */
 class InfoParser(
     val asyncApiContext: AsyncApiContext,
 ) {

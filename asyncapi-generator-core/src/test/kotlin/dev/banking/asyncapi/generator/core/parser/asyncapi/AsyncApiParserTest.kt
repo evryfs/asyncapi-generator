@@ -1,24 +1,23 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
-import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 
-class AsyncApiParserTest : AbstractParserTest() {
+class AsyncApiParserTest : ParserTestSupport() {
 
     private val parser = AsyncApiParser(asyncApiContext)
 
     @Test
     fun parseSingleFileAsyncApi() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
-        val result = parser.parse(root)
+        val rootNode = readNode("asyncapi_kafka_single_file_example.yaml")
+        val result = parser.parse(rootNode)
 
         assertEquals("3.0.0", result.asyncapi, "AsyncAPI version mismatch")
         assertEquals("Streetlights Kafka API", result.info.title)
@@ -57,16 +56,16 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parses equivalent yaml and json documents into the same model`() {
-        val yaml = ParserFixtures().document("parser/asyncapi/format-independent.yaml")
-        val json = ParserFixtures().document("parser/asyncapi/format-independent.json")
+        val yaml = parseDocument("parser/asyncapi/format-independent.yaml")
+        val json = parseDocument("parser/asyncapi/format-independent.json")
 
         assertEquals(yaml, json)
     }
 
     @Test
     fun `parsed schema is registered in model repository`() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
-        val asyncApi =  parser.parse(root)
+        val rootNode = readNode("asyncapi_kafka_single_file_example.yaml")
+        val asyncApi = parser.parse(rootNode)
         val schemasMap = (asyncApi.components as ComponentInterface.ComponentInline).component.schemas!!
 
         val lightMeasuredPayloadSchema = (schemasMap["lightMeasuredPayload"] as SchemaInterface.SchemaInline).schema
@@ -104,8 +103,8 @@ class AsyncApiParserTest : AbstractParserTest() {
 
     @Test
     fun `parsed schema properties have correct line numbers in source repository`() {
-        val root = readYaml("asyncapi_kafka_single_file_example.yaml")
-        parser.parse(root)
+        val rootNode = readNode("asyncapi_kafka_single_file_example.yaml")
+        parser.parse(rootNode)
         val schemaPath =
             "${asyncApiContext.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"
         val simpleStringSchema = asyncApiContext.modelRepository.getModelsByPath()[schemaPath] as Schema

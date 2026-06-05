@@ -2,20 +2,23 @@ package dev.banking.asyncapi.generator.core.parser.security
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
-import dev.banking.asyncapi.generator.core.parser.AbstractParserTest
+import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
 
-class SecuritySchemeParserTest : AbstractParserTest() {
+class SecuritySchemeParserTest : ParserTestSupport() {
 
     private val parser = SecuritySchemeParser(asyncApiContext)
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_saslScram_certs_basicAuth() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
+        )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("saslScram" in result)
         assertTrue("certs" in result)
@@ -45,8 +48,12 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_bearerAuth_apiKeyHeader_apiKeyQuery() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
+        )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("bearerAuth" in result)
         assertTrue("apiKeyHeader" in result)
@@ -76,8 +83,12 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_openIdConnectExample_oauthExample() {
-        val root = readYaml("parser/security/asyncapi_parser_security_valid.yaml")
-        val result = parser.parseMap(root.mandatory("components").mandatory("securitySchemes"))
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
+        )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("openIdConnectExample" in result)
         assertTrue("oauthExample" in result)
@@ -100,24 +111,34 @@ class SecuritySchemeParserTest : AbstractParserTest() {
 
     @Test
     fun `parse security scheme missing type throws RequiredObject`() {
-        val root = readYaml("parser/security/asyncapi_parser_security_invalid.yaml")
-        val schemeNode = root
-            .mandatory("components")
-            .mandatory("securitySchemes")
-            .mandatory("MissingType")
-        assertFailsWith<AsyncApiParseException.Mandatory> {
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "MissingType",
+        )
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'type'",
+            "asyncapi_parser_security_invalid.yaml",
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
+        ) {
             parser.parseElement(schemeNode)
         }
     }
 
     @Test
     fun `parse security scheme with invalid flows structure throws UnexpectedValue`() {
-        val root = readYaml("parser/security/asyncapi_parser_security_invalid.yaml")
-        val schemeNode = root
-            .mandatory("components")
-            .mandatory("securitySchemes")
-            .mandatory("InvalidFlowsStructure")
-        assertFailsWith<AsyncApiParseException.UnexpectedValue> {
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "InvalidFlowsStructure",
+        )
+        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
+            "Unexpected value: expected Map",
+            "asyncapi_parser_security_invalid.yaml",
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
+        ) {
             parser.parseElement(schemeNode)
         }
     }

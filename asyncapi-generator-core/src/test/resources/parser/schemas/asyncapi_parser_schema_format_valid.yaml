@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Schema Format Parser Test
+  version: 1.0.0
+components:
+  schemas:
+    AsyncApiYamlSchemaFormat:
+      schemaFormat: application/vnd.aai.asyncapi+yaml;version=3.0.0
+      schema:
+        title: Supported schema format
+        type: object

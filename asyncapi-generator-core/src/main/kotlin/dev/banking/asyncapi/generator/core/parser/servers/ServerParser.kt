@@ -11,6 +11,12 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 
+/**
+ * Parses AsyncAPI server objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ServerParserTest`
+ */
 class ServerParser(
     val asyncApiContext: AsyncApiContext,
 ) {

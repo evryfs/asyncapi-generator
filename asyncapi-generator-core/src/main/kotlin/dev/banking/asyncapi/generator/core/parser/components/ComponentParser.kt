@@ -21,6 +21,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 
+/**
+ * Parses AsyncAPI component objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `ComponentParserTest`
+ */
 class ComponentParser(
     val asyncApiContext: AsyncApiContext,
 ) {

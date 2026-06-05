@@ -20,11 +20,15 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
  * - For other known formats (e.g., JSON Schema Draft-07, Avro, OpenAPI, RAML, Protobuf),
  *   it *recognizes* the format but **throws a [UnsupportedSchemaFormat]**, indicating that
  *   code generation for these specific formats is not yet implemented in the generator.
- * - For any unknown `schemaFormat` string, it throws an [UnexpectedValue] error.
+ * - For any unknown `schemaFormat` string, it throws an [UnexpectedSchemaFormat] error.
  *
  * **Future Expansion:**
  * This parser is designed to be expanded in the future to provide full parsing and
  * code generation support for the currently unimplemented schema formats.
+ *
+ * Expected behavior is covered by:
+ * - `MultiFormatSchemaParserTest`
+ * - `SchemaParserTest`
  */
 class MultiFormatSchemaParser(
     val asyncApiContext: AsyncApiContext,
@@ -74,4 +78,3 @@ class MultiFormatSchemaParser(
             format == AsyncApiConstants.PROTOBUF_V_3
     }
 }
-

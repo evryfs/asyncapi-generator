@@ -12,6 +12,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 
+/**
+ * Parses AsyncAPI message objects from parser nodes.
+ *
+ * Expected behavior is covered by:
+ * - `MessageParserTest`
+ */
 class MessageParser(
     val asyncApiContext: AsyncApiContext,
 ) {
