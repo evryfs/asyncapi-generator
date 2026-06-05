@@ -11,9 +11,8 @@ class InfoParserTest : ParserTestSupport() {
 
     @Test
     fun `parse valid info object`() {
-        val result = parser.parseMap(
-            readNode("parser/info/asyncapi_parser_info_valid.yaml", "info")
-        )
+        val infoNode = readNode("parser/info/asyncapi_parser_info_valid.yaml", "info")
+        val result = parser.parseMap(infoNode)
         val expected = simpleInfo()
         assertThat(result)
             .usingRecursiveComparison()

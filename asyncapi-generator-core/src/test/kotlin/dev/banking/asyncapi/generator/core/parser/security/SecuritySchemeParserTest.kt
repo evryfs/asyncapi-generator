@@ -13,13 +13,12 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_saslScram_certs_basicAuth() {
-        val result = parser.parseMap(
-            readNode(
-                "parser/security/asyncapi_parser_security_valid.yaml",
-                "components",
-                "securitySchemes",
-            )
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
         )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("saslScram" in result)
         assertTrue("certs" in result)
@@ -49,13 +48,12 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_bearerAuth_apiKeyHeader_apiKeyQuery() {
-        val result = parser.parseMap(
-            readNode(
-                "parser/security/asyncapi_parser_security_valid.yaml",
-                "components",
-                "securitySchemes",
-            )
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
         )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("bearerAuth" in result)
         assertTrue("apiKeyHeader" in result)
@@ -85,13 +83,12 @@ class SecuritySchemeParserTest : ParserTestSupport() {
 
     @Test
     fun parseSecuritySchemes_validate_data_classes_openIdConnectExample_oauthExample() {
-        val result = parser.parseMap(
-            readNode(
-                "parser/security/asyncapi_parser_security_valid.yaml",
-                "components",
-                "securitySchemes",
-            )
+        val securitySchemesNode = readNode(
+            "parser/security/asyncapi_parser_security_valid.yaml",
+            "components",
+            "securitySchemes",
         )
+        val result = parser.parseMap(securitySchemesNode)
 
         assertTrue("openIdConnectExample" in result)
         assertTrue("oauthExample" in result)

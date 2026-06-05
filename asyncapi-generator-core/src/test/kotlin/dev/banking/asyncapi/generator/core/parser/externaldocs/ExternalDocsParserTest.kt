@@ -13,13 +13,12 @@ class ExternalDocsParserTest : ParserTestSupport() {
 
     @Test
     fun `parse valid external docs`() {
-        val result = parser.parseMap(
-            readNode(
-                "parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml",
-                "components",
-                "externalDocs",
-            )
+        val externalDocsNode = readNode(
+            "parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml",
+            "components",
+            "externalDocs",
         )
+        val result = parser.parseMap(externalDocsNode)
 
         assertTrue("MyExternalDocs" in result)
         val myExternalDocs = (result["MyExternalDocs"] as ExternalDocInterface.ExternalDocInline).externalDoc

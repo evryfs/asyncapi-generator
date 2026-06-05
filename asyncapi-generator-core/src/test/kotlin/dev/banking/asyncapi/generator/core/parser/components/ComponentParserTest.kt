@@ -12,9 +12,8 @@ class ComponentParserTest : ParserTestSupport() {
 
     @Test
     fun `parse components object delegates to all sub-parsers`() {
-        val result = parser.parseElement(
-            readNode("parser/components/asyncapi_parser_components_valid.yaml", "components")
-        )
+        val componentsNode = readNode("parser/components/asyncapi_parser_components_valid.yaml", "components")
+        val result = parser.parseElement(componentsNode)
 
         assertTrue(result is ComponentInterface.ComponentInline)
         val component = result.component
