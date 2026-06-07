@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.messages
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.correlations.CorrelationIdBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
@@ -8,6 +10,12 @@ import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 
+/**
+ * Bundles message trait objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `MessageTraitBundlerTest`
+ */
 class MessageTraitBundler {
 
     private val schemaBundler = SchemaBundler()
@@ -20,42 +28,52 @@ class MessageTraitBundler {
         traits: Map<String, MessageTraitInterface>?,
         visited: Set<String>
     ): Map<String, MessageTraitInterface>? =
-        traits?.mapValues { (_, trait) -> bundle(trait, visited) }
+        bundleMap(traits, BundlingContext.from(visited))
+
+    fun bundleMap(
+        traits: Map<String, MessageTraitInterface>?,
+        context: BundlingContext,
+    ): Map<String, MessageTraitInterface>? =
+        traits?.mapValues { (_, trait) -> bundle(trait, context) }
 
     fun bundleList(
         traits: List<MessageTraitInterface>?,
         visited: Set<String>
     ): List<MessageTraitInterface>? =
-        traits?.map { trait -> bundle(trait, visited) }
+        bundleList(traits, BundlingContext.from(visited))
 
-    fun bundle(traitInterface: MessageTraitInterface, visited: Set<String>): MessageTraitInterface {
-        return when (traitInterface) {
+    fun bundleList(
+        traits: List<MessageTraitInterface>?,
+        context: BundlingContext,
+    ): List<MessageTraitInterface>? =
+        traits?.map { trait -> bundle(trait, context) }
+
+    fun bundle(traitInterface: MessageTraitInterface, visited: Set<String>): MessageTraitInterface =
+        bundle(traitInterface, BundlingContext.from(visited))
+
+    fun bundle(traitInterface: MessageTraitInterface, context: BundlingContext): MessageTraitInterface =
+        when (traitInterface) {
             is MessageTraitInterface.InlineMessageTrait ->
                 MessageTraitInterface.InlineMessageTrait(
-                    bundleTrait(traitInterface.trait, visited)
+                    bundleTrait(traitInterface.trait, context)
                 )
             is MessageTraitInterface.ReferenceMessageTrait -> {
-                val ref = traitInterface.reference.ref
-                if (visited.contains(ref)) {
-                    traitInterface
-                } else {
-                    val model = traitInterface.reference.requireModel<MessageTrait>()
-                    val newVisited = visited + ref
-                    val bundled = bundleTrait(model, newVisited)
-                    traitInterface.reference.model = bundled
-                    traitInterface.reference.inline()
-                    traitInterface
+                ReferenceBundler.bundleReferencedModel<MessageTrait>(
+                    reference = traitInterface.reference,
+                    context = context,
+                ) { trait, nextContext ->
+                    bundleTrait(trait, nextContext)
                 }
+                traitInterface
             }
         }
-    }
 
-    private fun bundleTrait(trait: MessageTrait, visited: Set<String>): MessageTrait {
-        val bundledHeaders =  trait.headers?.let { schemaBundler.bundle(it, visited) }
-        val bundledCorrelationId = trait.correlationId?.let { correlationIdBundler.bundle(it, visited) }
-        val bundledTags = tagBundler.bundleList(trait.tags, visited)
-        val bundledExternalDocs = trait.externalDocs?.let { externalDocsBundler.bundle(it, visited) }
-        val bundledBindings = bindingBundler.bundleMap(trait.bindings, visited)
+    private fun bundleTrait(trait: MessageTrait, context: BundlingContext): MessageTrait {
+        val bundledHeaders =  trait.headers?.let { schemaBundler.bundle(it, context) }
+        val bundledCorrelationId = trait.correlationId?.let { correlationIdBundler.bundle(it, context) }
+        val bundledTags = tagBundler.bundleList(trait.tags, context)
+        val bundledExternalDocs = trait.externalDocs?.let { externalDocsBundler.bundle(it, context) }
+        val bundledBindings = bindingBundler.bundleMap(trait.bindings, context)
         return trait.copy(
             headers = bundledHeaders,
             correlationId = bundledCorrelationId,
