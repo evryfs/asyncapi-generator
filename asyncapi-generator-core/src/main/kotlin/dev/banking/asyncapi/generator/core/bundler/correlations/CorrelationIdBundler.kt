@@ -1,41 +1,40 @@
 package dev.banking.asyncapi.generator.core.bundler.correlations
 
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 
+/**
+ * Bundles correlation ID objects and references.
+ *
+ * Expected behavior is covered by:
+ * - `CorrelationIdBundlerTest`
+ */
 class CorrelationIdBundler {
 
     fun bundleMap(
         correlationIds: Map<String, CorrelationIdInterface>?,
         visited: Set<String>,
     ): Map<String, CorrelationIdInterface>? =
-        correlationIds?.mapValues { (_, correlationId) ->
-            when (correlationId) {
-                is CorrelationIdInterface.CorrelationIdReference -> {
-                    val ref = correlationId.reference.ref
-                    if (visited.contains(ref)) {
-                        correlationId
-                    } else {
-                        correlationId.reference.inline()
-                        correlationId
+        bundleMap(correlationIds, BundlingContext.from(visited))
 
-                    }
-                }
-                else -> correlationId
-            }
+    fun bundleMap(
+        correlationIds: Map<String, CorrelationIdInterface>?,
+        context: BundlingContext,
+    ): Map<String, CorrelationIdInterface>? =
+        correlationIds?.mapValues { (_, correlationId) ->
+            bundle(correlationId, context)
         }
 
-    fun bundle(correlationId: CorrelationIdInterface, visited: Set<String>): CorrelationIdInterface {
-        return when (correlationId) {
+    fun bundle(correlationId: CorrelationIdInterface, visited: Set<String>): CorrelationIdInterface =
+        bundle(correlationId, BundlingContext.from(visited))
+
+    fun bundle(correlationId: CorrelationIdInterface, context: BundlingContext): CorrelationIdInterface =
+        when (correlationId) {
             is CorrelationIdInterface.CorrelationIdReference -> {
-                val ref = correlationId.reference.ref
-                if (visited.contains(ref)) {
-                    correlationId
-                } else {
-                    correlationId.reference.inline()
-                    correlationId
-                }
+                ReferenceBundler.inlineIfUnvisited(correlationId.reference, context)
+                correlationId
             }
             else -> correlationId
         }
-    }
 }
