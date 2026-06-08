@@ -23,6 +23,9 @@ sealed interface GenerationTask {
     data class SpringKafkaClient(
         val language: GeneratorName,
         val clientType: SpringKafkaClientType,
+        val clientPackage: String,
+        val modelPackage: String,
+        val topicPropertyPrefix: String,
     ) : GenerationTask
 
     data class QuarkusKafkaClient(

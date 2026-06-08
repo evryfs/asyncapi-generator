@@ -7,9 +7,9 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinS
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaSimpleGenerator
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
+import java.io.File
 
 /**
  * Dispatches planned Spring Kafka client generation to the current implementations.
@@ -24,35 +24,37 @@ class SpringKafkaClientGeneration {
     fun generate(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        generatorOptions: GeneratorOptions,
+        sourceOutputDirectory: File,
+        resourceOutputDirectory: File,
     ) {
         when (task.language) {
-            KOTLIN -> generateKotlinClient(task, generationInput, generatorOptions)
-            JAVA -> generateJavaClient(task, generationInput, generatorOptions)
+            KOTLIN -> generateKotlinClient(task, generationInput, sourceOutputDirectory, resourceOutputDirectory)
+            JAVA -> generateJavaClient(task, generationInput, sourceOutputDirectory, resourceOutputDirectory)
         }
     }
 
     private fun generateKotlinClient(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        generatorOptions: GeneratorOptions,
+        sourceOutputDirectory: File,
+        resourceOutputDirectory: File,
     ) {
         if (task.clientType == SpringKafkaClientType.SIMPLE) {
             val kafkaGenerator =
                 KotlinSpringKafkaSimpleGenerator(
-                    outputDir = generatorOptions.codegenOutputDirectory,
-                    clientPackage = generatorOptions.clientPackage,
-                    modelPackage = generatorOptions.modelPackage,
+                    outputDir = sourceOutputDirectory,
+                    clientPackage = task.clientPackage,
+                    modelPackage = task.modelPackage,
                 )
             kafkaGenerator.generate(generationInput.channels)
         } else {
             val kafkaGenerator =
                 KotlinSpringKafkaGenerator(
-                    outputDir = generatorOptions.codegenOutputDirectory,
-                    clientPackage = generatorOptions.clientPackage,
-                    modelPackage = generatorOptions.modelPackage,
-                    topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                    resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                    outputDir = sourceOutputDirectory,
+                    clientPackage = task.clientPackage,
+                    modelPackage = task.modelPackage,
+                    topicPropertyPrefix = task.topicPropertyPrefix,
+                    resourceOutputDir = resourceOutputDirectory,
                 )
             kafkaGenerator.generate(generationInput.channels)
         }
@@ -61,24 +63,25 @@ class SpringKafkaClientGeneration {
     private fun generateJavaClient(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        generatorOptions: GeneratorOptions,
+        sourceOutputDirectory: File,
+        resourceOutputDirectory: File,
     ) {
         if (task.clientType == SpringKafkaClientType.SIMPLE) {
             val kafkaGenerator =
                 JavaSpringKafkaSimpleGenerator(
-                    outputDir = generatorOptions.codegenOutputDirectory,
-                    clientPackage = generatorOptions.clientPackage,
-                    modelPackage = generatorOptions.modelPackage,
+                    outputDir = sourceOutputDirectory,
+                    clientPackage = task.clientPackage,
+                    modelPackage = task.modelPackage,
                 )
             kafkaGenerator.generate(generationInput.channels)
         } else {
             val kafkaGenerator =
                 JavaSpringKafkaGenerator(
-                    outputDir = generatorOptions.codegenOutputDirectory,
-                    clientPackage = generatorOptions.clientPackage,
-                    modelPackage = generatorOptions.modelPackage,
-                    topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
-                    resourceOutputDir = generatorOptions.resourceOutputDirectory,
+                    outputDir = sourceOutputDirectory,
+                    clientPackage = task.clientPackage,
+                    modelPackage = task.modelPackage,
+                    topicPropertyPrefix = task.topicPropertyPrefix,
+                    resourceOutputDir = resourceOutputDirectory,
                 )
             kafkaGenerator.generate(generationInput.channels)
         }

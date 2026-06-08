@@ -76,10 +76,7 @@ class GenerationPlannerTest {
                     language = GeneratorName.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
-                GenerationTask.SpringKafkaClient(
-                    language = GeneratorName.KOTLIN,
-                    clientType = SpringKafkaClientType.FULL,
-                ),
+                springKafkaClientTask(clientType = SpringKafkaClientType.FULL),
             ),
             plan.tasks,
         )
@@ -102,10 +99,7 @@ class GenerationPlannerTest {
                     language = GeneratorName.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
-                GenerationTask.SpringKafkaClient(
-                    language = GeneratorName.KOTLIN,
-                    clientType = SpringKafkaClientType.FULL,
-                ),
+                springKafkaClientTask(clientType = SpringKafkaClientType.FULL),
             ),
             plan.tasks,
         )
@@ -124,9 +118,32 @@ class GenerationPlannerTest {
 
         assertEquals(
             listOf(
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(clientType = SpringKafkaClientType.SIMPLE),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes custom topic prefix on Spring Kafka client task`() {
+        val plan =
+            planner.plan(
+                generatorOptions(
+                    generateModels = false,
+                    generateSpringKafkaClient = true,
+                    kafkaTopicsPropertyPrefix = "custom.topics",
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.HeaderModelArtifacts(
                     language = GeneratorName.KOTLIN,
-                    clientType = SpringKafkaClientType.SIMPLE,
+                    packageName = "com.example.client.header",
+                ),
+                springKafkaClientTask(
+                    clientType = SpringKafkaClientType.FULL,
+                    topicPropertyPrefix = "custom.topics",
                 ),
             ),
             plan.tasks,
@@ -155,7 +172,7 @@ class GenerationPlannerTest {
                     language = GeneratorName.JAVA,
                     packageName = "com.example.client.header",
                 ),
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(
                     language = GeneratorName.JAVA,
                     clientType = SpringKafkaClientType.FULL,
                 ),
@@ -224,5 +241,20 @@ class GenerationPlannerTest {
             generateQuarkusKafkaClient = generateQuarkusKafkaClient,
             generateAvroSchema = generateAvroSchema,
             configOptions = configOptions,
+        )
+
+    private fun springKafkaClientTask(
+        language: GeneratorName = GeneratorName.KOTLIN,
+        clientType: SpringKafkaClientType,
+        clientPackage: String = "com.example.client",
+        modelPackage: String = "com.example.model",
+        topicPropertyPrefix: String = "kafka.topics",
+    ): GenerationTask.SpringKafkaClient =
+        GenerationTask.SpringKafkaClient(
+            language = language,
+            clientType = clientType,
+            clientPackage = clientPackage,
+            modelPackage = modelPackage,
+            topicPropertyPrefix = topicPropertyPrefix,
         )
 }

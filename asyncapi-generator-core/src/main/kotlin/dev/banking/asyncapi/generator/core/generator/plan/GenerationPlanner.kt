@@ -40,6 +40,9 @@ class GenerationPlanner {
                         GenerationTask.SpringKafkaClient(
                             language = generatorOptions.generatorName,
                             clientType = clientType,
+                            clientPackage = generatorOptions.clientPackage,
+                            modelPackage = generatorOptions.modelPackage,
+                            topicPropertyPrefix = generatorOptions.kafkaTopicsPropertyPrefix,
                         ),
                     )
                 }

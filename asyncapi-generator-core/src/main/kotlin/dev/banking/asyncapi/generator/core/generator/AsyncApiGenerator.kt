@@ -66,7 +66,8 @@ class AsyncApiGenerator {
                     springKafkaClientGeneration.generate(
                         task = task,
                         generationInput = generationInput,
-                        generatorOptions = generatorOptions,
+                        sourceOutputDirectory = generatorOptions.codegenOutputDirectory,
+                        resourceOutputDirectory = generatorOptions.resourceOutputDirectory,
                     )
                 is GenerationTask.QuarkusKafkaClient ->
                     log.info("Generate ${task.language.name.titlecase()} Quarkus Kafka Client is not yet implemented. Skipping..")

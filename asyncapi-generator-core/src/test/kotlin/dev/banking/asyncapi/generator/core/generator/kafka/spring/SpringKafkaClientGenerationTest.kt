@@ -2,12 +2,10 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorOptions
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertTrue
 
@@ -25,17 +23,13 @@ class SpringKafkaClientGenerationTest {
 
         generator.generate(
             task =
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(
                     language = GeneratorName.KOTLIN,
                     clientType = SpringKafkaClientType.SIMPLE,
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
-            generatorOptions =
-                generatorOptions(
-                    generatorName = GeneratorName.KOTLIN,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
         )
 
         assertTrue(
@@ -53,17 +47,14 @@ class SpringKafkaClientGenerationTest {
 
         generator.generate(
             task =
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(
                     language = GeneratorName.KOTLIN,
                     clientType = SpringKafkaClientType.FULL,
+                    topicPropertyPrefix = "custom.topics",
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
-            generatorOptions =
-                generatorOptions(
-                    generatorName = GeneratorName.KOTLIN,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
         )
 
         assertTrue(
@@ -77,6 +68,13 @@ class SpringKafkaClientGenerationTest {
         )
         assertTrue(
             sourceOutputDirectory.resolve("com/example/client/producer/TopicUserEventsProducerUserSignedUp.kt").exists(),
+        )
+        val producerContent =
+            sourceOutputDirectory
+                .resolve("com/example/client/producer/TopicUserEventsProducerUserSignedUp.kt")
+                .readText()
+        assertTrue(
+            producerContent.contains("custom.topics.userEvents"),
         )
         assertTrue(
             resourceOutputDirectory
@@ -92,17 +90,13 @@ class SpringKafkaClientGenerationTest {
 
         generator.generate(
             task =
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(
                     language = GeneratorName.JAVA,
                     clientType = SpringKafkaClientType.SIMPLE,
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
-            generatorOptions =
-                generatorOptions(
-                    generatorName = GeneratorName.JAVA,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
         )
 
         assertTrue(
@@ -120,17 +114,13 @@ class SpringKafkaClientGenerationTest {
 
         generator.generate(
             task =
-                GenerationTask.SpringKafkaClient(
+                springKafkaClientTask(
                     language = GeneratorName.JAVA,
                     clientType = SpringKafkaClientType.FULL,
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
-            generatorOptions =
-                generatorOptions(
-                    generatorName = GeneratorName.JAVA,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
         )
 
         assertTrue(
@@ -152,19 +142,16 @@ class SpringKafkaClientGenerationTest {
         )
     }
 
-    private fun generatorOptions(
-        generatorName: GeneratorName,
-        sourceOutputDirectory: File,
-        resourceOutputDirectory: File,
-    ): GeneratorOptions =
-        GeneratorOptions(
-            generatorName = generatorName,
-            modelPackage = "com.example.model",
+    private fun springKafkaClientTask(
+        language: GeneratorName,
+        clientType: SpringKafkaClientType,
+        topicPropertyPrefix: String = "kafka.topics",
+    ): GenerationTask.SpringKafkaClient =
+        GenerationTask.SpringKafkaClient(
+            language = language,
+            clientType = clientType,
             clientPackage = "com.example.client",
-            schemaPackage = "com.example.schema",
-            codegenOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-            generateModels = false,
-            generateSpringKafkaClient = true,
+            modelPackage = "com.example.model",
+            topicPropertyPrefix = topicPropertyPrefix,
         )
 }
