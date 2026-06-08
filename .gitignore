@@ -66,3 +66,6 @@ replay_pid*
 
 # local test files
 .local/
+
+# ApprovalTests received artifacts
+*.received.*

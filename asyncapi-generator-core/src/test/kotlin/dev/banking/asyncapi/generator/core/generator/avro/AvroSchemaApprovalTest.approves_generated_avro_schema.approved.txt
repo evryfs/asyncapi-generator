@@ -1,0 +1,22 @@
+{
+  "type": "record",
+  "name": "Task",
+  "namespace": "com.example.avro",
+  "fields": [
+    {
+      "name": "id",
+      "type": ["null", "string"],
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": ["null", "com.example.avro.TaskStatus"],
+      "default": null
+    },
+    {
+      "name": "priority",
+      "type": ["null", "com.example.avro.Priority"],
+      "default": null
+    }
+  ]
+}

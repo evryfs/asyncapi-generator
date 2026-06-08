@@ -5,54 +5,71 @@ import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnum
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroUnion
-import dev.banking.asyncapi.generator.core.generator.util.FileUtil
+import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import java.io.File
 import java.io.StringWriter
 
+/**
+ * Renders Avro schema model items into schema artifacts.
+ *
+ * Expected behavior is covered by:
+ * - `AvroSchemaGeneratorTest`
+ * - `AvroSchemaApprovalTest`
+ */
 class AvroSchemaGenerator(
-    private val outputDir: File
+    private val outputDir: File,
 ) {
     private val mustacheFactory = DefaultMustacheFactory("avro")
 
     fun generate(schemaItem: AvroSchema) {
-        when (schemaItem) {
-            is AvroRecord -> generateRecord(schemaItem)
-            is AvroUnion -> generateUnion(schemaItem)
-            is AvroEnum -> generateEnum(schemaItem)
-        }
+        val artifact = render(schemaItem)
+        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
+            .write(GenerationResult.of(artifact))
     }
 
-    private fun generateRecord(record: AvroRecord) {
+    fun render(schemaItem: AvroSchema): GeneratedArtifact =
+        when (schemaItem) {
+            is AvroRecord -> renderRecord(schemaItem)
+            is AvroUnion -> renderUnion(schemaItem)
+            is AvroEnum -> renderEnum(schemaItem)
+        }
+
+    private fun renderRecord(record: AvroRecord): GeneratedArtifact {
         val template = mustacheFactory.compile("avro.mustache")
         val writer = StringWriter()
         template.execute(writer, record).flush()
 
-        val packageDir = FileUtil.packageDirectory(outputDir, record.namespace)
-        val outputFile = File(packageDir, "${record.name}.avsc")
-
-        outputFile.writeText(writer.toString())
+        return schemaArtifact(record.namespace, record.name, writer.toString())
     }
 
-    private fun generateUnion(union: AvroUnion) {
+    private fun renderUnion(union: AvroUnion): GeneratedArtifact {
         val template = mustacheFactory.compile("avro-union.mustache")
         val writer = StringWriter()
         template.execute(writer, union).flush()
 
-        val packageDir = FileUtil.packageDirectory(outputDir, union.namespace)
-        val outputFile = File(packageDir, "${union.name}.avsc")
-
-        outputFile.writeText(writer.toString())
+        return schemaArtifact(union.namespace, union.name, writer.toString())
     }
 
-    private fun generateEnum(enumModel: AvroEnum) {
+    private fun renderEnum(enumModel: AvroEnum): GeneratedArtifact {
         val template = mustacheFactory.compile("avro-enum.mustache")
         val writer = StringWriter()
         template.execute(writer, enumModel).flush()
 
-        val packageDir = FileUtil.packageDirectory(outputDir, enumModel.namespace)
-        val outputFile = File(packageDir, "${enumModel.name}.avsc")
-
-        outputFile.writeText(writer.toString())
+        return schemaArtifact(enumModel.namespace, enumModel.name, writer.toString())
     }
-}
 
+    private fun schemaArtifact(
+        namespace: String,
+        name: String,
+        content: String,
+    ): GeneratedArtifact =
+        GeneratedArtifact(
+            relativePath = GeneratedArtifactPaths.fromNamespace(namespace, "$name.avsc"),
+            content = content,
+            kind = GeneratedArtifactKind.SCHEMA,
+        )
+}

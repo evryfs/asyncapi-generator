@@ -71,6 +71,11 @@
             <artifactId>gson</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.approvaltests</groupId>
+            <artifactId>approvaltests</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
