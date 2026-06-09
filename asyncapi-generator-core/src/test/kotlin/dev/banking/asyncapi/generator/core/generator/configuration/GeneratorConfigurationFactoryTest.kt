@@ -229,6 +229,100 @@ class GeneratorConfigurationFactoryTest {
         assertEquals("clients.springKafka.topicPropertyPrefix cannot be empty", exception.message)
     }
 
+    @Test
+    fun `create rejects empty package names`() {
+        assertConfigurationError(
+            expectedMessage = "models.packageName cannot be empty",
+            request =
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = " "),
+                ),
+        )
+        assertConfigurationError(
+            expectedMessage = "schemas.avroProjection.packageName cannot be empty",
+            request =
+                request(
+                    schemas =
+                        GeneratorConfigurationRequest.Schemas(
+                            avroProjection =
+                                GeneratorConfigurationRequest.AvroProjection(
+                                    packageName = "",
+                                ),
+                        ),
+                ),
+        )
+        assertConfigurationError(
+            expectedMessage = "clients.springKafka.packageName cannot be empty",
+            request =
+                request(
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            springKafka =
+                                GeneratorConfigurationRequest.SpringKafka(
+                                    packageName = " ",
+                                    modelPackageName = "com.example.model",
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    @Test
+    fun `create rejects invalid package names`() {
+        assertConfigurationError(
+            expectedMessage =
+                "models.packageName must be a dot-separated package name, for example com.example.model",
+            request =
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example-model"),
+                ),
+        )
+        assertConfigurationError(
+            expectedMessage =
+                "clients.springKafka.modelPackageName must be a dot-separated package name, " +
+                    "for example com.example.model",
+            request =
+                request(
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            springKafka =
+                                GeneratorConfigurationRequest.SpringKafka(
+                                    packageName = "com.example.client",
+                                    modelPackageName = "com.example.",
+                                ),
+                        ),
+                ),
+        )
+        assertConfigurationError(
+            expectedMessage =
+                "clients.quarkusKafka.packageName must be a dot-separated package name, " +
+                    "for example com.example.model",
+            request =
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            quarkusKafka =
+                                GeneratorConfigurationRequest.QuarkusKafka(
+                                    packageName = "1example.client",
+                                ),
+                        ),
+                ),
+        )
+    }
+
+    private fun assertConfigurationError(
+        expectedMessage: String,
+        request: GeneratorConfigurationRequest,
+    ) {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(request)
+            }
+
+        assertEquals(expectedMessage, exception.message)
+    }
+
     private fun request(
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),

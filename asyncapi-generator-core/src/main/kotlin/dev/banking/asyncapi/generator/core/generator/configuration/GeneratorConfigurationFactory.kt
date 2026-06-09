@@ -7,6 +7,8 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * - `GeneratorConfigurationFactoryTest`
  */
 object GeneratorConfigurationFactory {
+    private val packageNamePattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
+
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
@@ -94,6 +96,50 @@ object GeneratorConfigurationFactory {
 
         if (request.clients.springKafka?.topicPropertyPrefix?.isBlank() == true) {
             throw IllegalArgumentException("clients.springKafka.topicPropertyPrefix cannot be empty")
+        }
+
+        validatePackageName(
+            path = "models.packageName",
+            value = request.models?.packageName,
+        )
+        validatePackageName(
+            path = "schemas.avroProjection.packageName",
+            value = request.schemas.avroProjection?.packageName,
+        )
+        validatePackageName(
+            path = "clients.springKafka.packageName",
+            value = request.clients.springKafka?.packageName,
+        )
+        validatePackageName(
+            path = "clients.springKafka.modelPackageName",
+            value = request.clients.springKafka?.modelPackageName,
+        )
+        validatePackageName(
+            path = "clients.quarkusKafka.packageName",
+            value = request.clients.quarkusKafka?.packageName,
+        )
+        validatePackageName(
+            path = "clients.quarkusKafka.modelPackageName",
+            value = request.clients.quarkusKafka?.modelPackageName,
+        )
+    }
+
+    private fun validatePackageName(
+        path: String,
+        value: String?,
+    ) {
+        if (value == null) {
+            return
+        }
+
+        if (value.isBlank()) {
+            throw IllegalArgumentException("$path cannot be empty")
+        }
+
+        if (!packageNamePattern.matches(value)) {
+            throw IllegalArgumentException(
+                "$path must be a dot-separated package name, for example com.example.model",
+            )
         }
     }
 
