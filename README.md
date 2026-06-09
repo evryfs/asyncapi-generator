@@ -7,7 +7,7 @@ The project is currently in BETA.
 ## Supported generators
 
 - Kotlin - Data classes with Jakarta Validation annotations
-- Java - POJOs with Jakarta Validation annotations
+- Java - POJOs or records with Jakarta Validation annotations
 - Spring Kafka - Client source artifacts for both Kotlin and Java
 - Avro - Schema generation from AsyncAPI schemas
 
@@ -133,6 +133,51 @@ The plugin wires generated sources into the `main` source set automatically when
 ```sh
 ./gradlew generateAsyncApi
 ```
+
+### Java Model Type
+
+Java model generation defaults to regular classes. For projects that prefer immutable constructor-based payload models, configure `models.javaModelType` as `record`.
+
+Maven:
+
+```xml
+<configuration>
+    <generatorName>java</generatorName>
+    <inputFile>path/to/my/asyncapi_specification.yaml</inputFile>
+    <models>
+        <packageName>my.package.path.model</packageName>
+        <javaModelType>record</javaModelType> <!-- options: class, record - default class -->
+    </models>
+</configuration>
+```
+
+Gradle Kotlin DSL:
+
+```kotlin
+asyncapiGenerate {
+    inputFile.set(file("src/main/resources/asyncapi.yaml"))
+    generatorName.set("java")
+    models {
+        packageName.set("my.package.path.model")
+        javaModelType.set("record") // options: class, record - default class
+    }
+}
+```
+
+Gradle Groovy DSL:
+
+```groovy
+asyncapiGenerate {
+    inputFile = file('src/main/resources/asyncapi.yaml')
+    generatorName = 'java'
+    models {
+        packageName = 'my.package.path.model'
+        javaModelType = 'record' // options: class, record - default class
+    }
+}
+```
+
+The same option is available from the CLI as `--models-java-model-type record`. Java records are only supported when `generatorName` is `java`.
 
 ### Spring Kafka Clients
 

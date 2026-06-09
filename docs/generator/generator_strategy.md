@@ -25,7 +25,7 @@ Both generators share a similar structure:
 *   **Template Engine:** Renders the final source code.
 
 **Key Features:**
-*   **Data Classes/POJOs:** Full support for properties, types, and nullability.
+*   **Data Classes/POJOs/Records:** Full support for properties, types, and nullability.
 *   **Enums:** Generation of strict Enum classes.
 *   **Polymorphism:** `oneOf`/`anyOf` are mapped to Sealed Interfaces (Kotlin) or Interface hierarchies (Java).
 *   **Validation:** `jakarta.validation` annotations are added automatically.
