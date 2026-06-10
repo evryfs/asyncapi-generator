@@ -5,5 +5,6 @@ data class AnalyzedChannel(
     val topic: String,
     val isProducer: Boolean, // Generate Producer class?
     val isConsumer: Boolean, // Generate Listener/Handler?
-    val messages: List<AnalyzedMessage>
+    val messages: List<AnalyzedMessage>,
+    val multiFormatMessages: List<AnalyzedMultiFormatMessage> = emptyList(),
 )
