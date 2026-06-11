@@ -10,9 +10,6 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
     class Mandatory(name: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("Missing mandatory '$name'", path, context))
 
-    class UnsupportedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
-        AsyncApiParseException(buildMessage("SchemaFormat: $format is not supported.", path, context))
-
     class UnexpectedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
 

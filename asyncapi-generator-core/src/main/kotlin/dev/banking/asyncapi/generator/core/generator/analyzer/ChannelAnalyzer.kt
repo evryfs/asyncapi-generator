@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -62,29 +63,35 @@ class ChannelAnalyzer {
                 val usage = channelUsage[name]!!
                 val finalProducer = if (!usage.isProducer && !usage.isConsumer) true else usage.isProducer
                 val finalConsumer = if (!usage.isProducer && !usage.isConsumer) true else usage.isConsumer
+                val resolvedMessages = resolveMessages(channel.messages)
 
                 AnalyzedChannel(
                     channelName = name,
                     topic = channel.address ?: name, // Fallback if address missing
                     isProducer = finalProducer,
                     isConsumer = finalConsumer,
-                    messages = resolveMessages(channel.messages),
+                    messages = resolvedMessages.messages,
+                    multiFormatMessages = resolvedMessages.multiFormatMessages,
                 )
             }
 
         return ChannelAnalysisResult(analyzedChannels)
     }
 
-    private fun resolveMessages(messages: Map<String, MessageInterface>?): List<AnalyzedMessage> {
-        if (messages.isNullOrEmpty()) return emptyList()
-        return messages.mapNotNull { (name, msgInterface) ->
+    private fun resolveMessages(messages: Map<String, MessageInterface>?): ResolvedMessages {
+        if (messages.isNullOrEmpty()) return ResolvedMessages()
+        val analyzedMessages = mutableListOf<AnalyzedMessage>()
+        val analyzedMultiFormatMessages = mutableListOf<AnalyzedMultiFormatMessage>()
+
+        messages.forEach { (name, msgInterface) ->
             val message =
                 when (msgInterface) {
                     is MessageInterface.MessageInline -> msgInterface.message
                     is MessageInterface.MessageReference -> msgInterface.reference.model as? Message
-                } ?: return@mapNotNull null
+                } ?: return@forEach
 
             var payloadSchema: Schema? = null
+            var multiFormatSchema: MultiFormatSchema? = null
             var typeName: String? = null
             val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: name)
             val inlinePayloadTypeName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
@@ -95,19 +102,48 @@ class ChannelAnalyzer {
                     typeName = inlinePayloadTypeName
                 }
                 is SchemaInterface.SchemaReference -> {
-                    payloadSchema = p.reference.model as? Schema
                     typeName = MapperUtil.toPascalCase(p.reference.ref.substringAfterLast('/'))
+                    when (val referencedModel = p.reference.model) {
+                        is Schema -> payloadSchema = referencedModel
+                        is MultiFormatSchema -> multiFormatSchema = referencedModel
+                    }
+                }
+                is SchemaInterface.MultiFormatSchemaInline -> {
+                    multiFormatSchema = p.multiFormatSchema
+                    typeName = inlinePayloadTypeName
                 }
                 else -> {}
             }
 
-            if (payloadSchema == null || typeName == null) return@mapNotNull null
+            if (typeName == null) return@forEach
 
-            AnalyzedMessage(
-                messageName = baseName,
-                payloadTypeName = typeName,
-                schema = payloadSchema,
-            )
+            if (payloadSchema != null) {
+                analyzedMessages.add(
+                    AnalyzedMessage(
+                        messageName = baseName,
+                        payloadTypeName = typeName,
+                        schema = payloadSchema,
+                    ),
+                )
+            } else if (multiFormatSchema != null) {
+                analyzedMultiFormatMessages.add(
+                    AnalyzedMultiFormatMessage(
+                        messageName = baseName,
+                        payloadName = typeName,
+                        schema = multiFormatSchema,
+                    ),
+                )
+            }
         }
+
+        return ResolvedMessages(
+            messages = analyzedMessages,
+            multiFormatMessages = analyzedMultiFormatMessages,
+        )
     }
+
+    private data class ResolvedMessages(
+        val messages: List<AnalyzedMessage> = emptyList(),
+        val multiFormatMessages: List<AnalyzedMultiFormatMessage> = emptyList(),
+    )
 }

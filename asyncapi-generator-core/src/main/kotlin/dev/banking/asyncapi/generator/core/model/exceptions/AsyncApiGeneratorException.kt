@@ -41,4 +41,18 @@ sealed class AsyncApiGeneratorException(
             private fun formatOriginals(values: List<String>): String = values.joinToString(prefix = "[", postfix = "]") { "'$it'" }
         }
     }
+
+    class UnsupportedPayloadSchemaFormat(
+        output: String,
+        payloadName: String,
+        schemaFormat: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output cannot consume payload '$payloadName' because it uses schemaFormat '$schemaFormat'.")
+                appendLine("This output currently supports AsyncAPI Schema Object payloads only.")
+                appendLine("Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities.")
+                appendLine()
+            }.trimEnd(),
+        )
 }

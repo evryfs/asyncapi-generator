@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInputCompatibilityValidator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientGeneration
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
@@ -21,6 +22,7 @@ class AsyncApiGenerator {
     private val log = LoggerFactory.getLogger(AsyncApiGenerator::class.java)
 
     private val generationInputFactory = GenerationInputFactory()
+    private val generationInputCompatibilityValidator = GenerationInputCompatibilityValidator()
     private val generationPlanner = GenerationPlanner()
     private val modelArtifactGeneration = ModelArtifactGeneration()
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
@@ -32,6 +34,10 @@ class AsyncApiGenerator {
     ) {
         val generationInput = generationInputFactory.create(asyncApiDocument)
         val generationPlan = generationPlanner.plan(generatorConfiguration)
+        generationInputCompatibilityValidator.validate(
+            generationInput = generationInput,
+            generationPlan = generationPlan,
+        )
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,

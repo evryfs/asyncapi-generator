@@ -19,12 +19,14 @@ class GenerationInputFactory(
 ) {
     fun create(asyncApiDocument: AsyncApiDocument): GenerationInput {
         val schemas = AsyncApiSchemaLoader.load(asyncApiDocument)
+        val multiFormatSchemas = AsyncApiSchemaLoader.loadMultiFormatSchemas(asyncApiDocument)
         val normalizedSchemas = schemaNormalizer.normalize(schemas)
         val (analyzedSchemas, polymorphicRelationships) = schemaAnalyzer.analyze(normalizedSchemas)
         val analyzedChannels = channelAnalyzer.analyze(asyncApiDocument).channels
 
         return GenerationInput(
             schemas = analyzedSchemas,
+            multiFormatSchemas = multiFormatSchemas,
             polymorphicRelationships = polymorphicRelationships,
             channels = analyzedChannels,
         )

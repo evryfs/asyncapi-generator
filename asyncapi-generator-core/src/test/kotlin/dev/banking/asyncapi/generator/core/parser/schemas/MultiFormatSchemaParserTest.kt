@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
@@ -28,20 +29,60 @@ class MultiFormatSchemaParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse unsupported schema format throws UnsupportedSchemaFormat`() {
+    fun `parse json schema format as multi format schema`() {
         val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
+            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
             "components",
             "schemas",
-            "UnsupportedJsonSchemaFormat",
+            "JsonSchemaDraftSchemaFormat",
         )
-        assertParseFailure<AsyncApiParseException.UnsupportedSchemaFormat>(
-            "SchemaFormat: application/schema+json;version=draft-07 is not supported.",
-            "asyncapi_parser_schema_format_invalid.yaml",
-            "asyncapi_parser_schema_format_invalid.root.components.schemas.UnsupportedJsonSchemaFormat",
-        ) {
-            parser.parseElement(schemaNode)
-        }
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
+        val rawSchema = schema.multiFormatSchema.schema as Map<*, *>
+        assertEquals("application/schema+json;version=draft-07", schema.multiFormatSchema.schemaFormat)
+        assertEquals(SchemaFormat.JSON_SCHEMA_DRAFT_07_JSON, schema.multiFormatSchema.format)
+        assertEquals("object", rawSchema["type"])
+    }
+
+    @Test
+    fun `parse native avro schema format as multi format schema`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
+            "components",
+            "schemas",
+            "NativeAvroSchemaFormat",
+        )
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
+        val rawSchema = schema.multiFormatSchema.schema as Map<*, *>
+        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.multiFormatSchema.schemaFormat)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.multiFormatSchema.format)
+        assertTrue(schema.multiFormatSchema.format.isNativeAvro)
+        assertEquals("record", rawSchema["type"])
+        assertEquals("UserCreated", rawSchema["name"])
+    }
+
+    @Test
+    fun `parse native protobuf schema format as multi format schema`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
+            "components",
+            "schemas",
+            "NativeProtobufSchemaFormat",
+        )
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
+        assertEquals("application/vnd.google.protobuf;version=3", schema.multiFormatSchema.schemaFormat)
+        assertEquals(SchemaFormat.PROTOBUF_3, schema.multiFormatSchema.format)
+        assertTrue(schema.multiFormatSchema.format.isNativeProtobuf)
+        val rawSchema = schema.multiFormatSchema.schema as String
+        assertTrue(rawSchema.contains("message UserCreated"))
     }
 
     @Test

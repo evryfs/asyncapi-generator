@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /**
@@ -16,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  */
 data class GenerationInput(
     val schemas: Map<String, Schema>,
+    val multiFormatSchemas: Map<String, MultiFormatSchema> = emptyMap(),
     val polymorphicRelationships: Map<String, List<String>>,
     val channels: List<AnalyzedChannel>,
 ) {

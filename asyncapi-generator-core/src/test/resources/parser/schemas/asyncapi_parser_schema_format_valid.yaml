@@ -9,3 +9,18 @@ components:
       schema:
         title: Supported schema format
         type: object
+    JsonSchemaDraftSchemaFormat:
+      schemaFormat: application/schema+json;version=draft-07
+      schema:
+        type: object
+    NativeAvroSchemaFormat:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        type: record
+        name: UserCreated
+        fields: []
+    NativeProtobufSchemaFormat:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3";
+        message UserCreated {}

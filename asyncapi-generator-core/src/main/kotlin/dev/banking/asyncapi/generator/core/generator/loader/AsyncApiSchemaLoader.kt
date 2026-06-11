@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -33,8 +34,7 @@ object AsyncApiSchemaLoader {
             val message = (messageInterface as? MessageInterface.MessageInline)?.message ?: return@forEach
             if (message.payload is SchemaInterface.SchemaInline) {
                 val inlinePayload = message.payload.schema
-                val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
-                val schemaName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
+                val schemaName = payloadSchemaName(message, messageKey)
                 if (!collectedSchemas.containsKey(schemaName)) {
                     collectedSchemas[schemaName] = inlinePayload
                 }
@@ -47,13 +47,44 @@ object AsyncApiSchemaLoader {
             channel.messages?.forEach { (messageKey, messageInterface) ->
                 val message = (messageInterface as? MessageInterface.MessageInline)?.message ?: return@forEach
                 val inlinePayload = message.payload as? SchemaInterface.SchemaInline ?: return@forEach
-                val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
-                val schemaName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
+                val schemaName = payloadSchemaName(message, messageKey)
                 if (!collectedSchemas.containsKey(schemaName)) {
                     collectedSchemas[schemaName] = inlinePayload.schema
                 }
             }
         }
+        return collectedSchemas
+    }
+
+    fun loadMultiFormatSchemas(asyncApiDocument: AsyncApiDocument): Map<String, MultiFormatSchema> {
+        val collectedSchemas = mutableMapOf<String, MultiFormatSchema>()
+        val componentNode = (asyncApiDocument.components as? ComponentInterface.ComponentInline)?.component
+
+        componentNode?.schemas?.forEach { (name, schemaInterface) ->
+            val multiFormatSchema =
+                (schemaInterface as? SchemaInterface.MultiFormatSchemaInline)?.multiFormatSchema ?: return@forEach
+            collectedSchemas[MapperUtil.toPascalCase(name)] = multiFormatSchema
+        }
+
+        componentNode?.messages?.forEach { (messageKey, messageInterface) ->
+            val message = (messageInterface as? MessageInterface.MessageInline)?.message ?: return@forEach
+            val inlinePayload =
+                (message.payload as? SchemaInterface.MultiFormatSchemaInline)?.multiFormatSchema ?: return@forEach
+            val schemaName = payloadSchemaName(message, messageKey)
+            collectedSchemas.putIfAbsent(schemaName, inlinePayload)
+        }
+
+        asyncApiDocument.channels?.forEach { (_, channelInterface) ->
+            val channel = (channelInterface as? ChannelInterface.ChannelInline)?.channel ?: return@forEach
+            channel.messages?.forEach { (messageKey, messageInterface) ->
+                val message = (messageInterface as? MessageInterface.MessageInline)?.message ?: return@forEach
+                val inlinePayload =
+                    (message.payload as? SchemaInterface.MultiFormatSchemaInline)?.multiFormatSchema ?: return@forEach
+                val schemaName = payloadSchemaName(message, messageKey)
+                collectedSchemas.putIfAbsent(schemaName, inlinePayload)
+            }
+        }
+
         return collectedSchemas
     }
 
@@ -136,5 +167,13 @@ object AsyncApiSchemaLoader {
         schema.anyOf?.forEach { collectFromSchemaInterface(it, sink, visitedRefs) }
         schema.allOf?.forEach { collectFromSchemaInterface(it, sink, visitedRefs) }
         schema.not?.let { collectFromSchemaInterface(it, sink, visitedRefs) }
+    }
+
+    private fun payloadSchemaName(
+        message: Message,
+        messageKey: String,
+    ): String {
+        val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
+        return if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
     }
 }

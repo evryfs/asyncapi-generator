@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
@@ -50,8 +51,19 @@ class SchemaParser(
             )
         }
         parserNode.optional("schemaFormat")?.coerce<String>()?.let { format ->
-            multiFormatParser.validateFormat(format, parserNode.path)
-            return parseElement(parserNode.mandatory("schema"))
+            val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
+            val schemaNode = parserNode.mandatory("schema")
+            if (schemaFormat.isAsyncApiSchemaObject) {
+                return parseElement(schemaNode)
+            }
+            val multiFormatSchema =
+                MultiFormatSchema(
+                    schemaFormat = format,
+                    schema = schemaNode.node,
+                    format = schemaFormat,
+                )
+            return SchemaInterface.MultiFormatSchemaInline(multiFormatSchema)
+                .also { asyncApiContext.register(multiFormatSchema, parserNode) }
         }
         if (isBooleanSchema(parserNode)) {
             val bool = parserNode.coerce<Boolean>()

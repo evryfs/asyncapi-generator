@@ -1,15 +1,15 @@
 # asyncapi-generator
 
-The asyncapi-generator is an open-source tool for generating code and schemas from AsyncAPI Yaml specifications.
+The asyncapi-generator is an open-source tool for generating code and schemas from AsyncAPI YAML or JSON specifications.
 
 The project is currently in BETA.
 
 ## Supported generators
 
-- Kotlin - Data classes with Jakarta Validation annotations
-- Java - POJOs or records with Jakarta Validation annotations
-- Spring Kafka - Client source artifacts for both Kotlin and Java
-- Avro - Schema generation from AsyncAPI schemas
+- Kotlin - Data classes with Jakarta Validation annotations from AsyncAPI Schema Object payloads
+- Java - POJOs or records with Jakarta Validation annotations from AsyncAPI Schema Object payloads
+- Spring Kafka - Client source artifacts for JSON-compatible payload models in both Kotlin and Java
+- Avro Projection - `.avsc` schema generation from AsyncAPI Schema Object payloads
 
 The current documentation provided is still a draft, found in `docs/` folder at the repository root.
 
@@ -196,26 +196,60 @@ The generated output depends on the channel direction from the AsyncAPI operatio
 
 The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
 
+### Payload Schema Formats
+
+The generator separates JSON-compatible AsyncAPI payloads from native or explicit multi-format payload schemas.
+
+The default payload path is the AsyncAPI Schema Object. This is the JSON-compatible schema shape used by model generation, Spring Kafka client generation, and Avro Projection. In this mode, a schema is written directly as an AsyncAPI schema:
+
+```yaml
+components:
+  schemas:
+    UserCreated:
+      type: object
+      required:
+        - userId
+      properties:
+        userId:
+          type: string
+```
+
+Avro Projection is an explicit projection from this AsyncAPI Schema Object shape into `.avsc` files. It does not consume native Avro schemas and it does not generate Avro `SpecificRecord` classes.
+
+Native schema formats are represented with `schemaFormat`, for example Avro or Protobuf:
+
+```yaml
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        type: record
+        name: UserCreated
+        fields: []
+```
+
+The reader and parser recognize known `schemaFormat` values and preserve those schemas as multi-format payloads. Existing model, Spring Kafka, and Avro Projection outputs reject those payloads with a clear generator error because they currently support AsyncAPI Schema Object payloads only. Dedicated native Avro and Protobuf generator capabilities will be modeled separately.
+
 ## Features supported 
 
 ### Parser
 
 The core parsing logic is stable and handles the structural validation of AsyncAPI documents.
 
-- [x] **AsyncAPI YAML Support:** Reads and Parses yaml format.
-- [ ] **AsyncAPI JSON Support:** Reads and Parses yaml format.
+- [x] **AsyncAPI YAML Support:** Reads and parses YAML format.
+- [x] **AsyncAPI JSON Support:** Reads and parses JSON format.
 - [x] **Context-Aware Error Handling:** Provides precise error messages with line numbers and JSON paths.
 - [x] **Reference Resolution:** Supports internal and external file references.
 - [x] **Components:** Full parsing support for Schemas, Messages, Channels, Parameters, etc.
 
 ### Schema Formats
 
-- [x] **Yaml Schema:** Fully supported (default format).
-- [ ] **Multi-Format Schemas:**
-  - [ ] **JSON Schema:** Support for parsing JSON schemas defined in AsyncAPI documents.
-  - [ ] **Avro Schema:** Support for parsing Avro schemas defined in AsyncAPI documents.
-  - [ ] **Protobuf Schema:** Support for parsing Protobuf schemas defined in AsyncAPI documents.
-  - [ ] **RAML Schema:** Support for parsing Protobuf schemas defined in AsyncAPI documents.
+- [x] **AsyncAPI Schema Object:** Fully supported for model, Spring Kafka, and Avro Projection outputs.
+- [x] **Known Multi-Format Schemas:** Known `schemaFormat` values are recognized and preserved separately from AsyncAPI Schema Object payloads.
+- [ ] **Native Avro Generation:** Dedicated native Avro generation is not yet implemented.
+- [ ] **Native Protobuf Generation:** Dedicated Protobuf generation is not yet implemented.
+- [ ] **Other Multi-Format Outputs:** JSON Schema, OpenAPI, RAML, and other schema families are not yet consumed by generator outputs.
 
 ### Validator
 
@@ -230,5 +264,5 @@ The core parsing logic is stable and handles the structural validation of AsyncA
 - [ ] **CLI Tool:** Publish the already made CLI module to package managers like brew and dnf.
 - [ ] **Documentation:** Complete documentation with examples and guides.
 - [ ] **Additional Generators:** Expand support for more programming languages and frameworks, i.e., Quarkus Kafka.
-- [ ] **Enhanced Schema Support:** Full support for multi-format schemas including Avro and Protobuf.
+- [ ] **Enhanced Schema Support:** Dedicated native schema generation capabilities including Avro and Protobuf.
 - [ ] **Serialization:** Consider using kotlinx-serialization for writing bundled schemas to files.
