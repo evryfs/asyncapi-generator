@@ -111,4 +111,18 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
             }.trimEnd(),
         )
+
+    class UnsupportedNativeProtobufPayloadType(
+        payloadName: String,
+        schemaFormat: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Native Protobuf payload '$payloadName' cannot be used as a generated client type.")
+                appendLine("The payload uses schemaFormat '$schemaFormat'.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
 }
