@@ -136,6 +136,26 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should generate native protobuf schema`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-native-protobuf",
+                "-g", "kotlin",
+            )
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
+    }
+
+    @Test
     fun `should allow bundle-only output with no packages`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()

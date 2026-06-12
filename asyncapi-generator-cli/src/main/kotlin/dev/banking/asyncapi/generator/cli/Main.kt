@@ -81,6 +81,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "false" to false,
     )
 
+    private val schemasNativeProtobuf by option(
+        "--schemas-native-protobuf",
+        help = "Enable native Protobuf schema artifact generation",
+    ).flag(default = false)
+
     private val clientsSpringKafka by option(
         "--clients-spring-kafka",
         help = "Enable Spring Kafka client generation",
@@ -197,6 +202,10 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                 GeneratorConfigurationRequest.nativeAvro(
                     enabled = true.takeIf { schemasNativeAvro },
                     generateSpecificRecords = schemasNativeAvroGenerateSpecificRecords,
+                ),
+            nativeProtobuf =
+                GeneratorConfigurationRequest.nativeProtobuf(
+                    enabled = true.takeIf { schemasNativeProtobuf },
                 ),
         )
 

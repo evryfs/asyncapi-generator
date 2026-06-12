@@ -32,11 +32,13 @@ class MavenModelGenerationConfiguration {
 class MavenSchemaGenerationConfiguration {
     var avroProjection: MavenAvroProjectionConfiguration? = null
     var nativeAvro: MavenNativeAvroConfiguration? = null
+    var nativeProtobuf: MavenNativeProtobufConfiguration? = null
 
     fun toRequest(): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection = avroProjection?.toRequest(),
             nativeAvro = nativeAvro?.toRequest(),
+            nativeProtobuf = nativeProtobuf?.toRequest(),
         )
 }
 
@@ -71,6 +73,21 @@ class MavenNativeAvroConfiguration {
         GeneratorConfigurationRequest.nativeAvro(
             enabled = enabled,
             generateSpecificRecords = generateSpecificRecords,
+        )
+}
+
+/**
+ * Maven native Protobuf schema generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenNativeProtobufConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.NativeProtobuf? =
+        GeneratorConfigurationRequest.nativeProtobuf(
+            enabled = enabled,
         )
 }
 

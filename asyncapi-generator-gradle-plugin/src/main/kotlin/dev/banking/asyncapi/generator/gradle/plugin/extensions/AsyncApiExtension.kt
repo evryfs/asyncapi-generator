@@ -62,6 +62,8 @@ abstract class AsyncApiSchemasExtension @Inject constructor(objects: ObjectFacto
         objects.newInstance(AsyncApiAvroProjectionExtension::class.java)
     val nativeAvro: AsyncApiNativeAvroExtension =
         objects.newInstance(AsyncApiNativeAvroExtension::class.java)
+    val nativeProtobuf: AsyncApiNativeProtobufExtension =
+        objects.newInstance(AsyncApiNativeProtobufExtension::class.java)
 
     fun avroProjection(action: Action<AsyncApiAvroProjectionExtension>) {
         action.execute(avroProjection)
@@ -69,6 +71,10 @@ abstract class AsyncApiSchemasExtension @Inject constructor(objects: ObjectFacto
 
     fun nativeAvro(action: Action<AsyncApiNativeAvroExtension>) {
         action.execute(nativeAvro)
+    }
+
+    fun nativeProtobuf(action: Action<AsyncApiNativeProtobufExtension>) {
+        action.execute(nativeProtobuf)
     }
 }
 
@@ -92,6 +98,16 @@ abstract class AsyncApiAvroProjectionExtension @Inject constructor(objects: Obje
 abstract class AsyncApiNativeAvroExtension @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val generateSpecificRecords: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+}
+
+/**
+ * Gradle native Protobuf schema generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiNativeProtobufExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
 }
 
 /**

@@ -37,6 +37,7 @@ class AsyncApiPlugin : Plugin<Project> {
             avroProjectionPackageName.set(extension.schemas.avroProjection.packageName)
             nativeAvroEnabled.set(extension.schemas.nativeAvro.enabled)
             nativeAvroGenerateSpecificRecords.set(extension.schemas.nativeAvro.generateSpecificRecords)
+            nativeProtobufEnabled.set(extension.schemas.nativeProtobuf.enabled)
 
             springKafkaEnabled.set(extension.clients.springKafka.enabled)
             springKafkaPackageName.set(extension.clients.springKafka.packageName)

@@ -434,6 +434,37 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate native protobuf schema`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("kotlin")
+                  schemas {
+                      nativeProtobuf {
+                          enabled.set(true)
+                      }
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaFile = File(projectDir, "build/generated-resources/asyncapi/com/example/protobuf/UserCreated.proto")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
+    }
+
+    @Test
     fun `should fail if input file is missing`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
 

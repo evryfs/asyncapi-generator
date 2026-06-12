@@ -75,10 +75,12 @@ object MavenTestHelper {
     fun schemas(
         avroProjection: MavenAvroProjectionConfiguration? = null,
         nativeAvro: MavenNativeAvroConfiguration? = null,
+        nativeProtobuf: MavenNativeProtobufConfiguration? = null,
     ): MavenSchemaGenerationConfiguration =
         MavenSchemaGenerationConfiguration().apply {
             this.avroProjection = avroProjection
             this.nativeAvro = nativeAvro
+            this.nativeProtobuf = nativeProtobuf
         }
 
     fun avroProjection(
@@ -97,6 +99,11 @@ object MavenTestHelper {
         MavenNativeAvroConfiguration().apply {
             this.enabled = enabled
             this.generateSpecificRecords = generateSpecificRecords
+        }
+
+    fun nativeProtobuf(enabled: Boolean? = null): MavenNativeProtobufConfiguration =
+        MavenNativeProtobufConfiguration().apply {
+            this.enabled = enabled
         }
 
     fun clients(

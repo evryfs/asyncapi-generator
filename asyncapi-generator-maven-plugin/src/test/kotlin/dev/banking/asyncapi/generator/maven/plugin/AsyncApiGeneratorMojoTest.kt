@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.javaSourceOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobuf
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.models
@@ -163,6 +164,22 @@ class AsyncApiGeneratorMojoTest {
         assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
         assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
         assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-protobuf"))
+            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
+            generatorName("kotlin")
+        }.execute()
+
+        val schemaFile = File("target/generated-resources/asyncapi-native-protobuf/com/example/protobuf/UserCreated.proto")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
     }
 
     @Test
