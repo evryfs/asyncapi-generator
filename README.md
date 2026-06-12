@@ -11,6 +11,7 @@ The project is currently in BETA.
 - Spring Kafka - Client source artifacts for JSON-compatible payload models and native Avro message payloads in both Kotlin and Java
 - Avro Projection - `.avsc` schema generation from AsyncAPI Schema Object payloads
 - Native Avro - `.avsc` schema artifacts and Apache Avro Java `SpecificRecord` sources from native Avro `schemaFormat` payloads
+- Native Protobuf - `.proto` schema artifacts from native Protobuf `schemaFormat` payloads
 
 The current documentation provided is still a draft, found in `docs/` folder at the repository root.
 
@@ -238,6 +239,60 @@ asyncapi-generator \
 
 Use `generateSpecificRecords = false` or `--schemas-native-avro-generate-specific-records false` when only `.avsc` artifacts should be generated.
 
+### Native Protobuf Generation
+
+Native Protobuf generation is configured under `schemas.nativeProtobuf`. It consumes AsyncAPI schemas that use a native Protobuf `schemaFormat` and writes `.proto` files to the resource output directory.
+
+Maven:
+
+```xml
+<configuration>
+    <inputFile>path/to/my/asyncapi_specification.yaml</inputFile>
+    <resourceOutputDirectory>${project.build.directory}/generated-resources/asyncapi</resourceOutputDirectory>
+    <schemas>
+        <nativeProtobuf>
+            <enabled>true</enabled>
+        </nativeProtobuf>
+    </schemas>
+</configuration>
+```
+
+Gradle Kotlin DSL:
+
+```kotlin
+asyncapiGenerate {
+    inputFile.set(file("src/main/resources/asyncapi.yaml"))
+    schemas {
+        nativeProtobuf {
+            enabled.set(true)
+        }
+    }
+}
+```
+
+Gradle Groovy DSL:
+
+```groovy
+asyncapiGenerate {
+    inputFile = file('src/main/resources/asyncapi.yaml')
+    schemas {
+        nativeProtobuf {
+            enabled = true
+        }
+    }
+}
+```
+
+CLI:
+
+```sh
+asyncapi-generator \
+  --input src/main/resources/asyncapi.yaml \
+  --schemas-native-protobuf
+```
+
+Runtime mappers and Spring Kafka Protobuf serialization are not generated yet. Applications still own Protobuf compiler/runtime integration.
+
 ### Spring Kafka Clients
 
 Spring Kafka output is configured under `clients.springKafka`.
@@ -299,6 +354,26 @@ The reader and parser recognize known `schemaFormat` values and preserve those s
 
 Native Avro generation writes `.avsc` artifacts to the configured resource output directory. When `generateSpecificRecords` is enabled, it also generates Apache Avro Java `SpecificRecord` sources. Maven writes those Java sources to `javaSourceOutputDirectory`, which defaults to a sibling `asyncapi-java` generated-source directory. CLI and Gradle write those Java sources under the Java source root inside the configured codegen output directory.
 
+Native Protobuf generation consumes `.proto` text directly:
+
+```yaml
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3";
+
+        package com.example.protobuf;
+
+        message UserCreated {
+          string user_id = 1;
+          string email = 2;
+        }
+```
+
+Native Protobuf generation writes `.proto` artifacts to the configured resource output directory. When the `.proto` content declares a `package`, that package is used as the output path. For example, `package com.example.protobuf;` is written under `com/example/protobuf`.
+
 Spring Kafka client generation supports native Avro message payloads by referencing the generated Avro Java type from the Avro schema namespace. If native Avro artifacts are not generated in the same execution, the referenced Avro classes must already be available to the consuming project.
 
 ## Features supported 
@@ -318,7 +393,7 @@ The core parsing logic is stable and handles the structural validation of AsyncA
 - [x] **AsyncAPI Schema Object:** Fully supported for model, Spring Kafka, and Avro Projection outputs.
 - [x] **Known Multi-Format Schemas:** Known `schemaFormat` values are recognized and preserved separately from AsyncAPI Schema Object payloads.
 - [x] **Native Avro Generation:** Native Avro `.avsc` artifacts and Java `SpecificRecord` sources can be generated from Avro `schemaFormat` payloads.
-- [ ] **Native Protobuf Generation:** Dedicated Protobuf generation is not yet implemented.
+- [x] **Native Protobuf Generation:** Native Protobuf `.proto` artifacts can be generated from Protobuf `schemaFormat` payloads.
 - [ ] **Other Multi-Format Outputs:** JSON Schema, OpenAPI, RAML, and other schema families are not yet consumed by generator outputs.
 
 ### Validator
@@ -334,5 +409,5 @@ The core parsing logic is stable and handles the structural validation of AsyncA
 - [ ] **CLI Tool:** Publish the already made CLI module to package managers like brew and dnf.
 - [ ] **Documentation:** Complete documentation with examples and guides.
 - [ ] **Additional Generators:** Expand support for more programming languages and frameworks, i.e., Quarkus Kafka.
-- [ ] **Enhanced Schema Support:** Dedicated native schema generation capabilities for Protobuf and other schema families.
+- [ ] **Enhanced Schema Support:** Dedicated native schema generation capabilities for JSON Schema, OpenAPI, RAML, and other schema families.
 - [ ] **Serialization:** Consider using kotlinx-serialization for writing bundled schemas to files.
