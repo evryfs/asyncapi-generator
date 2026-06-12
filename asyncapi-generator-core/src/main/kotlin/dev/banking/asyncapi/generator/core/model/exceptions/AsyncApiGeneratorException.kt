@@ -97,4 +97,18 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
             }.trimEnd(),
         )
+
+    class InvalidNativeProtobufSchema(
+        payloadName: String,
+        schemaFormat: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Native Protobuf generation failed for payload '$payloadName'.")
+                appendLine("The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
 }

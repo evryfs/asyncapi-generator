@@ -179,6 +179,24 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create enables native Protobuf when schema mode is configured`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    schemas =
+                        GeneratorConfigurationRequest.Schemas(
+                            nativeProtobuf = GeneratorConfigurationRequest.NativeProtobuf,
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(SchemaGeneration.NativeProtobuf),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create returns no configured output when no output requests are configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(

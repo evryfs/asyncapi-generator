@@ -41,4 +41,6 @@ sealed interface GenerationTask {
     data class NativeAvroArtifacts(
         val generateSpecificRecords: Boolean = true,
     ) : GenerationTask
+
+    data object NativeProtobufArtifacts : GenerationTask
 }

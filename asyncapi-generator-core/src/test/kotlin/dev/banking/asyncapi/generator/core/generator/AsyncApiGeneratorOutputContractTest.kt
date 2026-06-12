@@ -93,6 +93,28 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate writes native Protobuf schema artifacts to resource output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufComponent(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                ),
+        )
+
+        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertFalse(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+    }
+
+    @Test
     fun `generate rejects multi format component schemas before writing model artifacts`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()

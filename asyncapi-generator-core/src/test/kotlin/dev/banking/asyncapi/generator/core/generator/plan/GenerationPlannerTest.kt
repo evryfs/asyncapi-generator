@@ -63,6 +63,21 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan includes native Protobuf artifact task when enabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                ),
+            )
+
+        assertEquals(
+            listOf(GenerationTask.NativeProtobufArtifacts),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan includes model annotation on model artifact task when configured`() {
         val plan =
             planner.plan(

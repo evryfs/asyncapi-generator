@@ -32,6 +32,7 @@ data class GeneratorConfigurationRequest(
     data class Schemas(
         val avroProjection: AvroProjection? = null,
         val nativeAvro: NativeAvro? = null,
+        val nativeProtobuf: NativeProtobuf? = null,
     )
 
     data class AvroProjection(
@@ -41,6 +42,8 @@ data class GeneratorConfigurationRequest(
     data class NativeAvro(
         val generateSpecificRecords: Boolean = true,
     )
+
+    data object NativeProtobuf
 
     data class Clients(
         val springKafka: SpringKafka? = null,
@@ -102,6 +105,13 @@ data class GeneratorConfigurationRequest(
                 enabled == false -> null
                 enabled == true || generateSpecificRecords != null ->
                     NativeAvro(generateSpecificRecords = generateSpecificRecords ?: true)
+                else -> null
+            }
+
+        fun nativeProtobuf(enabled: Boolean? = null): NativeProtobuf? =
+            when {
+                enabled == false -> null
+                enabled == true -> NativeProtobuf
                 else -> null
             }
 

@@ -85,6 +85,17 @@ internal class GenerationInputFixtures {
             channels = emptyList(),
         )
 
+    fun generationInputWithNativeProtobufSchema(): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            multiFormatSchemas =
+                mapOf(
+                    "UserCreated" to nativeProtobufUserCreatedSchema(),
+                ),
+            polymorphicRelationships = emptyMap(),
+            channels = emptyList(),
+        )
+
     fun documentWithMessageHeaders(): AsyncApiDocument =
         AsyncApiDocument(
             asyncapi = "3.0.0",
@@ -224,6 +235,24 @@ internal class GenerationInputFixtures {
                 ),
         )
 
+    fun documentWithNativeProtobufComponent(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            mapOf(
+                                "UserCreated" to
+                                    SchemaInterface.MultiFormatSchemaInline(
+                                        nativeProtobufUserCreatedSchema(),
+                                    ),
+                            ),
+                    ),
+                ),
+        )
+
     private fun nativeAvroUserCreatedSchema(namespace: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
@@ -249,5 +278,21 @@ internal class GenerationInputFixtures {
                         ),
                     )
                 },
+        )
+
+    private fun nativeProtobufUserCreatedSchema(): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.google.protobuf;version=3",
+            schema =
+                """
+                syntax = "proto3";
+
+                package com.example.protobuf;
+
+                message UserCreated {
+                  string user_id = 1;
+                  string email = 2;
+                }
+                """.trimIndent(),
         )
 }

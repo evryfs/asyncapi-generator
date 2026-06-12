@@ -69,6 +69,17 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
+    fun `native protobuf request is created only when schema output is configured`() {
+        assertNull(GeneratorConfigurationRequest.nativeProtobuf())
+        assertNull(GeneratorConfigurationRequest.nativeProtobuf(enabled = false))
+
+        assertEquals(
+            GeneratorConfigurationRequest.NativeProtobuf,
+            GeneratorConfigurationRequest.nativeProtobuf(enabled = true),
+        )
+    }
+
+    @Test
     fun `spring kafka request is created only when client output is configured`() {
         assertNull(GeneratorConfigurationRequest.springKafka())
         assertNull(

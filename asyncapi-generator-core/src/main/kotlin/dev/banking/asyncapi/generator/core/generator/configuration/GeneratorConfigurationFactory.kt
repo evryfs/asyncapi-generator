@@ -42,6 +42,9 @@ object GeneratorConfigurationFactory {
                             ),
                         )
                     }
+                    request.schemas.nativeProtobuf?.let {
+                        add(SchemaGeneration.NativeProtobuf)
+                    }
                 },
             clients =
                 buildList {

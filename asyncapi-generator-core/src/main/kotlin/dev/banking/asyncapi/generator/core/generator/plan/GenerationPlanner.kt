@@ -68,6 +68,8 @@ class GenerationPlanner {
                                     generateSpecificRecords = schema.generateSpecificRecords,
                                 ),
                             )
+                        SchemaGeneration.NativeProtobuf ->
+                            add(GenerationTask.NativeProtobufArtifacts)
                     }
                 }
             },
