@@ -1,10 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
+import dev.banking.asyncapi.generator.core.fixtures.GeneratedJavaCompiler
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -12,6 +15,10 @@ import kotlin.test.assertTrue
 class NativeProtobufGeneratorTest {
     private val generator = NativeProtobufGenerator()
     private val fixtures = GenerationInputFixtures()
+    private val javaCompiler = GeneratedJavaCompiler()
+
+    @TempDir
+    lateinit var tempDir: Path
 
     @Test
     fun `render returns schema artifacts for native Protobuf schemas`() {
@@ -43,6 +50,7 @@ class NativeProtobufGeneratorTest {
         assertTrue(messageArtifact.content.contains("public final class UserCreated"))
         assertTrue(messageArtifact.content.contains("com.google.protobuf.GeneratedMessageV3"))
         assertTrue(builderArtifact.content.contains("public interface UserCreatedOrBuilder"))
+        javaCompiler.compile(result.artifacts, tempDir)
     }
 
     @Test
