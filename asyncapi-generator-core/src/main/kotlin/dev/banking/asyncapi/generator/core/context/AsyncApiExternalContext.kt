@@ -4,30 +4,15 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import java.io.File
 
 class AsyncApiExternalContext(
     val context: AsyncApiContext,
 ) {
     private val loadedFiles = mutableSetOf<String>() // absolute paths
+    private val pathResolver = ExternalReferencePathResolver(context)
 
     fun loadExternal(reference: Reference) {
-        val clean = reference.ref.trim().trimStart('\'', '"', '|', '>')
-        if (clean.isEmpty()) {
-            return
-        }
-        if (clean.startsWith("#")) {
-            return
-        }
-        val docPart = clean.substringBefore('#').trim()
-        if (docPart.isEmpty()) {
-            return
-        }
-        val baseFile =
-            reference.sourceId
-                ?.let(context::findFileById)
-                ?: context.getCurrentFile()
-        val externalFile = File(baseFile.parentFile, docPart).canonicalFile
+        val externalFile = pathResolver.resolveFile(reference.ref, reference.sourceId) ?: return
         val key = externalFile.absolutePath
         if (!loadedFiles.add(key)) {
             return

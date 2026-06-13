@@ -86,6 +86,44 @@ class MultiFormatSchemaParserTest : ParserTestSupport() {
     }
 
     @Test
+    fun `parse external native avro schema asset as schema text`() {
+        val schemaNode = readNode(
+            "parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml",
+            "components",
+            "schemas",
+            "ExternalNativeAvroSchema",
+        )
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
+        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.multiFormatSchema.schemaFormat)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.multiFormatSchema.format)
+        val schemaText = schema.multiFormatSchema.schema as String
+        assertTrue(schemaText.contains("\"type\": \"record\""))
+        assertTrue(schemaText.contains("\"name\": \"UserCreated\""))
+    }
+
+    @Test
+    fun `parse external native protobuf schema asset as schema text`() {
+        val schemaNode = readNode(
+            "parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml",
+            "components",
+            "schemas",
+            "ExternalNativeProtobufSchema",
+        )
+
+        val schema = parser.parseElement(schemaNode)
+
+        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
+        assertEquals("application/vnd.google.protobuf;version=3", schema.multiFormatSchema.schemaFormat)
+        assertEquals(SchemaFormat.PROTOBUF_3, schema.multiFormatSchema.format)
+        val schemaText = schema.multiFormatSchema.schema as String
+        assertTrue(schemaText.contains("option java_multiple_files = true;"))
+        assertTrue(schemaText.contains("message UserCreated"))
+    }
+
+    @Test
     fun `parse unknown schema format throws UnexpectedSchemaFormat`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
