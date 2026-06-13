@@ -101,9 +101,13 @@ object MavenTestHelper {
             this.generateSpecificRecords = generateSpecificRecords
         }
 
-    fun nativeProtobuf(enabled: Boolean? = null): MavenNativeProtobufConfiguration =
+    fun nativeProtobuf(
+        enabled: Boolean? = null,
+        generateJavaMessageTypes: Boolean? = null,
+    ): MavenNativeProtobufConfiguration =
         MavenNativeProtobufConfiguration().apply {
             this.enabled = enabled
+            this.generateJavaMessageTypes = generateJavaMessageTypes
         }
 
     fun clients(

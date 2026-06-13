@@ -108,6 +108,7 @@ abstract class AsyncApiNativeAvroExtension @Inject constructor(objects: ObjectFa
  */
 abstract class AsyncApiNativeProtobufExtension @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+    val generateJavaMessageTypes: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
 }
 
 /**

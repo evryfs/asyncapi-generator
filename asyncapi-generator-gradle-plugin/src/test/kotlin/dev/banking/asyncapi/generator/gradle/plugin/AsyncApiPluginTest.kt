@@ -460,8 +460,11 @@ class AsyncApiPluginTest {
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
         val schemaFile = File(projectDir, "build/generated-resources/asyncapi/com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = File(projectDir, "build/generated/asyncapi/src/main/java/com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
     }
 
     @Test

@@ -72,6 +72,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val nativeProtobufGenerateJavaMessageTypes: Property<Boolean>
+
+    @get:Input
+    @get:Optional
     abstract val springKafkaEnabled: Property<Boolean>
 
     @get:Input
@@ -167,6 +171,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             nativeAvroEnabled = nativeAvroEnabled.orNull,
                             nativeAvroGenerateSpecificRecords = nativeAvroGenerateSpecificRecords.orNull,
                             nativeProtobufEnabled = nativeProtobufEnabled.orNull,
+                            nativeProtobufGenerateJavaMessageTypes = nativeProtobufGenerateJavaMessageTypes.orNull,
                         ),
                     clients =
                         clientRequest(
@@ -206,6 +211,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         nativeAvroEnabled: Boolean?,
         nativeAvroGenerateSpecificRecords: Boolean?,
         nativeProtobufEnabled: Boolean?,
+        nativeProtobufGenerateJavaMessageTypes: Boolean?,
     ): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
@@ -221,6 +227,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             nativeProtobuf =
                 GeneratorConfigurationRequest.nativeProtobuf(
                     enabled = nativeProtobufEnabled,
+                    generateJavaMessageTypes = nativeProtobufGenerateJavaMessageTypes,
                 ),
         )
 

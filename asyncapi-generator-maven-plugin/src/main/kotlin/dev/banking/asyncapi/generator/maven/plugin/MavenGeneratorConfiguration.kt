@@ -84,10 +84,12 @@ class MavenNativeAvroConfiguration {
  */
 class MavenNativeProtobufConfiguration {
     var enabled: Boolean? = null
+    var generateJavaMessageTypes: Boolean? = null
 
     fun toRequest(): GeneratorConfigurationRequest.NativeProtobuf? =
         GeneratorConfigurationRequest.nativeProtobuf(
             enabled = enabled,
+            generateJavaMessageTypes = generateJavaMessageTypes,
         )
 }
 

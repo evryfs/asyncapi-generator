@@ -38,6 +38,7 @@ class AsyncApiPlugin : Plugin<Project> {
             nativeAvroEnabled.set(extension.schemas.nativeAvro.enabled)
             nativeAvroGenerateSpecificRecords.set(extension.schemas.nativeAvro.generateSpecificRecords)
             nativeProtobufEnabled.set(extension.schemas.nativeProtobuf.enabled)
+            nativeProtobufGenerateJavaMessageTypes.set(extension.schemas.nativeProtobuf.generateJavaMessageTypes)
 
             springKafkaEnabled.set(extension.clients.springKafka.enabled)
             springKafkaPackageName.set(extension.clients.springKafka.packageName)

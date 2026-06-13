@@ -172,14 +172,18 @@ class AsyncApiGeneratorMojoTest {
             project(MavenProject())
             inputFile(inputPath("asyncapi_native_protobuf.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf"))
+            javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf-java"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-protobuf"))
             schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
             generatorName("kotlin")
         }.execute()
 
         val schemaFile = File("target/generated-resources/asyncapi-native-protobuf/com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = File("target/generated-sources/asyncapi-native-protobuf-java/com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
     }
 
     @Test
