@@ -11,7 +11,7 @@ The project is currently in BETA.
 - Spring Kafka - Client source artifacts for JSON-compatible payload models, native Avro message payloads, and native Protobuf message payloads in both Kotlin and Java
 - Avro Projection - `.avsc` schema generation from AsyncAPI Schema Object payloads
 - Native Avro - `.avsc` schema artifacts and Apache Avro Java `SpecificRecord` sources from native Avro `schemaFormat` payloads
-- Native Protobuf - `.proto` schema artifacts from native Protobuf `schemaFormat` payloads
+- Native Protobuf - `.proto` schema artifacts and Java Protobuf message sources from native Protobuf `schemaFormat` payloads
 
 The current documentation provided is still a draft, found in `docs/` folder at the repository root.
 
@@ -241,7 +241,7 @@ Use `generateSpecificRecords = false` or `--schemas-native-avro-generate-specifi
 
 ### Native Protobuf Generation
 
-Native Protobuf generation is configured under `schemas.nativeProtobuf`. It consumes AsyncAPI schemas that use a native Protobuf `schemaFormat` and writes `.proto` files to the resource output directory.
+Native Protobuf generation is configured under `schemas.nativeProtobuf`. It consumes AsyncAPI schemas that use a native Protobuf `schemaFormat`, writes `.proto` files to the resource output directory, and generates Java Protobuf message sources by default.
 
 Maven:
 
@@ -252,6 +252,7 @@ Maven:
     <schemas>
         <nativeProtobuf>
             <enabled>true</enabled>
+            <generateJavaMessageTypes>true</generateJavaMessageTypes>
         </nativeProtobuf>
     </schemas>
 </configuration>
@@ -265,6 +266,7 @@ asyncapiGenerate {
     schemas {
         nativeProtobuf {
             enabled.set(true)
+            generateJavaMessageTypes.set(true)
         }
     }
 }
@@ -278,6 +280,7 @@ asyncapiGenerate {
     schemas {
         nativeProtobuf {
             enabled = true
+            generateJavaMessageTypes = true
         }
     }
 }
@@ -288,10 +291,13 @@ CLI:
 ```sh
 asyncapi-generator \
   --input src/main/resources/asyncapi.yaml \
-  --schemas-native-protobuf
+  --schemas-native-protobuf \
+  --schemas-native-protobuf-generate-java-message-types true
 ```
 
-Generated Spring Kafka APIs can reference Protobuf message types when the `.proto` schema declares a Java package or Protobuf package, enables `option java_multiple_files = true;`, and contains a top-level message that matches the payload name. The generator does not configure Protobuf serializers or deserializers yet. Applications still own Protobuf compiler/runtime integration.
+Use `generateJavaMessageTypes = false` or `--schemas-native-protobuf-generate-java-message-types false` when only `.proto` artifacts should be generated.
+
+Generated Java Protobuf message sources are produced by running `protoc` during generation. The `.proto` schema must declare a Java package or Protobuf package, enable `option java_multiple_files = true;`, and contain a top-level message that matches the payload name. Generated Java Protobuf sources require `protobuf-java` on the consuming project's compile classpath. The generator does not configure Protobuf serializers or deserializers yet; applications still own Kafka runtime wiring.
 
 ### Spring Kafka Clients
 
@@ -381,6 +387,7 @@ components:
 
         package com.example.protobuf;
 
+        option java_package = "com.example.protobuf";
         option java_multiple_files = true;
 
         message UserCreated {
@@ -389,7 +396,9 @@ components:
         }
 ```
 
-Native Protobuf generation writes `.proto` artifacts to the configured resource output directory. When the `.proto` content declares a `package`, that package is used as the output path. For example, `package com.example.protobuf;` is written under `com/example/protobuf`.
+Native Protobuf generation writes `.proto` artifacts to the configured resource output directory. When Java message generation is enabled, it also writes generated Java Protobuf message sources to the Java source output directory. Maven writes those Java sources to `javaSourceOutputDirectory`, which defaults to a sibling `asyncapi-java` generated-source directory. CLI and Gradle write those Java sources under the Java source root inside the configured codegen output directory.
+
+When the `.proto` content declares a `package`, that package is used as the `.proto` output path. For example, `package com.example.protobuf;` is written under `com/example/protobuf`. When `option java_package` is declared, generated Java message sources use that Java package. When `option java_package` is omitted, generated Java message sources use the Protobuf `package`.
 
 Native Protobuf schemas can also be kept in external local `.proto` files and referenced from the AsyncAPI document:
 
@@ -421,7 +430,7 @@ The core parsing logic is stable and handles the structural validation of AsyncA
 - [x] **AsyncAPI Schema Object:** Fully supported for model, Spring Kafka, and Avro Projection outputs.
 - [x] **Known Multi-Format Schemas:** Known `schemaFormat` values are recognized and preserved separately from AsyncAPI Schema Object payloads.
 - [x] **Native Avro Generation:** Native Avro `.avsc` artifacts and Java `SpecificRecord` sources can be generated from Avro `schemaFormat` payloads.
-- [x] **Native Protobuf Generation:** Native Protobuf `.proto` artifacts can be generated from Protobuf `schemaFormat` payloads.
+- [x] **Native Protobuf Generation:** Native Protobuf `.proto` artifacts and Java Protobuf message sources can be generated from Protobuf `schemaFormat` payloads.
 - [ ] **Other Multi-Format Outputs:** JSON Schema, OpenAPI, RAML, and other schema families are not yet consumed by generator outputs.
 
 ### Validator

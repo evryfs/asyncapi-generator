@@ -24,11 +24,13 @@ The generator intentionally separates AsyncAPI Schema Object payloads from nativ
 
 `GenerationInput.schemas` contains component schemas that can be consumed as JSON-compatible AsyncAPI Schema Object payloads. These are the schemas used by Kotlin model generation, Java model generation, Spring Kafka client generation, and Avro Projection.
 
-`GenerationInput.multiFormatSchemas` contains component schemas declared with a known `schemaFormat`, such as native Avro or Protobuf. These schemas are preserved so dedicated future generator capabilities can consume them without losing their original format.
+`GenerationInput.multiFormatSchemas` contains component schemas declared with a known `schemaFormat`, such as native Avro or Protobuf. These schemas are preserved so dedicated generator capabilities can consume them without losing their original format.
 
 Channel analysis follows the same boundary. `AnalyzedChannel.messages` contains messages with AsyncAPI Schema Object payloads. `AnalyzedChannel.multiFormatMessages` contains messages with explicit multi-format payloads.
 
-Existing model, Spring Kafka, and Avro Projection outputs reject multi-format payloads through `GenerationInputCompatibilityValidator`. This is deliberate. These outputs currently support AsyncAPI Schema Object payloads only, and native Avro or Protobuf support should be modeled as dedicated generator capabilities instead of silently projecting one transfer format into another.
+Model generation and Avro Projection reject multi-format payloads through `GenerationInputCompatibilityValidator`. This is deliberate. Those outputs consume AsyncAPI Schema Object payloads only, and native Avro or Protobuf support is modeled as dedicated generator capabilities instead of silently projecting one transfer format into another.
+
+Spring Kafka client generation can reference native Avro `SpecificRecord` payload types and native Protobuf Java message payload types when those schemas provide enough native package and type information. The native schema artifact generators are still responsible for producing the `.avsc`, `.proto`, `SpecificRecord`, or Java Protobuf message source artifacts.
 
 ---
 
@@ -52,7 +54,7 @@ Both generators share a similar structure:
 
 The current Avro generator is an **Avro Projection** generator. It produces `.avsc` files from JSON-compatible AsyncAPI Schema Object definitions.
 
-It does not consume native Avro schemas declared through `schemaFormat`, and it does not generate Avro `SpecificRecord` classes. Native Avro support should be implemented as a separate generator capability so users can choose between:
+It does not consume native Avro schemas declared through `schemaFormat`, and it does not generate Avro `SpecificRecord` classes. Native Avro support is implemented as a separate generator capability so users can choose between:
 
 *   AsyncAPI Schema Object -> Java/Kotlin payload models.
 *   AsyncAPI Schema Object -> projected `.avsc` files.
@@ -81,7 +83,14 @@ While Avro Enums are supported, users are advised to use the `default` property 
   "default": "UNKNOWN" 
 }
 ```
-This pattern is fully supported by the generator.
+
+---
+
+## Protobuf Generator Strategy
+
+Native Protobuf generation consumes schemas declared through Protobuf `schemaFormat`. It writes native `.proto` schema artifacts and can generate Java Protobuf message sources by running `protoc` during generation.
+
+Spring Kafka client generation can reference those generated Java message types when the `.proto` schema declares a Java package or Protobuf package, enables `option java_multiple_files = true;`, and contains a top-level message matching the AsyncAPI payload name.
 
 ## Future Enhancements
 
