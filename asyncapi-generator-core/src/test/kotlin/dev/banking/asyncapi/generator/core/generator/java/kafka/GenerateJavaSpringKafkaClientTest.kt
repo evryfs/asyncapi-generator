@@ -159,4 +159,29 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
         assertTrue(producerContent.contains("import com.example.avro.UserCreated;"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
     }
+
+    @Test
+    fun `should generate full spring kafka client with native protobuf payload type for Java`() {
+        val yaml = File("src/test/resources/generator/asyncapi_native_protobuf_spring_kafka_client.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = false,
+            generateSpringKafkaClient = true,
+        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
+        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreated.java").readText()
+        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreated.java").readText()
+
+        assertTrue(listenerContent.contains("import com.example.protobuf.UserCreated;"))
+        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreated>"))
+        assertTrue(producerContent.contains("import com.example.protobuf.UserCreated;"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
+    }
 }

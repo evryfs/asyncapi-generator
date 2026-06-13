@@ -63,7 +63,7 @@ class GenerationInputCompatibilityValidator {
             generationInput.channels
                 .asSequence()
                 .flatMap { channel -> channel.multiFormatMessages.asSequence() }
-                .filterNot { message -> message.schema.format.isNativeAvro }
+                .filterNot { message -> message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf }
                 .firstOrNull() ?: return
 
         throw UnsupportedPayloadSchemaFormat(

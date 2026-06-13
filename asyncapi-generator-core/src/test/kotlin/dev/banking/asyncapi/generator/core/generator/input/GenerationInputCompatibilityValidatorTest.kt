@@ -105,15 +105,34 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `rejects non avro multi format messages for spring kafka client generation`() {
+    fun `allows native protobuf multi format messages for spring kafka client generation`() {
+        validator.validate(
+            generationInput = generationInputWithMultiFormatMessage(nativeProtobufSchema()),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.SpringKafkaClient(
+                            language = GeneratorName.KOTLIN,
+                            clientType = SpringKafkaClientType.SIMPLE,
+                            clientPackage = "com.example.kafka",
+                            modelPackage = "com.example.model",
+                            topicPropertyPrefix = "kafka.topics",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects unsupported multi format messages for spring kafka client generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
                 validator.validate(
                     generationInput =
                         generationInputWithMultiFormatMessage(
                             MultiFormatSchema(
-                                schemaFormat = "application/vnd.google.protobuf;version=3",
-                                schema = "message UserCreated {}",
+                                schemaFormat = "application/schema+json;version=draft-07",
+                                schema = mapOf("type" to "object"),
                             ),
                         ),
                     generationPlan =
@@ -171,5 +190,22 @@ class GenerationInputCompatibilityValidatorTest {
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema = mapOf("type" to "record", "name" to "UserCreated", "fields" to emptyList<Any>()),
+        )
+
+    private fun nativeProtobufSchema(): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.google.protobuf;version=3",
+            schema =
+                """
+                syntax = "proto3";
+
+                package com.example.protobuf;
+
+                option java_multiple_files = true;
+
+                message UserCreated {
+                  string user_id = 1;
+                }
+                """.trimIndent(),
         )
 }

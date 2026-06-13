@@ -2,10 +2,9 @@ package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
-import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroPayloadTypeResolver
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
@@ -16,7 +15,7 @@ class JavaKafkaGeneratorModelFactory(
     private val packageName: String,
     private val modelPackage: String,
     private val topicPropertyPrefix: String,
-    private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),
+    private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         val items = mutableListOf<GeneratorItem>()
@@ -103,7 +102,7 @@ class JavaKafkaGeneratorModelFactory(
     private fun topicPropertyKey(channelName: String): String = "$topicPropertyPrefix.$channelName"
 
     private fun AnalyzedChannel.payloads(): List<KafkaPayload> =
-        messages.map(::payload) + multiFormatMessages.mapNotNull(::nativeAvroPayload)
+        messages.map(::payload) + multiFormatMessages.mapNotNull(nativeKafkaPayloadResolver::resolve)
 
     private fun payload(msg: AnalyzedMessage): KafkaPayload {
         val type = resolvePayloadType(msg)
@@ -118,15 +117,6 @@ class JavaKafkaGeneratorModelFactory(
                 },
         )
     }
-
-    private fun nativeAvroPayload(msg: AnalyzedMultiFormatMessage): KafkaPayload? =
-        nativeAvroPayloadTypeResolver.resolve(msg)?.let { payloadType ->
-            KafkaPayload(
-                messageName = msg.messageName,
-                payloadType = payloadType.typeName,
-                importName = payloadType.importName,
-            )
-        }
 
     private fun resolvePayloadType(msg: AnalyzedMessage): String =
         if (isOpenPayloadSchema(msg.schema)) {
