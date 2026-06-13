@@ -178,4 +178,29 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
     }
+
+    @Test
+    fun `should generate full spring kafka client with external native protobuf payload type`() {
+        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = false,
+            generateSpringKafkaClient = true,
+        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
+        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreatedProtobuf.kt").readText()
+        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreatedProtobuf.kt").readText()
+
+        assertTrue(listenerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
+        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreatedProtobuf>"))
+        assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserCreatedProtobuf>"))
+    }
 }
