@@ -8,7 +8,7 @@ The project is currently in BETA.
 
 - Kotlin - Data classes with Jakarta Validation annotations from AsyncAPI Schema Object payloads
 - Java - POJOs or records with Jakarta Validation annotations from AsyncAPI Schema Object payloads
-- Spring Kafka - Client source artifacts for JSON-compatible payload models and native Avro message payloads in both Kotlin and Java
+- Spring Kafka - Client source artifacts for JSON-compatible payload models, native Avro message payloads, and native Protobuf message payloads in both Kotlin and Java
 - Avro Projection - `.avsc` schema generation from AsyncAPI Schema Object payloads
 - Native Avro - `.avsc` schema artifacts and Apache Avro Java `SpecificRecord` sources from native Avro `schemaFormat` payloads
 - Native Protobuf - `.proto` schema artifacts from native Protobuf `schemaFormat` payloads
@@ -291,7 +291,7 @@ asyncapi-generator \
   --schemas-native-protobuf
 ```
 
-Runtime mappers and Spring Kafka Protobuf serialization are not generated yet. Applications still own Protobuf compiler/runtime integration.
+Generated Spring Kafka APIs can reference Protobuf message types when the `.proto` schema declares a Java package or Protobuf package, enables `option java_multiple_files = true;`, and contains a top-level message that matches the payload name. The generator does not configure Protobuf serializers or deserializers yet. Applications still own Protobuf compiler/runtime integration.
 
 ### Spring Kafka Clients
 
@@ -299,7 +299,11 @@ Spring Kafka output is configured under `clients.springKafka`.
 
 Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.springKafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
 
-For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer, consumer, listener, and handler APIs. The generator does not configure Kafka Avro serializers or deserializers yet; applications still own that runtime wiring.
+For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer, consumer, listener, and handler APIs.
+
+For native Protobuf message payloads, generated Spring Kafka clients use the Java type declared by `option java_package`, or by the Protobuf `package` when `java_package` is omitted. Protobuf client generation requires `option java_multiple_files = true;` so the generated message can be referenced as a top-level Java type. The `.proto` schema must contain a top-level message matching the payload name.
+
+The generator does not configure Kafka Avro or Protobuf serializers and deserializers yet; applications still own that runtime wiring.
 
 The current generator has two modes:
 
@@ -366,6 +370,8 @@ components:
 
         package com.example.protobuf;
 
+        option java_multiple_files = true;
+
         message UserCreated {
           string user_id = 1;
           string email = 2;
@@ -374,7 +380,7 @@ components:
 
 Native Protobuf generation writes `.proto` artifacts to the configured resource output directory. When the `.proto` content declares a `package`, that package is used as the output path. For example, `package com.example.protobuf;` is written under `com/example/protobuf`.
 
-Spring Kafka client generation supports native Avro message payloads by referencing the generated Avro Java type from the Avro schema namespace. If native Avro artifacts are not generated in the same execution, the referenced Avro classes must already be available to the consuming project.
+Spring Kafka client generation supports native Avro and native Protobuf message payloads by referencing their generated Java types. If native Avro or Protobuf artifacts are not generated in the same execution, the referenced classes must already be available to the consuming project.
 
 ## Features supported 
 
