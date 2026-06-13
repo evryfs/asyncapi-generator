@@ -55,6 +55,16 @@
             <artifactId>avro-compiler</artifactId>
         </dependency>
 
+        <!-- protobuf -->
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.os72</groupId>
+            <artifactId>protoc-jar</artifactId>
+        </dependency>
+
         <!-- test -->
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>

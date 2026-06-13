@@ -26,6 +26,26 @@ class NativeProtobufGeneratorTest {
     }
 
     @Test
+    fun `render returns Java message artifacts for native Protobuf schemas when enabled`() {
+        val result =
+            generator.render(
+                fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
+                generateJavaMessageTypes = true,
+            )
+
+        val schemaArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.proto" }
+        val messageArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }
+        val builderArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreatedOrBuilder.java" }
+
+        assertEquals(GeneratedArtifactKind.SCHEMA, schemaArtifact.kind)
+        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, messageArtifact.kind)
+        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, builderArtifact.kind)
+        assertTrue(messageArtifact.content.contains("public final class UserCreated"))
+        assertTrue(messageArtifact.content.contains("com.google.protobuf.GeneratedMessageV3"))
+        assertTrue(builderArtifact.content.contains("public interface UserCreatedOrBuilder"))
+    }
+
+    @Test
     fun `render ignores non Protobuf multi format schemas`() {
         val result =
             generator.render(
@@ -81,5 +101,18 @@ class NativeProtobufGeneratorTest {
             }
 
         assertTrue(error.message!!.contains("Native Protobuf schema content cannot be blank"))
+    }
+
+    @Test
+    fun `render rejects Java message generation when java multiple files is not enabled`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.InvalidNativeProtobufSchema> {
+                generator.render(
+                    fixtures.generationInputWithNativeProtobufSchema().multiFormatSchemas,
+                    generateJavaMessageTypes = true,
+                )
+            }
+
+        assertTrue(error.message!!.contains("Java Protobuf message generation requires `option java_multiple_files = true;`"))
     }
 }

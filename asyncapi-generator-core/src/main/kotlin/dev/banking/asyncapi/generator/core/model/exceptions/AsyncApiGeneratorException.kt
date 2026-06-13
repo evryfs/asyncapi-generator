@@ -112,6 +112,20 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class NativeProtobufJavaGenerationFailed(
+        payloadName: String,
+        schemaFormat: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Java Protobuf message generation failed for native Protobuf payload '$payloadName'.")
+                appendLine("The payload uses schemaFormat '$schemaFormat'.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedNativeProtobufPayloadType(
         payloadName: String,
         schemaFormat: String,
