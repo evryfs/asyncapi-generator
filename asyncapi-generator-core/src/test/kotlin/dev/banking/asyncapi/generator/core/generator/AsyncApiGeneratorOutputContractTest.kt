@@ -130,13 +130,36 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
                 ),
         )
 
         assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
         assertFalse(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+    }
+
+    @Test
+    fun `generate writes native Protobuf Java message artifacts to Java source output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufJavaMessageComponent(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
+                ),
+        )
+
+        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreatedOrBuilder.java").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
     }
 
     @Test
@@ -152,7 +175,7 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
                 ),
         )
 

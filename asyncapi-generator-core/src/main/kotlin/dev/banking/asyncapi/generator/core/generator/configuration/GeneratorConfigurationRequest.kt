@@ -43,7 +43,9 @@ data class GeneratorConfigurationRequest(
         val generateSpecificRecords: Boolean = true,
     )
 
-    data object NativeProtobuf
+    data class NativeProtobuf(
+        val generateJavaMessageTypes: Boolean = true,
+    )
 
     data class Clients(
         val springKafka: SpringKafka? = null,
@@ -108,10 +110,14 @@ data class GeneratorConfigurationRequest(
                 else -> null
             }
 
-        fun nativeProtobuf(enabled: Boolean? = null): NativeProtobuf? =
+        fun nativeProtobuf(
+            enabled: Boolean? = null,
+            generateJavaMessageTypes: Boolean? = null,
+        ): NativeProtobuf? =
             when {
                 enabled == false -> null
-                enabled == true -> NativeProtobuf
+                enabled == true || generateJavaMessageTypes != null ->
+                    NativeProtobuf(generateJavaMessageTypes = generateJavaMessageTypes ?: true)
                 else -> null
             }
 

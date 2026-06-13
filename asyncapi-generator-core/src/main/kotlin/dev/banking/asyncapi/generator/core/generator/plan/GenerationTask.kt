@@ -42,5 +42,7 @@ sealed interface GenerationTask {
         val generateSpecificRecords: Boolean = true,
     ) : GenerationTask
 
-    data object NativeProtobufArtifacts : GenerationTask
+    data class NativeProtobufArtifacts(
+        val generateJavaMessageTypes: Boolean = true,
+    ) : GenerationTask
 }

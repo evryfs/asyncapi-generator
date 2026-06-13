@@ -81,8 +81,9 @@ class AsyncApiGenerator {
                         generationInput = generationInput,
                         artifactWriter = artifactWriter,
                     )
-                GenerationTask.NativeProtobufArtifacts ->
+                is GenerationTask.NativeProtobufArtifacts ->
                     nativeProtobufArtifactGeneration.generate(
+                        task = task,
                         generationInput = generationInput,
                         artifactWriter = artifactWriter,
                     )

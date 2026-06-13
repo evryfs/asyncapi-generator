@@ -74,8 +74,12 @@ class GeneratorConfigurationRequestTest {
         assertNull(GeneratorConfigurationRequest.nativeProtobuf(enabled = false))
 
         assertEquals(
-            GeneratorConfigurationRequest.NativeProtobuf,
+            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = true),
             GeneratorConfigurationRequest.nativeProtobuf(enabled = true),
+        )
+        assertEquals(
+            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = false),
+            GeneratorConfigurationRequest.nativeProtobuf(generateJavaMessageTypes = false),
         )
     }
 

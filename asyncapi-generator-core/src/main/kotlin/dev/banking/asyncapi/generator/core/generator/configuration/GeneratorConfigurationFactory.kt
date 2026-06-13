@@ -42,8 +42,12 @@ object GeneratorConfigurationFactory {
                             ),
                         )
                     }
-                    request.schemas.nativeProtobuf?.let {
-                        add(SchemaGeneration.NativeProtobuf)
+                    request.schemas.nativeProtobuf?.let { nativeProtobuf ->
+                        add(
+                            SchemaGeneration.NativeProtobuf(
+                                generateJavaMessageTypes = nativeProtobuf.generateJavaMessageTypes,
+                            ),
+                        )
                     }
                 },
             clients =

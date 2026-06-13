@@ -264,6 +264,24 @@ internal class GenerationInputFixtures {
                 ),
         )
 
+    fun documentWithNativeProtobufJavaMessageComponent(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            mapOf(
+                                "UserCreated" to
+                                    SchemaInterface.MultiFormatSchemaInline(
+                                        nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+                                    ),
+                            ),
+                    ),
+                ),
+        )
+
     private fun nativeAvroUserCreatedSchema(namespace: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",

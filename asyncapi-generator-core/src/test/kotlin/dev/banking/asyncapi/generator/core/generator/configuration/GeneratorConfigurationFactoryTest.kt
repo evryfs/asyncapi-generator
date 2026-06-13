@@ -185,13 +185,16 @@ class GeneratorConfigurationFactoryTest {
                 request(
                     schemas =
                         GeneratorConfigurationRequest.Schemas(
-                            nativeProtobuf = GeneratorConfigurationRequest.NativeProtobuf,
+                            nativeProtobuf =
+                                GeneratorConfigurationRequest.NativeProtobuf(
+                                    generateJavaMessageTypes = false,
+                                ),
                         ),
                 ),
             )
 
         assertEquals(
-            listOf(SchemaGeneration.NativeProtobuf),
+            listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
             configuration.schemas,
         )
     }

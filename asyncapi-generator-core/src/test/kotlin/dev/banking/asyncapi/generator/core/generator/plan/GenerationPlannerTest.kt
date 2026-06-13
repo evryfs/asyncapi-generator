@@ -67,12 +67,12 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
                 ),
             )
 
         assertEquals(
-            listOf(GenerationTask.NativeProtobufArtifacts),
+            listOf(GenerationTask.NativeProtobufArtifacts(generateJavaMessageTypes = true)),
             plan.tasks,
         )
     }

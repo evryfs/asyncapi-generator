@@ -68,8 +68,12 @@ class GenerationPlanner {
                                     generateSpecificRecords = schema.generateSpecificRecords,
                                 ),
                             )
-                        SchemaGeneration.NativeProtobuf ->
-                            add(GenerationTask.NativeProtobufArtifacts)
+                        is SchemaGeneration.NativeProtobuf ->
+                            add(
+                                GenerationTask.NativeProtobufArtifacts(
+                                    generateJavaMessageTypes = schema.generateJavaMessageTypes,
+                                ),
+                            )
                     }
                 }
             },
