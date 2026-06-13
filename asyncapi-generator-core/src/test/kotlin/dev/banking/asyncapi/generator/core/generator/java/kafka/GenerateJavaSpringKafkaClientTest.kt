@@ -161,6 +161,31 @@ class GenerateJavaSpringKafkaClientTest : AbstractJavaGeneratorClass() {
     }
 
     @Test
+    fun `should generate full spring kafka client with external native avro payload type for Java`() {
+        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+
+        generateElement(
+            yaml = yaml,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = false,
+            generateSpringKafkaClient = true,
+        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
+        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreatedAvro.java").readText()
+        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreatedAvro.java").readText()
+
+        assertTrue(listenerContent.contains("import com.example.external.avro.UserCreatedAvro;"))
+        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreatedAvro>"))
+        assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro;"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserCreatedAvro>"))
+    }
+
+    @Test
     fun `should generate full spring kafka client with native protobuf payload type for Java`() {
         val yaml = File("src/test/resources/generator/asyncapi_native_protobuf_spring_kafka_client.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
