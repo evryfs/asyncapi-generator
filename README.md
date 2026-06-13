@@ -358,6 +358,17 @@ The reader and parser recognize known `schemaFormat` values and preserve those s
 
 Native Avro generation writes `.avsc` artifacts to the configured resource output directory. When `generateSpecificRecords` is enabled, it also generates Apache Avro Java `SpecificRecord` sources. Maven writes those Java sources to `javaSourceOutputDirectory`, which defaults to a sibling `asyncapi-java` generated-source directory. CLI and Gradle write those Java sources under the Java source root inside the configured codegen output directory.
 
+Native Avro schemas can also be kept in external local `.avsc` files and referenced from the AsyncAPI document. The reference is resolved relative to the AsyncAPI file that owns the schema reference:
+
+```yaml
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        $ref: schemas/UserCreated.avsc
+```
+
 Native Protobuf generation consumes `.proto` text directly:
 
 ```yaml
@@ -380,6 +391,17 @@ components:
 
 Native Protobuf generation writes `.proto` artifacts to the configured resource output directory. When the `.proto` content declares a `package`, that package is used as the output path. For example, `package com.example.protobuf;` is written under `com/example/protobuf`.
 
+Native Protobuf schemas can also be kept in external local `.proto` files and referenced from the AsyncAPI document:
+
+```yaml
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema:
+        $ref: schemas/user-created.proto
+```
+
 Spring Kafka client generation supports native Avro and native Protobuf message payloads by referencing their generated Java types. If native Avro or Protobuf artifacts are not generated in the same execution, the referenced classes must already be available to the consuming project.
 
 ## Features supported 
@@ -391,7 +413,7 @@ The core parsing logic is stable and handles the structural validation of AsyncA
 - [x] **AsyncAPI YAML Support:** Reads and parses YAML format.
 - [x] **AsyncAPI JSON Support:** Reads and parses JSON format.
 - [x] **Context-Aware Error Handling:** Provides precise error messages with line numbers and JSON paths.
-- [x] **Reference Resolution:** Supports internal and external file references.
+- [x] **Reference Resolution:** Supports internal and external file references, including local native schema asset references.
 - [x] **Components:** Full parsing support for Schemas, Messages, Channels, Parameters, etc.
 
 ### Schema Formats

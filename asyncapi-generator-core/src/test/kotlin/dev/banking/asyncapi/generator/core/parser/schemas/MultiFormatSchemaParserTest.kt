@@ -124,6 +124,24 @@ class MultiFormatSchemaParserTest : ParserTestSupport() {
     }
 
     @Test
+    fun `parse external native schema asset reference fails when file cannot be read`() {
+        val schemaNode = readNode(
+            "parser/schemas/native-assets/asyncapi_missing_native_schema_asset.yaml",
+            "components",
+            "schemas",
+            "MissingNativeAvroSchema",
+        )
+
+        assertParseFailure<AsyncApiParseException.NativeSchemaAssetReadFailure>(
+            "Native schema asset 'missing-user-created.avsc' could not be read.",
+            "asyncapi_missing_native_schema_asset.yaml",
+            "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
     fun `parse unknown schema format throws UnexpectedSchemaFormat`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
