@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import java.net.URLClassLoader
 import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.util.Locale
@@ -26,7 +27,7 @@ internal class GeneratedJavaCompiler(
     fun compile(
         artifacts: Iterable<GeneratedArtifact>,
         workspace: Path,
-    ) {
+    ): GeneratedJavaCompilation {
         val javaArtifacts = artifacts.filter { artifact -> artifact.kind == GeneratedArtifactKind.JAVA_SOURCE }
         require(javaArtifacts.isNotEmpty()) {
             "Expected at least one Java source artifact to compile"
@@ -58,6 +59,8 @@ internal class GeneratedJavaCompiler(
                 fail("Generated Java source compilation failed:\n${diagnostics.format()}")
             }
         }
+
+        return GeneratedJavaCompilation(classesDirectory)
     }
 
     private fun writeSourceFile(
@@ -78,4 +81,17 @@ internal class GeneratedJavaCompiler(
             val message = diagnostic.getMessage(Locale.ROOT)
             "$source:$position: $kind: $message"
         }
+}
+
+/**
+ * Result of compiling generated Java source artifacts in tests.
+ */
+internal data class GeneratedJavaCompilation(
+    val classesDirectory: Path,
+) {
+    fun classLoader(): URLClassLoader =
+        URLClassLoader(
+            arrayOf(classesDirectory.toUri().toURL()),
+            Thread.currentThread().contextClassLoader,
+        )
 }

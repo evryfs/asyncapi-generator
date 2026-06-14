@@ -54,6 +54,29 @@ class NativeProtobufGeneratorTest {
     }
 
     @Test
+    fun `render returns Java message artifacts that support Protobuf serialization`() {
+        val result =
+            generator.render(
+                fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
+                generateJavaMessageTypes = true,
+            )
+        val compilation = javaCompiler.compile(result.artifacts, tempDir)
+
+        compilation.classLoader().use { classLoader ->
+            val messageClass = classLoader.loadClass("com.example.protobuf.UserCreated")
+            val builder = messageClass.getMethod("newBuilder").invoke(null)
+            builder.javaClass.getMethod("setUserId", String::class.java).invoke(builder, "user-123")
+            builder.javaClass.getMethod("setEmail", String::class.java).invoke(builder, "user@example.com")
+            val message = builder.javaClass.getMethod("build").invoke(builder)
+            val bytes = messageClass.getMethod("toByteArray").invoke(message) as ByteArray
+            val parsed = messageClass.getMethod("parseFrom", ByteArray::class.java).invoke(null, bytes)
+
+            assertEquals("user-123", messageClass.getMethod("getUserId").invoke(parsed))
+            assertEquals("user@example.com", messageClass.getMethod("getEmail").invoke(parsed))
+        }
+    }
+
+    @Test
     fun `render ignores non Protobuf multi format schemas`() {
         val result =
             generator.render(
