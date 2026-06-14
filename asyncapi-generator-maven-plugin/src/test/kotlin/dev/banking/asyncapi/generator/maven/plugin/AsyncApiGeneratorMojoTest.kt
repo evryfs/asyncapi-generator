@@ -19,6 +19,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.springKafka
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -184,6 +185,34 @@ class AsyncApiGeneratorMojoTest {
         assertTrue(schemaFile.readText().contains("message UserCreated"))
         assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
         assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema without Java message types when disabled`() {
+        val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only")
+        val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only-java")
+        val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-schema-only")
+        codegenOutputDirectory.deleteRecursively()
+        javaSourceOutputDirectory.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+        codegenOutputDirectory.mkdirs()
+        javaSourceOutputDirectory.mkdirs()
+        resourceOutputDirectory.mkdirs()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
+            codegenOutputDirectory(codegenOutputDirectory)
+            javaSourceOutputDirectory(javaSourceOutputDirectory)
+            resourceOutputDirectory(resourceOutputDirectory)
+            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true, generateJavaMessageTypes = false)))
+            generatorName("kotlin")
+        }.execute()
+
+        val schemaFile = resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
 
     @Test

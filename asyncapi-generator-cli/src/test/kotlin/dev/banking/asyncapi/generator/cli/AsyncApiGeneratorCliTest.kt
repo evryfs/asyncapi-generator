@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.parse
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -156,6 +157,28 @@ class AsyncApiGeneratorCliTest {
         assertTrue(schemaFile.readText().contains("message UserCreated"))
         assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
         assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema without Java message types when disabled`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-native-protobuf",
+                "--schemas-native-protobuf-generate-java-message-types", "false",
+                "-g", "kotlin",
+            )
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
 
     @Test
