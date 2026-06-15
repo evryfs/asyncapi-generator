@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -107,19 +106,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val clientsSpringKafkaModelPackage by option(
         "--clients-spring-kafka-model-package",
         help = "Package containing model types used by generated Spring Kafka clients",
-    )
-
-    private val clientsSpringKafkaMode by option(
-        "--clients-spring-kafka-mode",
-        help = "Spring Kafka generation mode (default: simple)",
-    ).choice(
-        SpringKafkaClientType.FULL.configurationValue to SpringKafkaClientType.FULL,
-        SpringKafkaClientType.SIMPLE.configurationValue to SpringKafkaClientType.SIMPLE,
-    )
-
-    private val clientsSpringKafkaTopicPropertyPrefix by option(
-        "--clients-spring-kafka-topic-property-prefix",
-        help = "Spring Kafka topic property prefix (default: kafka.topics)",
     )
 
     private val clientsQuarkusKafka by option(
@@ -225,8 +211,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     enabled = true.takeIf { clientsSpringKafka },
                     packageName = clientsSpringKafkaPackage,
                     modelPackageName = clientsSpringKafkaModelPackage,
-                    mode = clientsSpringKafkaMode?.configurationValue,
-                    topicPropertyPrefix = clientsSpringKafkaTopicPropertyPrefix,
                 ),
             quarkusKafka =
                 GeneratorConfigurationRequest.quarkusKafka(

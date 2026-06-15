@@ -120,16 +120,12 @@ class MavenSpringKafkaConfiguration {
     var enabled: Boolean? = null
     var packageName: String? = null
     var modelPackageName: String? = null
-    var mode: String? = null
-    var topicPropertyPrefix: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.SpringKafka? =
         GeneratorConfigurationRequest.springKafka(
             enabled = enabled,
             packageName = packageName,
             modelPackageName = modelPackageName,
-            mode = mode,
-            topicPropertyPrefix = topicPropertyPrefix,
         )
 }
 

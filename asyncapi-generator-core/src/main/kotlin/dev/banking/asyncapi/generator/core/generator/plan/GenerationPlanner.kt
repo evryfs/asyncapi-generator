@@ -31,25 +31,17 @@ class GenerationPlanner {
                 configuration.clients.forEach { client ->
                     when (client) {
                         is ClientGeneration.SpringKafka -> {
-                            require(client.topicPropertyPrefix.isNotBlank()) {
-                                "topicPropertyPrefix cannot be empty"
-                            }
-
-                            if (client.clientType != SpringKafkaClientType.SIMPLE) {
-                                add(
-                                    GenerationTask.HeaderModelArtifacts(
-                                        language = configuration.language,
-                                        packageName = "${client.packageName}.header",
-                                    ),
-                                )
-                            }
+                            add(
+                                GenerationTask.HeaderModelArtifacts(
+                                    language = configuration.language,
+                                    packageName = "${client.packageName}.header",
+                                ),
+                            )
                             add(
                                 GenerationTask.SpringKafkaClient(
                                     language = configuration.language,
-                                    clientType = client.clientType,
                                     clientPackage = client.packageName,
                                     modelPackage = client.modelPackageName,
-                                    topicPropertyPrefix = client.topicPropertyPrefix,
                                 ),
                             )
                         }

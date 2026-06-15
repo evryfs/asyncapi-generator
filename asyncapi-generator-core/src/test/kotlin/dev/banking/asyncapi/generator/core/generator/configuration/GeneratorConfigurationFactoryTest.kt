@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -78,7 +77,7 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create enables Spring Kafka client generation when client type is configured`() {
+    fun `create enables Spring Kafka client generation when client package is configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
@@ -88,8 +87,6 @@ class GeneratorConfigurationFactoryTest {
                             springKafka =
                                 GeneratorConfigurationRequest.SpringKafka(
                                     packageName = "com.example.client",
-                                    clientType = SpringKafkaClientType.SIMPLE,
-                                    topicPropertyPrefix = "custom.topics",
                                 ),
                         ),
                 ),
@@ -100,8 +97,6 @@ class GeneratorConfigurationFactoryTest {
                 ClientGeneration.SpringKafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.model",
-                    clientType = SpringKafkaClientType.SIMPLE,
-                    topicPropertyPrefix = "custom.topics",
                 ),
             ),
             configuration.clients,
@@ -129,7 +124,6 @@ class GeneratorConfigurationFactoryTest {
                 ClientGeneration.SpringKafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.external.model",
-                    clientType = SpringKafkaClientType.SIMPLE,
                 ),
             ),
             configuration.clients,
@@ -327,27 +321,6 @@ class GeneratorConfigurationFactoryTest {
             "models.javaModelType=record is only supported when generatorName is java",
             exception.message,
         )
-    }
-
-    @Test
-    fun `create rejects blank Kafka topics property prefix`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                GeneratorConfigurationFactory.create(
-                    request(
-                        clients =
-                            GeneratorConfigurationRequest.Clients(
-                                springKafka =
-                                    GeneratorConfigurationRequest.SpringKafka(
-                                        packageName = "com.example.client",
-                                        topicPropertyPrefix = "",
-                                    ),
-                            ),
-                    ),
-                )
-            }
-
-        assertEquals("clients.springKafka.topicPropertyPrefix cannot be empty", exception.message)
     }
 
     @Test

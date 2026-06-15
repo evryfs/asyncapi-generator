@@ -64,7 +64,6 @@
                     <clients>
                         <springKafka>
                             <enabled>true</enabled>
-                            <mode>full</mode>
                         </springKafka>
                     </clients>
                     <schemas>

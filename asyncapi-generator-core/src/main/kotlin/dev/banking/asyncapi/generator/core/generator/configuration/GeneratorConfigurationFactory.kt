@@ -64,8 +64,6 @@ object GeneratorConfigurationFactory {
                                     configuredModelPackageName = springKafka.modelPackageName,
                                     modelsPackageName = request.models?.packageName,
                                 ),
-                                clientType = springKafka.clientType,
-                                topicPropertyPrefix = springKafka.topicPropertyPrefix,
                             ),
                         )
                     }
@@ -118,10 +116,6 @@ object GeneratorConfigurationFactory {
             throw IllegalArgumentException(
                 "clients.quarkusKafka.packageName is required when clients.quarkusKafka is configured",
             )
-        }
-
-        if (request.clients.springKafka?.topicPropertyPrefix?.isBlank() == true) {
-            throw IllegalArgumentException("clients.springKafka.topicPropertyPrefix cannot be empty")
         }
 
         validatePackageName(

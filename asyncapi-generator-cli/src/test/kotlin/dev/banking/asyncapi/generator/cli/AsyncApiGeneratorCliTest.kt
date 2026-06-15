@@ -28,7 +28,6 @@ class AsyncApiGeneratorCliTest {
                 "--models-package", "com.example.cli.model",
                 "--clients-spring-kafka-package", "com.example.cli.client",
                 "--generator", "kotlin",
-                "--clients-spring-kafka-mode", "full",
             )
         )
         val packageDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
@@ -261,24 +260,6 @@ class AsyncApiGeneratorCliTest {
                 "models.packageName is required when models.annotation is configured",
             ),
         )
-    }
-
-    @Test
-    fun `should fail if spring kafka mode is invalid`(@TempDir tempDir: Path) {
-        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        assertFailsWith<BadParameterValue> {
-            cli.parse(
-                arrayOf(
-                    "-i", inputFile.absolutePath,
-                    "--codegen-output", codegenDir.absolutePath,
-                    "--models-package", "com.example.cli.model",
-                    "-g", "kotlin",
-                    "--clients-spring-kafka-package", "com.example.cli.client",
-                    "--clients-spring-kafka-mode", "basic",
-                )
-            )
-        }
     }
 
     @Test

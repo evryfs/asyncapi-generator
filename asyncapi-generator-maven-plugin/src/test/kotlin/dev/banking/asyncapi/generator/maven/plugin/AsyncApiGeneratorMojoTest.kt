@@ -271,22 +271,6 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should fail when spring kafka mode is invalid`() {
-        val mojo = AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            codegenOutputDirectory(outputPath("target/should-fail-client-mode"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.fail"))
-            clients(clients(springKafka = springKafka(packageName = "com.fail.client", mode = "basic")))
-            generatorName("kotlin")
-        }
-        assertThrows<MojoExecutionException> {
-            mojo.execute()
-        }
-    }
-
-    @Test
     fun `should fail when java model type is invalid`() {
         val mojo = AsyncApiGeneratorMojo().apply {
             project(MavenProject())

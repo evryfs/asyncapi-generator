@@ -35,12 +35,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val handlerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/handler/TopicSimpleTopicHandlerSimpleStringMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/consumer/SimpleTopicConsumer.kt")
         assertTrue(handlerFile.exists())
 
         val content = handlerFile.readText()
@@ -53,7 +51,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName.replace(
                     '.',
                     '/'
-                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.kt"
+                ) + "/producer/SimpleTopicProducerSimpleStringMessage.kt"
             )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
@@ -94,14 +92,12 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerStringMessage.kt")
         val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerIntMessage.kt")
         assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
         assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
         val producerContentA = producerFileA.readText()

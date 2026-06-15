@@ -8,7 +8,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import java.io.File
 
 abstract class AbstractJavaGeneratorClass {
@@ -27,8 +26,6 @@ abstract class AbstractJavaGeneratorClass {
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         generateQuarkusKafkaClient: Boolean = false,
-        kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        springKafkaClientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
         modelAnnotation: String? = null,
         javaModelType: JavaModelType = JavaModelType.CLASS,
     ): String {
@@ -59,8 +56,6 @@ abstract class AbstractJavaGeneratorClass {
                                 ClientGeneration.SpringKafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
-                                    clientType = springKafkaClientType,
-                                    topicPropertyPrefix = kafkaTopicsPropertyPrefix,
                                 ),
                             )
                         }

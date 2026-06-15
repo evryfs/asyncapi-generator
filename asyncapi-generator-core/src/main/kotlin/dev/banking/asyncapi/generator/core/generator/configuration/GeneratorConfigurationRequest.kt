@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import java.io.File
 
 /**
@@ -55,8 +54,6 @@ data class GeneratorConfigurationRequest(
     data class SpringKafka(
         val packageName: String? = null,
         val modelPackageName: String? = null,
-        val clientType: SpringKafkaClientType = SpringKafkaClientType.SIMPLE,
-        val topicPropertyPrefix: String = DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
     )
 
     data class QuarkusKafka(
@@ -65,8 +62,6 @@ data class GeneratorConfigurationRequest(
     )
 
     companion object {
-        const val DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX = "kafka.topics"
-
         fun models(
             enabled: Boolean? = null,
             packageName: String? = null,
@@ -125,25 +120,15 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             modelPackageName: String? = null,
-            mode: String? = null,
-            topicPropertyPrefix: String? = null,
         ): SpringKafka? =
             when {
                 enabled == false -> null
                 enabled == true ||
                     packageName != null ||
-                    modelPackageName != null ||
-                    mode != null ||
-                    topicPropertyPrefix != null ->
+                    modelPackageName != null ->
                     SpringKafka(
                         packageName = packageName,
                         modelPackageName = modelPackageName,
-                        clientType =
-                            SpringKafkaClientType.fromConfigurationValue(
-                                value = mode,
-                                path = "clients.springKafka.mode",
-                            ),
-                        topicPropertyPrefix = topicPropertyPrefix ?: DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
                     )
                 else -> null
             }

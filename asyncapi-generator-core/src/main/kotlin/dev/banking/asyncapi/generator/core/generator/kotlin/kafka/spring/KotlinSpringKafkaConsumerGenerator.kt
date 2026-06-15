@@ -6,13 +6,13 @@ import dev.banking.asyncapi.generator.core.generator.util.FileUtil
 import java.io.File
 import java.io.StringWriter
 
-class KotlinSpringKafkaHandlerGenerator(
+class KotlinSpringKafkaConsumerGenerator(
     private val outputDir: File,
 ) {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")
 
     fun generate(model: GeneratorItem.KafkaHandlerInterface) {
-        val template = mustacheFactory.compile("spring-kafka-handler.mustache")
+        val template = mustacheFactory.compile("spring-kafka-consumer.mustache")
         val writer = StringWriter()
         template.execute(writer, model).flush()
 

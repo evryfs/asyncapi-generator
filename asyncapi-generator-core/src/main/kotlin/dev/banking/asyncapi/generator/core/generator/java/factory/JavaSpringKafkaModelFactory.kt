@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class JavaSpringKafkaSimpleModelFactory(
+class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),

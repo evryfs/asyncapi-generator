@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -94,10 +93,8 @@ class GenerationInputCompatibilityValidatorTest {
                     listOf(
                         GenerationTask.SpringKafkaClient(
                             language = GeneratorName.KOTLIN,
-                            clientType = SpringKafkaClientType.SIMPLE,
                             clientPackage = "com.example.kafka",
                             modelPackage = "com.example.model",
-                            topicPropertyPrefix = "kafka.topics",
                         ),
                     ),
                 ),
@@ -113,10 +110,8 @@ class GenerationInputCompatibilityValidatorTest {
                     listOf(
                         GenerationTask.SpringKafkaClient(
                             language = GeneratorName.KOTLIN,
-                            clientType = SpringKafkaClientType.SIMPLE,
                             clientPackage = "com.example.kafka",
                             modelPackage = "com.example.model",
-                            topicPropertyPrefix = "kafka.topics",
                         ),
                     ),
                 ),
@@ -140,10 +135,8 @@ class GenerationInputCompatibilityValidatorTest {
                             listOf(
                                 GenerationTask.SpringKafkaClient(
                                     language = GeneratorName.KOTLIN,
-                                    clientType = SpringKafkaClientType.SIMPLE,
                                     clientPackage = "com.example.kafka",
                                     modelPackage = "com.example.model",
-                                    topicPropertyPrefix = "kafka.topics",
                                 ),
                             ),
                         ),

@@ -1,53 +1,27 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.java.factory.JavaKafkaGeneratorModelFactory
+import dev.banking.asyncapi.generator.core.generator.java.factory.JavaSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.AutoConfigurationModel
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.AutoConfigurationResourceGenerator
 import java.io.File
 
 class JavaSpringKafkaGenerator(
     outputDir: File,
-    private val clientPackage: String,
+    clientPackage: String,
     modelPackage: String,
-    topicPropertyPrefix: String,
-    resourceOutputDir: File,
 ) {
-    private val modelFactory =
-        JavaKafkaGeneratorModelFactory(
-            this.clientPackage,
-            modelPackage,
-            topicPropertyPrefix,
-        )
-
-    private val handlerGenerator = JavaSpringKafkaHandlerGenerator(outputDir)
-    private val listenerGenerator = JavaSpringKafkaListenerGenerator(outputDir)
+    private val modelFactory = JavaSpringKafkaModelFactory(clientPackage, modelPackage)
     private val producerGenerator = JavaSpringKafkaProducerGenerator(outputDir)
-    private val autoConfigGenerator = JavaSpringKafkaAutoConfigurationGenerator(outputDir)
-    private val autoConfigResourceGenerator = AutoConfigurationResourceGenerator(resourceOutputDir)
+    private val consumerGenerator = JavaSpringKafkaConsumerGenerator(outputDir)
 
     fun generate(channels: List<AnalyzedChannel>) {
-        val autoConfigPackage = "${this.clientPackage}.config"
-        val autoConfigClass = "AsyncApiKafkaAutoConfiguration"
-        autoConfigGenerator.generate(
-            AutoConfigurationModel(
-                packageName = autoConfigPackage,
-                className = autoConfigClass,
-                clientPackage = this.clientPackage,
-            ),
-        )
-        autoConfigResourceGenerator.generate("$autoConfigPackage.$autoConfigClass")
-
         channels.forEach { channel ->
             val items = modelFactory.create(channel)
             items.forEach { item ->
                 when (item) {
-                    is GeneratorItem.KafkaHandlerInterface -> handlerGenerator.generate(item)
-                    is GeneratorItem.KafkaListenerClass -> listenerGenerator.generate(item)
                     is GeneratorItem.KafkaProducerClass -> producerGenerator.generate(item)
-                    else -> { // Ignore
-                    }
+                    is GeneratorItem.KafkaHandlerInterface -> consumerGenerator.generate(item)
+                    else -> { /* Ignore */ }
                 }
             }
         }

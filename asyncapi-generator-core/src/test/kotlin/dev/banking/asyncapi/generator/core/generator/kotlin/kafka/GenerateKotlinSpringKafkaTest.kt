@@ -6,9 +6,8 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
-
     @Test
-    fun `should generate full spring kafka ecosystem`() {
+    fun `should generate spring kafka client`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
@@ -22,88 +21,32 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val modelPath = "dev/banking/test/userservice/v1/model"
         val clientPath = "dev/banking/test/userservice/v1/client"
+        val producerDir = outputDir.resolve("$clientPath/producer")
+        val consumerDir = outputDir.resolve("$clientPath/consumer")
 
-        val modelDir = outputDir.resolve(modelPath)
-        assertTrue(modelDir.resolve("UserSignedUpPayload.kt").exists(), "UserSignedUpPayload model missing")
-        assertTrue(modelDir.resolve("UserLoggedInPayload.kt").exists(), "UserLoggedInPayload model missing")
+        val producerFile = producerDir.resolve("UserEventsProducerUserSignedUp.kt")
+        assertTrue(producerFile.exists(), "Producer should be generated")
+        val producerContent = producerFile.readText()
+        assertTrue(producerContent.contains("class UserEventsProducerUserSignedUp"))
+        assertTrue(producerContent.contains("KafkaTemplate<String, UserSignedUpPayload>"))
+        assertTrue(producerContent.contains("sendUserSignedUp"))
+        assertTrue(!producerContent.contains("@Component"), "Producer should not be annotated")
 
-        val clientDir = outputDir.resolve(clientPath)
-        val autoconfigDir = clientDir.resolve("config")
-        val handlerDir = clientDir.resolve("handler")
-        val listenerDir = clientDir.resolve("listener")
-        val producerDir = clientDir.resolve("producer")
-        assertTrue(
-            listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").exists(),
-            "UserSignedUp Listener missing",
-        )
-        assertTrue(handlerDir.resolve("TopicUserEventsHandlerUserSignedUp.kt").exists(), "UserSignedUp Handler missing")
-        assertTrue(
-            listenerDir.resolve("TopicUserEventsListenerUserLoggedIn.kt").exists(),
-            "UserLoggedIn Listener missing",
-        )
-        assertTrue(handlerDir.resolve("TopicUserEventsHandlerUserLoggedIn.kt").exists(), "UserLoggedIn Handler missing")
-        assertTrue(producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").exists(), "UserSignedUp Producer missing")
-        assertTrue(producerDir.resolve("TopicUserEventsProducerUserLoggedIn.kt").exists(), "UserLoggedIn Producer missing")
-        val userSignedUpListenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
-        assertTrue(
-            userSignedUpListenerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"),
-            "Listener should be typed to UserSignedUp",
-        )
-        assertTrue(
-            userSignedUpListenerContent.contains("import $modelPackage.UserSignedUp"),
-            "Missing correct Model Import",
-        )
-        assertTrue(
-            userSignedUpListenerContent.contains("import org.springframework.boot.autoconfigure.condition.ConditionalOnBean"),
-            "Missing ConditionalOnBean import",
-        )
-        assertTrue(
-            userSignedUpListenerContent.contains("@ConditionalOnBean(TopicUserEventsHandlerUserSignedUp::class)"),
-            "Missing @ConditionalOnBean annotation",
-        )
-        val userProducerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
-        assertTrue(
-            userProducerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents\"])"),
-            "Missing @ConditionalOnProperty annotation",
-        )
-        assertTrue(
-            userProducerContent.contains("@Value(\"\\\${kafka.topics.userEvents}\")"),
-            "Producer should read topic from kafka.topics.userEvents",
-        )
-        assertTrue(
-            userSignedUpListenerContent.contains("@ConditionalOnProperty(name = [\"kafka.topics.userEvents\"])"),
-            "Listener should be conditional on topic property",
-        )
-        assertTrue(
-            userSignedUpListenerContent.contains("@KafkaListener(topics = [\"\\\${kafka.topics.userEvents}\"]"),
-            "Listener should read topic from kafka.topics.userEvents",
-        )
-
-        val autoConfigContent = autoconfigDir.resolve("AsyncApiKafkaAutoConfiguration.kt").readText()
-        assertTrue(autoConfigContent.contains("@ComponentScan"), "Auto-configuration should include ComponentScan")
-        assertTrue(
-            autoConfigContent.contains("basePackages = [\"$clientPackage\"]"),
-            "Auto-configuration should scan the client package",
-        )
-
-        val importsFile =
-            File("target/generated-resources/asyncapi/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports")
-        assertTrue(importsFile.exists(), "Auto-configuration imports file should be generated")
-        val importsContent = importsFile.readText()
-        assertTrue(
-            importsContent.contains("$clientPackage.config.AsyncApiKafkaAutoConfiguration"),
-            "Auto-configuration imports should include generated config",
-        )
+        val consumerFile = consumerDir.resolve("UserEventsConsumer.kt")
+        assertTrue(consumerFile.exists(), "Consumer should be generated")
+        val consumerContent = consumerFile.readText()
+        assertTrue(consumerContent.contains("interface UserEventsConsumer"))
+        assertTrue(consumerContent.contains("fun onUserSignedUp"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"))
+        assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
     }
 
     @Test
-    fun `should apply custom topic property prefix`() {
-        val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")
+    fun `should generate header classes for spring kafka client`() {
+        val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
-        val outputDir = File("target/generated-sources/asyncapi")
 
         generateElement(
             yaml = yaml,
@@ -111,26 +54,15 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             clientPackage = clientPackage,
             generateModels = true,
             generateSpringKafkaClient = true,
-            codegenOutputDirectory = outputDir,
-            kafkaTopicsPropertyPrefix = "my.property",
         )
-        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val producerDir = clientDir.resolve("producer")
-        val listenerDir = clientDir.resolve("listener")
-        val producerContent = producerDir.resolve("TopicUserEventsProducerUserSignedUp.kt").readText()
-        val listenerContent = listenerDir.resolve("TopicUserEventsListenerUserSignedUp.kt").readText()
-        assertTrue(
-            producerContent.contains("@Value(\"\\\${my.property.userEvents}\")"),
-            "Producer should use custom topic property key",
-        )
-        assertTrue(
-            listenerContent.contains("@KafkaListener(topics = [\"\\\${my.property.userEvents}\"]"),
-            "Listener should use custom topic property key",
-        )
+
+        val outputDir = File("target/generated-sources/asyncapi")
+        val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
+        assertTrue(headerDir.exists(), "Spring Kafka client should generate header classes")
     }
 
     @Test
-    fun `should generate full spring kafka client with native avro payload type`() {
+    fun `should generate spring kafka client with native avro payload type`() {
         val yaml = File("src/test/resources/generator/asyncapi_native_avro_spring_kafka_client.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
@@ -145,17 +77,17 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreated.kt").readText()
-        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreated.kt").readText()
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreated.kt").readText()
 
-        assertTrue(listenerContent.contains("import com.example.avro.UserCreated"))
-        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreated>"))
+        assertTrue(consumerContent.contains("import com.example.avro.UserCreated"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserCreated>"))
         assertTrue(producerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
     }
 
     @Test
-    fun `should generate full spring kafka client with external native avro payload type`() {
+    fun `should generate spring kafka client with external native avro payload type`() {
         val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
@@ -170,17 +102,17 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreatedAvro.kt").readText()
-        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreatedAvro.kt").readText()
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreatedAvro.kt").readText()
 
-        assertTrue(listenerContent.contains("import com.example.external.avro.UserCreatedAvro"))
-        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreatedAvro>"))
+        assertTrue(consumerContent.contains("import com.example.external.avro.UserCreatedAvro"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserCreatedAvro>"))
         assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreatedAvro>"))
     }
 
     @Test
-    fun `should generate full spring kafka client with native protobuf payload type`() {
+    fun `should generate spring kafka client with native protobuf payload type`() {
         val yaml = File("src/test/resources/generator/asyncapi_native_protobuf_spring_kafka_client.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
@@ -195,17 +127,17 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreated.kt").readText()
-        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreated.kt").readText()
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreated.kt").readText()
 
-        assertTrue(listenerContent.contains("import com.example.protobuf.UserCreated"))
-        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreated>"))
+        assertTrue(consumerContent.contains("import com.example.protobuf.UserCreated"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserCreated>"))
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreated>"))
     }
 
     @Test
-    fun `should generate full spring kafka client with external native protobuf payload type`() {
+    fun `should generate spring kafka client with external native protobuf payload type`() {
         val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
@@ -220,11 +152,11 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val listenerContent = clientDir.resolve("listener/TopicUserEventsListenerUserCreatedProtobuf.kt").readText()
-        val producerContent = clientDir.resolve("producer/TopicUserEventsProducerUserCreatedProtobuf.kt").readText()
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreatedProtobuf.kt").readText()
 
-        assertTrue(listenerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
-        assertTrue(listenerContent.contains("ConsumerRecord<String, UserCreatedProtobuf>"))
+        assertTrue(consumerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
+        assertTrue(consumerContent.contains("ConsumerRecord<String, UserCreatedProtobuf>"))
         assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(producerContent.contains("KafkaTemplate<String, UserCreatedProtobuf>"))
     }

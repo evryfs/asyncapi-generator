@@ -38,23 +38,17 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
         assertTrue(
-            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
             "Producer should exist"
         )
         assertFalse(
-            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
             "Listener should NOT exist"
-        )
-        assertFalse(
-            outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(),
-            "Handler should NOT exist"
         )
     }
 
@@ -76,23 +70,17 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
         assertFalse(
-            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
             "Producer should NOT exist"
         )
         assertTrue(
-            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
             "Listener should exist"
-        )
-        assertTrue(
-            outputDir.resolve("$packagePath/handler/TopicEventsHandlerTestEvent.kt").exists(),
-            "Handler should exist"
         )
     }
 
@@ -114,18 +102,16 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
         assertTrue(
-            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
             "Producer should exist"
         )
         assertTrue(
-            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
             "Listener should exist"
         )
     }
@@ -148,18 +134,16 @@ class GenerateKotlinSpringKafkaOperationsTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
 
         val packagePath = packageName.replace('.', '/')
         assertFalse(
-            outputDir.resolve("$packagePath/producer/TopicEventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
             "Producer should NOT exist"
         )
         assertFalse(
-            outputDir.resolve("$packagePath/listener/TopicEventsListenerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
             "Listener should NOT exist"
         )
     }

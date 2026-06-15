@@ -35,8 +35,6 @@ class GenerateJavaPrimitivePayloadTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFile =
@@ -44,7 +42,7 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName.replace(
                     '.',
                     '/'
-                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.java"
+                ) + "/producer/SimpleTopicProducerSimpleStringMessage.java"
             )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
@@ -85,14 +83,12 @@ class GenerateJavaPrimitivePayloadTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerStringMessage.java")
         val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerIntMessage.java")
         assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
         assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
         val producerContentA = producerFileA.readText()

@@ -88,14 +88,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val springKafkaMode: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val springKafkaTopicPropertyPrefix: Property<String>
-
-    @get:Input
-    @get:Optional
     abstract val quarkusKafkaEnabled: Property<Boolean>
 
     @get:Input
@@ -178,8 +170,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             springKafkaEnabled = springKafkaEnabled.orNull,
                             springKafkaPackageName = springKafkaPackageName.orNull,
                             springKafkaModelPackageName = springKafkaModelPackageName.orNull,
-                            springKafkaMode = springKafkaMode.orNull,
-                            springKafkaTopicPropertyPrefix = springKafkaTopicPropertyPrefix.orNull,
                             quarkusKafkaEnabled = quarkusKafkaEnabled.orNull,
                             quarkusKafkaPackageName = quarkusKafkaPackageName.orNull,
                             quarkusKafkaModelPackageName = quarkusKafkaModelPackageName.orNull,
@@ -235,8 +225,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         springKafkaEnabled: Boolean?,
         springKafkaPackageName: String?,
         springKafkaModelPackageName: String?,
-        springKafkaMode: String?,
-        springKafkaTopicPropertyPrefix: String?,
         quarkusKafkaEnabled: Boolean?,
         quarkusKafkaPackageName: String?,
         quarkusKafkaModelPackageName: String?,
@@ -247,8 +235,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     enabled = springKafkaEnabled,
                     packageName = springKafkaPackageName,
                     modelPackageName = springKafkaModelPackageName,
-                    mode = springKafkaMode,
-                    topicPropertyPrefix = springKafkaTopicPropertyPrefix,
                 ),
             quarkusKafka =
                 GeneratorConfigurationRequest.quarkusKafka(
@@ -262,14 +248,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         enabled: Boolean?,
         packageName: String?,
         modelPackageName: String?,
-        mode: String?,
-        topicPropertyPrefix: String?,
     ): GeneratorConfigurationRequest.SpringKafka? =
         GeneratorConfigurationRequest.springKafka(
             enabled = enabled,
             packageName = packageName,
             modelPackageName = modelPackageName,
-            mode = mode,
-            topicPropertyPrefix = topicPropertyPrefix,
         )
 }

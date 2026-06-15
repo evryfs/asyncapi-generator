@@ -142,8 +142,6 @@ abstract class AsyncApiSpringKafkaExtension @Inject constructor(objects: ObjectF
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val packageName: Property<String> = objects.property(String::class.java)
     val modelPackageName: Property<String> = objects.property(String::class.java)
-    val mode: Property<String> = objects.property(String::class.java)
-    val topicPropertyPrefix: Property<String> = objects.property(String::class.java)
 }
 
 /**

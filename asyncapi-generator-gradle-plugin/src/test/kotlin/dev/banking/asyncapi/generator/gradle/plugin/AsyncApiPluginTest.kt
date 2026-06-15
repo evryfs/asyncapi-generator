@@ -125,36 +125,6 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should fail if spring kafka mode is invalid`() {
-        val projectDir = Files.createTempDirectory("gradleTest").toFile()
-        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
-        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
-        GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("dev.banking.asyncapi.generator") }
-              asyncapiGenerate {
-                  inputFile.set(file("api.yaml"))
-                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
-                  generatorName.set("kotlin")
-                  models {
-                      packageName.set("com.example.model")
-                  }
-                  clients {
-                      springKafka {
-                          packageName.set("com.example.client")
-                          mode.set("basic")
-                      }
-                  }
-              }""")
-        val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
-        assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(
-            result.output.contains(
-                "Invalid clients.springKafka.mode 'basic'. Supported values: full, simple",
-            ),
-        )
-    }
-
-    @Test
     fun `should fail if java model type is invalid`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")

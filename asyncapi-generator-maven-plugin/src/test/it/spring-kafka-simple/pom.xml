@@ -27,7 +27,6 @@
                             <clients>
                                 <springKafka>
                                     <packageName>com.example.simple.client</packageName>
-                                    <mode>simple</mode>
                                 </springKafka>
                             </clients>
                         </configuration>

@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toK
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 
-class KotlinSpringKafkaSimpleModelFactory(
+class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),

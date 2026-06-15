@@ -1,6 +1,4 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
-
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -91,8 +89,6 @@ class GeneratorConfigurationRequestTest {
                 enabled = false,
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                mode = "full",
-                topicPropertyPrefix = "custom.topics",
             ),
         )
 
@@ -100,25 +96,19 @@ class GeneratorConfigurationRequestTest {
             GeneratorConfigurationRequest.SpringKafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                clientType = SpringKafkaClientType.FULL,
-                topicPropertyPrefix = "custom.topics",
             ),
             GeneratorConfigurationRequest.springKafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                mode = "full",
-                topicPropertyPrefix = "custom.topics",
             ),
         )
     }
 
     @Test
-    fun `spring kafka request defaults to simple mode and default topic prefix`() {
+    fun `spring kafka request can be created from package only`() {
         assertEquals(
             GeneratorConfigurationRequest.SpringKafka(
                 packageName = "com.example.client",
-                clientType = SpringKafkaClientType.SIMPLE,
-                topicPropertyPrefix = GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
             ),
             GeneratorConfigurationRequest.springKafka(packageName = "com.example.client"),
         )
