@@ -30,20 +30,26 @@ class GenerationPlanner {
 
                 configuration.clients.forEach { client ->
                     when (client) {
-                        is ClientGeneration.SpringKafka -> {
-                            add(
-                                GenerationTask.HeaderModelArtifacts(
-                                    language = configuration.language,
-                                    packageName = "${client.packageName}.header",
-                                ),
-                            )
-                            add(
-                                GenerationTask.SpringKafkaClient(
-                                    language = configuration.language,
-                                    clientPackage = client.packageName,
-                                    modelPackage = client.modelPackageName,
-                                ),
-                            )
+                        is ClientGeneration.Kafka -> {
+                            if (client.headers.enabled) {
+                                add(
+                                    GenerationTask.HeaderModelArtifacts(
+                                        language = configuration.language,
+                                        packageName = "${client.packageName}.header",
+                                    ),
+                                )
+                            }
+                            client.springKafka?.let { springKafka ->
+                                add(
+                                    GenerationTask.SpringKafkaClient(
+                                        language = configuration.language,
+                                        clientPackage = client.packageName,
+                                        modelPackage = client.modelPackageName,
+                                        generateProducers = springKafka.producer.enabled,
+                                        generateConsumers = springKafka.consumer.enabled,
+                                    ),
+                                )
+                            }
                         }
                         is ClientGeneration.QuarkusKafka ->
                             add(GenerationTask.QuarkusKafkaClient(configuration.language))

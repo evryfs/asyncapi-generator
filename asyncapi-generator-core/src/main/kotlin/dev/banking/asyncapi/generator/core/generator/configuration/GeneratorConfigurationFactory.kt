@@ -52,18 +52,35 @@ object GeneratorConfigurationFactory {
                 },
             clients =
                 buildList {
-                    request.clients.springKafka?.let { springKafka ->
+                    request.clients.kafka?.let { kafka ->
                         add(
-                            ClientGeneration.SpringKafka(
+                            ClientGeneration.Kafka(
                                 packageName = requiredPackageName(
-                                    path = "clients.springKafka.packageName",
-                                    value = springKafka.packageName,
+                                    path = "clients.kafka.packageName",
+                                    value = kafka.packageName,
                                 ),
                                 modelPackageName = requiredClientModelPackageName(
-                                    path = "clients.springKafka.modelPackageName",
-                                    configuredModelPackageName = springKafka.modelPackageName,
+                                    path = "clients.kafka.modelPackageName",
+                                    configuredModelPackageName = kafka.modelPackageName,
                                     modelsPackageName = request.models?.packageName,
                                 ),
+                                headers =
+                                    ClientGeneration.Headers(
+                                        enabled = kafka.headers.enabled,
+                                    ),
+                                springKafka =
+                                    kafka.springKafka?.let { springKafka ->
+                                        ClientGeneration.SpringKafka(
+                                            producer =
+                                                ClientGeneration.Producer(
+                                                    enabled = springKafka.producer.enabled,
+                                                ),
+                                            consumer =
+                                                ClientGeneration.Consumer(
+                                                    enabled = springKafka.consumer.enabled,
+                                                ),
+                                        )
+                                    },
                             ),
                         )
                     }
@@ -106,9 +123,9 @@ object GeneratorConfigurationFactory {
             )
         }
 
-        if (request.clients.springKafka != null && request.clients.springKafka.packageName == null) {
+        if (request.clients.kafka != null && request.clients.kafka.packageName == null) {
             throw IllegalArgumentException(
-                "clients.springKafka.packageName is required when clients.springKafka is configured",
+                "clients.kafka.packageName is required when clients.kafka is configured",
             )
         }
 
@@ -127,12 +144,12 @@ object GeneratorConfigurationFactory {
             value = request.schemas.avroProjection?.packageName,
         )
         validatePackageName(
-            path = "clients.springKafka.packageName",
-            value = request.clients.springKafka?.packageName,
+            path = "clients.kafka.packageName",
+            value = request.clients.kafka?.packageName,
         )
         validatePackageName(
-            path = "clients.springKafka.modelPackageName",
-            value = request.clients.springKafka?.modelPackageName,
+            path = "clients.kafka.modelPackageName",
+            value = request.clients.kafka?.modelPackageName,
         )
         validatePackageName(
             path = "clients.quarkusKafka.packageName",

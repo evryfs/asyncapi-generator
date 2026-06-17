@@ -38,6 +38,8 @@ class SpringKafkaClientGeneration {
                 outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
+                generateProducers = task.generateProducers,
+                generateConsumers = task.generateConsumers,
             )
         kafkaGenerator.generate(generationInput.channels)
     }
@@ -52,6 +54,8 @@ class SpringKafkaClientGeneration {
                 outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
+                generateProducers = task.generateProducers,
+                generateConsumers = task.generateConsumers,
             )
         kafkaGenerator.generate(generationInput.channels)
     }

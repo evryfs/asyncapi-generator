@@ -47,13 +47,32 @@ data class GeneratorConfigurationRequest(
     )
 
     data class Clients(
-        val springKafka: SpringKafka? = null,
+        val kafka: Kafka? = null,
         val quarkusKafka: QuarkusKafka? = null,
     )
 
-    data class SpringKafka(
+    data class Kafka(
         val packageName: String? = null,
         val modelPackageName: String? = null,
+        val headers: KafkaHeaders = KafkaHeaders(),
+        val springKafka: KafkaSpringKafka? = null,
+    )
+
+    data class KafkaHeaders(
+        val enabled: Boolean = true,
+    )
+
+    data class KafkaSpringKafka(
+        val producer: KafkaProducer = KafkaProducer(),
+        val consumer: KafkaConsumer = KafkaConsumer(),
+    )
+
+    data class KafkaProducer(
+        val enabled: Boolean = true,
+    )
+
+    data class KafkaConsumer(
+        val enabled: Boolean = true,
     )
 
     data class QuarkusKafka(
@@ -116,21 +135,60 @@ data class GeneratorConfigurationRequest(
                 else -> null
             }
 
-        fun springKafka(
+        fun kafka(
             enabled: Boolean? = null,
             packageName: String? = null,
             modelPackageName: String? = null,
-        ): SpringKafka? =
+            headers: KafkaHeaders? = null,
+            springKafka: KafkaSpringKafka? = null,
+        ): Kafka? =
             when {
                 enabled == false -> null
                 enabled == true ||
                     packageName != null ||
-                    modelPackageName != null ->
-                    SpringKafka(
+                    modelPackageName != null ||
+                    headers != null ||
+                    springKafka != null ->
+                    Kafka(
                         packageName = packageName,
                         modelPackageName = modelPackageName,
+                        headers = headers ?: KafkaHeaders(),
+                        springKafka = springKafka,
                     )
                 else -> null
+            }
+
+        fun kafkaHeaders(enabled: Boolean? = null): KafkaHeaders? =
+            when (enabled) {
+                null -> null
+                else -> KafkaHeaders(enabled = enabled)
+            }
+
+        fun kafkaSpringKafka(
+            enabled: Boolean? = null,
+            producer: KafkaProducer? = null,
+            consumer: KafkaConsumer? = null,
+        ): KafkaSpringKafka? =
+            when {
+                enabled == false -> null
+                enabled == true || producer != null || consumer != null ->
+                    KafkaSpringKafka(
+                        producer = producer ?: KafkaProducer(),
+                        consumer = consumer ?: KafkaConsumer(),
+                    )
+                else -> null
+            }
+
+        fun kafkaProducer(enabled: Boolean? = null): KafkaProducer? =
+            when (enabled) {
+                null -> null
+                else -> KafkaProducer(enabled = enabled)
+            }
+
+        fun kafkaConsumer(enabled: Boolean? = null): KafkaConsumer? =
+            when (enabled) {
+                null -> null
+                else -> KafkaConsumer(enabled = enabled)
             }
 
         fun quarkusKafka(

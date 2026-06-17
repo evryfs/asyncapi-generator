@@ -14,6 +14,8 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
+    private val generateProducers: Boolean = true,
+    private val generateConsumers: Boolean = true,
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
@@ -26,7 +28,7 @@ class JavaSpringKafkaModelFactory(
         val baseImports =
             payloads.mapNotNull { payload -> payload.importName }
 
-        if (channel.isConsumer) {
+        if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
             val imports = (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord").distinct().sorted()
             val methods =
@@ -47,7 +49,7 @@ class JavaSpringKafkaModelFactory(
             )
         }
 
-        if (channel.isProducer) {
+        if (channel.isProducer && generateProducers) {
             val imports =
                 (baseImports + "org.apache.kafka.clients.producer.ProducerRecord" + "org.springframework.kafka.core.KafkaTemplate")
                     .distinct()

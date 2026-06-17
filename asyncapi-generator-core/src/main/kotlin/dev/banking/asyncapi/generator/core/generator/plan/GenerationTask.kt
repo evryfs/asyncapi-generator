@@ -26,6 +26,8 @@ sealed interface GenerationTask {
         val language: GeneratorName,
         val clientPackage: String,
         val modelPackage: String,
+        val generateProducers: Boolean = true,
+        val generateConsumers: Boolean = true,
     ) : GenerationTask
 
     data class QuarkusKafkaClient(
