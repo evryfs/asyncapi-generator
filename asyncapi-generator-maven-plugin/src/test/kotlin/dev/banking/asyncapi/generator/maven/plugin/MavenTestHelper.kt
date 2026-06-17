@@ -111,22 +111,52 @@ object MavenTestHelper {
         }
 
     fun clients(
-        springKafka: MavenSpringKafkaConfiguration? = null,
+        kafka: MavenKafkaConfiguration? = null,
         quarkusKafka: MavenQuarkusKafkaConfiguration? = null,
     ): MavenClientGenerationConfiguration =
         MavenClientGenerationConfiguration().apply {
-            this.springKafka = springKafka
+            this.kafka = kafka
             this.quarkusKafka = quarkusKafka
         }
 
-    fun springKafka(
+    fun kafka(
         packageName: String? = null,
         modelPackageName: String? = null,
         enabled: Boolean? = null,
-    ): MavenSpringKafkaConfiguration =
-        MavenSpringKafkaConfiguration().apply {
+        headers: MavenKafkaHeadersConfiguration? = null,
+        springKafka: MavenKafkaSpringKafkaConfiguration? = springKafka(),
+    ): MavenKafkaConfiguration =
+        MavenKafkaConfiguration().apply {
             this.packageName = packageName
             this.modelPackageName = modelPackageName
+            this.enabled = enabled
+            this.headers = headers
+            this.springKafka = springKafka
+        }
+
+    fun kafkaHeaders(enabled: Boolean? = null): MavenKafkaHeadersConfiguration =
+        MavenKafkaHeadersConfiguration().apply {
+            this.enabled = enabled
+        }
+
+    fun springKafka(
+        enabled: Boolean? = null,
+        producer: MavenKafkaProducerConfiguration? = null,
+        consumer: MavenKafkaConsumerConfiguration? = null,
+    ): MavenKafkaSpringKafkaConfiguration =
+        MavenKafkaSpringKafkaConfiguration().apply {
+            this.enabled = enabled
+            this.producer = producer
+            this.consumer = consumer
+        }
+
+    fun kafkaProducer(enabled: Boolean? = null): MavenKafkaProducerConfiguration =
+        MavenKafkaProducerConfiguration().apply {
+            this.enabled = enabled
+        }
+
+    fun kafkaConsumer(enabled: Boolean? = null): MavenKafkaConsumerConfiguration =
+        MavenKafkaConsumerConfiguration().apply {
             this.enabled = enabled
         }
 

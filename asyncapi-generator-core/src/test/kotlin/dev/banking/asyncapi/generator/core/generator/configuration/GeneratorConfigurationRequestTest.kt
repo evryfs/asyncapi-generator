@@ -82,35 +82,63 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
-    fun `spring kafka request is created only when client output is configured`() {
-        assertNull(GeneratorConfigurationRequest.springKafka())
+    fun `kafka request is created only when client output is configured`() {
+        assertNull(GeneratorConfigurationRequest.kafka())
         assertNull(
-            GeneratorConfigurationRequest.springKafka(
+            GeneratorConfigurationRequest.kafka(
                 enabled = false,
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
         )
 
         assertEquals(
-            GeneratorConfigurationRequest.SpringKafka(
+            GeneratorConfigurationRequest.Kafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
-            GeneratorConfigurationRequest.springKafka(
+            GeneratorConfigurationRequest.kafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
         )
     }
 
     @Test
-    fun `spring kafka request can be created from package only`() {
+    fun `kafka request can be created from package only`() {
         assertEquals(
-            GeneratorConfigurationRequest.SpringKafka(
+            GeneratorConfigurationRequest.Kafka(
                 packageName = "com.example.client",
             ),
-            GeneratorConfigurationRequest.springKafka(packageName = "com.example.client"),
+            GeneratorConfigurationRequest.kafka(packageName = "com.example.client"),
+        )
+    }
+
+    @Test
+    fun `spring kafka request is created only when kafka spring kafka output is configured`() {
+        assertNull(GeneratorConfigurationRequest.kafkaSpringKafka())
+        assertNull(
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                enabled = false,
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = false),
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(),
+            GeneratorConfigurationRequest.kafkaSpringKafka(enabled = true),
+        )
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+            ),
         )
     }
 

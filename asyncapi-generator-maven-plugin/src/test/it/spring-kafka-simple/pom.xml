@@ -25,9 +25,12 @@
                                 <packageName>com.example.simple.model</packageName>
                             </models>
                             <clients>
-                                <springKafka>
+                                <kafka>
                                     <packageName>com.example.simple.client</packageName>
-                                </springKafka>
+                                    <springKafka>
+                                        <enabled>true</enabled>
+                                    </springKafka>
+                                </kafka>
                             </clients>
                         </configuration>
                     </execution>

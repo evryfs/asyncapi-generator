@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutput
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.javaSourceOutputDirectory
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.kafka
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobuf
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
@@ -15,7 +16,6 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.resourceOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemas
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.springKafka
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -50,7 +50,7 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             models(models(packageName = "com.example.kafka.model"))
-            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
+            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
             generatorName("kotlin")
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
@@ -65,7 +65,7 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             models(models(packageName = "com.example.kafka.model"))
-            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
+            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
             generatorName("java")
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
@@ -98,8 +98,8 @@ class AsyncApiGeneratorMojoTest {
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-client-only"))
             clients(
                 clients(
-                    springKafka =
-                        springKafka(
+                    kafka =
+                        kafka(
                             packageName = "com.example.kafka.client",
                             modelPackageName = "com.example.kafka.model",
                         ),

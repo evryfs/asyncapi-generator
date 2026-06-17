@@ -26,7 +26,8 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--models-package", "com.example.cli.model",
-                "--clients-spring-kafka-package", "com.example.cli.client",
+                "--clients-kafka-package", "com.example.cli.client",
+                "--clients-kafka-spring-kafka",
                 "--generator", "kotlin",
             )
         )
@@ -45,8 +46,9 @@ class AsyncApiGeneratorCliTest {
                 "--input", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
-                "--clients-spring-kafka-package", "com.example.cli.client",
-                "--clients-spring-kafka-model-package", "com.example.cli.model",
+                "--clients-kafka-package", "com.example.cli.client",
+                "--clients-kafka-model-package", "com.example.cli.model",
+                "--clients-kafka-spring-kafka",
                 "--generator", "kotlin",
             )
         )
@@ -195,7 +197,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
+    fun `should fail if kafka spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
         val exception =
@@ -205,14 +207,14 @@ class AsyncApiGeneratorCliTest {
                         "-i", inputFile.absolutePath,
                         "--codegen-output", codegenDir.absolutePath,
                         "--models-package", "com.example.cli.model",
-                        "--clients-spring-kafka",
+                        "--clients-kafka-spring-kafka",
                     )
                 )
             }
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "clients.springKafka.packageName is required when clients.springKafka is configured",
+                "clients.kafka.packageName is required when clients.kafka is configured",
             ),
         )
     }

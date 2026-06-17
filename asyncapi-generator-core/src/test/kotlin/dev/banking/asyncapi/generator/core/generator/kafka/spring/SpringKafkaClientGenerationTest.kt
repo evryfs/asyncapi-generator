@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SpringKafkaClientGenerationTest {
@@ -61,12 +62,41 @@ class SpringKafkaClientGenerationTest {
         )
     }
 
+    @Test
+    fun `generate respects producer and consumer task options`() {
+        val sourceOutputDirectory = tempDir.resolve("configured-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("configured-resources").toFile()
+
+        generator.generate(
+            task =
+                springKafkaClientTask(
+                    language = GeneratorName.KOTLIN,
+                    generateProducers = false,
+                    generateConsumers = true,
+                ),
+            generationInput = fixtures.generationInputWithUserSignupChannel(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = resourceOutputDirectory,
+        )
+
+        assertFalse(
+            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt").exists(),
+        )
+        assertTrue(
+            sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.kt").exists(),
+        )
+    }
+
     private fun springKafkaClientTask(
         language: GeneratorName,
+        generateProducers: Boolean = true,
+        generateConsumers: Boolean = true,
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = language,
             clientPackage = "com.example.client",
             modelPackage = "com.example.model",
+            generateProducers = generateProducers,
+            generateConsumers = generateConsumers,
         )
 }

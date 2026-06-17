@@ -132,7 +132,7 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    clients = listOf(springKafkaClientGeneration()),
+                    clients = listOf(kafkaClientGeneration()),
                 ),
             )
 
@@ -149,6 +149,61 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan can disable Kafka header generation`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                headers = ClientGeneration.Headers(enabled = false),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                springKafkaClientTask(),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes Spring Kafka producer and consumer options on Spring Kafka client task`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = true),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.HeaderModelArtifacts(
+                    language = GeneratorName.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+                springKafkaClientTask(
+                    generateProducers = false,
+                    generateConsumers = true,
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan uses selected language for language-specific tasks`() {
         val plan =
             planner.plan(
@@ -157,7 +212,7 @@ class GenerationPlannerTest {
                     models = ModelGeneration.Enabled(packageName = "com.example.model"),
                     clients =
                         listOf(
-                            springKafkaClientGeneration(),
+                            kafkaClientGeneration(),
                             ClientGeneration.QuarkusKafka(
                                 packageName = "com.example.client",
                                 modelPackageName = "com.example.model",
@@ -205,23 +260,31 @@ class GenerationPlannerTest {
             clients = clients,
         )
 
-    private fun springKafkaClientGeneration(
+    private fun kafkaClientGeneration(
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
-    ): ClientGeneration.SpringKafka =
-        ClientGeneration.SpringKafka(
+        headers: ClientGeneration.Headers = ClientGeneration.Headers(),
+        springKafka: ClientGeneration.SpringKafka? = ClientGeneration.SpringKafka(),
+    ): ClientGeneration.Kafka =
+        ClientGeneration.Kafka(
             packageName = clientPackage,
             modelPackageName = modelPackage,
+            headers = headers,
+            springKafka = springKafka,
         )
 
     private fun springKafkaClientTask(
         language: GeneratorName = GeneratorName.KOTLIN,
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
+        generateProducers: Boolean = true,
+        generateConsumers: Boolean = true,
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = language,
             clientPackage = clientPackage,
             modelPackage = modelPackage,
+            generateProducers = generateProducers,
+            generateConsumers = generateConsumers,
         )
 }

@@ -76,15 +76,31 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val springKafkaEnabled: Property<Boolean>
+    abstract val kafkaEnabled: Property<Boolean>
 
     @get:Input
     @get:Optional
-    abstract val springKafkaPackageName: Property<String>
+    abstract val kafkaPackageName: Property<String>
 
     @get:Input
     @get:Optional
-    abstract val springKafkaModelPackageName: Property<String>
+    abstract val kafkaModelPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val kafkaHeadersEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val kafkaSpringKafkaEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val kafkaSpringKafkaProducerEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val kafkaSpringKafkaConsumerEnabled: Property<Boolean>
 
     @get:Input
     @get:Optional
@@ -167,9 +183,13 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                         ),
                     clients =
                         clientRequest(
-                            springKafkaEnabled = springKafkaEnabled.orNull,
-                            springKafkaPackageName = springKafkaPackageName.orNull,
-                            springKafkaModelPackageName = springKafkaModelPackageName.orNull,
+                            kafkaEnabled = kafkaEnabled.orNull,
+                            kafkaPackageName = kafkaPackageName.orNull,
+                            kafkaModelPackageName = kafkaModelPackageName.orNull,
+                            kafkaHeadersEnabled = kafkaHeadersEnabled.orNull,
+                            kafkaSpringKafkaEnabled = kafkaSpringKafkaEnabled.orNull,
+                            kafkaSpringKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled.orNull,
+                            kafkaSpringKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled.orNull,
                             quarkusKafkaEnabled = quarkusKafkaEnabled.orNull,
                             quarkusKafkaPackageName = quarkusKafkaPackageName.orNull,
                             quarkusKafkaModelPackageName = quarkusKafkaModelPackageName.orNull,
@@ -222,19 +242,27 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         )
 
     private fun clientRequest(
-        springKafkaEnabled: Boolean?,
-        springKafkaPackageName: String?,
-        springKafkaModelPackageName: String?,
+        kafkaEnabled: Boolean?,
+        kafkaPackageName: String?,
+        kafkaModelPackageName: String?,
+        kafkaHeadersEnabled: Boolean?,
+        kafkaSpringKafkaEnabled: Boolean?,
+        kafkaSpringKafkaProducerEnabled: Boolean?,
+        kafkaSpringKafkaConsumerEnabled: Boolean?,
         quarkusKafkaEnabled: Boolean?,
         quarkusKafkaPackageName: String?,
         quarkusKafkaModelPackageName: String?,
     ): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
-            springKafka =
-                springKafkaRequest(
-                    enabled = springKafkaEnabled,
-                    packageName = springKafkaPackageName,
-                    modelPackageName = springKafkaModelPackageName,
+            kafka =
+                kafkaRequest(
+                    enabled = kafkaEnabled,
+                    packageName = kafkaPackageName,
+                    modelPackageName = kafkaModelPackageName,
+                    headersEnabled = kafkaHeadersEnabled,
+                    springKafkaEnabled = kafkaSpringKafkaEnabled,
+                    springKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled,
+                    springKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled,
                 ),
             quarkusKafka =
                 GeneratorConfigurationRequest.quarkusKafka(
@@ -244,14 +272,25 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 ),
         )
 
-    private fun springKafkaRequest(
+    private fun kafkaRequest(
         enabled: Boolean?,
         packageName: String?,
         modelPackageName: String?,
-    ): GeneratorConfigurationRequest.SpringKafka? =
-        GeneratorConfigurationRequest.springKafka(
+        headersEnabled: Boolean?,
+        springKafkaEnabled: Boolean?,
+        springKafkaProducerEnabled: Boolean?,
+        springKafkaConsumerEnabled: Boolean?,
+    ): GeneratorConfigurationRequest.Kafka? =
+        GeneratorConfigurationRequest.kafka(
             enabled = enabled,
             packageName = packageName,
             modelPackageName = modelPackageName,
+            headers = GeneratorConfigurationRequest.kafkaHeaders(enabled = headersEnabled),
+            springKafka =
+                GeneratorConfigurationRequest.kafkaSpringKafka(
+                    enabled = springKafkaEnabled,
+                    producer = GeneratorConfigurationRequest.kafkaProducer(enabled = springKafkaProducerEnabled),
+                    consumer = GeneratorConfigurationRequest.kafkaConsumer(enabled = springKafkaConsumerEnabled),
+                ),
         )
 }

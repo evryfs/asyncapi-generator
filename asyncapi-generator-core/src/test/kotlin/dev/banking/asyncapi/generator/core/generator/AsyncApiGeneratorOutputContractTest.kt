@@ -245,9 +245,10 @@ class AsyncApiGeneratorOutputContractTest {
                     resourceOutputDirectory = resourceOutputDirectory,
                     clients =
                         listOf(
-                            ClientGeneration.SpringKafka(
+                            ClientGeneration.Kafka(
                                 packageName = "com.example.kafka",
                                 modelPackageName = "com.example.model",
+                                springKafka = ClientGeneration.SpringKafka(),
                             ),
                         ),
                 ),

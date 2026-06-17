@@ -100,33 +100,95 @@ class MavenNativeProtobufConfiguration {
  * - `AsyncApiGeneratorMojoTest`
  */
 class MavenClientGenerationConfiguration {
-    var springKafka: MavenSpringKafkaConfiguration? = null
+    var kafka: MavenKafkaConfiguration? = null
     var quarkusKafka: MavenQuarkusKafkaConfiguration? = null
 
     fun toRequest(): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
-            springKafka = springKafka?.toRequest(),
+            kafka = kafka?.toRequest(),
             quarkusKafka = quarkusKafka?.toRequest(),
         )
 }
 
 /**
- * Maven Spring Kafka client configuration.
+ * Maven Kafka client configuration.
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
  */
-class MavenSpringKafkaConfiguration {
+class MavenKafkaConfiguration {
     var enabled: Boolean? = null
     var packageName: String? = null
     var modelPackageName: String? = null
+    var headers: MavenKafkaHeadersConfiguration? = null
+    var springKafka: MavenKafkaSpringKafkaConfiguration? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.SpringKafka? =
-        GeneratorConfigurationRequest.springKafka(
+    fun toRequest(): GeneratorConfigurationRequest.Kafka? =
+        GeneratorConfigurationRequest.kafka(
             enabled = enabled,
             packageName = packageName,
             modelPackageName = modelPackageName,
+            headers = headers?.toRequest(),
+            springKafka = springKafka?.toRequest(),
         )
+}
+
+/**
+ * Maven Kafka header generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenKafkaHeadersConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaHeaders? =
+        GeneratorConfigurationRequest.kafkaHeaders(enabled = enabled)
+}
+
+/**
+ * Maven Spring Kafka client generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenKafkaSpringKafkaConfiguration {
+    var enabled: Boolean? = null
+    var producer: MavenKafkaProducerConfiguration? = null
+    var consumer: MavenKafkaConsumerConfiguration? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaSpringKafka? =
+        GeneratorConfigurationRequest.kafkaSpringKafka(
+            enabled = enabled ?: true,
+            producer = producer?.toRequest(),
+            consumer = consumer?.toRequest(),
+        )
+}
+
+/**
+ * Maven Spring Kafka producer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenKafkaProducerConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaProducer? =
+        GeneratorConfigurationRequest.kafkaProducer(enabled = enabled)
+}
+
+/**
+ * Maven Spring Kafka consumer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenKafkaConsumerConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaConsumer? =
+        GeneratorConfigurationRequest.kafkaConsumer(enabled = enabled)
 }
 
 /**

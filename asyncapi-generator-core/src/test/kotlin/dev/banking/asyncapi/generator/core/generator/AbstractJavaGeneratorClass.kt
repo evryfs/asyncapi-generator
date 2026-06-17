@@ -53,9 +53,10 @@ abstract class AbstractJavaGeneratorClass {
                     buildList {
                         if (generateSpringKafkaClient) {
                             add(
-                                ClientGeneration.SpringKafka(
+                                ClientGeneration.Kafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
+                                    springKafka = ClientGeneration.SpringKafka(),
                                 ),
                             )
                         }

@@ -40,9 +40,13 @@ class AsyncApiPlugin : Plugin<Project> {
             nativeProtobufEnabled.set(extension.schemas.nativeProtobuf.enabled)
             nativeProtobufGenerateJavaMessageTypes.set(extension.schemas.nativeProtobuf.generateJavaMessageTypes)
 
-            springKafkaEnabled.set(extension.clients.springKafka.enabled)
-            springKafkaPackageName.set(extension.clients.springKafka.packageName)
-            springKafkaModelPackageName.set(extension.clients.springKafka.modelPackageName)
+            kafkaEnabled.set(extension.clients.kafka.enabled)
+            kafkaPackageName.set(extension.clients.kafka.packageName)
+            kafkaModelPackageName.set(extension.clients.kafka.modelPackageName)
+            kafkaHeadersEnabled.set(extension.clients.kafka.headers.enabled)
+            kafkaSpringKafkaEnabled.set(extension.clients.kafka.springKafka.enabled)
+            kafkaSpringKafkaProducerEnabled.set(extension.clients.kafka.springKafka.producer.enabled)
+            kafkaSpringKafkaConsumerEnabled.set(extension.clients.kafka.springKafka.consumer.enabled)
 
             quarkusKafkaEnabled.set(extension.clients.quarkusKafka.enabled)
             quarkusKafkaPackageName.set(extension.clients.quarkusKafka.packageName)

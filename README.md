@@ -42,11 +42,14 @@ Example usage in your `pom.xml`:
                     <packageName>my.package.path.model</packageName>
                 </models>
                 <clients>
-                    <springKafka>
+                    <kafka>
                         <packageName>my.package.path.client</packageName>
                         <!-- Optional: defaults to models.packageName when models are configured -->
                         <modelPackageName>my.package.path.model</modelPackageName>
-                    </springKafka>
+                        <springKafka>
+                            <enabled>true</enabled>
+                        </springKafka>
+                    </kafka>
                 </clients>
                 <schemas>
                     <avroProjection>
@@ -77,10 +80,13 @@ asyncapiGenerate {
         packageName.set("my.package.path.model")
     }
     clients {
-        springKafka {
+        kafka {
             packageName.set("my.package.path.client")
             // Optional: defaults to models.packageName when models are configured
             modelPackageName.set("my.package.path.model")
+            springKafka {
+                enabled.set(true)
+            }
         }
     }
     schemas {
@@ -109,10 +115,13 @@ asyncapiGenerate {
         packageName = 'my.package.path.model'
     }
     clients {
-        springKafka {
+        kafka {
             packageName = 'my.package.path.client'
             // Optional: defaults to models.packageName when models are configured
             modelPackageName = 'my.package.path.model'
+            springKafka {
+                enabled = true
+            }
         }
     }
     schemas {
@@ -298,9 +307,11 @@ Generated Java Protobuf message sources are produced by running `protoc` during 
 
 ### Spring Kafka Clients
 
-Spring Kafka output is configured under `clients.springKafka`.
+Spring Kafka output is configured under `clients.kafka.springKafka`.
 
-Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.springKafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
+Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.kafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
+
+Kafka client configuration can also be narrowed by capability. `clients.kafka.headers.enabled` controls typed header model generation, and `clients.kafka.springKafka.producer.enabled` / `clients.kafka.springKafka.consumer.enabled` control whether producer and consumer artifacts are generated.
 
 For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer and consumer APIs.
 
