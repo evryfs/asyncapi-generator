@@ -1,0 +1,14 @@
+asyncapi: 3.0.0
+info:
+  title: External Native Schema Assets Parser Test
+  version: 1.0.0
+components:
+  schemas:
+    ExternalNativeAvroSchema:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        $ref: user-created.avsc
+    ExternalNativeProtobufSchema:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema:
+        $ref: user-created.proto

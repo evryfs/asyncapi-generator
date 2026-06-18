@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class GenerationPlannerTest {
     private val planner = GenerationPlanner()
@@ -58,6 +57,21 @@ class GenerationPlannerTest {
                     generateSpecificRecords = false,
                 ),
             ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes native Protobuf artifact task when enabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
+                ),
+            )
+
+        assertEquals(
+            listOf(GenerationTask.NativeProtobufArtifacts(generateJavaMessageTypes = true)),
             plan.tasks,
         )
     }
@@ -114,11 +128,11 @@ class GenerationPlannerTest {
     }
 
     @Test
-    fun `plan includes header and full Spring Kafka client tasks for full client generation`() {
+    fun `plan includes header and Spring Kafka client tasks for Spring Kafka client generation`() {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL)),
+                    clients = listOf(kafkaClientGeneration()),
                 ),
             )
 
@@ -128,60 +142,49 @@ class GenerationPlannerTest {
                     language = GeneratorName.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
-                springKafkaClientTask(clientType = SpringKafkaClientType.FULL),
+                springKafkaClientTask(),
             ),
             plan.tasks,
         )
     }
 
     @Test
-    fun `plan accepts explicit full Spring Kafka client type`() {
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL)),
-                ),
-            )
-
-        assertEquals(
-            listOf(
-                GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.KOTLIN,
-                    packageName = "com.example.client.header",
-                ),
-                springKafkaClientTask(clientType = SpringKafkaClientType.FULL),
-            ),
-            plan.tasks,
-        )
-    }
-
-    @Test
-    fun `plan excludes header model task for simple Spring Kafka client generation`() {
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    clients = listOf(springKafkaClientGeneration(clientType = SpringKafkaClientType.SIMPLE)),
-                ),
-            )
-
-        assertEquals(
-            listOf(
-                springKafkaClientTask(clientType = SpringKafkaClientType.SIMPLE),
-            ),
-            plan.tasks,
-        )
-    }
-
-    @Test
-    fun `plan includes custom topic prefix on Spring Kafka client task`() {
+    fun `plan can disable Kafka header generation`() {
         val plan =
             planner.plan(
                 generatorConfiguration(
                     clients =
                         listOf(
-                            springKafkaClientGeneration(
-                                clientType = SpringKafkaClientType.FULL,
-                                topicPropertyPrefix = "custom.topics",
+                            kafkaClientGeneration(
+                                headers = ClientGeneration.Headers(enabled = false),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                springKafkaClientTask(
+                    generateHeaders = false,
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes Spring Kafka producer and consumer options on Spring Kafka client task`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = true),
+                                    ),
                             ),
                         ),
                 ),
@@ -194,12 +197,63 @@ class GenerationPlannerTest {
                     packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(
-                    clientType = SpringKafkaClientType.FULL,
-                    topicPropertyPrefix = "custom.topics",
+                    generateProducers = false,
+                    generateConsumers = true,
                 ),
             ),
             plan.tasks,
         )
+    }
+
+    @Test
+    fun `plan skips Spring Kafka client task when producer and consumer are disabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = false),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.HeaderModelArtifacts(
+                    language = GeneratorName.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan skips Kafka tasks when every Kafka capability is disabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                headers = ClientGeneration.Headers(enabled = false),
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = false),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(emptyList(), plan.tasks)
     }
 
     @Test
@@ -211,7 +265,7 @@ class GenerationPlannerTest {
                     models = ModelGeneration.Enabled(packageName = "com.example.model"),
                     clients =
                         listOf(
-                            springKafkaClientGeneration(clientType = SpringKafkaClientType.FULL),
+                            kafkaClientGeneration(),
                             ClientGeneration.QuarkusKafka(
                                 packageName = "com.example.client",
                                 modelPackageName = "com.example.model",
@@ -232,7 +286,6 @@ class GenerationPlannerTest {
                 ),
                 springKafkaClientTask(
                     language = GeneratorName.JAVA,
-                    clientType = SpringKafkaClientType.FULL,
                 ),
                 GenerationTask.QuarkusKafkaClient(
                     language = GeneratorName.JAVA,
@@ -240,26 +293,6 @@ class GenerationPlannerTest {
             ),
             plan.tasks,
         )
-    }
-
-    @Test
-    fun `plan rejects Spring Kafka client generation with blank topic prefix`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                planner.plan(
-                    generatorConfiguration(
-                        clients =
-                            listOf(
-                                springKafkaClientGeneration(
-                                    clientType = SpringKafkaClientType.FULL,
-                                    topicPropertyPrefix = "",
-                                ),
-                            ),
-                    ),
-                )
-            }
-
-        assertEquals("topicPropertyPrefix cannot be empty", exception.message)
     }
 
     private fun generatorConfiguration(
@@ -280,31 +313,33 @@ class GenerationPlannerTest {
             clients = clients,
         )
 
-    private fun springKafkaClientGeneration(
-        clientType: SpringKafkaClientType,
+    private fun kafkaClientGeneration(
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
-        topicPropertyPrefix: String = "kafka.topics",
-    ): ClientGeneration.SpringKafka =
-        ClientGeneration.SpringKafka(
+        headers: ClientGeneration.Headers = ClientGeneration.Headers(),
+        springKafka: ClientGeneration.SpringKafka? = ClientGeneration.SpringKafka(),
+    ): ClientGeneration.Kafka =
+        ClientGeneration.Kafka(
             packageName = clientPackage,
             modelPackageName = modelPackage,
-            clientType = clientType,
-            topicPropertyPrefix = topicPropertyPrefix,
+            headers = headers,
+            springKafka = springKafka,
         )
 
     private fun springKafkaClientTask(
         language: GeneratorName = GeneratorName.KOTLIN,
-        clientType: SpringKafkaClientType,
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
-        topicPropertyPrefix: String = "kafka.topics",
+        generateHeaders: Boolean = true,
+        generateProducers: Boolean = true,
+        generateConsumers: Boolean = true,
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = language,
-            clientType = clientType,
             clientPackage = clientPackage,
             modelPackage = modelPackage,
-            topicPropertyPrefix = topicPropertyPrefix,
+            generateHeaders = generateHeaders,
+            generateProducers = generateProducers,
+            generateConsumers = generateConsumers,
         )
 }

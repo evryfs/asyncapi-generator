@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package com.example.protobuf;
+
+message UserCreated {
+  string user_id = 1;
+  string email = 2;
+}

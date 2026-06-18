@@ -5,6 +5,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * `AvroProjection` represents AsyncAPI Schema Object to `.avsc` projection.
  * `NativeAvro` represents native Avro `schemaFormat` payload generation.
+ * `NativeProtobuf` represents native Protobuf `schemaFormat` payload generation.
  *
  * Expected behavior is covered by:
  * - `GenerationPlannerTest`
@@ -16,5 +17,9 @@ sealed interface SchemaGeneration {
 
     data class NativeAvro(
         val generateSpecificRecords: Boolean = true,
+    ) : SchemaGeneration
+
+    data class NativeProtobuf(
+        val generateJavaMessageTypes: Boolean = true,
     ) : SchemaGeneration
 }

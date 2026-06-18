@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
@@ -25,9 +24,8 @@ abstract class AbstractKotlinGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
+        generateKafkaHeaders: Boolean = true,
         generateQuarkusKafkaClient: Boolean = false,
-        kafkaTopicsPropertyPrefix: String = "kafka.topics",
-        springKafkaClientType: SpringKafkaClientType = SpringKafkaClientType.FULL,
         modelAnnotation: String? = null,
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
@@ -53,11 +51,11 @@ abstract class AbstractKotlinGeneratorClass {
                     buildList {
                         if (generateSpringKafkaClient) {
                             add(
-                                ClientGeneration.SpringKafka(
+                                ClientGeneration.Kafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
-                                    clientType = springKafkaClientType,
-                                    topicPropertyPrefix = kafkaTopicsPropertyPrefix,
+                                    headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
+                                    springKafka = ClientGeneration.SpringKafka(),
                                 ),
                             )
                         }

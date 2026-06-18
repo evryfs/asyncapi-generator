@@ -69,6 +69,7 @@ internal enum class GeneratorApprovalFormat(
     AVRO("avro", "avsc"),
     NATIVE_AVRO_SCHEMA("native-avro/schema", "avsc"),
     NATIVE_AVRO_SPECIFIC_RECORD("native-avro/specific-record", "java"),
+    NATIVE_PROTOBUF_SCHEMA("native-protobuf/schema", "proto"),
 }
 
 private class GeneratorApprovalNamer(

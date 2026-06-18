@@ -1,0 +1,20 @@
+asyncapi: '3.0.0'
+info:
+  title: Native Protobuf Test API
+  version: '1.0.0'
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3";
+
+        package com.example.protobuf;
+
+        option java_package = "com.example.protobuf";
+        option java_multiple_files = true;
+
+        message UserCreated {
+          string user_id = 1;
+          string email = 2;
+        }

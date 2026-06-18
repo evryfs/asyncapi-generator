@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -78,18 +77,17 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create enables Spring Kafka client generation when client type is configured`() {
+    fun `create enables Kafka and Spring Kafka client generation when client package is configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
                     models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
                     clients =
                         GeneratorConfigurationRequest.Clients(
-                            springKafka =
-                                GeneratorConfigurationRequest.SpringKafka(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
                                     packageName = "com.example.client",
-                                    clientType = SpringKafkaClientType.SIMPLE,
-                                    topicPropertyPrefix = "custom.topics",
+                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
                                 ),
                         ),
                 ),
@@ -97,11 +95,10 @@ class GeneratorConfigurationFactoryTest {
 
         assertEquals(
             listOf(
-                ClientGeneration.SpringKafka(
+                ClientGeneration.Kafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.model",
-                    clientType = SpringKafkaClientType.SIMPLE,
-                    topicPropertyPrefix = "custom.topics",
+                    springKafka = ClientGeneration.SpringKafka(),
                 ),
             ),
             configuration.clients,
@@ -115,10 +112,11 @@ class GeneratorConfigurationFactoryTest {
                 request(
                     clients =
                         GeneratorConfigurationRequest.Clients(
-                            springKafka =
-                                GeneratorConfigurationRequest.SpringKafka(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
                                     packageName = "com.example.client",
                                     modelPackageName = "com.example.external.model",
+                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
                                 ),
                         ),
                 ),
@@ -126,10 +124,49 @@ class GeneratorConfigurationFactoryTest {
 
         assertEquals(
             listOf(
-                ClientGeneration.SpringKafka(
+                ClientGeneration.Kafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.external.model",
-                    clientType = SpringKafkaClientType.SIMPLE,
+                    springKafka = ClientGeneration.SpringKafka(),
+                ),
+            ),
+            configuration.clients,
+        )
+    }
+
+    @Test
+    fun `create maps kafka header and spring kafka generation options`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
+                                    packageName = "com.example.client",
+                                    headers = GeneratorConfigurationRequest.KafkaHeaders(enabled = false),
+                                    springKafka =
+                                        GeneratorConfigurationRequest.KafkaSpringKafka(
+                                            producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                                            consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
+                                        ),
+                                ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                ClientGeneration.Kafka(
+                    packageName = "com.example.client",
+                    modelPackageName = "com.example.model",
+                    headers = ClientGeneration.Headers(enabled = false),
+                    springKafka =
+                        ClientGeneration.SpringKafka(
+                            producer = ClientGeneration.Producer(enabled = false),
+                            consumer = ClientGeneration.Consumer(enabled = true),
+                        ),
                 ),
             ),
             configuration.clients,
@@ -179,6 +216,27 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create enables native Protobuf when schema mode is configured`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    schemas =
+                        GeneratorConfigurationRequest.Schemas(
+                            nativeProtobuf =
+                                GeneratorConfigurationRequest.NativeProtobuf(
+                                    generateJavaMessageTypes = false,
+                                ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create returns no configured output when no output requests are configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
@@ -198,14 +256,14 @@ class GeneratorConfigurationFactoryTest {
                     request(
                         clients =
                             GeneratorConfigurationRequest.Clients(
-                                springKafka = GeneratorConfigurationRequest.SpringKafka(),
+                                kafka = GeneratorConfigurationRequest.Kafka(),
                             ),
                     ),
                 )
             }
 
         assertEquals(
-            "clients.springKafka.packageName is required when clients.springKafka is configured",
+            "clients.kafka.packageName is required when clients.kafka is configured",
             exception.message,
         )
     }
@@ -218,9 +276,10 @@ class GeneratorConfigurationFactoryTest {
                     request(
                         clients =
                             GeneratorConfigurationRequest.Clients(
-                                springKafka =
-                                    GeneratorConfigurationRequest.SpringKafka(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
                                         packageName = "com.example.client",
+                                        springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
                                     ),
                             ),
                     ),
@@ -228,7 +287,7 @@ class GeneratorConfigurationFactoryTest {
             }
 
         assertEquals(
-            "clients.springKafka.modelPackageName is required when models.packageName is not configured",
+            "clients.kafka.modelPackageName is required when models.packageName is not configured",
             exception.message,
         )
     }
@@ -309,27 +368,6 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create rejects blank Kafka topics property prefix`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                GeneratorConfigurationFactory.create(
-                    request(
-                        clients =
-                            GeneratorConfigurationRequest.Clients(
-                                springKafka =
-                                    GeneratorConfigurationRequest.SpringKafka(
-                                        packageName = "com.example.client",
-                                        topicPropertyPrefix = "",
-                                    ),
-                            ),
-                    ),
-                )
-            }
-
-        assertEquals("clients.springKafka.topicPropertyPrefix cannot be empty", exception.message)
-    }
-
-    @Test
     fun `create rejects empty package names`() {
         assertConfigurationError(
             expectedMessage = "models.packageName cannot be empty",
@@ -352,15 +390,16 @@ class GeneratorConfigurationFactoryTest {
                 ),
         )
         assertConfigurationError(
-            expectedMessage = "clients.springKafka.packageName cannot be empty",
+            expectedMessage = "clients.kafka.packageName cannot be empty",
             request =
                 request(
                     clients =
                         GeneratorConfigurationRequest.Clients(
-                            springKafka =
-                                GeneratorConfigurationRequest.SpringKafka(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
                                     packageName = " ",
                                     modelPackageName = "com.example.model",
+                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
                                 ),
                         ),
                 ),
@@ -379,16 +418,17 @@ class GeneratorConfigurationFactoryTest {
         )
         assertConfigurationError(
             expectedMessage =
-                "clients.springKafka.modelPackageName must be a dot-separated package name, " +
+                "clients.kafka.modelPackageName must be a dot-separated package name, " +
                     "for example com.example.model",
             request =
                 request(
                     clients =
                         GeneratorConfigurationRequest.Clients(
-                            springKafka =
-                                GeneratorConfigurationRequest.SpringKafka(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
                                     packageName = "com.example.client",
                                     modelPackageName = "com.example.",
+                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
                                 ),
                         ),
                 ),

@@ -13,6 +13,19 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
     class UnexpectedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
 
+    class NativeSchemaAssetReadFailure(
+        reference: String,
+        path: String,
+        context: AsyncApiContext,
+        reason: String,
+    ) : AsyncApiParseException(
+            buildMessage(
+                "Native schema asset '$reference' could not be read. Reason: $reason",
+                path,
+                context,
+            ),
+        )
+
     class UnexpectedValue(
         receivedValue: String,
         expectedValue: String,

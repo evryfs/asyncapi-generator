@@ -26,6 +26,7 @@ class SchemaParser(
     private val bindingParser = BindingParser(asyncApiContext)
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val multiFormatParser = MultiFormatSchemaParser(asyncApiContext)
+    private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> = buildMap {
         val nodes = parserNode.extractNodes()
@@ -56,10 +57,16 @@ class SchemaParser(
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
             }
+            val schemaContent =
+                if (schemaFormat.isNativeAvro || schemaFormat.isNativeProtobuf) {
+                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.node
+                } else {
+                    schemaNode.node
+                }
             val multiFormatSchema =
                 MultiFormatSchema(
                     schemaFormat = format,
-                    schema = schemaNode.node,
+                    schema = schemaContent,
                     format = schemaFormat,
                 )
             return SchemaInterface.MultiFormatSchemaInline(multiFormatSchema)

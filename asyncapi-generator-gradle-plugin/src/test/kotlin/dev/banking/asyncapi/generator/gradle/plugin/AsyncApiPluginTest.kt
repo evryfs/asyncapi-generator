@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AsyncApiPluginTest {
@@ -109,8 +110,10 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.model")
                   }
                   clients {
-                      springKafka {
-                          enabled.set(true)
+                      kafka {
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }""")
@@ -118,37 +121,7 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "clients.springKafka.packageName is required when clients.springKafka is configured",
-            ),
-        )
-    }
-
-    @Test
-    fun `should fail if spring kafka mode is invalid`() {
-        val projectDir = Files.createTempDirectory("gradleTest").toFile()
-        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
-        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
-        GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("dev.banking.asyncapi.generator") }
-              asyncapiGenerate {
-                  inputFile.set(file("api.yaml"))
-                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
-                  generatorName.set("kotlin")
-                  models {
-                      packageName.set("com.example.model")
-                  }
-                  clients {
-                      springKafka {
-                          packageName.set("com.example.client")
-                          mode.set("basic")
-                      }
-                  }
-              }""")
-        val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
-        assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(
-            result.output.contains(
-                "Invalid clients.springKafka.mode 'basic'. Supported values: full, simple",
+                "clients.kafka.packageName is required when clients.kafka is configured",
             ),
         )
     }
@@ -259,8 +232,11 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.kafka.model")
                   }
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""
@@ -290,9 +266,12 @@ class AsyncApiPluginTest {
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   generatorName.set("kotlin")
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
                           modelPackageName.set("com.example.kafka.model")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""
@@ -326,8 +305,11 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.kafka.model")
                   }
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""
@@ -431,6 +413,73 @@ class AsyncApiPluginTest {
         assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
         assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
         assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("kotlin")
+                  schemas {
+                      nativeProtobuf {
+                          enabled.set(true)
+                      }
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaFile = File(projectDir, "build/generated-resources/asyncapi/com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = File(projectDir, "build/generated/asyncapi/src/main/java/com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema without Java message types when disabled`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
+        val yamlFile = File(yamlUrl.toURI())
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        yamlFile.copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("kotlin")
+                  schemas {
+                      nativeProtobuf {
+                          enabled.set(true)
+                          generateJavaMessageTypes.set(false)
+                      }
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaFile = File(projectDir, "build/generated-resources/asyncapi/com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = File(projectDir, "build/generated/asyncapi/src/main/java/com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
 
     @Test

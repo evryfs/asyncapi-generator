@@ -6,7 +6,9 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutput
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.javaSourceOutputDirectory
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.kafka
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobuf
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.models
@@ -14,10 +16,10 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.resourceOutputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemas
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.springKafka
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -48,7 +50,7 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             models(models(packageName = "com.example.kafka.model"))
-            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
+            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
             generatorName("kotlin")
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
@@ -63,7 +65,7 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
             models(models(packageName = "com.example.kafka.model"))
-            clients(clients(springKafka = springKafka(packageName = "com.example.kafka.client")))
+            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
             generatorName("java")
         }.execute()
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
@@ -96,8 +98,8 @@ class AsyncApiGeneratorMojoTest {
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-client-only"))
             clients(
                 clients(
-                    springKafka =
-                        springKafka(
+                    kafka =
+                        kafka(
                             packageName = "com.example.kafka.client",
                             modelPackageName = "com.example.kafka.model",
                         ),
@@ -166,6 +168,54 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
+    fun `should generate native protobuf schema`() {
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
+            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf"))
+            javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf-java"))
+            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-protobuf"))
+            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
+            generatorName("kotlin")
+        }.execute()
+
+        val schemaFile = File("target/generated-resources/asyncapi-native-protobuf/com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = File("target/generated-sources/asyncapi-native-protobuf-java/com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema without Java message types when disabled`() {
+        val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only")
+        val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only-java")
+        val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-schema-only")
+        codegenOutputDirectory.deleteRecursively()
+        javaSourceOutputDirectory.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+        codegenOutputDirectory.mkdirs()
+        javaSourceOutputDirectory.mkdirs()
+        resourceOutputDirectory.mkdirs()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
+            codegenOutputDirectory(codegenOutputDirectory)
+            javaSourceOutputDirectory(javaSourceOutputDirectory)
+            resourceOutputDirectory(resourceOutputDirectory)
+            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true, generateJavaMessageTypes = false)))
+            generatorName("kotlin")
+        }.execute()
+
+        val schemaFile = resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
+    }
+
+    @Test
     fun `should allow bundle-only output with no packages`() {
         val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml")
         if (bundledFile.exists()) bundledFile.delete()
@@ -218,22 +268,6 @@ class AsyncApiGeneratorMojoTest {
             "Invalid generatorName 'invalid-lang'. Supported values: kotlin, java",
             exception.message,
         )
-    }
-
-    @Test
-    fun `should fail when spring kafka mode is invalid`() {
-        val mojo = AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            codegenOutputDirectory(outputPath("target/should-fail-client-mode"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.fail"))
-            clients(clients(springKafka = springKafka(packageName = "com.fail.client", mode = "basic")))
-            generatorName("kotlin")
-        }
-        assertThrows<MojoExecutionException> {
-            mojo.execute()
-        }
     }
 
     @Test

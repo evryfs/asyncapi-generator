@@ -30,12 +30,8 @@ class GenerationPlanner {
 
                 configuration.clients.forEach { client ->
                     when (client) {
-                        is ClientGeneration.SpringKafka -> {
-                            require(client.topicPropertyPrefix.isNotBlank()) {
-                                "topicPropertyPrefix cannot be empty"
-                            }
-
-                            if (client.clientType != SpringKafkaClientType.SIMPLE) {
+                        is ClientGeneration.Kafka -> {
+                            if (client.headers.enabled) {
                                 add(
                                     GenerationTask.HeaderModelArtifacts(
                                         language = configuration.language,
@@ -43,15 +39,18 @@ class GenerationPlanner {
                                     ),
                                 )
                             }
-                            add(
-                                GenerationTask.SpringKafkaClient(
-                                    language = configuration.language,
-                                    clientType = client.clientType,
-                                    clientPackage = client.packageName,
-                                    modelPackage = client.modelPackageName,
-                                    topicPropertyPrefix = client.topicPropertyPrefix,
-                                ),
-                            )
+                            client.springKafka?.takeIf { it.hasEnabledOutput() }?.let { springKafka ->
+                                add(
+                                    GenerationTask.SpringKafkaClient(
+                                        language = configuration.language,
+                                        clientPackage = client.packageName,
+                                        modelPackage = client.modelPackageName,
+                                        generateHeaders = client.headers.enabled,
+                                        generateProducers = springKafka.producer.enabled,
+                                        generateConsumers = springKafka.consumer.enabled,
+                                    ),
+                                )
+                            }
                         }
                         is ClientGeneration.QuarkusKafka ->
                             add(GenerationTask.QuarkusKafkaClient(configuration.language))
@@ -68,9 +67,17 @@ class GenerationPlanner {
                                     generateSpecificRecords = schema.generateSpecificRecords,
                                 ),
                             )
+                        is SchemaGeneration.NativeProtobuf ->
+                            add(
+                                GenerationTask.NativeProtobufArtifacts(
+                                    generateJavaMessageTypes = schema.generateJavaMessageTypes,
+                                ),
+                            )
                     }
                 }
             },
         )
 
+    private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
+        producer.enabled || consumer.enabled
 }

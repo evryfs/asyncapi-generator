@@ -1,6 +1,4 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
-
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -69,43 +67,78 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
-    fun `spring kafka request is created only when client output is configured`() {
-        assertNull(GeneratorConfigurationRequest.springKafka())
+    fun `native protobuf request is created only when schema output is configured`() {
+        assertNull(GeneratorConfigurationRequest.nativeProtobuf())
+        assertNull(GeneratorConfigurationRequest.nativeProtobuf(enabled = false))
+
+        assertEquals(
+            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = true),
+            GeneratorConfigurationRequest.nativeProtobuf(enabled = true),
+        )
+        assertEquals(
+            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = false),
+            GeneratorConfigurationRequest.nativeProtobuf(generateJavaMessageTypes = false),
+        )
+    }
+
+    @Test
+    fun `kafka request is created only when client output is configured`() {
+        assertNull(GeneratorConfigurationRequest.kafka())
         assertNull(
-            GeneratorConfigurationRequest.springKafka(
+            GeneratorConfigurationRequest.kafka(
                 enabled = false,
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                mode = "full",
-                topicPropertyPrefix = "custom.topics",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
         )
 
         assertEquals(
-            GeneratorConfigurationRequest.SpringKafka(
+            GeneratorConfigurationRequest.Kafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                clientType = SpringKafkaClientType.FULL,
-                topicPropertyPrefix = "custom.topics",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
-            GeneratorConfigurationRequest.springKafka(
+            GeneratorConfigurationRequest.kafka(
                 packageName = "com.example.client",
                 modelPackageName = "com.example.model",
-                mode = "full",
-                topicPropertyPrefix = "custom.topics",
+                springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
             ),
         )
     }
 
     @Test
-    fun `spring kafka request defaults to simple mode and default topic prefix`() {
+    fun `kafka request can be created from package only`() {
         assertEquals(
-            GeneratorConfigurationRequest.SpringKafka(
+            GeneratorConfigurationRequest.Kafka(
                 packageName = "com.example.client",
-                clientType = SpringKafkaClientType.SIMPLE,
-                topicPropertyPrefix = GeneratorConfigurationRequest.DEFAULT_KAFKA_TOPICS_PROPERTY_PREFIX,
             ),
-            GeneratorConfigurationRequest.springKafka(packageName = "com.example.client"),
+            GeneratorConfigurationRequest.kafka(packageName = "com.example.client"),
+        )
+    }
+
+    @Test
+    fun `spring kafka request is created only when kafka spring kafka output is configured`() {
+        assertNull(GeneratorConfigurationRequest.kafkaSpringKafka())
+        assertNull(
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                enabled = false,
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = false),
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(),
+            GeneratorConfigurationRequest.kafkaSpringKafka(enabled = true),
+        )
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+            ),
         )
     }
 

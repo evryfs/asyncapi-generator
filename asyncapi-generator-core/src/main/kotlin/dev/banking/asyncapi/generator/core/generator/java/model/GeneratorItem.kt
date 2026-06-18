@@ -41,19 +41,6 @@ sealed interface GeneratorItem {
         val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
-    data class KafkaListenerClass(
-        override val name: String,
-        override val packageName: String,
-        override val description: List<String>,
-        val topic: String,
-        val groupId: String,
-        val handlerInterface: String,
-        val payloadType: String,
-        val methodName: String,
-        val imports: List<String> = emptyList(),
-        val topicPropertyKey: String,
-    ) : GeneratorItem
-
     data class KafkaProducerClass(
         override val name: String,
         override val packageName: String,
@@ -62,16 +49,27 @@ sealed interface GeneratorItem {
         val sendMethods: List<SendMethod>,
         val kafkaValueType: String,
         val imports: List<String> = emptyList(),
-        val topicPropertyKey: String,
     ) : GeneratorItem
 
     data class HandlerMethod(
         val methodName: String,
         val payloadType: String,
-    )
+        val headerType: String? = null,
+    ) {
+        val hasHeaders: Boolean get() = headerType != null
+    }
 
     data class SendMethod(
         val methodName: String,
         val payloadType: String,
+        val headerType: String? = null,
+        val headerProperties: List<HeaderProperty> = emptyList(),
+    ) {
+        val hasHeaders: Boolean get() = headerType != null
+    }
+
+    data class HeaderProperty(
+        val name: String,
+        val accessorName: String,
     )
 }

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifactGeneration
+import dev.banking.asyncapi.generator.core.generator.artifact.NativeProtobufArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputCompatibilityValidator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
@@ -28,6 +29,7 @@ class AsyncApiGenerator {
     private val modelArtifactGeneration = ModelArtifactGeneration()
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
     private val nativeAvroArtifactGeneration = NativeAvroArtifactGeneration()
+    private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration()
     private val springKafkaClientGeneration = SpringKafkaClientGeneration()
 
     fun generate(
@@ -75,6 +77,12 @@ class AsyncApiGenerator {
                     log.info("Generate ${task.language.name.titlecase()} Quarkus Kafka Client is not yet implemented. Skipping..")
                 is GenerationTask.NativeAvroArtifacts ->
                     nativeAvroArtifactGeneration.generate(
+                        task = task,
+                        generationInput = generationInput,
+                        artifactWriter = artifactWriter,
+                    )
+                is GenerationTask.NativeProtobufArtifacts ->
+                    nativeProtobufArtifactGeneration.generate(
                         task = task,
                         generationInput = generationInput,
                         artifactWriter = artifactWriter,
