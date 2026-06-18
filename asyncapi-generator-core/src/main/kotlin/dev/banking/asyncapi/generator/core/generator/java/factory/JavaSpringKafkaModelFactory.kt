@@ -91,7 +91,6 @@ class JavaSpringKafkaModelFactory(
                         sendMethods = listOf(sendMethod),
                         kafkaValueType = payload.payloadType,
                         imports = imports,
-                        topicPropertyKey = "",
                     ),
                 )
             }

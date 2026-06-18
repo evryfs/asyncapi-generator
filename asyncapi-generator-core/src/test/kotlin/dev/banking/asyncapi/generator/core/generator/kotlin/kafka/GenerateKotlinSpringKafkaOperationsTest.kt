@@ -48,12 +48,12 @@ class GenerateKotlinSpringKafkaOperationsTest {
         )
         assertFalse(
             outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
-            "Listener should NOT exist"
+            "Consumer should NOT exist"
         )
     }
 
     @Test
-    fun `should generate ONLY listener when isConsumer=true`() {
+    fun `should generate ONLY consumer when isConsumer=true`() {
         outputDir.deleteRecursively()
 
         val channel =
@@ -80,7 +80,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
         )
         assertTrue(
             outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
-            "Listener should exist"
+            "Consumer should exist"
         )
     }
 
@@ -112,7 +112,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
         )
         assertTrue(
             outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
-            "Listener should exist"
+            "Consumer should exist"
         )
     }
 
@@ -144,7 +144,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
         )
         assertFalse(
             outputDir.resolve("$packagePath/consumer/EventsConsumer.kt").exists(),
-            "Listener should NOT exist"
+            "Consumer should NOT exist"
         )
     }
 }

@@ -90,7 +90,6 @@ class KotlinSpringKafkaModelFactory(
                         sendMethods = listOf(sendMethod),
                         kafkaValueType = payload.payloadType,
                         imports = imports,
-                        topicPropertyKey = "",
                     ),
                 )
             }
