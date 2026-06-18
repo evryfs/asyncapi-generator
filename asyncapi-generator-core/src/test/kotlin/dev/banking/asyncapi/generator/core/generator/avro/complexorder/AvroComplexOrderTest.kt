@@ -35,7 +35,7 @@ class AvroComplexOrderTest : AbstractAvroGeneratorClass() {
             content.contains("\"type\": \"dev.banking.avro.CustomerWithContacts\""),
             "Customer reference missing or incorrect"
         )
-        assertTrue(content.contains("{\"type\": \"array\", \"items\": \"string\"}"), "Array should default to string items for now")
+        assertTrue(content.contains("{\"type\": \"array\", \"items\": \"dev.banking.avro.OrderLineType\"}"), "Array should default to string items for now")
     }
 
     @Test

@@ -1,0 +1,25 @@
+asyncapi: 3.0.0
+info:
+  title: OneOf Composition Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    Payment:
+      type: object
+      required:
+        - paymentType
+      properties:
+        paymentType:
+          type: string
+    PaymentBulk:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    PaymentOperation:
+      oneOf:
+        - $ref: '#/components/schemas/Payment'
+        - $ref: '#/components/schemas/PaymentBulk'
