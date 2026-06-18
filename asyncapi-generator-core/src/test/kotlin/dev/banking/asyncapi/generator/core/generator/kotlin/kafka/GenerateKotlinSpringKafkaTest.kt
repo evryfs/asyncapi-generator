@@ -42,6 +42,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
         assertTrue(consumerContent.contains("fun onUserSignedUp"))
         assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"))
+        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
         assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
     }
 
@@ -72,6 +73,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
                     "headers: TopicUserEventsHeadersUserSignup)",
             ),
         )
+        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.kt").readText()
         assertTrue(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
@@ -118,6 +120,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains(".client.header."))
         assertFalse(consumerContent.contains("TopicUserEventsHeadersUserSignup"))
         assertTrue(consumerContent.contains("fun onUserSignup(record: ConsumerRecord<String, UserSignupPayload>)"))
+        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.kt").readText()
         assertFalse(producerContent.contains(".client.header."))

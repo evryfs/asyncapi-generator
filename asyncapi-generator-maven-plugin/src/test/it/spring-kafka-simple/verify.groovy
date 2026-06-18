@@ -13,4 +13,5 @@ assert consumer.exists() : "Expected UserEventsConsumer.kt to be generated"
 def consumerContent = consumer.text
 assert consumerContent.contains("interface UserEventsConsumer") : "Expected consumer interface"
 assert consumerContent.contains("fun onUserSignedUp") : "Expected onUserSignedUp method"
+assert !consumerContent.contains("{ }") : "Expected abstract consumer method"
 assert !consumerContent.contains("@KafkaListener") : "Simple consumer should not be annotated"

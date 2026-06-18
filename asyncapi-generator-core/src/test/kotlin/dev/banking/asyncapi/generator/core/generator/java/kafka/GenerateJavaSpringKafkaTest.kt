@@ -40,7 +40,8 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertTrue(consumerFile.exists(), "Consumer should be generated")
         val consumerContent = consumerFile.readText()
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
-        assertTrue(consumerContent.contains("default void onUserSignedUp"))
+        assertTrue(consumerContent.contains("void onUserSignedUp"))
+        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
         assertTrue(consumerContent.contains("ConsumerRecord<String, UserSignedUpPayload>"))
         assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
     }
@@ -68,10 +69,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertTrue(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
         assertTrue(
             consumerContent.contains(
-                "default void onUserSignup(ConsumerRecord<String, UserSignupPayload> record, " +
-                    "TopicUserEventsHeadersUserSignup headers)",
+                "void onUserSignup(ConsumerRecord<String, UserSignupPayload> record, " +
+                    "TopicUserEventsHeadersUserSignup headers);",
             ),
         )
+        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.java").readText()
         assertTrue(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
@@ -117,7 +119,8 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
         assertFalse(consumerContent.contains(".client.header."))
         assertFalse(consumerContent.contains("TopicUserEventsHeadersUserSignup"))
-        assertTrue(consumerContent.contains("default void onUserSignup(ConsumerRecord<String, UserSignupPayload> record)"))
+        assertTrue(consumerContent.contains("void onUserSignup(ConsumerRecord<String, UserSignupPayload> record);"))
+        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.java").readText()
         assertFalse(producerContent.contains(".client.header."))
