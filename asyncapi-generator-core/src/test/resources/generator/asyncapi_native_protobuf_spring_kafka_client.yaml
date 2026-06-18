@@ -1,0 +1,28 @@
+asyncapi: '3.0.0'
+info:
+  title: Native Protobuf Spring Kafka Client Test API
+  version: '1.0.0'
+channels:
+  userEvents:
+    address: user.events
+    messages:
+      userCreated:
+        name: UserCreated
+        payload:
+          $ref: '#/components/schemas/UserCreated'
+components:
+  schemas:
+    UserCreated:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3";
+
+        package banking.events;
+
+        option java_package = "com.example.protobuf";
+        option java_multiple_files = true;
+
+        message UserCreated {
+          string user_id = 1;
+          string email = 2;
+        }

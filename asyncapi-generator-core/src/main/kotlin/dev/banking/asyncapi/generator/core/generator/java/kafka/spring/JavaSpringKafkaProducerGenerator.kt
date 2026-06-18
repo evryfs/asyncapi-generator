@@ -17,7 +17,8 @@ class JavaSpringKafkaProducerGenerator(
         template.execute(writer, model).flush()
 
         val packageDir = FileUtil.packageDirectory(outputDir, model.packageName)
-        val file = File(packageDir, "${model.name}.java")
-        file.writeText(writer.toString())
+        val outputFile = File(packageDir, "${model.name}.java")
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText(writer.toString())
     }
 }

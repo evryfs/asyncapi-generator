@@ -1,0 +1,10 @@
+asyncapi: '3.0.0'
+info:
+  title: Missing Native Schema Asset Parser Test API
+  version: '1.0.0'
+components:
+  schemas:
+    MissingNativeAvroSchema:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        $ref: missing-user-created.avsc

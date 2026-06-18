@@ -11,6 +11,9 @@ components:
 
         package com.example.protobuf;
 
+        option java_package = "com.example.protobuf";
+        option java_multiple_files = true;
+
         message UserCreated {
           string user_id = 1;
           string email = 2;

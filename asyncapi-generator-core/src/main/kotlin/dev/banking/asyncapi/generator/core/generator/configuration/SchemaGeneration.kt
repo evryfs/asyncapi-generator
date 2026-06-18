@@ -19,5 +19,7 @@ sealed interface SchemaGeneration {
         val generateSpecificRecords: Boolean = true,
     ) : SchemaGeneration
 
-    data object NativeProtobuf : SchemaGeneration
+    data class NativeProtobuf(
+        val generateJavaMessageTypes: Boolean = true,
+    ) : SchemaGeneration
 }

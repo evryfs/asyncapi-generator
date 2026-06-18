@@ -36,7 +36,7 @@ class GenerationInputCompatibilityValidator {
                     )
                 is GenerationTask.HeaderModelArtifacts,
                 is GenerationTask.NativeAvroArtifacts,
-                GenerationTask.NativeProtobufArtifacts,
+                is GenerationTask.NativeProtobufArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
             }
@@ -63,7 +63,7 @@ class GenerationInputCompatibilityValidator {
             generationInput.channels
                 .asSequence()
                 .flatMap { channel -> channel.multiFormatMessages.asSequence() }
-                .filterNot { message -> message.schema.format.isNativeAvro }
+                .filterNot { message -> message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf }
                 .firstOrNull() ?: return
 
         throw UnsupportedPayloadSchemaFormat(

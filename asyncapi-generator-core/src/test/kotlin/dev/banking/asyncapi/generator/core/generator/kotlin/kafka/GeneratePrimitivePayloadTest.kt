@@ -35,12 +35,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val handlerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/handler/TopicSimpleTopicHandlerSimpleStringMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/consumer/SimpleTopicConsumer.kt")
         assertTrue(handlerFile.exists())
 
         val content = handlerFile.readText()
@@ -53,13 +51,17 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName.replace(
                     '.',
                     '/'
-                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.kt"
+                ) + "/producer/SimpleTopicProducerSimpleStringMessage.kt"
             )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
             producerContent.contains("KafkaTemplate<String, String>"),
             "Producer should use typed KafkaTemplate for single payload",
+        )
+        assertTrue(
+            producerContent.contains("CompletableFuture<SendResult<String, String>>"),
+            "Producer should return the Spring Kafka send result future",
         )
     }
 
@@ -94,14 +96,12 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerStringMessage.kt")
         val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.kt")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerIntMessage.kt")
         assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
         assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
         val producerContentA = producerFileA.readText()
@@ -111,8 +111,16 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             "StringMessage producer should use typed KafkaTemplate",
         )
         assertTrue(
+            producerContentA.contains("CompletableFuture<SendResult<String, String>>"),
+            "StringMessage producer should return the Spring Kafka send result future",
+        )
+        assertTrue(
             producerContentB.contains("KafkaTemplate<String, Int>"),
             "IntMessage producer should use typed KafkaTemplate",
+        )
+        assertTrue(
+            producerContentB.contains("CompletableFuture<SendResult<String, Int>>"),
+            "IntMessage producer should return the Spring Kafka send result future",
         )
     }
 }
