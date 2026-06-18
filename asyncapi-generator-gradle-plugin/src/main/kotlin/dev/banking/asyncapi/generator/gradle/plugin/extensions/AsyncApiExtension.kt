@@ -118,13 +118,13 @@ abstract class AsyncApiNativeProtobufExtension @Inject constructor(objects: Obje
  * - `AsyncApiPluginTest`
  */
 abstract class AsyncApiClientsExtension @Inject constructor(objects: ObjectFactory) {
-    val springKafka: AsyncApiSpringKafkaExtension =
-        objects.newInstance(AsyncApiSpringKafkaExtension::class.java)
+    val kafka: AsyncApiKafkaExtension =
+        objects.newInstance(AsyncApiKafkaExtension::class.java)
     val quarkusKafka: AsyncApiQuarkusKafkaExtension =
         objects.newInstance(AsyncApiQuarkusKafkaExtension::class.java)
 
-    fun springKafka(action: Action<AsyncApiSpringKafkaExtension>) {
-        action.execute(springKafka)
+    fun kafka(action: Action<AsyncApiKafkaExtension>) {
+        action.execute(kafka)
     }
 
     fun quarkusKafka(action: Action<AsyncApiQuarkusKafkaExtension>) {
@@ -133,17 +133,79 @@ abstract class AsyncApiClientsExtension @Inject constructor(objects: ObjectFacto
 }
 
 /**
- * Gradle Spring Kafka client configuration.
+ * Gradle Kafka client configuration.
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
  */
-abstract class AsyncApiSpringKafkaExtension @Inject constructor(objects: ObjectFactory) {
+abstract class AsyncApiKafkaExtension @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val packageName: Property<String> = objects.property(String::class.java)
     val modelPackageName: Property<String> = objects.property(String::class.java)
-    val mode: Property<String> = objects.property(String::class.java)
-    val topicPropertyPrefix: Property<String> = objects.property(String::class.java)
+    val headers: AsyncApiKafkaHeadersExtension =
+        objects.newInstance(AsyncApiKafkaHeadersExtension::class.java)
+    val springKafka: AsyncApiKafkaSpringKafkaExtension =
+        objects.newInstance(AsyncApiKafkaSpringKafkaExtension::class.java)
+
+    fun headers(action: Action<AsyncApiKafkaHeadersExtension>) {
+        action.execute(headers)
+    }
+
+    fun springKafka(action: Action<AsyncApiKafkaSpringKafkaExtension>) {
+        action.execute(springKafka)
+    }
+}
+
+/**
+ * Gradle Kafka header generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiKafkaHeadersExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+}
+
+/**
+ * Gradle Spring Kafka client generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiKafkaSpringKafkaExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+    val producer: AsyncApiKafkaProducerExtension =
+        objects.newInstance(AsyncApiKafkaProducerExtension::class.java)
+    val consumer: AsyncApiKafkaConsumerExtension =
+        objects.newInstance(AsyncApiKafkaConsumerExtension::class.java)
+
+    fun producer(action: Action<AsyncApiKafkaProducerExtension>) {
+        action.execute(producer)
+    }
+
+    fun consumer(action: Action<AsyncApiKafkaConsumerExtension>) {
+        action.execute(consumer)
+    }
+}
+
+/**
+ * Gradle Spring Kafka producer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiKafkaProducerExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+}
+
+/**
+ * Gradle Spring Kafka consumer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+abstract class AsyncApiKafkaConsumerExtension @Inject constructor(objects: ObjectFactory) {
+    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
 }
 
 /**

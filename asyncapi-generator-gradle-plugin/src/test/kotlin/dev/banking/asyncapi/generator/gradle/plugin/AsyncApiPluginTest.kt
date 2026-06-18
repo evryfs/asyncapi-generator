@@ -110,8 +110,10 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.model")
                   }
                   clients {
-                      springKafka {
-                          enabled.set(true)
+                      kafka {
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }""")
@@ -119,37 +121,7 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "clients.springKafka.packageName is required when clients.springKafka is configured",
-            ),
-        )
-    }
-
-    @Test
-    fun `should fail if spring kafka mode is invalid`() {
-        val projectDir = Files.createTempDirectory("gradleTest").toFile()
-        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
-        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
-        GradleTestHelper.writeBuildScript(projectDir, """
-              plugins { id("dev.banking.asyncapi.generator") }
-              asyncapiGenerate {
-                  inputFile.set(file("api.yaml"))
-                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
-                  generatorName.set("kotlin")
-                  models {
-                      packageName.set("com.example.model")
-                  }
-                  clients {
-                      springKafka {
-                          packageName.set("com.example.client")
-                          mode.set("basic")
-                      }
-                  }
-              }""")
-        val result = GradleTestHelper.runGradleAndFail(projectDir, "generateAsyncApi")
-        assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(
-            result.output.contains(
-                "Invalid clients.springKafka.mode 'basic'. Supported values: full, simple",
+                "clients.kafka.packageName is required when clients.kafka is configured",
             ),
         )
     }
@@ -260,8 +232,11 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.kafka.model")
                   }
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""
@@ -291,9 +266,12 @@ class AsyncApiPluginTest {
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   generatorName.set("kotlin")
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
                           modelPackageName.set("com.example.kafka.model")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""
@@ -327,8 +305,11 @@ class AsyncApiPluginTest {
                       packageName.set("com.example.kafka.model")
                   }
                   clients {
-                      springKafka {
+                      kafka {
                           packageName.set("com.example.kafka.client")
+                          springKafka {
+                              enabled.set(true)
+                          }
                       }
                   }
               }"""

@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -94,32 +93,48 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         "false" to false,
     )
 
-    private val clientsSpringKafka by option(
-        "--clients-spring-kafka",
-        help = "Enable Spring Kafka client generation",
+    private val clientsKafka by option(
+        "--clients-kafka",
+        help = "Enable Kafka client generation",
     ).flag(default = false)
 
-    private val clientsSpringKafkaPackage by option(
-        "--clients-spring-kafka-package",
-        help = "Package for generated Spring Kafka clients",
+    private val clientsKafkaPackage by option(
+        "--clients-kafka-package",
+        help = "Package for generated Kafka clients",
     )
 
-    private val clientsSpringKafkaModelPackage by option(
-        "--clients-spring-kafka-model-package",
-        help = "Package containing model types used by generated Spring Kafka clients",
+    private val clientsKafkaModelPackage by option(
+        "--clients-kafka-model-package",
+        help = "Package containing model types used by generated Kafka clients",
     )
 
-    private val clientsSpringKafkaMode by option(
-        "--clients-spring-kafka-mode",
-        help = "Spring Kafka generation mode (default: simple)",
+    private val clientsKafkaHeaders by option(
+        "--clients-kafka-headers",
+        help = "Generate typed Kafka header models when headers are defined (default: true)",
     ).choice(
-        SpringKafkaClientType.FULL.configurationValue to SpringKafkaClientType.FULL,
-        SpringKafkaClientType.SIMPLE.configurationValue to SpringKafkaClientType.SIMPLE,
+        "true" to true,
+        "false" to false,
     )
 
-    private val clientsSpringKafkaTopicPropertyPrefix by option(
-        "--clients-spring-kafka-topic-property-prefix",
-        help = "Spring Kafka topic property prefix (default: kafka.topics)",
+    private val clientsKafkaSpringKafka by option(
+        "--clients-kafka-spring-kafka",
+        help = "Enable Spring Kafka client generation under Kafka clients",
+    ).flag(default = false)
+
+    private val clientsKafkaSpringKafkaProducer by option(
+        "--clients-kafka-spring-kafka-producer",
+        help = "Generate Spring Kafka producer APIs (default: true)",
+    ).choice(
+        "true" to true,
+        "false" to false,
+    )
+
+    private val clientsKafkaSpringKafkaConsumer by option(
+        "--clients-kafka-spring-kafka-consumer",
+        help = "Generate Spring Kafka consumer APIs (default: true)",
+    ).choice(
+        "true" to true,
+        "false" to false,
     )
 
     private val clientsQuarkusKafka by option(
@@ -220,13 +235,24 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     private fun clientRequest(): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
-            springKafka =
-                GeneratorConfigurationRequest.springKafka(
-                    enabled = true.takeIf { clientsSpringKafka },
-                    packageName = clientsSpringKafkaPackage,
-                    modelPackageName = clientsSpringKafkaModelPackage,
-                    mode = clientsSpringKafkaMode?.configurationValue,
-                    topicPropertyPrefix = clientsSpringKafkaTopicPropertyPrefix,
+            kafka =
+                GeneratorConfigurationRequest.kafka(
+                    enabled = true.takeIf { clientsKafka },
+                    packageName = clientsKafkaPackage,
+                    modelPackageName = clientsKafkaModelPackage,
+                    headers = GeneratorConfigurationRequest.kafkaHeaders(enabled = clientsKafkaHeaders),
+                    springKafka =
+                        GeneratorConfigurationRequest.kafkaSpringKafka(
+                            enabled = true.takeIf { clientsKafkaSpringKafka },
+                            producer =
+                                GeneratorConfigurationRequest.kafkaProducer(
+                                    enabled = clientsKafkaSpringKafkaProducer,
+                                ),
+                            consumer =
+                                GeneratorConfigurationRequest.kafkaConsumer(
+                                    enabled = clientsKafkaSpringKafkaConsumer,
+                                ),
+                        ),
                 ),
             quarkusKafka =
                 GeneratorConfigurationRequest.quarkusKafka(

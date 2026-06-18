@@ -6,18 +6,19 @@ import dev.banking.asyncapi.generator.core.generator.util.FileUtil
 import java.io.File
 import java.io.StringWriter
 
-class JavaSpringKafkaListenerGenerator(
+class JavaSpringKafkaConsumerGenerator(
     private val outputDir: File,
 ) {
     private val mustacheFactory = DefaultMustacheFactory("java")
 
-    fun generate(model: GeneratorItem.KafkaListenerClass) {
-        val template = mustacheFactory.compile("spring-kafka-listener.mustache")
+    fun generate(model: GeneratorItem.KafkaHandlerInterface) {
+        val template = mustacheFactory.compile("spring-kafka-consumer.mustache")
         val writer = StringWriter()
         template.execute(writer, model).flush()
 
         val packageDir = FileUtil.packageDirectory(outputDir, model.packageName)
-        val file = File(packageDir, "${model.name}.java")
-        file.writeText(writer.toString())
+        val outputFile = File(packageDir, "${model.name}.java")
+        outputFile.parentFile.mkdirs()
+        outputFile.writeText(writer.toString())
     }
 }

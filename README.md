@@ -42,12 +42,14 @@ Example usage in your `pom.xml`:
                     <packageName>my.package.path.model</packageName>
                 </models>
                 <clients>
-                    <springKafka>
+                    <kafka>
                         <packageName>my.package.path.client</packageName>
                         <!-- Optional: defaults to models.packageName when models are configured -->
                         <modelPackageName>my.package.path.model</modelPackageName>
-                        <mode>simple</mode> <!-- options: full, simple - default simple -->
-                    </springKafka>
+                        <springKafka>
+                            <enabled>true</enabled>
+                        </springKafka>
+                    </kafka>
                 </clients>
                 <schemas>
                     <avroProjection>
@@ -78,11 +80,13 @@ asyncapiGenerate {
         packageName.set("my.package.path.model")
     }
     clients {
-        springKafka {
+        kafka {
             packageName.set("my.package.path.client")
             // Optional: defaults to models.packageName when models are configured
             modelPackageName.set("my.package.path.model")
-            mode.set("simple") // options: full, simple - default simple
+            springKafka {
+                enabled.set(true)
+            }
         }
     }
     schemas {
@@ -111,11 +115,13 @@ asyncapiGenerate {
         packageName = 'my.package.path.model'
     }
     clients {
-        springKafka {
+        kafka {
             packageName = 'my.package.path.client'
             // Optional: defaults to models.packageName when models are configured
             modelPackageName = 'my.package.path.model'
-            mode = 'simple' // options: full, simple - default simple
+            springKafka {
+                enabled = true
+            }
         }
     }
     schemas {
@@ -301,24 +307,21 @@ Generated Java Protobuf message sources are produced by running `protoc` during 
 
 ### Spring Kafka Clients
 
-Spring Kafka output is configured under `clients.springKafka`.
+Spring Kafka output is configured under `clients.kafka.springKafka`.
 
-Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.springKafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
+Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.kafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
 
-For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer, consumer, listener, and handler APIs.
+Kafka client configuration can also be narrowed by capability. `clients.kafka.headers.enabled` controls typed header model generation, and `clients.kafka.springKafka.producer.enabled` / `clients.kafka.springKafka.consumer.enabled` control whether producer and consumer artifacts are generated.
+
+For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer and consumer APIs.
 
 For native Protobuf message payloads, generated Spring Kafka clients use the Java type declared by `option java_package`, or by the Protobuf `package` when `java_package` is omitted. Protobuf client generation requires `option java_multiple_files = true;` so the generated message can be referenced as a top-level Java type. The `.proto` schema must contain a top-level message matching the payload name.
 
 The generator does not configure Kafka Avro or Protobuf serializers and deserializers yet; applications still own that runtime wiring.
 
-The current generator has two modes:
+Generated Spring Kafka clients are contract-only source artifacts. Producer-oriented channels generate producer wrappers around application-provided `KafkaTemplate` instances and return Spring Kafka `CompletableFuture<SendResult<...>>` values from send methods. Consumer-oriented channels generate consumer interfaces with abstract methods that receive typed `ConsumerRecord` values. The generator does not create Spring Boot auto-configuration, `@KafkaListener` classes, listener containers, serializer configuration, deserializer configuration, or schema registry configuration.
 
-- `mode = "full"` generates Spring Boot-oriented client artifacts. This includes producer classes, listener classes, handler interfaces, an auto-configuration class, and the Spring Boot auto-configuration import resource. Generated producers and listeners use topic property keys, for example `kafka.topics.customerUpdated`, instead of hard-coding topic names directly in the generated source.
-- `mode = "simple"` generates lightweight producer and consumer source artifacts without Spring Boot auto-configuration. The application owns how those generated types are instantiated and connected to Spring Kafka infrastructure.
-
-When `mode` is omitted, the generator uses `simple`.
-
-The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer, listener, or handler artifacts depending on the selected mode. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
+The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer artifacts. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
 
 The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
 

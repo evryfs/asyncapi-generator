@@ -24,10 +24,11 @@ sealed interface GenerationTask {
 
     data class SpringKafkaClient(
         val language: GeneratorName,
-        val clientType: SpringKafkaClientType,
         val clientPackage: String,
         val modelPackage: String,
-        val topicPropertyPrefix: String,
+        val generateHeaders: Boolean = true,
+        val generateProducers: Boolean = true,
+        val generateConsumers: Boolean = true,
     ) : GenerationTask
 
     data class QuarkusKafkaClient(

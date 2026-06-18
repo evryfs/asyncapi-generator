@@ -9,9 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufPayl
  *
  * Expected behavior is covered by:
  * - `GenerateKotlinSpringKafkaTest`
- * - `GenerateKotlinSpringKafkaSimpleTest`
- * - `GenerateJavaSpringKafkaClientTest`
- * - `GenerateJavaSpringKafkaSimpleTest`
+ * - `GenerateJavaSpringKafkaTest`
  */
 class NativeKafkaPayloadResolver(
     private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),

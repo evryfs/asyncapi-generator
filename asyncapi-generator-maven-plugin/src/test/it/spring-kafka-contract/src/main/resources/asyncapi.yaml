@@ -1,6 +1,6 @@
 asyncapi: 3.0.0
 info:
-  title: Spring Kafka Simple IT
+  title: Spring Kafka Contract IT
   version: 1.0.0
 channels:
   userEvents:

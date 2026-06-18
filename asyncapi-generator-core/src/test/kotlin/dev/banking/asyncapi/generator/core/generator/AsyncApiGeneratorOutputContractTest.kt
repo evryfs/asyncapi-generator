@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -246,10 +245,10 @@ class AsyncApiGeneratorOutputContractTest {
                     resourceOutputDirectory = resourceOutputDirectory,
                     clients =
                         listOf(
-                            ClientGeneration.SpringKafka(
+                            ClientGeneration.Kafka(
                                 packageName = "com.example.kafka",
                                 modelPackageName = "com.example.model",
-                                clientType = SpringKafkaClientType.SIMPLE,
+                                springKafka = ClientGeneration.SpringKafka(),
                             ),
                         ),
                 ),
