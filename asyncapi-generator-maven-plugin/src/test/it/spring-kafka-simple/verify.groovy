@@ -4,6 +4,7 @@ assert producer.exists() : "Expected UserEventsProducerUserSignedUp.kt to be gen
 def producerContent = producer.text
 assert producerContent.contains("class UserEventsProducerUserSignedUp") : "Expected producer class name"
 assert producerContent.contains("KafkaTemplate<String, UserSignedUp>") : "Expected typed KafkaTemplate"
+assert producerContent.contains("CompletableFuture<SendResult<String, UserSignedUp>>") : "Expected producer send future return type"
 assert !producerContent.contains("@Component") : "Simple producer should not be annotated"
 
 def consumer = new File(basedir, "target/generated-sources/asyncapi/com/example/simple/client/consumer/UserEventsConsumer.kt")

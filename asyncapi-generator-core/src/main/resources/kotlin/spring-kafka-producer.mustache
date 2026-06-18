@@ -14,16 +14,20 @@ class {{name}}(
     private val topic: String
 ) {
     {{#sendMethods}}
-    fun {{methodName}}(key: String, message: {{payloadType}}{{#hasHeaders}}, headers: {{headerType}}{{/hasHeaders}}) {
+    fun {{methodName}}(
+        key: String,
+        message: {{payloadType}}{{#hasHeaders}},
+        headers: {{headerType}}{{/hasHeaders}}
+    ): CompletableFuture<SendResult<String, {{kafkaValueType}}>> {
 {{#hasHeaders}}
         val record = ProducerRecord(topic, key, message)
 {{#headerProperties}}
         headers.{{accessorName}}?.let { record.headers().add("{{name}}", it.toString().toByteArray(Charsets.UTF_8)) }
 {{/headerProperties}}
-        kafkaTemplate.send(record)
+        return kafkaTemplate.send(record)
 {{/hasHeaders}}
 {{^hasHeaders}}
-        kafkaTemplate.send(ProducerRecord(topic, key, message))
+        return kafkaTemplate.send(ProducerRecord(topic, key, message))
 {{/hasHeaders}}
     }
     {{/sendMethods}}

@@ -59,6 +59,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             producerContent.contains("KafkaTemplate<String, String>"),
             "Producer should use typed KafkaTemplate for single payload",
         )
+        assertTrue(
+            producerContent.contains("CompletableFuture<SendResult<String, String>>"),
+            "Producer should return the Spring Kafka send result future",
+        )
     }
 
     @Test
@@ -107,8 +111,16 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             "StringMessage producer should use typed KafkaTemplate",
         )
         assertTrue(
+            producerContentA.contains("CompletableFuture<SendResult<String, String>>"),
+            "StringMessage producer should return the Spring Kafka send result future",
+        )
+        assertTrue(
             producerContentB.contains("KafkaTemplate<String, Int>"),
             "IntMessage producer should use typed KafkaTemplate",
+        )
+        assertTrue(
+            producerContentB.contains("CompletableFuture<SendResult<String, Int>>"),
+            "IntMessage producer should return the Spring Kafka send result future",
         )
     }
 }

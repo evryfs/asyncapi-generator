@@ -59,8 +59,10 @@ class JavaSpringKafkaModelFactory(
             val imports =
                 (
                     baseImports +
+                        "java.util.concurrent.CompletableFuture" +
                         "org.apache.kafka.clients.producer.ProducerRecord" +
                         "org.springframework.kafka.core.KafkaTemplate" +
+                        "org.springframework.kafka.support.SendResult" +
                         listOfNotNull("java.nio.charset.StandardCharsets".takeIf { payloads.any { it.headerProperties.isNotEmpty() } })
                 )
                     .distinct()

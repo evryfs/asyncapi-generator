@@ -56,7 +56,13 @@ class KotlinSpringKafkaModelFactory(
 
         if (channel.isProducer && generateProducers) {
             val imports =
-                (baseImports + "org.apache.kafka.clients.producer.ProducerRecord" + "org.springframework.kafka.core.KafkaTemplate")
+                (
+                    baseImports +
+                        "java.util.concurrent.CompletableFuture" +
+                        "org.apache.kafka.clients.producer.ProducerRecord" +
+                        "org.springframework.kafka.core.KafkaTemplate" +
+                        "org.springframework.kafka.support.SendResult"
+                )
                     .distinct()
                     .sorted()
             payloads.forEach { payload ->

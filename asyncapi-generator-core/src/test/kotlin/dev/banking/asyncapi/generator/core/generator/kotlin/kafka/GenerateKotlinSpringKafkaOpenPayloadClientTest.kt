@@ -31,6 +31,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         val producerContent = producerDir.resolve("UserDlqProducerDeadLetterQueueEvent.kt").readText()
         assertTrue(producerContent.contains("KafkaTemplate<String, DeadLetterQueueEvent>"))
         assertTrue(producerContent.contains("fun sendDeadLetterQueueEvent"))
+        assertTrue(producerContent.contains("CompletableFuture<SendResult<String, DeadLetterQueueEvent>>"))
         assertTrue(producerContent.contains("import $modelPackage.DeadLetterQueueEvent"))
 
         val consumerContent = consumerDir.resolve("UserDlqConsumer.kt").readText()
@@ -64,6 +65,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         val producerContent = producerDir.resolve("UserDlqProducerDeadLetterQueueEvent.kt").readText()
         assertTrue(producerContent.contains("KafkaTemplate<String, DeadLetterQueueEventPayload>"))
         assertTrue(producerContent.contains("fun sendDeadLetterQueueEvent"))
+        assertTrue(producerContent.contains("CompletableFuture<SendResult<String, DeadLetterQueueEventPayload>>"))
         assertTrue(producerContent.contains("import $modelPackage.DeadLetterQueueEventPayload"))
 
         val consumerContent = consumerDir.resolve("UserDlqConsumer.kt").readText()
