@@ -17,6 +17,19 @@ components:
         - customer
         - orderLines
       properties:
+        attributes:
+          type: array
+          items:
+            type: string
+        metadataObjects:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/MetaData'
+        metadataIntegers:
+          type: object
+          additionalProperties:
+            type: integer
+          nullable: true
         metadata:
           type: object
           additionalProperties:
@@ -54,6 +67,13 @@ components:
             Optional free-text notes attached to the order.
           type: string
           maxLength: 2000
+    MetaData:
+      type: object
+      properties:
+        name:
+          type: string
+        value:
+          type: string
     OrderLineType:
       type: object
       description: A single order line with product, quantity and price.

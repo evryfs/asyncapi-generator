@@ -8,14 +8,17 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 class AvroTypeMapper(
     val packageName: String,
 ) {
+    fun getTitleFromReference(ref: SchemaInterface.SchemaReference): String {
+        val childName = ref.reference.ref.substringAfterLast('/')
+        return "$packageName.${MapperUtil.toPascalCase(childName)}"
+    }
 
     fun mapToAvroType(schema: Schema?, isOptional: Boolean, refName: String? = null): String {
         if (schema != null && !schema.oneOf.isNullOrEmpty()) {
             val unionTypes = schema.oneOf.mapNotNull { ref ->
-                if (ref is SchemaInterface.SchemaReference) {
-                    val childName = ref.reference.ref.substringAfterLast('/')
-                    "\"$packageName.${MapperUtil.toPascalCase(childName)}\""
-                } else null
+                if (ref is SchemaInterface.SchemaReference)
+                    "\"${getTitleFromReference(ref)}\""
+                else null
             }
 
             if (unionTypes.isNotEmpty()) {
@@ -35,17 +38,17 @@ class AvroTypeMapper(
             return if (isOptional) "[\"null\", $fullName]" else fullName
         }
 
-        if (schema == null) {
+        if (schema == null)
             return "\"string\""
-        }
-        val baseType = resolveBaseType(schema)
-        val finalType = if (schema.type.getPrimaryType() == "integer" && schema.format == "int64") {
+
+        val finalType = if (schema.type.getPrimaryType() == "integer" && schema.format == "int64")
             "\"long\""
-        } else if (schema.type.getPrimaryType() == "object") {
-            "{\"type\":\"map\", \"values\":\"${resolveMapValuesType(schema)}\"}"
-        } else {
-            baseType
-        }
+        else if (schema.type.getPrimaryType() == "array")
+            "{\"type\": \"array\", \"items\": ${resolveArrayItemsType(schema)}}"
+        else if (schema.type.getPrimaryType() == "object")
+            "{\"type\": \"map\", \"values\": ${resolveMapValuesType(schema)}}"
+        else
+            resolveBaseType(schema)
         return if (isOptional) {
             "[\"null\", $finalType]"
         } else {
@@ -53,13 +56,34 @@ class AvroTypeMapper(
         }
     }
 
+    private fun resolveArrayItemsType(schema: Schema): String {
+        try {
+            val defaultSchema = "\"string\""
+            if (schema.items == null)
+                return defaultSchema
+            if (schema.items is SchemaInterface.SchemaInline && schema.items.schema.type.getPrimaryType() != null)
+                return resolveBaseType(schema.items.schema)
+                    ?: defaultSchema
+            else if (schema.items is SchemaInterface.SchemaReference)
+                return "\"${getTitleFromReference(schema.items)}\""
+            return defaultSchema
+        } catch (e: Exception) {
+            throw RuntimeException("Error while resolving map values $schema")
+        }
+    }
+
     private fun resolveMapValuesType(schema: Schema): String {
         try {
-            val defaultSchema = "\"string\"";
+            val defaultSchema = "\"string\""
             if (schema.additionalProperties == null)
                 return defaultSchema
-            return (schema.additionalProperties as SchemaInterface.SchemaInline).schema.type.getPrimaryType() ?: defaultSchema
-        }catch (e:Exception){
+            else if (schema.additionalProperties is SchemaInterface.SchemaInline)
+                return resolveBaseType(schema.additionalProperties.schema)
+                    ?: defaultSchema
+            else if (schema.additionalProperties is SchemaInterface.SchemaReference)
+                return "\"${getTitleFromReference(schema.additionalProperties)}\""
+            return defaultSchema
+        } catch (e: Exception) {
             throw RuntimeException("Error while resolving map values $schema")
         }
     }
@@ -85,10 +109,6 @@ class AvroTypeMapper(
             "long" -> {
                 if (schema.format == "date-time") "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"
                 else "\"long\""
-            }
-
-            "array" -> {
-                "{\"type\": \"array\", \"items\": \"string\"}"
             }
 
             else -> "\"string\""

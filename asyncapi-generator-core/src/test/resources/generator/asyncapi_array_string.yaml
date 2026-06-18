@@ -1,0 +1,37 @@
+asyncapi: 3.0.0
+info:
+  title: Array of Primitive Types Example
+  version: 1.0.0
+defaultContentType: application/json
+components:
+  schemas:
+    CustomerWithContacts:
+      type: object
+      description: >
+        Customer object with nested contact points and primitive lists.
+      required:
+        - customerId
+        - fullName
+        - contactPoints
+      properties:
+        customerId:
+          description: Unique identifier for the customer.
+          type: string
+          format: uuid
+        fullName:
+          description: >
+            Customer's full name as presented in UI and reports.
+          type: string
+          maxLength: 140
+        tags:
+          description: >
+            Free-form tags associated with the customer.
+          type: array
+          items:
+            type: string
+        contactPoints:
+          description: >
+            List of contact points associated with the customer.
+          type: array
+          items:
+            type: string
