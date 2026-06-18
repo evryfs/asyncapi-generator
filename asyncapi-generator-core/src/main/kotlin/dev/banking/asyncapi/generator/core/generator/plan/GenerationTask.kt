@@ -26,6 +26,7 @@ sealed interface GenerationTask {
         val language: GeneratorName,
         val clientPackage: String,
         val modelPackage: String,
+        val generateHeaders: Boolean = true,
         val generateProducers: Boolean = true,
         val generateConsumers: Boolean = true,
     ) : GenerationTask

@@ -9,6 +9,7 @@ class JavaSpringKafkaGenerator(
     outputDir: File,
     clientPackage: String,
     modelPackage: String,
+    generateHeaders: Boolean = true,
     generateProducers: Boolean = true,
     generateConsumers: Boolean = true,
 ) {
@@ -16,6 +17,7 @@ class JavaSpringKafkaGenerator(
         JavaSpringKafkaModelFactory(
             clientPackage = clientPackage,
             modelPackage = modelPackage,
+            generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
         )

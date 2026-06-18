@@ -45,6 +45,7 @@ class GenerationPlanner {
                                         language = configuration.language,
                                         clientPackage = client.packageName,
                                         modelPackage = client.modelPackageName,
+                                        generateHeaders = client.headers.enabled,
                                         generateProducers = springKafka.producer.enabled,
                                         generateConsumers = springKafka.consumer.enabled,
                                     ),

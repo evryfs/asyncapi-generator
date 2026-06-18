@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.java.kafka
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
@@ -85,6 +86,44 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
                     "String.valueOf(headers.getCorrelationId()).getBytes(StandardCharsets.UTF_8));",
             ),
         )
+    }
+
+    @Test
+    fun `should not reference typed headers when Kafka header generation is disabled for Java`() {
+        val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
+        val modelPackage = "dev.banking.test.userservice.v1.model"
+        val clientPackage = "dev.banking.test.userservice.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi-java-spring-kafka-no-headers")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-spring-kafka-no-headers")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+
+        generateElement(
+            yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+            generateKafkaHeaders = false,
+        )
+
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
+        val headerDir = clientDir.resolve("header")
+        assertFalse(headerDir.exists(), "Header classes should not be generated when Kafka headers are disabled")
+
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
+        assertFalse(consumerContent.contains(".client.header."))
+        assertFalse(consumerContent.contains("TopicUserEventsHeadersUserSignup"))
+        assertTrue(consumerContent.contains("default void onUserSignup(ConsumerRecord<String, UserSignupPayload> record)"))
+
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.java").readText()
+        assertFalse(producerContent.contains(".client.header."))
+        assertFalse(producerContent.contains("TopicUserEventsHeadersUserSignup"))
+        assertFalse(producerContent.contains("StandardCharsets"))
+        assertFalse(producerContent.contains("record.headers().add"))
+        assertTrue(producerContent.contains("public void sendUserSignup(String key, UserSignupPayload message)"))
     }
 
     @Test

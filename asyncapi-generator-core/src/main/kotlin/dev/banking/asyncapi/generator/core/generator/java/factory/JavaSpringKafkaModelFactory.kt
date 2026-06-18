@@ -16,6 +16,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
+    private val generateHeaders: Boolean = true,
     private val generateProducers: Boolean = true,
     private val generateConsumers: Boolean = true,
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
@@ -106,6 +107,7 @@ class JavaSpringKafkaModelFactory(
 
     private fun payload(msg: AnalyzedMessage): KafkaPayload {
         val type = resolvePayloadType(msg)
+        val headers = if (generateHeaders) msg.headers else null
         return KafkaPayload(
             messageName = msg.messageName,
             payloadType = type,
@@ -115,10 +117,10 @@ class JavaSpringKafkaModelFactory(
                 } else {
                     "$modelPackage.$type"
                 },
-            headerTypeName = msg.headers?.typeName,
-            headerImportName = msg.headers?.typeName?.let { "$clientPackage.header.$it" },
+            headerTypeName = headers?.typeName,
+            headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
             headerProperties =
-                msg.headers
+                headers
                     ?.properties
                     ?.keys
                     ?.map { headerName ->
@@ -170,21 +172,25 @@ class JavaSpringKafkaModelFactory(
         type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal", "Object")
 
     private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
-        copy(
-            headerTypeName = headers?.typeName,
-            headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
-            headerProperties =
-                headers
-                    ?.properties
-                    ?.keys
-                    ?.map { headerName ->
-                        KafkaHeaderProperty(
-                            name = headerName,
-                            accessorName = getterName(headerName),
-                        )
-                    }
-                    .orEmpty(),
-        )
+        if (generateHeaders) {
+            copy(
+                headerTypeName = headers?.typeName,
+                headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
+                headerProperties =
+                    headers
+                        ?.properties
+                        ?.keys
+                        ?.map { headerName ->
+                            KafkaHeaderProperty(
+                                name = headerName,
+                                accessorName = getterName(headerName),
+                            )
+                        }
+                        .orEmpty(),
+            )
+        } else {
+            this
+        }
 
     private fun getterName(propertyName: String): String =
         "get" + propertyName.replaceFirstChar { it.uppercase() }

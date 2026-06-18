@@ -24,6 +24,7 @@ abstract class AbstractKotlinGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
+        generateKafkaHeaders: Boolean = true,
         generateQuarkusKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
     ): String {
@@ -53,6 +54,7 @@ abstract class AbstractKotlinGeneratorClass {
                                 ClientGeneration.Kafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
+                                    headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
                                     springKafka = ClientGeneration.SpringKafka(),
                                 ),
                             )

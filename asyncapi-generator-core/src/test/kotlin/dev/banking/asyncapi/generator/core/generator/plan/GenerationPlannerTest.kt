@@ -164,7 +164,9 @@ class GenerationPlannerTest {
 
         assertEquals(
             listOf(
-                springKafkaClientTask(),
+                springKafkaClientTask(
+                    generateHeaders = false,
+                ),
             ),
             plan.tasks,
         )
@@ -277,6 +279,7 @@ class GenerationPlannerTest {
         language: GeneratorName = GeneratorName.KOTLIN,
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
+        generateHeaders: Boolean = true,
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
     ): GenerationTask.SpringKafkaClient =
@@ -284,6 +287,7 @@ class GenerationPlannerTest {
             language = language,
             clientPackage = clientPackage,
             modelPackage = modelPackage,
+            generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
         )

@@ -96,6 +96,7 @@ class SpringKafkaClientGenerationTest {
             language = language,
             clientPackage = "com.example.client",
             modelPackage = "com.example.model",
+            generateHeaders = true,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
         )
