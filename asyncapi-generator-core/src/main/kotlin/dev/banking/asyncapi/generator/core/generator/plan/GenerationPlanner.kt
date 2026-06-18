@@ -39,7 +39,7 @@ class GenerationPlanner {
                                     ),
                                 )
                             }
-                            client.springKafka?.let { springKafka ->
+                            client.springKafka?.takeIf { it.hasEnabledOutput() }?.let { springKafka ->
                                 add(
                                     GenerationTask.SpringKafkaClient(
                                         language = configuration.language,
@@ -78,4 +78,6 @@ class GenerationPlanner {
             },
         )
 
+    private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
+        producer.enabled || consumer.enabled
 }

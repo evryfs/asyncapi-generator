@@ -206,6 +206,57 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan skips Spring Kafka client task when producer and consumer are disabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = false),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.HeaderModelArtifacts(
+                    language = GeneratorName.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan skips Kafka tasks when every Kafka capability is disabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    clients =
+                        listOf(
+                            kafkaClientGeneration(
+                                headers = ClientGeneration.Headers(enabled = false),
+                                springKafka =
+                                    ClientGeneration.SpringKafka(
+                                        producer = ClientGeneration.Producer(enabled = false),
+                                        consumer = ClientGeneration.Consumer(enabled = false),
+                                    ),
+                            ),
+                        ),
+                ),
+            )
+
+        assertEquals(emptyList(), plan.tasks)
+    }
+
+    @Test
     fun `plan uses selected language for language-specific tasks`() {
         val plan =
             planner.plan(
