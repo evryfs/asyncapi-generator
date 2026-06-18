@@ -35,8 +35,6 @@ class GenerateJavaPrimitivePayloadTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFile =
@@ -44,13 +42,17 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName.replace(
                     '.',
                     '/'
-                ) + "/producer/TopicSimpleTopicProducerSimpleStringMessage.java"
+                ) + "/producer/SimpleTopicProducerSimpleStringMessage.java"
             )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
             producerContent.contains("KafkaTemplate<String, String>"),
             "Producer should use typed KafkaTemplate for single payload",
+        )
+        assertTrue(
+            producerContent.contains("CompletableFuture<SendResult<String, String>>"),
+            "Producer should return the Spring Kafka send result future",
         )
     }
 
@@ -85,14 +87,12 @@ class GenerateJavaPrimitivePayloadTest {
                 outputDir,
                 packageName,
                 packageName,
-                "kafka.topics",
-                File("target/generated-resources/asyncapi"),
             )
         generator.generate(listOf(channel))
         val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerStringMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerStringMessage.java")
         val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/TopicMultiTopicProducerIntMessage.java")
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerIntMessage.java")
         assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
         assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
         val producerContentA = producerFileA.readText()
@@ -102,8 +102,16 @@ class GenerateJavaPrimitivePayloadTest {
             "StringMessage producer should use typed KafkaTemplate",
         )
         assertTrue(
+            producerContentA.contains("CompletableFuture<SendResult<String, String>>"),
+            "StringMessage producer should return the Spring Kafka send result future",
+        )
+        assertTrue(
             producerContentB.contains("KafkaTemplate<String, Integer>"),
             "IntMessage producer should use typed KafkaTemplate",
+        )
+        assertTrue(
+            producerContentB.contains("CompletableFuture<SendResult<String, Integer>>"),
+            "IntMessage producer should return the Spring Kafka send result future",
         )
     }
 }

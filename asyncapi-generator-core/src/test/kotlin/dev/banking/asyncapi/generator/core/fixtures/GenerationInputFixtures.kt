@@ -96,6 +96,17 @@ internal class GenerationInputFixtures {
             channels = emptyList(),
         )
 
+    fun generationInputWithNativeProtobufJavaMessageSchema(): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            multiFormatSchemas =
+                mapOf(
+                    "UserCreated" to nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+                ),
+            polymorphicRelationships = emptyMap(),
+            channels = emptyList(),
+        )
+
     fun documentWithMessageHeaders(): AsyncApiDocument =
         AsyncApiDocument(
             asyncapi = "3.0.0",
@@ -253,6 +264,24 @@ internal class GenerationInputFixtures {
                 ),
         )
 
+    fun documentWithNativeProtobufJavaMessageComponent(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            mapOf(
+                                "UserCreated" to
+                                    SchemaInterface.MultiFormatSchemaInline(
+                                        nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+                                    ),
+                            ),
+                    ),
+                ),
+        )
+
     private fun nativeAvroUserCreatedSchema(namespace: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
@@ -280,19 +309,24 @@ internal class GenerationInputFixtures {
                 },
         )
 
-    private fun nativeProtobufUserCreatedSchema(): MultiFormatSchema =
+    private fun nativeProtobufUserCreatedSchema(javaPackage: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.google.protobuf;version=3",
             schema =
-                """
-                syntax = "proto3";
-
-                package com.example.protobuf;
-
-                message UserCreated {
-                  string user_id = 1;
-                  string email = 2;
-                }
-                """.trimIndent(),
+                buildString {
+                    appendLine("""syntax = "proto3";""")
+                    appendLine()
+                    appendLine("package com.example.protobuf;")
+                    appendLine()
+                    if (javaPackage != null) {
+                        appendLine("""option java_package = "$javaPackage";""")
+                        appendLine("option java_multiple_files = true;")
+                        appendLine()
+                    }
+                    appendLine("message UserCreated {")
+                    appendLine("  string user_id = 1;")
+                    appendLine("  string email = 2;")
+                    appendLine("}")
+                }.trimEnd(),
         )
 }

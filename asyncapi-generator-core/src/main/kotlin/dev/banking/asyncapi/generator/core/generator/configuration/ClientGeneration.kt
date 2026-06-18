@@ -1,7 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
-
 /**
  * Typed client generation capabilities requested by generator configuration.
  *
@@ -9,12 +7,29 @@ import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
  * - `GenerationPlannerTest`
  */
 sealed interface ClientGeneration {
-    data class SpringKafka(
+    data class Kafka(
         val packageName: String,
         val modelPackageName: String,
-        val clientType: SpringKafkaClientType = SpringKafkaClientType.SIMPLE,
-        val topicPropertyPrefix: String = "kafka.topics",
+        val headers: Headers = Headers(),
+        val springKafka: SpringKafka? = null,
     ) : ClientGeneration
+
+    data class Headers(
+        val enabled: Boolean = true,
+    )
+
+    data class SpringKafka(
+        val producer: Producer = Producer(),
+        val consumer: Consumer = Consumer(),
+    )
+
+    data class Producer(
+        val enabled: Boolean = true,
+    )
+
+    data class Consumer(
+        val enabled: Boolean = true,
+    )
 
     data class QuarkusKafka(
         val packageName: String,

@@ -11,6 +11,6 @@ import {{.}};
  */
 public interface {{name}} {
 {{#methods}}
-    default void {{methodName}}(ConsumerRecord<String, {{payloadType}}> record) { }
+    void {{methodName}}(ConsumerRecord<String, {{payloadType}}> record{{#hasHeaders}}, {{headerType}} headers{{/hasHeaders}});
 {{/methods}}
 }
