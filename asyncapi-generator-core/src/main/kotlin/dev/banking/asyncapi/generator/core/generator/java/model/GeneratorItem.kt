@@ -68,10 +68,22 @@ sealed interface GeneratorItem {
     data class HandlerMethod(
         val methodName: String,
         val payloadType: String,
-    )
+        val headerType: String? = null,
+    ) {
+        val hasHeaders: Boolean get() = headerType != null
+    }
 
     data class SendMethod(
         val methodName: String,
         val payloadType: String,
+        val headerType: String? = null,
+        val headerProperties: List<HeaderProperty> = emptyList(),
+    ) {
+        val hasHeaders: Boolean get() = headerType != null
+    }
+
+    data class HeaderProperty(
+        val name: String,
+        val accessorName: String,
     )
 }

@@ -84,6 +84,40 @@ class ChannelAnalyzerTest {
     }
 
     @Test
+    fun `should analyze generated header type for messages with headers`() {
+        val channel = Channel(
+            messages = mapOf(
+                "UserSignup" to MessageInterface.MessageInline(
+                    Message(
+                        name = "UserSignup",
+                        headers =
+                            SchemaInterface.SchemaInline(
+                                Schema(
+                                    type = "object",
+                                    properties =
+                                        mapOf(
+                                            "correlationId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                        ),
+                                ),
+                            ),
+                        payload = SchemaInterface.SchemaInline(Schema(title = "MyPayload", type = "object")),
+                    ),
+                ),
+            ),
+        )
+        val doc = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info("Title", "1.0"),
+            channels = mapOf("userEvents" to ChannelInterface.ChannelInline(channel)),
+        )
+
+        val analyzed = analyzer.analyze(doc).channels.single().messages.single()
+
+        assertEquals("TopicUserEventsHeadersUserSignup", analyzed.headers?.typeName)
+        assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
+    }
+
+    @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
         val channel = Channel(

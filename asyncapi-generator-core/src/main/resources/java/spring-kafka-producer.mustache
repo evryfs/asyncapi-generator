@@ -20,8 +20,19 @@ public class {{name}} {
     }
 
     {{#sendMethods}}
-    public void {{methodName}}(String key, {{payloadType}} message) {
+    public void {{methodName}}(String key, {{payloadType}} message{{#hasHeaders}}, {{headerType}} headers{{/hasHeaders}}) {
+{{#hasHeaders}}
+        ProducerRecord<String, {{kafkaValueType}}> record = new ProducerRecord<>(topic, key, message);
+{{#headerProperties}}
+        if (headers != null && headers.{{accessorName}}() != null) {
+            record.headers().add("{{name}}", String.valueOf(headers.{{accessorName}}()).getBytes(StandardCharsets.UTF_8));
+        }
+{{/headerProperties}}
+        kafkaTemplate.send(record);
+{{/hasHeaders}}
+{{^hasHeaders}}
         kafkaTemplate.send(new ProducerRecord<>(topic, key, message));
+{{/hasHeaders}}
     }
     {{/sendMethods}}
 }

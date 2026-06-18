@@ -57,8 +57,34 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
         assertTrue(headerDir.exists(), "Spring Kafka client should generate header classes")
+
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
+        assertTrue(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
+        assertTrue(
+            consumerContent.contains(
+                "default void onUserSignup(ConsumerRecord<String, UserSignupPayload> record, " +
+                    "TopicUserEventsHeadersUserSignup headers)",
+            ),
+        )
+
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.java").readText()
+        assertTrue(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
+        assertTrue(producerContent.contains("import java.nio.charset.StandardCharsets;"))
+        assertTrue(
+            producerContent.contains(
+                "public void sendUserSignup(String key, UserSignupPayload message, " +
+                    "TopicUserEventsHeadersUserSignup headers)",
+            ),
+        )
+        assertTrue(
+            producerContent.contains(
+                "record.headers().add(\"correlationId\", " +
+                    "String.valueOf(headers.getCorrelationId()).getBytes(StandardCharsets.UTF_8));",
+            ),
+        )
     }
 
     @Test

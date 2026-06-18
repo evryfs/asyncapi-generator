@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
@@ -26,7 +28,9 @@ class JavaSpringKafkaModelFactory(
         val payloads = channel.payloads()
 
         val baseImports =
-            payloads.mapNotNull { payload -> payload.importName }
+            payloads.flatMap { payload -> listOfNotNull(payload.importName, payload.headerImportName) }
+                .distinct()
+                .sorted()
 
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
@@ -36,6 +40,7 @@ class JavaSpringKafkaModelFactory(
                     GeneratorItem.HandlerMethod(
                         methodName = "on${payload.messageName}",
                         payloadType = payload.payloadType,
+                        headerType = payload.headerTypeName,
                     )
                 }
             items.add(
@@ -51,7 +56,12 @@ class JavaSpringKafkaModelFactory(
 
         if (channel.isProducer && generateProducers) {
             val imports =
-                (baseImports + "org.apache.kafka.clients.producer.ProducerRecord" + "org.springframework.kafka.core.KafkaTemplate")
+                (
+                    baseImports +
+                        "org.apache.kafka.clients.producer.ProducerRecord" +
+                        "org.springframework.kafka.core.KafkaTemplate" +
+                        listOfNotNull("java.nio.charset.StandardCharsets".takeIf { payloads.any { it.headerProperties.isNotEmpty() } })
+                )
                     .distinct()
                     .sorted()
             payloads.forEach { payload ->
@@ -59,6 +69,14 @@ class JavaSpringKafkaModelFactory(
                     GeneratorItem.SendMethod(
                         methodName = "send${payload.messageName}",
                         payloadType = payload.payloadType,
+                        headerType = payload.headerTypeName,
+                        headerProperties =
+                            payload.headerProperties.map { header ->
+                                GeneratorItem.HeaderProperty(
+                                    name = header.name,
+                                    accessorName = header.accessorName,
+                                )
+                            },
                     )
                 val producerName = "${baseName}Producer${payload.messageName}"
                 items.add(
@@ -80,7 +98,11 @@ class JavaSpringKafkaModelFactory(
     }
 
     private fun AnalyzedChannel.payloads(): List<KafkaPayload> =
-        messages.map(::payload) + multiFormatMessages.mapNotNull(nativeKafkaPayloadResolver::resolve)
+        messages.map(::payload) +
+            multiFormatMessages.mapNotNull { message ->
+                nativeKafkaPayloadResolver.resolve(message)
+                    ?.withHeaders(message.headers)
+            }
 
     private fun payload(msg: AnalyzedMessage): KafkaPayload {
         val type = resolvePayloadType(msg)
@@ -93,6 +115,19 @@ class JavaSpringKafkaModelFactory(
                 } else {
                     "$modelPackage.$type"
                 },
+            headerTypeName = msg.headers?.typeName,
+            headerImportName = msg.headers?.typeName?.let { "$clientPackage.header.$it" },
+            headerProperties =
+                msg.headers
+                    ?.properties
+                    ?.keys
+                    ?.map { headerName ->
+                        KafkaHeaderProperty(
+                            name = headerName,
+                            accessorName = getterName(headerName),
+                        )
+                    }
+                    .orEmpty(),
         )
     }
 
@@ -133,4 +168,24 @@ class JavaSpringKafkaModelFactory(
 
     private fun isPrimitive(type: String): Boolean =
         type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal", "Object")
+
+    private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
+        copy(
+            headerTypeName = headers?.typeName,
+            headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
+            headerProperties =
+                headers
+                    ?.properties
+                    ?.keys
+                    ?.map { headerName ->
+                        KafkaHeaderProperty(
+                            name = headerName,
+                            accessorName = getterName(headerName),
+                        )
+                    }
+                    .orEmpty(),
+        )
+
+    private fun getterName(propertyName: String): String =
+        "get" + propertyName.replaceFirstChar { it.uppercase() }
 }

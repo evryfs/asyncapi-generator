@@ -11,6 +11,6 @@ import {{{.}}}
  */
 interface {{name}} {
 {{#methods}}
-    fun {{methodName}}(record: ConsumerRecord<String, {{payloadType}}>) { }
+    fun {{methodName}}(record: ConsumerRecord<String, {{payloadType}}>{{#hasHeaders}}, headers: {{headerType}}{{/hasHeaders}}) { }
 {{/methods}}
 }

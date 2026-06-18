@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.factory
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
@@ -24,7 +26,9 @@ class KotlinSpringKafkaModelFactory(
         val payloads = channel.payloads()
 
         val baseImports =
-            payloads.mapNotNull { payload -> payload.importName }
+            payloads.flatMap { payload -> listOfNotNull(payload.importName, payload.headerImportName) }
+                .distinct()
+                .sorted()
 
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
@@ -35,6 +39,7 @@ class KotlinSpringKafkaModelFactory(
                         methodName = "on${payload.messageName}",
                         payloadType = payload.payloadType,
                         keyType = "String?",
+                        headerType = payload.headerTypeName,
                     )
                 }
             items.add(
@@ -59,6 +64,14 @@ class KotlinSpringKafkaModelFactory(
                         methodName = "send${payload.messageName}",
                         payloadType = payload.payloadType,
                         keyType = "String",
+                        headerType = payload.headerTypeName,
+                        headerProperties =
+                            payload.headerProperties.map { header ->
+                                GeneratorItem.HeaderProperty(
+                                    name = header.name,
+                                    accessorName = header.accessorName,
+                                )
+                            },
                     )
                 val producerName = "${baseName}Producer${payload.messageName}"
                 items.add(
@@ -80,7 +93,11 @@ class KotlinSpringKafkaModelFactory(
     }
 
     private fun AnalyzedChannel.payloads(): List<KafkaPayload> =
-        messages.map(::payload) + multiFormatMessages.mapNotNull(nativeKafkaPayloadResolver::resolve)
+        messages.map(::payload) +
+            multiFormatMessages.mapNotNull { message ->
+                nativeKafkaPayloadResolver.resolve(message)
+                    ?.withHeaders(message.headers)
+            }
 
     private fun payload(msg: AnalyzedMessage): KafkaPayload {
         val type = resolvePayloadType(msg)
@@ -93,6 +110,19 @@ class KotlinSpringKafkaModelFactory(
                 } else {
                     "$modelPackage.$type"
                 },
+            headerTypeName = msg.headers?.typeName,
+            headerImportName = msg.headers?.typeName?.let { "$clientPackage.header.$it" },
+            headerProperties =
+                msg.headers
+                    ?.properties
+                    ?.keys
+                    ?.map { headerName ->
+                        KafkaHeaderProperty(
+                            name = headerName,
+                            accessorName = headerName,
+                        )
+                    }
+                    .orEmpty(),
         )
     }
 
@@ -106,4 +136,21 @@ class KotlinSpringKafkaModelFactory(
         }
 
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
+
+    private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
+        copy(
+            headerTypeName = headers?.typeName,
+            headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
+            headerProperties =
+                headers
+                    ?.properties
+                    ?.keys
+                    ?.map { headerName ->
+                        KafkaHeaderProperty(
+                            name = headerName,
+                            accessorName = headerName,
+                        )
+                    }
+                    .orEmpty(),
+        )
 }

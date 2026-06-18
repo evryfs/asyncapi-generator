@@ -57,8 +57,32 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
+        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
         assertTrue(headerDir.exists(), "Spring Kafka client should generate header classes")
+
+        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
+        assertTrue(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
+        assertTrue(
+            consumerContent.contains(
+                "fun onUserSignup(record: ConsumerRecord<String, UserSignupPayload>, " +
+                    "headers: TopicUserEventsHeadersUserSignup)",
+            ),
+        )
+
+        val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.kt").readText()
+        assertTrue(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
+        assertTrue(
+            producerContent.contains(
+                "fun sendUserSignup(key: String, message: UserSignupPayload, headers: TopicUserEventsHeadersUserSignup)",
+            ),
+        )
+        assertTrue(
+            producerContent.contains(
+                "headers.correlationId?.let { record.headers().add(\"correlationId\", " +
+                    "it.toString().toByteArray(Charsets.UTF_8)) }",
+            ),
+        )
     }
 
     @Test

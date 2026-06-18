@@ -14,8 +14,17 @@ class {{name}}(
     private val topic: String
 ) {
     {{#sendMethods}}
-    fun {{methodName}}(key: String, message: {{payloadType}}) {
+    fun {{methodName}}(key: String, message: {{payloadType}}{{#hasHeaders}}, headers: {{headerType}}{{/hasHeaders}}) {
+{{#hasHeaders}}
+        val record = ProducerRecord(topic, key, message)
+{{#headerProperties}}
+        headers.{{accessorName}}?.let { record.headers().add("{{name}}", it.toString().toByteArray(Charsets.UTF_8)) }
+{{/headerProperties}}
+        kafkaTemplate.send(record)
+{{/hasHeaders}}
+{{^hasHeaders}}
         kafkaTemplate.send(ProducerRecord(topic, key, message))
+{{/hasHeaders}}
     }
     {{/sendMethods}}
 }

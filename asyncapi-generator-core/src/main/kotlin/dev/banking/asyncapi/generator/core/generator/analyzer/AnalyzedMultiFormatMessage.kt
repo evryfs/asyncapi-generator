@@ -15,4 +15,5 @@ data class AnalyzedMultiFormatMessage(
     val messageName: String,
     val payloadName: String,
     val schema: MultiFormatSchema,
+    val headers: AnalyzedMessageHeaders? = null,
 )
