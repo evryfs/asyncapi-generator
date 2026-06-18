@@ -36,7 +36,7 @@ class GenerationInputCompatibilityValidator {
                     )
                 is GenerationTask.HeaderModelArtifacts,
                 is GenerationTask.NativeAvroArtifacts,
-                GenerationTask.NativeProtobufArtifacts,
+                is GenerationTask.NativeProtobufArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
             }

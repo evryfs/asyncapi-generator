@@ -7,4 +7,5 @@ data class AnalyzedMessage(
     val payloadTypeName: String, // The payload type name (e.g. "UserSignedUpPayload")
     val schema: Schema, // The payload schema
     val keySchema: Schema? = null, // Optional Kafka Key schema
+    val headers: AnalyzedMessageHeaders? = null,
 )

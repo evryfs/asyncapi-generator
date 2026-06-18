@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.plan.SpringKafkaClientType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -93,6 +92,31 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate writes external native Avro schema asset content to output directories`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = externalNativeSchemaAssetsDocument(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
+                ),
+        )
+
+        val schemaArtifact = resourceOutputDirectory.resolve("com/example/external/avro/UserCreatedAvro.avsc")
+        val specificRecordArtifact = javaSourceOutputDirectory.resolve("com/example/external/avro/UserCreatedAvro.java")
+        assertTrue(schemaArtifact.exists())
+        assertTrue(schemaArtifact.readText().contains("\"namespace\" : \"com.example.external.avro\""))
+        assertTrue(specificRecordArtifact.exists())
+        assertTrue(specificRecordArtifact.readText().contains("package com.example.external.avro;"))
+    }
+
+    @Test
     fun `generate writes native Protobuf schema artifacts to resource output directory`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
@@ -105,13 +129,61 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
                 ),
         )
 
         assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
         assertFalse(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+    }
+
+    @Test
+    fun `generate writes native Protobuf Java message artifacts to Java source output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufJavaMessageComponent(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
+                ),
+        )
+
+        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreatedOrBuilder.java").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+    }
+
+    @Test
+    fun `generate writes external native Protobuf schema asset content to resource output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = externalNativeSchemaAssetsDocument(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+                ),
+        )
+
+        val schemaArtifact = resourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto")
+        assertTrue(schemaArtifact.exists())
+        assertTrue(schemaArtifact.readText().contains("package com.example.external.protobuf;"))
+        assertTrue(schemaArtifact.readText().contains("message UserCreatedProtobuf"))
+        assertFalse(sourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists())
+        assertFalse(javaSourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists())
     }
 
     @Test
@@ -173,10 +245,10 @@ class AsyncApiGeneratorOutputContractTest {
                     resourceOutputDirectory = resourceOutputDirectory,
                     clients =
                         listOf(
-                            ClientGeneration.SpringKafka(
+                            ClientGeneration.Kafka(
                                 packageName = "com.example.kafka",
                                 modelPackageName = "com.example.model",
-                                clientType = SpringKafkaClientType.SIMPLE,
+                                springKafka = ClientGeneration.SpringKafka(),
                             ),
                         ),
                 ),
@@ -189,6 +261,11 @@ class AsyncApiGeneratorOutputContractTest {
     private fun bundledDocument() =
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
+        )
+
+    private fun externalNativeSchemaAssetsDocument() =
+        bundlerFixtures.bundledDocument(
+            File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml"),
         )
 
     private fun generatorConfiguration(

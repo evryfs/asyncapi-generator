@@ -1,0 +1,15 @@
+{
+  "type": "record",
+  "name": "UserCreatedAvro",
+  "namespace": "com.example.external.avro",
+  "fields": [
+    {
+      "name": "userId",
+      "type": "string"
+    },
+    {
+      "name": "email",
+      "type": "string"
+    }
+  ]
+}

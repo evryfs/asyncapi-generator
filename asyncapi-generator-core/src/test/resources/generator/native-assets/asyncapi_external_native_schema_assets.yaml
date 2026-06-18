@@ -1,0 +1,26 @@
+asyncapi: '3.0.0'
+info:
+  title: External Native Schema Assets Generator Test API
+  version: '1.0.0'
+channels:
+  userEvents:
+    address: user.events
+    messages:
+      userCreatedAvro:
+        name: UserCreatedAvro
+        payload:
+          $ref: '#/components/schemas/UserCreatedAvro'
+      userCreatedProtobuf:
+        name: UserCreatedProtobuf
+        payload:
+          $ref: '#/components/schemas/UserCreatedProtobuf'
+components:
+  schemas:
+    UserCreatedAvro:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        $ref: user-created.avsc
+    UserCreatedProtobuf:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema:
+        $ref: user-created.proto

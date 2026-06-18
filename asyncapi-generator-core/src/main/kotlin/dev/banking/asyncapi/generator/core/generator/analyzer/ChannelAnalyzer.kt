@@ -63,7 +63,7 @@ class ChannelAnalyzer {
                 val usage = channelUsage[name]!!
                 val finalProducer = if (!usage.isProducer && !usage.isConsumer) true else usage.isProducer
                 val finalConsumer = if (!usage.isProducer && !usage.isConsumer) true else usage.isConsumer
-                val resolvedMessages = resolveMessages(channel.messages)
+                val resolvedMessages = resolveMessages(channelName = name, messages = channel.messages)
 
                 AnalyzedChannel(
                     channelName = name,
@@ -78,7 +78,10 @@ class ChannelAnalyzer {
         return ChannelAnalysisResult(analyzedChannels)
     }
 
-    private fun resolveMessages(messages: Map<String, MessageInterface>?): ResolvedMessages {
+    private fun resolveMessages(
+        channelName: String,
+        messages: Map<String, MessageInterface>?,
+    ): ResolvedMessages {
         if (messages.isNullOrEmpty()) return ResolvedMessages()
         val analyzedMessages = mutableListOf<AnalyzedMessage>()
         val analyzedMultiFormatMessages = mutableListOf<AnalyzedMultiFormatMessage>()
@@ -95,6 +98,12 @@ class ChannelAnalyzer {
             var typeName: String? = null
             val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: name)
             val inlinePayloadTypeName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
+            val headers =
+                MessageHeaderAnalyzer.analyze(
+                    channelName = channelName,
+                    messageKey = name,
+                    message = message,
+                )
 
             when (val p = message.payload) {
                 is SchemaInterface.SchemaInline -> {
@@ -123,6 +132,7 @@ class ChannelAnalyzer {
                         messageName = baseName,
                         payloadTypeName = typeName,
                         schema = payloadSchema,
+                        headers = headers,
                     ),
                 )
             } else if (multiFormatSchema != null) {
@@ -131,6 +141,7 @@ class ChannelAnalyzer {
                         messageName = baseName,
                         payloadName = typeName,
                         schema = multiFormatSchema,
+                        headers = headers,
                     ),
                 )
             }

@@ -7,4 +7,12 @@ data class KafkaPayload(
     val messageName: String,
     val payloadType: String,
     val importName: String? = null,
+    val headerTypeName: String? = null,
+    val headerImportName: String? = null,
+    val headerProperties: List<KafkaHeaderProperty> = emptyList(),
+)
+
+data class KafkaHeaderProperty(
+    val name: String,
+    val accessorName: String,
 )

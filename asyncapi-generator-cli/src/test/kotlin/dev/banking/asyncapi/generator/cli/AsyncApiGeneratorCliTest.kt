@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.parse
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -25,9 +26,9 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--models-package", "com.example.cli.model",
-                "--clients-spring-kafka-package", "com.example.cli.client",
+                "--clients-kafka-package", "com.example.cli.client",
+                "--clients-kafka-spring-kafka",
                 "--generator", "kotlin",
-                "--clients-spring-kafka-mode", "full",
             )
         )
         val packageDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
@@ -45,8 +46,9 @@ class AsyncApiGeneratorCliTest {
                 "--input", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
-                "--clients-spring-kafka-package", "com.example.cli.client",
-                "--clients-spring-kafka-model-package", "com.example.cli.model",
+                "--clients-kafka-package", "com.example.cli.client",
+                "--clients-kafka-model-package", "com.example.cli.model",
+                "--clients-kafka-spring-kafka",
                 "--generator", "kotlin",
             )
         )
@@ -151,8 +153,33 @@ class AsyncApiGeneratorCliTest {
         )
 
         val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+    }
+
+    @Test
+    fun `should generate native protobuf schema without Java message types when disabled`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-native-protobuf",
+                "--schemas-native-protobuf-generate-java-message-types", "false",
+                "-g", "kotlin",
+            )
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
 
     @Test
@@ -170,7 +197,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
+    fun `should fail if kafka spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
         val exception =
@@ -180,14 +207,14 @@ class AsyncApiGeneratorCliTest {
                         "-i", inputFile.absolutePath,
                         "--codegen-output", codegenDir.absolutePath,
                         "--models-package", "com.example.cli.model",
-                        "--clients-spring-kafka",
+                        "--clients-kafka-spring-kafka",
                     )
                 )
             }
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "clients.springKafka.packageName is required when clients.springKafka is configured",
+                "clients.kafka.packageName is required when clients.kafka is configured",
             ),
         )
     }
@@ -235,24 +262,6 @@ class AsyncApiGeneratorCliTest {
                 "models.packageName is required when models.annotation is configured",
             ),
         )
-    }
-
-    @Test
-    fun `should fail if spring kafka mode is invalid`(@TempDir tempDir: Path) {
-        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        assertFailsWith<BadParameterValue> {
-            cli.parse(
-                arrayOf(
-                    "-i", inputFile.absolutePath,
-                    "--codegen-output", codegenDir.absolutePath,
-                    "--models-package", "com.example.cli.model",
-                    "-g", "kotlin",
-                    "--clients-spring-kafka-package", "com.example.cli.client",
-                    "--clients-spring-kafka-mode", "basic",
-                )
-            )
-        }
     }
 
     @Test
