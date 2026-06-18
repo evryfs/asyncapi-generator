@@ -109,3 +109,24 @@ jobs:
             publishPlugins \
             publishToSonatype \
             closeAndReleaseSonatypeStagingRepository
+
+      - name: Commit and Tag Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b release/v${{ inputs.releaseVersion }}
+          git add -u '*pom.xml'
+          git commit -m "release v${{ inputs.releaseVersion }}"
+          git tag "v${{ inputs.releaseVersion }}"
+          git push origin release/v${{ inputs.releaseVersion }}
+          git push origin "v${{ inputs.releaseVersion }}"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ inputs.releaseVersion }}" \
+            --title "v${{ inputs.releaseVersion }}" \
+            --generate-notes
