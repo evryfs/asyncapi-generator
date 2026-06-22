@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.kafka
 import dev.banking.asyncapi.generator.core.generator.AbstractKotlinGeneratorClass
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorClass() {
@@ -29,10 +30,12 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(modelFile.exists(), "DeadLetterQueueEvent typealias should be generated")
 
         val producerContent = producerDir.resolve("UserDlqProducerDeadLetterQueueEvent.kt").readText()
-        assertTrue(producerContent.contains("KafkaTemplate<String, DeadLetterQueueEvent>"))
+        assertTrue(producerContent.contains("interface UserDlqProducerDeadLetterQueueEvent"))
         assertTrue(producerContent.contains("fun sendDeadLetterQueueEvent"))
-        assertTrue(producerContent.contains("CompletableFuture<SendResult<String, DeadLetterQueueEvent>>"))
+        assertTrue(producerContent.contains("payload: DeadLetterQueueEvent"))
         assertTrue(producerContent.contains("import $modelPackage.DeadLetterQueueEvent"))
+        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("CompletableFuture"))
 
         val consumerContent = consumerDir.resolve("UserDlqConsumer.kt").readText()
         assertTrue(consumerContent.contains("ConsumerRecord<String, DeadLetterQueueEvent>"))
@@ -63,10 +66,12 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(modelFile.exists(), "DeadLetterQueueEventPayload typealias should be generated")
 
         val producerContent = producerDir.resolve("UserDlqProducerDeadLetterQueueEvent.kt").readText()
-        assertTrue(producerContent.contains("KafkaTemplate<String, DeadLetterQueueEventPayload>"))
+        assertTrue(producerContent.contains("interface UserDlqProducerDeadLetterQueueEvent"))
         assertTrue(producerContent.contains("fun sendDeadLetterQueueEvent"))
-        assertTrue(producerContent.contains("CompletableFuture<SendResult<String, DeadLetterQueueEventPayload>>"))
+        assertTrue(producerContent.contains("payload: DeadLetterQueueEventPayload"))
         assertTrue(producerContent.contains("import $modelPackage.DeadLetterQueueEventPayload"))
+        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("CompletableFuture"))
 
         val consumerContent = consumerDir.resolve("UserDlqConsumer.kt").readText()
         assertTrue(consumerContent.contains("ConsumerRecord<String, DeadLetterQueueEventPayload>"))

@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinS
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
@@ -56,13 +57,16 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
-            producerContent.contains("KafkaTemplate<String, String>"),
-            "Producer should use typed KafkaTemplate for single payload",
+            producerContent.contains("interface SimpleTopicProducerSimpleStringMessage"),
+            "Producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContent.contains("CompletableFuture<SendResult<String, String>>"),
-            "Producer should return the Spring Kafka send result future",
+            producerContent.contains("payload: String"),
+            "Producer should expose the primitive payload type directly",
         )
+        assertTrue(producerContent.contains("key: String"), "Producer should expose the Kafka record key")
+        assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
+        assertFalse(producerContent.contains("CompletableFuture"), "Producer contract should not own send results")
     }
 
     @Test
@@ -107,20 +111,22 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
         val producerContentA = producerFileA.readText()
         val producerContentB = producerFileB.readText()
         assertTrue(
-            producerContentA.contains("KafkaTemplate<String, String>"),
-            "StringMessage producer should use typed KafkaTemplate",
+            producerContentA.contains("interface MultiTopicProducerStringMessage"),
+            "StringMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentA.contains("CompletableFuture<SendResult<String, String>>"),
-            "StringMessage producer should return the Spring Kafka send result future",
+            producerContentA.contains("payload: String"),
+            "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
-            producerContentB.contains("KafkaTemplate<String, Int>"),
-            "IntMessage producer should use typed KafkaTemplate",
+            producerContentB.contains("interface MultiTopicProducerIntMessage"),
+            "IntMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentB.contains("CompletableFuture<SendResult<String, Int>>"),
-            "IntMessage producer should return the Spring Kafka send result future",
+            producerContentB.contains("payload: Int"),
+            "IntMessage producer should expose the primitive payload type directly",
         )
+        assertFalse(producerContentA.contains("KafkaTemplate"), "StringMessage producer should not own KafkaTemplate wiring")
+        assertFalse(producerContentB.contains("KafkaTemplate"), "IntMessage producer should not own KafkaTemplate wiring")
     }
 }

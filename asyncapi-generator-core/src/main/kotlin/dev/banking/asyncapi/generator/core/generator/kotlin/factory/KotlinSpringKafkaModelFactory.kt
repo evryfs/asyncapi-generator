@@ -10,6 +10,8 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
@@ -55,21 +57,23 @@ class KotlinSpringKafkaModelFactory(
         }
 
         if (channel.isProducer && generateProducers) {
-            val imports =
-                (
-                    baseImports +
-                        "java.util.concurrent.CompletableFuture" +
-                        "org.apache.kafka.clients.producer.ProducerRecord" +
-                        "org.springframework.kafka.core.KafkaTemplate" +
-                        "org.springframework.kafka.support.SendResult"
-                )
-                    .distinct()
-                    .sorted()
             payloads.forEach { payload ->
+                val imports =
+                    (
+                        listOfNotNull(payload.importName) +
+                            "jakarta.validation.Valid" +
+                            "org.springframework.validation.annotation.Validated"
+                    )
+                        .distinct()
+                        .sorted()
                 val sendMethod =
                     GeneratorItem.SendMethod(
                         methodName = "send${payload.messageName}",
                         payloadType = payload.payloadType,
+                        payloadDescription =
+                            toKDocLines(payload.payloadDescription)
+                                .ifEmpty { listOf("Message payload.") },
+                        keyDescription = listOf("Kafka record key."),
                         keyType = "String",
                         headerType = payload.headerTypeName,
                         headerProperties =
@@ -77,6 +81,13 @@ class KotlinSpringKafkaModelFactory(
                                 GeneratorItem.HeaderProperty(
                                     name = header.name,
                                     accessorName = header.accessorName,
+                                    parameterName = header.accessorName,
+                                    typeName = header.kotlinTypeName(),
+                                    description =
+                                        toKDocLines(header.description)
+                                            .ifEmpty { listOf("Kafka message header.") },
+                                    required = header.required,
+                                    defaultValue = if (header.required) null else "null",
                                 )
                             },
                     )
@@ -85,7 +96,14 @@ class KotlinSpringKafkaModelFactory(
                     GeneratorItem.KafkaProducerClass(
                         name = producerName,
                         packageName = producerPackage,
-                        description = toKDocLines("Producer for topic '${channel.topic}'"),
+                        description =
+                            toKDocLines(
+                                "Producer contract for publishing messages to the `${channel.topic}` topic.",
+                            ) +
+                                toKDocLines(
+                                    "The contract exposes the Kafka record key, message payload, and " +
+                                        "contract-defined headers as method parameters.",
+                                ),
                         topic = channel.topic,
                         sendMethods = listOf(sendMethod),
                         kafkaValueType = payload.payloadType,
@@ -111,6 +129,7 @@ class KotlinSpringKafkaModelFactory(
         return KafkaPayload(
             messageName = msg.messageName,
             payloadType = type,
+            payloadDescription = msg.schema.description,
             importName =
                 if (isPrimitive(type)) {
                     null
@@ -124,9 +143,12 @@ class KotlinSpringKafkaModelFactory(
                     ?.properties
                     ?.keys
                     ?.map { headerName ->
+                        val schema = headers.properties.getValue(headerName)
                         KafkaHeaderProperty(
                             name = headerName,
-                            accessorName = headerName,
+                            accessorName = headerName.toParameterName(),
+                            description = schema.description(),
+                            required = headerName in headers.requiredProperties,
                         )
                     }
                     .orEmpty(),
@@ -154,9 +176,12 @@ class KotlinSpringKafkaModelFactory(
                         ?.properties
                         ?.keys
                         ?.map { headerName ->
+                            val schema = headers.properties.getValue(headerName)
                             KafkaHeaderProperty(
                                 name = headerName,
-                                accessorName = headerName,
+                                accessorName = headerName.toParameterName(),
+                                description = schema.description(),
+                                required = headerName in headers.requiredProperties,
                             )
                         }
                         .orEmpty(),
@@ -164,4 +189,23 @@ class KotlinSpringKafkaModelFactory(
         } else {
             this
         }
+
+    private fun KafkaHeaderProperty.kotlinTypeName(): String {
+        val nullableSuffix = if (required) "" else "?"
+        return "String$nullableSuffix"
+    }
+
+    private fun SchemaInterface.description(): String? = resolvedSchema()?.description
+
+    private fun SchemaInterface.resolvedSchema(): Schema? =
+        when (this) {
+            is SchemaInterface.SchemaInline -> schema
+            is SchemaInterface.SchemaReference -> reference.model as? Schema
+            else -> null
+        }
+
+    private fun String.toParameterName(): String {
+        val pascalCase = MapperUtil.toPascalCase(this)
+        return pascalCase.replaceFirstChar { it.lowercase() }
+    }
 }

@@ -32,6 +32,7 @@ object MessageHeaderAnalyzer {
         return AnalyzedMessageHeaders(
             typeName = "Topic${channelNamePascal}Headers$messageNamePascal",
             properties = properties,
+            requiredProperties = collectRequiredProperties(message),
         )
     }
 
@@ -51,6 +52,42 @@ object MessageHeaderAnalyzer {
 
         return headers
     }
+
+    private fun collectRequiredProperties(message: Message): List<String> {
+        val required = mutableSetOf<String>()
+
+        message.traits?.forEach { traitInterface ->
+            val trait =
+                when (traitInterface) {
+                    is MessageTraitInterface.InlineMessageTrait -> traitInterface.trait
+                    is MessageTraitInterface.ReferenceMessageTrait -> traitInterface.reference.model as? MessageTrait
+                }
+            trait?.headers?.let { required.addAll(extractRequiredProperties(it)) }
+        }
+
+        message.headers?.let { required.addAll(extractRequiredProperties(it)) }
+
+        return required.toList()
+    }
+
+    private fun extractRequiredProperties(schemaInterface: SchemaInterface): List<String> =
+        when (schemaInterface) {
+            is SchemaInterface.SchemaInline ->
+                if (schemaInterface.schema.type.getPrimaryType() == "object") {
+                    schemaInterface.schema.required ?: emptyList()
+                } else {
+                    emptyList()
+                }
+            is SchemaInterface.SchemaReference -> {
+                val schema = schemaInterface.reference.model as? Schema
+                if (schema?.type.getPrimaryType() == "object") {
+                    schema?.required ?: emptyList()
+                } else {
+                    emptyList()
+                }
+            }
+            else -> emptyList()
+        }
 
     private fun extractProperties(schemaInterface: SchemaInterface): Map<String, SchemaInterface> =
         when (schemaInterface) {
