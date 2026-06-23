@@ -38,6 +38,21 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
             )
         generator.generate(listOf(channel))
+        val consumerFile =
+            outputDir.resolve(packageName.replace('.', '/') + "/consumer/SimpleTopicConsumer.java")
+        assertTrue(consumerFile.exists(), "Consumer should be generated")
+        val consumerContent = consumerFile.readText()
+        assertTrue(
+            consumerContent.contains("void onSimpleStringMessage("),
+            "Consumer should expose the contract method",
+        )
+        assertTrue(
+            consumerContent.contains("@Valid @NotNull String payload"),
+            "Consumer should expose the primitive payload type directly",
+        )
+        assertTrue(consumerContent.contains("@Nullable String key"), "Consumer should expose the nullable Kafka record key")
+        assertFalse(consumerContent.contains("ConsumerRecord"), "Consumer contract should not own listener record mapping")
+
         val producerFile =
             outputDir.resolve(
                 packageName.replace(

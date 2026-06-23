@@ -9,8 +9,39 @@ import {{.}};
  * {{.}}
 {{/description}}
  */
+@Validated
 public interface {{name}} {
 {{#methods}}
-    void {{methodName}}(ConsumerRecord<String, {{payloadType}}> record{{#hasHeaders}}, {{headerType}} headers{{/hasHeaders}});
+    /**
+{{#hasParameterDocumentation}}
+{{#payloadDescriptionFirstLine}}
+     * @param payload {{.}}
+{{/payloadDescriptionFirstLine}}
+{{#payloadDescriptionTailLines}}
+     * {{.}}
+{{/payloadDescriptionTailLines}}
+{{#keyDescriptionFirstLine}}
+     * @param key {{.}}
+{{/keyDescriptionFirstLine}}
+{{#keyDescriptionTailLines}}
+     * {{.}}
+{{/keyDescriptionTailLines}}
+{{#headerProperties}}
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{.}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
+     * {{.}}
+{{/descriptionTailLines}}
+{{/headerProperties}}
+{{/hasParameterDocumentation}}
+     */
+    void {{methodName}}(
+        @Valid @NotNull {{payloadType}} payload,
+        @Nullable String key{{#hasHeaders}},{{/hasHeaders}}
+{{#headerProperties}}
+        {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/headerProperties}}
+    );
 {{/methods}}
 }
