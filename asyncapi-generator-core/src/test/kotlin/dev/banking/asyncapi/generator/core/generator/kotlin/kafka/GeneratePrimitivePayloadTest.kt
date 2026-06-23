@@ -44,9 +44,12 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
 
         val content = handlerFile.readText()
         assertTrue(
-            content.contains("fun onSimpleStringMessage(record: ConsumerRecord<String, String>)"),
-            "Should use ConsumerRecord with String payload",
+            content.contains("fun onSimpleStringMessage("),
+            "Consumer should expose the contract method",
         )
+        assertTrue(content.contains("payload: String"), "Consumer should expose the primitive payload type directly")
+        assertTrue(content.contains("key: String?"), "Consumer should expose the nullable Kafka record key")
+        assertFalse(content.contains("ConsumerRecord"), "Consumer contract should not own listener record mapping")
         val producerFile =
             outputDir.resolve(
                 packageName.replace(

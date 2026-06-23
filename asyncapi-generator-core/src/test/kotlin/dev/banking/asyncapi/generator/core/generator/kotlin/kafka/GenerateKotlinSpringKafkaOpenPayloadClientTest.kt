@@ -38,8 +38,11 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertFalse(producerContent.contains("CompletableFuture"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
-        assertTrue(consumerContent.contains("ConsumerRecord<String, RawEvent>"))
+        assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
         assertTrue(consumerContent.contains("fun onRawEvent"))
+        assertTrue(consumerContent.contains("payload: RawEvent"))
+        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("import $modelPackage.RawEvent"))
     }
 
@@ -74,8 +77,11 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertFalse(producerContent.contains("CompletableFuture"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
-        assertTrue(consumerContent.contains("ConsumerRecord<String, RawEventPayload>"))
+        assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
         assertTrue(consumerContent.contains("fun onRawEvent"))
+        assertTrue(consumerContent.contains("payload: RawEventPayload"))
+        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("import $modelPackage.RawEventPayload"))
     }
 }

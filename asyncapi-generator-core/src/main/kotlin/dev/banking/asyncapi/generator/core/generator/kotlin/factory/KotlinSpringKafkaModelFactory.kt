@@ -28,28 +28,55 @@ class KotlinSpringKafkaModelFactory(
         val consumerPackage = "$clientPackage.consumer"
         val payloads = channel.payloads()
 
-        val baseImports =
-            payloads.flatMap { payload -> listOfNotNull(payload.importName, payload.headerImportName) }
-                .distinct()
-                .sorted()
-
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
-            val imports = (baseImports + "org.apache.kafka.clients.consumer.ConsumerRecord").distinct().sorted()
+            val imports =
+                (
+                    payloads.mapNotNull { payload -> payload.importName } +
+                        "jakarta.validation.Valid" +
+                        "org.springframework.validation.annotation.Validated"
+                )
+                    .distinct()
+                    .sorted()
             val methods =
                 payloads.map { payload ->
                     GeneratorItem.HandlerMethod(
                         methodName = "on${payload.messageName}",
                         payloadType = payload.payloadType,
+                        payloadDescription =
+                            toKDocLines(payload.payloadDescription)
+                                .ifEmpty { listOf("Message payload.") },
+                        keyDescription = listOf("Kafka record key."),
                         keyType = "String?",
                         headerType = payload.headerTypeName,
+                        headerProperties =
+                            payload.headerProperties.map { header ->
+                                GeneratorItem.HeaderProperty(
+                                    name = header.name,
+                                    accessorName = header.accessorName,
+                                    parameterName = header.accessorName,
+                                    typeName = header.kotlinTypeName(),
+                                    description =
+                                        toKDocLines(header.description)
+                                            .ifEmpty { listOf("Kafka message header.") },
+                                    required = header.required,
+                                    defaultValue = if (header.required) null else "null",
+                                )
+                            },
                     )
                 }
             items.add(
                 GeneratorItem.KafkaHandlerInterface(
                     name = consumerName,
                     packageName = consumerPackage,
-                    description = toKDocLines("Consumer for topic '${channel.topic}'"),
+                    description =
+                        toKDocLines(
+                            "Consumer contract for handling messages from the `${channel.topic}` topic.",
+                        ) +
+                            toKDocLines(
+                                "The contract exposes the Kafka record key, message payload, and " +
+                                    "contract-defined headers as method parameters.",
+                            ),
                     methods = methods,
                     imports = imports,
                 ),
