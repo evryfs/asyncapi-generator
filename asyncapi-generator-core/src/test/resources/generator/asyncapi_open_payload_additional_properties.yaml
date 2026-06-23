@@ -4,6 +4,6 @@ info:
   version: 1.0.0
 components:
   schemas:
-    DlqPayload:
+    OpenPayload:
       type: object
       additionalProperties: true

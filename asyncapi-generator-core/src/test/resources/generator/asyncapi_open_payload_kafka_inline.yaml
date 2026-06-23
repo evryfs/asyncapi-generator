@@ -3,10 +3,10 @@ info:
   title: Open Payload Kafka
   version: 1.0.0
 channels:
-  user.dlq:
+  user.raw-events:
     messages:
-      DlqEvent:
-        name: Dead Letter Queue Event
+      RawEvent:
+        name: Raw Event
         payload:
           type: object
           additionalProperties: true
