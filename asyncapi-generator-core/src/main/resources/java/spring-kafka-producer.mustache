@@ -9,34 +9,40 @@ import {{{.}}};
  * {{{.}}}
 {{/description}}
  */
-public class {{name}} {
-
-    private final KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate;
-    private final String topic;
-
-    public {{name}}(KafkaTemplate<String, {{kafkaValueType}}> kafkaTemplate, String topic) {
-        this.kafkaTemplate = kafkaTemplate;
-        this.topic = topic;
-    }
+@Validated
+public interface {{name}} {
 
     {{#sendMethods}}
-    public CompletableFuture<SendResult<String, {{kafkaValueType}}>> {{methodName}}(
-        String key,
-        {{payloadType}} message{{#hasHeaders}},
-        {{headerType}} headers{{/hasHeaders}}
-    ) {
-{{#hasHeaders}}
-        ProducerRecord<String, {{kafkaValueType}}> record = new ProducerRecord<>(topic, key, message);
+    /**
+{{#hasParameterDocumentation}}
+{{#payloadDescriptionFirstLine}}
+     * @param payload {{{.}}}
+{{/payloadDescriptionFirstLine}}
+{{#payloadDescriptionTailLines}}
+     * {{{.}}}
+{{/payloadDescriptionTailLines}}
+{{#keyDescriptionFirstLine}}
+     * @param key {{{.}}}
+{{/keyDescriptionFirstLine}}
+{{#keyDescriptionTailLines}}
+     * {{{.}}}
+{{/keyDescriptionTailLines}}
 {{#headerProperties}}
-        if (headers != null && headers.{{accessorName}}() != null) {
-            record.headers().add("{{name}}", String.valueOf(headers.{{accessorName}}()).getBytes(StandardCharsets.UTF_8));
-        }
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{{.}}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
+     * {{{.}}}
+{{/descriptionTailLines}}
 {{/headerProperties}}
-        return kafkaTemplate.send(record);
-{{/hasHeaders}}
-{{^hasHeaders}}
-        return kafkaTemplate.send(new ProducerRecord<>(topic, key, message));
-{{/hasHeaders}}
-    }
+{{/hasParameterDocumentation}}
+     */
+    void {{methodName}}(
+        @Valid @NotNull {{payloadType}} payload,
+        @NotNull String key{{#hasHeaders}},{{/hasHeaders}}
+{{#headerProperties}}
+        {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/headerProperties}}
+    );
     {{/sendMethods}}
 }

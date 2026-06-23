@@ -6,12 +6,13 @@ import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSprin
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateJavaPrimitivePayloadTest {
 
     @Test
-    fun `should generate typed KafkaTemplate for single string payload`() {
+    fun `should generate producer contract for single string payload`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive"
         val stringSchema = Schema(type = "string")
@@ -47,13 +48,16 @@ class GenerateJavaPrimitivePayloadTest {
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
-            producerContent.contains("KafkaTemplate<String, String>"),
-            "Producer should use typed KafkaTemplate for single payload",
+            producerContent.contains("interface SimpleTopicProducerSimpleStringMessage"),
+            "Producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContent.contains("CompletableFuture<SendResult<String, String>>"),
-            "Producer should return the Spring Kafka send result future",
+            producerContent.contains("@Valid @NotNull String payload"),
+            "Producer should expose the primitive payload type directly",
         )
+        assertTrue(producerContent.contains("@NotNull String key"), "Producer should expose the Kafka record key")
+        assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
+        assertFalse(producerContent.contains("CompletableFuture"), "Producer contract should not own send results")
     }
 
     @Test
@@ -98,20 +102,22 @@ class GenerateJavaPrimitivePayloadTest {
         val producerContentA = producerFileA.readText()
         val producerContentB = producerFileB.readText()
         assertTrue(
-            producerContentA.contains("KafkaTemplate<String, String>"),
-            "StringMessage producer should use typed KafkaTemplate",
+            producerContentA.contains("interface MultiTopicProducerStringMessage"),
+            "StringMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentA.contains("CompletableFuture<SendResult<String, String>>"),
-            "StringMessage producer should return the Spring Kafka send result future",
+            producerContentA.contains("@Valid @NotNull String payload"),
+            "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
-            producerContentB.contains("KafkaTemplate<String, Integer>"),
-            "IntMessage producer should use typed KafkaTemplate",
+            producerContentB.contains("interface MultiTopicProducerIntMessage"),
+            "IntMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentB.contains("CompletableFuture<SendResult<String, Integer>>"),
-            "IntMessage producer should return the Spring Kafka send result future",
+            producerContentB.contains("@Valid @NotNull Integer payload"),
+            "IntMessage producer should expose the primitive payload type directly",
         )
+        assertFalse(producerContentA.contains("KafkaTemplate"), "StringMessage producer should not own KafkaTemplate wiring")
+        assertFalse(producerContentB.contains("KafkaTemplate"), "IntMessage producer should not own KafkaTemplate wiring")
     }
 }
