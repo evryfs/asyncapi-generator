@@ -323,7 +323,7 @@ Generated Spring Kafka clients are contract-only source artifacts. Producer-orie
 
 The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer artifacts. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
 
-The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
+The Spring Kafka client surface is intentionally contract-first. Applications should implement the generated interfaces and own runtime wiring, topic resolution, Kafka template configuration, listener configuration, serialization, deserialization, and schema registry integration.
 
 ### Payload Schema Formats
 
