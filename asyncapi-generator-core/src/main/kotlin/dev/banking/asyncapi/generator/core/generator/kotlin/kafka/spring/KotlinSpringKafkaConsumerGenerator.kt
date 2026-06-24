@@ -11,7 +11,7 @@ class KotlinSpringKafkaConsumerGenerator(
 ) {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")
 
-    fun generate(model: GeneratorItem.KafkaHandlerInterface) {
+    fun generate(model: GeneratorItem.KafkaConsumerInterface) {
         val template = mustacheFactory.compile("spring-kafka-consumer.mustache")
         val writer = StringWriter()
         template.execute(writer, model).flush()

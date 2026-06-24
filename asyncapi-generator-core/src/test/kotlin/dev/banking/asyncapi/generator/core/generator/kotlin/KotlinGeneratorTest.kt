@@ -49,8 +49,8 @@ class KotlinGeneratorTest {
                     description = emptyList(),
                     aliasType = "String",
                 ),
-                GeneratorItem.KafkaHandlerInterface(
-                    name = "IgnoredHandler",
+                GeneratorItem.KafkaConsumerInterface(
+                    name = "IgnoredConsumer",
                     packageName = "com.example.kafka",
                     description = emptyList(),
                     methods = emptyList(),

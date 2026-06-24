@@ -38,11 +38,11 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 packageName,
             )
         generator.generate(listOf(channel))
-        val handlerFile =
+        val consumerFile =
             outputDir.resolve(packageName.replace('.', '/') + "/consumer/SimpleTopicConsumer.kt")
-        assertTrue(handlerFile.exists())
+        assertTrue(consumerFile.exists())
 
-        val content = handlerFile.readText()
+        val content = consumerFile.readText()
         assertTrue(
             content.contains("fun onSimpleStringMessage("),
             "Consumer should expose the contract method",

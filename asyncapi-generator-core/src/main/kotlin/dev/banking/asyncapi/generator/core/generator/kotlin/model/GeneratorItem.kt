@@ -36,11 +36,11 @@ sealed interface GeneratorItem {
         override val description: List<String>,
     ) : GeneratorItem
 
-    data class KafkaHandlerInterface(
+    data class KafkaConsumerInterface(
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-        val methods: List<HandlerMethod>,
+        val methods: List<ConsumerMethod>,
         val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
@@ -54,7 +54,7 @@ sealed interface GeneratorItem {
         val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
-    data class HandlerMethod(
+    data class ConsumerMethod(
         val methodName: String,
         val payloadType: String,
         val payloadDescription: List<String> = emptyList(),

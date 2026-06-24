@@ -40,7 +40,7 @@ class KotlinSpringKafkaModelFactory(
                     .sorted()
             val methods =
                 payloads.map { payload ->
-                    GeneratorItem.HandlerMethod(
+                    GeneratorItem.ConsumerMethod(
                         methodName = "on${payload.messageName}",
                         payloadType = payload.payloadType,
                         payloadDescription =
@@ -66,7 +66,7 @@ class KotlinSpringKafkaModelFactory(
                     )
                 }
             items.add(
-                GeneratorItem.KafkaHandlerInterface(
+                GeneratorItem.KafkaConsumerInterface(
                     name = consumerName,
                     packageName = consumerPackage,
                     description =
