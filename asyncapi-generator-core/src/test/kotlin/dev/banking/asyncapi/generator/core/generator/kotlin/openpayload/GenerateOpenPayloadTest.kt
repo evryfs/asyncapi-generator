@@ -11,7 +11,7 @@ class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
         val generated =
             generateElement(
                 yaml = File("src/test/resources/generator/asyncapi_open_payload_empty_schema.yaml"),
-                generated = "DlqPayload.kt",
+                generated = "OpenPayload.kt",
                 modelPackage = "dev.banking.asyncapi.generator.core.model.generated.openpayload",
             )
         val typeAlias = extractElement(generated)
@@ -20,7 +20,7 @@ class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
             """
             package dev.banking.asyncapi.generator.core.model.generated.openpayload
 
-            typealias DlqPayload = Any
+            typealias OpenPayload = Any
             """.trimIndent()
 
         assertEquals(expected, typeAlias)
@@ -31,7 +31,7 @@ class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
         val generated =
             generateElement(
                 yaml = File("src/test/resources/generator/asyncapi_open_payload_additional_properties.yaml"),
-                generated = "DlqPayload.kt",
+                generated = "OpenPayload.kt",
                 modelPackage = "dev.banking.asyncapi.generator.core.model.generated.openpayload",
             )
         val typeAlias = extractElement(generated)
@@ -40,7 +40,7 @@ class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
             """
             package dev.banking.asyncapi.generator.core.model.generated.openpayload
 
-            typealias DlqPayload = Any
+            typealias OpenPayload = Any
             """.trimIndent()
 
         assertEquals(expected, typeAlias)

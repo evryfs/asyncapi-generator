@@ -11,8 +11,8 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
     @Test
     fun `should use Object for open payload in spring kafka clients`() {
         val yaml = File("src/test/resources/generator/asyncapi_open_payload_kafka_inline.yaml")
-        val modelPackage = "dev.banking.test.dlq.model"
-        val clientPackage = "dev.banking.test.dlq.client"
+        val modelPackage = "dev.banking.test.raw.model"
+        val clientPackage = "dev.banking.test.raw.client"
 
         generateElement(
             yaml = yaml,
@@ -23,19 +23,25 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
         )
 
         val outputDir = File("target/generated-sources/asyncapi")
-        val modelDir = outputDir.resolve("dev/banking/test/dlq/model")
-        val producerDir = outputDir.resolve("dev/banking/test/dlq/client/producer")
-        val consumerDir = outputDir.resolve("dev/banking/test/dlq/client/consumer")
+        val modelDir = outputDir.resolve("dev/banking/test/raw/model")
+        val producerDir = outputDir.resolve("dev/banking/test/raw/client/producer")
+        val consumerDir = outputDir.resolve("dev/banking/test/raw/client/consumer")
 
-        val modelFile = modelDir.resolve("DeadLetterQueueEventPayload.java")
+        val modelFile = modelDir.resolve("RawEventPayload.java")
         assertFalse(modelFile.exists(), "Open payload should not generate a model class")
 
-        val producerContent = producerDir.resolve("UserDlqProducerDeadLetterQueueEvent.java").readText()
-        assertTrue(producerContent.contains("KafkaTemplate<String, Object>"))
-        assertTrue(producerContent.contains("CompletableFuture<SendResult<String, Object>> sendDeadLetterQueueEvent"))
+        val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.java").readText()
+        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent"))
+        assertTrue(producerContent.contains("void sendRawEvent"))
+        assertTrue(producerContent.contains("@Valid @NotNull Object payload"))
+        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("CompletableFuture"))
 
-        val consumerContent = consumerDir.resolve("UserDlqConsumer.java").readText()
-        assertTrue(consumerContent.contains("ConsumerRecord<String, Object>"))
-        assertTrue(consumerContent.contains("void onDeadLetterQueueEvent"))
+        val consumerContent = consumerDir.resolve("UserRawEventsConsumer.java").readText()
+        assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
+        assertTrue(consumerContent.contains("void onRawEvent"))
+        assertTrue(consumerContent.contains("@Valid @NotNull Object payload"))
+        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertFalse(consumerContent.contains("ConsumerRecord"))
     }
 }

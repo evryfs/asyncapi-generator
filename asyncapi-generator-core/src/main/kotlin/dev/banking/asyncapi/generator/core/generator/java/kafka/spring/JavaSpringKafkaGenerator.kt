@@ -30,7 +30,7 @@ class JavaSpringKafkaGenerator(
             items.forEach { item ->
                 when (item) {
                     is GeneratorItem.KafkaProducerClass -> producerGenerator.generate(item)
-                    is GeneratorItem.KafkaHandlerInterface -> consumerGenerator.generate(item)
+                    is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.generate(item)
                     else -> { /* Ignore */ }
                 }
             }

@@ -9,26 +9,44 @@ import {{{.}}}
  * {{{.}}}
 {{/description}}
  */
-class {{name}}(
-    private val kafkaTemplate: KafkaTemplate<String, {{kafkaValueType}}>,
-    private val topic: String
-) {
+@Validated
+interface {{name}} {
     {{#sendMethods}}
-    fun {{methodName}}(
-        key: String,
-        message: {{payloadType}}{{#hasHeaders}},
-        headers: {{headerType}}{{/hasHeaders}}
-    ): CompletableFuture<SendResult<String, {{kafkaValueType}}>> {
-{{#hasHeaders}}
-        val record = ProducerRecord(topic, key, message)
+    /**
+{{#hasParameterDocumentation}}
+{{#payloadDescriptionFirstLine}}
+     * @param payload {{{.}}}
+{{/payloadDescriptionFirstLine}}
+{{#payloadDescriptionTailLines}}
+     * {{{.}}}
+{{/payloadDescriptionTailLines}}
+{{#keyDescriptionFirstLine}}
+     * @param key {{{.}}}
+{{/keyDescriptionFirstLine}}
+{{#keyDescriptionTailLines}}
+     * {{{.}}}
+{{/keyDescriptionTailLines}}
 {{#headerProperties}}
-        headers.{{accessorName}}?.let { record.headers().add("{{name}}", it.toString().toByteArray(Charsets.UTF_8)) }
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{{.}}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
+     * {{{.}}}
+{{/descriptionTailLines}}
 {{/headerProperties}}
-        return kafkaTemplate.send(record)
+{{/hasParameterDocumentation}}
+     */
+    fun {{methodName}}(
+        @param:Valid
+        payload: {{payloadType}},
+
+        key: String,
+{{#hasHeaders}}
+
 {{/hasHeaders}}
-{{^hasHeaders}}
-        return kafkaTemplate.send(ProducerRecord(topic, key, message))
-{{/hasHeaders}}
-    }
+{{#headerProperties}}
+        {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
+{{/headerProperties}}
+    )
     {{/sendMethods}}
 }

@@ -44,8 +44,8 @@ class JavaGeneratorTest {
                     packageName = "com.example.model",
                     description = emptyList(),
                 ),
-                GeneratorItem.KafkaHandlerInterface(
-                    name = "IgnoredHandler",
+                GeneratorItem.KafkaConsumerInterface(
+                    name = "IgnoredConsumer",
                     packageName = "com.example.kafka",
                     description = emptyList(),
                     methods = emptyList(),

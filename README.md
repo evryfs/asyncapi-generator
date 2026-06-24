@@ -319,11 +319,11 @@ For native Protobuf message payloads, generated Spring Kafka clients use the Jav
 
 The generator does not configure Kafka Avro or Protobuf serializers and deserializers yet; applications still own that runtime wiring.
 
-Generated Spring Kafka clients are contract-only source artifacts. Producer-oriented channels generate producer wrappers around application-provided `KafkaTemplate` instances and return Spring Kafka `CompletableFuture<SendResult<...>>` values from send methods. Consumer-oriented channels generate consumer interfaces with abstract methods that receive typed `ConsumerRecord` values. The generator does not create Spring Boot auto-configuration, `@KafkaListener` classes, listener containers, serializer configuration, deserializer configuration, or schema registry configuration.
+Generated Spring Kafka clients are contract-only source artifacts. Producer-oriented channels generate producer interfaces with abstract send methods that expose the payload, Kafka record key, and contract-defined headers as method parameters. Consumer-oriented channels generate consumer interfaces with abstract handling methods that expose the payload, nullable Kafka record key, and contract-defined headers as method parameters. The generator does not create Spring Boot auto-configuration, `KafkaTemplate` wrappers, `@KafkaListener` classes, listener containers, serializer configuration, deserializer configuration, or schema registry configuration.
 
 The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer artifacts. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
 
-The Spring Kafka client surface is still being redesigned for the next major version. The generated artifacts should currently be treated as a source-generation contract, not as final application architecture guidance.
+The Spring Kafka client surface is intentionally contract-first. Applications should implement the generated interfaces and own runtime wiring, topic resolution, Kafka template configuration, listener configuration, serialization, deserialization, and schema registry integration.
 
 ### Payload Schema Formats
 

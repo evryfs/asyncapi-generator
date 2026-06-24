@@ -9,8 +9,44 @@ import {{{.}}}
  * {{{.}}}
 {{/description}}
  */
+@Validated
 interface {{name}} {
 {{#methods}}
-    fun {{methodName}}(record: ConsumerRecord<String, {{payloadType}}>{{#hasHeaders}}, headers: {{headerType}}{{/hasHeaders}})
+    /**
+{{#hasParameterDocumentation}}
+{{#payloadDescriptionFirstLine}}
+     * @param payload {{{.}}}
+{{/payloadDescriptionFirstLine}}
+{{#payloadDescriptionTailLines}}
+     * {{{.}}}
+{{/payloadDescriptionTailLines}}
+{{#keyDescriptionFirstLine}}
+     * @param key {{{.}}}
+{{/keyDescriptionFirstLine}}
+{{#keyDescriptionTailLines}}
+     * {{{.}}}
+{{/keyDescriptionTailLines}}
+{{#headerProperties}}
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{{.}}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
+     * {{{.}}}
+{{/descriptionTailLines}}
+{{/headerProperties}}
+{{/hasParameterDocumentation}}
+     */
+    fun {{methodName}}(
+        @param:Valid
+        payload: {{payloadType}},
+
+        key: {{keyType}}{{#hasHeaders}},{{/hasHeaders}}
+{{#hasHeaders}}
+
+{{/hasHeaders}}
+{{#headerProperties}}
+        {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
+{{/headerProperties}}
+    )
 {{/methods}}
 }
