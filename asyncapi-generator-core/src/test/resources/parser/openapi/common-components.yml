@@ -1,0 +1,31 @@
+asyncapi: "3.0.0"
+info:
+  title: Common components
+  version: 1.0.0
+  tags:
+    - name: "Default"
+components:
+  schemas:
+    ActionType:
+      title: ActionType
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+    BaseMessage:
+      title: BaseMessage
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          readOnly: true
+        initiatedBy:
+          type: string
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        eventDateTime:
+          type: string
+          format: date-time

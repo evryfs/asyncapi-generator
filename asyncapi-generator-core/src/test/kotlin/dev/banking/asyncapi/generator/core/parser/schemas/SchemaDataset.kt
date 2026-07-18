@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.COMPONENT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -26,7 +27,7 @@ fun lightMeasuredPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = COMPONENT)
         )
     )
 )
@@ -43,7 +44,7 @@ fun turnOnOffPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = COMPONENT)
         )
     )
 )
@@ -61,7 +62,7 @@ fun dimLightPayload() = Schema(
             )
         ),
         "sentAt" to SchemaInterface.SchemaReference(
-            Reference("#/components/schemas/sentAt", referenceCategoryKey = SCHEMA)
+            Reference("#/components/schemas/sentAt", referenceCategoryKey = COMPONENT)
         )
     )
 )
@@ -206,7 +207,7 @@ fun asyncApiSpecific() = Schema(
 
 )
 
-fun referencedSchema() = Reference("#/components/schemas/simpleString", referenceCategoryKey = SCHEMA)
+fun referencedSchema() = Reference("#/components/schemas/simpleString", referenceCategoryKey = COMPONENT)
 
 fun allowAnything() = SchemaInterface.BooleanSchema(value = true)
 

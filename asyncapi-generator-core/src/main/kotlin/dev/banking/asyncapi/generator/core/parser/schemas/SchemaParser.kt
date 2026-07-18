@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.COMPONENT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import kotlin.String
 import kotlin.collections.Map
@@ -44,12 +45,15 @@ class SchemaParser(
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
         parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
+            val isComponents = reference.contains("components/schemas")
+            val isOf = parserNode.name.contains("[")
+            val categoryKey = if (isComponents && !isOf) COMPONENT else SCHEMA
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
-                    referenceCategoryKey = SCHEMA
-                ).also { asyncApiContext.register(it, parserNode) }
-            )
+                    referenceCategoryKey = categoryKey
+                )
+            ).also { asyncApiContext.register(it.reference, parserNode) }
         }
         parserNode.optional("schemaFormat")?.coerce<String>()?.let { format ->
             val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
@@ -97,7 +101,7 @@ class SchemaParser(
         val comment = parserNode.optional($$"$comment")?.coerce<String>()
         val title = parserNode.optional("title")?.coerce<String>()
         val description = parserNode.optional("description")?.coerce<String>()
-        val type = parserNode.optional("type")?.coerce<Any>()
+        var type = parserNode.optional("type")?.coerce<Any>()
         val format = parserNode.optional("format")?.coerce<String>()
 
         val defaultNode = extractDefaultNode(parserNode)
@@ -159,6 +163,10 @@ class SchemaParser(
         val readOnly = parserNode.optional("readOnly")?.coerce<Boolean>()
         val writeOnly = parserNode.optional("writeOnly")?.coerce<Boolean>()
 
+        if (type == null) {
+            if (enumValues != null && !enumValues.isEmpty())
+                type = "string"
+        }
         return SchemaInterface.SchemaInline(
             Schema(
                 id = id,
@@ -228,7 +236,10 @@ class SchemaParser(
     private fun isBooleanSchema(node: ParserNode): Boolean {
         val value = node.node
         return value is Boolean ||
-            (value is String && (value.equals("true", ignoreCase = true) || value.equals("false", ignoreCase = true)))
+                (value is String && (value.equals("true", ignoreCase = true) || value.equals(
+                    "false",
+                    ignoreCase = true
+                )))
     }
 
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {

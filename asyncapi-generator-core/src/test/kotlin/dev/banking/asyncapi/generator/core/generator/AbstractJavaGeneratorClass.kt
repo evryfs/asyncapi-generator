@@ -36,47 +36,55 @@ abstract class AbstractJavaGeneratorClass {
             GeneratorConfiguration(
                 language = GeneratorName.JAVA,
                 output =
-                    GeneratorOutputConfiguration(
-                        sourceOutputDirectory = codegenOutputDirectory,
-                        resourceOutputDirectory = resourceOutputDirectory,
-                    ),
+                GeneratorOutputConfiguration(
+                    sourceOutputDirectory = codegenOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
                 models =
-                    if (generateModels) {
-                        ModelGeneration.Enabled(
-                            packageName = modelPackage,
-                            annotation = modelAnnotation,
-                            javaModelType = javaModelType,
-                        )
-                    } else {
-                        ModelGeneration.Disabled
-                    },
+                if (generateModels) {
+                    ModelGeneration.Enabled(
+                        packageName = modelPackage,
+                        annotation = modelAnnotation,
+                        javaModelType = javaModelType,
+                    )
+                } else {
+                    ModelGeneration.Disabled
+                },
                 clients =
-                    buildList {
-                        if (generateSpringKafkaClient) {
-                            add(
-                                ClientGeneration.Kafka(
-                                    packageName = effectiveClientPackage,
-                                    modelPackageName = modelPackage,
-                                    headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
-                                    springKafka = ClientGeneration.SpringKafka(),
-                                ),
-                            )
-                        }
-                        if (generateQuarkusKafkaClient) {
-                            add(
-                                ClientGeneration.QuarkusKafka(
-                                    packageName = effectiveClientPackage,
-                                    modelPackageName = modelPackage,
-                                ),
-                            )
-                        }
-                    },
+                buildList {
+                    if (generateSpringKafkaClient) {
+                        add(
+                            ClientGeneration.Kafka(
+                                packageName = effectiveClientPackage,
+                                modelPackageName = modelPackage,
+                                headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
+                                springKafka = ClientGeneration.SpringKafka(),
+                            ),
+                        )
+                    }
+                    if (generateQuarkusKafkaClient) {
+                        add(
+                            ClientGeneration.QuarkusKafka(
+                                packageName = effectiveClientPackage,
+                                modelPackageName = modelPackage,
+                            ),
+                        )
+                    }
+                },
             )
         generator.generate(
             asyncApiDocument = bundled,
             generatorConfiguration = generatorConfiguration,
         )
 
+        return loadGeneratedClassContent(codegenOutputDirectory, generated, modelPackage)
+    }
+
+    fun loadGeneratedClassContent(
+        codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
+        generated: String? = null,
+        modelPackage: String
+    ): String {
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')
             val output =

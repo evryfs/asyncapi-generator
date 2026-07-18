@@ -1,0 +1,12 @@
+openapi: 3.0.0
+info:
+  title: example-nested-common
+  version: 0.0.1
+  description: something
+servers:
+  - url: 'http://localhost:8080'
+paths: { }
+components:
+  schemas:
+    Message:
+      $ref: "./openapi-example-refs-common.yml#/components/schemas/BaseMessage"

@@ -22,6 +22,7 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.components.ComponentParser
+import dev.banking.asyncapi.generator.core.parser.components.ComponentUnknownSchemaParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
@@ -258,6 +259,15 @@ class ExternalFragmentProcessor(
     }
 
     private fun parseAndValidateComponent(rootNode: ParserNode, results: ValidationResults) {
+        val isUnknownSchema = rootNode.optional("asyncapi") == null
+        if(isUnknownSchema){
+            rootNode.optional("components")?.let {
+                val parsed:ComponentInterface = ComponentUnknownSchemaParser(context).parseElement(it)
+                val validator = ComponentValidator(context)
+                validator.validateInterface(parsed, "External Component", results)
+            }
+            return
+        }
         val parsed: ComponentInterface = ComponentParser(context).parseElement(rootNode)
         val validator = ComponentValidator(context)
         validator.validateInterface(parsed, "External Component", results)
