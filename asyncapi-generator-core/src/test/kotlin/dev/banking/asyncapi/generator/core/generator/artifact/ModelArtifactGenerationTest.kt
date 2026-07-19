@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
@@ -31,7 +31,7 @@ class ModelArtifactGenerationTest {
         generation.generateModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
                     annotation = "com.example.NoArg",
                 ),
@@ -59,7 +59,7 @@ class ModelArtifactGenerationTest {
         generation.generateHeaderModelArtifacts(
             task =
                 GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.client.header",
                 ),
             asyncApiDocument = fixtures.documentWithMessageHeaders(),
@@ -93,7 +93,7 @@ class ModelArtifactGenerationTest {
         generation.generateModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
                     javaModelType = JavaModelType.RECORD,
                 ),

@@ -1,18 +1,16 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
 /**
- * Generator implementation selected by user-facing configuration.
+ * Source language used by resolved generation tasks.
  *
  * Expected behavior is covered by:
- * - `GeneratorNameTest`
+ * - `SourceLanguageTest`
  */
-enum class GeneratorName(
+enum class SourceLanguage(
     val configurationValue: String,
 ) {
-    JAVA("java"),
     KOTLIN("kotlin"),
-    AVRO("avro"),
-    PROTOBUF("protobuf"),
+    JAVA("java"),
     ;
 
     companion object {
@@ -21,9 +19,9 @@ enum class GeneratorName(
         fun fromConfigurationValue(
             value: String?,
             path: String,
-        ): GeneratorName {
+        ): SourceLanguage {
             if (value == null) {
-                throw IllegalArgumentException("$path is required")
+                return KOTLIN
             }
 
             return entries.firstOrNull { it.configurationValue == value }

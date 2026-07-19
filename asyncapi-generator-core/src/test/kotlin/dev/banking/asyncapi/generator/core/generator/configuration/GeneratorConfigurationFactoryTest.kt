@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -464,7 +464,7 @@ class GeneratorConfigurationFactoryTest {
     }
 
     private fun request(
-        language: GeneratorName = GeneratorName.KOTLIN,
+        language: SourceLanguage = SourceLanguage.KOTLIN,
         javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),

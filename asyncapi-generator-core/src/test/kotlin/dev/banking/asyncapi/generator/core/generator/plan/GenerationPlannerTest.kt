@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -31,7 +31,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
                 ),
                 GenerationTask.AvroSchemaArtifacts(
@@ -92,7 +92,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
                     annotation = "com.example.NoArg",
                 ),
@@ -106,7 +106,7 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     models =
                         ModelGeneration.Enabled(
                             packageName = "com.example.model",
@@ -118,7 +118,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
                     javaModelType = JavaModelType.RECORD,
                 ),
@@ -139,7 +139,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(),
@@ -193,7 +193,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(
@@ -226,7 +226,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.client.header",
                 ),
             ),
@@ -261,7 +261,7 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     models = ModelGeneration.Enabled(packageName = "com.example.model"),
                     clients =
                         listOf(
@@ -277,18 +277,18 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
                 ),
                 GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                 ),
                 GenerationTask.QuarkusKafkaClient(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                 ),
             ),
             plan.tasks,
@@ -296,7 +296,7 @@ class GenerationPlannerTest {
     }
 
     private fun generatorConfiguration(
-        language: GeneratorName = GeneratorName.KOTLIN,
+        language: SourceLanguage = SourceLanguage.KOTLIN,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
         clients: List<ClientGeneration> = emptyList(),
@@ -327,7 +327,7 @@ class GenerationPlannerTest {
         )
 
     private fun springKafkaClientTask(
-        language: GeneratorName = GeneratorName.KOTLIN,
+        language: SourceLanguage = SourceLanguage.KOTLIN,
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
         generateHeaders: Boolean = true,

@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
@@ -29,7 +29,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.ModelArtifacts(
-                            language = GeneratorName.KOTLIN,
+                            language = SourceLanguage.KOTLIN,
                             packageName = "com.example.model",
                         ),
                         GenerationTask.AvroSchemaArtifacts(
@@ -50,7 +50,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.ModelArtifacts(
-                                    language = GeneratorName.JAVA,
+                                    language = SourceLanguage.JAVA,
                                     packageName = "com.example.model",
                                     javaModelType = JavaModelType.RECORD,
                                 ),
@@ -92,7 +92,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.SpringKafkaClient(
-                            language = GeneratorName.KOTLIN,
+                            language = SourceLanguage.KOTLIN,
                             clientPackage = "com.example.kafka",
                             modelPackage = "com.example.model",
                         ),
@@ -109,7 +109,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.SpringKafkaClient(
-                            language = GeneratorName.KOTLIN,
+                            language = SourceLanguage.KOTLIN,
                             clientPackage = "com.example.kafka",
                             modelPackage = "com.example.model",
                         ),
@@ -134,7 +134,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.SpringKafkaClient(
-                                    language = GeneratorName.KOTLIN,
+                                    language = SourceLanguage.KOTLIN,
                                     clientPackage = "com.example.kafka",
                                     modelPackage = "com.example.model",
                                 ),

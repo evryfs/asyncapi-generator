@@ -6,18 +6,27 @@ import kotlin.test.assertFailsWith
 
 class GeneratorNameTest {
     @Test
-    fun `fromConfigurationValue defaults to kotlin when value is not configured`() {
-        assertEquals(
-            GeneratorName.KOTLIN,
-            GeneratorName.fromConfigurationValue(
-                value = null,
-                path = "generatorName",
-            ),
-        )
+    fun `fromConfigurationValue requires generator name`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorName.fromConfigurationValue(
+                    value = null,
+                    path = "generatorName",
+                )
+            }
+
+        assertEquals("generatorName is required", exception.message)
     }
 
     @Test
     fun `fromConfigurationValue parses supported configuration values`() {
+        assertEquals(
+            GeneratorName.JAVA,
+            GeneratorName.fromConfigurationValue(
+                value = "java",
+                path = "generatorName",
+            ),
+        )
         assertEquals(
             GeneratorName.KOTLIN,
             GeneratorName.fromConfigurationValue(
@@ -26,9 +35,16 @@ class GeneratorNameTest {
             ),
         )
         assertEquals(
-            GeneratorName.JAVA,
+            GeneratorName.AVRO,
             GeneratorName.fromConfigurationValue(
-                value = "java",
+                value = "avro",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.PROTOBUF,
+            GeneratorName.fromConfigurationValue(
+                value = "protobuf",
                 path = "generatorName",
             ),
         )
@@ -45,7 +61,7 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: kotlin, java",
+            "Invalid generatorName 'python'. Supported values: java, kotlin, avro, protobuf",
             exception.message,
         )
     }

@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
@@ -32,7 +32,7 @@ abstract class AbstractKotlinGeneratorClass {
         val effectiveClientPackage = clientPackage ?: modelPackage
         val generatorConfiguration =
             GeneratorConfiguration(
-                language = GeneratorName.KOTLIN,
+                language = SourceLanguage.KOTLIN,
                 output =
                     GeneratorOutputConfiguration(
                         sourceOutputDirectory = codegenOutputDirectory,

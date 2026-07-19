@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractAvroGeneratorClass {
@@ -26,7 +26,7 @@ abstract class AbstractAvroGeneratorClass {
 
         val generatorConfiguration =
             GeneratorConfiguration(
-                language = GeneratorName.KOTLIN,
+                language = SourceLanguage.KOTLIN,
                 output =
                     GeneratorOutputConfiguration(
                         sourceOutputDirectory = codegenOutputDirectory,

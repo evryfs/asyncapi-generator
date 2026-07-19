@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 
 /**
@@ -11,19 +11,19 @@ import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
  */
 sealed interface GenerationTask {
     data class ModelArtifacts(
-        val language: GeneratorName,
+        val language: SourceLanguage,
         val packageName: String,
         val annotation: String? = null,
         val javaModelType: JavaModelType = JavaModelType.CLASS,
     ) : GenerationTask
 
     data class HeaderModelArtifacts(
-        val language: GeneratorName,
+        val language: SourceLanguage,
         val packageName: String,
     ) : GenerationTask
 
     data class SpringKafkaClient(
-        val language: GeneratorName,
+        val language: SourceLanguage,
         val clientPackage: String,
         val modelPackage: String,
         val generateHeaders: Boolean = true,
@@ -32,7 +32,7 @@ sealed interface GenerationTask {
     ) : GenerationTask
 
     data class QuarkusKafkaClient(
-        val language: GeneratorName,
+        val language: SourceLanguage,
     ) : GenerationTask
 
     data class AvroSchemaArtifacts(

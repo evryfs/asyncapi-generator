@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -24,7 +24,7 @@ class SpringKafkaClientGenerationTest {
         generator.generate(
             task =
                 springKafkaClientTask(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
             sourceOutputDirectory = sourceOutputDirectory,
@@ -47,7 +47,7 @@ class SpringKafkaClientGenerationTest {
         generator.generate(
             task =
                 springKafkaClientTask(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                 ),
             generationInput = fixtures.generationInputWithUserSignupChannel(),
             sourceOutputDirectory = sourceOutputDirectory,
@@ -70,7 +70,7 @@ class SpringKafkaClientGenerationTest {
         generator.generate(
             task =
                 springKafkaClientTask(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     generateProducers = false,
                     generateConsumers = true,
                 ),
@@ -88,7 +88,7 @@ class SpringKafkaClientGenerationTest {
     }
 
     private fun springKafkaClientTask(
-        language: GeneratorName,
+        language: SourceLanguage,
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
     ): GenerationTask.SpringKafkaClient =
