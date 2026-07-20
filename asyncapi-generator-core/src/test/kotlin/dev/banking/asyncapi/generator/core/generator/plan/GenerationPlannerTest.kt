@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
@@ -7,6 +8,8 @@ import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
@@ -196,6 +199,13 @@ class GenerationPlannerTest {
 
     @Test
     fun `plan includes Spring Kafka producer and consumer options on Spring Kafka client task`() {
+        val producerRecordValueType =
+            ProducerRecordValueType.Custom(
+                QualifiedTypeName.fromConfigurationValue(
+                    value = "org.apache.kafka.common.utils.Bytes",
+                    path = "clients.kafka.springKafka.producer.recordValueType",
+                ),
+            )
         val plan =
             planner.plan(
                 generatorConfiguration(
@@ -204,7 +214,12 @@ class GenerationPlannerTest {
                             kafkaClientGeneration(
                                 springKafka =
                                     ClientGeneration.SpringKafka(
-                                        producer = ClientGeneration.Producer(enabled = false),
+                                        clientContract = ClientContract.INTERFACE,
+                                        producer =
+                                            ClientGeneration.Producer(
+                                                enabled = false,
+                                                recordValueType = producerRecordValueType,
+                                            ),
                                         consumer = ClientGeneration.Consumer(enabled = true),
                                     ),
                             ),
@@ -221,6 +236,8 @@ class GenerationPlannerTest {
                 springKafkaClientTask(
                     generateProducers = false,
                     generateConsumers = true,
+                    clientContract = ClientContract.INTERFACE,
+                    producerRecordValueType = producerRecordValueType,
                 ),
             ),
             plan.tasks,
@@ -355,6 +372,8 @@ class GenerationPlannerTest {
         generateHeaders: Boolean = true,
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
+        clientContract: ClientContract = ClientContract.INTERFACE,
+        producerRecordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = language,
@@ -363,5 +382,7 @@ class GenerationPlannerTest {
             generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
+            clientContract = clientContract,
+            producerRecordValueType = producerRecordValueType,
         )
 }

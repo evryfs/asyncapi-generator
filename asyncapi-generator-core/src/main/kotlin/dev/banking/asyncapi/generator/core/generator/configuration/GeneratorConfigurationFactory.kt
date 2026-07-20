@@ -78,9 +78,11 @@ object GeneratorConfigurationFactory {
                                 springKafka =
                                     kafka.springKafka?.let { springKafka ->
                                         ClientGeneration.SpringKafka(
+                                            clientContract = springKafka.clientContract,
                                             producer =
                                                 ClientGeneration.Producer(
                                                     enabled = springKafka.producer.enabled,
+                                                    recordValueType = springKafka.producer.recordValueType,
                                                 ),
                                             consumer =
                                                 ClientGeneration.Consumer(

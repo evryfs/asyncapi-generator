@@ -23,11 +23,8 @@
                             <modelPackage>com.example.a.model</modelPackage>
                             <clientPackage>com.example.a.client</clientPackage>
                             <clientConfig>
-                                <kafka>
-                                    <springKafka>
-                                        <enabled>true</enabled>
-                                    </springKafka>
-                                </kafka>
+                                <clientType>spring-kafka</clientType>
+                                <clientContract>interface</clientContract>
                             </clientConfig>
                         </configuration>
                     </execution>

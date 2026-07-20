@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
@@ -30,6 +32,8 @@ sealed interface GenerationTask {
         val generateHeaders: Boolean = true,
         val generateProducers: Boolean = true,
         val generateConsumers: Boolean = true,
+        val clientContract: ClientContract = ClientContract.INTERFACE,
+        val producerRecordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     ) : GenerationTask
 
     data class QuarkusKafkaClient(

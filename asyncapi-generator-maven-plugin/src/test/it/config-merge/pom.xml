@@ -24,11 +24,8 @@
                             <clientPackage>com.example.a.client</clientPackage>
                             <schemaPackage>com.example.a.schema</schemaPackage>
                             <clientConfig>
-                                <kafka>
-                                    <springKafka>
-                                        <enabled>true</enabled>
-                                    </springKafka>
-                                </kafka>
+                                <clientType>spring-kafka</clientType>
+                                <clientContract>interface</clientContract>
                             </clientConfig>
                             <schemaConfig>
                                 <avroProjection>
@@ -46,11 +43,6 @@
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputSpec>
                             <modelPackage>com.example.b.model</modelPackage>
-                            <clientConfig>
-                                <kafka>
-                                    <enabled>false</enabled>
-                                </kafka>
-                            </clientConfig>
                             <schemaConfig>
                                 <avroProjection>
                                     <enabled>false</enabled>
@@ -61,14 +53,6 @@
                 </executions>
                 <configuration>
                     <generatorName>kotlin</generatorName>
-                    <clientConfig>
-                        <kafka>
-                            <enabled>true</enabled>
-                            <springKafka>
-                                <enabled>true</enabled>
-                            </springKafka>
-                        </kafka>
-                    </clientConfig>
                     <schemaConfig>
                         <avroProjection>
                             <enabled>true</enabled>

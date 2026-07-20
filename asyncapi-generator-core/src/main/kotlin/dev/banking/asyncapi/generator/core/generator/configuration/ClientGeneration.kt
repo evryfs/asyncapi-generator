@@ -19,12 +19,14 @@ sealed interface ClientGeneration {
     )
 
     data class SpringKafka(
+        val clientContract: ClientContract = ClientContract.INTERFACE,
         val producer: Producer = Producer(),
         val consumer: Consumer = Consumer(),
     )
 
     data class Producer(
         val enabled: Boolean = true,
+        val recordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     )
 
     data class Consumer(

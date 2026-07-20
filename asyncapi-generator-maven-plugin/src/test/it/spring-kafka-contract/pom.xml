@@ -24,11 +24,8 @@
                             <modelPackage>com.example.contract.model</modelPackage>
                             <clientPackage>com.example.contract.client</clientPackage>
                             <clientConfig>
-                                <kafka>
-                                    <springKafka>
-                                        <enabled>true</enabled>
-                                    </springKafka>
-                                </kafka>
+                                <clientType>spring-kafka</clientType>
+                                <clientContract>interface</clientContract>
                             </clientConfig>
                         </configuration>
                     </execution>

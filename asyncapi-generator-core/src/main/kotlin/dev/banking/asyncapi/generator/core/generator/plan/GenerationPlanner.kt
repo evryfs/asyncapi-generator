@@ -48,6 +48,8 @@ class GenerationPlanner {
                                         generateHeaders = client.headers.enabled,
                                         generateProducers = springKafka.producer.enabled,
                                         generateConsumers = springKafka.consumer.enabled,
+                                        clientContract = springKafka.clientContract,
+                                        producerRecordValueType = springKafka.producer.recordValueType,
                                     ),
                                 )
                             }

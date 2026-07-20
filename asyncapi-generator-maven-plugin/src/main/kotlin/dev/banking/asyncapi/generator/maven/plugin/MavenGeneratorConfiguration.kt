@@ -1,6 +1,10 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.core.generator.configuration.PackageName
+import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 
 /**
  * Maven model generation configuration.
@@ -97,117 +101,64 @@ class MavenNativeProtobufConfiguration {
  * - `AsyncApiGeneratorMojoTest`
  */
 class MavenClientConfiguration {
-    var kafka: MavenKafkaConfiguration? = null
-    var quarkusKafka: MavenQuarkusKafkaConfiguration? = null
+    var clientType: String? = null
+    var clientContract: String? = null
+    var generateProducer: Boolean? = null
+    var generateConsumer: Boolean? = null
+    var producerRecordValueType: String? = null
 
     fun toRequest(
         clientPackage: String?,
         modelPackage: String?,
-    ): GeneratorConfigurationRequest.Clients =
-        GeneratorConfigurationRequest.Clients(
-            kafka = kafka?.toRequest(clientPackage, modelPackage),
-            quarkusKafka = quarkusKafka?.toRequest(clientPackage, modelPackage),
-        )
-}
+    ): GeneratorConfigurationRequest.Clients {
+        val resolvedClientType =
+            ClientType.fromConfigurationValue(
+                value = clientType,
+                path = "clientConfig.clientType",
+            )
+        val resolvedClientContract =
+            ClientContract.fromConfigurationValue(
+                value = clientContract,
+                path = "clientConfig.clientContract",
+            )
+        val resolvedClientPackage = requiredPackageName(clientPackage, "clientPackage")
+        val resolvedModelPackage = requiredPackageName(modelPackage, "modelPackage")
 
-/**
- * Maven Kafka client configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenKafkaConfiguration {
-    var enabled: Boolean? = null
-    var headers: MavenKafkaHeadersConfiguration? = null
-    var springKafka: MavenKafkaSpringKafkaConfiguration? = null
+        return when (resolvedClientType) {
+            ClientType.SPRING_KAFKA ->
+                GeneratorConfigurationRequest.Clients(
+                    kafka =
+                        GeneratorConfigurationRequest.Kafka(
+                            packageName = resolvedClientPackage,
+                            modelPackageName = resolvedModelPackage,
+                            springKafka =
+                                GeneratorConfigurationRequest.KafkaSpringKafka(
+                                    clientContract = resolvedClientContract,
+                                    producer =
+                                        GeneratorConfigurationRequest.KafkaProducer(
+                                            enabled = generateProducer ?: true,
+                                            recordValueType =
+                                                ProducerRecordValueType.fromConfigurationValue(
+                                                    value = producerRecordValueType,
+                                                    path = "clientConfig.producerRecordValueType",
+                                                ),
+                                        ),
+                                    consumer =
+                                        GeneratorConfigurationRequest.KafkaConsumer(
+                                            enabled = generateConsumer ?: true,
+                                        ),
+                                ),
+                        ),
+                )
+        }
+    }
 
-    fun toRequest(
-        clientPackage: String?,
-        modelPackage: String?,
-    ): GeneratorConfigurationRequest.Kafka? =
-        GeneratorConfigurationRequest.kafka(
-            enabled = enabled,
-            packageName = clientPackage,
-            modelPackageName = modelPackage,
-            headers = headers?.toRequest(),
-            springKafka = springKafka?.toRequest(),
-        )
-}
-
-/**
- * Maven Kafka header generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenKafkaHeadersConfiguration {
-    var enabled: Boolean? = null
-
-    fun toRequest(): GeneratorConfigurationRequest.KafkaHeaders? =
-        GeneratorConfigurationRequest.kafkaHeaders(enabled = enabled)
-}
-
-/**
- * Maven Spring Kafka client generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenKafkaSpringKafkaConfiguration {
-    var enabled: Boolean? = null
-    var producer: MavenKafkaProducerConfiguration? = null
-    var consumer: MavenKafkaConsumerConfiguration? = null
-
-    fun toRequest(): GeneratorConfigurationRequest.KafkaSpringKafka? =
-        GeneratorConfigurationRequest.kafkaSpringKafka(
-            enabled = enabled ?: true,
-            producer = producer?.toRequest(),
-            consumer = consumer?.toRequest(),
-        )
-}
-
-/**
- * Maven Spring Kafka producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenKafkaProducerConfiguration {
-    var enabled: Boolean? = null
-
-    fun toRequest(): GeneratorConfigurationRequest.KafkaProducer? =
-        GeneratorConfigurationRequest.kafkaProducer(enabled = enabled)
-}
-
-/**
- * Maven Spring Kafka consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenKafkaConsumerConfiguration {
-    var enabled: Boolean? = null
-
-    fun toRequest(): GeneratorConfigurationRequest.KafkaConsumer? =
-        GeneratorConfigurationRequest.kafkaConsumer(enabled = enabled)
-}
-
-/**
- * Maven Quarkus Kafka client configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- */
-class MavenQuarkusKafkaConfiguration {
-    var enabled: Boolean? = null
-
-    fun toRequest(
-        clientPackage: String?,
-        modelPackage: String?,
-    ): GeneratorConfigurationRequest.QuarkusKafka? =
-        GeneratorConfigurationRequest.quarkusKafka(
-            enabled = enabled,
-            packageName = clientPackage,
-            modelPackageName = modelPackage,
-        )
+    private fun requiredPackageName(
+        value: String?,
+        path: String,
+    ): String =
+        PackageName.fromConfigurationValue(
+            value = value ?: throw IllegalArgumentException("$path is required when clientConfig is configured"),
+            path = path,
+        ).value
 }

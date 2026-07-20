@@ -1,12 +1,14 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
+import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputSpec
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.kafka
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
@@ -21,6 +23,7 @@ import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -51,7 +54,12 @@ class AsyncApiGeneratorMojoTest {
             outputDirectory(outputPath("target/generated-sources/asyncapi"))
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
-            clientConfig(clientConfig(kafka = kafka()))
+            clientConfig(
+                clientConfig(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                ),
+            )
             generatorName("kotlin")
         }.execute()
 
@@ -67,12 +75,88 @@ class AsyncApiGeneratorMojoTest {
             outputDirectory(outputPath("target/generated-sources/asyncapi"))
             modelPackage("com.example.kafka.model")
             clientPackage("com.example.kafka.client")
-            clientConfig(clientConfig(kafka = kafka()))
+            clientConfig(
+                clientConfig(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                ),
+            )
             generatorName("java")
         }.execute()
 
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
+    }
+
+    @Test
+    fun `should map typed client contract and producer record value configuration`() {
+        val clients =
+            clientConfig(
+                clientType = "spring-kafka",
+                clientContract = "interface",
+                generateProducer = false,
+                generateConsumer = true,
+                producerRecordValueType = "org.apache.kafka.common.utils.Bytes",
+            ).toRequest(
+                clientPackage = "com.example.client",
+                modelPackage = "com.example.model",
+            )
+
+        val kafka = clients.kafka
+        assertNotNull(kafka)
+        val springKafka = kafka!!.springKafka
+        assertNotNull(springKafka)
+        val configuredSpringKafka = springKafka!!
+        assertEquals(ClientContract.INTERFACE, configuredSpringKafka.clientContract)
+        assertFalse(configuredSpringKafka.producer.enabled)
+        assertTrue(configuredSpringKafka.consumer.enabled)
+        assertEquals(
+            ProducerRecordValueType.Custom(
+                QualifiedTypeName.fromConfigurationValue(
+                    value = "org.apache.kafka.common.utils.Bytes",
+                    path = "clientConfig.producerRecordValueType",
+                ),
+            ),
+            configuredSpringKafka.producer.recordValueType,
+        )
+    }
+
+    @Test
+    fun `should use producer and consumer defaults for minimal client config`() {
+        val clients =
+            clientConfig(
+                clientType = "spring-kafka",
+                clientContract = "interface",
+            ).toRequest(
+                clientPackage = "com.example.client",
+                modelPackage = "com.example.model",
+            )
+
+        val springKafka = clients.kafka!!.springKafka!!
+        assertTrue(springKafka.producer.enabled)
+        assertTrue(springKafka.consumer.enabled)
+        assertEquals(ProducerRecordValueType.ByteArray, springKafka.producer.recordValueType)
+    }
+
+    @Test
+    fun `should require client type and client contract`() {
+        val missingClientType =
+            assertThrows<IllegalArgumentException> {
+                clientConfig(clientContract = "interface").toRequest(
+                    clientPackage = "com.example.client",
+                    modelPackage = "com.example.model",
+                )
+            }
+        val missingClientContract =
+            assertThrows<IllegalArgumentException> {
+                clientConfig(clientType = "spring-kafka").toRequest(
+                    clientPackage = "com.example.client",
+                    modelPackage = "com.example.model",
+                )
+            }
+
+        assertEquals("clientConfig.clientType is required", missingClientType.message)
+        assertEquals("clientConfig.clientContract is required", missingClientContract.message)
     }
 
     @Test

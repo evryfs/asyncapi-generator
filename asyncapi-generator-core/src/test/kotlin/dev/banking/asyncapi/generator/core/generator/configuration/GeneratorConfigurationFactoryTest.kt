@@ -203,6 +203,13 @@ class GeneratorConfigurationFactoryTest {
 
     @Test
     fun `create maps kafka header and spring kafka generation options`() {
+        val producerRecordValueType =
+            ProducerRecordValueType.Custom(
+                QualifiedTypeName.fromConfigurationValue(
+                    value = "org.apache.kafka.common.utils.Bytes",
+                    path = "clients.kafka.springKafka.producer.recordValueType",
+                ),
+            )
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
@@ -215,7 +222,12 @@ class GeneratorConfigurationFactoryTest {
                                     headers = GeneratorConfigurationRequest.KafkaHeaders(enabled = false),
                                     springKafka =
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
-                                            producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                                            clientContract = ClientContract.INTERFACE,
+                                            producer =
+                                                GeneratorConfigurationRequest.KafkaProducer(
+                                                    enabled = false,
+                                                    recordValueType = producerRecordValueType,
+                                                ),
                                             consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
                                         ),
                                 ),
@@ -231,7 +243,12 @@ class GeneratorConfigurationFactoryTest {
                     headers = ClientGeneration.Headers(enabled = false),
                     springKafka =
                         ClientGeneration.SpringKafka(
-                            producer = ClientGeneration.Producer(enabled = false),
+                            clientContract = ClientContract.INTERFACE,
+                            producer =
+                                ClientGeneration.Producer(
+                                    enabled = false,
+                                    recordValueType = producerRecordValueType,
+                                ),
                             consumer = ClientGeneration.Consumer(enabled = true),
                         ),
                 ),

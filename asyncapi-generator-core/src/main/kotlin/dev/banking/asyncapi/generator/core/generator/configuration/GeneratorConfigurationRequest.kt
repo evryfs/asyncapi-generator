@@ -62,12 +62,14 @@ data class GeneratorConfigurationRequest(
     )
 
     data class KafkaSpringKafka(
+        val clientContract: ClientContract = ClientContract.INTERFACE,
         val producer: KafkaProducer = KafkaProducer(),
         val consumer: KafkaConsumer = KafkaConsumer(),
     )
 
     data class KafkaProducer(
         val enabled: Boolean = true,
+        val recordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     )
 
     data class KafkaConsumer(
@@ -175,6 +177,7 @@ data class GeneratorConfigurationRequest(
 
         fun kafkaSpringKafka(
             enabled: Boolean? = null,
+            clientContract: ClientContract = ClientContract.INTERFACE,
             producer: KafkaProducer? = null,
             consumer: KafkaConsumer? = null,
         ): KafkaSpringKafka? =
@@ -182,16 +185,24 @@ data class GeneratorConfigurationRequest(
                 enabled == false -> null
                 enabled == true || producer != null || consumer != null ->
                     KafkaSpringKafka(
+                        clientContract = clientContract,
                         producer = producer ?: KafkaProducer(),
                         consumer = consumer ?: KafkaConsumer(),
                     )
                 else -> null
             }
 
-        fun kafkaProducer(enabled: Boolean? = null): KafkaProducer? =
+        fun kafkaProducer(
+            enabled: Boolean? = null,
+            recordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
+        ): KafkaProducer? =
             when (enabled) {
                 null -> null
-                else -> KafkaProducer(enabled = enabled)
+                else ->
+                    KafkaProducer(
+                        enabled = enabled,
+                        recordValueType = recordValueType,
+                    )
             }
 
         fun kafkaConsumer(enabled: Boolean? = null): KafkaConsumer? =

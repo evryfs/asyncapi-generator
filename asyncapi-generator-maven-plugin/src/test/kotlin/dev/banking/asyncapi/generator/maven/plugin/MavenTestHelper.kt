@@ -105,53 +105,17 @@ object MavenTestHelper {
         }
 
     fun clientConfig(
-        kafka: MavenKafkaConfiguration? = null,
-        quarkusKafka: MavenQuarkusKafkaConfiguration? = null,
+        clientType: String? = null,
+        clientContract: String? = null,
+        generateProducer: Boolean? = null,
+        generateConsumer: Boolean? = null,
+        producerRecordValueType: String? = null,
     ): MavenClientConfiguration =
         MavenClientConfiguration().apply {
-            this.kafka = kafka
-            this.quarkusKafka = quarkusKafka
-        }
-
-    fun kafka(
-        enabled: Boolean? = null,
-        headers: MavenKafkaHeadersConfiguration? = null,
-        springKafka: MavenKafkaSpringKafkaConfiguration? = springKafka(),
-    ): MavenKafkaConfiguration =
-        MavenKafkaConfiguration().apply {
-            this.enabled = enabled
-            this.headers = headers
-            this.springKafka = springKafka
-        }
-
-    fun kafkaHeaders(enabled: Boolean? = null): MavenKafkaHeadersConfiguration =
-        MavenKafkaHeadersConfiguration().apply {
-            this.enabled = enabled
-        }
-
-    fun springKafka(
-        enabled: Boolean? = null,
-        producer: MavenKafkaProducerConfiguration? = null,
-        consumer: MavenKafkaConsumerConfiguration? = null,
-    ): MavenKafkaSpringKafkaConfiguration =
-        MavenKafkaSpringKafkaConfiguration().apply {
-            this.enabled = enabled
-            this.producer = producer
-            this.consumer = consumer
-        }
-
-    fun kafkaProducer(enabled: Boolean? = null): MavenKafkaProducerConfiguration =
-        MavenKafkaProducerConfiguration().apply {
-            this.enabled = enabled
-        }
-
-    fun kafkaConsumer(enabled: Boolean? = null): MavenKafkaConsumerConfiguration =
-        MavenKafkaConsumerConfiguration().apply {
-            this.enabled = enabled
-        }
-
-    fun quarkusKafka(enabled: Boolean? = null): MavenQuarkusKafkaConfiguration =
-        MavenQuarkusKafkaConfiguration().apply {
-            this.enabled = enabled
+            this.clientType = clientType
+            this.clientContract = clientContract
+            this.generateProducer = generateProducer
+            this.generateConsumer = generateConsumer
+            this.producerRecordValueType = producerRecordValueType
         }
 }

@@ -11,7 +11,7 @@ def bModelDir = new File(codegenBase, "com/example/b/model")
 // assert that the expected directories exist or do not exist based on the configuration in the pom.xml
 assert aModelDir.exists() : "Expected model directory for contract A"
 assert bModelDir.exists() : "Expected model directory for contract B"
-assert aClientDir.exists() : "Expected client directory for contract A (global springKafka client)"
+assert aClientDir.exists() : "Expected client directory for contract A (execution client configuration)"
 assert aSchemaDir.exists() : "Expected schema directory for contract A (global avroProjection schema)"
 assert !bClientDir.exists() : "Did not expect client directory for contract B (disabled springKafka client)"
 assert !bSchemaDir.exists() : "Did not expect schema directory for contract B (disabled avroProjection schema)"
