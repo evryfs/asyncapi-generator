@@ -13,6 +13,7 @@ class MavenModelGenerationConfiguration {
     var packageName: String? = null
     var annotation: String? = null
     var javaModelType: String? = null
+    var protobufModelType: String? = null
 
     fun toRequest(): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
@@ -20,6 +21,7 @@ class MavenModelGenerationConfiguration {
             packageName = packageName,
             annotation = annotation,
             javaModelType = javaModelType,
+            protobufModelType = protobufModelType,
         )
 }
 
@@ -84,12 +86,10 @@ class MavenNativeAvroConfiguration {
  */
 class MavenNativeProtobufConfiguration {
     var enabled: Boolean? = null
-    var generateJavaMessageTypes: Boolean? = null
 
     fun toRequest(): GeneratorConfigurationRequest.NativeProtobuf? =
         GeneratorConfigurationRequest.nativeProtobuf(
             enabled = enabled,
-            generateJavaMessageTypes = generateJavaMessageTypes,
         )
 }
 

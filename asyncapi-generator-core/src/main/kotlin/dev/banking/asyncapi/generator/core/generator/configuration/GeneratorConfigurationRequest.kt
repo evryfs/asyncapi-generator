@@ -26,6 +26,7 @@ data class GeneratorConfigurationRequest(
         val packageName: String? = null,
         val annotation: String? = null,
         val javaModelType: JavaModelType = JavaModelType.CLASS,
+        val protobufModelType: ProtobufModelType? = null,
     )
 
     data class Schemas(
@@ -42,9 +43,7 @@ data class GeneratorConfigurationRequest(
         val generateSpecificRecords: Boolean = true,
     )
 
-    data class NativeProtobuf(
-        val generateJavaMessageTypes: Boolean = true,
-    )
+    data object NativeProtobuf
 
     data class Clients(
         val kafka: Kafka? = null,
@@ -86,10 +85,15 @@ data class GeneratorConfigurationRequest(
             packageName: String? = null,
             annotation: String? = null,
             javaModelType: String? = null,
+            protobufModelType: String? = null,
         ): Models? =
             when {
                 enabled == false -> null
-                enabled == true || packageName != null || annotation != null || javaModelType != null ->
+                enabled == true ||
+                    packageName != null ||
+                    annotation != null ||
+                    javaModelType != null ||
+                    protobufModelType != null ->
                     Models(
                         packageName = packageName,
                         annotation = annotation,
@@ -98,6 +102,13 @@ data class GeneratorConfigurationRequest(
                                 value = javaModelType,
                                 path = "models.javaModelType",
                             ),
+                        protobufModelType =
+                            protobufModelType?.let {
+                                ProtobufModelType.fromConfigurationValue(
+                                    value = it,
+                                    path = "models.protobufModelType",
+                                )
+                            },
                     )
                 else -> null
             }
@@ -126,12 +137,10 @@ data class GeneratorConfigurationRequest(
 
         fun nativeProtobuf(
             enabled: Boolean? = null,
-            generateJavaMessageTypes: Boolean? = null,
         ): NativeProtobuf? =
             when {
                 enabled == false -> null
-                enabled == true || generateJavaMessageTypes != null ->
-                    NativeProtobuf(generateJavaMessageTypes = generateJavaMessageTypes ?: true)
+                enabled == true -> NativeProtobuf
                 else -> null
             }
 

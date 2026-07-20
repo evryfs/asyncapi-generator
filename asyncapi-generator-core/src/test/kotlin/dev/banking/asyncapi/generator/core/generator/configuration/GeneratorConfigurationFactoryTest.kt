@@ -32,6 +32,57 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create resolves Kotlin Protobuf models to Kotlin source language`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.PROTOBUF,
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.protobuf",
+                            protobufModelType = ProtobufModelType.KOTLIN,
+                        ),
+                ),
+            )
+
+        assertEquals(SourceLanguage.KOTLIN, configuration.language)
+        assertEquals(ModelGeneration.Disabled, configuration.models)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    models =
+                        ProtobufModelGeneration(
+                            packageName = "com.example.protobuf",
+                            modelType = ProtobufModelType.KOTLIN,
+                        ),
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create defaults Protobuf model generation to Java`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.PROTOBUF,
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.protobuf"),
+                ),
+            )
+
+        assertEquals(SourceLanguage.JAVA, configuration.language)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create enables model generation when model package is configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
@@ -238,16 +289,13 @@ class GeneratorConfigurationFactoryTest {
                 request(
                     schemas =
                         GeneratorConfigurationRequest.Schemas(
-                            nativeProtobuf =
-                                GeneratorConfigurationRequest.NativeProtobuf(
-                                    generateJavaMessageTypes = false,
-                                ),
+                            nativeProtobuf = GeneratorConfigurationRequest.NativeProtobuf,
                         ),
                 ),
             )
 
         assertEquals(
-            listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+            listOf(SchemaGeneration.NativeProtobuf()),
             configuration.schemas,
         )
     }
@@ -379,6 +427,27 @@ class GeneratorConfigurationFactoryTest {
 
         assertEquals(
             "models.javaModelType=record is only supported when generatorName is java",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects Protobuf model type for non Protobuf generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models =
+                            GeneratorConfigurationRequest.Models(
+                                packageName = "com.example.model",
+                                protobufModelType = ProtobufModelType.KOTLIN,
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models.protobufModelType is only supported when generatorName is protobuf",
             exception.message,
         )
     }

@@ -20,6 +20,6 @@ sealed interface SchemaGeneration {
     ) : SchemaGeneration
 
     data class NativeProtobuf(
-        val generateJavaMessageTypes: Boolean = true,
+        val models: ProtobufModelGeneration? = null,
     ) : SchemaGeneration
 }

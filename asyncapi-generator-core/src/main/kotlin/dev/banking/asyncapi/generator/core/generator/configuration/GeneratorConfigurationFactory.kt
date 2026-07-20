@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.PROTOBUF
 
 /**
  * Assembles core generator configuration from frontend-neutral requests.
@@ -14,8 +15,14 @@ object GeneratorConfigurationFactory {
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
+        val protobufModels = request.protobufModels()
+
         return GeneratorConfiguration(
-            language = request.generatorName.sourceLanguage,
+            language =
+                GeneratorSourceLanguageResolver.resolve(
+                    generatorName = request.generatorName,
+                    protobufModelType = protobufModels?.modelType,
+                ),
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
@@ -23,7 +30,7 @@ object GeneratorConfigurationFactory {
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
             models =
-                request.models?.packageName?.let { packageName ->
+                request.models?.packageName?.takeUnless { request.generatorName == PROTOBUF }?.let { packageName ->
                     ModelGeneration.Enabled(
                         packageName = packageName,
                         annotation = request.models.annotation,
@@ -42,10 +49,10 @@ object GeneratorConfigurationFactory {
                             ),
                         )
                     }
-                    request.schemas.nativeProtobuf?.let { nativeProtobuf ->
+                    if (request.schemas.nativeProtobuf != null || protobufModels != null) {
                         add(
                             SchemaGeneration.NativeProtobuf(
-                                generateJavaMessageTypes = nativeProtobuf.generateJavaMessageTypes,
+                                models = protobufModels,
                             ),
                         )
                     }
@@ -115,6 +122,12 @@ object GeneratorConfigurationFactory {
 
         if (request.models?.javaModelType == JavaModelType.RECORD && request.generatorName != JAVA) {
             throw IllegalArgumentException("models.javaModelType=record is only supported when generatorName is java")
+        }
+
+        if (request.models?.protobufModelType != null && request.generatorName != PROTOBUF) {
+            throw IllegalArgumentException(
+                "models.protobufModelType is only supported when generatorName is protobuf",
+            )
         }
 
         if (request.schemas.avroProjection != null && request.schemas.avroProjection.packageName == null) {
@@ -195,4 +208,15 @@ object GeneratorConfigurationFactory {
             ?: throw IllegalArgumentException(
                 "$path is required when models.packageName is not configured",
             )
+
+    private fun GeneratorConfigurationRequest.protobufModels(): ProtobufModelGeneration? =
+        models
+            ?.takeIf { generatorName == PROTOBUF }
+            ?.packageName
+            ?.let { packageName ->
+                ProtobufModelGeneration(
+                    packageName = packageName,
+                    modelType = models.protobufModelType ?: ProtobufModelType.JAVA,
+                )
+            }
 }

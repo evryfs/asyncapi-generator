@@ -416,7 +416,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should generate native protobuf schema`() {
+    fun `should generate native protobuf schema and Java models by default`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
         val yamlFile = File(yamlUrl.toURI())
@@ -429,11 +429,9 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("kotlin")
-                  schemas {
-                      nativeProtobuf {
-                          enabled.set(true)
-                      }
+                  generatorName.set("protobuf")
+                  models {
+                      packageName.set("com.example.protobuf")
                   }
               }"""
         )
@@ -450,7 +448,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should generate native protobuf schema without Java message types when disabled`() {
+    fun `should generate native protobuf schema without model package`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
         val yamlFile = File(yamlUrl.toURI())
@@ -463,11 +461,10 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("kotlin")
+                  generatorName.set("protobuf")
                   schemas {
                       nativeProtobuf {
                           enabled.set(true)
-                          generateJavaMessageTypes.set(false)
                       }
                   }
               }"""
@@ -480,6 +477,38 @@ class AsyncApiPluginTest {
         val javaMessageFile = File(projectDir, "build/generated/asyncapi/src/main/java/com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
+    }
+
+    @Test
+    fun `should generate native protobuf Java messages and Kotlin DSL`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_protobuf.yaml")
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        File(yamlUrl.toURI()).copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("protobuf")
+                  models {
+                      packageName.set("com.example.protobuf")
+                      protobufModelType.set("kotlin")
+                  }
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        assertTrue(
+            File(projectDir, "build/generated/asyncapi/src/main/java/com/example/protobuf/UserCreated.java").exists(),
+        )
+        assertTrue(
+            File(projectDir, "build/generated/asyncapi/src/main/kotlin/com/example/protobuf/UserCreatedKt.kt").exists(),
+        )
     }
 
     @Test

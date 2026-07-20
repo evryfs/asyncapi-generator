@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
@@ -129,7 +130,7 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
                 ),
         )
 
@@ -151,7 +152,12 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
+                    schemas =
+                        listOf(
+                            SchemaGeneration.NativeProtobuf(
+                                models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
+                            ),
+                        ),
                 ),
         )
 
@@ -174,7 +180,7 @@ class AsyncApiGeneratorOutputContractTest {
                     sourceOutputDirectory = sourceOutputDirectory,
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    schemas = listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+                    schemas = listOf(SchemaGeneration.NativeProtobuf()),
                 ),
         )
 

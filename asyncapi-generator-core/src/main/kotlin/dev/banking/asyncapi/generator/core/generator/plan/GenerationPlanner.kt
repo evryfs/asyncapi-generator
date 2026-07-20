@@ -70,7 +70,7 @@ class GenerationPlanner {
                         is SchemaGeneration.NativeProtobuf ->
                             add(
                                 GenerationTask.NativeProtobufArtifacts(
-                                    generateJavaMessageTypes = schema.generateJavaMessageTypes,
+                                    models = schema.models,
                                 ),
                             )
                     }

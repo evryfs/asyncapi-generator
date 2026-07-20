@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
@@ -71,7 +73,27 @@ class GenerationPlannerTest {
             )
 
         assertEquals(
-            listOf(GenerationTask.NativeProtobufArtifacts(generateJavaMessageTypes = true)),
+            listOf(GenerationTask.NativeProtobufArtifacts()),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes configured Protobuf model generation`() {
+        val models =
+            ProtobufModelGeneration(
+                packageName = "com.example.protobuf",
+                modelType = ProtobufModelType.KOTLIN,
+            )
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(models = models)),
+                ),
+            )
+
+        assertEquals(
+            listOf(GenerationTask.NativeProtobufArtifacts(models = models)),
             plan.tasks,
         )
     }

@@ -1,7 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Planned generator work item.
@@ -44,6 +45,6 @@ sealed interface GenerationTask {
     ) : GenerationTask
 
     data class NativeProtobufArtifacts(
-        val generateJavaMessageTypes: Boolean = true,
+        val models: ProtobufModelGeneration? = null,
     ) : GenerationTask
 }

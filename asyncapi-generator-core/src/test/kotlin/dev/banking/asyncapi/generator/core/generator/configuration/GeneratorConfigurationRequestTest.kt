@@ -21,11 +21,13 @@ class GeneratorConfigurationRequestTest {
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
                 javaModelType = JavaModelType.RECORD,
+                protobufModelType = ProtobufModelType.KOTLIN,
             ),
             GeneratorConfigurationRequest.models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
                 javaModelType = "record",
+                protobufModelType = "kotlin",
             ),
         )
     }
@@ -72,12 +74,8 @@ class GeneratorConfigurationRequestTest {
         assertNull(GeneratorConfigurationRequest.nativeProtobuf(enabled = false))
 
         assertEquals(
-            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = true),
+            GeneratorConfigurationRequest.NativeProtobuf,
             GeneratorConfigurationRequest.nativeProtobuf(enabled = true),
-        )
-        assertEquals(
-            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = false),
-            GeneratorConfigurationRequest.nativeProtobuf(generateJavaMessageTypes = false),
         )
     }
 

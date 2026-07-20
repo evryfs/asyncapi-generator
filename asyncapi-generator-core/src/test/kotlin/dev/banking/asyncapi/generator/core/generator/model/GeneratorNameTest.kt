@@ -51,14 +51,6 @@ class GeneratorNameTest {
     }
 
     @Test
-    fun `generator names resolve their source language`() {
-        assertEquals(SourceLanguage.JAVA, GeneratorName.JAVA.sourceLanguage)
-        assertEquals(SourceLanguage.KOTLIN, GeneratorName.KOTLIN.sourceLanguage)
-        assertEquals(SourceLanguage.JAVA, GeneratorName.AVRO.sourceLanguage)
-        assertEquals(SourceLanguage.JAVA, GeneratorName.PROTOBUF.sourceLanguage)
-    }
-
-    @Test
     fun `fromConfigurationValue rejects unsupported configuration values`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {

@@ -32,13 +32,13 @@ class AsyncApiPlugin : Plugin<Project> {
             modelsPackageName.set(extension.models.packageName)
             modelsAnnotation.set(extension.models.annotation)
             modelsJavaModelType.set(extension.models.javaModelType)
+            modelsProtobufModelType.set(extension.models.protobufModelType)
 
             avroProjectionEnabled.set(extension.schemas.avroProjection.enabled)
             avroProjectionPackageName.set(extension.schemas.avroProjection.packageName)
             nativeAvroEnabled.set(extension.schemas.nativeAvro.enabled)
             nativeAvroGenerateSpecificRecords.set(extension.schemas.nativeAvro.generateSpecificRecords)
             nativeProtobufEnabled.set(extension.schemas.nativeProtobuf.enabled)
-            nativeProtobufGenerateJavaMessageTypes.set(extension.schemas.nativeProtobuf.generateJavaMessageTypes)
 
             kafkaEnabled.set(extension.clients.kafka.enabled)
             kafkaPackageName.set(extension.clients.kafka.packageName)

@@ -1,18 +1,19 @@
-package dev.banking.asyncapi.generator.core.generator.model
+package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
- * Generator implementation selected by user-facing configuration.
+ * Generated Protobuf model API selected by user-facing model configuration.
+ *
+ * `KOTLIN` generates the Java Protobuf messages required at runtime together
+ * with the official Kotlin DSL sources.
  *
  * Expected behavior is covered by:
- * - `GeneratorNameTest`
+ * - `ProtobufModelTypeTest`
  */
-enum class GeneratorName(
+enum class ProtobufModelType(
     val configurationValue: String,
 ) {
     JAVA("java"),
     KOTLIN("kotlin"),
-    AVRO("avro"),
-    PROTOBUF("protobuf"),
     ;
 
     companion object {
@@ -21,9 +22,9 @@ enum class GeneratorName(
         fun fromConfigurationValue(
             value: String?,
             path: String,
-        ): GeneratorName {
+        ): ProtobufModelType {
             if (value == null) {
-                throw IllegalArgumentException("$path is required")
+                return JAVA
             }
 
             return entries.firstOrNull { it.configurationValue == value }

@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSourceLanguageResolver
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
@@ -52,6 +54,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val modelsProtobufModelType: Property<String>
+
+    @get:Input
+    @get:Optional
     abstract val avroProjectionEnabled: Property<Boolean>
 
     @get:Input
@@ -69,10 +75,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:Input
     @get:Optional
     abstract val nativeProtobufEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val nativeProtobufGenerateJavaMessageTypes: Property<Boolean>
 
     @get:Input
     @get:Optional
@@ -148,10 +150,17 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 value = genNameString,
                 path = "generatorName",
             )
+        val targetProtobufModelType =
+            modelsProtobufModelType.orNull?.let {
+                ProtobufModelType.fromConfigurationValue(
+                    value = it,
+                    path = "models.protobufModelType",
+                )
+            }
 
         // Calculate Source Root
         val sourceRootName =
-            when (targetGenerator.sourceLanguage) {
+            when (GeneratorSourceLanguageResolver.resolve(targetGenerator, targetProtobufModelType)) {
                 KOTLIN -> "src/main/kotlin"
                 JAVA -> "src/main/java"
         }
@@ -171,6 +180,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             packageName = modelsPackageName.orNull,
                             annotation = modelsAnnotation.orNull,
                             javaModelType = modelsJavaModelType.orNull,
+                            protobufModelType = modelsProtobufModelType.orNull,
                         ),
                     schemas =
                         schemaRequest(
@@ -179,7 +189,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             nativeAvroEnabled = nativeAvroEnabled.orNull,
                             nativeAvroGenerateSpecificRecords = nativeAvroGenerateSpecificRecords.orNull,
                             nativeProtobufEnabled = nativeProtobufEnabled.orNull,
-                            nativeProtobufGenerateJavaMessageTypes = nativeProtobufGenerateJavaMessageTypes.orNull,
                         ),
                     clients =
                         clientRequest(
@@ -207,12 +216,14 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         packageName: String?,
         annotation: String?,
         javaModelType: String?,
+        protobufModelType: String?,
     ): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
             enabled = enabled,
             packageName = packageName,
             annotation = annotation,
             javaModelType = javaModelType,
+            protobufModelType = protobufModelType,
         )
 
     private fun schemaRequest(
@@ -221,7 +232,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         nativeAvroEnabled: Boolean?,
         nativeAvroGenerateSpecificRecords: Boolean?,
         nativeProtobufEnabled: Boolean?,
-        nativeProtobufGenerateJavaMessageTypes: Boolean?,
     ): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
             avroProjection =
@@ -237,7 +247,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             nativeProtobuf =
                 GeneratorConfigurationRequest.nativeProtobuf(
                     enabled = nativeProtobufEnabled,
-                    generateJavaMessageTypes = nativeProtobufGenerateJavaMessageTypes,
                 ),
         )
 

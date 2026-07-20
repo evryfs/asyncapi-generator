@@ -168,15 +168,15 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate native protobuf schema`() {
+    fun `should generate native protobuf schema and Java messages by default`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
             inputFile(inputPath("asyncapi_native_protobuf.yaml"))
             codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf"))
             javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf-java"))
             resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-protobuf"))
-            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
-            generatorName("kotlin")
+            models(models(packageName = "com.example.protobuf"))
+            generatorName("protobuf")
         }.execute()
 
         val schemaFile = File("target/generated-resources/asyncapi-native-protobuf/com/example/protobuf/UserCreated.proto")
@@ -188,7 +188,7 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate native protobuf schema without Java message types when disabled`() {
+    fun `should generate native protobuf schema without model package`() {
         val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only")
         val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only-java")
         val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-schema-only")
@@ -205,14 +205,39 @@ class AsyncApiGeneratorMojoTest {
             codegenOutputDirectory(codegenOutputDirectory)
             javaSourceOutputDirectory(javaSourceOutputDirectory)
             resourceOutputDirectory(resourceOutputDirectory)
-            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true, generateJavaMessageTypes = false)))
-            generatorName("kotlin")
+            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
+            generatorName("protobuf")
         }.execute()
 
         val schemaFile = resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto")
         val javaMessageFile = javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
+    }
+
+    @Test
+    fun `should generate native protobuf Java messages and Kotlin DSL`() {
+        val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin")
+        val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin-java")
+        val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-kotlin")
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
+            codegenOutputDirectory(codegenOutputDirectory)
+            javaSourceOutputDirectory(javaSourceOutputDirectory)
+            resourceOutputDirectory(resourceOutputDirectory)
+            models(
+                models(
+                    packageName = "com.example.protobuf",
+                    protobufModelType = "kotlin",
+                ),
+            )
+            generatorName("protobuf")
+        }.execute()
+
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(codegenOutputDirectory.resolve("com/example/protobuf/UserCreatedKt.kt").exists())
     }
 
     @Test

@@ -22,7 +22,7 @@ class NativeProtobufArtifactGeneration {
         artifactWriter.write(
             nativeProtobufGenerator.render(
                 schemas = generationInput.multiFormatSchemas,
-                generateJavaMessageTypes = task.generateJavaMessageTypes,
+                models = task.models,
             ),
         )
     }

@@ -138,7 +138,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should generate native protobuf schema`(@TempDir tempDir: Path) {
+    fun `should generate native protobuf schema and Java message types by default`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
         val resourceDir = tempDir.resolve("resources").toFile()
@@ -147,8 +147,8 @@ class AsyncApiGeneratorCliTest {
                 "-i", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
-                "--schemas-native-protobuf",
-                "-g", "kotlin",
+                "--models-package", "com.example.protobuf",
+                "-g", "protobuf",
             )
         )
 
@@ -161,7 +161,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should generate native protobuf schema without Java message types when disabled`(@TempDir tempDir: Path) {
+    fun `should generate native protobuf schema without model generation when model package is omitted`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
         val resourceDir = tempDir.resolve("resources").toFile()
@@ -171,8 +171,7 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--schemas-native-protobuf",
-                "--schemas-native-protobuf-generate-java-message-types", "false",
-                "-g", "kotlin",
+                "-g", "protobuf",
             )
         )
 
@@ -180,6 +179,30 @@ class AsyncApiGeneratorCliTest {
         val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
+    }
+
+    @Test
+    fun `should generate native protobuf Java messages and Kotlin DSL`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--models-package", "com.example.protobuf",
+                "--models-protobuf-model-type", "kotlin",
+                "-g", "protobuf",
+            )
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
+        val kotlinDslFile = codegenDir.resolve("src/main/kotlin/com/example/protobuf/UserCreatedKt.kt")
+        assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
+        assertTrue(javaMessageFile.exists(), "Required Protobuf Java message output should exist")
+        assertTrue(kotlinDslFile.exists(), "Protobuf Kotlin DSL output should exist")
     }
 
     @Test
