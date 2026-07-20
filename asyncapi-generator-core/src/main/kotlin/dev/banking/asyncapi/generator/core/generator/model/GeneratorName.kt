@@ -8,11 +8,12 @@ package dev.banking.asyncapi.generator.core.generator.model
  */
 enum class GeneratorName(
     val configurationValue: String,
+    val sourceLanguage: SourceLanguage,
 ) {
-    JAVA("java"),
-    KOTLIN("kotlin"),
-    AVRO("avro"),
-    PROTOBUF("protobuf"),
+    JAVA("java", SourceLanguage.JAVA),
+    KOTLIN("kotlin", SourceLanguage.KOTLIN),
+    AVRO("avro", SourceLanguage.JAVA),
+    PROTOBUF("protobuf", SourceLanguage.JAVA),
     ;
 
     companion object {

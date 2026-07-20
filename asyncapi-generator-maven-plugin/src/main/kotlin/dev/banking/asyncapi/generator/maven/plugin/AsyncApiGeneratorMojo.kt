@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -80,8 +80,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
                 AsyncApiRegistry.writeYaml(file, bundled)
             }
-            val targetLanguage =
-                SourceLanguage.fromConfigurationValue(
+            val targetGenerator =
+                GeneratorName.fromConfigurationValue(
                     value = generatorName,
                     path = "generatorName",
                 )
@@ -92,7 +92,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             val generatorConfiguration =
                 GeneratorConfigurationFactory.create(
                     GeneratorConfigurationRequest(
-                        language = targetLanguage,
+                        generatorName = targetGenerator,
                         sourceOutputDirectory = codegenOutputDirectory,
                         javaSourceOutputDirectory = resolvedJavaSourceOutputDirectory,
                         resourceOutputDirectory = resourceOutputDirectory,

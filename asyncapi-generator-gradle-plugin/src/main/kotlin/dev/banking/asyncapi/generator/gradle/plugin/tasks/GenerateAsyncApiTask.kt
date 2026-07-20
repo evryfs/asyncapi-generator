@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -143,15 +143,15 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
 
         val genNameString = generatorName.get()
-        val targetLanguage =
-            SourceLanguage.fromConfigurationValue(
+        val targetGenerator =
+            GeneratorName.fromConfigurationValue(
                 value = genNameString,
                 path = "generatorName",
             )
 
         // Calculate Source Root
         val sourceRootName =
-            when (targetLanguage) {
+            when (targetGenerator.sourceLanguage) {
                 KOTLIN -> "src/main/kotlin"
                 JAVA -> "src/main/java"
         }
@@ -161,7 +161,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val generatorConfiguration =
             GeneratorConfigurationFactory.create(
                 GeneratorConfigurationRequest(
-                    language = targetLanguage,
+                    generatorName = targetGenerator,
                     sourceOutputDirectory = codegenSourceRoot,
                     javaSourceOutputDirectory = javaSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,

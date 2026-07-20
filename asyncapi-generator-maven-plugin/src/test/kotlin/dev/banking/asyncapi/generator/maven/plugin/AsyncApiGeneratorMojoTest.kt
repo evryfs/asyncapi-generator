@@ -265,7 +265,7 @@ class AsyncApiGeneratorMojoTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'invalid-lang'. Supported values: kotlin, java",
+            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro, protobuf",
             exception.message,
         )
     }

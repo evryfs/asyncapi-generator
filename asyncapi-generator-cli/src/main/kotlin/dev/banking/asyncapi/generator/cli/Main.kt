@@ -15,6 +15,7 @@ import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -38,9 +39,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     private val generator by option("--generator", "-g", help = "Target language (default: kotlin)")
         .choice(
-            SourceLanguage.KOTLIN.configurationValue to SourceLanguage.KOTLIN,
-            SourceLanguage.JAVA.configurationValue to SourceLanguage.JAVA,
-        ).default(SourceLanguage.KOTLIN)
+            GeneratorName.KOTLIN.configurationValue to GeneratorName.KOTLIN,
+            GeneratorName.JAVA.configurationValue to GeneratorName.JAVA,
+        ).default(GeneratorName.KOTLIN)
 
     private val modelsPackage by option("--models-package", help = "Package for generated models")
 
@@ -178,7 +179,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
         val sourceRootName =
-            if (generator == SourceLanguage.KOTLIN) {
+            if (generator.sourceLanguage == SourceLanguage.KOTLIN) {
                 "src/main/kotlin"
             } else {
                 "src/main/java"
@@ -189,7 +190,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             try {
                 GeneratorConfigurationFactory.create(
                     GeneratorConfigurationRequest(
-                        language = generator,
+                        generatorName = generator,
                         sourceOutputDirectory = sourceRoot,
                         javaSourceOutputDirectory = javaSourceRoot,
                         resourceOutputDirectory = resourceOutputDirectory,

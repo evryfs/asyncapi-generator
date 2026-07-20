@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 
 /**
  * Assembles core generator configuration from frontend-neutral requests.
@@ -15,7 +15,7 @@ object GeneratorConfigurationFactory {
         validate(request)
 
         return GeneratorConfiguration(
-            language = request.language,
+            language = request.generatorName.sourceLanguage,
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
@@ -113,7 +113,7 @@ object GeneratorConfigurationFactory {
             throw IllegalArgumentException("models.packageName is required when models are configured")
         }
 
-        if (request.models?.javaModelType == JavaModelType.RECORD && request.language != JAVA) {
+        if (request.models?.javaModelType == JavaModelType.RECORD && request.generatorName != JAVA) {
             throw IllegalArgumentException("models.javaModelType=record is only supported when generatorName is java")
         }
 

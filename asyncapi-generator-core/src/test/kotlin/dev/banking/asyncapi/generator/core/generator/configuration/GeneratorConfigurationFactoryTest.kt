@@ -1,7 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -14,6 +15,21 @@ import kotlin.test.assertTrue
 class GeneratorConfigurationFactoryTest {
     @TempDir
     lateinit var tempDir: Path
+
+    @Test
+    fun `create resolves generator names to source languages`() {
+        mapOf(
+            GeneratorName.JAVA to SourceLanguage.JAVA,
+            GeneratorName.KOTLIN to SourceLanguage.KOTLIN,
+            GeneratorName.AVRO to SourceLanguage.JAVA,
+            GeneratorName.PROTOBUF to SourceLanguage.JAVA,
+        ).forEach { (generatorName, sourceLanguage) ->
+            assertEquals(
+                sourceLanguage,
+                GeneratorConfigurationFactory.create(request(generatorName = generatorName)).language,
+            )
+        }
+    }
 
     @Test
     fun `create enables model generation when model package is configured`() {
@@ -44,7 +60,7 @@ class GeneratorConfigurationFactoryTest {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
-                    language = JAVA,
+                    generatorName = JAVA,
                     models =
                         GeneratorConfigurationRequest.Models(
                             packageName = "com.example.model",
@@ -464,14 +480,14 @@ class GeneratorConfigurationFactoryTest {
     }
 
     private fun request(
-        language: SourceLanguage = SourceLanguage.KOTLIN,
+        generatorName: GeneratorName = GeneratorName.KOTLIN,
         javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
         clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
     ): GeneratorConfigurationRequest =
         GeneratorConfigurationRequest(
-            language = language,
+            generatorName = generatorName,
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             javaSourceOutputDirectory = javaSourceOutputDirectory,
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),

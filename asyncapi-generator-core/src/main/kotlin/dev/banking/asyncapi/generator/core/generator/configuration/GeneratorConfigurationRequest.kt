@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import java.io.File
 
 /**
@@ -14,7 +14,7 @@ import java.io.File
  * - `GeneratorConfigurationRequestTest`
  */
 data class GeneratorConfigurationRequest(
-    val language: SourceLanguage,
+    val generatorName: GeneratorName,
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
     val javaSourceOutputDirectory: File = sourceOutputDirectory,
