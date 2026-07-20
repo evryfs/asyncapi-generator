@@ -19,7 +19,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/main.yaml</inputFile>
+                            <inputSpec>${project.basedir}/src/main/resources/main.yaml</inputSpec>
                             <outputFile>${project.build.directory}/bundled.yaml</outputFile>
                             <generatorName>kotlin</generatorName>
                         </configuration>

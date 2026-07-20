@@ -8,18 +8,16 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
  */
-class MavenModelGenerationConfiguration {
-    var enabled: Boolean? = null
-    var packageName: String? = null
-    var annotation: String? = null
+class MavenModelConfiguration {
+    var modelAnnotation: String? = null
     var javaModelType: String? = null
     var protobufModelType: String? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.Models? =
+    fun toRequest(modelPackage: String?): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
-            enabled = enabled,
-            packageName = packageName,
-            annotation = annotation,
+            enabled = true,
+            packageName = modelPackage,
+            annotation = modelAnnotation,
             javaModelType = javaModelType,
             protobufModelType = protobufModelType,
         )
@@ -31,14 +29,14 @@ class MavenModelGenerationConfiguration {
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
  */
-class MavenSchemaGenerationConfiguration {
+class MavenSchemaConfiguration {
     var avroProjection: MavenAvroProjectionConfiguration? = null
     var nativeAvro: MavenNativeAvroConfiguration? = null
     var nativeProtobuf: MavenNativeProtobufConfiguration? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.Schemas =
+    fun toRequest(schemaPackage: String?): GeneratorConfigurationRequest.Schemas =
         GeneratorConfigurationRequest.Schemas(
-            avroProjection = avroProjection?.toRequest(),
+            avroProjection = avroProjection?.toRequest(schemaPackage),
             nativeAvro = nativeAvro?.toRequest(),
             nativeProtobuf = nativeProtobuf?.toRequest(),
         )
@@ -52,12 +50,11 @@ class MavenSchemaGenerationConfiguration {
  */
 class MavenAvroProjectionConfiguration {
     var enabled: Boolean? = null
-    var packageName: String? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.AvroProjection? =
+    fun toRequest(schemaPackage: String?): GeneratorConfigurationRequest.AvroProjection? =
         GeneratorConfigurationRequest.avroProjection(
             enabled = enabled,
-            packageName = packageName,
+            packageName = schemaPackage,
         )
 }
 
@@ -99,14 +96,17 @@ class MavenNativeProtobufConfiguration {
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
  */
-class MavenClientGenerationConfiguration {
+class MavenClientConfiguration {
     var kafka: MavenKafkaConfiguration? = null
     var quarkusKafka: MavenQuarkusKafkaConfiguration? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.Clients =
+    fun toRequest(
+        clientPackage: String?,
+        modelPackage: String?,
+    ): GeneratorConfigurationRequest.Clients =
         GeneratorConfigurationRequest.Clients(
-            kafka = kafka?.toRequest(),
-            quarkusKafka = quarkusKafka?.toRequest(),
+            kafka = kafka?.toRequest(clientPackage, modelPackage),
+            quarkusKafka = quarkusKafka?.toRequest(clientPackage, modelPackage),
         )
 }
 
@@ -118,16 +118,17 @@ class MavenClientGenerationConfiguration {
  */
 class MavenKafkaConfiguration {
     var enabled: Boolean? = null
-    var packageName: String? = null
-    var modelPackageName: String? = null
     var headers: MavenKafkaHeadersConfiguration? = null
     var springKafka: MavenKafkaSpringKafkaConfiguration? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.Kafka? =
+    fun toRequest(
+        clientPackage: String?,
+        modelPackage: String?,
+    ): GeneratorConfigurationRequest.Kafka? =
         GeneratorConfigurationRequest.kafka(
             enabled = enabled,
-            packageName = packageName,
-            modelPackageName = modelPackageName,
+            packageName = clientPackage,
+            modelPackageName = modelPackage,
             headers = headers?.toRequest(),
             springKafka = springKafka?.toRequest(),
         )
@@ -199,13 +200,14 @@ class MavenKafkaConsumerConfiguration {
  */
 class MavenQuarkusKafkaConfiguration {
     var enabled: Boolean? = null
-    var packageName: String? = null
-    var modelPackageName: String? = null
 
-    fun toRequest(): GeneratorConfigurationRequest.QuarkusKafka? =
+    fun toRequest(
+        clientPackage: String?,
+        modelPackage: String?,
+    ): GeneratorConfigurationRequest.QuarkusKafka? =
         GeneratorConfigurationRequest.quarkusKafka(
             enabled = enabled,
-            packageName = packageName,
-            modelPackageName = modelPackageName,
+            packageName = clientPackage,
+            modelPackageName = modelPackage,
         )
 }

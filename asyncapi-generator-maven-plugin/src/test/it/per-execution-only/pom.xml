@@ -19,18 +19,16 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi-a.yaml</inputFile>
-                            <models>
-                                <packageName>com.example.a.model</packageName>
-                            </models>
-                            <clients>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi-a.yaml</inputSpec>
+                            <modelPackage>com.example.a.model</modelPackage>
+                            <clientPackage>com.example.a.client</clientPackage>
+                            <clientConfig>
                                 <kafka>
-                                    <packageName>com.example.a.client</packageName>
                                     <springKafka>
                                         <enabled>true</enabled>
                                     </springKafka>
                                 </kafka>
-                            </clients>
+                            </clientConfig>
                         </configuration>
                     </execution>
                     <execution>
@@ -40,15 +38,12 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputFile>
-                            <models>
-                                <packageName>com.example.b.model</packageName>
-                            </models>
-                            <schemas>
-                                <avroProjection>
-                                    <packageName>com.example.b.schema</packageName>
-                                </avroProjection>
-                            </schemas>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputSpec>
+                            <modelPackage>com.example.b.model</modelPackage>
+                            <schemaPackage>com.example.b.schema</schemaPackage>
+                            <schemaConfig>
+                                <avroProjection/>
+                            </schemaConfig>
                         </configuration>
                     </execution>
                 </executions>

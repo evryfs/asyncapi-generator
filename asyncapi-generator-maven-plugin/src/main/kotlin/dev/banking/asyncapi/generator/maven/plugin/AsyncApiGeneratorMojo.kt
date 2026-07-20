@@ -25,38 +25,35 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(property = "generatorName", defaultValue = "kotlin")
     private lateinit var generatorName: String
 
-    @Parameter(property = "inputFile", required = true)
-    private lateinit var inputFile: File
+    @Parameter(property = "inputSpec", required = true)
+    private lateinit var inputSpec: File
 
     @Parameter(property = "outputFile")
     private var outputFile: File? = null
 
     @Parameter(
-        property = "codegenOutputDirectory",
+        property = "outputDirectory",
         defaultValue = "\${project.build.directory}/generated-sources/asyncapi",
     )
-    private lateinit var codegenOutputDirectory: File
+    private lateinit var outputDirectory: File
 
-    @Parameter(
-        property = "resourceOutputDirectory",
-        defaultValue = "\${project.build.directory}/generated-resources/asyncapi",
-    )
-    private lateinit var resourceOutputDirectory: File
+    @Parameter(property = "modelPackage")
+    private var modelPackage: String? = null
 
-    @Parameter(
-        property = "javaSourceOutputDirectory",
-        defaultValue = "\${project.build.directory}/generated-sources/asyncapi-java",
-    )
-    private var javaSourceOutputDirectory: File? = null
+    @Parameter(property = "clientPackage")
+    private var clientPackage: String? = null
+
+    @Parameter(property = "schemaPackage")
+    private var schemaPackage: String? = null
 
     @Parameter
-    private var models: MavenModelGenerationConfiguration? = null
+    private var modelConfig: MavenModelConfiguration? = null
 
     @Parameter
-    private var schemas: MavenSchemaGenerationConfiguration? = null
+    private var schemaConfig: MavenSchemaConfiguration? = null
 
     @Parameter
-    private var clients: MavenClientGenerationConfiguration? = null
+    private var clientConfig: MavenClientConfiguration? = null
 
     private val context = AsyncApiContext()
     private val parser = AsyncApiParser(context)
@@ -67,10 +64,10 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     override fun execute() {
         try {
             log.info("asyncapi-generator-maven-plugin started")
-            if (!inputFile.exists()) {
-                throw MojoExecutionException("Input file not found: $inputFile")
+            if (!inputSpec.exists()) {
+                throw MojoExecutionException("Input specification not found: $inputSpec")
             }
-            val root = AsyncApiRegistry.readYaml(inputFile, context)
+            val root = AsyncApiRegistry.read(inputSpec, context)
             val asyncApiParsed = parser.parse(root)
             val validationErrors = validator.validate(asyncApiParsed)
             validationErrors.logWarnings()
@@ -85,27 +82,35 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                     value = generatorName,
                     path = "generatorName",
                 )
-            val modelRequest = models?.toRequest()
-            val resolvedJavaSourceOutputDirectory =
-                javaSourceOutputDirectory ?: defaultJavaSourceOutputDirectory()
+            val modelRequest =
+                if (modelPackage != null || modelConfig != null) {
+                    (modelConfig ?: MavenModelConfiguration()).toRequest(modelPackage)
+                } else {
+                    null
+                }
 
             val generatorConfiguration =
                 GeneratorConfigurationFactory.create(
                     GeneratorConfigurationRequest(
                         generatorName = targetGenerator,
-                        sourceOutputDirectory = codegenOutputDirectory,
-                        javaSourceOutputDirectory = resolvedJavaSourceOutputDirectory,
-                        resourceOutputDirectory = resourceOutputDirectory,
+                        sourceOutputDirectory = outputDirectory,
+                        javaSourceOutputDirectory = outputDirectory,
+                        resourceOutputDirectory = outputDirectory,
                         models = modelRequest,
-                        schemas = schemas?.toRequest() ?: GeneratorConfigurationRequest.Schemas(),
-                        clients = clients?.toRequest() ?: GeneratorConfigurationRequest.Clients(),
+                        schemas =
+                            schemaConfig?.toRequest(schemaPackage)
+                                ?: GeneratorConfigurationRequest.Schemas(),
+                        clients =
+                            clientConfig?.toRequest(
+                                clientPackage = clientPackage,
+                                modelPackage = modelPackage,
+                            ) ?: GeneratorConfigurationRequest.Clients(),
                     ),
                 )
             if (generatorConfiguration.hasConfiguredOutputs()) {
                 generator.generate(bundled, generatorConfiguration)
             }
-            project.addCompileSourceRoot(codegenOutputDirectory.absolutePath)
-            project.addCompileSourceRoot(resolvedJavaSourceOutputDirectory.absolutePath)
+            project.addCompileSourceRoot(outputDirectory.absolutePath)
             log.info("asyncapi-generator-maven-plugin completed successfully")
         } catch (e: MojoExecutionException) {
             throw e
@@ -115,7 +120,4 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             throw MojoExecutionException(e.message, e)
         }
     }
-
-    private fun defaultJavaSourceOutputDirectory(): File =
-        codegenOutputDirectory.parentFile?.resolve("asyncapi-java") ?: codegenOutputDirectory
 }

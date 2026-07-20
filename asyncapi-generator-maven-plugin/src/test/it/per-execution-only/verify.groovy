@@ -1,11 +1,10 @@
 def codegenBase = new File(basedir, "target/generated-sources/asyncapi")
-def resourceBase = new File(basedir, "target/generated-resources/asyncapi")
 
 // Verify that the expected directories were generated based on the per-execution configuration
 def aClientDir = new File(codegenBase, "com/example/a/client")
-def aSchemaDir = new File(resourceBase, "com/example/a/schema")
+def aSchemaDir = new File(codegenBase, "com/example/a/schema")
 def bClientDir = new File(codegenBase, "com/example/b/client")
-def bSchemaDir = new File(resourceBase, "com/example/b/schema")
+def bSchemaDir = new File(codegenBase, "com/example/b/schema")
 def aModelDir = new File(codegenBase, "com/example/a/model")
 def bModelDir = new File(codegenBase, "com/example/b/model")
 

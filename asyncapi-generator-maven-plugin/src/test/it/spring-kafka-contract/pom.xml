@@ -19,19 +19,17 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
                             <generatorName>kotlin</generatorName>
-                            <models>
-                                <packageName>com.example.contract.model</packageName>
-                            </models>
-                            <clients>
+                            <modelPackage>com.example.contract.model</modelPackage>
+                            <clientPackage>com.example.contract.client</clientPackage>
+                            <clientConfig>
                                 <kafka>
-                                    <packageName>com.example.contract.client</packageName>
                                     <springKafka>
                                         <enabled>true</enabled>
                                     </springKafka>
                                 </kafka>
-                            </clients>
+                            </clientConfig>
                         </configuration>
                     </execution>
                 </executions>

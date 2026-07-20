@@ -1,21 +1,22 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clients
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.codegenOutputDirectory
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.javaSourceOutputDirectory
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputSpec
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.kafka
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelConfig
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobuf
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputFile
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.models
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.resourceOutputDirectory
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemas
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaConfig
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -28,104 +29,80 @@ import java.io.File
 class AsyncApiGeneratorMojoTest {
 
     @Test
-    fun `should generate kotlin models from valid asyncapi yaml`() {
+    fun `should generate kotlin models when model package is configured`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.example.model"))
+            inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            modelPackage("com.example.model")
             generatorName("kotlin")
         }.execute()
+
         val output = File("target/generated-sources/asyncapi/com/example/model")
         assertTrue(output.exists(), "Output directory should exist")
         assertTrue(output.list()?.isNotEmpty() == true, "Output directory should not be empty")
     }
 
     @Test
-    fun `should generate kotlin kafka client from generic kafka yaml`() {
+    fun `should generate kotlin kafka client from top-level packages`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.example.kafka.model"))
-            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            modelPackage("com.example.kafka.model")
+            clientPackage("com.example.kafka.client")
+            clientConfig(clientConfig(kafka = kafka()))
             generatorName("kotlin")
         }.execute()
+
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
     }
 
     @Test
-    fun `should generate java kafka client from generic kafka yaml`() {
+    fun `should generate java kafka client from top-level packages`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.example.kafka.model"))
-            clients(clients(kafka = kafka(packageName = "com.example.kafka.client")))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            modelPackage("com.example.kafka.model")
+            clientPackage("com.example.kafka.client")
+            clientConfig(clientConfig(kafka = kafka()))
             generatorName("java")
         }.execute()
+
         val clientDir = File("target/generated-sources/asyncapi/com/example/kafka/client")
         assertTrue(clientDir.exists(), "Client directory should exist")
     }
 
     @Test
-    fun `should accept java record model type for java model generation`() {
+    fun `should accept java record model type from model config`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.example.record.model", javaModelType = "record"))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            modelPackage("com.example.record.model")
+            modelConfig(modelConfig(javaModelType = "record"))
             generatorName("java")
         }.execute()
 
-        val modelDir = File("target/generated-sources/asyncapi/com/example/record/model")
-        assertTrue(modelDir.exists(), "Model directory should exist")
-        val generatedRecord = modelDir.resolve("User.java")
+        val generatedRecord =
+            File("target/generated-sources/asyncapi/com/example/record/model/User.java")
+        assertTrue(generatedRecord.exists(), "Generated Java record should exist")
         assertTrue(generatedRecord.readText().contains("public record User("))
     }
 
     @Test
-    fun `should generate kafka client with explicit model package when models are not generated`() {
-        AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-client-only"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-client-only"))
-            clients(
-                clients(
-                    kafka =
-                        kafka(
-                            packageName = "com.example.kafka.client",
-                            modelPackageName = "com.example.kafka.model",
-                        ),
-                ),
-            )
-            generatorName("kotlin")
-        }.execute()
-
-        val clientDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/client")
-        val modelDir = File("target/generated-sources/asyncapi-client-only/com/example/kafka/model")
-        assertTrue(clientDir.exists(), "Client directory should exist")
-        assertTrue(!modelDir.exists(), "Model directory should not exist when model generation is not configured")
-    }
-
-    @Test
-    fun `should support outputFile option to save bundled yaml`() {
+    fun `should support output file for bundled specification`() {
         val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml")
         if (bundledFile.exists()) bundledFile.delete()
 
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundled.yaml"))
-            models(models(packageName = "com.example.bundled"))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            outputFile(bundledFile)
+            modelPackage("com.example.bundled")
             generatorName("kotlin")
         }.execute()
 
@@ -134,34 +111,35 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate avro schema when schema mode is avro projection`() {
+    fun `should generate avro projection under the shared output directory`() {
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.example.avro.model"))
-            schemas(schemas(avroProjection = avroProjection(packageName = "com.example.avro.schema")))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi"))
+            modelPackage("com.example.avro.model")
+            schemaPackage("com.example.avro.schema")
+            schemaConfig(schemaConfig(avroProjection = avroProjection()))
             generatorName("kotlin")
         }.execute()
-        val schemaDir = File("target/generated-resources/asyncapi/com/example/avro/schema")
+
+        val schemaDir = File("target/generated-sources/asyncapi/com/example/avro/schema")
         assertTrue(schemaDir.exists(), "Schema directory should exist")
     }
 
     @Test
-    fun `should generate native avro schema and specific record source`() {
+    fun `should generate native avro schema and specific record in shared output directory`() {
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-native-avro")
+
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_native_avro.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-avro"))
-            javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-avro-java"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-avro"))
-            schemas(schemas(nativeAvro = nativeAvro(enabled = true)))
-            generatorName("kotlin")
+            inputSpec(inputPath("asyncapi_native_avro.yaml"))
+            outputDirectory(outputDirectory)
+            schemaConfig(schemaConfig(nativeAvro = nativeAvro(enabled = true)))
+            generatorName("avro")
         }.execute()
 
-        val schemaFile = File("target/generated-resources/asyncapi-native-avro/com/example/avro/UserCreated.avsc")
-        val specificRecordFile = File("target/generated-sources/asyncapi-native-avro-java/com/example/avro/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/avro/UserCreated.avsc")
+        val specificRecordFile = outputDirectory.resolve("com/example/avro/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
         assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
         assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
@@ -169,18 +147,18 @@ class AsyncApiGeneratorMojoTest {
 
     @Test
     fun `should generate native protobuf schema and Java messages by default`() {
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf")
+
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
-            codegenOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf"))
-            javaSourceOutputDirectory(outputPath("target/generated-sources/asyncapi-native-protobuf-java"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi-native-protobuf"))
-            models(models(packageName = "com.example.protobuf"))
+            inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
+            outputDirectory(outputDirectory)
+            modelPackage("com.example.protobuf")
             generatorName("protobuf")
         }.execute()
 
-        val schemaFile = File("target/generated-resources/asyncapi-native-protobuf/com/example/protobuf/UserCreated.proto")
-        val javaMessageFile = File("target/generated-sources/asyncapi-native-protobuf-java/com/example/protobuf/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(schemaFile.readText().contains("message UserCreated"))
         assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
@@ -189,55 +167,39 @@ class AsyncApiGeneratorMojoTest {
 
     @Test
     fun `should generate native protobuf schema without model package`() {
-        val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only")
-        val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only-java")
-        val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-schema-only")
-        codegenOutputDirectory.deleteRecursively()
-        javaSourceOutputDirectory.deleteRecursively()
-        resourceOutputDirectory.deleteRecursively()
-        codegenOutputDirectory.mkdirs()
-        javaSourceOutputDirectory.mkdirs()
-        resourceOutputDirectory.mkdirs()
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-schema-only")
+        outputDirectory.deleteRecursively()
+        outputDirectory.mkdirs()
 
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
-            codegenOutputDirectory(codegenOutputDirectory)
-            javaSourceOutputDirectory(javaSourceOutputDirectory)
-            resourceOutputDirectory(resourceOutputDirectory)
-            schemas(schemas(nativeProtobuf = nativeProtobuf(enabled = true)))
+            inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
+            outputDirectory(outputDirectory)
+            schemaConfig(schemaConfig(nativeProtobuf = nativeProtobuf(enabled = true)))
             generatorName("protobuf")
         }.execute()
 
-        val schemaFile = resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto")
-        val javaMessageFile = javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
 
     @Test
     fun `should generate native protobuf Java messages and Kotlin DSL`() {
-        val codegenOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin")
-        val javaSourceOutputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin-java")
-        val resourceOutputDirectory = outputPath("target/generated-resources/asyncapi-native-protobuf-kotlin")
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin")
 
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_native_protobuf.yaml"))
-            codegenOutputDirectory(codegenOutputDirectory)
-            javaSourceOutputDirectory(javaSourceOutputDirectory)
-            resourceOutputDirectory(resourceOutputDirectory)
-            models(
-                models(
-                    packageName = "com.example.protobuf",
-                    protobufModelType = "kotlin",
-                ),
-            )
+            inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
+            outputDirectory(outputDirectory)
+            modelPackage("com.example.protobuf")
+            modelConfig(modelConfig(protobufModelType = "kotlin"))
             generatorName("protobuf")
         }.execute()
 
-        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
-        assertTrue(codegenOutputDirectory.resolve("com/example/protobuf/UserCreatedKt.kt").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreatedKt.kt").exists())
     }
 
     @Test
@@ -245,49 +207,48 @@ class AsyncApiGeneratorMojoTest {
         val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml")
         if (bundledFile.exists()) bundledFile.delete()
         val bundleOnlyOutputDir = outputPath("target/generated-sources/asyncapi-bundle-only")
+
         AsyncApiGeneratorMojo().apply {
             project(MavenProject())
-            inputFile(inputPath("asyncapi_kafka_complex.yaml"))
-            codegenOutputDirectory(bundleOnlyOutputDir)
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            outputFile(File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml"))
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(bundleOnlyOutputDir)
+            outputFile(bundledFile)
             generatorName("kotlin")
-            // no models/clients/schemas output blocks set
         }.execute()
+
         assertTrue(bundledFile.exists(), "Bundled output file should exist")
         assertTrue(bundledFile.length() > 0, "Bundled output file should not be empty")
-        val generatedPackageRoot = bundleOnlyOutputDir.resolve("com")
-        assertTrue(!generatedPackageRoot.exists(), "No code should be generated when packages are not set")
+        assertFalse(
+            bundleOnlyOutputDir.resolve("com").exists(),
+            "No code should be generated when packages are not set",
+        )
     }
 
     @Test
-    fun `should fail when input file is missing`() {
-        val mojo = AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(File("src/test/resources/non_existent.yaml"))
-            codegenOutputDirectory(outputPath("target/should-fail"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.fail"))
-        }
-        assertThrows<MojoExecutionException> {
-            mojo.execute()
-        }
+    fun `should fail when input specification is missing`() {
+        val mojo =
+            AsyncApiGeneratorMojo().apply {
+                project(MavenProject())
+                inputSpec(File("src/test/resources/non_existent.yaml"))
+                outputDirectory(outputPath("target/should-fail"))
+                modelPackage("com.fail")
+            }
+
+        val exception = assertThrows<MojoExecutionException> { mojo.execute() }
+        assertTrue(exception.message.orEmpty().startsWith("Input specification not found:"))
     }
 
     @Test
     fun `should fail when generator name is invalid`() {
-        val mojo = AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            codegenOutputDirectory(outputPath("target/should-fail-gen"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.fail"))
-            generatorName("invalid-lang")
-        }
-        val exception =
-            assertThrows<MojoExecutionException> {
-                mojo.execute()
+        val mojo =
+            AsyncApiGeneratorMojo().apply {
+                project(MavenProject())
+                inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
+                outputDirectory(outputPath("target/should-fail-gen"))
+                modelPackage("com.fail")
+                generatorName("invalid-lang")
             }
+        val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
             "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro, protobuf",
@@ -297,18 +258,16 @@ class AsyncApiGeneratorMojoTest {
 
     @Test
     fun `should fail when java model type is invalid`() {
-        val mojo = AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputFile(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            codegenOutputDirectory(outputPath("target/should-fail-java-model-type"))
-            resourceOutputDirectory(outputPath("target/generated-resources/asyncapi"))
-            models(models(packageName = "com.fail", javaModelType = "data"))
-            generatorName("java")
-        }
-        val exception =
-            assertThrows<MojoExecutionException> {
-                mojo.execute()
+        val mojo =
+            AsyncApiGeneratorMojo().apply {
+                project(MavenProject())
+                inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
+                outputDirectory(outputPath("target/should-fail-java-model-type"))
+                modelPackage("com.fail")
+                modelConfig(modelConfig(javaModelType = "data"))
+                generatorName("java")
             }
+        val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
             "Invalid models.javaModelType 'data'. Supported values: class, record",
