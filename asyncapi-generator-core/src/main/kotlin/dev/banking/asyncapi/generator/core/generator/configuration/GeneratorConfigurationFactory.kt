@@ -79,6 +79,7 @@ object GeneratorConfigurationFactory {
                                     kafka.springKafka?.let { springKafka ->
                                         ClientGeneration.SpringKafka(
                                             clientContract = springKafka.clientContract,
+                                            validationAnnotations = springKafka.validationAnnotations,
                                             producer =
                                                 ClientGeneration.Producer(
                                                     enabled = springKafka.producer.enabled,

@@ -2,9 +2,11 @@ package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.PackageName
 import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 
 /**
  * Maven model generation configuration.
@@ -106,6 +108,7 @@ class MavenClientConfiguration {
     var generateProducer: Boolean? = null
     var generateConsumer: Boolean? = null
     var producerRecordValueType: String? = null
+    var validationAnnotations: MavenValidationAnnotationsConfiguration? = null
 
     fun toRequest(
         clientPackage: String?,
@@ -134,6 +137,9 @@ class MavenClientConfiguration {
                             springKafka =
                                 GeneratorConfigurationRequest.KafkaSpringKafka(
                                     clientContract = resolvedClientContract,
+                                    validationAnnotations =
+                                        validationAnnotations?.toRequest()
+                                            ?: ClientValidationAnnotations(),
                                     producer =
                                         GeneratorConfigurationRequest.KafkaProducer(
                                             enabled = generateProducer ?: true,
@@ -161,4 +167,32 @@ class MavenClientConfiguration {
             value = value ?: throw IllegalArgumentException("$path is required when clientConfig is configured"),
             path = path,
         ).value
+}
+
+/**
+ * Maven annotation configuration for generated client contracts.
+ *
+ * Annotation values must be fully qualified so generated imports do not depend on
+ * framework or validation-library aliases maintained by the generator.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenValidationAnnotationsConfiguration {
+    var clientContract: String? = null
+    var payloadParameter: String? = null
+
+    fun toRequest(): ClientValidationAnnotations =
+        ClientValidationAnnotations(
+            clientContract = clientContract.toQualifiedTypeName("clientContract"),
+            payloadParameter = payloadParameter.toQualifiedTypeName("payloadParameter"),
+        )
+
+    private fun String?.toQualifiedTypeName(fieldName: String): QualifiedTypeName? =
+        this?.let { value ->
+            QualifiedTypeName.fromConfigurationValue(
+                value = value,
+                path = "clientConfig.validationAnnotations.$fieldName",
+            )
+        }
 }

@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
@@ -19,6 +20,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.validationAnnotations
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -97,6 +99,11 @@ class AsyncApiGeneratorMojoTest {
                 generateProducer = false,
                 generateConsumer = true,
                 producerRecordValueType = "org.apache.kafka.common.utils.Bytes",
+                validationAnnotations =
+                    validationAnnotations(
+                        clientContract = "org.springframework.validation.annotation.Validated",
+                        payloadParameter = "jakarta.validation.Valid",
+                    ),
             ).toRequest(
                 clientPackage = "com.example.client",
                 modelPackage = "com.example.model",
@@ -110,6 +117,21 @@ class AsyncApiGeneratorMojoTest {
         assertEquals(ClientContract.INTERFACE, configuredSpringKafka.clientContract)
         assertFalse(configuredSpringKafka.producer.enabled)
         assertTrue(configuredSpringKafka.consumer.enabled)
+        assertEquals(
+            ClientValidationAnnotations(
+                clientContract =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "org.springframework.validation.annotation.Validated",
+                        path = "clientConfig.validationAnnotations.clientContract",
+                    ),
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clientConfig.validationAnnotations.payloadParameter",
+                    ),
+            ),
+            configuredSpringKafka.validationAnnotations,
+        )
         assertEquals(
             ProducerRecordValueType.Custom(
                 QualifiedTypeName.fromConfigurationValue(
@@ -136,6 +158,44 @@ class AsyncApiGeneratorMojoTest {
         assertTrue(springKafka.producer.enabled)
         assertTrue(springKafka.consumer.enabled)
         assertEquals(ProducerRecordValueType.ByteArray, springKafka.producer.recordValueType)
+        assertEquals(ClientValidationAnnotations(), springKafka.validationAnnotations)
+    }
+
+    @Test
+    fun `should require fully qualified validation annotation names`() {
+        val invalidClientContractAnnotation =
+            assertThrows<IllegalArgumentException> {
+                clientConfig(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                    validationAnnotations = validationAnnotations(clientContract = "Validated"),
+                ).toRequest(
+                    clientPackage = "com.example.client",
+                    modelPackage = "com.example.model",
+                )
+            }
+        val invalidPayloadParameterAnnotation =
+            assertThrows<IllegalArgumentException> {
+                clientConfig(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                    validationAnnotations = validationAnnotations(payloadParameter = "Valid"),
+                ).toRequest(
+                    clientPackage = "com.example.client",
+                    modelPackage = "com.example.model",
+                )
+            }
+
+        assertEquals(
+            "clientConfig.validationAnnotations.clientContract must be a fully qualified type name, " +
+                "for example com.example.GeneratedPayload",
+            invalidClientContractAnnotation.message,
+        )
+        assertEquals(
+            "clientConfig.validationAnnotations.payloadParameter must be a fully qualified type name, " +
+                "for example com.example.GeneratedPayload",
+            invalidPayloadParameterAnnotation.message,
+        )
     }
 
     @Test

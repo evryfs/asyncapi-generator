@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
@@ -33,6 +34,7 @@ sealed interface GenerationTask {
         val generateProducers: Boolean = true,
         val generateConsumers: Boolean = true,
         val clientContract: ClientContract = ClientContract.INTERFACE,
+        val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producerRecordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     ) : GenerationTask
 

@@ -210,6 +210,19 @@ class GeneratorConfigurationFactoryTest {
                     path = "clients.kafka.springKafka.producer.recordValueType",
                 ),
             )
+        val validationAnnotations =
+            ClientValidationAnnotations(
+                clientContract =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "org.springframework.validation.annotation.Validated",
+                        path = "clients.kafka.springKafka.validationAnnotations.clientContract",
+                    ),
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
+                    ),
+            )
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
@@ -223,6 +236,7 @@ class GeneratorConfigurationFactoryTest {
                                     springKafka =
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
                                             clientContract = ClientContract.INTERFACE,
+                                            validationAnnotations = validationAnnotations,
                                             producer =
                                                 GeneratorConfigurationRequest.KafkaProducer(
                                                     enabled = false,
@@ -244,6 +258,7 @@ class GeneratorConfigurationFactoryTest {
                     springKafka =
                         ClientGeneration.SpringKafka(
                             clientContract = ClientContract.INTERFACE,
+                            validationAnnotations = validationAnnotations,
                             producer =
                                 ClientGeneration.Producer(
                                     enabled = false,

@@ -138,6 +138,23 @@ class GeneratorConfigurationRequestTest {
                 producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
             ),
         )
+
+        val validationAnnotations =
+            ClientValidationAnnotations(
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
+                    ),
+            )
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
+                validationAnnotations = validationAnnotations,
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                validationAnnotations = validationAnnotations,
+            ),
+        )
     }
 
     @Test

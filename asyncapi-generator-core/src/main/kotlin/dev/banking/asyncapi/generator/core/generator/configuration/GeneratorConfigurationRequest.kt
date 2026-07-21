@@ -63,6 +63,7 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaSpringKafka(
         val clientContract: ClientContract = ClientContract.INTERFACE,
+        val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producer: KafkaProducer = KafkaProducer(),
         val consumer: KafkaConsumer = KafkaConsumer(),
     )
@@ -178,14 +179,19 @@ data class GeneratorConfigurationRequest(
         fun kafkaSpringKafka(
             enabled: Boolean? = null,
             clientContract: ClientContract = ClientContract.INTERFACE,
+            validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
             producer: KafkaProducer? = null,
             consumer: KafkaConsumer? = null,
         ): KafkaSpringKafka? =
             when {
                 enabled == false -> null
-                enabled == true || producer != null || consumer != null ->
+                enabled == true ||
+                    validationAnnotations != ClientValidationAnnotations() ||
+                    producer != null ||
+                    consumer != null ->
                     KafkaSpringKafka(
                         clientContract = clientContract,
+                        validationAnnotations = validationAnnotations,
                         producer = producer ?: KafkaProducer(),
                         consumer = consumer ?: KafkaConsumer(),
                     )

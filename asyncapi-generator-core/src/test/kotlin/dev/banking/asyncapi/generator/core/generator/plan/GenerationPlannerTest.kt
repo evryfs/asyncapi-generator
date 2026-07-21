@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.plan
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
@@ -206,6 +207,19 @@ class GenerationPlannerTest {
                     path = "clients.kafka.springKafka.producer.recordValueType",
                 ),
             )
+        val validationAnnotations =
+            ClientValidationAnnotations(
+                clientContract =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "org.springframework.validation.annotation.Validated",
+                        path = "clients.kafka.springKafka.validationAnnotations.clientContract",
+                    ),
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
+                    ),
+            )
         val plan =
             planner.plan(
                 generatorConfiguration(
@@ -215,6 +229,7 @@ class GenerationPlannerTest {
                                 springKafka =
                                     ClientGeneration.SpringKafka(
                                         clientContract = ClientContract.INTERFACE,
+                                        validationAnnotations = validationAnnotations,
                                         producer =
                                             ClientGeneration.Producer(
                                                 enabled = false,
@@ -237,6 +252,7 @@ class GenerationPlannerTest {
                     generateProducers = false,
                     generateConsumers = true,
                     clientContract = ClientContract.INTERFACE,
+                    validationAnnotations = validationAnnotations,
                     producerRecordValueType = producerRecordValueType,
                 ),
             ),
@@ -373,6 +389,7 @@ class GenerationPlannerTest {
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
         clientContract: ClientContract = ClientContract.INTERFACE,
+        validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         producerRecordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
@@ -383,6 +400,7 @@ class GenerationPlannerTest {
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
             clientContract = clientContract,
+            validationAnnotations = validationAnnotations,
             producerRecordValueType = producerRecordValueType,
         )
 }

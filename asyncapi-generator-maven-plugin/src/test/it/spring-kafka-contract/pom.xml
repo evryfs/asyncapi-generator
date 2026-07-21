@@ -26,6 +26,10 @@
                             <clientConfig>
                                 <clientType>spring-kafka</clientType>
                                 <clientContract>interface</clientContract>
+                                <validationAnnotations>
+                                    <clientContract>org.springframework.validation.annotation.Validated</clientContract>
+                                    <payloadParameter>jakarta.validation.Valid</payloadParameter>
+                                </validationAnnotations>
                             </clientConfig>
                         </configuration>
                     </execution>
