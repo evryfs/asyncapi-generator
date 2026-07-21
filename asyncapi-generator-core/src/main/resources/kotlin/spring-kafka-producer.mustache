@@ -37,6 +37,7 @@ interface {{name}} {
 {{/descriptionTailLines}}
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
+     * @return Future completed with Kafka record metadata after successful publication.
      */
     fun {{methodName}}(
 {{#payloadParameterAnnotation}}
@@ -51,6 +52,6 @@ interface {{name}} {
 {{#headerProperties}}
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
-    )
+    ): CompletableFuture<RecordMetadata>
     {{/sendMethods}}
 }

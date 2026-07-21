@@ -203,13 +203,6 @@ class GeneratorConfigurationFactoryTest {
 
     @Test
     fun `create maps kafka header and spring kafka generation options`() {
-        val producerRecordValueType =
-            ProducerRecordValueType.Custom(
-                QualifiedTypeName.fromConfigurationValue(
-                    value = "org.apache.kafka.common.utils.Bytes",
-                    path = "clients.kafka.springKafka.producer.recordValueType",
-                ),
-            )
         val validationAnnotations =
             ClientValidationAnnotations(
                 clientContract =
@@ -240,7 +233,6 @@ class GeneratorConfigurationFactoryTest {
                                             producer =
                                                 GeneratorConfigurationRequest.KafkaProducer(
                                                     enabled = false,
-                                                    recordValueType = producerRecordValueType,
                                                 ),
                                             consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
                                         ),
@@ -262,7 +254,6 @@ class GeneratorConfigurationFactoryTest {
                             producer =
                                 ClientGeneration.Producer(
                                     enabled = false,
-                                    recordValueType = producerRecordValueType,
                                 ),
                             consumer = ClientGeneration.Consumer(enabled = true),
                         ),

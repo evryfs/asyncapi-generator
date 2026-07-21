@@ -69,7 +69,7 @@ class GenerateJavaPrimitivePayloadTest {
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
-            producerContent.contains("interface SimpleTopicProducerSimpleStringMessage"),
+            producerContent.contains("interface SimpleTopicProducerSimpleStringMessage {"),
             "Producer should be generated as a contract interface",
         )
         assertTrue(
@@ -78,7 +78,10 @@ class GenerateJavaPrimitivePayloadTest {
         )
         assertTrue(producerContent.contains("@NotNull String key"), "Producer should expose the Kafka record key")
         assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
-        assertFalse(producerContent.contains("CompletableFuture"), "Producer contract should not own send results")
+        assertTrue(
+            producerContent.contains("CompletableFuture<RecordMetadata> sendSimpleStringMessage"),
+            "Producer contract should expose the asynchronous send result",
+        )
     }
 
     @Test
@@ -123,7 +126,7 @@ class GenerateJavaPrimitivePayloadTest {
         val producerContentA = producerFileA.readText()
         val producerContentB = producerFileB.readText()
         assertTrue(
-            producerContentA.contains("interface MultiTopicProducerStringMessage"),
+            producerContentA.contains("interface MultiTopicProducerStringMessage {"),
             "StringMessage producer should be generated as a contract interface",
         )
         assertTrue(
@@ -131,7 +134,7 @@ class GenerateJavaPrimitivePayloadTest {
             "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
-            producerContentB.contains("interface MultiTopicProducerIntMessage"),
+            producerContentB.contains("interface MultiTopicProducerIntMessage {"),
             "IntMessage producer should be generated as a contract interface",
         )
         assertTrue(

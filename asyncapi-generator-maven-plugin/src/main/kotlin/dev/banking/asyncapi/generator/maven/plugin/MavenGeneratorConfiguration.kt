@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.PackageName
-import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 
 /**
@@ -107,7 +106,6 @@ class MavenClientConfiguration {
     var clientContract: String? = null
     var generateProducer: Boolean? = null
     var generateConsumer: Boolean? = null
-    var producerRecordValueType: String? = null
     var validationAnnotations: MavenValidationAnnotationsConfiguration? = null
 
     fun toRequest(
@@ -143,11 +141,6 @@ class MavenClientConfiguration {
                                     producer =
                                         GeneratorConfigurationRequest.KafkaProducer(
                                             enabled = generateProducer ?: true,
-                                            recordValueType =
-                                                ProducerRecordValueType.fromConfigurationValue(
-                                                    value = producerRecordValueType,
-                                                    path = "clientConfig.producerRecordValueType",
-                                                ),
                                         ),
                                     consumer =
                                         GeneratorConfigurationRequest.KafkaConsumer(

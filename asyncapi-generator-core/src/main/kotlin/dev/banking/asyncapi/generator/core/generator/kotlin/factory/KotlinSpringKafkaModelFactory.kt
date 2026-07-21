@@ -94,6 +94,8 @@ class KotlinSpringKafkaModelFactory(
                 val imports =
                     (
                         listOfNotNull(payload.importName) +
+                            "java.util.concurrent.CompletableFuture" +
+                            "org.apache.kafka.clients.producer.RecordMetadata" +
                             listOfNotNull(
                                 validationAnnotations.clientContract?.value,
                                 validationAnnotations.payloadParameter?.value,
@@ -142,7 +144,6 @@ class KotlinSpringKafkaModelFactory(
                                 ),
                         topic = channel.topic,
                         sendMethods = listOf(sendMethod),
-                        kafkaValueType = payload.payloadType,
                         clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
                         imports = imports,
                     ),

@@ -30,12 +30,12 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(modelFile.exists(), "RawEvent typealias should be generated")
 
         val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.kt").readText()
-        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent"))
+        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent {"))
         assertTrue(producerContent.contains("fun sendRawEvent"))
         assertTrue(producerContent.contains("payload: RawEvent"))
         assertTrue(producerContent.contains("import $modelPackage.RawEvent"))
         assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
@@ -69,12 +69,12 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(modelFile.exists(), "RawEventPayload typealias should be generated")
 
         val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.kt").readText()
-        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent"))
+        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent {"))
         assertTrue(producerContent.contains("fun sendRawEvent"))
         assertTrue(producerContent.contains("payload: RawEventPayload"))
         assertTrue(producerContent.contains("import $modelPackage.RawEventPayload"))
         assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))

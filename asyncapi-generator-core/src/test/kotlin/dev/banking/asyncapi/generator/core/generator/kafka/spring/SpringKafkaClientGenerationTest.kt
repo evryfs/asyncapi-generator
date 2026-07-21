@@ -166,6 +166,50 @@ class SpringKafkaClientGenerationTest {
         }
     }
 
+    @Test
+    fun `generate leaves the Kotlin producer record value type to the implementation`() {
+        val sourceOutputDirectory = tempDir.resolve("flexible-kotlin-producer-sources").toFile()
+
+        generator.generate(
+            task =
+                springKafkaClientTask(
+                    language = SourceLanguage.KOTLIN,
+                ),
+            generationInput = fixtures.generationInputWithUserSignupChannel(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = tempDir.resolve("flexible-kotlin-producer-resources").toFile(),
+        )
+
+        val producerContent =
+            sourceOutputDirectory
+                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt")
+                .readText()
+        assertTrue(producerContent.contains("interface UserEventsProducerUserSignedUp {"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
+    }
+
+    @Test
+    fun `generate leaves the Java producer record value type to the implementation`() {
+        val sourceOutputDirectory = tempDir.resolve("flexible-java-producer-sources").toFile()
+
+        generator.generate(
+            task =
+                springKafkaClientTask(
+                    language = SourceLanguage.JAVA,
+                ),
+            generationInput = fixtures.generationInputWithUserSignupChannel(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            resourceOutputDirectory = tempDir.resolve("flexible-java-producer-resources").toFile(),
+        )
+
+        val producerContent =
+            sourceOutputDirectory
+                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.java")
+                .readText()
+        assertTrue(producerContent.contains("interface UserEventsProducerUserSignedUp {"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
+    }
+
     private fun springKafkaClientTask(
         language: SourceLanguage,
         generateProducers: Boolean = true,

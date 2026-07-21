@@ -83,7 +83,6 @@ object GeneratorConfigurationFactory {
                                             producer =
                                                 ClientGeneration.Producer(
                                                     enabled = springKafka.producer.enabled,
-                                                    recordValueType = springKafka.producer.recordValueType,
                                                 ),
                                             consumer =
                                                 ClientGeneration.Consumer(

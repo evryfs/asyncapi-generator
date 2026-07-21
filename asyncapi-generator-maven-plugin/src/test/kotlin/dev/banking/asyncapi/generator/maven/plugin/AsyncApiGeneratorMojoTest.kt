@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
-import dev.banking.asyncapi.generator.core.generator.configuration.ProducerRecordValueType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
@@ -91,14 +90,13 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should map typed client contract and producer record value configuration`() {
+    fun `should map typed client contract and generation options`() {
         val clients =
             clientConfig(
                 clientType = "spring-kafka",
                 clientContract = "interface",
                 generateProducer = false,
                 generateConsumer = true,
-                producerRecordValueType = "org.apache.kafka.common.utils.Bytes",
                 validationAnnotations =
                     validationAnnotations(
                         clientContract = "org.springframework.validation.annotation.Validated",
@@ -132,15 +130,6 @@ class AsyncApiGeneratorMojoTest {
             ),
             configuredSpringKafka.validationAnnotations,
         )
-        assertEquals(
-            ProducerRecordValueType.Custom(
-                QualifiedTypeName.fromConfigurationValue(
-                    value = "org.apache.kafka.common.utils.Bytes",
-                    path = "clientConfig.producerRecordValueType",
-                ),
-            ),
-            configuredSpringKafka.producer.recordValueType,
-        )
     }
 
     @Test
@@ -157,7 +146,6 @@ class AsyncApiGeneratorMojoTest {
         val springKafka = clients.kafka!!.springKafka!!
         assertTrue(springKafka.producer.enabled)
         assertTrue(springKafka.consumer.enabled)
-        assertEquals(ProducerRecordValueType.ByteArray, springKafka.producer.recordValueType)
         assertEquals(ClientValidationAnnotations(), springKafka.validationAnnotations)
     }
 

@@ -51,7 +51,6 @@ sealed interface GeneratorItem {
         override val description: List<String>,
         val topic: String,
         val sendMethods: List<SendMethod>,
-        val kafkaValueType: String,
         val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
     ) : GeneratorItem

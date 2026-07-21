@@ -38,8 +38,9 @@ public interface {{name}} {
 {{/descriptionTailLines}}
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
+     * @return future completed with Kafka record metadata after successful publication
      */
-    void {{methodName}}(
+    CompletableFuture<RecordMetadata> {{methodName}}(
         {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
         @NotNull String key{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}

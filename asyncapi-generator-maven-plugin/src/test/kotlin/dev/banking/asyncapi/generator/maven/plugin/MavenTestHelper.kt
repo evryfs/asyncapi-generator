@@ -109,7 +109,6 @@ object MavenTestHelper {
         clientContract: String? = null,
         generateProducer: Boolean? = null,
         generateConsumer: Boolean? = null,
-        producerRecordValueType: String? = null,
         validationAnnotations: MavenValidationAnnotationsConfiguration? = null,
     ): MavenClientConfiguration =
         MavenClientConfiguration().apply {
@@ -117,7 +116,6 @@ object MavenTestHelper {
             this.clientContract = clientContract
             this.generateProducer = generateProducer
             this.generateConsumer = generateConsumer
-            this.producerRecordValueType = producerRecordValueType
             this.validationAnnotations = validationAnnotations
         }
 

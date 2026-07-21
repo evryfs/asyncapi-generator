@@ -70,7 +70,6 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaProducer(
         val enabled: Boolean = true,
-        val recordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
     )
 
     data class KafkaConsumer(
@@ -200,15 +199,10 @@ data class GeneratorConfigurationRequest(
 
         fun kafkaProducer(
             enabled: Boolean? = null,
-            recordValueType: ProducerRecordValueType = ProducerRecordValueType.ByteArray,
         ): KafkaProducer? =
             when (enabled) {
                 null -> null
-                else ->
-                    KafkaProducer(
-                        enabled = enabled,
-                        recordValueType = recordValueType,
-                    )
+                else -> KafkaProducer(enabled = enabled)
             }
 
         fun kafkaConsumer(enabled: Boolean? = null): KafkaConsumer? =
