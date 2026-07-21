@@ -6,6 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * Expected behavior is covered by:
  * - `GeneratorConfigurationFactoryTest`
  * - `GenerationPlannerTest`
+ * - `SpringKafkaClientGenerationTest`
  * - `AsyncApiGeneratorMojoTest`
  */
 data class ClientValidationAnnotations(

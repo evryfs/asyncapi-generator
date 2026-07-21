@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import java.io.File
@@ -12,6 +13,7 @@ class KotlinSpringKafkaGenerator(
     generateHeaders: Boolean = true,
     generateProducers: Boolean = true,
     generateConsumers: Boolean = true,
+    validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
 ) {
     private val modelFactory =
         KotlinSpringKafkaModelFactory(
@@ -20,6 +22,7 @@ class KotlinSpringKafkaGenerator(
             generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
+            validationAnnotations = validationAnnotations,
         )
     private val producerGenerator = KotlinSpringKafkaProducerGenerator(outputDir)
     private val consumerGenerator = KotlinSpringKafkaConsumerGenerator(outputDir)

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.factory
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
@@ -19,6 +20,7 @@ class KotlinSpringKafkaModelFactory(
     private val generateHeaders: Boolean = true,
     private val generateProducers: Boolean = true,
     private val generateConsumers: Boolean = true,
+    private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
@@ -33,8 +35,10 @@ class KotlinSpringKafkaModelFactory(
             val imports =
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
-                        "jakarta.validation.Valid" +
-                        "org.springframework.validation.annotation.Validated"
+                        listOfNotNull(
+                            validationAnnotations.clientContract?.value,
+                            validationAnnotations.payloadParameter?.value,
+                        )
                 )
                     .distinct()
                     .sorted()
@@ -63,6 +67,7 @@ class KotlinSpringKafkaModelFactory(
                                     defaultValue = if (header.required) null else "null",
                                 )
                             },
+                        payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
                 }
             items.add(
@@ -78,6 +83,7 @@ class KotlinSpringKafkaModelFactory(
                                     "contract-defined headers as method parameters.",
                             ),
                     methods = methods,
+                    clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
                     imports = imports,
                 ),
             )
@@ -88,8 +94,10 @@ class KotlinSpringKafkaModelFactory(
                 val imports =
                     (
                         listOfNotNull(payload.importName) +
-                            "jakarta.validation.Valid" +
-                            "org.springframework.validation.annotation.Validated"
+                            listOfNotNull(
+                                validationAnnotations.clientContract?.value,
+                                validationAnnotations.payloadParameter?.value,
+                            )
                     )
                         .distinct()
                         .sorted()
@@ -117,6 +125,7 @@ class KotlinSpringKafkaModelFactory(
                                     defaultValue = if (header.required) null else "null",
                                 )
                             },
+                        payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
                 val producerName = "${baseName}Producer${payload.messageName}"
                 items.add(
@@ -134,6 +143,7 @@ class KotlinSpringKafkaModelFactory(
                         topic = channel.topic,
                         sendMethods = listOf(sendMethod),
                         kafkaValueType = payload.payloadType,
+                        clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
                         imports = imports,
                     ),
                 )

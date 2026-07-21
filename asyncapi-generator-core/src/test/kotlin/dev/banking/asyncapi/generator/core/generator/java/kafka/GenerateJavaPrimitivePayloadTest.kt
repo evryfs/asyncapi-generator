@@ -47,11 +47,17 @@ class GenerateJavaPrimitivePayloadTest {
             "Consumer should expose the contract method",
         )
         assertTrue(
-            consumerContent.contains("@Valid @NotNull String payload"),
+            consumerContent.contains("@NotNull String payload"),
             "Consumer should expose the primitive payload type directly",
         )
-        assertTrue(consumerContent.contains("@Nullable String key"), "Consumer should expose the nullable Kafka record key")
-        assertFalse(consumerContent.contains("ConsumerRecord"), "Consumer contract should not own listener record mapping")
+        assertTrue(
+            consumerContent.contains("@Nullable String key"),
+            "Consumer should expose the nullable Kafka record key"
+        )
+        assertFalse(
+            consumerContent.contains("ConsumerRecord"),
+            "Consumer contract should not own listener record mapping"
+        )
 
         val producerFile =
             outputDir.resolve(
@@ -67,7 +73,7 @@ class GenerateJavaPrimitivePayloadTest {
             "Producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContent.contains("@Valid @NotNull String payload"),
+            producerContent.contains("@NotNull String payload"),
             "Producer should expose the primitive payload type directly",
         )
         assertTrue(producerContent.contains("@NotNull String key"), "Producer should expose the Kafka record key")
@@ -121,7 +127,7 @@ class GenerateJavaPrimitivePayloadTest {
             "StringMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentA.contains("@Valid @NotNull String payload"),
+            producerContentA.contains("@NotNull String payload"),
             "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
@@ -129,10 +135,16 @@ class GenerateJavaPrimitivePayloadTest {
             "IntMessage producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentB.contains("@Valid @NotNull Integer payload"),
+            producerContentB.contains("@NotNull Integer payload"),
             "IntMessage producer should expose the primitive payload type directly",
         )
-        assertFalse(producerContentA.contains("KafkaTemplate"), "StringMessage producer should not own KafkaTemplate wiring")
-        assertFalse(producerContentB.contains("KafkaTemplate"), "IntMessage producer should not own KafkaTemplate wiring")
+        assertFalse(
+            producerContentA.contains("KafkaTemplate"),
+            "StringMessage producer should not own KafkaTemplate wiring"
+        )
+        assertFalse(
+            producerContentB.contains("KafkaTemplate"),
+            "IntMessage producer should not own KafkaTemplate wiring"
+        )
     }
 }

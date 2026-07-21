@@ -38,6 +38,7 @@ sealed interface GeneratorItem {
         override val packageName: String,
         override val description: List<String>,
         val methods: List<ConsumerMethod>,
+        val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
@@ -48,6 +49,7 @@ sealed interface GeneratorItem {
         val topic: String,
         val sendMethods: List<SendMethod>,
         val kafkaValueType: String,
+        val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
     ) : GeneratorItem
 
@@ -58,6 +60,7 @@ sealed interface GeneratorItem {
         val keyDescription: List<String> = emptyList(),
         val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
+        val payloadParameterAnnotation: String? = null,
     ) {
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
         val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||
@@ -76,6 +79,7 @@ sealed interface GeneratorItem {
         val keyDescription: List<String> = emptyList(),
         val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
+        val payloadParameterAnnotation: String? = null,
     ) {
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
         val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||

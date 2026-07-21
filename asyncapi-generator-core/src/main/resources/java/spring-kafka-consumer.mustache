@@ -9,7 +9,9 @@ import {{.}};
  * {{.}}
 {{/description}}
  */
-@Validated
+{{#clientContractAnnotation}}
+@{{.}}
+{{/clientContractAnnotation}}
 public interface {{name}} {
 {{#methods}}
     /**
@@ -37,7 +39,7 @@ public interface {{name}} {
 {{/hasParameterDocumentation}}
      */
     void {{methodName}}(
-        @Valid @NotNull {{payloadType}} payload,
+        {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
         @Nullable String key{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}
         {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
