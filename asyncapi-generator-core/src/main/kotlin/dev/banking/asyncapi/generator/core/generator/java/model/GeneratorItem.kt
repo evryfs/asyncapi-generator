@@ -44,6 +44,7 @@ sealed interface GeneratorItem {
         val imports: List<String> = emptyList(),
     ) : GeneratorItem {
         val hasSingleMethod: Boolean get() = methods.size == 1
+        val hasMultipleMethods: Boolean get() = methods.size > 1
     }
 
     data class KafkaProducerClass(

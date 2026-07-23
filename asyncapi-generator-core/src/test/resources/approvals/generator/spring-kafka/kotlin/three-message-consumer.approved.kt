@@ -26,6 +26,23 @@ import org.springframework.validation.annotation.Validated
  * Kafka metadata parameters use [KafkaHeaders], provided by Spring Kafka.
  * See [KafkaHeaders] for the metadata constants available in the application's
  * Spring Kafka version.
+ *
+ * This channel declares multiple message types. Add `@KafkaListener` to the
+ * implementation class and use `@KafkaHandler` methods to dispatch records by
+ * the converted payload's runtime type. Each handler must therefore use a
+ * distinct payload type.
+ *
+ * Every generated method must be implemented. Applications that intentionally
+ * consume only a subset of the declared messages should configure a
+ * `RecordFilterStrategy` for the listener and explicitly implement the
+ * remaining methods. No default no-op methods are generated, so ignoring a
+ * message type remains an explicit application decision.
+ *
+ * Filtered records are not delivered to a handler. Their acknowledgement and
+ * offset behavior is controlled by the application's listener container and
+ * filter configuration. Filters should distinguish expected ignored messages
+ * from unknown messages so new or malformed message types are not silently
+ * discarded.
  */
 @Validated
 interface MyAccountLifecycleConsumer {
