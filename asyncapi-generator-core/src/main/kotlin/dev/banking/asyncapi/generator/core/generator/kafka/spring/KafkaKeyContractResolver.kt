@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
@@ -18,10 +19,12 @@ internal object KafkaKeyContractResolver {
     fun resolve(
         messageName: String,
         schema: SchemaInterface?,
+        modelPackage: String? = null,
     ): KafkaKeyContract? {
         if (schema == null) return null
 
-        val resolvedSchema = schema.resolve(messageName)
+        val resolved = KafkaKeySchemaResolver.resolve(messageName, schema)
+        val resolvedSchema = resolved.schema
         if (resolvedSchema.type.hasMultipleNonNullTypes()) {
             throw UnsupportedKafkaKeySchema(
                 messageName = messageName,
@@ -35,6 +38,18 @@ internal object KafkaKeyContractResolver {
                 "integer" -> resolveInteger(resolvedSchema)
                 "number" -> resolveNumber(resolvedSchema)
                 "boolean" -> KafkaKeyType(javaTypeName = "Boolean", kotlinTypeName = "Boolean")
+                "object" -> {
+                    val modelName =
+                        requireNotNull(resolved.modelName) {
+                            "Object Kafka key model name was not resolved for '$messageName'"
+                        }
+                    KafkaKeyType(
+                        javaTypeName = modelName,
+                        kotlinTypeName = modelName,
+                        importName = modelPackage?.let { "$it.$modelName" },
+                        isModel = true,
+                    )
+                }
                 else ->
                     throw UnsupportedKafkaKeySchema(
                         messageName = messageName,
@@ -48,29 +63,9 @@ internal object KafkaKeyContractResolver {
             kotlinTypeName = keyType.kotlinTypeName,
             importName = keyType.importName,
             nullable = resolvedSchema.nullable == true || resolvedSchema.type.isTypeNullable(),
+            isModel = keyType.isModel,
         )
     }
-
-    private fun SchemaInterface.resolve(messageName: String): Schema =
-        when (this) {
-            is SchemaInterface.SchemaInline -> schema
-            is SchemaInterface.SchemaReference ->
-                reference.model as? Schema
-                    ?: throw UnsupportedKafkaKeySchema(
-                        messageName = messageName,
-                        schemaType = "unresolved schema reference '${reference.ref}'",
-                    )
-            is SchemaInterface.BooleanSchema ->
-                throw UnsupportedKafkaKeySchema(
-                    messageName = messageName,
-                    schemaType = "boolean schema",
-                )
-            is SchemaInterface.MultiFormatSchemaInline ->
-                throw UnsupportedKafkaKeySchema(
-                    messageName = messageName,
-                    schemaType = "multi-format schema '${multiFormatSchema.schemaFormat}'",
-                )
-        }
 
     private fun resolveString(schema: Schema): KafkaKeyType =
         when (schema.format) {
@@ -116,10 +111,12 @@ internal data class KafkaKeyContract(
     val kotlinTypeName: String,
     val importName: String? = null,
     val nullable: Boolean = false,
+    val isModel: Boolean = false,
 )
 
 private data class KafkaKeyType(
     val javaTypeName: String,
     val kotlinTypeName: String,
     val importName: String? = null,
+    val isModel: Boolean = false,
 )

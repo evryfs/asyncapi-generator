@@ -1,8 +1,8 @@
 package com.example.account.client.consumer
 
+import com.example.account.model.MyAccountKey
 import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
-import java.util.UUID
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.Payload
@@ -34,7 +34,7 @@ import org.springframework.validation.annotation.Validated
  *     override fun listen(
  *         payload: MyAccountUpdatedPayload,
  *         receivedTopic: String,
- *         receivedKey: UUID,
+ *         receivedKey: MyAccountKey,
  *         X_EXAMPLE_CORRELATION_ID: String,
  *         X_EXAMPLE_SOURCE_SYSTEM: String?,
  *     ) {
@@ -69,7 +69,7 @@ interface MyAccountUpdatedConsumer {
      *
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [receivedKey] Unique account identifier used as the Kafka record key.
+     * @param [receivedKey] Identifies an account within an institution.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
@@ -83,7 +83,8 @@ interface MyAccountUpdatedConsumer {
         receivedTopic: String,
 
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true)
-        receivedKey: UUID,
+        @Valid
+        receivedKey: MyAccountKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,

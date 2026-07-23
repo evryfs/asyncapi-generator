@@ -1,12 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -92,17 +90,32 @@ class KafkaKeyContractResolverTest {
     }
 
     @Test
-    fun `rejects unsupported object key schema`() {
-        val exception =
-            assertFailsWith<UnsupportedKafkaKeySchema> {
+    fun `resolves inline object key schema to generated model type`() {
+        val schema =
+            Schema(
+                type = "object",
+                description = "Composite account key.",
+                properties =
+                    mapOf(
+                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+            )
+
+        val result =
+            requireNotNull(
                 KafkaKeyContractResolver.resolve(
                     messageName = "AccountUpdated",
-                    schema = SchemaInterface.SchemaInline(Schema(type = "object")),
-                )
-            }
+                    schema = SchemaInterface.SchemaInline(schema),
+                    modelPackage = "com.example.account.model",
+                ),
+            )
 
-        assertTrue(exception.message.orEmpty().contains("message 'AccountUpdated'"))
-        assertTrue(exception.message.orEmpty().contains("unsupported schema type 'object'"))
+        assertEquals(schema, result.schema)
+        assertEquals("AccountUpdatedKey", result.javaTypeName)
+        assertEquals("AccountUpdatedKey", result.kotlinTypeName)
+        assertEquals("com.example.account.model.AccountUpdatedKey", result.importName)
+        assertTrue(result.isModel)
     }
 
     private data class ExpectedKeyType(

@@ -1,6 +1,7 @@
 package com.example.account.client.consumer
 
 import com.example.account.model.MyAccountClosedPayload
+import com.example.account.model.MyAccountClosureKey
 import com.example.account.model.MyAccountCreatedPayload
 import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
@@ -104,7 +105,7 @@ interface MyAccountLifecycleConsumer {
      *
      * @param [payload] Details about a closed account.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [receivedKey] Indicates the account-key partition group.
+     * @param [receivedKey] Identifies a particular account closure.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
@@ -117,8 +118,9 @@ interface MyAccountLifecycleConsumer {
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
         receivedTopic: String,
 
-        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        receivedKey: Boolean?,
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = true)
+        @Valid
+        receivedKey: MyAccountClosureKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,

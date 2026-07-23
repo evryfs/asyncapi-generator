@@ -27,7 +27,7 @@ components:
       bindings:
         kafka:
           key:
-            $ref: './key-schemas.yaml#/myAccountId'
+            $ref: './key-schemas.yaml#/myAccountKey'
           bindingVersion: '0.5.0'
       headers:
         $ref: '#/components/schemas/MessageHeaders'

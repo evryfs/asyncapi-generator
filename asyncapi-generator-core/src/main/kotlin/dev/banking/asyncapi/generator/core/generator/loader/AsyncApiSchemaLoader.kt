@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.loader
 
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
+import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -51,6 +53,28 @@ object AsyncApiSchemaLoader {
                 if (!collectedSchemas.containsKey(schemaName)) {
                     collectedSchemas[schemaName] = inlinePayload.schema
                 }
+            }
+        }
+
+        componentNode?.messages?.forEach { (messageKey, messageInterface) ->
+            collectKafkaKeySchema(
+                messageKey = messageKey,
+                messageInterface = messageInterface,
+                collectedSchemas = collectedSchemas,
+            )
+        }
+        asyncApiDocument.channels?.forEach { (_, channelInterface) ->
+            val channel =
+                when (channelInterface) {
+                    is ChannelInterface.ChannelInline -> channelInterface.channel
+                    is ChannelInterface.ChannelReference -> channelInterface.reference.model as? Channel
+                } ?: return@forEach
+            channel.messages?.forEach { (messageKey, messageInterface) ->
+                collectKafkaKeySchema(
+                    messageKey = messageKey,
+                    messageInterface = messageInterface,
+                    collectedSchemas = collectedSchemas,
+                )
             }
         }
         return collectedSchemas
@@ -173,7 +197,33 @@ object AsyncApiSchemaLoader {
         message: Message,
         messageKey: String,
     ): String {
-        val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
+        val baseName = messageBaseName(message, messageKey)
         return if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
     }
+
+    private fun collectKafkaKeySchema(
+        messageKey: String,
+        messageInterface: MessageInterface,
+        collectedSchemas: MutableMap<String, Schema>,
+    ) {
+        val message =
+            when (messageInterface) {
+                is MessageInterface.MessageInline -> messageInterface.message
+                is MessageInterface.MessageReference -> messageInterface.reference.model as? Message
+            } ?: return
+        val keySchema = message.kafkaKeySchema() ?: return
+        val keyModel =
+            KafkaKeySchemaResolver.resolveObjectModelOrNull(
+                messageName = messageBaseName(message, messageKey),
+                schema = keySchema,
+            ) ?: return
+
+        collectedSchemas.putIfAbsent(keyModel.name, keyModel.schema)
+    }
+
+    private fun messageBaseName(
+        message: Message,
+        messageKey: String,
+    ): String =
+        MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
 }

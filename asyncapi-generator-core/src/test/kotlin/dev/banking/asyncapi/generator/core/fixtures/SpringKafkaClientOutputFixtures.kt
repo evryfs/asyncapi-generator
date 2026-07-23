@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
@@ -12,6 +14,7 @@ import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.listDirectoryEntries
+import kotlin.io.path.nameWithoutExtension
 import kotlin.io.path.readText
 
 /**
@@ -31,6 +34,7 @@ internal class SpringKafkaClientOutputFixtures(
         outputDirectory: Path,
         validationAnnotations: ClientValidationAnnotations = defaultValidationAnnotations,
         topicParameterProperties: TopicParameterProperties = defaultTopicParameterProperties,
+        javaModelType: JavaModelType = JavaModelType.CLASS,
     ): GeneratedSpringKafkaContracts {
         generator.generate(
             asyncApiDocument = bundlerFixtures.bundledDocument(contractPath),
@@ -41,6 +45,11 @@ internal class SpringKafkaClientOutputFixtures(
                         GeneratorOutputConfiguration(
                             sourceOutputDirectory = outputDirectory.toFile(),
                             resourceOutputDirectory = outputDirectory.resolve("resources").toFile(),
+                        ),
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = MODEL_PACKAGE,
+                            javaModelType = javaModelType,
                         ),
                     clients =
                         listOf(
@@ -63,6 +72,7 @@ internal class SpringKafkaClientOutputFixtures(
         return GeneratedSpringKafkaContracts(
             producers = readSources(packageDirectory.resolve("producer"), extension),
             consumers = readSources(packageDirectory.resolve("consumer"), extension),
+            models = readNamedSources(outputDirectory.resolve(MODEL_PACKAGE.replace('.', '/')), extension),
         )
     }
 
@@ -96,6 +106,16 @@ internal class SpringKafkaClientOutputFixtures(
             .sortedBy(Path::toString)
             .map(Path::readText)
 
+    private fun readNamedSources(
+        directory: Path,
+        extension: String,
+    ): Map<String, String> =
+        directory
+            .listDirectoryEntries()
+            .filter { path -> path.isRegularFile() && path.extension == extension }
+            .sortedBy(Path::toString)
+            .associate { path -> path.nameWithoutExtension to path.readText() }
+
     internal companion object {
         const val CLIENT_PACKAGE = "com.example.account.client"
         const val MODEL_PACKAGE = "com.example.account.model"
@@ -108,6 +128,7 @@ internal class SpringKafkaClientOutputFixtures(
 internal data class GeneratedSpringKafkaContracts(
     val producers: List<String>,
     val consumers: List<String>,
+    val models: Map<String, String>,
 ) {
     fun singleProducer(): String =
         producers.singleOrNull()
@@ -116,4 +137,8 @@ internal data class GeneratedSpringKafkaContracts(
     fun singleConsumer(): String =
         consumers.singleOrNull()
             ?: error("Expected one generated consumer contract, found ${consumers.size}")
+
+    fun model(name: String): String =
+        models[name]
+            ?: error("Expected generated model '$name', found ${models.keys.sorted()}")
 }

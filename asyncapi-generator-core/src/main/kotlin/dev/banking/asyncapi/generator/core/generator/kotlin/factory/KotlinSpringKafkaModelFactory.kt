@@ -44,7 +44,11 @@ class KotlinSpringKafkaModelFactory(
         val payloads = channel.payloads()
         val keyContracts =
             payloads.associateWith { payload ->
-                KafkaKeyContractResolver.resolve(payload.messageName, payload.keySchema)
+                KafkaKeyContractResolver.resolve(
+                    messageName = payload.messageName,
+                    schema = payload.keySchema,
+                    modelPackage = modelPackage,
+                )
             }
         val topicAddress =
             KafkaTopicAddress.from(
@@ -308,7 +312,13 @@ class KotlinSpringKafkaModelFactory(
             required = !nullable,
             annotations =
                 constraintMapper.buildAnnotations(schema)
-                    .map { annotation -> annotation.replace("@field:", "@") },
+                    .map { annotation -> annotation.replace("@field:", "@") } +
+                    listOfNotNull(
+                        validationAnnotations.payloadParameter
+                            ?.simpleName
+                            ?.takeIf { isModel }
+                            ?.let { "@$it" },
+                    ),
         )
     }
 

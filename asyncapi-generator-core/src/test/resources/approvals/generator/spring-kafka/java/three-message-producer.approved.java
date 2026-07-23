@@ -1,6 +1,7 @@
 package com.example.account.client.producer;
 
 import com.example.account.model.MyAccountClosedPayload;
+import com.example.account.model.MyAccountClosureKey;
 import com.example.account.model.MyAccountCreatedPayload;
 import com.example.account.model.MyAccountUpdatedPayload;
 import jakarta.validation.Valid;
@@ -56,7 +57,7 @@ public interface MyAccountLifecycleProducer {
 
     /**
      * @param payload Details about a closed account.
-     * @param messageKey Indicates the account-key partition group.
+     * @param messageKey Identifies a particular account closure.
      * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
@@ -65,7 +66,7 @@ public interface MyAccountLifecycleProducer {
      */
     CompletableFuture<RecordMetadata> sendMyAccountClosed(
         @Payload @Valid MyAccountClosedPayload payload,
-        @Nullable Boolean messageKey,
+        @Valid @NotNull MyAccountClosureKey messageKey,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
     );

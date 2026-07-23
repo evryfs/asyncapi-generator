@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -122,6 +123,55 @@ class SpringKafkaClientApprovalTest {
                     scenario = "three-message-consumer",
                 )
             },
+        )
+    }
+
+    @Test
+    fun approves_generated_kotlin_object_key_model() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("kotlin-object-key-model"),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.model("MyAccountKey"),
+            format = GeneratorApprovalFormat.KOTLIN,
+            scenario = "spring-kafka-object-key-model",
+        )
+    }
+
+    @Test
+    fun approves_generated_java_object_key_class() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-object-key-class"),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.model("MyAccountKey"),
+            format = GeneratorApprovalFormat.JAVA,
+            scenario = "spring-kafka-object-key-class",
+        )
+    }
+
+    @Test
+    fun approves_generated_java_object_key_record() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-object-key-record"),
+                javaModelType = JavaModelType.RECORD,
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.model("MyAccountKey"),
+            format = GeneratorApprovalFormat.JAVA,
+            scenario = "spring-kafka-object-key-record",
         )
     }
 }

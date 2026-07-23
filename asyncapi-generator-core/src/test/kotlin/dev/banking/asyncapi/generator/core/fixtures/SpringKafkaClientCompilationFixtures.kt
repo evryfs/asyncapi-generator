@@ -20,6 +20,7 @@ internal class SpringKafkaClientCompilationFixtures(
         topicAddressConstantName: String,
         payloadName: String,
         workspace: Path,
+        keyModelName: String? = null,
     ) {
         compiler.compile(
             artifacts =
@@ -29,16 +30,6 @@ internal class SpringKafkaClientCompilationFixtures(
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
                                 "$contractName.kt",
                         content = consumerSource,
-                    ),
-                    kotlinSource(
-                        relativePath =
-                            "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.kt",
-                        content =
-                            """
-                            package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE}
-
-                            class $payloadName
-                            """.trimIndent(),
                     ),
                     kotlinSource(
                         relativePath = "org/springframework/kafka/support/KafkaHeaders.kt",
@@ -83,7 +74,19 @@ internal class SpringKafkaClientCompilationFixtures(
                             }
                             """.trimIndent(),
                     ),
-                ),
+                ) +
+                    (listOf(payloadName) + listOfNotNull(keyModelName)).map { modelName ->
+                        kotlinSource(
+                            relativePath =
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$modelName.kt",
+                            content =
+                                """
+                                package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE}
+
+                                class $modelName
+                                """.trimIndent(),
+                        )
+                    },
             workspace = workspace,
         )
     }
@@ -94,6 +97,7 @@ internal class SpringKafkaClientCompilationFixtures(
         topicAddressConstantName: String,
         payloadName: String,
         workspace: Path,
+        keyModelName: String? = null,
     ) {
         javaCompiler.compile(
             artifacts =
@@ -103,16 +107,6 @@ internal class SpringKafkaClientCompilationFixtures(
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
                                 "$contractName.java",
                         content = consumerSource,
-                    ),
-                    javaSource(
-                        relativePath =
-                            "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.java",
-                        content =
-                            """
-                            package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE};
-
-                            public final class $payloadName {}
-                            """.trimIndent(),
                     ),
                     javaSource(
                         relativePath = "org/springframework/kafka/support/KafkaHeaders.java",
@@ -181,7 +175,19 @@ internal class SpringKafkaClientCompilationFixtures(
                             }
                             """.trimIndent(),
                     ),
-                ),
+                ) +
+                    (listOf(payloadName) + listOfNotNull(keyModelName)).map { modelName ->
+                        javaSource(
+                            relativePath =
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$modelName.java",
+                            content =
+                                """
+                                package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE};
+
+                                public final class $modelName {}
+                                """.trimIndent(),
+                        )
+                    },
             workspace = workspace,
         )
     }
@@ -193,6 +199,7 @@ internal class SpringKafkaClientCompilationFixtures(
         consumerName: String,
         payloadNames: List<String>,
         workspace: Path,
+        keyModelNames: List<String> = emptyList(),
     ) {
         compiler.compile(
             artifacts =
@@ -260,15 +267,15 @@ internal class SpringKafkaClientCompilationFixtures(
                             """.trimIndent(),
                     ),
                 ) +
-                    payloadNames.map { payloadName ->
+                    (payloadNames + keyModelNames).distinct().map { modelName ->
                         kotlinSource(
                             relativePath =
-                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.kt",
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$modelName.kt",
                             content =
                                 """
                                 package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE}
 
-                                class $payloadName
+                                class $modelName
                                 """.trimIndent(),
                         )
                     },
@@ -283,6 +290,7 @@ internal class SpringKafkaClientCompilationFixtures(
         consumerName: String,
         payloadNames: List<String>,
         workspace: Path,
+        keyModelNames: List<String> = emptyList(),
     ) {
         javaCompiler.compile(
             artifacts =
@@ -358,15 +366,15 @@ internal class SpringKafkaClientCompilationFixtures(
                         name = "Nullable",
                     ),
                 ) +
-                    payloadNames.map { payloadName ->
+                    (payloadNames + keyModelNames).distinct().map { modelName ->
                         javaSource(
                             relativePath =
-                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.java",
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$modelName.java",
                             content =
                                 """
                                 package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE};
 
-                                public final class $payloadName {}
+                                public final class $modelName {}
                                 """.trimIndent(),
                         )
                     },

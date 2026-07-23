@@ -45,7 +45,11 @@ class JavaSpringKafkaModelFactory(
         val payloads = channel.payloads()
         val keyContracts =
             payloads.associateWith { payload ->
-                KafkaKeyContractResolver.resolve(payload.messageName, payload.keySchema)
+                KafkaKeyContractResolver.resolve(
+                    messageName = payload.messageName,
+                    schema = payload.keySchema,
+                    modelPackage = modelPackage,
+                )
             }
         val topicAddress =
             KafkaTopicAddress.from(
@@ -344,6 +348,12 @@ class JavaSpringKafkaModelFactory(
     ): GeneratorItem.KeyParameter {
         val annotations =
             constraintMapper.buildAnnotations(schema) +
+                listOfNotNull(
+                    validationAnnotations.payloadParameter
+                        ?.simpleName
+                        ?.takeIf { isModel }
+                        ?.let { "@$it" },
+                ) +
                 if (nullable) "@Nullable" else "@NotNull"
         val defaultDescription =
             if (consumer && nullable) {

@@ -32,6 +32,7 @@ class SpringKafkaTopicAddressCompilationTest {
             contractName = "MyAccountUpdatedConsumer",
             topicAddressConstantName = "MY_ACCOUNT_UPDATED_TOPIC_ADDRESS",
             payloadName = "MyAccountUpdatedPayload",
+            keyModelName = "MyAccountKey",
             workspace = tempDir.resolve("compilation"),
         )
     }
@@ -51,6 +52,7 @@ class SpringKafkaTopicAddressCompilationTest {
             contractName = "MyAccountUpdatedConsumer",
             topicAddressConstantName = "MY_ACCOUNT_UPDATED_TOPIC_ADDRESS",
             payloadName = "MyAccountUpdatedPayload",
+            keyModelName = "MyAccountKey",
             workspace = tempDir.resolve("java-compilation"),
         )
     }
@@ -76,6 +78,7 @@ class SpringKafkaTopicAddressCompilationTest {
                     "MyAccountUpdatedPayload",
                     "MyAccountClosedPayload",
                 ),
+            keyModelNames = listOf("MyAccountClosureKey"),
             workspace = tempDir.resolve("mixed-kotlin-compilation"),
         )
     }
@@ -101,6 +104,7 @@ class SpringKafkaTopicAddressCompilationTest {
                     "MyAccountUpdatedPayload",
                     "MyAccountClosedPayload",
                 ),
+            keyModelNames = listOf("MyAccountClosureKey"),
             workspace = tempDir.resolve("mixed-java-compilation"),
         )
     }

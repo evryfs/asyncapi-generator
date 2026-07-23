@@ -52,10 +52,21 @@ components:
       bindings:
         kafka:
           key:
-            type:
-              - boolean
-              - 'null'
-            description: Indicates the account-key partition group.
+            title: My Account Closure Key
+            type: object
+            description: Identifies a particular account closure.
+            required:
+              - accountId
+              - closureSequence
+            properties:
+              accountId:
+                type: string
+                description: Identifier of the closed account.
+              closureSequence:
+                type: integer
+                format: int64
+                minimum: 1
+                description: Sequence number assigned to this closure.
           bindingVersion: '0.5.0'
       headers:
         $ref: '#/components/schemas/MessageHeaders'
