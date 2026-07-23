@@ -31,8 +31,10 @@ import {{.}};
  *     @KafkaListener(topics = {{name}}.{{topicAddressConstantName}})
  *     public void {{methodName}}(
  *             {{payloadType}} payload,
- *             String receivedTopic,
- *             String receivedKey{{#hasHeaders}},{{/hasHeaders}}
+ *             String receivedTopic{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+ *             {{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/keyParameter}}
 {{#headerProperties}}
  *             {{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
@@ -82,12 +84,14 @@ public interface {{name}} {
      *   {{.}}
 {{/payloadDescriptionTailLines}}
      * @param receivedTopic Kafka topic from which the record was received.
-{{#keyDescriptionFirstLine}}
-     * @param receivedKey {{.}}
-{{/keyDescriptionFirstLine}}
-{{#keyDescriptionTailLines}}
+{{#keyParameter}}
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{.}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
      *   {{.}}
-{{/keyDescriptionTailLines}}
+{{/descriptionTailLines}}
+{{/keyParameter}}
 {{#headerProperties}}
 {{#descriptionFirstLine}}
      * @param {{parameterName}} {{.}}
@@ -100,8 +104,10 @@ public interface {{name}} {
      */
     void {{methodName}}(
         @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload,
-        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) {{#requiredHeaderAnnotation}}@{{.}} {{/requiredHeaderAnnotation}}String receivedTopic,
-        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String receivedKey{{#hasHeaders}},{{/hasHeaders}}
+        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) {{#requiredHeaderAnnotation}}@{{.}} {{/requiredHeaderAnnotation}}String receivedTopic{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = {{required}}) {{#annotations}}{{{.}}} {{/annotations}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/keyParameter}}
 {{#headerProperties}}
         @Header(name = "{{{wireName}}}", required = {{required}}) {{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}

@@ -32,8 +32,10 @@ import {{{.}}}
  *     )
  *     override fun {{methodName}}(
  *         payload: {{payloadType}},
- *         receivedTopic: String,
- *         receivedKey: {{keyType}},
+ *         receivedTopic: String{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+ *         {{parameterName}}: {{typeName}}{{#hasHeaders}},{{/hasHeaders}}
+{{/keyParameter}}
 {{#headerProperties}}
  *         {{parameterName}}: {{typeName}},
 {{/headerProperties}}
@@ -80,12 +82,14 @@ interface {{name}} {
      *   {{{.}}}
 {{/payloadDescriptionTailLines}}
      * @param [receivedTopic] Kafka topic from which the record was received.
-{{#keyDescriptionFirstLine}}
-     * @param [receivedKey] {{{.}}}
-{{/keyDescriptionFirstLine}}
-{{#keyDescriptionTailLines}}
+{{#keyParameter}}
+{{#descriptionFirstLine}}
+     * @param [{{parameterName}}] {{{.}}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
      *   {{{.}}}
-{{/keyDescriptionTailLines}}
+{{/descriptionTailLines}}
+{{/keyParameter}}
 {{#headerProperties}}
 {{#descriptionFirstLine}}
      * @param [{{parameterName}}] {{{.}}}
@@ -104,10 +108,15 @@ interface {{name}} {
         payload: {{payloadType}},
 
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
-        receivedTopic: String,
+        receivedTopic: String{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
 
-        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        receivedKey: {{keyType}}{{#hasHeaders}},{{/hasHeaders}}
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = {{required}})
+{{#annotations}}
+        {{{.}}}
+{{/annotations}}
+        {{parameterName}}: {{typeName}}{{#hasHeaders}},{{/hasHeaders}}
+{{/keyParameter}}
 {{#hasHeaders}}
 
 {{/hasHeaders}}

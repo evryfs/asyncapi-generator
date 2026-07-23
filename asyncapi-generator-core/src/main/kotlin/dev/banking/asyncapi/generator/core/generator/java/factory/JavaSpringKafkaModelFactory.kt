@@ -5,9 +5,13 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.java.mapper.ConstraintMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderPropertyFactory
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContractResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
@@ -27,6 +31,8 @@ class JavaSpringKafkaModelFactory(
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
+    private val constraintMapper = ConstraintMapper()
+
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!channel.shouldGenerateClient()) {
             return emptyList()
@@ -37,6 +43,10 @@ class JavaSpringKafkaModelFactory(
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
         val payloads = channel.payloads()
+        val keyContracts =
+            payloads.associateWith { payload ->
+                KafkaKeyContractResolver.resolve(payload.messageName, payload.keySchema)
+            }
         val topicAddress =
             KafkaTopicAddress.from(
                 channelName = channel.channelName,
@@ -46,23 +56,21 @@ class JavaSpringKafkaModelFactory(
 
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
-            val imports =
-                (
-                    payloads.mapNotNull { payload -> payload.importName } +
-                        "jakarta.validation.constraints.NotNull" +
-                        "org.springframework.lang.Nullable" +
-                        "org.springframework.kafka.support.KafkaHeaders" +
-                        "org.springframework.messaging.handler.annotation.Header" +
-                        "org.springframework.messaging.handler.annotation.Payload" +
-                        listOfNotNull(
-                            validationAnnotations.clientContract?.value,
-                            validationAnnotations.payloadParameter?.value,
-                        )
-                )
-                    .distinct()
-                    .sorted()
             val methods =
                 payloads.map { payload ->
+                    val headerProperties =
+                        payload.headerProperties.mapIndexed { index, header ->
+                            GeneratorItem.HeaderProperty(
+                                wireName = header.wireName,
+                                parameterName = header.parameterName,
+                                typeName = "String",
+                                description = header.consumerDescription(),
+                                required = header.required,
+                                requiredAnnotation = if (header.required) "@NotNull" else null,
+                                nullableAnnotation = if (header.required) null else "@Nullable",
+                                parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
+                            )
+                        }
                     GeneratorItem.ConsumerMethod(
                         messageName = payload.messageName,
                         methodName =
@@ -75,28 +83,42 @@ class JavaSpringKafkaModelFactory(
                         payloadDescription =
                             DocumentationUtils.toJavaDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
-                        keyDescription =
-                            listOf(
-                                "Kafka record key, or {@code null} when the record has no key.",
+                        keyParameter =
+                            keyContracts.getValue(payload)?.toJavaKeyParameter(
+                                parameterName = "receivedKey",
+                                consumer = true,
+                                hasFollowingParameters = headerProperties.isNotEmpty(),
                             ),
                         headerType = payload.headerTypeName,
-                        headerProperties =
-                            payload.headerProperties.mapIndexed { index, header ->
-                                GeneratorItem.HeaderProperty(
-                                    wireName = header.wireName,
-                                    parameterName = header.parameterName,
-                                    typeName = "String",
-                                    description = header.consumerDescription(),
-                                    required = header.required,
-                                    requiredAnnotation = if (header.required) "@NotNull" else null,
-                                    nullableAnnotation = if (header.required) null else "@Nullable",
-                                    parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
-                                )
-                            },
+                        headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                         requiredHeaderAnnotation = "NotNull",
                     )
                 }
+            val keyAnnotations =
+                methods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
+            val imports =
+                (
+                    payloads.mapNotNull { payload -> payload.importName } +
+                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        JakartaValidationImportResolver.resolve(keyAnnotations) +
+                        "jakarta.validation.constraints.NotNull" +
+                        "org.springframework.kafka.support.KafkaHeaders" +
+                        "org.springframework.messaging.handler.annotation.Header" +
+                        "org.springframework.messaging.handler.annotation.Payload" +
+                        listOfNotNull(
+                            "org.springframework.lang.Nullable".takeIf {
+                                methods.any { method ->
+                                    method.keyParameter?.required == false ||
+                                        method.headerProperties.any { header -> !header.required }
+                                }
+                            },
+                            validationAnnotations.clientContract?.value,
+                            validationAnnotations.payloadParameter?.value,
+                        )
+                )
+                    .distinct()
+                    .sorted()
             items.add(
                 GeneratorItem.KafkaConsumerInterface(
                     name = consumerName,
@@ -118,6 +140,24 @@ class JavaSpringKafkaModelFactory(
         if (channel.isProducer && generateProducers) {
             val sendMethods =
                 payloads.map { payload ->
+                    val headerProperties =
+                        payload.headerProperties.mapIndexed { index, header ->
+                            GeneratorItem.HeaderProperty(
+                                wireName = header.wireName,
+                                parameterName = header.parameterName,
+                                typeName = "String",
+                                description = header.producerDescription(),
+                                required = header.required,
+                                requiredAnnotation = if (header.required) "@NotNull" else null,
+                                nullableAnnotation = if (header.required) null else "@Nullable",
+                                parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
+                                bindingAnnotation =
+                                    "Header(" +
+                                        "name = \"${header.wireName.toJavaStringLiteral()}\", " +
+                                        "required = ${header.required}" +
+                                        ")",
+                            )
+                        }
                     GeneratorItem.SendMethod(
                         methodName =
                             payload.methodName(
@@ -130,34 +170,24 @@ class JavaSpringKafkaModelFactory(
                             DocumentationUtils.toJavaDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
                         payloadBindingAnnotation = "Payload",
-                        keyDescription = listOf("Kafka record key."),
-                        keyParameterName = "messageKey",
-                        keyType = "String",
+                        keyParameter =
+                            keyContracts.getValue(payload)?.toJavaKeyParameter(
+                                parameterName = "messageKey",
+                                consumer = false,
+                                hasFollowingParameters = headerProperties.isNotEmpty(),
+                            ),
                         headerType = payload.headerTypeName,
-                        headerProperties =
-                            payload.headerProperties.mapIndexed { index, header ->
-                                GeneratorItem.HeaderProperty(
-                                    wireName = header.wireName,
-                                    parameterName = header.parameterName,
-                                    typeName = "String",
-                                    description = header.producerDescription(),
-                                    required = header.required,
-                                    requiredAnnotation = if (header.required) "@NotNull" else null,
-                                    nullableAnnotation = if (header.required) null else "@Nullable",
-                                    parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
-                                    bindingAnnotation =
-                                        "Header(" +
-                                            "name = \"${header.wireName.toJavaStringLiteral()}\", " +
-                                            "required = ${header.required}" +
-                                            ")",
-                                )
-                            },
+                        headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
                 }
+            val keyAnnotations =
+                sendMethods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
             val imports =
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
+                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "java.util.concurrent.CompletableFuture" +
                         "org.apache.kafka.clients.producer.RecordMetadata" +
                         listOfNotNull(
@@ -171,7 +201,8 @@ class JavaSpringKafkaModelFactory(
                             },
                             "org.springframework.lang.Nullable".takeIf {
                                 sendMethods.any { method ->
-                                    method.headerProperties.any { header -> !header.required }
+                                    method.keyParameter?.required == false ||
+                                        method.headerProperties.any { header -> !header.required }
                                 }
                             },
                             "jakarta.validation.constraints.NotNull".takeIf {
@@ -196,8 +227,10 @@ class JavaSpringKafkaModelFactory(
                             "Producer contract for publishing messages to the {@code ${channel.topic}} topic.",
                         ) +
                             DocumentationUtils.toJavaDocLines(
-                                "The contract exposes the Kafka record key, message payload, and " +
-                                    "contract-defined headers as method parameters.",
+                                "The contract exposes message payloads and contract-defined headers as method parameters.",
+                            ) +
+                            DocumentationUtils.toJavaDocLines(
+                                "Messages with a bindings.kafka.key schema also expose a typed Kafka record key.",
                             ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toJavaStringLiteral(),
@@ -225,6 +258,7 @@ class JavaSpringKafkaModelFactory(
             messageName = msg.messageName,
             payloadType = type,
             payloadDescription = msg.schema.description,
+            keySchema = msg.keySchema,
             importName =
                 if (isPrimitive(type)) {
                     null
@@ -302,6 +336,32 @@ class JavaSpringKafkaModelFactory(
                 description?.let { value -> append(" $value") }
             },
         )
+
+    private fun KafkaKeyContract.toJavaKeyParameter(
+        parameterName: String,
+        consumer: Boolean,
+        hasFollowingParameters: Boolean,
+    ): GeneratorItem.KeyParameter {
+        val annotations =
+            constraintMapper.buildAnnotations(schema) +
+                if (nullable) "@Nullable" else "@NotNull"
+        val defaultDescription =
+            if (consumer && nullable) {
+                "Kafka record key, or {@code null} when the record has no key."
+            } else {
+                "Kafka record key."
+            }
+        return GeneratorItem.KeyParameter(
+            parameterName = parameterName,
+            typeName = javaTypeName,
+            description =
+                DocumentationUtils.toJavaDocLines(schema.description)
+                    .ifEmpty { listOf(defaultDescription) },
+            required = !nullable,
+            annotations = annotations,
+            parameterSuffix = if (hasFollowingParameters) "," else "",
+        )
+    }
 
     private fun AnalyzedChannel.shouldGenerateClient(): Boolean =
         (isConsumer && generateConsumers) || (isProducer && generateProducers)

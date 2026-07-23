@@ -24,6 +24,11 @@ components:
   messages:
     MyAccountUpdated:
       name: MyAccountUpdated
+      bindings:
+        kafka:
+          key:
+            $ref: './key-schemas.yaml#/myAccountId'
+          bindingVersion: '0.5.0'
       headers:
         $ref: '#/components/schemas/MessageHeaders'
       payload:

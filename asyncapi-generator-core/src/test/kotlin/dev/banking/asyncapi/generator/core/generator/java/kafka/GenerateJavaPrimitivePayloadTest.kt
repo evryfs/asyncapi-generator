@@ -50,9 +50,9 @@ class GenerateJavaPrimitivePayloadTest {
             consumerContent.contains("@Payload String payload"),
             "Consumer should expose the primitive payload type directly",
         )
-        assertTrue(
-            consumerContent.contains("@Nullable String receivedKey"),
-            "Consumer should expose the nullable Kafka record key"
+        assertFalse(
+            consumerContent.contains("receivedKey"),
+            "Consumer should omit a key not declared by the contract",
         )
         assertFalse(
             consumerContent.contains("ConsumerRecord"),
@@ -73,7 +73,7 @@ class GenerateJavaPrimitivePayloadTest {
             producerContent.contains("@Payload String payload"),
             "Producer should expose the primitive payload type directly",
         )
-        assertTrue(producerContent.contains("String messageKey"), "Producer should expose the Kafka record key")
+        assertFalse(producerContent.contains("messageKey"), "Producer should omit a key not declared by the contract")
         assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
         assertTrue(
             producerContent.contains("CompletableFuture<RecordMetadata> send("),

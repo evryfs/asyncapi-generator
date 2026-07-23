@@ -5,11 +5,15 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderPropertyFactory
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContractResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
+import dev.banking.asyncapi.generator.core.generator.kotlin.mapper.ConstraintMapper
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -26,6 +30,8 @@ class KotlinSpringKafkaModelFactory(
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
+    private val constraintMapper = ConstraintMapper()
+
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!channel.shouldGenerateClient()) {
             return emptyList()
@@ -36,6 +42,10 @@ class KotlinSpringKafkaModelFactory(
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
         val payloads = channel.payloads()
+        val keyContracts =
+            payloads.associateWith { payload ->
+                KafkaKeyContractResolver.resolve(payload.messageName, payload.keySchema)
+            }
         val topicAddress =
             KafkaTopicAddress.from(
                 channelName = channel.channelName,
@@ -45,21 +55,19 @@ class KotlinSpringKafkaModelFactory(
 
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
-            val imports =
-                (
-                    payloads.mapNotNull { payload -> payload.importName } +
-                        "org.springframework.kafka.support.KafkaHeaders" +
-                        "org.springframework.messaging.handler.annotation.Header" +
-                        "org.springframework.messaging.handler.annotation.Payload" +
-                        listOfNotNull(
-                            validationAnnotations.clientContract?.value,
-                            validationAnnotations.payloadParameter?.value,
-                        )
-                )
-                    .distinct()
-                    .sorted()
             val methods =
                 payloads.map { payload ->
+                    val headerProperties =
+                        payload.headerProperties.map { header ->
+                            GeneratorItem.HeaderProperty(
+                                wireName = header.wireName,
+                                parameterName = header.parameterName,
+                                typeName = header.kotlinTypeName(),
+                                description = header.consumerDescription(),
+                                required = header.required,
+                                defaultValue = if (header.required) null else "null",
+                            )
+                        }
                     GeneratorItem.ConsumerMethod(
                         messageName = payload.messageName,
                         methodName =
@@ -72,26 +80,33 @@ class KotlinSpringKafkaModelFactory(
                         payloadDescription =
                             toKDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
-                        keyDescription =
-                            listOf(
-                                "Kafka record key, or `null` when the record has no key.",
+                        keyParameter =
+                            keyContracts.getValue(payload)?.toKotlinKeyParameter(
+                                parameterName = "receivedKey",
+                                consumer = true,
                             ),
-                        keyType = "String?",
                         headerType = payload.headerTypeName,
-                        headerProperties =
-                            payload.headerProperties.map { header ->
-                                GeneratorItem.HeaderProperty(
-                                    wireName = header.wireName,
-                                    parameterName = header.parameterName,
-                                    typeName = header.kotlinTypeName(),
-                                    description = header.consumerDescription(),
-                                    required = header.required,
-                                    defaultValue = if (header.required) null else "null",
-                                )
-                            },
+                        headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
                 }
+            val keyAnnotations =
+                methods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
+            val imports =
+                (
+                    payloads.mapNotNull { payload -> payload.importName } +
+                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        JakartaValidationImportResolver.resolve(keyAnnotations) +
+                        "org.springframework.kafka.support.KafkaHeaders" +
+                        "org.springframework.messaging.handler.annotation.Header" +
+                        "org.springframework.messaging.handler.annotation.Payload" +
+                        listOfNotNull(
+                            validationAnnotations.clientContract?.value,
+                            validationAnnotations.payloadParameter?.value,
+                        )
+                )
+                    .distinct()
+                    .sorted()
             items.add(
                 GeneratorItem.KafkaConsumerInterface(
                     name = consumerName,
@@ -113,6 +128,22 @@ class KotlinSpringKafkaModelFactory(
         if (channel.isProducer && generateProducers) {
             val sendMethods =
                 payloads.map { payload ->
+                    val headerProperties =
+                        payload.headerProperties.map { header ->
+                            GeneratorItem.HeaderProperty(
+                                wireName = header.wireName,
+                                parameterName = header.parameterName,
+                                typeName = header.kotlinTypeName(),
+                                description = header.producerDescription(),
+                                required = header.required,
+                                defaultValue = if (header.required) null else "null",
+                                bindingAnnotation =
+                                    "Header(" +
+                                        "name = \"${header.wireName.toKotlinStringLiteral()}\", " +
+                                        "required = ${header.required}" +
+                                        ")",
+                            )
+                        }
                     GeneratorItem.SendMethod(
                         methodName =
                             payload.methodName(
@@ -125,32 +156,23 @@ class KotlinSpringKafkaModelFactory(
                             toKDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
                         payloadBindingAnnotation = "Payload",
-                        keyDescription = listOf("Kafka record key."),
-                        keyParameterName = "messageKey",
-                        keyType = "String",
+                        keyParameter =
+                            keyContracts.getValue(payload)?.toKotlinKeyParameter(
+                                parameterName = "messageKey",
+                                consumer = false,
+                            ),
                         headerType = payload.headerTypeName,
-                        headerProperties =
-                            payload.headerProperties.map { header ->
-                                GeneratorItem.HeaderProperty(
-                                    wireName = header.wireName,
-                                    parameterName = header.parameterName,
-                                    typeName = header.kotlinTypeName(),
-                                    description = header.producerDescription(),
-                                    required = header.required,
-                                    defaultValue = if (header.required) null else "null",
-                                    bindingAnnotation =
-                                        "Header(" +
-                                            "name = \"${header.wireName.toKotlinStringLiteral()}\", " +
-                                            "required = ${header.required}" +
-                                            ")",
-                                )
-                            },
+                        headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
                 }
+            val keyAnnotations =
+                sendMethods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
             val imports =
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
+                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "java.util.concurrent.CompletableFuture" +
                         "org.apache.kafka.clients.producer.RecordMetadata" +
                         listOfNotNull(
@@ -179,8 +201,10 @@ class KotlinSpringKafkaModelFactory(
                             "Producer contract for publishing messages to the `${channel.topic}` topic.",
                         ) +
                             toKDocLines(
-                                "The contract exposes the Kafka record key, message payload, and " +
-                                    "contract-defined headers as method parameters.",
+                                "The contract exposes message payloads and contract-defined headers as method parameters.",
+                            ) +
+                            toKDocLines(
+                                "Messages with a `bindings.kafka.key` schema also expose a typed Kafka record key.",
                             ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toKotlinStringLiteral(),
@@ -208,6 +232,7 @@ class KotlinSpringKafkaModelFactory(
             messageName = msg.messageName,
             payloadType = type,
             payloadDescription = msg.schema.description,
+            keySchema = msg.keySchema,
             importName =
                 if (isPrimitive(type)) {
                     null
@@ -263,6 +288,29 @@ class KotlinSpringKafkaModelFactory(
                 description?.let { value -> append(" $value") }
             },
         )
+
+    private fun KafkaKeyContract.toKotlinKeyParameter(
+        parameterName: String,
+        consumer: Boolean,
+    ): GeneratorItem.KeyParameter {
+        val defaultDescription =
+            if (consumer && nullable) {
+                "Kafka record key, or `null` when the record has no key."
+            } else {
+                "Kafka record key."
+            }
+        return GeneratorItem.KeyParameter(
+            parameterName = parameterName,
+            typeName = kotlinTypeName + if (nullable) "?" else "",
+            description =
+                toKDocLines(schema.description)
+                    .ifEmpty { listOf(defaultDescription) },
+            required = !nullable,
+            annotations =
+                constraintMapper.buildAnnotations(schema)
+                    .map { annotation -> annotation.replace("@field:", "@") },
+        )
+    }
 
     private fun AnalyzedChannel.shouldGenerateClient(): Boolean =
         (isConsumer && generateConsumers) || (isProducer && generateProducers)

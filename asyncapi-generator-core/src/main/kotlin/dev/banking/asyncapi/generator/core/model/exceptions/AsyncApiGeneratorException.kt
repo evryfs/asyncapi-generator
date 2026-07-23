@@ -73,6 +73,20 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class UnsupportedKafkaKeySchema(
+        messageName: String,
+        schemaType: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for message '$messageName'.")
+                appendLine("The Kafka record key uses unsupported schema type '$schemaType'.")
+                appendLine("Generated Kafka key parameters currently support scalar string, integer, number, and boolean schemas.")
+                appendLine("Use a scalar bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedPayloadSchemaFormat(
         output: String,
         payloadName: String,

@@ -41,7 +41,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
         assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: RawEvent"))
-        assertTrue(consumerContent.contains("receivedKey: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("import $modelPackage.RawEvent"))
     }
@@ -80,7 +80,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
         assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: RawEventPayload"))
-        assertTrue(consumerContent.contains("receivedKey: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("import $modelPackage.RawEventPayload"))
     }

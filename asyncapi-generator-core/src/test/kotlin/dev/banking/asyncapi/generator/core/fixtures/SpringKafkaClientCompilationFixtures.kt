@@ -186,6 +186,194 @@ internal class SpringKafkaClientCompilationFixtures(
         )
     }
 
+    fun compileKotlinContracts(
+        producerSource: String,
+        consumerSource: String,
+        producerName: String,
+        consumerName: String,
+        payloadNames: List<String>,
+        workspace: Path,
+    ) {
+        compiler.compile(
+            artifacts =
+                listOf(
+                    kotlinSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/producer/" +
+                                "$producerName.kt",
+                        content = producerSource,
+                    ),
+                    kotlinSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
+                                "$consumerName.kt",
+                        content = consumerSource,
+                    ),
+                    kotlinSource(
+                        relativePath = "org/apache/kafka/clients/producer/RecordMetadata.kt",
+                        content =
+                            """
+                            package org.apache.kafka.clients.producer
+
+                            class RecordMetadata
+                            """.trimIndent(),
+                    ),
+                    kotlinSource(
+                        relativePath = "org/springframework/kafka/support/KafkaHeaders.kt",
+                        content =
+                            """
+                            package org.springframework.kafka.support
+
+                            object KafkaHeaders {
+                                const val RECEIVED_TOPIC: String = "kafka_receivedTopic"
+                                const val RECEIVED_KEY: String = "kafka_receivedMessageKey"
+                            }
+                            """.trimIndent(),
+                    ),
+                    kotlinSource(
+                        relativePath = "org/springframework/messaging/handler/annotation/MessageAnnotations.kt",
+                        content =
+                            """
+                            package org.springframework.messaging.handler.annotation
+
+                            @Target(AnnotationTarget.VALUE_PARAMETER)
+                            annotation class Header(
+                                val name: String,
+                                val required: Boolean = true,
+                            )
+
+                            @Target(AnnotationTarget.VALUE_PARAMETER)
+                            annotation class Payload
+                            """.trimIndent(),
+                    ),
+                    kotlinSource(
+                        relativePath = "jakarta/validation/constraints/NumericConstraints.kt",
+                        content =
+                            """
+                            package jakarta.validation.constraints
+
+                            @Target(AnnotationTarget.VALUE_PARAMETER)
+                            annotation class Min(val value: Long)
+
+                            @Target(AnnotationTarget.VALUE_PARAMETER)
+                            annotation class Max(val value: Long)
+                            """.trimIndent(),
+                    ),
+                ) +
+                    payloadNames.map { payloadName ->
+                        kotlinSource(
+                            relativePath =
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.kt",
+                            content =
+                                """
+                                package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE}
+
+                                class $payloadName
+                                """.trimIndent(),
+                        )
+                    },
+            workspace = workspace,
+        )
+    }
+
+    fun compileJavaContracts(
+        producerSource: String,
+        consumerSource: String,
+        producerName: String,
+        consumerName: String,
+        payloadNames: List<String>,
+        workspace: Path,
+    ) {
+        javaCompiler.compile(
+            artifacts =
+                listOf(
+                    javaSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/producer/" +
+                                "$producerName.java",
+                        content = producerSource,
+                    ),
+                    javaSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
+                                "$consumerName.java",
+                        content = consumerSource,
+                    ),
+                    javaSource(
+                        relativePath = "org/apache/kafka/clients/producer/RecordMetadata.java",
+                        content =
+                            """
+                            package org.apache.kafka.clients.producer;
+
+                            public final class RecordMetadata {}
+                            """.trimIndent(),
+                    ),
+                    javaSource(
+                        relativePath = "org/springframework/kafka/support/KafkaHeaders.java",
+                        content =
+                            """
+                            package org.springframework.kafka.support;
+
+                            public final class KafkaHeaders {
+                                public static final String RECEIVED_TOPIC = "kafka_receivedTopic";
+                                public static final String RECEIVED_KEY = "kafka_receivedMessageKey";
+                            }
+                            """.trimIndent(),
+                    ),
+                    javaAnnotation(
+                        relativePath = "org/springframework/messaging/handler/annotation/Header.java",
+                        packageName = "org.springframework.messaging.handler.annotation",
+                        name = "Header",
+                        members =
+                            """
+                            String name();
+                            boolean required() default true;
+                            """.trimIndent(),
+                    ),
+                    javaAnnotation(
+                        relativePath = "org/springframework/messaging/handler/annotation/Payload.java",
+                        packageName = "org.springframework.messaging.handler.annotation",
+                        name = "Payload",
+                    ),
+                    javaAnnotation(
+                        relativePath = "jakarta/validation/constraints/NotNull.java",
+                        packageName = "jakarta.validation.constraints",
+                        name = "NotNull",
+                    ),
+                    javaAnnotation(
+                        relativePath = "jakarta/validation/constraints/Min.java",
+                        packageName = "jakarta.validation.constraints",
+                        name = "Min",
+                        members = "long value();",
+                    ),
+                    javaAnnotation(
+                        relativePath = "jakarta/validation/constraints/Max.java",
+                        packageName = "jakarta.validation.constraints",
+                        name = "Max",
+                        members = "long value();",
+                    ),
+                    javaAnnotation(
+                        relativePath = "org/springframework/lang/Nullable.java",
+                        packageName = "org.springframework.lang",
+                        name = "Nullable",
+                    ),
+                ) +
+                    payloadNames.map { payloadName ->
+                        javaSource(
+                            relativePath =
+                                "${SpringKafkaClientOutputFixtures.MODEL_PACKAGE.replace('.', '/')}/$payloadName.java",
+                            content =
+                                """
+                                package ${SpringKafkaClientOutputFixtures.MODEL_PACKAGE};
+
+                                public final class $payloadName {}
+                                """.trimIndent(),
+                        )
+                    },
+            workspace = workspace,
+        )
+    }
+
     private fun kotlinSource(
         relativePath: String,
         content: String,

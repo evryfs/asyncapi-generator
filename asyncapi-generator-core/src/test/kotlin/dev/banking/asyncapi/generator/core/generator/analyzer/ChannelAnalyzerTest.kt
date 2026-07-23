@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -118,14 +120,41 @@ class ChannelAnalyzerTest {
     }
 
     @Test
+    fun `should preserve Kafka key schema from message binding`() {
+        val keySchema = Schema(type = "integer", format = "int64")
+        val channel = Channel(
+            messages = mapOf(
+                "AccountUpdated" to MessageInterface.MessageInline(
+                    Message(
+                        name = "AccountUpdated",
+                        payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                        bindings = kafkaKeyBinding(keySchema),
+                    ),
+                ),
+            ),
+        )
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info("Title", "1.0"),
+            channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
+        )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
+    }
+
+    @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
+        val keySchema = Schema(type = "integer", format = "int64")
         val channel = Channel(
             messages = mapOf(
                 "msg" to MessageInterface.MessageInline(
                     Message(
                         name = "MyMessage",
                         payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                        bindings = kafkaKeyBinding(keySchema),
                     ),
                 ),
             ),
@@ -143,6 +172,7 @@ class ChannelAnalyzerTest {
         assertEquals("MyMessage", multiFormatMessage.messageName)
         assertEquals("MyMessagePayload", multiFormatMessage.payloadName)
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), multiFormatMessage.keySchema)
     }
 
     @Test
@@ -182,5 +212,16 @@ class ChannelAnalyzerTest {
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema = mapOf("type" to "record", "name" to "UserCreated", "fields" to emptyList<Any>()),
+        )
+
+    private fun kafkaKeyBinding(schema: Schema): Map<String, BindingInterface> =
+        mapOf(
+            "kafka" to
+                BindingInterface.BindingInline(
+                    Binding(
+                        content = emptyMap(),
+                        kafkaKeySchema = SchemaInterface.SchemaInline(schema),
+                    ),
+                ),
         )
 }

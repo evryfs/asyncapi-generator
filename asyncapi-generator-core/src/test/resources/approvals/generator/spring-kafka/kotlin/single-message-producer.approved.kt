@@ -2,6 +2,7 @@ package com.example.account.client.producer
 
 import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
+import java.util.UUID
 import java.util.concurrent.CompletableFuture
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.messaging.handler.annotation.Header
@@ -10,7 +11,8 @@ import org.springframework.validation.annotation.Validated
 
 /**
  * Producer contract for publishing messages to the `my.accounts.{environment}.updated.v1` topic.
- * The contract exposes the Kafka record key, message payload, and contract-defined headers as method parameters.
+ * The contract exposes message payloads and contract-defined headers as method parameters.
+ * Messages with a `bindings.kafka.key` schema also expose a typed Kafka record key.
  */
 @Validated
 interface MyAccountUpdatedProducer {
@@ -21,7 +23,7 @@ interface MyAccountUpdatedProducer {
 
     /**
      * @param payload Details about an account update.
-     * @param messageKey Kafka record key.
+     * @param messageKey Unique account identifier used as the Kafka record key.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -33,7 +35,7 @@ interface MyAccountUpdatedProducer {
         @Valid
         payload: MyAccountUpdatedPayload,
 
-        messageKey: String,
+        messageKey: UUID,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,

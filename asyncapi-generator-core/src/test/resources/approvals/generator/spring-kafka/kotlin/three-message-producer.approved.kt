@@ -4,6 +4,8 @@ import com.example.account.model.MyAccountClosedPayload
 import com.example.account.model.MyAccountCreatedPayload
 import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import java.util.concurrent.CompletableFuture
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.springframework.messaging.handler.annotation.Header
@@ -12,7 +14,8 @@ import org.springframework.validation.annotation.Validated
 
 /**
  * Producer contract for publishing messages to the `my.accounts.{environment}.lifecycle.v1` topic.
- * The contract exposes the Kafka record key, message payload, and contract-defined headers as method parameters.
+ * The contract exposes message payloads and contract-defined headers as method parameters.
+ * Messages with a `bindings.kafka.key` schema also expose a typed Kafka record key.
  */
 @Validated
 interface MyAccountLifecycleProducer {
@@ -23,7 +26,6 @@ interface MyAccountLifecycleProducer {
 
     /**
      * @param payload Details about a newly created account.
-     * @param messageKey Kafka record key.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -35,8 +37,6 @@ interface MyAccountLifecycleProducer {
         @Valid
         payload: MyAccountCreatedPayload,
 
-        messageKey: String,
-
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
@@ -45,7 +45,7 @@ interface MyAccountLifecycleProducer {
 
     /**
      * @param payload Details about an account update.
-     * @param messageKey Kafka record key.
+     * @param messageKey Numeric identifier of the updated account.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -57,7 +57,9 @@ interface MyAccountLifecycleProducer {
         @Valid
         payload: MyAccountUpdatedPayload,
 
-        messageKey: String,
+        @Min(1L)
+        @Max(9999999999L)
+        messageKey: Long,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,
@@ -67,7 +69,7 @@ interface MyAccountLifecycleProducer {
 
     /**
      * @param payload Details about a closed account.
-     * @param messageKey Kafka record key.
+     * @param messageKey Indicates the account-key partition group.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -79,7 +81,7 @@ interface MyAccountLifecycleProducer {
         @Valid
         payload: MyAccountClosedPayload,
 
-        messageKey: String,
+        messageKey: Boolean?,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,

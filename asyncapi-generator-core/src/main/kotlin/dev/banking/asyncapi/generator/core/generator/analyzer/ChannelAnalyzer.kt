@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -104,6 +106,7 @@ class ChannelAnalyzer {
                     messageKey = name,
                     message = message,
                 )
+            val keySchema = message.kafkaKeySchema()
 
             when (val p = message.payload) {
                 is SchemaInterface.SchemaInline -> {
@@ -132,6 +135,7 @@ class ChannelAnalyzer {
                         messageName = baseName,
                         payloadTypeName = typeName,
                         schema = payloadSchema,
+                        keySchema = keySchema,
                         headers = headers,
                     ),
                 )
@@ -141,6 +145,7 @@ class ChannelAnalyzer {
                         messageName = baseName,
                         payloadName = typeName,
                         schema = multiFormatSchema,
+                        keySchema = keySchema,
                         headers = headers,
                     ),
                 )
@@ -151,6 +156,17 @@ class ChannelAnalyzer {
             messages = analyzedMessages,
             multiFormatMessages = analyzedMultiFormatMessages,
         )
+    }
+
+    private fun Message.kafkaKeySchema(): SchemaInterface? {
+        val binding =
+            when (val kafkaBinding = bindings?.get("kafka")) {
+                is BindingInterface.BindingInline -> kafkaBinding.binding
+                is BindingInterface.BindingReference -> kafkaBinding.reference.model as? Binding
+                null -> null
+            } ?: return null
+
+        return binding.kafkaKeySchema
     }
 
     private data class ResolvedMessages(

@@ -4,6 +4,8 @@ import com.example.account.model.MyAccountClosedPayload
 import com.example.account.model.MyAccountCreatedPayload
 import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.Payload
@@ -50,7 +52,6 @@ interface MyAccountLifecycleConsumer {
      *
      * @param [payload] Details about a newly created account.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [receivedKey] Kafka record key, or `null` when the record has no key.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
@@ -63,9 +64,6 @@ interface MyAccountLifecycleConsumer {
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
         receivedTopic: String,
 
-        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        receivedKey: String?,
-
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
@@ -77,7 +75,7 @@ interface MyAccountLifecycleConsumer {
      *
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [receivedKey] Kafka record key, or `null` when the record has no key.
+     * @param [receivedKey] Numeric identifier of the updated account.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
@@ -90,8 +88,10 @@ interface MyAccountLifecycleConsumer {
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
         receivedTopic: String,
 
-        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        receivedKey: String?,
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = true)
+        @Min(1L)
+        @Max(9999999999L)
+        receivedKey: Long,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,
@@ -104,7 +104,7 @@ interface MyAccountLifecycleConsumer {
      *
      * @param [payload] Details about a closed account.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [receivedKey] Kafka record key, or `null` when the record has no key.
+     * @param [receivedKey] Indicates the account-key partition group.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
@@ -118,7 +118,7 @@ interface MyAccountLifecycleConsumer {
         receivedTopic: String,
 
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        receivedKey: String?,
+        receivedKey: Boolean?,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
         X_EXAMPLE_CORRELATION_ID: String,

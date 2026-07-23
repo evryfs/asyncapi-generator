@@ -1,0 +1,13 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Kafka Key Binding Test
+  version: 1.0.0
+components:
+  messageBindings:
+    InvalidKafkaKey:
+      kafka:
+        key:
+          type: integer
+          minimum: 10
+          maximum: 1
+        bindingVersion: '0.5.0'

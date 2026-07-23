@@ -22,6 +22,13 @@ components:
       amqp:
         contentEncoding: gzip
         messageType: user.signup
+    accountUpdatedMessage:
+      kafka:
+        key:
+          type: integer
+          format: int64
+          description: Account identifier used as the Kafka record key.
+        bindingVersion: '0.5.0'
 
   serverBindings:
     myServerBinding:

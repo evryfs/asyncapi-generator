@@ -1,0 +1,4 @@
+myAccountId:
+  type: string
+  format: uuid
+  description: Unique account identifier used as the Kafka record key.

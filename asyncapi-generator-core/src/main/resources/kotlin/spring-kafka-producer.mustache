@@ -27,12 +27,14 @@ interface {{name}} {
 {{#payloadDescriptionTailLines}}
      * {{{.}}}
 {{/payloadDescriptionTailLines}}
-{{#keyDescriptionFirstLine}}
-     * @param {{keyParameterName}} {{{.}}}
-{{/keyDescriptionFirstLine}}
-{{#keyDescriptionTailLines}}
+{{#keyParameter}}
+{{#descriptionFirstLine}}
+     * @param {{parameterName}} {{{.}}}
+{{/descriptionFirstLine}}
+{{#descriptionTailLines}}
      * {{{.}}}
-{{/keyDescriptionTailLines}}
+{{/descriptionTailLines}}
+{{/keyParameter}}
 {{#headerProperties}}
 {{#descriptionFirstLine}}
      * @param {{parameterName}} {{{.}}}
@@ -51,9 +53,14 @@ interface {{name}} {
 {{#payloadParameterAnnotation}}
         @{{.}}
 {{/payloadParameterAnnotation}}
-        payload: {{payloadType}},
+        payload: {{payloadType}}{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
 
-        {{keyParameterName}}: {{keyType}},
+{{#annotations}}
+        {{{.}}}
+{{/annotations}}
+        {{parameterName}}: {{typeName}}{{#hasHeaders}},{{/hasHeaders}}
+{{/keyParameter}}
 {{#hasHeaders}}
 
 {{/hasHeaders}}

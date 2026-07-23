@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+
 /**
  * Payload signature model used by Spring Kafka client generators.
  */
@@ -8,6 +10,7 @@ data class KafkaPayload(
     val payloadType: String,
     val payloadDescription: String? = null,
     val importName: String? = null,
+    val keySchema: SchemaInterface? = null,
     val headerTypeName: String? = null,
     val headerImportName: String? = null,
     val headerProperties: List<KafkaHeaderProperty> = emptyList(),

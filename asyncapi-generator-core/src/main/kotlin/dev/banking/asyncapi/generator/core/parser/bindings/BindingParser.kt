@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 
 /**
  * Parses AsyncAPI binding objects from parser nodes.
@@ -16,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 class BindingParser(
     val asyncApiContext: AsyncApiContext,
 ) {
+    private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     fun parseMap(parserNode: ParserNode): Map<String, BindingInterface> = buildMap {
         val nodes = parserNode.extractNodes()
@@ -33,11 +35,19 @@ class BindingParser(
                 val content = node.coerce<Map<String, Any?>>()
                 BindingInterface.BindingInline(
                     Binding(
-                        content = content
+                        content = content,
+                        kafkaKeySchema = node.kafkaKeyNode()?.let(schemaParser::parseElement),
                     ).also { asyncApiContext.register(it, node) }
                 )
             }
             put(node.name, binding)
         }
     }
+
+    private fun ParserNode.kafkaKeyNode(): ParserNode? =
+        if (name == "kafka") {
+            optional("key")
+        } else {
+            optional("kafka")?.optional("key")
+        }
 }

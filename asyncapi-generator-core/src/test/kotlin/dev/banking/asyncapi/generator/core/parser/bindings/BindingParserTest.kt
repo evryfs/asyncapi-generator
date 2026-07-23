@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.parser.bindings
 
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -41,6 +42,23 @@ class BindingParserTest : ParserTestSupport() {
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
             .isEqualTo(userSignedUpMessageBinding())
+    }
+
+    @Test
+    fun `parse Kafka key schema from message binding`() {
+        val messageBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "messageBindings",
+        )
+
+        val bindings = parser.parseMap(messageBindingsNode)
+        val binding = (bindings.getValue("accountUpdatedMessage") as BindingInterface.BindingInline).binding
+        val keySchema = (binding.kafkaKeySchema as SchemaInterface.SchemaInline).schema
+
+        assertThat(keySchema.type).isEqualTo("integer")
+        assertThat(keySchema.format).isEqualTo("int64")
+        assertThat(keySchema.description).isEqualTo("Account identifier used as the Kafka record key.")
     }
 
     @Test
