@@ -61,6 +61,7 @@ class KotlinSpringKafkaModelFactory(
             val methods =
                 payloads.map { payload ->
                     GeneratorItem.ConsumerMethod(
+                        messageName = payload.messageName,
                         methodName =
                             payload.methodName(
                                 singleName = "listen",
@@ -71,7 +72,10 @@ class KotlinSpringKafkaModelFactory(
                         payloadDescription =
                             toKDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
-                        keyDescription = listOf("Kafka record key."),
+                        keyDescription =
+                            listOf(
+                                "Kafka record key, or `null` when the record has no key.",
+                            ),
                         keyType = "String?",
                         headerType = payload.headerTypeName,
                         headerProperties =
@@ -97,12 +101,9 @@ class KotlinSpringKafkaModelFactory(
                     packageName = consumerPackage,
                     description =
                         toKDocLines(
-                            "Consumer contract for handling messages from the `${channel.topic}` topic.",
-                        ) +
-                            toKDocLines(
-                                "The contract exposes the Kafka record key, message payload, and " +
-                                    "contract-defined headers as method parameters.",
-                            ),
+                            "Defines the Spring Kafka consumer contract for messages received from the " +
+                                "`${channel.topic}` AsyncAPI channel.",
+                        ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toKotlinStringLiteral(),
                     methods = methods,

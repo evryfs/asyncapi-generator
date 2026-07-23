@@ -51,7 +51,7 @@ class GenerateJavaPrimitivePayloadTest {
             "Consumer should expose the primitive payload type directly",
         )
         assertTrue(
-            consumerContent.contains("@Nullable String key"),
+            consumerContent.contains("@Nullable String receivedKey"),
             "Consumer should expose the nullable Kafka record key"
         )
         assertFalse(

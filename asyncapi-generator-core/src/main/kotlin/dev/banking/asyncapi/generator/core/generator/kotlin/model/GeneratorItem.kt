@@ -45,7 +45,9 @@ sealed interface GeneratorItem {
         val methods: List<ConsumerMethod>,
         val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
-    ) : GeneratorItem
+    ) : GeneratorItem {
+        val hasSingleMethod: Boolean get() = methods.size == 1
+    }
 
     data class KafkaProducerClass(
         override val name: String,
@@ -59,6 +61,7 @@ sealed interface GeneratorItem {
     ) : GeneratorItem
 
     data class ConsumerMethod(
+        val messageName: String,
         val methodName: String,
         val payloadType: String,
         val payloadDescription: List<String> = emptyList(),

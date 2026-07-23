@@ -40,7 +40,7 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
         assertTrue(consumerContent.contains("void listen("))
         assertTrue(consumerContent.contains("@NotNull Object payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
     }
 }

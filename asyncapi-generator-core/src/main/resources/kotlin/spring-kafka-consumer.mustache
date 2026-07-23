@@ -8,38 +8,90 @@ import {{{.}}}
 {{#description}}
  * {{{.}}}
 {{/description}}
+ *
+ * This interface does not register Kafka listeners. The application activates
+ * consumption by implementing this contract in a Spring bean and configuring
+ * `@KafkaListener` on the implementation.
+ *
+ * The generated parameter annotations define how Spring binds the message
+ * payload, Kafka record metadata, and any AsyncAPI-defined message headers.
+ *
+ * Kafka metadata parameters use [KafkaHeaders], provided by Spring Kafka.
+ * See [KafkaHeaders] for the metadata constants available in the application's
+ * Spring Kafka version.
+{{#hasSingleMethod}}
+ *
+ * Example implementation:
+ *
+ * ```kotlin
+ * @Component
+ * class {{name}}Impl : {{name}} {
+{{#methods}}
+ *     @KafkaListener(
+ *         topics = [{{name}}.{{topicAddressConstantName}}],
+ *     )
+ *     override fun {{methodName}}(
+ *         payload: {{payloadType}},
+ *         receivedTopic: String,
+ *         receivedKey: {{keyType}},
+{{#headerProperties}}
+ *         {{parameterName}}: {{typeName}},
+{{/headerProperties}}
+ *     ) {
+ *         // Process the message.
+ *     }
+{{/methods}}
+ * }
+ * ```
+{{/hasSingleMethod}}
  */
 {{#clientContractAnnotation}}
 @{{.}}
 {{/clientContractAnnotation}}
 interface {{name}} {
     companion object {
-        /** Spring-resolvable Kafka topic address declared by this AsyncAPI channel. */
+        /**
+         * Kafka topic address declared by this AsyncAPI channel, with channel parameters
+         * mapped to Spring property placeholders.
+         *
+         * Use this constant in `@KafkaListener(topics = [...])`.
+         *
+         * To inject the resolved topic address:
+         *
+         * ```kotlin
+         * class {{name}}Impl(
+         *     @param:Value({{name}}.{{topicAddressConstantName}})
+         *     private val topicAddress: String,
+         * )
+         * ```
+         */
         const val {{topicAddressConstantName}}: String = "{{{topicAddress}}}"
     }
 {{#methods}}
 
     /**
+     * Handles the `{{messageName}}` message received from this channel.
+     *
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
-     * @param payload {{{.}}}
+     * @param [payload] {{{.}}}
 {{/payloadDescriptionFirstLine}}
 {{#payloadDescriptionTailLines}}
-     * {{{.}}}
+     *   {{{.}}}
 {{/payloadDescriptionTailLines}}
-     * @param topic Kafka topic from which the record was received.
+     * @param [receivedTopic] Kafka topic from which the record was received.
 {{#keyDescriptionFirstLine}}
-     * @param key {{{.}}}
+     * @param [receivedKey] {{{.}}}
 {{/keyDescriptionFirstLine}}
 {{#keyDescriptionTailLines}}
-     * {{{.}}}
+     *   {{{.}}}
 {{/keyDescriptionTailLines}}
 {{#headerProperties}}
 {{#descriptionFirstLine}}
-     * @param {{parameterName}} {{{.}}}
+     * @param [{{parameterName}}] {{{.}}}
 {{/descriptionFirstLine}}
 {{#descriptionTailLines}}
-     * {{{.}}}
+     *   {{{.}}}
 {{/descriptionTailLines}}
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
@@ -52,10 +104,10 @@ interface {{name}} {
         payload: {{payloadType}},
 
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
-        topic: String,
+        receivedTopic: String,
 
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
-        key: {{keyType}}{{#hasHeaders}},{{/hasHeaders}}
+        receivedKey: {{keyType}}{{#hasHeaders}},{{/hasHeaders}}
 {{#hasHeaders}}
 
 {{/hasHeaders}}

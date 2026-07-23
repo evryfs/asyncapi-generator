@@ -47,13 +47,21 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
         assertFalse(consumerContent.contains("@Validated"))
         assertFalse(consumerContent.contains("import jakarta.validation.Valid;"))
-        assertTrue(consumerContent.contains("Consumer contract for handling messages from the {@code user.events.v1} topic."))
+        assertTrue(
+            consumerContent.contains(
+                "Defines the Spring Kafka consumer contract for messages received from the " +
+                    "{@code user.events.v1} AsyncAPI channel.",
+            ),
+        )
         assertTrue(consumerContent.contains("void listenUserSignedUp"))
         assertTrue(consumerContent.contains("@NotNull UserSignedUpPayload payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
-        assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
+        assertFalse(
+            consumerContent.lineSequence().any { line -> line.trimStart().startsWith("@KafkaListener") },
+            "Consumer should not be annotated",
+        )
     }
 
     @Test
@@ -80,7 +88,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("void listen("))
         assertTrue(consumerContent.contains("@NotNull UserSignupPayload payload"))
-        assertTrue(consumerContent.contains("@Nullable String key,"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey,"))
         assertTrue(consumerContent.contains("@Nullable String correlationId,"))
         assertTrue(consumerContent.contains("@Nullable String applicationInstanceId"))
         assertTrue(consumerContent.contains("@param correlationId Correlation ID set by application"))
@@ -142,7 +150,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("void listen("))
         assertTrue(consumerContent.contains("@NotNull UserSignupPayload payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("correlationId"))
         assertFalse(consumerContent.contains("applicationInstanceId"))
         assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
@@ -179,7 +187,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.avro.UserCreated;"))
         assertTrue(consumerContent.contains("@NotNull UserCreated payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.avro.UserCreated;"))
         assertTrue(producerContent.contains("@NotNull UserCreated payload"))
@@ -208,7 +216,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.external.avro.UserCreatedAvro;"))
         assertTrue(consumerContent.contains("@NotNull UserCreatedAvro payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro;"))
         assertTrue(producerContent.contains("@NotNull UserCreatedAvro payload"))
@@ -237,7 +245,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.protobuf.UserCreated;"))
         assertTrue(consumerContent.contains("@NotNull UserCreated payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated;"))
         assertTrue(producerContent.contains("@NotNull UserCreated payload"))
@@ -266,7 +274,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf;"))
         assertTrue(consumerContent.contains("@NotNull UserCreatedProtobuf payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("@Nullable String receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf;"))
         assertTrue(producerContent.contains("@NotNull UserCreatedProtobuf payload"))

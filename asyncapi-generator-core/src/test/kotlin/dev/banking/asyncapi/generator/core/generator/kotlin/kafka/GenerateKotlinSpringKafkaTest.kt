@@ -46,14 +46,22 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val consumerContent = consumerFile.readText()
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
         assertFalse(consumerContent.contains("@Validated"))
-        assertTrue(consumerContent.contains("Consumer contract for handling messages from the `user.events.v1` topic."))
+        assertTrue(
+            consumerContent.contains(
+                "Defines the Spring Kafka consumer contract for messages received from the `user.events.v1` " +
+                    "AsyncAPI channel.",
+            ),
+        )
         assertTrue(consumerContent.contains("fun listenUserSignedUp"))
         assertFalse(consumerContent.contains("@Valid"))
         assertTrue(consumerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
-        assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
+        assertFalse(
+            consumerContent.lineSequence().any { line -> line.trimStart().startsWith("@KafkaListener") },
+            "Consumer should not be annotated",
+        )
     }
 
     @Test
@@ -80,13 +88,13 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: UserSignupPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertTrue(consumerContent.contains("correlationId: String? = null"))
         assertTrue(consumerContent.contains("applicationInstanceId: String? = null"))
-        assertTrue(consumerContent.contains("@param correlationId Correlation ID set by application"))
+        assertTrue(consumerContent.contains("@param [correlationId] Correlation ID set by application"))
         assertTrue(
             consumerContent.contains(
-                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
+                "@param [applicationInstanceId] Unique identifier for a given instance of the publishing application",
             ),
         )
         assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
@@ -140,7 +148,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: UserSignupPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("correlationId:"))
         assertFalse(consumerContent.contains("applicationInstanceId:"))
         assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
@@ -177,7 +185,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(consumerContent.contains("payload: UserCreated"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
@@ -206,7 +214,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(consumerContent.contains("payload: UserCreatedAvro"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(producerContent.contains("payload: UserCreatedAvro"))
@@ -235,7 +243,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(consumerContent.contains("payload: UserCreated"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
@@ -264,7 +272,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
         assertTrue(consumerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(consumerContent.contains("payload: UserCreatedProtobuf"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertTrue(consumerContent.contains("receivedKey: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(producerContent.contains("payload: UserCreatedProtobuf"))

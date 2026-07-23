@@ -63,6 +63,7 @@ class JavaSpringKafkaModelFactory(
             val methods =
                 payloads.map { payload ->
                     GeneratorItem.ConsumerMethod(
+                        messageName = payload.messageName,
                         methodName =
                             payload.methodName(
                                 singleName = "listen",
@@ -73,7 +74,10 @@ class JavaSpringKafkaModelFactory(
                         payloadDescription =
                             DocumentationUtils.toJavaDocLines(payload.payloadDescription)
                                 .ifEmpty { listOf("Message payload.") },
-                        keyDescription = listOf("Kafka record key."),
+                        keyDescription =
+                            listOf(
+                                "Kafka record key, or {@code null} when the record has no key.",
+                            ),
                         headerType = payload.headerTypeName,
                         headerProperties =
                             payload.headerProperties.mapIndexed { index, header ->
@@ -99,12 +103,9 @@ class JavaSpringKafkaModelFactory(
                     packageName = consumerPackage,
                     description =
                         DocumentationUtils.toJavaDocLines(
-                            "Consumer contract for handling messages from the {@code ${channel.topic}} topic.",
-                        ) +
-                            DocumentationUtils.toJavaDocLines(
-                                "The contract exposes the Kafka record key, message payload, and " +
-                                    "contract-defined headers as method parameters.",
-                            ),
+                            "Defines the Spring Kafka consumer contract for messages received from the " +
+                                "{@code ${channel.topic}} AsyncAPI channel.",
+                        ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toJavaStringLiteral(),
                     methods = methods,
