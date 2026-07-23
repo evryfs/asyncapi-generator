@@ -99,11 +99,11 @@ public interface {{name}} {
 {{/hasParameterDocumentation}}
      */
     void {{methodName}}(
-        @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
-        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
+        @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload,
+        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) {{#requiredHeaderAnnotation}}@{{.}} {{/requiredHeaderAnnotation}}String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String receivedKey{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}
-        @Header(name = "{{{name}}}", required = {{required}}) {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+        @Header(name = "{{{wireName}}}", required = {{required}}) {{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
     );
 {{/methods}}

@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.util.concurrent.CompletableFuture;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.lang.Nullable;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -22,15 +21,17 @@ public interface MyAccountUpdatedProducer {
 
     /**
      * @param payload Details about an account update.
-     * @param key Kafka record key.
-     * @param correlationId Identifier used to correlate related messages.
-     * @param sourceSystem Optional name of the system that produced the message.
+     * @param messageKey Kafka record key.
+     * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
+     * Kafka record. Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
+     * Kafka record. Optional name of the system that produced the message.
      * @return future completed with Kafka record metadata after successful publication
      */
     CompletableFuture<RecordMetadata> send(
-        @Payload @Valid @NotNull MyAccountUpdatedPayload payload,
-        @Header(name = KafkaHeaders.KEY, required = true) @NotNull String key,
-        @Header(name = "correlationId", required = true) @NotNull String correlationId,
-        @Header(name = "sourceSystem", required = false) @Nullable String sourceSystem
+        @Payload @Valid MyAccountUpdatedPayload payload,
+        String messageKey,
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
     );
 }

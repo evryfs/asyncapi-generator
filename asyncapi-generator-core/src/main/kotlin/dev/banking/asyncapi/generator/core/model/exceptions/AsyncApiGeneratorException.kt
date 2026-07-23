@@ -42,6 +42,37 @@ sealed class AsyncApiGeneratorException(
         }
     }
 
+    class InvalidKafkaHeaderName(
+        headerContractName: String,
+        wireName: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Kafka header generation failed for '$headerContractName'.")
+                appendLine("Header '$wireName' cannot be represented as a Java or Kotlin parameter.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class KafkaHeaderParameterNameCollision(
+        headerContractName: String,
+        wireNames: List<String>,
+        parameterName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Kafka header generation failed for '$headerContractName'.")
+                appendLine(
+                    "Header names collide after source-parameter normalization: " +
+                        "${wireNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} -> '$parameterName'",
+                )
+                appendLine("Use distinct header names that remain unique after non-identifier characters are replaced with underscores.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedPayloadSchemaFormat(
         output: String,
         payloadName: String,

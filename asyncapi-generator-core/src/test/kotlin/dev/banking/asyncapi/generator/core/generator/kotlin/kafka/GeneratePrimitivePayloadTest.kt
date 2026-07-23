@@ -67,7 +67,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             producerContent.contains("payload: String"),
             "Producer should expose the primitive payload type directly",
         )
-        assertTrue(producerContent.contains("key: String"), "Producer should expose the Kafka record key")
+        assertTrue(producerContent.contains("messageKey: String"), "Producer should expose the Kafka record key")
         assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
         assertTrue(
             producerContent.contains("CompletableFuture<RecordMetadata>"),

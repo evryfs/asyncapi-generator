@@ -28,7 +28,7 @@ interface {{name}} {
      * {{{.}}}
 {{/payloadDescriptionTailLines}}
 {{#keyDescriptionFirstLine}}
-     * @param key {{{.}}}
+     * @param {{keyParameterName}} {{{.}}}
 {{/keyDescriptionFirstLine}}
 {{#keyDescriptionTailLines}}
      * {{{.}}}
@@ -45,19 +45,22 @@ interface {{name}} {
      * @return Future completed with Kafka record metadata after successful publication.
      */
     fun {{methodName}}(
-        @Payload
+{{#payloadBindingAnnotation}}
+        @{{{.}}}
+{{/payloadBindingAnnotation}}
 {{#payloadParameterAnnotation}}
         @{{.}}
 {{/payloadParameterAnnotation}}
         payload: {{payloadType}},
 
-        @Header(name = KafkaHeaders.KEY, required = true)
-        key: String,
+        {{keyParameterName}}: {{keyType}},
 {{#hasHeaders}}
 
 {{/hasHeaders}}
 {{#headerProperties}}
-        @Header(name = "{{{name}}}", required = {{required}})
+{{#bindingAnnotation}}
+        @{{{.}}}
+{{/bindingAnnotation}}
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
     ): CompletableFuture<RecordMetadata>

@@ -164,8 +164,16 @@ class SpringKafkaClientGenerationTest {
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract;"))
             assertTrue(content.contains("import com.example.validation.ValidPayload;"))
             assertTrue(content.contains("@ValidatedClientContract"))
-            assertTrue(content.contains("@ValidPayload @NotNull Object payload"))
+            assertTrue(content.contains("@ValidPayload Object payload"))
+            assertFalse(content.contains("@ValidPayload @NotNull Object payload"))
         }
+        assertFalse(producerContent.contains("jakarta.validation.constraints.NotNull"))
+        assertTrue(consumerContent.contains("import jakarta.validation.constraints.NotNull;"))
+        assertTrue(
+            consumerContent.contains(
+                "@Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic",
+            ),
+        )
     }
 
     @Test

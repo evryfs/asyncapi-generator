@@ -32,12 +32,12 @@ components:
     MessageHeaders:
       type: object
       required:
-        - correlationId
+        - X-EXAMPLE-CORRELATION-ID
       properties:
-        correlationId:
+        X-EXAMPLE-CORRELATION-ID:
           type: string
           description: Identifier used to correlate related messages.
-        sourceSystem:
+        X-EXAMPLE-SOURCE-SYSTEM:
           type: string
           description: Optional name of the system that produced the message.
     MyAccountUpdatedPayload:

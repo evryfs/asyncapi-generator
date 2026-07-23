@@ -4,7 +4,6 @@ import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
 import java.util.concurrent.CompletableFuture
 import org.apache.kafka.clients.producer.RecordMetadata
-import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.Payload
 import org.springframework.validation.annotation.Validated
@@ -22,9 +21,11 @@ interface MyAccountUpdatedProducer {
 
     /**
      * @param payload Details about an account update.
-     * @param key Kafka record key.
-     * @param correlationId Identifier used to correlate related messages.
-     * @param sourceSystem Optional name of the system that produced the message.
+     * @param messageKey Kafka record key.
+     * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
+     * record. Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
+     * record. Optional name of the system that produced the message.
      * @return Future completed with Kafka record metadata after successful publication.
      */
     fun send(
@@ -32,12 +33,11 @@ interface MyAccountUpdatedProducer {
         @Valid
         payload: MyAccountUpdatedPayload,
 
-        @Header(name = KafkaHeaders.KEY, required = true)
-        key: String,
+        messageKey: String,
 
-        @Header(name = "correlationId", required = true)
-        correlationId: String,
-        @Header(name = "sourceSystem", required = false)
-        sourceSystem: String? = null,
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
+        X_EXAMPLE_CORRELATION_ID: String,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
+        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
     ): CompletableFuture<RecordMetadata>
 }

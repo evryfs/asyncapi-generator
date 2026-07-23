@@ -14,8 +14,8 @@ data class KafkaPayload(
 )
 
 data class KafkaHeaderProperty(
-    val name: String,
-    val accessorName: String,
+    val wireName: String,
+    val parameterName: String,
     val description: String? = null,
     val required: Boolean = false,
 )

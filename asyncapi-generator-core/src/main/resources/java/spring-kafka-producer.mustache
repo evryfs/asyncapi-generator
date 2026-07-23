@@ -26,7 +26,7 @@ public interface {{name}} {
      * {{{.}}}
 {{/payloadDescriptionTailLines}}
 {{#keyDescriptionFirstLine}}
-     * @param key {{{.}}}
+     * @param {{keyParameterName}} {{{.}}}
 {{/keyDescriptionFirstLine}}
 {{#keyDescriptionTailLines}}
      * {{{.}}}
@@ -43,10 +43,10 @@ public interface {{name}} {
      * @return future completed with Kafka record metadata after successful publication
      */
     CompletableFuture<RecordMetadata> {{methodName}}(
-        @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
-        @Header(name = KafkaHeaders.KEY, required = true) @NotNull String key{{#hasHeaders}},{{/hasHeaders}}
+        {{#payloadBindingAnnotation}}@{{{.}}} {{/payloadBindingAnnotation}}{{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload,
+        {{keyType}} {{keyParameterName}}{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}
-        @Header(name = "{{{name}}}", required = {{required}}) {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+        {{#bindingAnnotation}}@{{{.}}} {{/bindingAnnotation}}{{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
     );
 {{/sendMethods}}

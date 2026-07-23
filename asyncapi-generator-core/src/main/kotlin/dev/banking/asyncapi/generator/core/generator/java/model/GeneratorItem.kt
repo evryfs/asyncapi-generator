@@ -66,6 +66,7 @@ sealed interface GeneratorItem {
         val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
+        val requiredHeaderAnnotation: String? = null,
     ) {
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
         val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||
@@ -81,7 +82,10 @@ sealed interface GeneratorItem {
         val methodName: String,
         val payloadType: String,
         val payloadDescription: List<String> = emptyList(),
+        val payloadBindingAnnotation: String? = null,
         val keyDescription: List<String> = emptyList(),
+        val keyParameterName: String,
+        val keyType: String,
         val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
@@ -97,14 +101,15 @@ sealed interface GeneratorItem {
     }
 
     data class HeaderProperty(
-        val name: String,
-        val accessorName: String,
+        val wireName: String,
         val parameterName: String,
         val typeName: String,
         val description: List<String> = emptyList(),
         val required: Boolean = false,
+        val requiredAnnotation: String? = null,
         val nullableAnnotation: String? = null,
         val parameterSuffix: String = "",
+        val bindingAnnotation: String? = null,
     ) {
         val descriptionFirstLine: String? get() = description.firstOrNull()
         val descriptionTailLines: List<String> get() = description.drop(1)

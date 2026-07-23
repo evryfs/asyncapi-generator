@@ -56,15 +56,17 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about a newly created account.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Kafka record key, or {@code null} when the record has no key.
-     * @param correlationId Identifier used to correlate related messages.
-     * @param sourceSystem Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
+     *   messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
+     *   message.
      */
     void listenMyAccountCreated(
-        @Payload @Valid @NotNull MyAccountCreatedPayload payload,
+        @Payload @Valid MyAccountCreatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String receivedKey,
-        @Header(name = "correlationId", required = true) @NotNull String correlationId,
-        @Header(name = "sourceSystem", required = false) @Nullable String sourceSystem
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
     );
 
     /**
@@ -73,15 +75,17 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about an account update.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Kafka record key, or {@code null} when the record has no key.
-     * @param correlationId Identifier used to correlate related messages.
-     * @param sourceSystem Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
+     *   messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
+     *   message.
      */
     void listenMyAccountUpdated(
-        @Payload @Valid @NotNull MyAccountUpdatedPayload payload,
+        @Payload @Valid MyAccountUpdatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String receivedKey,
-        @Header(name = "correlationId", required = true) @NotNull String correlationId,
-        @Header(name = "sourceSystem", required = false) @Nullable String sourceSystem
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
     );
 
     /**
@@ -90,14 +94,16 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about a closed account.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Kafka record key, or {@code null} when the record has no key.
-     * @param correlationId Identifier used to correlate related messages.
-     * @param sourceSystem Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
+     *   messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
+     *   message.
      */
     void listenMyAccountClosed(
-        @Payload @Valid @NotNull MyAccountClosedPayload payload,
+        @Payload @Valid MyAccountClosedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String receivedKey,
-        @Header(name = "correlationId", required = true) @NotNull String correlationId,
-        @Header(name = "sourceSystem", required = false) @Nullable String sourceSystem
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
     );
 }

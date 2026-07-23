@@ -112,7 +112,7 @@ interface {{name}} {
 
 {{/hasHeaders}}
 {{#headerProperties}}
-        @Header(name = "{{{name}}}", required = {{required}})
+        @Header(name = "{{{wireName}}}", required = {{required}})
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
     )

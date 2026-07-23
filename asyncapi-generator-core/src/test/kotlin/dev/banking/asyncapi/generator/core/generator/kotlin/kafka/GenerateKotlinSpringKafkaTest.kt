@@ -35,7 +35,11 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerContent.contains("sendUserSignedUp"))
         assertFalse(producerContent.contains("@Valid"))
         assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(producerContent.contains("key: String"))
+        assertTrue(producerContent.contains("messageKey: String"))
+        assertTrue(producerContent.contains("@Payload"))
+        assertFalse(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
+        assertFalse(producerContent.contains("@Header("))
         assertFalse(producerContent.contains("KafkaTemplate"))
         assertFalse(producerContent.contains("ProducerRecord"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
@@ -91,12 +95,18 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(consumerContent.contains("receivedKey: String?"))
         assertTrue(consumerContent.contains("correlationId: String? = null"))
         assertTrue(consumerContent.contains("applicationInstanceId: String? = null"))
-        assertTrue(consumerContent.contains("@param [correlationId] Correlation ID set by application"))
         assertTrue(
             consumerContent.contains(
-                "@param [applicationInstanceId] Unique identifier for a given instance of the publishing application",
+                "@param [correlationId] Value bound from the `correlationId` Kafka message header.",
             ),
         )
+        assertTrue(consumerContent.contains("Correlation ID set by application"))
+        assertTrue(
+            consumerContent.contains(
+                "@param [applicationInstanceId] Value bound from the `applicationInstanceId` Kafka message header.",
+            ),
+        )
+        assertTrue(consumerContent.contains("Unique identifier for a given instance"))
         assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
@@ -106,14 +116,24 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("fun send("))
         assertTrue(producerContent.contains("payload: UserSignupPayload"))
+        assertTrue(producerContent.contains("messageKey: String"))
+        assertTrue(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
+        assertFalse(producerContent.contains("KafkaHeaders.KEY"))
         assertTrue(producerContent.contains("correlationId: String? = null"))
         assertTrue(producerContent.contains("applicationInstanceId: String? = null"))
-        assertTrue(producerContent.contains("@param correlationId Correlation ID set by application"))
         assertTrue(
             producerContent.contains(
-                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
+                "@param correlationId Value for the `correlationId` Kafka message header.",
             ),
         )
+        assertTrue(producerContent.contains("Correlation ID set by application"))
+        assertTrue(
+            producerContent.contains(
+                "@param applicationInstanceId Value for the `applicationInstanceId` Kafka message header.",
+            ),
+        )
+        assertTrue(producerContent.contains("Unique identifier for a given instance"))
         assertFalse(producerContent.contains("record.headers().add"))
     }
 
@@ -159,8 +179,12 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(producerContent.contains("record.headers().add"))
         assertFalse(producerContent.contains("correlationId:"))
         assertFalse(producerContent.contains("applicationInstanceId:"))
+        assertFalse(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
+        assertFalse(producerContent.contains("@Header("))
         assertTrue(producerContent.contains("fun send("))
         assertTrue(producerContent.contains("payload: UserSignupPayload"))
+        assertTrue(producerContent.contains("messageKey: String"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 

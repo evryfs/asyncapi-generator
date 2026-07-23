@@ -47,7 +47,7 @@ class GenerateJavaPrimitivePayloadTest {
             "Consumer should expose the contract method",
         )
         assertTrue(
-            consumerContent.contains("@NotNull String payload"),
+            consumerContent.contains("@Payload String payload"),
             "Consumer should expose the primitive payload type directly",
         )
         assertTrue(
@@ -70,10 +70,10 @@ class GenerateJavaPrimitivePayloadTest {
             "Producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContent.contains("@NotNull String payload"),
+            producerContent.contains("@Payload String payload"),
             "Producer should expose the primitive payload type directly",
         )
-        assertTrue(producerContent.contains("@NotNull String key"), "Producer should expose the Kafka record key")
+        assertTrue(producerContent.contains("String messageKey"), "Producer should expose the Kafka record key")
         assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
         assertTrue(
             producerContent.contains("CompletableFuture<RecordMetadata> send("),
@@ -127,7 +127,7 @@ class GenerateJavaPrimitivePayloadTest {
             "StringMessage should have a dedicated producer method",
         )
         assertTrue(
-            producerContent.contains("@NotNull String payload"),
+            producerContent.contains("@Payload String payload"),
             "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
@@ -135,7 +135,7 @@ class GenerateJavaPrimitivePayloadTest {
             "IntMessage should have a dedicated producer method",
         )
         assertTrue(
-            producerContent.contains("@NotNull Integer payload"),
+            producerContent.contains("@Payload Integer payload"),
             "IntMessage producer should expose the primitive payload type directly",
         )
         assertFalse(
