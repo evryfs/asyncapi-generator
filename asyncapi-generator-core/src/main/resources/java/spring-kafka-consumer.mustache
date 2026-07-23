@@ -13,7 +13,10 @@ import {{.}};
 @{{.}}
 {{/clientContractAnnotation}}
 public interface {{name}} {
+    /** Spring-resolvable Kafka topic address declared by this AsyncAPI channel. */
+    String {{topicAddressConstantName}} = "{{{topicAddress}}}";
 {{#methods}}
+
     /**
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
@@ -22,6 +25,7 @@ public interface {{name}} {
 {{#payloadDescriptionTailLines}}
      * {{.}}
 {{/payloadDescriptionTailLines}}
+     * @param topic Kafka topic from which the record was received.
 {{#keyDescriptionFirstLine}}
      * @param key {{.}}
 {{/keyDescriptionFirstLine}}
@@ -39,10 +43,11 @@ public interface {{name}} {
 {{/hasParameterDocumentation}}
      */
     void {{methodName}}(
-        {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
-        @Nullable String key{{#hasHeaders}},{{/hasHeaders}}
+        @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
+        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String topic,
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false) @Nullable String key{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}
-        {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+        @Header(name = "{{{name}}}", required = {{required}}) {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
     );
 {{/methods}}

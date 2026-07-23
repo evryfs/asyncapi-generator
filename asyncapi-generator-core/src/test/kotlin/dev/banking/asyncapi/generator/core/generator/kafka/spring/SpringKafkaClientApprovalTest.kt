@@ -1,0 +1,127 @@
+package dev.banking.asyncapi.generator.core.generator.kafka.spring
+
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
+import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
+import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
+import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+
+class SpringKafkaClientApprovalTest {
+    private val generatedClients = SpringKafkaClientOutputFixtures()
+
+    @TempDir
+    lateinit var tempDir: Path
+
+    @Test
+    fun approves_kotlin_single_message_producer_and_consumer_contracts() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("kotlin-single-message"),
+            )
+
+        assertAll(
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleProducer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+                    scenario = "single-message-producer",
+                )
+            },
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleConsumer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+                    scenario = "single-message-consumer",
+                )
+            },
+        )
+    }
+
+    @Test
+    fun approves_kotlin_three_message_producer_and_consumer_contracts() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = THREE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("kotlin-three-message"),
+            )
+
+        assertAll(
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleProducer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+                    scenario = "three-message-producer",
+                )
+            },
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleConsumer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+                    scenario = "three-message-consumer",
+                )
+            },
+        )
+    }
+
+    @Test
+    fun approves_java_single_message_producer_and_consumer_contracts() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-single-message"),
+            )
+
+        assertAll(
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleProducer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+                    scenario = "single-message-producer",
+                )
+            },
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleConsumer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+                    scenario = "single-message-consumer",
+                )
+            },
+        )
+    }
+
+    @Test
+    fun approves_java_three_message_producer_and_consumer_contracts() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = THREE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-three-message"),
+            )
+
+        assertAll(
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleProducer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+                    scenario = "three-message-producer",
+                )
+            },
+            {
+                GeneratorApprovals.verify(
+                    generated = contracts.singleConsumer(),
+                    format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+                    scenario = "three-message-consumer",
+                )
+            },
+        )
+    }
+}

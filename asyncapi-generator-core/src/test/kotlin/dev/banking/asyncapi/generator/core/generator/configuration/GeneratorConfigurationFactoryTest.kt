@@ -229,6 +229,8 @@ class GeneratorConfigurationFactoryTest {
                                     springKafka =
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
                                             clientContract = ClientContract.INTERFACE,
+                                            topicParameterProperties =
+                                                mapOf("environment" to "kafka.environment"),
                                             validationAnnotations = validationAnnotations,
                                             producer =
                                                 GeneratorConfigurationRequest.KafkaProducer(
@@ -250,6 +252,11 @@ class GeneratorConfigurationFactoryTest {
                     springKafka =
                         ClientGeneration.SpringKafka(
                             clientContract = ClientContract.INTERFACE,
+                            topicParameterProperties =
+                                TopicParameterProperties.fromConfigurationValues(
+                                    values = mapOf("environment" to "kafka.environment"),
+                                    path = "clients.kafka.springKafka.topicParameterProperties",
+                                ),
                             validationAnnotations = validationAnnotations,
                             producer =
                                 ClientGeneration.Producer(
@@ -260,6 +267,36 @@ class GeneratorConfigurationFactoryTest {
                 ),
             ),
             configuration.clients,
+        )
+    }
+
+    @Test
+    fun `create rejects invalid topic parameter property mappings`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        springKafka =
+                                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                topicParameterProperties =
+                                                    mapOf("environment" to "${'$'}{kafka.environment}"),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "clients.kafka.springKafka.topicParameterProperties.environment must be a Spring property name " +
+                "without placeholder syntax, for example kafka.environment",
+            exception.message,
         )
     }
 

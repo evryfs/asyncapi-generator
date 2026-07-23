@@ -41,6 +41,7 @@ class SpringKafkaClientGeneration {
                 generateHeaders = task.generateHeaders,
                 generateProducers = task.generateProducers,
                 generateConsumers = task.generateConsumers,
+                topicParameterProperties = task.topicParameterProperties,
                 validationAnnotations = task.validationAnnotations,
             )
         kafkaGenerator.generate(generationInput.channels)
@@ -59,6 +60,7 @@ class SpringKafkaClientGeneration {
                 generateHeaders = task.generateHeaders,
                 generateProducers = task.generateProducers,
                 generateConsumers = task.generateConsumers,
+                topicParameterProperties = task.topicParameterProperties,
                 validationAnnotations = task.validationAnnotations,
             )
         kafkaGenerator.generate(generationInput.channels)

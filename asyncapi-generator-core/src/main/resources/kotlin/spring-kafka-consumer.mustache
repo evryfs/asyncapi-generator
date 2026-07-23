@@ -13,7 +13,12 @@ import {{{.}}}
 @{{.}}
 {{/clientContractAnnotation}}
 interface {{name}} {
+    companion object {
+        /** Spring-resolvable Kafka topic address declared by this AsyncAPI channel. */
+        const val {{topicAddressConstantName}}: String = "{{{topicAddress}}}"
+    }
 {{#methods}}
+
     /**
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
@@ -22,6 +27,7 @@ interface {{name}} {
 {{#payloadDescriptionTailLines}}
      * {{{.}}}
 {{/payloadDescriptionTailLines}}
+     * @param topic Kafka topic from which the record was received.
 {{#keyDescriptionFirstLine}}
      * @param key {{{.}}}
 {{/keyDescriptionFirstLine}}
@@ -39,16 +45,22 @@ interface {{name}} {
 {{/hasParameterDocumentation}}
      */
     fun {{methodName}}(
+        @Payload
 {{#payloadParameterAnnotation}}
-        @param:{{.}}
+        @{{.}}
 {{/payloadParameterAnnotation}}
         payload: {{payloadType}},
 
+        @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
+        topic: String,
+
+        @Header(name = KafkaHeaders.RECEIVED_KEY, required = false)
         key: {{keyType}}{{#hasHeaders}},{{/hasHeaders}}
 {{#hasHeaders}}
 
 {{/hasHeaders}}
 {{#headerProperties}}
+        @Header(name = "{{{name}}}", required = {{required}})
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
     )

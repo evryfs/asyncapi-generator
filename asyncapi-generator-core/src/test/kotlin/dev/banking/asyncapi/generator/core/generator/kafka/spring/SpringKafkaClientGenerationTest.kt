@@ -8,6 +8,8 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -47,7 +49,7 @@ class SpringKafkaClientGenerationTest {
         )
 
         assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt").exists(),
+            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.kt").exists(),
         )
         assertTrue(
             sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.kt").exists(),
@@ -70,7 +72,7 @@ class SpringKafkaClientGenerationTest {
         )
 
         assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducerUserSignedUp.java").exists(),
+            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.java").exists(),
         )
         assertTrue(
             sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.java").exists(),
@@ -95,7 +97,7 @@ class SpringKafkaClientGenerationTest {
         )
 
         assertFalse(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt").exists(),
+            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.kt").exists(),
         )
         assertTrue(
             sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.kt").exists(),
@@ -119,7 +121,7 @@ class SpringKafkaClientGenerationTest {
 
         val producerContent =
             sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt")
+                .resolve("com/example/client/producer/UserEventsProducer.kt")
                 .readText()
         val consumerContent =
             sourceOutputDirectory
@@ -130,7 +132,7 @@ class SpringKafkaClientGenerationTest {
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract"))
             assertTrue(content.contains("import com.example.validation.ValidPayload"))
             assertTrue(content.contains("@ValidatedClientContract"))
-            assertTrue(content.contains("@param:ValidPayload"))
+            assertTrue(content.contains("@ValidPayload"))
         }
     }
 
@@ -151,7 +153,7 @@ class SpringKafkaClientGenerationTest {
 
         val producerContent =
             sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.java")
+                .resolve("com/example/client/producer/UserEventsProducer.java")
                 .readText()
         val consumerContent =
             sourceOutputDirectory
@@ -182,9 +184,9 @@ class SpringKafkaClientGenerationTest {
 
         val producerContent =
             sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.kt")
+                .resolve("com/example/client/producer/UserEventsProducer.kt")
                 .readText()
-        assertTrue(producerContent.contains("interface UserEventsProducerUserSignedUp {"))
+        assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
@@ -204,10 +206,39 @@ class SpringKafkaClientGenerationTest {
 
         val producerContent =
             sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducerUserSignedUp.java")
+                .resolve("com/example/client/producer/UserEventsProducer.java")
                 .readText()
-        assertTrue(producerContent.contains("interface UserEventsProducerUserSignedUp {"))
+        assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
+    }
+
+    @Test
+    fun `generate rejects a parameterized topic without a configured property mapping`() {
+        val generationInput = fixtures.generationInputWithUserSignupChannel()
+        val parameterizedInput =
+            generationInput.copy(
+                channels =
+                    generationInput.channels.map { channel ->
+                        channel.copy(topic = "user.{environment}.events")
+                    },
+            )
+
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                generator.generate(
+                    task = springKafkaClientTask(language = SourceLanguage.KOTLIN),
+                    generationInput = parameterizedInput,
+                    sourceOutputDirectory = tempDir.resolve("missing-mapping-sources").toFile(),
+                    resourceOutputDirectory = tempDir.resolve("missing-mapping-resources").toFile(),
+                )
+            }
+
+        assertEquals(
+            "Cannot generate Spring Kafka client for channel 'userEvents': " +
+                "topic address 'user.{environment}.events' uses channel parameters [environment] without " +
+                "matching topicParameterProperties entries. Configured entries: []",
+            exception.message,
+        )
     }
 
     private fun springKafkaClientTask(

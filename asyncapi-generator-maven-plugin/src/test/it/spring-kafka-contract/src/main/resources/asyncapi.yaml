@@ -4,7 +4,10 @@ info:
   version: 1.0.0
 channels:
   userEvents:
-    address: user.events.v1
+    address: user.{environment}.events.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
     messages:
       UserSignedUp:
         $ref: "#/components/messages/UserSignedUp"

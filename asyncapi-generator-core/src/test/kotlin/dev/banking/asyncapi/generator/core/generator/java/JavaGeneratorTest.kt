@@ -48,6 +48,8 @@ class JavaGeneratorTest {
                     name = "IgnoredConsumer",
                     packageName = "com.example.kafka",
                     description = emptyList(),
+                    topicAddressConstantName = "IGNORED_TOPIC_ADDRESS",
+                    topicAddress = "ignored",
                     methods = emptyList(),
                 ),
             )

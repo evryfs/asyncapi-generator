@@ -132,6 +132,15 @@ class GeneratorConfigurationRequestTest {
         )
         assertEquals(
             GeneratorConfigurationRequest.KafkaSpringKafka(
+                topicParameterProperties = mapOf("environment" to "kafka.environment"),
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                topicParameterProperties = mapOf("environment" to "kafka.environment"),
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
                 producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
             ),
             GeneratorConfigurationRequest.kafkaSpringKafka(

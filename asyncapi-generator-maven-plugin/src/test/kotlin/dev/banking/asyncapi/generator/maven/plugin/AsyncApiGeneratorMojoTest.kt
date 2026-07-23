@@ -97,6 +97,7 @@ class AsyncApiGeneratorMojoTest {
                 clientContract = "interface",
                 generateProducer = false,
                 generateConsumer = true,
+                topicParameterProperties = mapOf("environment" to "kafka.environment"),
                 validationAnnotations =
                     validationAnnotations(
                         clientContract = "org.springframework.validation.annotation.Validated",
@@ -115,6 +116,10 @@ class AsyncApiGeneratorMojoTest {
         assertEquals(ClientContract.INTERFACE, configuredSpringKafka.clientContract)
         assertFalse(configuredSpringKafka.producer.enabled)
         assertTrue(configuredSpringKafka.consumer.enabled)
+        assertEquals(
+            mapOf("environment" to "kafka.environment"),
+            configuredSpringKafka.topicParameterProperties,
+        )
         assertEquals(
             ClientValidationAnnotations(
                 clientContract =

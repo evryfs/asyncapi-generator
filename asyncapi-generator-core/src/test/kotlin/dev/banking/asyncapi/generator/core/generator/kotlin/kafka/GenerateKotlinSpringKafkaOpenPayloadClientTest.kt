@@ -29,9 +29,9 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         val modelFile = modelDir.resolve("RawEvent.kt")
         assertTrue(modelFile.exists(), "RawEvent typealias should be generated")
 
-        val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.kt").readText()
-        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent {"))
-        assertTrue(producerContent.contains("fun sendRawEvent"))
+        val producerContent = producerDir.resolve("UserRawEventsProducer.kt").readText()
+        assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
+        assertTrue(producerContent.contains("fun send("))
         assertTrue(producerContent.contains("payload: RawEvent"))
         assertTrue(producerContent.contains("import $modelPackage.RawEvent"))
         assertFalse(producerContent.contains("KafkaTemplate"))
@@ -39,7 +39,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("fun onRawEvent"))
+        assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: RawEvent"))
         assertTrue(consumerContent.contains("key: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
@@ -68,9 +68,9 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         val modelFile = modelDir.resolve("RawEventPayload.kt")
         assertTrue(modelFile.exists(), "RawEventPayload typealias should be generated")
 
-        val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.kt").readText()
-        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent {"))
-        assertTrue(producerContent.contains("fun sendRawEvent"))
+        val producerContent = producerDir.resolve("UserRawEventsProducer.kt").readText()
+        assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
+        assertTrue(producerContent.contains("fun send("))
         assertTrue(producerContent.contains("payload: RawEventPayload"))
         assertTrue(producerContent.contains("import $modelPackage.RawEventPayload"))
         assertFalse(producerContent.contains("KafkaTemplate"))
@@ -78,7 +78,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("fun onRawEvent"))
+        assertTrue(consumerContent.contains("fun listen("))
         assertTrue(consumerContent.contains("payload: RawEventPayload"))
         assertTrue(consumerContent.contains("key: String?"))
         assertFalse(consumerContent.contains("ConsumerRecord"))

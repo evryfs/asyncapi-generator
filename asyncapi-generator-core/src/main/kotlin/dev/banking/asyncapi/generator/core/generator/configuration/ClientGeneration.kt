@@ -20,6 +20,7 @@ sealed interface ClientGeneration {
 
     data class SpringKafka(
         val clientContract: ClientContract = ClientContract.INTERFACE,
+        val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
         val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producer: Producer = Producer(),
         val consumer: Consumer = Consumer(),

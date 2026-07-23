@@ -106,6 +106,7 @@ class MavenClientConfiguration {
     var clientContract: String? = null
     var generateProducer: Boolean? = null
     var generateConsumer: Boolean? = null
+    var topicParameterProperties: Map<String, String>? = null
     var validationAnnotations: MavenValidationAnnotationsConfiguration? = null
 
     fun toRequest(
@@ -135,6 +136,7 @@ class MavenClientConfiguration {
                             springKafka =
                                 GeneratorConfigurationRequest.KafkaSpringKafka(
                                     clientContract = resolvedClientContract,
+                                    topicParameterProperties = topicParameterProperties.orEmpty(),
                                     validationAnnotations =
                                         validationAnnotations?.toRequest()
                                             ?: ClientValidationAnnotations(),

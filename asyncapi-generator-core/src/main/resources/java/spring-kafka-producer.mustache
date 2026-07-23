@@ -13,8 +13,10 @@ import {{{.}}};
 @{{.}}
 {{/clientContractAnnotation}}
 public interface {{name}} {
+    /** Spring-resolvable Kafka topic address declared by this AsyncAPI channel. */
+    String {{topicAddressConstantName}} = "{{{topicAddress}}}";
+{{#sendMethods}}
 
-    {{#sendMethods}}
     /**
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
@@ -41,11 +43,11 @@ public interface {{name}} {
      * @return future completed with Kafka record metadata after successful publication
      */
     CompletableFuture<RecordMetadata> {{methodName}}(
-        {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
-        @NotNull String key{{#hasHeaders}},{{/hasHeaders}}
+        @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}@NotNull {{payloadType}} payload,
+        @Header(name = KafkaHeaders.KEY, required = true) @NotNull String key{{#hasHeaders}},{{/hasHeaders}}
 {{#headerProperties}}
-        {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+        @Header(name = "{{{name}}}", required = {{required}}) {{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{^nullableAnnotation}}@NotNull {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
     );
-    {{/sendMethods}}
+{{/sendMethods}}
 }

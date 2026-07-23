@@ -1,0 +1,51 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Update API
+  version: 1.0.0
+channels:
+  myAccountUpdated:
+    address: my.accounts.{environment}.updated.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+    messages:
+      myAccountUpdated:
+        $ref: '#/components/messages/MyAccountUpdated'
+operations:
+  publishMyAccountUpdates:
+    action: send
+    channel:
+      $ref: '#/channels/myAccountUpdated'
+  consumeMyAccountUpdates:
+    action: receive
+    channel:
+      $ref: '#/channels/myAccountUpdated'
+components:
+  messages:
+    MyAccountUpdated:
+      name: MyAccountUpdated
+      headers:
+        $ref: '#/components/schemas/MessageHeaders'
+      payload:
+        $ref: '#/components/schemas/MyAccountUpdatedPayload'
+  schemas:
+    MessageHeaders:
+      type: object
+      required:
+        - correlationId
+      properties:
+        correlationId:
+          type: string
+          description: Identifier used to correlate related messages.
+        sourceSystem:
+          type: string
+          description: Optional name of the system that produced the message.
+    MyAccountUpdatedPayload:
+      type: object
+      description: Details about an account update.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the updated account.

@@ -4,9 +4,11 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -20,15 +22,26 @@ class JavaSpringKafkaModelFactory(
     private val generateHeaders: Boolean = true,
     private val generateProducers: Boolean = true,
     private val generateConsumers: Boolean = true,
+    private val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
+        if (!channel.shouldGenerateClient()) {
+            return emptyList()
+        }
+
         val items = mutableListOf<GeneratorItem>()
         val baseName = MapperUtil.toPascalCase(channel.channelName)
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
         val payloads = channel.payloads()
+        val topicAddress =
+            KafkaTopicAddress.from(
+                channelName = channel.channelName,
+                value = channel.topic,
+                topicParameterProperties = topicParameterProperties,
+            )
 
         if (channel.isConsumer && generateConsumers) {
             val consumerName = "${baseName}Consumer"
@@ -37,6 +50,9 @@ class JavaSpringKafkaModelFactory(
                     payloads.mapNotNull { payload -> payload.importName } +
                         "jakarta.validation.constraints.NotNull" +
                         "org.springframework.lang.Nullable" +
+                        "org.springframework.kafka.support.KafkaHeaders" +
+                        "org.springframework.messaging.handler.annotation.Header" +
+                        "org.springframework.messaging.handler.annotation.Payload" +
                         listOfNotNull(
                             validationAnnotations.clientContract?.value,
                             validationAnnotations.payloadParameter?.value,
@@ -47,7 +63,12 @@ class JavaSpringKafkaModelFactory(
             val methods =
                 payloads.map { payload ->
                     GeneratorItem.ConsumerMethod(
-                        methodName = "on${payload.messageName}",
+                        methodName =
+                            payload.methodName(
+                                singleName = "listen",
+                                multiplePrefix = "listen",
+                                messageCount = payloads.size,
+                            ),
                         payloadType = payload.payloadType,
                         payloadDescription =
                             DocumentationUtils.toJavaDocLines(payload.payloadDescription)
@@ -84,6 +105,8 @@ class JavaSpringKafkaModelFactory(
                                 "The contract exposes the Kafka record key, message payload, and " +
                                     "contract-defined headers as method parameters.",
                             ),
+                    topicAddressConstantName = topicAddress.constantName,
+                    topicAddress = topicAddress.propertyPlaceholderValue.toJavaStringLiteral(),
                     methods = methods,
                     clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
                     imports = imports,
@@ -92,28 +115,38 @@ class JavaSpringKafkaModelFactory(
         }
 
         if (channel.isProducer && generateProducers) {
-            payloads.forEach { payload ->
-                val imports =
-                    (
-                        listOfNotNull(payload.importName) +
-                            "java.util.concurrent.CompletableFuture" +
-                            "org.apache.kafka.clients.producer.RecordMetadata" +
-                            "jakarta.validation.constraints.NotNull" +
-                            listOfNotNull(
-                                validationAnnotations.clientContract?.value,
-                                validationAnnotations.payloadParameter?.value,
-                            ) +
-                            listOfNotNull(
-                                "org.springframework.lang.Nullable".takeIf {
+            val imports =
+                (
+                    payloads.mapNotNull { payload -> payload.importName } +
+                        "java.util.concurrent.CompletableFuture" +
+                        "org.apache.kafka.clients.producer.RecordMetadata" +
+                        "jakarta.validation.constraints.NotNull" +
+                        "org.springframework.kafka.support.KafkaHeaders" +
+                        "org.springframework.messaging.handler.annotation.Header" +
+                        "org.springframework.messaging.handler.annotation.Payload" +
+                        listOfNotNull(
+                            validationAnnotations.clientContract?.value,
+                            validationAnnotations.payloadParameter?.value,
+                        ) +
+                        listOfNotNull(
+                            "org.springframework.lang.Nullable".takeIf {
+                                payloads.any { payload ->
                                     payload.headerProperties.any { header -> !header.required }
-                                },
-                            )
-                    )
-                        .distinct()
-                        .sorted()
-                val sendMethod =
+                                }
+                            },
+                        )
+                )
+                    .distinct()
+                    .sorted()
+            val sendMethods =
+                payloads.map { payload ->
                     GeneratorItem.SendMethod(
-                        methodName = "send${payload.messageName}",
+                        methodName =
+                            payload.methodName(
+                                singleName = "send",
+                                multiplePrefix = "send",
+                                messageCount = payloads.size,
+                            ),
                         payloadType = payload.payloadType,
                         payloadDescription =
                             DocumentationUtils.toJavaDocLines(payload.payloadDescription)
@@ -137,26 +170,26 @@ class JavaSpringKafkaModelFactory(
                             },
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
-                val producerName = "${baseName}Producer${payload.messageName}"
-                items.add(
-                    GeneratorItem.KafkaProducerClass(
-                        name = producerName,
-                        packageName = producerPackage,
-                        description =
+                }
+            items.add(
+                GeneratorItem.KafkaProducerClass(
+                    name = "${baseName}Producer",
+                    packageName = producerPackage,
+                    description =
+                        DocumentationUtils.toJavaDocLines(
+                            "Producer contract for publishing messages to the {@code ${channel.topic}} topic.",
+                        ) +
                             DocumentationUtils.toJavaDocLines(
-                                "Producer contract for publishing messages to the {@code ${channel.topic}} topic.",
-                            ) +
-                                DocumentationUtils.toJavaDocLines(
-                                    "The contract exposes the Kafka record key, message payload, and " +
-                                        "contract-defined headers as method parameters.",
-                                ),
-                        topic = channel.topic,
-                        sendMethods = listOf(sendMethod),
-                        clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
-                        imports = imports,
-                    ),
-                )
-            }
+                                "The contract exposes the Kafka record key, message payload, and " +
+                                    "contract-defined headers as method parameters.",
+                            ),
+                    topicAddressConstantName = topicAddress.constantName,
+                    topicAddress = topicAddress.propertyPlaceholderValue.toJavaStringLiteral(),
+                    sendMethods = sendMethods,
+                    clientContractAnnotation = validationAnnotations.clientContract?.simpleName,
+                    imports = imports,
+                ),
+            )
         }
 
         return items
@@ -273,7 +306,24 @@ class JavaSpringKafkaModelFactory(
         }
 
     private fun String.toParameterName(): String {
-        val pascalCase = MapperUtil.toPascalCase(this)
-        return pascalCase.replaceFirstChar { it.lowercase() }
+        return MapperUtil.toCamelCase(this)
     }
+
+    private fun AnalyzedChannel.shouldGenerateClient(): Boolean =
+        (isConsumer && generateConsumers) || (isProducer && generateProducers)
+
+    private fun KafkaPayload.methodName(
+        singleName: String,
+        multiplePrefix: String,
+        messageCount: Int,
+    ): String =
+        if (messageCount == 1) {
+            singleName
+        } else {
+            "$multiplePrefix$messageName"
+        }
+
+    private fun String.toJavaStringLiteral(): String =
+        replace("\\", "\\\\")
+            .replace("\"", "\\\"")
 }

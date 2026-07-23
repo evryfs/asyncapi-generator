@@ -63,6 +63,7 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaSpringKafka(
         val clientContract: ClientContract = ClientContract.INTERFACE,
+        val topicParameterProperties: Map<String, String> = emptyMap(),
         val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producer: KafkaProducer = KafkaProducer(),
         val consumer: KafkaConsumer = KafkaConsumer(),
@@ -178,6 +179,7 @@ data class GeneratorConfigurationRequest(
         fun kafkaSpringKafka(
             enabled: Boolean? = null,
             clientContract: ClientContract = ClientContract.INTERFACE,
+            topicParameterProperties: Map<String, String> = emptyMap(),
             validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
             producer: KafkaProducer? = null,
             consumer: KafkaConsumer? = null,
@@ -185,11 +187,13 @@ data class GeneratorConfigurationRequest(
             when {
                 enabled == false -> null
                 enabled == true ||
+                    topicParameterProperties.isNotEmpty() ||
                     validationAnnotations != ClientValidationAnnotations() ||
                     producer != null ||
                     consumer != null ->
                     KafkaSpringKafka(
                         clientContract = clientContract,
+                        topicParameterProperties = topicParameterProperties,
                         validationAnnotations = validationAnnotations,
                         producer = producer ?: KafkaProducer(),
                         consumer = consumer ?: KafkaConsumer(),

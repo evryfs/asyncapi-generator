@@ -109,6 +109,7 @@ object MavenTestHelper {
         clientContract: String? = null,
         generateProducer: Boolean? = null,
         generateConsumer: Boolean? = null,
+        topicParameterProperties: Map<String, String>? = null,
         validationAnnotations: MavenValidationAnnotationsConfiguration? = null,
     ): MavenClientConfiguration =
         MavenClientConfiguration().apply {
@@ -116,6 +117,7 @@ object MavenTestHelper {
             this.clientContract = clientContract
             this.generateProducer = generateProducer
             this.generateConsumer = generateConsumer
+            this.topicParameterProperties = topicParameterProperties
             this.validationAnnotations = validationAnnotations
         }
 

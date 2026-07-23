@@ -79,6 +79,11 @@ object GeneratorConfigurationFactory {
                                     kafka.springKafka?.let { springKafka ->
                                         ClientGeneration.SpringKafka(
                                             clientContract = springKafka.clientContract,
+                                            topicParameterProperties =
+                                                TopicParameterProperties.fromConfigurationValues(
+                                                    values = springKafka.topicParameterProperties,
+                                                    path = "clients.kafka.springKafka.topicParameterProperties",
+                                                ),
                                             validationAnnotations = springKafka.validationAnnotations,
                                             producer =
                                                 ClientGeneration.Producer(

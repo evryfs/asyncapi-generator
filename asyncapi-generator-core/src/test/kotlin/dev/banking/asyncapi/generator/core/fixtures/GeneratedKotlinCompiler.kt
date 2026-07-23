@@ -33,12 +33,20 @@ internal class GeneratedKotlinCompiler(
             "Expected at least one Kotlin source artifact to compile"
         }
 
-        val javaCompilation = javaCompiler.compile(artifacts, workspace)
+        val javaCompilation =
+            artifacts
+                .filter { artifact -> artifact.kind == GeneratedArtifactKind.JAVA_SOURCE }
+                .takeIf(List<GeneratedArtifact>::isNotEmpty)
+                ?.let { javaArtifacts -> javaCompiler.compile(javaArtifacts, workspace) }
         val sourceDirectory = workspace.resolve("generated-kotlin-sources").createDirectories()
         val classesDirectory = workspace.resolve("generated-kotlin-classes").createDirectories()
         val sourceFiles = kotlinArtifacts.map { artifact -> writeSourceFile(sourceDirectory, artifact) }
         val compilerOutput = ByteArrayOutputStream()
-        val compilationClasspath = classpath + File.pathSeparator + javaCompilation.classesDirectory
+        val compilationClasspath =
+            listOfNotNull(
+                classpath,
+                javaCompilation?.classesDirectory?.toString(),
+            ).joinToString(File.pathSeparator)
         val exitCode =
             PrintStream(compilerOutput, true, StandardCharsets.UTF_8).use { output ->
                 K2JVMCompiler().exec(
@@ -62,7 +70,7 @@ internal class GeneratedKotlinCompiler(
 
         return GeneratedKotlinCompilation(
             classesDirectory = classesDirectory,
-            javaClassesDirectory = javaCompilation.classesDirectory,
+            javaClassesDirectory = javaCompilation?.classesDirectory,
         )
     }
 
@@ -82,5 +90,5 @@ internal class GeneratedKotlinCompiler(
  */
 internal data class GeneratedKotlinCompilation(
     val classesDirectory: Path,
-    val javaClassesDirectory: Path,
+    val javaClassesDirectory: Path?,
 )

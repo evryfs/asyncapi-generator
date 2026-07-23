@@ -23,17 +23,22 @@
                             <generatorName>kotlin</generatorName>
                             <modelPackage>com.example.contract.model</modelPackage>
                             <clientPackage>com.example.contract.client</clientPackage>
-                            <clientConfig>
-                                <clientType>spring-kafka</clientType>
-                                <clientContract>interface</clientContract>
-                                <validationAnnotations>
-                                    <clientContract>org.springframework.validation.annotation.Validated</clientContract>
-                                    <payloadParameter>jakarta.validation.Valid</payloadParameter>
-                                </validationAnnotations>
-                            </clientConfig>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <clientConfig>
+                        <clientType>spring-kafka</clientType>
+                        <clientContract>interface</clientContract>
+                        <topicParameterProperties>
+                            <environment>kafka.environment</environment>
+                        </topicParameterProperties>
+                        <validationAnnotations>
+                            <clientContract>org.springframework.validation.annotation.Validated</clientContract>
+                            <payloadParameter>jakarta.validation.Valid</payloadParameter>
+                        </validationAnnotations>
+                    </clientConfig>
+                </configuration>
             </plugin>
         </plugins>
     </build>

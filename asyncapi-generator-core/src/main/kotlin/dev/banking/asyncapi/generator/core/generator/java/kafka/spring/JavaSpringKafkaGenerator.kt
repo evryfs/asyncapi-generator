@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import java.io.File
@@ -13,6 +14,7 @@ class JavaSpringKafkaGenerator(
     generateHeaders: Boolean = true,
     generateProducers: Boolean = true,
     generateConsumers: Boolean = true,
+    topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
 ) {
     private val modelFactory =
@@ -22,6 +24,7 @@ class JavaSpringKafkaGenerator(
             generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
+            topicParameterProperties = topicParameterProperties,
             validationAnnotations = validationAnnotations,
         )
     private val producerGenerator = JavaSpringKafkaProducerGenerator(outputDir)

@@ -260,7 +260,7 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducerUserCreated.kt").exists())
+        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt").exists())
         assertTrue(sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
     }
 

@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientContrac
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
@@ -33,6 +34,7 @@ sealed interface GenerationTask {
         val generateProducers: Boolean = true,
         val generateConsumers: Boolean = true,
         val clientContract: ClientContract = ClientContract.INTERFACE,
+        val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
         val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     ) : GenerationTask
 

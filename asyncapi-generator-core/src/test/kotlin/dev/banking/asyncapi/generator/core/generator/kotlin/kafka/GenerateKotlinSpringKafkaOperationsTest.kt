@@ -43,7 +43,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
 
         val packagePath = packageName.replace('.', '/')
         assertTrue(
-            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducer.kt").exists(),
             "Producer should exist"
         )
         assertFalse(
@@ -75,7 +75,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
 
         val packagePath = packageName.replace('.', '/')
         assertFalse(
-            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducer.kt").exists(),
             "Producer should NOT exist"
         )
         assertTrue(
@@ -107,7 +107,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
 
         val packagePath = packageName.replace('.', '/')
         assertTrue(
-            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducer.kt").exists(),
             "Producer should exist"
         )
         assertTrue(
@@ -139,7 +139,7 @@ class GenerateKotlinSpringKafkaOperationsTest {
 
         val packagePath = packageName.replace('.', '/')
         assertFalse(
-            outputDir.resolve("$packagePath/producer/EventsProducerTestEvent.kt").exists(),
+            outputDir.resolve("$packagePath/producer/EventsProducer.kt").exists(),
             "Producer should NOT exist"
         )
         assertFalse(
