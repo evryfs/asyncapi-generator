@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.loader
 
+import dev.banking.asyncapi.generator.core.generator.analyzer.MessageNameResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -224,6 +225,5 @@ object AsyncApiSchemaLoader {
     private fun messageBaseName(
         message: Message,
         messageKey: String,
-    ): String =
-        MapperUtil.toPascalCase(message.name ?: message.title ?: messageKey)
+    ): String = MessageNameResolver.resolve(message, messageKey)
 }

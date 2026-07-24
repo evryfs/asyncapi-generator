@@ -68,6 +68,7 @@ sealed interface GeneratorItem {
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
         val requiredHeaderAnnotation: String? = null,
+        val handlerAnnotation: String? = null,
     ) {
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
         val hasAdditionalParameters: Boolean get() = keyParameter != null || hasHeaders

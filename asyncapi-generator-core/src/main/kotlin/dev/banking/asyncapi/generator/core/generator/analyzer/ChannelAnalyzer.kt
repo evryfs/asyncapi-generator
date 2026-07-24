@@ -87,7 +87,7 @@ class ChannelAnalyzer {
         val analyzedMessages = mutableListOf<AnalyzedMessage>()
         val analyzedMultiFormatMessages = mutableListOf<AnalyzedMultiFormatMessage>()
 
-        messages.forEach { (name, msgInterface) ->
+        messages.forEach { (messageId, msgInterface) ->
             val message =
                 when (msgInterface) {
                     is MessageInterface.MessageInline -> msgInterface.message
@@ -97,12 +97,17 @@ class ChannelAnalyzer {
             var payloadSchema: Schema? = null
             var multiFormatSchema: MultiFormatSchema? = null
             var typeName: String? = null
-            val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: name)
-            val inlinePayloadTypeName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
+            val messageName = MessageNameResolver.resolve(message, messageId)
+            val inlinePayloadTypeName =
+                if (messageName.endsWith("Payload")) {
+                    messageName
+                } else {
+                    "${messageName}Payload"
+                }
             val headers =
                 MessageHeaderAnalyzer.analyze(
                     channelName = channelName,
-                    messageKey = name,
+                    messageKey = messageId,
                     message = message,
                 )
             val keySchema = message.kafkaKeySchema()
@@ -131,7 +136,7 @@ class ChannelAnalyzer {
             if (payloadSchema != null) {
                 analyzedMessages.add(
                     AnalyzedMessage(
-                        messageName = baseName,
+                        messageName = messageName,
                         payloadTypeName = typeName,
                         schema = payloadSchema,
                         keySchema = keySchema,
@@ -141,7 +146,7 @@ class ChannelAnalyzer {
             } else if (multiFormatSchema != null) {
                 analyzedMultiFormatMessages.add(
                     AnalyzedMultiFormatMessage(
-                        messageName = baseName,
+                        messageName = messageName,
                         payloadName = typeName,
                         schema = multiFormatSchema,
                         keySchema = keySchema,

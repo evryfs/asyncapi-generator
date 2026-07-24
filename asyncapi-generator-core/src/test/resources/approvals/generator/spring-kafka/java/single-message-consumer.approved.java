@@ -32,7 +32,7 @@ import org.springframework.validation.annotation.Validated;
  * public final class MyAccountUpdatedConsumerImpl implements MyAccountUpdatedConsumer {
  *     @Override
  *     @KafkaListener(topics = MyAccountUpdatedConsumer.MY_ACCOUNT_UPDATED_TOPIC_ADDRESS)
- *     public void listen(
+ *     public void listenMyAccountUpdated(
  *             MyAccountUpdatedPayload payload,
  *             String receivedTopic,
  *             MyAccountKey receivedKey,
@@ -79,7 +79,7 @@ public interface MyAccountUpdatedConsumer {
      * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    void listen(
+    void listenMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true) @Valid @NotNull MyAccountKey receivedKey,

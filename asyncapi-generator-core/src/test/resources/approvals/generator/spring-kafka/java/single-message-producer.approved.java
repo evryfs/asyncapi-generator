@@ -30,7 +30,7 @@ public interface MyAccountUpdatedProducer {
      * Kafka record. Optional name of the system that produced the message.
      * @return future completed with Kafka record metadata after successful publication
      */
-    CompletableFuture<RecordMetadata> send(
+    CompletableFuture<RecordMetadata> sendMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Valid @NotNull MyAccountKey messageKey,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,

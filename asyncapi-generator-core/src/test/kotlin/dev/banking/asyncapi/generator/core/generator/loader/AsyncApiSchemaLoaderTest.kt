@@ -49,6 +49,32 @@ class AsyncApiSchemaLoaderTest {
     }
 
     @Test
+    fun `should use the message id instead of title for inline generated schema names`() {
+        val keySchema = Schema(type = "object")
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "accountUpdatedV2" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    title = "Human-readable account update",
+                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    bindings = kafkaBinding(SchemaInterface.SchemaInline(keySchema)),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+
+        assertTrue(loaded.containsKey("AccountUpdatedV2Payload"))
+        assertTrue(loaded.containsKey("AccountUpdatedV2Key"))
+        assertFalse(loaded.containsKey("HumanReadableAccountUpdatePayload"))
+        assertFalse(loaded.containsKey("HumanReadableAccountUpdateKey"))
+    }
+
+    @Test
     fun `should harvest inline object schemas from Kafka message keys`() {
         val keySchema =
             Schema(

@@ -27,15 +27,17 @@ import {{{.}}}
  * distinct payload type.
  *
  * Every generated method must be implemented. Applications that intentionally
- * consume only a subset of the declared messages should configure a
- * `RecordFilterStrategy` for the listener and explicitly implement the
- * remaining methods. No default no-op methods are generated, so ignoring a
- * message type remains an explicit application decision.
+ * process only a subset of the declared messages must still explicitly
+ * implement the remaining methods. These may be intentional no-op handlers,
+ * or the application may configure a `RecordFilterStrategy` to discard
+ * excluded records before handler delivery.
  *
- * Filtered records are not delivered to a handler. Their acknowledgement and
- * offset behavior is controlled by the application's listener container and
- * filter configuration. Filters should distinguish expected ignored messages
- * from unknown messages so new or malformed message types are not silently
+ * No default no-op methods are generated, so ignoring a message type remains
+ * an explicit application decision. When filtering is used, filtered records
+ * are not delivered to a handler. Their acknowledgement and offset behavior
+ * is controlled by the application's listener container and filter
+ * configuration. Filters should distinguish expected ignored messages from
+ * unknown messages so new or malformed message types are not silently
  * discarded.
 {{/hasMultipleMethods}}
 {{#hasSingleMethod}}
@@ -119,6 +121,9 @@ interface {{name}} {
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
      */
+{{#handlerAnnotation}}
+    @{{.}}
+{{/handlerAnnotation}}
     fun {{methodName}}(
         @Payload
 {{#payloadParameterAnnotation}}

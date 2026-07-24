@@ -31,7 +31,7 @@ import org.springframework.validation.annotation.Validated
  *     @KafkaListener(
  *         topics = [MyAccountUpdatedConsumer.MY_ACCOUNT_UPDATED_TOPIC_ADDRESS],
  *     )
- *     override fun listen(
+ *     override fun listenMyAccountUpdated(
  *         payload: MyAccountUpdatedPayload,
  *         receivedTopic: String,
  *         receivedKey: MyAccountKey,
@@ -74,7 +74,7 @@ interface MyAccountUpdatedConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    fun listen(
+    fun listenMyAccountUpdated(
         @Payload
         @Valid
         payload: MyAccountUpdatedPayload,

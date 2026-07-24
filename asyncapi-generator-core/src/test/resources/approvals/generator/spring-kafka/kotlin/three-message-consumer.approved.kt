@@ -7,6 +7,7 @@ import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
+import org.springframework.kafka.annotation.KafkaHandler
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.Payload
@@ -33,15 +34,17 @@ import org.springframework.validation.annotation.Validated
  * distinct payload type.
  *
  * Every generated method must be implemented. Applications that intentionally
- * consume only a subset of the declared messages should configure a
- * `RecordFilterStrategy` for the listener and explicitly implement the
- * remaining methods. No default no-op methods are generated, so ignoring a
- * message type remains an explicit application decision.
+ * process only a subset of the declared messages must still explicitly
+ * implement the remaining methods. These may be intentional no-op handlers,
+ * or the application may configure a `RecordFilterStrategy` to discard
+ * excluded records before handler delivery.
  *
- * Filtered records are not delivered to a handler. Their acknowledgement and
- * offset behavior is controlled by the application's listener container and
- * filter configuration. Filters should distinguish expected ignored messages
- * from unknown messages so new or malformed message types are not silently
+ * No default no-op methods are generated, so ignoring a message type remains
+ * an explicit application decision. When filtering is used, filtered records
+ * are not delivered to a handler. Their acknowledgement and offset behavior
+ * is controlled by the application's listener container and filter
+ * configuration. Filters should distinguish expected ignored messages from
+ * unknown messages so new or malformed message types are not silently
  * discarded.
  */
 @Validated
@@ -74,6 +77,7 @@ interface MyAccountLifecycleConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
+    @KafkaHandler
     fun listenMyAccountCreated(
         @Payload
         @Valid
@@ -98,6 +102,7 @@ interface MyAccountLifecycleConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
+    @KafkaHandler
     fun listenMyAccountUpdated(
         @Payload
         @Valid
@@ -127,6 +132,7 @@ interface MyAccountLifecycleConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
+    @KafkaHandler
     fun listenMyAccountClosed(
         @Payload
         @Valid

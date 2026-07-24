@@ -43,7 +43,7 @@ class GenerateJavaPrimitivePayloadTest {
         assertTrue(consumerFile.exists(), "Consumer should be generated")
         val consumerContent = consumerFile.readText()
         assertTrue(
-            consumerContent.contains("void listen("),
+            consumerContent.contains("void listenSimpleStringMessage("),
             "Consumer should expose the contract method",
         )
         assertTrue(
@@ -76,7 +76,7 @@ class GenerateJavaPrimitivePayloadTest {
         assertFalse(producerContent.contains("messageKey"), "Producer should omit a key not declared by the contract")
         assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
         assertTrue(
-            producerContent.contains("CompletableFuture<RecordMetadata> send("),
+            producerContent.contains("CompletableFuture<RecordMetadata> sendSimpleStringMessage("),
             "Producer contract should expose the asynchronous send result",
         )
     }

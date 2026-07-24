@@ -30,7 +30,7 @@ interface MyAccountUpdatedProducer {
      * record. Optional name of the system that produced the message.
      * @return Future completed with Kafka record metadata after successful publication.
      */
-    fun send(
+    fun sendMyAccountUpdated(
         @Payload
         @Valid
         payload: MyAccountUpdatedPayload,

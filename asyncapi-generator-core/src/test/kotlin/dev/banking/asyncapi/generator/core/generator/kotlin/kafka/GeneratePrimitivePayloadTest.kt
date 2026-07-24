@@ -44,7 +44,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
 
         val content = consumerFile.readText()
         assertTrue(
-            content.contains("fun listen("),
+            content.contains("fun listenSimpleStringMessage("),
             "Consumer should expose the contract method",
         )
         assertTrue(content.contains("payload: String"), "Consumer should expose the primitive payload type directly")
@@ -59,6 +59,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
         assertTrue(
             producerContent.contains("interface SimpleTopicProducer {"),
             "Producer should be generated as a contract interface",
+        )
+        assertTrue(
+            producerContent.contains("fun sendSimpleStringMessage("),
+            "Producer should expose the message-qualified contract method",
         )
         assertTrue(
             producerContent.contains("payload: String"),

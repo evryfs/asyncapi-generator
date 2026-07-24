@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHea
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHandlerPayloadTypeValidator
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderPropertyFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
@@ -58,6 +59,10 @@ class KotlinSpringKafkaModelFactory(
             )
 
         if (channel.isConsumer && generateConsumers) {
+            KafkaHandlerPayloadTypeValidator.validate(
+                channelName = channel.channelName,
+                payloads = payloads,
+            )
             val consumerName = "${baseName}Consumer"
             val methods =
                 payloads.map { payload ->
@@ -74,12 +79,7 @@ class KotlinSpringKafkaModelFactory(
                         }
                     GeneratorItem.ConsumerMethod(
                         messageName = payload.messageName,
-                        methodName =
-                            payload.methodName(
-                                singleName = "listen",
-                                multiplePrefix = "listen",
-                                messageCount = payloads.size,
-                            ),
+                        methodName = payload.methodName("listen"),
                         payloadType = payload.payloadType,
                         payloadDescription =
                             toKDocLines(payload.payloadDescription)
@@ -92,6 +92,7 @@ class KotlinSpringKafkaModelFactory(
                         headerType = payload.headerTypeName,
                         headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
+                        handlerAnnotation = "KafkaHandler".takeIf { payloads.size > 1 },
                     )
                 }
             val keyAnnotations =
@@ -105,6 +106,9 @@ class KotlinSpringKafkaModelFactory(
                         "org.springframework.messaging.handler.annotation.Header" +
                         "org.springframework.messaging.handler.annotation.Payload" +
                         listOfNotNull(
+                            "org.springframework.kafka.annotation.KafkaHandler".takeIf {
+                                methods.any { method -> method.handlerAnnotation != null }
+                            },
                             validationAnnotations.clientContract?.value,
                             validationAnnotations.payloadParameter?.value,
                         )
@@ -149,12 +153,7 @@ class KotlinSpringKafkaModelFactory(
                             )
                         }
                     GeneratorItem.SendMethod(
-                        methodName =
-                            payload.methodName(
-                                singleName = "send",
-                                multiplePrefix = "send",
-                                messageCount = payloads.size,
-                            ),
+                        methodName = payload.methodName("send"),
                         payloadType = payload.payloadType,
                         payloadDescription =
                             toKDocLines(payload.payloadDescription)
@@ -326,15 +325,8 @@ class KotlinSpringKafkaModelFactory(
         (isConsumer && generateConsumers) || (isProducer && generateProducers)
 
     private fun KafkaPayload.methodName(
-        singleName: String,
-        multiplePrefix: String,
-        messageCount: Int,
-    ): String =
-        if (messageCount == 1) {
-            singleName
-        } else {
-            "$multiplePrefix$messageName"
-        }
+        prefix: String,
+    ): String = "$prefix$messageName"
 
     private fun String.toKotlinStringLiteral(): String =
         replace("\\", "\\\\")

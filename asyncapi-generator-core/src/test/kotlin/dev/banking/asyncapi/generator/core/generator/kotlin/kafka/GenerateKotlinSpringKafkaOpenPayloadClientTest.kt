@@ -31,7 +31,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val producerContent = producerDir.resolve("UserRawEventsProducer.kt").readText()
         assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
-        assertTrue(producerContent.contains("fun send("))
+        assertTrue(producerContent.contains("fun sendRawEvent("))
         assertTrue(producerContent.contains("payload: RawEvent"))
         assertTrue(producerContent.contains("import $modelPackage.RawEvent"))
         assertFalse(producerContent.contains("KafkaTemplate"))
@@ -39,7 +39,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("fun listen("))
+        assertTrue(consumerContent.contains("fun listenRawEvent("))
         assertTrue(consumerContent.contains("payload: RawEvent"))
         assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
@@ -70,7 +70,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val producerContent = producerDir.resolve("UserRawEventsProducer.kt").readText()
         assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
-        assertTrue(producerContent.contains("fun send("))
+        assertTrue(producerContent.contains("fun sendRawEvent("))
         assertTrue(producerContent.contains("payload: RawEventPayload"))
         assertTrue(producerContent.contains("import $modelPackage.RawEventPayload"))
         assertFalse(producerContent.contains("KafkaTemplate"))
@@ -78,7 +78,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("fun listen("))
+        assertTrue(consumerContent.contains("fun listenRawEvent("))
         assertTrue(consumerContent.contains("payload: RawEventPayload"))
         assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))

@@ -73,6 +73,28 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class AmbiguousKafkaHandlerPayloadTypes(
+        channelName: String,
+        collisions: Map<String, List<String>>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka consumer generation failed for channel '$channelName'.")
+                appendLine("Multiple messages resolve to the same Kafka handler payload type:")
+                collisions.toSortedMap().forEach { (payloadType, messageNames) ->
+                    appendLine(
+                        "- '$payloadType': " +
+                            messageNames.joinToString(prefix = "[", postfix = "]") { "'$it'" },
+                    )
+                }
+                appendLine(
+                    "Class-level @KafkaListener dispatch selects one @KafkaHandler from the converted payload type.",
+                )
+                appendLine("Use a distinct payload type for every message consumed from this channel.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedKafkaKeySchema(
         messageName: String,
         schemaType: String,

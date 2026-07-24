@@ -32,13 +32,13 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
 
         val producerContent = producerDir.resolve("UserRawEventsProducer.java").readText()
         assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
-        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> send("))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> sendRawEvent("))
         assertTrue(producerContent.contains("@Payload Object payload"))
         assertFalse(producerContent.contains("KafkaTemplate"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.java").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("void listen("))
+        assertTrue(consumerContent.contains("void listenRawEvent("))
         assertTrue(consumerContent.contains("@Payload Object payload"))
         assertFalse(consumerContent.contains("receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))

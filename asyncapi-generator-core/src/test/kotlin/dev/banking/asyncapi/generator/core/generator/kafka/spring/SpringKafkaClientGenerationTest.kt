@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.AmbiguousKafkaHandlerPayloadTypes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -247,6 +248,53 @@ class SpringKafkaClientGenerationTest {
                 "matching topicParameterProperties entries. Configured entries: []",
             exception.message,
         )
+    }
+
+    @Test
+    fun `generate rejects ambiguous multi-message consumer payload types`() {
+        val generationInput = fixtures.generationInputWithUserSignupChannel()
+        val channel = generationInput.channels.single()
+        val message = channel.messages.single()
+        val ambiguousInput =
+            generationInput.copy(
+                channels =
+                    listOf(
+                        channel.copy(
+                            messages =
+                                listOf(
+                                    message.copy(messageName = "UserSignedUp"),
+                                    message.copy(messageName = "UserProfileUpdated"),
+                                ),
+                        ),
+                    ),
+            )
+
+        SourceLanguage.entries.forEach { language ->
+            val exception =
+                assertFailsWith<AmbiguousKafkaHandlerPayloadTypes> {
+                    generator.generate(
+                        task = springKafkaClientTask(language = language),
+                        generationInput = ambiguousInput,
+                        sourceOutputDirectory = tempDir.resolve("ambiguous-$language-sources").toFile(),
+                        resourceOutputDirectory = tempDir.resolve("ambiguous-$language-resources").toFile(),
+                    )
+                }
+
+            assertTrue(
+                exception.message.orEmpty().contains(
+                    "Multiple messages resolve to the same Kafka handler payload type",
+                ),
+                exception.message,
+            )
+            assertTrue(
+                exception.message.orEmpty().contains("'UserSignedUp'"),
+                exception.message,
+            )
+            assertTrue(
+                exception.message.orEmpty().contains("'UserProfileUpdated'"),
+                exception.message,
+            )
+        }
     }
 
     private fun springKafkaClientTask(

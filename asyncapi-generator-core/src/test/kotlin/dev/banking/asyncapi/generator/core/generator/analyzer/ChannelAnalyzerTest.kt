@@ -120,6 +120,56 @@ class ChannelAnalyzerTest {
     }
 
     @Test
+    fun `should keep message identity independent from title and referenced payload type`() {
+        val payloadSchema = Schema(type = "object")
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "accountUpdateAlias" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "AccountUpdatedV1",
+                                    title = "Human-readable account update",
+                                    headers =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "correlationId" to
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(type = "string"),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                    payload =
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "#/components/schemas/AccountChange",
+                                                model = payloadSchema,
+                                            ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
+            )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals("AccountUpdatedV1", analyzed.messageName)
+        assertEquals("AccountChange", analyzed.payloadTypeName)
+        assertEquals("TopicAccountEventsHeadersAccountUpdatedV1", analyzed.headers?.typeName)
+    }
+
+    @Test
     fun `should preserve Kafka key schema from message binding`() {
         val keySchema = Schema(type = "integer", format = "int64")
         val channel = Channel(

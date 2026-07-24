@@ -26,11 +26,10 @@ object MessageHeaderAnalyzer {
         if (properties.isEmpty()) return null
 
         val channelNamePascal = MapperUtil.toPascalCase(channelName)
-        val messageName = message.name ?: message.title ?: messageKey
-        val messageNamePascal = MapperUtil.toPascalCase(messageName)
+        val messageName = MessageNameResolver.resolve(message, messageKey)
 
         return AnalyzedMessageHeaders(
-            typeName = "Topic${channelNamePascal}Headers$messageNamePascal",
+            typeName = "Topic${channelNamePascal}Headers$messageName",
             properties = properties,
             requiredProperties = collectRequiredProperties(message),
         )
