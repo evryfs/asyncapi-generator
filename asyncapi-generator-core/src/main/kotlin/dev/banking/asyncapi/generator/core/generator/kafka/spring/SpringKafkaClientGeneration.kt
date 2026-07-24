@@ -22,6 +22,11 @@ class SpringKafkaClientGeneration {
         @Suppress("UNUSED_PARAMETER")
         resourceOutputDirectory: File,
     ) {
+        SpringKafkaClientMethodNameValidator.validate(
+            channels = generationInput.channels,
+            task = task,
+        )
+
         when (task.language) {
             KOTLIN -> generateKotlinClient(task, generationInput, sourceOutputDirectory)
             JAVA -> generateJavaClient(task, generationInput, sourceOutputDirectory)

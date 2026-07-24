@@ -18,4 +18,5 @@ data class AnalyzedMultiFormatMessage(
     val schema: MultiFormatSchema,
     val keySchema: SchemaInterface? = null,
     val headers: AnalyzedMessageHeaders? = null,
+    val messageId: String = messageName,
 )

@@ -164,6 +164,7 @@ class ChannelAnalyzerTest {
 
         val analyzed = analyzer.analyze(document).channels.single().messages.single()
 
+        assertEquals("accountUpdateAlias", analyzed.messageId)
         assertEquals("AccountUpdatedV1", analyzed.messageName)
         assertEquals("AccountChange", analyzed.payloadTypeName)
         assertEquals("TopicAccountEventsHeadersAccountUpdatedV1", analyzed.headers?.typeName)
@@ -219,6 +220,7 @@ class ChannelAnalyzerTest {
 
         assertTrue(analyzed.messages.isEmpty())
         val multiFormatMessage = analyzed.multiFormatMessages.single()
+        assertEquals("msg", multiFormatMessage.messageId)
         assertEquals("MyMessage", multiFormatMessage.messageName)
         assertEquals("MyMessagePayload", multiFormatMessage.payloadName)
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)

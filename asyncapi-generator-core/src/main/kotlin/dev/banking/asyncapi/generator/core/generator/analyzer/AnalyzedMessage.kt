@@ -9,4 +9,5 @@ data class AnalyzedMessage(
     val schema: Schema, // The payload schema
     val keySchema: SchemaInterface? = null,
     val headers: AnalyzedMessageHeaders? = null,
+    val messageId: String = messageName,
 )

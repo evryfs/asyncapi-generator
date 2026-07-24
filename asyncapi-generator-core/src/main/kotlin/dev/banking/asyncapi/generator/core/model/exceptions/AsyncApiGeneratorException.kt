@@ -73,6 +73,32 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class SpringKafkaClientMethodNameCollision(
+        channelName: String,
+        messageIds: List<String>,
+        generatedMessageName: String,
+        methodNames: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine(
+                    "Channel messages " +
+                        messageIds.joinToString(prefix = "[", postfix = "]") { "'$it'" } +
+                        " resolve to generated message name '$generatedMessageName'.",
+                )
+                appendLine(
+                    "Each of these client methods would be generated more than once: " +
+                        methodNames.joinToString(prefix = "[", postfix = "]") { "'$it'" },
+                )
+                appendLine(
+                    "Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted.",
+                )
+                appendLine("Names must remain unique after conversion to source-code identifiers.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedKafkaKeySchema(
         messageName: String,
         schemaType: String,

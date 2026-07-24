@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -292,6 +293,45 @@ class SpringKafkaClientGenerationTest {
                 },
             )
         }
+    }
+
+    @Test
+    fun `generate rejects method name collisions before writing client sources`() {
+        val generationInput = fixtures.generationInputWithUserSignupChannel()
+        val channel = generationInput.channels.single()
+        val message = channel.messages.single()
+        val sourceOutputDirectory = tempDir.resolve("colliding-method-sources").toFile()
+
+        val error =
+            assertFailsWith<SpringKafkaClientMethodNameCollision> {
+                generator.generate(
+                    task = springKafkaClientTask(language = SourceLanguage.JAVA),
+                    generationInput =
+                        generationInput.copy(
+                            channels =
+                                listOf(
+                                    channel.copy(
+                                        messages =
+                                            listOf(
+                                                message.copy(
+                                                    messageId = "user-signed-up",
+                                                    messageName = "UserSignedUp",
+                                                ),
+                                                message.copy(
+                                                    messageId = "user_signed_up",
+                                                    messageName = "UserSignedUp",
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = tempDir.resolve("colliding-method-resources").toFile(),
+                )
+            }
+
+        assertTrue(error.message!!.contains("['user-signed-up', 'user_signed_up']"))
+        assertFalse(sourceOutputDirectory.exists())
     }
 
     private fun springKafkaClientTask(

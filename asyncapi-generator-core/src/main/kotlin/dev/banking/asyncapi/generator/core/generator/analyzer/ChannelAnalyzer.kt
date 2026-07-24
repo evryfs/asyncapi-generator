@@ -141,6 +141,7 @@ class ChannelAnalyzer {
                         schema = payloadSchema,
                         keySchema = keySchema,
                         headers = headers,
+                        messageId = messageId,
                     ),
                 )
             } else if (multiFormatSchema != null) {
@@ -151,6 +152,7 @@ class ChannelAnalyzer {
                         schema = multiFormatSchema,
                         keySchema = keySchema,
                         headers = headers,
+                        messageId = messageId,
                     ),
                 )
             }
