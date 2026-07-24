@@ -144,6 +144,7 @@ class KotlinSpringKafkaModelFactory(
                             )
                         }
                     GeneratorItem.SendMethod(
+                        messageName = payload.messageName,
                         methodName = payload.methodName("send"),
                         payloadType = payload.payloadType,
                         payloadDescription =
@@ -192,14 +193,9 @@ class KotlinSpringKafkaModelFactory(
                     packageName = producerPackage,
                     description =
                         toKDocLines(
-                            "Producer contract for publishing messages to the `${channel.topic}` topic.",
-                        ) +
-                            toKDocLines(
-                                "The contract exposes message payloads and contract-defined headers as method parameters.",
-                            ) +
-                            toKDocLines(
-                                "Messages with a `bindings.kafka.key` schema also expose a typed Kafka record key.",
-                            ),
+                            "Defines the Spring Kafka producer contract for messages published to the " +
+                                "`${channel.topic}` AsyncAPI channel.",
+                        ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toKotlinStringLiteral(),
                     sendMethods = sendMethods,

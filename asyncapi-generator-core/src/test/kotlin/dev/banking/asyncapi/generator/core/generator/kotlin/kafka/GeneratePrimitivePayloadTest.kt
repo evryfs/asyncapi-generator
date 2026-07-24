@@ -69,7 +69,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             "Producer should expose the primitive payload type directly",
         )
         assertFalse(producerContent.contains("messageKey:"), "Producer should omit a key not declared by the contract")
-        assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
+        assertFalse(
+            producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"),
+            "Producer contract should not own KafkaTemplate wiring",
+        )
         assertTrue(
             producerContent.contains("CompletableFuture<RecordMetadata>"),
             "Producer contract should expose the asynchronous send result",
@@ -133,6 +136,9 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             producerContent.contains("payload: Int"),
             "IntMessage producer should expose the primitive payload type directly",
         )
-        assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
+        assertFalse(
+            producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"),
+            "Producer contract should not own KafkaTemplate wiring",
+        )
     }
 }

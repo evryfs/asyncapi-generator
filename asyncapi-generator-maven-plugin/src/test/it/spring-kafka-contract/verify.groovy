@@ -10,7 +10,8 @@ assert producerContent.contains("CompletableFuture<RecordMetadata>") : "Expected
 assert producerContent.contains("CompletableFuture.failedFuture(") : "Expected an explicit unimplemented producer default"
 assert producerContent.contains('const val USER_EVENTS_TOPIC_ADDRESS: String = "user.\\${kafka.environment}.events.v1"') : "Expected mapped producer topic address"
 assert !producerContent.contains("resolveTopicAddress") : "Producer contract should not expose runtime topic resolution"
-assert !producerContent.contains("@Component") : "Contract producer should not be annotated"
+assert !producerContent.readLines().any { line -> line.trim() == "@Component" } :
+    "Contract producer should not be annotated"
 
 def consumer = new File(basedir, "target/generated-sources/asyncapi/com/example/contract/client/consumer/UserEventsConsumer.kt")
 assert consumer.exists() : "Expected UserEventsConsumer.kt to be generated"

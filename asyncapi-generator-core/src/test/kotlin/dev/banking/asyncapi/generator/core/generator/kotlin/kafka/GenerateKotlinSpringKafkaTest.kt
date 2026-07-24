@@ -31,7 +31,12 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val producerContent = producerFile.readText()
         assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertFalse(producerContent.contains("@Validated"))
-        assertTrue(producerContent.contains("Producer contract for publishing messages to the `user.events.v1` topic."))
+        assertTrue(
+            producerContent.contains(
+                "Defines the Spring Kafka producer contract for messages published to the " +
+                    "`user.events.v1` AsyncAPI channel.",
+            ),
+        )
         assertTrue(producerContent.contains("sendUserSignedUp"))
         assertFalse(producerContent.contains("@Valid"))
         assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
@@ -40,12 +45,15 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
         assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
         assertFalse(producerContent.contains("@Header("))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertFalse(producerContent.contains("ProducerRecord"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
         assertTrue(producerContent.contains("CompletableFuture.failedFuture("))
         assertTrue(producerContent.contains("UnsupportedOperationException("))
-        assertTrue(!producerContent.contains("@Component"), "Producer should not be annotated")
+        assertFalse(
+            producerContent.lineSequence().any { line -> line.trim() == "@Component" },
+            "Producer should not be annotated",
+        )
 
         val consumerFile = consumerDir.resolve("UserEventsConsumer.kt")
         assertTrue(consumerFile.exists(), "Consumer should be generated")
@@ -128,13 +136,13 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertTrue(producerContent.contains("applicationInstanceId: String? = null"))
         assertTrue(
             producerContent.contains(
-                "@param correlationId Value for the `correlationId` Kafka message header.",
+                "@param [correlationId] Value for the `correlationId` Kafka message header.",
             ),
         )
         assertTrue(producerContent.contains("Correlation ID set by application"))
         assertTrue(
             producerContent.contains(
-                "@param applicationInstanceId Value for the `applicationInstanceId` Kafka message header.",
+                "@param [applicationInstanceId] Value for the `applicationInstanceId` Kafka message header.",
             ),
         )
         assertTrue(producerContent.contains("Unique identifier for a given instance"))
@@ -218,7 +226,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
@@ -247,7 +255,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(producerContent.contains("payload: UserCreatedAvro"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
@@ -276,7 +284,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
@@ -305,7 +313,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(producerContent.contains("payload: UserCreatedProtobuf"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 }

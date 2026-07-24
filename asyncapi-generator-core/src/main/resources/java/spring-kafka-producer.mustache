@@ -8,16 +8,100 @@ import {{{.}}};
 {{#description}}
  * {{{.}}}
 {{/description}}
+ *
+ * <p>This interface does not publish Kafka records or register a Spring bean.
+ * The application publishes messages by implementing this contract and
+ * delegating to an application-configured Spring Kafka producer.
+ *
+ * <p>The generated {@code @Payload} and {@code @Header} annotations describe
+ * each parameter's role in the message contract. They do not create the
+ * outbound message. Implementations own topic resolution, record or message
+ * creation, Kafka key and header mapping, serialization, message conversion,
+ * and producer runtime configuration.
+ *
+ * <p>Generated methods return an exceptionally completed future until the
+ * application overrides them. Inheriting this interface alone cannot publish
+ * records.
+{{#hasMultipleMethods}}
+ *
+ * <p>This channel declares multiple message types. Each generated method is an
+ * independent publication contract. Override every method the application
+ * intends to publish.
+{{/hasMultipleMethods}}
+{{#hasSingleMethod}}
+ *
+ * <p>Example implementation:
+ *
+ * <pre>{@code
+ * @Component
+ * public final class {{name}}Impl implements {{name}} {
+ *     private final String topicAddress;
+ *     private final KafkaTemplate<?, ?> kafkaTemplate;
+ *
+ *     public {{name}}Impl(
+ *             @Value({{name}}.{{topicAddressConstantName}}) String topicAddress,
+ *             KafkaTemplate<?, ?> kafkaTemplate) {
+ *         this.topicAddress = topicAddress;
+ *         this.kafkaTemplate = kafkaTemplate;
+ *     }
+ *
+{{#sendMethods}}
+ *     @Override
+ *     public CompletableFuture<RecordMetadata> {{methodName}}(
+ *             {{payloadType}} payload{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+ *             {{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/keyParameter}}
+{{#headerProperties}}
+ *             {{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/headerProperties}}
+ *     ) {
+ *         var message = MessageBuilder.withPayload(payload)
+ *                 .setHeader(KafkaHeaders.TOPIC, topicAddress)
+{{#keyParameter}}
+ *                 .setHeader(KafkaHeaders.KEY, {{parameterName}})
+{{/keyParameter}}
+{{#headerProperties}}
+ *                 .setHeader("{{{wireName}}}", {{parameterName}})
+{{/headerProperties}}
+ *                 .build();
+ *
+ *         return kafkaTemplate.send(message)
+ *                 .thenApply(result -> result.getRecordMetadata());
+ *     }
+{{/sendMethods}}
+ * }
+ * }</pre>
+{{/hasSingleMethod}}
  */
 {{#clientContractAnnotation}}
 @{{.}}
 {{/clientContractAnnotation}}
 public interface {{name}} {
-    /** Spring-resolvable Kafka topic address declared by this AsyncAPI channel. */
+    /**
+     * Kafka topic address declared by this AsyncAPI channel, with channel parameters
+     * mapped to Spring property placeholders.
+     *
+     * <p>Inject the resolved topic address into a producer implementation:
+     *
+     * <pre>{@code
+     * public final class {{name}}Impl {
+     *     private final String topicAddress;
+     *
+     *     public {{name}}Impl(
+     *             @Value({{name}}.{{topicAddressConstantName}})
+     *             String topicAddress) {
+     *         this.topicAddress = topicAddress;
+     *     }
+     * }
+     * }</pre>
+     */
     String {{topicAddressConstantName}} = "{{{topicAddress}}}";
 {{#sendMethods}}
 
     /**
+     * Publishes the {@code {{messageName}}} message to this channel.
+     *
      * <p>The generated default implementation does not publish a record. It
      * returns an exceptionally completed future until the application
      * overrides this method.
@@ -46,7 +130,7 @@ public interface {{name}} {
 {{/descriptionTailLines}}
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
-     * @return future completed with Kafka record metadata after successful publication;
+     * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> {{methodName}}(

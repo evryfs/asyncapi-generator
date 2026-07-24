@@ -34,7 +34,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(producerContent.contains("fun sendRawEvent("))
         assertTrue(producerContent.contains("payload: RawEvent"))
         assertTrue(producerContent.contains("import $modelPackage.RawEvent"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()
@@ -73,7 +73,7 @@ class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorCl
         assertTrue(producerContent.contains("fun sendRawEvent("))
         assertTrue(producerContent.contains("payload: RawEventPayload"))
         assertTrue(producerContent.contains("import $modelPackage.RawEventPayload"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.kt").readText()

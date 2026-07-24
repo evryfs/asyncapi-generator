@@ -59,7 +59,10 @@ sealed interface GeneratorItem {
         val sendMethods: List<SendMethod>,
         val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
-    ) : GeneratorItem
+    ) : GeneratorItem {
+        val hasSingleMethod: Boolean get() = sendMethods.size == 1
+        val hasMultipleMethods: Boolean get() = sendMethods.size > 1
+    }
 
     data class ConsumerMethod(
         val messageName: String,
@@ -81,6 +84,7 @@ sealed interface GeneratorItem {
     }
 
     data class SendMethod(
+        val messageName: String,
         val methodName: String,
         val payloadType: String,
         val payloadDescription: List<String> = emptyList(),
