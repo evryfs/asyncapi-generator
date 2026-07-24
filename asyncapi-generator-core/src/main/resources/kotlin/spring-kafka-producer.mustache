@@ -20,6 +20,10 @@ interface {{name}} {
 {{#sendMethods}}
 
     /**
+     * The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
      * @param payload {{{.}}}
@@ -45,6 +49,7 @@ interface {{name}} {
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
      * @return Future completed with Kafka record metadata after successful publication.
+     *   The generated default completes exceptionally until this method is overridden.
      */
     fun {{methodName}}(
 {{#payloadBindingAnnotation}}
@@ -70,6 +75,11 @@ interface {{name}} {
 {{/bindingAnnotation}}
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
-    ): CompletableFuture<RecordMetadata>
+    ): CompletableFuture<RecordMetadata> =
+        CompletableFuture.failedFuture(
+            UnsupportedOperationException(
+                "Generated producer method '{{methodName}}' has no implementation. Override it before use.",
+            ),
+        )
 {{/sendMethods}}
 }

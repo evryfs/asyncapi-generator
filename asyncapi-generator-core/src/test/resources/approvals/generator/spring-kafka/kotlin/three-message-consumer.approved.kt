@@ -7,7 +7,6 @@ import com.example.account.model.MyAccountUpdatedPayload
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
-import org.springframework.kafka.annotation.KafkaHandler
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
 import org.springframework.messaging.handler.annotation.Payload
@@ -28,24 +27,21 @@ import org.springframework.validation.annotation.Validated
  * See [KafkaHeaders] for the metadata constants available in the application's
  * Spring Kafka version.
  *
- * This channel declares multiple message types. Add `@KafkaListener` to the
- * implementation class and use `@KafkaHandler` methods to dispatch records by
- * the converted payload's runtime type. Each handler must therefore use a
- * distinct payload type.
+ * This channel declares multiple message types. To activate class-level
+ * dispatch, add `@KafkaListener` to the implementation class, override each
+ * selected method, and add `@KafkaHandler` to each override. Spring dispatches
+ * records by the converted payload's runtime type, so selected handlers must
+ * use distinct payload types.
  *
- * Every generated method must be implemented. Applications that intentionally
- * process only a subset of the declared messages must still explicitly
- * implement the remaining methods. These may be intentional no-op handlers,
- * or the application may configure a `RecordFilterStrategy` to discard
- * excluded records before handler delivery.
+ * Generated methods are unannotated no-op defaults. Inheriting a method does
+ * not register it as a Kafka handler. Records without a selected handler are
+ * not routed to these defaults.
  *
- * No default no-op methods are generated, so ignoring a message type remains
- * an explicit application decision. When filtering is used, filtered records
- * are not delivered to a handler. Their acknowledgement and offset behavior
- * is controlled by the application's listener container and filter
- * configuration. Filters should distinguish expected ignored messages from
- * unknown messages so new or malformed message types are not silently
- * discarded.
+ * Applications that intentionally ignore a declared message should configure
+ * a `RecordFilterStrategy` before handler dispatch or provide an explicit
+ * no-op `@KafkaHandler` override. Filters should distinguish expected ignored
+ * messages from unknown messages so new or malformed message types are not
+ * silently discarded.
  */
 @Validated
 interface MyAccountLifecycleConsumer {
@@ -71,13 +67,16 @@ interface MyAccountLifecycleConsumer {
     /**
      * Handles the `MyAccountCreated` message received from this channel.
      *
+     * The generated default implementation performs no action and is not a
+     * Kafka handler. Override this method and add `@KafkaHandler` to select it
+     * for class-level listener dispatch.
+     *
      * @param [payload] Details about a newly created account.
      * @param [receivedTopic] Kafka topic from which the record was received.
      * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    @KafkaHandler
     fun listenMyAccountCreated(
         @Payload
         @Valid
@@ -90,10 +89,14 @@ interface MyAccountLifecycleConsumer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    )
+    ) = Unit
 
     /**
      * Handles the `MyAccountUpdated` message received from this channel.
+     *
+     * The generated default implementation performs no action and is not a
+     * Kafka handler. Override this method and add `@KafkaHandler` to select it
+     * for class-level listener dispatch.
      *
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
@@ -102,7 +105,6 @@ interface MyAccountLifecycleConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    @KafkaHandler
     fun listenMyAccountUpdated(
         @Payload
         @Valid
@@ -120,10 +122,14 @@ interface MyAccountLifecycleConsumer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    )
+    ) = Unit
 
     /**
      * Handles the `MyAccountClosed` message received from this channel.
+     *
+     * The generated default implementation performs no action and is not a
+     * Kafka handler. Override this method and add `@KafkaHandler` to select it
+     * for class-level listener dispatch.
      *
      * @param [payload] Details about a closed account.
      * @param [receivedTopic] Kafka topic from which the record was received.
@@ -132,7 +138,6 @@ interface MyAccountLifecycleConsumer {
      * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    @KafkaHandler
     fun listenMyAccountClosed(
         @Payload
         @Valid
@@ -149,5 +154,5 @@ interface MyAccountLifecycleConsumer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    )
+    ) = Unit
 }

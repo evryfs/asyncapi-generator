@@ -43,7 +43,9 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(producerContent.contains("@Header("))
         assertFalse(producerContent.contains("KafkaTemplate"))
         assertFalse(producerContent.contains("ProducerRecord"))
-        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> sendUserSignedUp"))
+        assertTrue(producerContent.contains("default CompletableFuture<RecordMetadata> sendUserSignedUp"))
+        assertTrue(producerContent.contains("CompletableFuture.failedFuture("))
+        assertTrue(producerContent.contains("new UnsupportedOperationException("))
         assertTrue(!producerContent.contains("@Component"), "Producer should not be annotated")
 
         val consumerFile = consumerDir.resolve("UserEventsConsumer.java")
@@ -69,7 +71,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("receivedKey"))
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
         assertFalse(
             consumerContent.lineSequence().any { line -> line.trimStart().startsWith("@KafkaListener") },
             "Consumer should not be annotated",
@@ -116,7 +118,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
             ),
         )
         assertTrue(consumerContent.contains("Unique identifier for a given instance"))
-        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
         assertFalse(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
@@ -182,7 +184,7 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertFalse(consumerContent.contains("correlationId"))
         assertFalse(consumerContent.contains("applicationInstanceId"))
-        assertFalse(consumerContent.contains("default void"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
         assertFalse(producerContent.contains(".client.header."))

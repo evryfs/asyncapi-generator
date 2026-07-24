@@ -43,6 +43,8 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(producerContent.contains("KafkaTemplate"))
         assertFalse(producerContent.contains("ProducerRecord"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
+        assertTrue(producerContent.contains("CompletableFuture.failedFuture("))
+        assertTrue(producerContent.contains("UnsupportedOperationException("))
         assertTrue(!producerContent.contains("@Component"), "Producer should not be annotated")
 
         val consumerFile = consumerDir.resolve("UserEventsConsumer.kt")
@@ -62,7 +64,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
         assertFalse(
             consumerContent.lineSequence().any { line -> line.trimStart().startsWith("@KafkaListener") },
             "Consumer should not be annotated",
@@ -109,7 +111,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             ),
         )
         assertTrue(consumerContent.contains("Unique identifier for a given instance"))
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
         assertFalse(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
@@ -174,7 +176,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertFalse(consumerContent.contains("correlationId:"))
         assertFalse(consumerContent.contains("applicationInstanceId:"))
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
+        assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
         assertFalse(producerContent.contains(".client.header."))

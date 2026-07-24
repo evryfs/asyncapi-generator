@@ -8,7 +8,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.TopicParamete
 import dev.banking.asyncapi.generator.core.generator.java.mapper.ConstraintMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHandlerPayloadTypeValidator
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderPropertyFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
@@ -57,13 +56,9 @@ class JavaSpringKafkaModelFactory(
                 channelName = channel.channelName,
                 value = channel.topic,
                 topicParameterProperties = topicParameterProperties,
-            )
+        )
 
         if (channel.isConsumer && generateConsumers) {
-            KafkaHandlerPayloadTypeValidator.validate(
-                channelName = channel.channelName,
-                payloads = payloads,
-            )
             val consumerName = "${baseName}Consumer"
             val methods =
                 payloads.map { payload ->
@@ -97,7 +92,6 @@ class JavaSpringKafkaModelFactory(
                         headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                         requiredHeaderAnnotation = "NotNull",
-                        handlerAnnotation = "KafkaHandler".takeIf { payloads.size > 1 },
                     )
                 }
             val keyAnnotations =
@@ -112,9 +106,6 @@ class JavaSpringKafkaModelFactory(
                         "org.springframework.messaging.handler.annotation.Header" +
                         "org.springframework.messaging.handler.annotation.Payload" +
                         listOfNotNull(
-                            "org.springframework.kafka.annotation.KafkaHandler".takeIf {
-                                methods.any { method -> method.handlerAnnotation != null }
-                            },
                             "org.springframework.lang.Nullable".takeIf {
                                 methods.any { method ->
                                     method.keyParameter?.required == false ||

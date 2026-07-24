@@ -25,6 +25,9 @@ import org.springframework.validation.annotation.Validated;
  * See {@link KafkaHeaders} for the metadata constants available in the application's
  * Spring Kafka version.
  *
+ * <p>The generated method is an unannotated no-op default. Override it and add
+ * {@code @KafkaListener} to the implementation method to activate consumption.
+ *
  * <p>Example implementation:
  *
  * <pre>{@code
@@ -71,6 +74,9 @@ public interface MyAccountUpdatedConsumer {
     /**
      * Handles the {@code MyAccountUpdated} message received from this channel.
      *
+     * <p>The generated default implementation performs no action. Override this
+     * method and add {@code @KafkaListener} to activate message consumption.
+     *
      * @param payload Details about an account update.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Identifies an account within an institution.
@@ -79,11 +85,12 @@ public interface MyAccountUpdatedConsumer {
      * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
      *   message.
      */
-    void listenMyAccountUpdated(
+    default void listenMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true) @Valid @NotNull MyAccountKey receivedKey,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
-    );
+    ) {
+    }
 }

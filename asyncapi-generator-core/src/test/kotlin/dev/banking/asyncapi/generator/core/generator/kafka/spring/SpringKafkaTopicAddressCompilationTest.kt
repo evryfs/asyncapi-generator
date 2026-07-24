@@ -58,7 +58,7 @@ class SpringKafkaTopicAddressCompilationTest {
     }
 
     @Test
-    fun `generated Kotlin contracts compile with message-specific Kafka keys`() {
+    fun `generated Kotlin contracts support partial implementations with message-specific Kafka keys`() {
         val contracts =
             generatedClients.generate(
                 contractPath = THREE_MESSAGE_CONTRACT,
@@ -84,7 +84,7 @@ class SpringKafkaTopicAddressCompilationTest {
     }
 
     @Test
-    fun `generated Java contracts compile with message-specific Kafka keys`() {
+    fun `generated Java contracts support partial implementations with message-specific Kafka keys`() {
         val contracts =
             generatedClients.generate(
                 contractPath = THREE_MESSAGE_CONTRACT,

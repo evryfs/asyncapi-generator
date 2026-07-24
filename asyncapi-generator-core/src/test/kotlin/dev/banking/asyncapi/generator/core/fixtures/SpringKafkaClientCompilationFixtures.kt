@@ -217,6 +217,19 @@ internal class SpringKafkaClientCompilationFixtures(
                         content = consumerSource,
                     ),
                     kotlinSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/PartialContracts.kt",
+                        content =
+                            """
+                            package ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}
+
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.$consumerName
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.$producerName
+
+                            class PartialContracts : $producerName, $consumerName
+                            """.trimIndent(),
+                    ),
+                    kotlinSource(
                         relativePath = "org/apache/kafka/clients/producer/RecordMetadata.kt",
                         content =
                             """
@@ -235,16 +248,6 @@ internal class SpringKafkaClientCompilationFixtures(
                                 const val RECEIVED_TOPIC: String = "kafka_receivedTopic"
                                 const val RECEIVED_KEY: String = "kafka_receivedMessageKey"
                             }
-                            """.trimIndent(),
-                    ),
-                    kotlinSource(
-                        relativePath = "org/springframework/kafka/annotation/KafkaHandler.kt",
-                        content =
-                            """
-                            package org.springframework.kafka.annotation
-
-                            @Target(AnnotationTarget.FUNCTION)
-                            annotation class KafkaHandler
                             """.trimIndent(),
                     ),
                     kotlinSource(
@@ -318,6 +321,19 @@ internal class SpringKafkaClientCompilationFixtures(
                         content = consumerSource,
                     ),
                     javaSource(
+                        relativePath =
+                            "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/PartialContracts.java",
+                        content =
+                            """
+                            package ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE};
+
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.$consumerName;
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.$producerName;
+
+                            public final class PartialContracts implements $producerName, $consumerName {}
+                            """.trimIndent(),
+                    ),
+                    javaSource(
                         relativePath = "org/apache/kafka/clients/producer/RecordMetadata.java",
                         content =
                             """
@@ -337,12 +353,6 @@ internal class SpringKafkaClientCompilationFixtures(
                                 public static final String RECEIVED_KEY = "kafka_receivedMessageKey";
                             }
                             """.trimIndent(),
-                    ),
-                    javaAnnotation(
-                        relativePath = "org/springframework/kafka/annotation/KafkaHandler.java",
-                        packageName = "org.springframework.kafka.annotation",
-                        name = "KafkaHandler",
-                        target = "ElementType.METHOD",
                     ),
                     javaAnnotation(
                         relativePath = "org/springframework/messaging/handler/annotation/Header.java",

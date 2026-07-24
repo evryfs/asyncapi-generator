@@ -18,6 +18,10 @@ public interface {{name}} {
 {{#sendMethods}}
 
     /**
+     * <p>The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
      * @param payload {{{.}}}
@@ -42,9 +46,10 @@ public interface {{name}} {
 {{/descriptionTailLines}}
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
-     * @return future completed with Kafka record metadata after successful publication
+     * @return future completed with Kafka record metadata after successful publication;
+     *   the generated default completes exceptionally until this method is overridden
      */
-    CompletableFuture<RecordMetadata> {{methodName}}(
+    default CompletableFuture<RecordMetadata> {{methodName}}(
         {{#payloadBindingAnnotation}}@{{{.}}} {{/payloadBindingAnnotation}}{{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}
         {{#annotations}}{{{.}}} {{/annotations}}{{typeName}} {{parameterName}}{{parameterSuffix}}
@@ -52,6 +57,12 @@ public interface {{name}} {
 {{#headerProperties}}
         {{#bindingAnnotation}}@{{{.}}} {{/bindingAnnotation}}{{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
-    );
+    ) {
+        return CompletableFuture.failedFuture(
+            new UnsupportedOperationException(
+                "Generated producer method '{{methodName}}' has no implementation. Override it before use."
+            )
+        );
+    }
 {{/sendMethods}}
 }

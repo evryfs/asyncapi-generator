@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.AmbiguousKafkaHandlerPayloadTypes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -251,11 +250,11 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `generate rejects ambiguous multi-message consumer payload types`() {
+    fun `generate leaves multi-message handler selection to the application`() {
         val generationInput = fixtures.generationInputWithUserSignupChannel()
         val channel = generationInput.channels.single()
         val message = channel.messages.single()
-        val ambiguousInput =
+        val sharedPayloadInput =
             generationInput.copy(
                 channels =
                     listOf(
@@ -270,29 +269,27 @@ class SpringKafkaClientGenerationTest {
             )
 
         SourceLanguage.entries.forEach { language ->
-            val exception =
-                assertFailsWith<AmbiguousKafkaHandlerPayloadTypes> {
-                    generator.generate(
-                        task = springKafkaClientTask(language = language),
-                        generationInput = ambiguousInput,
-                        sourceOutputDirectory = tempDir.resolve("ambiguous-$language-sources").toFile(),
-                        resourceOutputDirectory = tempDir.resolve("ambiguous-$language-resources").toFile(),
-                    )
-                }
+            val sourceOutputDirectory = tempDir.resolve("shared-payload-$language-sources").toFile()
+            generator.generate(
+                task = springKafkaClientTask(language = language),
+                generationInput = sharedPayloadInput,
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = tempDir.resolve("shared-payload-$language-resources").toFile(),
+            )
 
-            assertTrue(
-                exception.message.orEmpty().contains(
-                    "Multiple messages resolve to the same Kafka handler payload type",
-                ),
-                exception.message,
-            )
-            assertTrue(
-                exception.message.orEmpty().contains("'UserSignedUp'"),
-                exception.message,
-            )
-            assertTrue(
-                exception.message.orEmpty().contains("'UserProfileUpdated'"),
-                exception.message,
+            val extension = if (language == SourceLanguage.KOTLIN) "kt" else "java"
+            val consumerContent =
+                sourceOutputDirectory
+                    .resolve("com/example/client/consumer/UserEventsConsumer.$extension")
+                    .readText()
+
+            assertTrue(consumerContent.contains("listenUserSignedUp"))
+            assertTrue(consumerContent.contains("listenUserProfileUpdated"))
+            assertFalse(consumerContent.contains("import org.springframework.kafka.annotation.KafkaHandler"))
+            assertFalse(
+                consumerContent.lineSequence().any { line ->
+                    line.trim() == "@KafkaHandler"
+                },
             )
         }
     }

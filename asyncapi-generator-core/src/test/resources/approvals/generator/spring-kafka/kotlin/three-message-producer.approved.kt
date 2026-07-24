@@ -26,12 +26,17 @@ interface MyAccountLifecycleProducer {
     }
 
     /**
+     * The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about a newly created account.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Optional name of the system that produced the message.
      * @return Future completed with Kafka record metadata after successful publication.
+     *   The generated default completes exceptionally until this method is overridden.
      */
     fun sendMyAccountCreated(
         @Payload
@@ -42,9 +47,18 @@ interface MyAccountLifecycleProducer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    ): CompletableFuture<RecordMetadata>
+    ): CompletableFuture<RecordMetadata> =
+        CompletableFuture.failedFuture(
+            UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountCreated' has no implementation. Override it before use.",
+            ),
+        )
 
     /**
+     * The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about an account update.
      * @param messageKey Numeric identifier of the updated account.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -52,6 +66,7 @@ interface MyAccountLifecycleProducer {
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Optional name of the system that produced the message.
      * @return Future completed with Kafka record metadata after successful publication.
+     *   The generated default completes exceptionally until this method is overridden.
      */
     fun sendMyAccountUpdated(
         @Payload
@@ -66,9 +81,18 @@ interface MyAccountLifecycleProducer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    ): CompletableFuture<RecordMetadata>
+    ): CompletableFuture<RecordMetadata> =
+        CompletableFuture.failedFuture(
+            UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountUpdated' has no implementation. Override it before use.",
+            ),
+        )
 
     /**
+     * The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about a closed account.
      * @param messageKey Identifies a particular account closure.
      * @param X_EXAMPLE_CORRELATION_ID Value for the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Implementations must add this value to the outgoing Kafka
@@ -76,6 +100,7 @@ interface MyAccountLifecycleProducer {
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Implementations must add this value to the outgoing Kafka
      * record. Optional name of the system that produced the message.
      * @return Future completed with Kafka record metadata after successful publication.
+     *   The generated default completes exceptionally until this method is overridden.
      */
     fun sendMyAccountClosed(
         @Payload
@@ -89,5 +114,10 @@ interface MyAccountLifecycleProducer {
         X_EXAMPLE_CORRELATION_ID: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
         X_EXAMPLE_SOURCE_SYSTEM: String? = null,
-    ): CompletableFuture<RecordMetadata>
+    ): CompletableFuture<RecordMetadata> =
+        CompletableFuture.failedFuture(
+            UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountClosed' has no implementation. Override it before use.",
+            ),
+        )
 }

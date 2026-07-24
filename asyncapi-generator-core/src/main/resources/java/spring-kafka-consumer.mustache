@@ -21,25 +21,26 @@ import {{.}};
  * Spring Kafka version.
 {{#hasMultipleMethods}}
  *
- * <p>This channel declares multiple message types. Add {@code @KafkaListener} to the
- * implementation class and use {@code @KafkaHandler} methods to dispatch records by
- * the converted payload's runtime type. Each handler must therefore use a distinct
- * payload type.
+ * <p>This channel declares multiple message types. To activate class-level
+ * dispatch, add {@code @KafkaListener} to the implementation class, override
+ * each selected method, and add {@code @KafkaHandler} to each override. Spring
+ * dispatches records by the converted payload's runtime type, so selected
+ * handlers must use distinct payload types.
  *
- * <p>Every generated method must be implemented. Applications that intentionally
- * process only a subset of the declared messages must still explicitly implement
- * the remaining methods. These may be intentional no-op handlers, or the
- * application may configure a {@code RecordFilterStrategy} to discard excluded
- * records before handler delivery.
+ * <p>Generated methods are unannotated no-op defaults. Inheriting a method does
+ * not register it as a Kafka handler. Records without a selected handler are
+ * not routed to these defaults.
  *
- * <p>No default no-op methods are generated, so ignoring a message type remains
- * an explicit application decision. When filtering is used, filtered records are
- * not delivered to a handler. Their acknowledgement and offset behavior is
- * controlled by the application's listener container and filter configuration.
- * Filters should distinguish expected ignored messages from unknown messages so
- * new or malformed message types are not silently discarded.
+ * <p>Applications that intentionally ignore a declared message should configure
+ * a {@code RecordFilterStrategy} before handler dispatch or provide an explicit
+ * no-op {@code @KafkaHandler} override. Filters should distinguish expected
+ * ignored messages from unknown messages so new or malformed message types are
+ * not silently discarded.
 {{/hasMultipleMethods}}
 {{#hasSingleMethod}}
+ *
+ * <p>The generated method is an unannotated no-op default. Override it and add
+ * {@code @KafkaListener} to the implementation method to activate consumption.
  *
  * <p>Example implementation:
  *
@@ -96,6 +97,17 @@ public interface {{name}} {
     /**
      * Handles the {@code {{messageName}}} message received from this channel.
      *
+{{#hasSingleMethod}}
+     * <p>The generated default implementation performs no action. Override this
+     * method and add {@code @KafkaListener} to activate message consumption.
+     *
+{{/hasSingleMethod}}
+{{#hasMultipleMethods}}
+     * <p>The generated default implementation performs no action and is not a
+     * Kafka handler. Override this method and add {@code @KafkaHandler} to
+     * select it for class-level listener dispatch.
+     *
+{{/hasMultipleMethods}}
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
      * @param payload {{.}}
@@ -122,10 +134,7 @@ public interface {{name}} {
 {{/headerProperties}}
 {{/hasParameterDocumentation}}
      */
-{{#handlerAnnotation}}
-    @{{.}}
-{{/handlerAnnotation}}
-    void {{methodName}}(
+    default void {{methodName}}(
         @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) {{#requiredHeaderAnnotation}}@{{.}} {{/requiredHeaderAnnotation}}String receivedTopic{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}
@@ -134,6 +143,7 @@ public interface {{name}} {
 {{#headerProperties}}
         @Header(name = "{{{wireName}}}", required = {{required}}) {{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
-    );
+    ) {
+    }
 {{/methods}}
 }

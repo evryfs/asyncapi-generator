@@ -26,48 +26,81 @@ public interface MyAccountLifecycleProducer {
     String MY_ACCOUNT_LIFECYCLE_TOPIC_ADDRESS = "my.accounts.${kafka.environment}.lifecycle.v1";
 
     /**
+     * <p>The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about a newly created account.
      * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Optional name of the system that produced the message.
-     * @return future completed with Kafka record metadata after successful publication
+     * @return future completed with Kafka record metadata after successful publication;
+     *   the generated default completes exceptionally until this method is overridden
      */
-    CompletableFuture<RecordMetadata> sendMyAccountCreated(
+    default CompletableFuture<RecordMetadata> sendMyAccountCreated(
         @Payload @Valid MyAccountCreatedPayload payload,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
-    );
+    ) {
+        return CompletableFuture.failedFuture(
+            new UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountCreated' has no implementation. Override it before use."
+            )
+        );
+    }
 
     /**
+     * <p>The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about an account update.
      * @param messageKey Numeric identifier of the updated account.
      * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Optional name of the system that produced the message.
-     * @return future completed with Kafka record metadata after successful publication
+     * @return future completed with Kafka record metadata after successful publication;
+     *   the generated default completes exceptionally until this method is overridden
      */
-    CompletableFuture<RecordMetadata> sendMyAccountUpdated(
+    default CompletableFuture<RecordMetadata> sendMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Min(1L) @Max(9999999999L) @NotNull Long messageKey,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
-    );
+    ) {
+        return CompletableFuture.failedFuture(
+            new UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountUpdated' has no implementation. Override it before use."
+            )
+        );
+    }
 
     /**
+     * <p>The generated default implementation does not publish a record. It
+     * returns an exceptionally completed future until the application
+     * overrides this method.
+     *
      * @param payload Details about a closed account.
      * @param messageKey Identifies a particular account closure.
      * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Identifier used to correlate related messages.
      * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
      * Kafka record. Optional name of the system that produced the message.
-     * @return future completed with Kafka record metadata after successful publication
+     * @return future completed with Kafka record metadata after successful publication;
+     *   the generated default completes exceptionally until this method is overridden
      */
-    CompletableFuture<RecordMetadata> sendMyAccountClosed(
+    default CompletableFuture<RecordMetadata> sendMyAccountClosed(
         @Payload @Valid MyAccountClosedPayload payload,
         @Valid @NotNull MyAccountClosureKey messageKey,
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
-    );
+    ) {
+        return CompletableFuture.failedFuture(
+            new UnsupportedOperationException(
+                "Generated producer method 'sendMyAccountClosed' has no implementation. Override it before use."
+            )
+        );
+    }
 }
