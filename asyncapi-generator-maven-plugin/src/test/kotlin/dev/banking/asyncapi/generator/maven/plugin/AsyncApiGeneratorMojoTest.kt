@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedType
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.consumer
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.generatorName
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputSpec
@@ -16,6 +17,7 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobu
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
+import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.producer
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
@@ -95,8 +97,8 @@ class AsyncApiGeneratorMojoTest {
             clientConfig(
                 clientType = "spring-kafka",
                 clientContract = "interface",
-                generateProducer = false,
-                generateConsumer = true,
+                producer = producer(enabled = false),
+                consumer = consumer(enabled = true),
                 topicParameterProperties = mapOf("environment" to "kafka.environment"),
                 validationAnnotations =
                     validationAnnotations(
@@ -152,6 +154,24 @@ class AsyncApiGeneratorMojoTest {
         assertTrue(springKafka.producer.enabled)
         assertTrue(springKafka.consumer.enabled)
         assertEquals(ClientValidationAnnotations(), springKafka.validationAnnotations)
+    }
+
+    @Test
+    fun `should enable empty producer and consumer configuration objects`() {
+        val clients =
+            clientConfig(
+                clientType = "spring-kafka",
+                clientContract = "interface",
+                producer = producer(),
+                consumer = consumer(),
+            ).toRequest(
+                clientPackage = "com.example.client",
+                modelPackage = "com.example.model",
+            )
+
+        val springKafka = clients.kafka!!.springKafka!!
+        assertTrue(springKafka.producer.enabled)
+        assertTrue(springKafka.consumer.enabled)
     }
 
     @Test

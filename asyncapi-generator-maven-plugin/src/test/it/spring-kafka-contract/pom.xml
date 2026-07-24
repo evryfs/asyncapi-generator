@@ -30,6 +30,8 @@
                     <clientConfig>
                         <clientType>spring-kafka</clientType>
                         <clientContract>interface</clientContract>
+                        <producer/>
+                        <consumer/>
                         <topicParameterProperties>
                             <environment>kafka.environment</environment>
                         </topicParameterProperties>

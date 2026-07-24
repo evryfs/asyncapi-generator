@@ -107,18 +107,28 @@ object MavenTestHelper {
     fun clientConfig(
         clientType: String? = null,
         clientContract: String? = null,
-        generateProducer: Boolean? = null,
-        generateConsumer: Boolean? = null,
+        producer: MavenProducerConfiguration? = null,
+        consumer: MavenConsumerConfiguration? = null,
         topicParameterProperties: Map<String, String>? = null,
         validationAnnotations: MavenValidationAnnotationsConfiguration? = null,
     ): MavenClientConfiguration =
         MavenClientConfiguration().apply {
             this.clientType = clientType
             this.clientContract = clientContract
-            this.generateProducer = generateProducer
-            this.generateConsumer = generateConsumer
+            this.producer = producer
+            this.consumer = consumer
             this.topicParameterProperties = topicParameterProperties
             this.validationAnnotations = validationAnnotations
+        }
+
+    fun producer(enabled: Boolean? = null): MavenProducerConfiguration =
+        MavenProducerConfiguration().apply {
+            this.enabled = enabled
+        }
+
+    fun consumer(enabled: Boolean? = null): MavenConsumerConfiguration =
+        MavenConsumerConfiguration().apply {
+            this.enabled = enabled
         }
 
     fun validationAnnotations(

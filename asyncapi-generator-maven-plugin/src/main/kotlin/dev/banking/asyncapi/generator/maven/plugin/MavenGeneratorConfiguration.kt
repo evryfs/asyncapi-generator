@@ -96,6 +96,36 @@ class MavenNativeProtobufConfiguration {
 }
 
 /**
+ * Maven producer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenProducerConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaProducer =
+        GeneratorConfigurationRequest.KafkaProducer(
+            enabled = enabled ?: true,
+        )
+}
+
+/**
+ * Maven consumer generation configuration.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorMojoTest`
+ */
+class MavenConsumerConfiguration {
+    var enabled: Boolean? = null
+
+    fun toRequest(): GeneratorConfigurationRequest.KafkaConsumer =
+        GeneratorConfigurationRequest.KafkaConsumer(
+            enabled = enabled ?: true,
+        )
+}
+
+/**
  * Maven client generation configuration.
  *
  * Expected behavior is covered by:
@@ -104,8 +134,8 @@ class MavenNativeProtobufConfiguration {
 class MavenClientConfiguration {
     var clientType: String? = null
     var clientContract: String? = null
-    var generateProducer: Boolean? = null
-    var generateConsumer: Boolean? = null
+    var producer: MavenProducerConfiguration? = null
+    var consumer: MavenConsumerConfiguration? = null
     var topicParameterProperties: Map<String, String>? = null
     var validationAnnotations: MavenValidationAnnotationsConfiguration? = null
 
@@ -141,13 +171,11 @@ class MavenClientConfiguration {
                                         validationAnnotations?.toRequest()
                                             ?: ClientValidationAnnotations(),
                                     producer =
-                                        GeneratorConfigurationRequest.KafkaProducer(
-                                            enabled = generateProducer ?: true,
-                                        ),
+                                        producer?.toRequest()
+                                            ?: GeneratorConfigurationRequest.KafkaProducer(),
                                     consumer =
-                                        GeneratorConfigurationRequest.KafkaConsumer(
-                                            enabled = generateConsumer ?: true,
-                                        ),
+                                        consumer?.toRequest()
+                                            ?: GeneratorConfigurationRequest.KafkaConsumer(),
                                 ),
                         ),
                 )
