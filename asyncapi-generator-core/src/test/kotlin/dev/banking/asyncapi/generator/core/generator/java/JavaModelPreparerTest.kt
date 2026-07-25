@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -15,6 +16,11 @@ class JavaModelPreparerTest {
             preparer.prepare(
                 input = fixtures.generationInputWithObjectEnumAndPrimitive(),
                 packageName = "com.example.model",
+                annotation =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "com.example.GeneratedPayload",
+                        path = "modelConfig.modelAnnotation",
+                    ),
             )
 
         assertEquals(listOf("User", "Status"), items.map { it.name })
@@ -22,6 +28,8 @@ class JavaModelPreparerTest {
         val user = items.filterIsInstance<GeneratorItem.ClassModel>().single()
         assertEquals("com.example.model", user.packageName)
         assertEquals(listOf("Command", "Serializable"), user.implementsInterfaces)
+        assertEquals(listOf("@GeneratedPayload"), user.classAnnotations)
+        assertEquals(listOf("com.example.GeneratedPayload"), user.classAnnotationImports)
         assertEquals("id", user.properties.single().name)
         assertEquals("String", user.properties.single().typeName)
 

@@ -15,4 +15,5 @@ data class JavaRecordTemplate(
     val hasFields: Boolean = fields.isNotEmpty(),
     val imports: List<String> = emptyList(),
     val implementsClause: String = "",
+    val classAnnotations: List<String> = emptyList(),
 )

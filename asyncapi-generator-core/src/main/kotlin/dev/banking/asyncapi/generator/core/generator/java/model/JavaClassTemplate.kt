@@ -7,5 +7,6 @@ data class JavaClassTemplate(
     val fields: List<Map<String, Any?>>,
     val allFields: List<Map<String, Any?>> = fields,
     val imports: List<String> = emptyList(),
-    val implementsClause: String = ""
+    val implementsClause: String = "",
+    val classAnnotations: List<String> = emptyList(),
 )

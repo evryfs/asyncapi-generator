@@ -50,6 +50,7 @@ class ModelArtifactGeneration(
                     javaModelPreparer.prepare(
                         input = generationInput,
                         packageName = task.packageName,
+                        annotation = task.annotation,
                     )
                 val generator =
                     JavaGenerator(

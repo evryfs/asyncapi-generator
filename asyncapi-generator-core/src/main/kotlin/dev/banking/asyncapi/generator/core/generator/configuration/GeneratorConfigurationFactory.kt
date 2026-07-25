@@ -22,7 +22,7 @@ object GeneratorConfigurationFactory {
                     configuredModelType = models.modelType,
                 )
             }
-        validateModelAnnotation(request, modelType)
+        val modelAnnotation = resolveModelAnnotation(request, modelType)
         val protobufModels = request.protobufModels(modelType)
 
         return GeneratorConfiguration(
@@ -46,7 +46,7 @@ object GeneratorConfigurationFactory {
                             )
                         },
                 ),
-            models = request.jvmModels(modelType),
+            models = request.jvmModels(modelType, modelAnnotation),
             schemas = request.schemaGeneration(modelType, protobufModels),
             clients =
                 buildList {
@@ -258,12 +258,12 @@ object GeneratorConfigurationFactory {
                 "$path is required when models.packageName is not configured",
             )
 
-    private fun validateModelAnnotation(
+    private fun resolveModelAnnotation(
         request: GeneratorConfigurationRequest,
         modelType: ModelType?,
-    ) {
+    ): QualifiedTypeName? {
+        val annotation = request.models?.annotation ?: return null
         if (
-            request.models?.annotation != null &&
             modelType !in
             setOf(
                 ModelType.KOTLIN_DATA_CLASS,
@@ -273,12 +273,20 @@ object GeneratorConfigurationFactory {
         ) {
             throw IllegalArgumentException(
                 "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
-                    "and java-record model types",
+                "and java-record model types",
             )
         }
+
+        return QualifiedTypeName.fromConfigurationValue(
+            value = annotation,
+            path = "modelConfig.modelAnnotation",
+        )
     }
 
-    private fun GeneratorConfigurationRequest.jvmModels(modelType: ModelType?): ModelGeneration =
+    private fun GeneratorConfigurationRequest.jvmModels(
+        modelType: ModelType?,
+        modelAnnotation: QualifiedTypeName?,
+    ): ModelGeneration =
         models?.packageName?.let { packageName ->
             when (modelType) {
                 ModelType.KOTLIN_DATA_CLASS,
@@ -286,13 +294,13 @@ object GeneratorConfigurationFactory {
                 ->
                     ModelGeneration.Enabled(
                         packageName = packageName,
-                        annotation = models.annotation,
+                        annotation = modelAnnotation,
                         javaModelType = JavaModelType.CLASS,
                     )
                 ModelType.JAVA_RECORD ->
                     ModelGeneration.Enabled(
                         packageName = packageName,
-                        annotation = models.annotation,
+                        annotation = modelAnnotation,
                         javaModelType = JavaModelType.RECORD,
                     )
                 ModelType.AVRO_SPECIFIC_RECORD,

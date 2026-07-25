@@ -31,6 +31,8 @@ def javaRecord = new File(
     "target/generated-sources/java/com/example/complete/java/model/AccountUpdatedV1Payload.java",
 )
 assert javaRecord.isFile() : "Expected the configured Java model package"
+assert javaRecord.text.contains("import com.example.codegen.GeneratedPayload;")
+assert javaRecord.text.contains("@GeneratedPayload")
 assert javaRecord.text.contains("public record AccountUpdatedV1Payload(")
 
 def nativeAvroSchema = new File(

@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
@@ -43,7 +44,13 @@ abstract class AbstractKotlinGeneratorClass {
                     if (generateModels) {
                         ModelGeneration.Enabled(
                             packageName = modelPackage,
-                            annotation = modelAnnotation,
+                            annotation =
+                                modelAnnotation?.let { value ->
+                                    QualifiedTypeName.fromConfigurationValue(
+                                        value = value,
+                                        path = "modelConfig.modelAnnotation",
+                                    )
+                                },
                         )
                     } else {
                         ModelGeneration.Disabled

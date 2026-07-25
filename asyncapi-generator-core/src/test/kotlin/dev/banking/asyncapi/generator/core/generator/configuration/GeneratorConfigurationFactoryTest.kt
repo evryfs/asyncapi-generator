@@ -228,7 +228,11 @@ class GeneratorConfigurationFactoryTest {
         assertEquals(
             ModelGeneration.Enabled(
                 packageName = "com.example.model",
-                annotation = "com.example.NoArg",
+                annotation =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "com.example.NoArg",
+                        path = "modelConfig.modelAnnotation",
+                    ),
                 javaModelType = JavaModelType.CLASS,
             ),
             configuration.models,
@@ -716,6 +720,38 @@ class GeneratorConfigurationFactoryTest {
         assertEquals(
             "models.packageName is required when models.annotation is configured",
             exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects an empty model annotation`() {
+        assertConfigurationError(
+            expectedMessage = "modelConfig.modelAnnotation cannot be empty",
+            request =
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            annotation = " ",
+                        ),
+                ),
+        )
+    }
+
+    @Test
+    fun `create rejects a model annotation without a fully qualified name`() {
+        assertConfigurationError(
+            expectedMessage =
+                "modelConfig.modelAnnotation must be a fully qualified type name, " +
+                    "for example com.example.GeneratedPayload",
+            request =
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            annotation = "GeneratedPayload",
+                        ),
+                ),
         )
     }
 

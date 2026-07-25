@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.factory
 
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
@@ -13,7 +14,7 @@ class KotlinGeneratorModelFactory(
     val packageName: String,
     val context: GeneratorContext,
     val polymorphicRelationships: Map<String, List<String>>,
-    val annotation: String? = null,
+    val annotation: QualifiedTypeName? = null,
 ) {
     private val propertyFactory = PropertyFactory(context)
     private val kotlinEnumIdentifierRegex = Regex("^[A-Z_][A-Z0-9_]*$")
@@ -56,11 +57,10 @@ class KotlinGeneratorModelFactory(
                         propertyFactory.createProperty(propName, propSchema, schema.required ?: emptyList())
                     } ?: emptyList()
                 val (classAnnotations, classAnnotationImports) =
-                    if (annotation.isNullOrBlank()) {
+                    if (annotation == null) {
                         emptyList<String>() to emptyList()
                     } else {
-                        val shortName = annotation.substringAfterLast(".")
-                        listOf("@$shortName") to listOf(annotation)
+                        listOf("@${annotation.simpleName}") to listOf(annotation.value)
                     }
                 GeneratorItem.DataClassModel(
                     name = name,

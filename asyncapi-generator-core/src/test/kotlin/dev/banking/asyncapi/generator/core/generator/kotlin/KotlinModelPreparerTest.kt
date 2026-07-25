@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -15,7 +16,11 @@ class KotlinModelPreparerTest {
             preparer.prepare(
                 input = fixtures.generationInputWithObjectEnumAndPrimitive(),
                 packageName = "com.example.model",
-                annotation = "jakarta.validation.Valid",
+                annotation =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "modelConfig.modelAnnotation",
+                    ),
             )
 
         assertEquals(listOf("User", "Status"), items.map { it.name })

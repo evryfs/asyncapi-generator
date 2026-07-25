@@ -218,7 +218,11 @@ class GenerationPlannerTest {
                     models =
                         ModelGeneration.Enabled(
                             packageName = "com.example.model",
-                            annotation = "com.example.NoArg",
+                            annotation =
+                                QualifiedTypeName.fromConfigurationValue(
+                                    value = "com.example.NoArg",
+                                    path = "modelConfig.modelAnnotation",
+                                ),
                         ),
                 ),
             )
@@ -228,7 +232,11 @@ class GenerationPlannerTest {
                 GenerationTask.ModelArtifacts(
                     language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
-                    annotation = "com.example.NoArg",
+                    annotation =
+                        QualifiedTypeName.fromConfigurationValue(
+                            value = "com.example.NoArg",
+                            path = "modelConfig.modelAnnotation",
+                        ),
                 ),
             ),
             plan.tasks,

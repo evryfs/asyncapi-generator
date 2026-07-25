@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.java.factory
 
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
@@ -14,6 +15,7 @@ class JavaGeneratorModelFactory(
     val packageName: String,
     val context: GeneratorContext,
     val polymorphicRelationships: Map<String, List<String>>,
+    val annotation: QualifiedTypeName? = null,
 ) {
     private val propertyFactory = PropertyFactory(context)
     private val javaEnumIdentifierRegex = Regex("^[A-Z_][A-Z0-9_]*$")
@@ -96,6 +98,8 @@ class JavaGeneratorModelFactory(
                     description = description,
                     properties = properties,
                     implementsInterfaces = interfaces,
+                    classAnnotations = annotation?.let { listOf("@${it.simpleName}") }.orEmpty(),
+                    classAnnotationImports = annotation?.let { listOf(it.value) }.orEmpty(),
                 )
             }
 

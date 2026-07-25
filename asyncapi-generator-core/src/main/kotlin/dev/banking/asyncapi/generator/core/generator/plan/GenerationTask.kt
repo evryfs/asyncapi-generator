@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
@@ -24,7 +25,7 @@ sealed interface GenerationTask {
     data class ModelArtifacts(
         val language: SourceLanguage,
         val packageName: String,
-        val annotation: String? = null,
+        val annotation: QualifiedTypeName? = null,
         val javaModelType: JavaModelType = JavaModelType.CLASS,
     ) : GenerationTask
 

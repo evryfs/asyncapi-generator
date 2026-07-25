@@ -62,6 +62,7 @@
                             <modelPackage>com.example.complete.java.model</modelPackage>
                             <modelConfig>
                                 <modelType>java-record</modelType>
+                                <modelAnnotation>com.example.codegen.GeneratedPayload</modelAnnotation>
                             </modelConfig>
                         </configuration>
                     </execution>

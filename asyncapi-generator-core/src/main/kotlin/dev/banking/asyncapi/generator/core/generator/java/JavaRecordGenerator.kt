@@ -48,7 +48,13 @@ class JavaRecordGenerator(
             )
         }
 
-        val imports = importMapper.computeImports(model.name, model.properties, includeObjects = false)
+        val imports =
+            (
+                importMapper.computeImports(model.name, model.properties, includeObjects = false) +
+                    model.classAnnotationImports
+            )
+                .distinct()
+                .sorted()
         val implementsClause =
             if (model.implementsInterfaces.isNotEmpty()) {
                 " implements " + model.implementsInterfaces.joinToString(", ")
@@ -64,6 +70,7 @@ class JavaRecordGenerator(
                 fields = fields,
                 imports = imports,
                 implementsClause = implementsClause,
+                classAnnotations = model.classAnnotations,
             )
 
         val writer = StringWriter()

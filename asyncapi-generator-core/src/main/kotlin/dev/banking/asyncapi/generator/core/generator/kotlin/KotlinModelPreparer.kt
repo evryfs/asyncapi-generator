@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinGeneratorModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
@@ -16,7 +17,7 @@ class KotlinModelPreparer {
     fun prepare(
         input: GenerationInput,
         packageName: String,
-        annotation: String? = null,
+        annotation: QualifiedTypeName? = null,
     ): List<GeneratorItem> {
         val factory =
             KotlinGeneratorModelFactory(
