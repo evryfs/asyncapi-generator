@@ -73,6 +73,23 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class UnsupportedKafkaHeaderSchema(
+        headerContractName: String,
+        wireName: String,
+        schemaType: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for header contract '$headerContractName'.")
+                appendLine("Header '$wireName' uses unsupported schema type '$schemaType'.")
+                appendLine(
+                    "Generated Kafka header parameters support scalar string, integer, number, and boolean schemas.",
+                )
+                appendLine("Use a supported scalar schema for this message header.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class SpringKafkaClientMethodNameCollision(
         channelName: String,
         messageIds: List<String>,
@@ -107,8 +124,11 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
                 appendLine("Spring Kafka client generation failed for message '$messageName'.")
                 appendLine("The Kafka record key uses unsupported schema type '$schemaType'.")
-                appendLine("Generated Kafka key parameters currently support scalar string, integer, number, and boolean schemas.")
-                appendLine("Use a scalar bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.")
+                appendLine(
+                    "Generated Kafka key parameters support scalar string, integer, number, and boolean schemas, " +
+                        "and object schemas represented by generated key models.",
+                )
+                appendLine("Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.")
                 appendLine()
             }.trimEnd(),
         )

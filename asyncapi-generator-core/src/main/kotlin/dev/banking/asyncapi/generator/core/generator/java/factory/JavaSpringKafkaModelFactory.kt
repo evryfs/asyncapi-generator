@@ -67,11 +67,11 @@ class JavaSpringKafkaModelFactory(
                             GeneratorItem.HeaderProperty(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
-                                typeName = "String",
+                                typeName = header.javaTypeName,
                                 description = header.consumerDescription(),
                                 required = header.required,
-                                requiredAnnotation = if (header.required) "@NotNull" else null,
-                                nullableAnnotation = if (header.required) null else "@Nullable",
+                                requiredAnnotation = if (header.nullable) null else "@NotNull",
+                                nullableAnnotation = if (header.nullable) "@Nullable" else null,
                                 parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
                             )
                         }
@@ -100,6 +100,9 @@ class JavaSpringKafkaModelFactory(
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        payloads.flatMap { payload ->
+                            payload.headerProperties.mapNotNull { header -> header.importName }
+                        } +
                         JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "jakarta.validation.constraints.NotNull" +
                         "org.springframework.kafka.support.KafkaHeaders" +
@@ -109,7 +112,7 @@ class JavaSpringKafkaModelFactory(
                             "org.springframework.lang.Nullable".takeIf {
                                 methods.any { method ->
                                     method.keyParameter?.required == false ||
-                                        method.headerProperties.any { header -> !header.required }
+                                        method.headerProperties.any { header -> header.nullableAnnotation != null }
                                 }
                             },
                             validationAnnotations.clientContract?.value,
@@ -144,11 +147,11 @@ class JavaSpringKafkaModelFactory(
                             GeneratorItem.HeaderProperty(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
-                                typeName = "String",
+                                typeName = header.javaTypeName,
                                 description = header.producerDescription(),
                                 required = header.required,
-                                requiredAnnotation = if (header.required) "@NotNull" else null,
-                                nullableAnnotation = if (header.required) null else "@Nullable",
+                                requiredAnnotation = if (header.nullable) null else "@NotNull",
+                                nullableAnnotation = if (header.nullable) "@Nullable" else null,
                                 parameterSuffix = if (index == payload.headerProperties.lastIndex) "" else ",",
                                 bindingAnnotation =
                                     "Header(" +
@@ -182,6 +185,9 @@ class JavaSpringKafkaModelFactory(
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        payloads.flatMap { payload ->
+                            payload.headerProperties.mapNotNull { header -> header.importName }
+                        } +
                         JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "java.util.concurrent.CompletableFuture" +
                         "org.apache.kafka.clients.producer.RecordMetadata" +
@@ -197,12 +203,12 @@ class JavaSpringKafkaModelFactory(
                             "org.springframework.lang.Nullable".takeIf {
                                 sendMethods.any { method ->
                                     method.keyParameter?.required == false ||
-                                        method.headerProperties.any { header -> !header.required }
+                                        method.headerProperties.any { header -> header.nullableAnnotation != null }
                                 }
                             },
                             "jakarta.validation.constraints.NotNull".takeIf {
                                 sendMethods.any { method ->
-                                    method.headerProperties.any { header -> header.required }
+                                    method.headerProperties.any { header -> header.requiredAnnotation != null }
                                 }
                             },
                             validationAnnotations.clientContract?.value,

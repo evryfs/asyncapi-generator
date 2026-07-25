@@ -66,7 +66,7 @@ class KotlinSpringKafkaModelFactory(
                             GeneratorItem.HeaderProperty(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
-                                typeName = header.kotlinTypeName(),
+                                typeName = header.kotlinTypeName + if (header.nullable) "?" else "",
                                 description = header.consumerDescription(),
                                 required = header.required,
                                 defaultValue = if (header.required) null else "null",
@@ -95,6 +95,9 @@ class KotlinSpringKafkaModelFactory(
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        payloads.flatMap { payload ->
+                            payload.headerProperties.mapNotNull { header -> header.importName }
+                        } +
                         JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "org.springframework.kafka.support.KafkaHeaders" +
                         "org.springframework.messaging.handler.annotation.Header" +
@@ -132,7 +135,7 @@ class KotlinSpringKafkaModelFactory(
                             GeneratorItem.HeaderProperty(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
-                                typeName = header.kotlinTypeName(),
+                                typeName = header.kotlinTypeName + if (header.nullable) "?" else "",
                                 description = header.producerDescription(),
                                 required = header.required,
                                 defaultValue = if (header.required) null else "null",
@@ -167,6 +170,9 @@ class KotlinSpringKafkaModelFactory(
                 (
                     payloads.mapNotNull { payload -> payload.importName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        payloads.flatMap { payload ->
+                            payload.headerProperties.mapNotNull { header -> header.importName }
+                        } +
                         JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "java.util.concurrent.CompletableFuture" +
                         "org.apache.kafka.clients.producer.RecordMetadata" +
@@ -256,11 +262,6 @@ class KotlinSpringKafkaModelFactory(
         } else {
             this
         }
-
-    private fun KafkaHeaderProperty.kotlinTypeName(): String {
-        val nullableSuffix = if (required) "" else "?"
-        return "String$nullableSuffix"
-    }
 
     private fun KafkaHeaderProperty.consumerDescription(): List<String> =
         toKDocLines(

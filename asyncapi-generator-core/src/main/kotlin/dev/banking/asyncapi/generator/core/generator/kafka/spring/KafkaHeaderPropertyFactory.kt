@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Prepares contract-defined Kafka headers for language-specific client generation.
+ *
+ * Expected behavior is exercised by `KafkaHeaderPropertyFactoryTest`.
  */
 internal object KafkaHeaderPropertyFactory {
     fun create(headers: AnalyzedMessageHeaders?): List<KafkaHeaderProperty> {
@@ -18,21 +18,23 @@ internal object KafkaHeaderPropertyFactory {
             )
 
         return headers.properties.map { (wireName, schema) ->
+            val required = wireName in headers.requiredProperties
+            val headerType =
+                KafkaHeaderTypeResolver.resolve(
+                    headerContractName = headers.typeName,
+                    wireName = wireName,
+                    schema = schema,
+                )
             KafkaHeaderProperty(
                 wireName = wireName,
                 parameterName = parameterNames.getValue(wireName),
-                description = schema.description(),
-                required = wireName in headers.requiredProperties,
+                javaTypeName = headerType.javaTypeName,
+                kotlinTypeName = headerType.kotlinTypeName,
+                importName = headerType.importName,
+                description = headerType.description,
+                required = required,
+                nullable = !required || headerType.schemaNullable,
             )
         }
     }
-
-    private fun SchemaInterface.description(): String? = resolvedSchema()?.description
-
-    private fun SchemaInterface.resolvedSchema(): Schema? =
-        when (this) {
-            is SchemaInterface.SchemaInline -> schema
-            is SchemaInterface.SchemaReference -> reference.model as? Schema
-            else -> null
-        }
 }

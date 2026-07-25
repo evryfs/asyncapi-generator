@@ -19,6 +19,10 @@ data class KafkaPayload(
 data class KafkaHeaderProperty(
     val wireName: String,
     val parameterName: String,
+    val javaTypeName: String,
+    val kotlinTypeName: String,
+    val importName: String? = null,
     val description: String? = null,
     val required: Boolean = false,
+    val nullable: Boolean = !required,
 )
