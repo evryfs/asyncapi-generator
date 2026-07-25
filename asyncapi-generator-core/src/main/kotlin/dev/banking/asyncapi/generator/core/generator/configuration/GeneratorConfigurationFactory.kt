@@ -184,7 +184,7 @@ object GeneratorConfigurationFactory {
                 }
                 if (request.schemas != GeneratorConfigurationRequest.Schemas()) {
                     throw IllegalArgumentException(
-                        "schemaConfig cannot be configured when generatorName is " +
+                        "schema generation options cannot be configured when generatorName is " +
                             request.generatorName.configurationValue +
                             "; the generator name already selects the schema type",
                     )

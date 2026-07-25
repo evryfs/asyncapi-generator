@@ -601,7 +601,7 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create rejects schema config for schema generator`() {
+    fun `create rejects schema generation options for schema generator`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
                 GeneratorConfigurationFactory.create(
@@ -617,7 +617,7 @@ class GeneratorConfigurationFactoryTest {
             }
 
         assertEquals(
-            "schemaConfig cannot be configured when generatorName is avro-schema; " +
+            "schema generation options cannot be configured when generatorName is avro-schema; " +
                 "the generator name already selects the schema type",
             exception.message,
         )
