@@ -28,6 +28,11 @@ sealed interface GenerationTask {
         val javaModelType: JavaModelType = JavaModelType.CLASS,
     ) : GenerationTask
 
+    data class KafkaKeyModelArtifacts(
+        val language: SourceLanguage,
+        val packageName: String,
+    ) : GenerationTask
+
     data class HeaderModelArtifacts(
         val language: SourceLanguage,
         val packageName: String,

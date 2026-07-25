@@ -67,6 +67,13 @@ class AsyncApiGenerator {
                         sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                         artifactWriter = artifactWriter,
                     )
+                is GenerationTask.KafkaKeyModelArtifacts ->
+                    modelArtifactGeneration.generateKafkaKeyModelArtifacts(
+                        task = task,
+                        generationInput = generationInput,
+                        sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
+                        artifactWriter = artifactWriter,
+                    )
                 is GenerationTask.HeaderModelArtifacts ->
                     modelArtifactGeneration.generateHeaderModelArtifacts(
                         task = task,

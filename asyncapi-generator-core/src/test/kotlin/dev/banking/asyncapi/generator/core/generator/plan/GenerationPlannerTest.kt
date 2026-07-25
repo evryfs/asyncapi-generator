@@ -102,6 +102,33 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan includes Kafka key models when native Avro models and Spring Kafka contracts are enabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
+                    clients = listOf(kafkaClientGeneration()),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.KafkaKeyModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.model",
+                ),
+                GenerationTask.HeaderModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+                springKafkaClientTask(),
+                GenerationTask.NativeAvroArtifacts(generateSpecificRecords = true),
+            ),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan includes native Protobuf artifact task when enabled`() {
         val plan =
             planner.plan(
@@ -132,6 +159,38 @@ class GenerationPlannerTest {
 
         assertEquals(
             listOf(GenerationTask.NativeProtobufArtifacts(models = models)),
+            plan.tasks,
+        )
+    }
+
+    @Test
+    fun `plan includes Kafka key models when native Protobuf models and Spring Kafka contracts are enabled`() {
+        val models =
+            ProtobufModelGeneration(
+                packageName = "com.example.model",
+                modelType = ProtobufModelType.KOTLIN,
+            )
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(models = models)),
+                    clients = listOf(kafkaClientGeneration()),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.KafkaKeyModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.model",
+                ),
+                GenerationTask.HeaderModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.client.header",
+                ),
+                springKafkaClientTask(),
+                GenerationTask.NativeProtobufArtifacts(models = models),
+            ),
             plan.tasks,
         )
     }

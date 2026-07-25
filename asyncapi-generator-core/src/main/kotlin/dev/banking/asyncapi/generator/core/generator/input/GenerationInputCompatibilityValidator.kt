@@ -69,6 +69,7 @@ class GenerationInputCompatibilityValidator {
                     requireJsonSchema(generationInput)
                 is GenerationTask.DocumentArtifact,
                 is GenerationTask.HeaderModelArtifacts,
+                is GenerationTask.KafkaKeyModelArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
             }

@@ -88,6 +88,48 @@ class MavenGeneratedOutputRegistrarTest {
     }
 
     @Test
+    fun `registers Kotlin key models and Java native model roots for Avro Spring Kafka contracts`() {
+        val project = MavenProject()
+        val sourceOutputDirectory = outputDirectory("avro-kotlin-client")
+        val javaSourceOutputDirectory = outputDirectory("avro-java-model")
+        val resourceOutputDirectory = outputDirectory("avro-schema")
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                GeneratorConfigurationRequest(
+                    generatorName = GeneratorName.KOTLIN,
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.avro",
+                            modelType = ModelType.AVRO_SPECIFIC_RECORD,
+                        ),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
+                                    packageName = "com.example.client",
+                                    modelPackageName = "com.example.avro",
+                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
+                                ),
+                        ),
+                ),
+            )
+
+        MavenGeneratedOutputRegistrar(project).register(configuration)
+
+        assertEquals(
+            setOf(
+                sourceOutputDirectory.normalizedAbsolutePath(),
+                javaSourceOutputDirectory.normalizedAbsolutePath(),
+            ),
+            project.compileSourceRoots.toSet(),
+        )
+        assertEquals(resourceOutputDirectory.normalizedAbsolutePath(), project.resources.single().directory)
+    }
+
+    @Test
     fun `does not register Maven roots for document output`() {
         val project = MavenProject()
         val outputDirectory = outputDirectory("document")

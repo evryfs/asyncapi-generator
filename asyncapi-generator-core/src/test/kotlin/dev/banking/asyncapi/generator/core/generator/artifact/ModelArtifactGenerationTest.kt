@@ -47,6 +47,32 @@ class ModelArtifactGenerationTest {
     }
 
     @Test
+    fun `generate Kafka key model artifacts writes only native payload key models`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val artifactWriter =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+            )
+
+        generation.generateKafkaKeyModelArtifacts(
+            task =
+                GenerationTask.KafkaKeyModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.model",
+                ),
+            generationInput = fixtures.generationInputWithNativeAvroMessageAndObjectKey(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            artifactWriter = artifactWriter,
+        )
+
+        assertTrue(sourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/model/UserCreated.kt").exists())
+        assertFalse(resourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
+    }
+
+    @Test
     fun `generate header model artifacts writes Java header artifacts through writer`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
@@ -60,6 +61,32 @@ class ModelArtifactGeneration(
                 artifactWriter.write(generator.render())
             }
         }
+    }
+
+    fun generateKafkaKeyModelArtifacts(
+        task: GenerationTask.KafkaKeyModelArtifacts,
+        generationInput: GenerationInput,
+        sourceOutputDirectory: File,
+        artifactWriter: GeneratedArtifactWriter,
+    ) {
+        val keySchemas = KafkaKeyModelSelector.select(generationInput)
+        if (keySchemas.isEmpty()) return
+
+        generateModelArtifacts(
+            task =
+                GenerationTask.ModelArtifacts(
+                    language = task.language,
+                    packageName = task.packageName,
+                ),
+            generationInput =
+                generationInput.copy(
+                    schemas = keySchemas,
+                    declaredSchemas = keySchemas,
+                    multiFormatSchemas = emptyMap(),
+                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            artifactWriter = artifactWriter,
+        )
     }
 
     fun generateHeaderModelArtifacts(

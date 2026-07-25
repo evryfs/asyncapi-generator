@@ -2,7 +2,10 @@ package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
@@ -84,6 +87,35 @@ internal class GenerationInputFixtures {
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
         )
+
+    fun generationInputWithNativeAvroMessageAndObjectKey(): GenerationInput {
+        val keySchema = accountKeySchema()
+        val nativeSchema = nativeAvroUserCreatedSchema(namespace = "com.example.avro")
+        return GenerationInput(
+            schemas = mapOf("UserCreatedKey" to keySchema),
+            multiFormatSchemas = mapOf("UserCreated" to nativeSchema),
+            polymorphicRelationships = emptyMap(),
+            channels =
+                listOf(
+                    AnalyzedChannel(
+                        channelName = "userEvents",
+                        topic = "user.events",
+                        isProducer = true,
+                        isConsumer = true,
+                        messages = emptyList(),
+                        multiFormatMessages =
+                            listOf(
+                                AnalyzedMultiFormatMessage(
+                                    messageName = "UserCreated",
+                                    payloadName = "UserCreated",
+                                    schema = nativeSchema,
+                                    keySchema = SchemaInterface.SchemaInline(keySchema),
+                                ),
+                            ),
+                    ),
+                ),
+        )
+    }
 
     fun generationInputWithNativeProtobufSchema(): GenerationInput =
         GenerationInput(
@@ -333,6 +365,58 @@ internal class GenerationInputFixtures {
                 ),
         )
 
+    fun documentWithNativeAvroMessageAndObjectKey(): AsyncApiDocument =
+        documentWithNativeMessageAndObjectKey(
+            payload = nativeAvroUserCreatedSchema(namespace = "com.example.avro"),
+        )
+
+    fun documentWithNativeProtobufMessageAndObjectKey(): AsyncApiDocument =
+        documentWithNativeMessageAndObjectKey(
+            payload =
+                nativeProtobufUserCreatedSchema(
+                    javaPackage = "com.example.protobuf",
+                    messageName = "UserCreatedPayload",
+                ),
+        )
+
+    private fun documentWithNativeMessageAndObjectKey(payload: MultiFormatSchema): AsyncApiDocument {
+        val keySchema = accountKeySchema()
+        return AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Test API", version = "1.0.0"),
+            channels =
+                mapOf(
+                    "userEvents" to
+                        ChannelInterface.ChannelInline(
+                            Channel(
+                                address = "user.events",
+                                messages =
+                                    mapOf(
+                                        "userCreated" to
+                                            MessageInterface.MessageInline(
+                                                Message(
+                                                    name = "UserCreated",
+                                                    payload = SchemaInterface.MultiFormatSchemaInline(payload),
+                                                    bindings =
+                                                        mapOf(
+                                                            "kafka" to
+                                                                BindingInterface.BindingInline(
+                                                                    Binding(
+                                                                        content = emptyMap(),
+                                                                        kafkaKeySchema =
+                                                                            SchemaInterface.SchemaInline(keySchema),
+                                                                    ),
+                                                                ),
+                                                        ),
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                        ),
+                ),
+        )
+    }
+
     fun documentWithNativeProtobufComponent(): AsyncApiDocument =
         AsyncApiDocument(
             asyncapi = "3.0.0",
@@ -396,7 +480,21 @@ internal class GenerationInputFixtures {
                 },
         )
 
-    private fun nativeProtobufUserCreatedSchema(javaPackage: String? = null): MultiFormatSchema =
+    private fun accountKeySchema(): Schema =
+        Schema(
+            type = "object",
+            required = listOf("tenantId", "accountId"),
+            properties =
+                linkedMapOf(
+                    "tenantId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                ),
+        )
+
+    private fun nativeProtobufUserCreatedSchema(
+        javaPackage: String? = null,
+        messageName: String = "UserCreated",
+    ): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.google.protobuf;version=3",
             schema =
@@ -410,7 +508,7 @@ internal class GenerationInputFixtures {
                         appendLine("option java_multiple_files = true;")
                         appendLine()
                     }
-                    appendLine("message UserCreated {")
+                    appendLine("message $messageName {")
                     appendLine("  string user_id = 1;")
                     appendLine("  string email = 2;")
                     appendLine("}")

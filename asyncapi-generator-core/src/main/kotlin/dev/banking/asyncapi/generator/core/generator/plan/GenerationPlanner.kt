@@ -15,6 +15,9 @@ class GenerationPlanner {
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
+                val keyModelPackages = mutableSetOf<String>()
+                val hasNativePayloadModels = configuration.hasNativePayloadModels()
+
                 configuration.output.document?.let { document ->
                     add(
                         GenerationTask.DocumentArtifact(
@@ -40,6 +43,19 @@ class GenerationPlanner {
                 configuration.clients.forEach { client ->
                     when (client) {
                         is ClientGeneration.Kafka -> {
+                            val springKafka = client.springKafka?.takeIf { it.hasEnabledOutput() }
+                            if (
+                                hasNativePayloadModels &&
+                                springKafka != null &&
+                                keyModelPackages.add(client.modelPackageName)
+                            ) {
+                                add(
+                                    GenerationTask.KafkaKeyModelArtifacts(
+                                        language = configuration.requireSourceLanguage(),
+                                        packageName = client.modelPackageName,
+                                    ),
+                                )
+                            }
                             if (client.headers.enabled) {
                                 add(
                                     GenerationTask.HeaderModelArtifacts(
@@ -48,7 +64,7 @@ class GenerationPlanner {
                                     ),
                                 )
                             }
-                            client.springKafka?.takeIf { it.hasEnabledOutput() }?.let { springKafka ->
+                            springKafka?.let {
                                 add(
                                     GenerationTask.SpringKafkaClient(
                                         language = configuration.requireSourceLanguage(),
@@ -96,6 +112,17 @@ class GenerationPlanner {
 
     private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
         producer.enabled || consumer.enabled
+
+    private fun GeneratorConfiguration.hasNativePayloadModels(): Boolean =
+        schemas.any { schema ->
+            when (schema) {
+                is SchemaGeneration.NativeAvro -> schema.generateSpecificRecords
+                is SchemaGeneration.NativeProtobuf -> schema.models != null
+                is SchemaGeneration.AvroProjection,
+                is SchemaGeneration.JsonSchema,
+                -> false
+            }
+        }
 
     private fun GeneratorConfiguration.requireSourceLanguage() =
         requireNotNull(sourceLanguage) {

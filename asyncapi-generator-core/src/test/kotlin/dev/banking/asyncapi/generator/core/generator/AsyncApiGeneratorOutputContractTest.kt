@@ -332,6 +332,82 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
     }
 
+    @Test
+    fun `generate writes object Kafka key models alongside native Avro payload models and clients`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithNativeAvroMessageAndObjectKey(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
+                    clients =
+                        listOf(
+                            ClientGeneration.Kafka(
+                                packageName = "com.example.kafka",
+                                modelPackageName = "com.example.model",
+                                headers = ClientGeneration.Headers(enabled = false),
+                                springKafka = ClientGeneration.SpringKafka(),
+                            ),
+                        ),
+                ),
+        )
+
+        val keyModel = sourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt")
+        val producer = sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt")
+        assertTrue(keyModel.exists())
+        assertTrue(keyModel.readText().contains("data class UserCreatedKey("))
+        assertTrue(producer.exists())
+        assertTrue(producer.readText().contains("import com.example.model.UserCreatedKey"))
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
+        assertTrue(resourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
+    }
+
+    @Test
+    fun `generate writes object Kafka key models alongside native Protobuf payload models and clients`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val protobufModels =
+            ProtobufModelGeneration(
+                packageName = "com.example.protobuf",
+            )
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufMessageAndObjectKey(),
+            generatorConfiguration =
+                generatorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                    schemas = listOf(SchemaGeneration.NativeProtobuf(models = protobufModels)),
+                    clients =
+                        listOf(
+                            ClientGeneration.Kafka(
+                                packageName = "com.example.kafka",
+                                modelPackageName = "com.example.protobuf",
+                                headers = ClientGeneration.Headers(enabled = false),
+                                springKafka = ClientGeneration.SpringKafka(),
+                            ),
+                        ),
+                ),
+        )
+
+        val keyModel = sourceOutputDirectory.resolve("com/example/protobuf/UserCreatedKey.kt")
+        val consumer = sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt")
+        assertTrue(keyModel.exists())
+        assertTrue(keyModel.readText().contains("data class UserCreatedKey("))
+        assertTrue(consumer.exists())
+        assertTrue(consumer.readText().contains("import com.example.protobuf.UserCreatedKey"))
+        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreatedPayload.java").exists())
+        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreatedPayload.proto").exists())
+    }
+
     private fun bundledDocument() =
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
