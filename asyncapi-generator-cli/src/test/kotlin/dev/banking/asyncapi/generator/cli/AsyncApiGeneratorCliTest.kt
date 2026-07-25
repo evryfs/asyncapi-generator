@@ -84,7 +84,7 @@ class AsyncApiGeneratorCliTest {
                 "-i", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
                 "--models-package", "com.example.cli.model",
-                "--models-java-model-type", "record",
+                "--models-model-type", "java-record",
                 "-g", "java",
             )
         )
@@ -148,7 +148,8 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--models-package", "com.example.protobuf",
-                "-g", "protobuf",
+                "--models-model-type", "protobuf-message",
+                "-g", "java",
             )
         )
 
@@ -171,7 +172,7 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--schemas-native-protobuf",
-                "-g", "protobuf",
+                "-g", "java",
             )
         )
 
@@ -192,8 +193,8 @@ class AsyncApiGeneratorCliTest {
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
                 "--models-package", "com.example.protobuf",
-                "--models-protobuf-model-type", "kotlin",
-                "-g", "protobuf",
+                "--models-model-type", "protobuf-message",
+                "-g", "kotlin",
             )
         )
 
@@ -288,7 +289,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if java model type is invalid`(@TempDir tempDir: Path) {
+    fun `should fail if model type is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
         assertFailsWith<BadParameterValue> {
@@ -297,7 +298,7 @@ class AsyncApiGeneratorCliTest {
                     "-i", inputFile.absolutePath,
                     "--codegen-output", codegenDir.absolutePath,
                     "--models-package", "com.example.cli.model",
-                    "--models-java-model-type", "data",
+                    "--models-model-type", "data",
                     "-g", "java",
                 )
             )
@@ -315,7 +316,7 @@ class AsyncApiGeneratorCliTest {
                         "-i", inputFile.absolutePath,
                         "--codegen-output", codegenDir.absolutePath,
                         "--models-package", "com.example.cli.model",
-                        "--models-java-model-type", "record",
+                        "--models-model-type", "java-record",
                         "-g", "kotlin",
                     )
                 )
@@ -323,7 +324,7 @@ class AsyncApiGeneratorCliTest {
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "models.javaModelType=record is only supported when generatorName is java",
+                "modelConfig.modelType 'java-record' is not supported when generatorName is kotlin",
             ),
         )
     }

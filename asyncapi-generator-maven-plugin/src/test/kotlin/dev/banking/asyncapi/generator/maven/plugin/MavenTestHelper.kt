@@ -65,13 +65,11 @@ object MavenTestHelper {
 
     fun modelConfig(
         modelAnnotation: String? = null,
-        javaModelType: String? = null,
-        protobufModelType: String? = null,
+        modelType: String? = null,
     ): MavenModelConfiguration =
         MavenModelConfiguration().apply {
             this.modelAnnotation = modelAnnotation
-            this.javaModelType = javaModelType
-            this.protobufModelType = protobufModelType
+            this.modelType = modelType
         }
 
     fun schemaConfig(

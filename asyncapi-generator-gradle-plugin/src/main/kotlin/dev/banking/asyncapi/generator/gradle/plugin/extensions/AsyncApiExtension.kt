@@ -48,8 +48,7 @@ abstract class AsyncApiModelsExtension @Inject constructor(objects: ObjectFactor
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val packageName: Property<String> = objects.property(String::class.java)
     val annotation: Property<String> = objects.property(String::class.java)
-    val javaModelType: Property<String> = objects.property(String::class.java)
-    val protobufModelType: Property<String> = objects.property(String::class.java)
+    val modelType: Property<String> = objects.property(String::class.java)
 }
 
 /**

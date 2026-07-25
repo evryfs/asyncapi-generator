@@ -25,8 +25,7 @@ data class GeneratorConfigurationRequest(
     data class Models(
         val packageName: String? = null,
         val annotation: String? = null,
-        val javaModelType: JavaModelType = JavaModelType.CLASS,
-        val protobufModelType: ProtobufModelType? = null,
+        val modelType: ModelType? = null,
     )
 
     data class Schemas(
@@ -87,29 +86,22 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             annotation: String? = null,
-            javaModelType: String? = null,
-            protobufModelType: String? = null,
+            modelType: String? = null,
         ): Models? =
             when {
                 enabled == false -> null
                 enabled == true ||
                     packageName != null ||
                     annotation != null ||
-                    javaModelType != null ||
-                    protobufModelType != null ->
+                    modelType != null ->
                     Models(
                         packageName = packageName,
                         annotation = annotation,
-                        javaModelType =
-                            JavaModelType.fromConfigurationValue(
-                                value = javaModelType,
-                                path = "models.javaModelType",
-                            ),
-                        protobufModelType =
-                            protobufModelType?.let {
-                                ProtobufModelType.fromConfigurationValue(
+                        modelType =
+                            modelType?.let {
+                                ModelType.fromConfigurationValue(
                                     value = it,
-                                    path = "models.protobufModelType",
+                                    path = "modelConfig.modelType",
                                 )
                             },
                     )

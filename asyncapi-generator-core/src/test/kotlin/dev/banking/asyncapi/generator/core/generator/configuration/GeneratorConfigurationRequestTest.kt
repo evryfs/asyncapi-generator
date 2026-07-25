@@ -12,7 +12,7 @@ class GeneratorConfigurationRequestTest {
                 enabled = false,
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = "record",
+                modelType = "java-record",
             ),
         )
 
@@ -20,14 +20,12 @@ class GeneratorConfigurationRequestTest {
             GeneratorConfigurationRequest.Models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = JavaModelType.RECORD,
-                protobufModelType = ProtobufModelType.KOTLIN,
+                modelType = ModelType.JAVA_RECORD,
             ),
             GeneratorConfigurationRequest.models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = "record",
-                protobufModelType = "kotlin",
+                modelType = "java-record",
             ),
         )
     }

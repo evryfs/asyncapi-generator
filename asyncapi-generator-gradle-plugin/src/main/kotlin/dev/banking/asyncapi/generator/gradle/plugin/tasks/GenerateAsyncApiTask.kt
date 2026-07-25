@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSourceLanguageResolver
-import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
@@ -50,11 +49,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val modelsJavaModelType: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val modelsProtobufModelType: Property<String>
+    abstract val modelsModelType: Property<String>
 
     @get:Input
     @get:Optional
@@ -150,17 +145,9 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                 value = genNameString,
                 path = "generatorName",
             )
-        val targetProtobufModelType =
-            modelsProtobufModelType.orNull?.let {
-                ProtobufModelType.fromConfigurationValue(
-                    value = it,
-                    path = "models.protobufModelType",
-                )
-            }
-
         // Calculate Source Root
         val sourceRootName =
-            when (GeneratorSourceLanguageResolver.resolve(targetGenerator, targetProtobufModelType)) {
+            when (GeneratorSourceLanguageResolver.resolve(targetGenerator)) {
                 KOTLIN -> "src/main/kotlin"
                 JAVA -> "src/main/java"
         }
@@ -179,8 +166,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             enabled = modelsEnabled.orNull,
                             packageName = modelsPackageName.orNull,
                             annotation = modelsAnnotation.orNull,
-                            javaModelType = modelsJavaModelType.orNull,
-                            protobufModelType = modelsProtobufModelType.orNull,
+                            modelType = modelsModelType.orNull,
                         ),
                     schemas =
                         schemaRequest(
@@ -215,15 +201,13 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         enabled: Boolean?,
         packageName: String?,
         annotation: String?,
-        javaModelType: String?,
-        protobufModelType: String?,
+        modelType: String?,
     ): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
             enabled = enabled,
             packageName = packageName,
             annotation = annotation,
-            javaModelType = javaModelType,
-            protobufModelType = protobufModelType,
+            modelType = modelType,
         )
 
     private fun schemaRequest(

@@ -67,7 +67,7 @@
                             <outputDirectory>${project.build.directory}/generated-sources/java</outputDirectory>
                             <modelPackage>com.example.complete.java.model</modelPackage>
                             <modelConfig>
-                                <javaModelType>record</javaModelType>
+                                <modelType>java-record</modelType>
                             </modelConfig>
                         </configuration>
                     </execution>
@@ -79,13 +79,16 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatorName>avro</generatorName>
+                            <generatorName>java</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/native-avro.yaml</inputSpec>
                             <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+                            <modelPackage>com.example.complete.avro</modelPackage>
+                            <modelConfig>
+                                <modelType>avro-specific-record</modelType>
+                            </modelConfig>
                             <schemaConfig>
                                 <nativeAvro>
                                     <enabled>true</enabled>
-                                    <generateSpecificRecords>true</generateSpecificRecords>
                                 </nativeAvro>
                             </schemaConfig>
                         </configuration>
@@ -98,12 +101,12 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatorName>protobuf</generatorName>
+                            <generatorName>kotlin</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/native-protobuf.yaml</inputSpec>
                             <outputDirectory>${project.build.directory}/generated-sources/protobuf</outputDirectory>
                             <modelPackage>com.example.complete.protobuf</modelPackage>
                             <modelConfig>
-                                <protobufModelType>kotlin</protobufModelType>
+                                <modelType>protobuf-message</modelType>
                             </modelConfig>
                             <schemaConfig>
                                 <nativeProtobuf>

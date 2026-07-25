@@ -10,18 +10,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
  * - `GeneratorConfigurationFactoryTest`
  */
 object GeneratorSourceLanguageResolver {
-    fun resolve(
-        generatorName: GeneratorName,
-        protobufModelType: ProtobufModelType? = null,
-    ): SourceLanguage =
-        when (generatorName) {
-            GeneratorName.JAVA -> SourceLanguage.JAVA
-            GeneratorName.KOTLIN -> SourceLanguage.KOTLIN
-            GeneratorName.AVRO -> SourceLanguage.JAVA
-            GeneratorName.PROTOBUF ->
-                when (protobufModelType ?: ProtobufModelType.JAVA) {
-                    ProtobufModelType.JAVA -> SourceLanguage.JAVA
-                    ProtobufModelType.KOTLIN -> SourceLanguage.KOTLIN
-                }
-        }
+    fun resolve(generatorName: GeneratorName): SourceLanguage =
+        (generatorName.profile as GeneratorProfile.Source).language
 }

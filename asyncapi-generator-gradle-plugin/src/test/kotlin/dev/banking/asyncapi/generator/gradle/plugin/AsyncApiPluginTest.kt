@@ -127,7 +127,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should fail if java model type is invalid`() {
+    fun `should fail if model type is invalid`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
@@ -139,7 +139,7 @@ class AsyncApiPluginTest {
                   generatorName.set("java")
                   models {
                       packageName.set("com.example.model")
-                      javaModelType.set("data")
+                      modelType.set("data")
                   }
               }""")
 
@@ -148,13 +148,14 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "Invalid models.javaModelType 'data'. Supported values: class, record",
+                "Invalid modelConfig.modelType 'data'. Supported values: kotlin-data-class, java-class, " +
+                    "java-record, avro-specific-record, protobuf-message",
             ),
         )
     }
 
     @Test
-    fun `should generate java record models when java model type is configured`() {
+    fun `should generate java record models when model type is configured`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
@@ -167,7 +168,7 @@ class AsyncApiPluginTest {
                   generatorName.set("java")
                   models {
                       packageName.set("com.example.model")
-                      javaModelType.set("record")
+                      modelType.set("java-record")
                   }
               }"""
         )
@@ -429,9 +430,10 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("protobuf")
+                  generatorName.set("java")
                   models {
                       packageName.set("com.example.protobuf")
+                      modelType.set("protobuf-message")
                   }
               }"""
         )
@@ -461,7 +463,7 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("protobuf")
+                  generatorName.set("java")
                   schemas {
                       nativeProtobuf {
                           enabled.set(true)
@@ -492,10 +494,10 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("protobuf")
+                  generatorName.set("kotlin")
                   models {
                       packageName.set("com.example.protobuf")
-                      protobufModelType.set("kotlin")
+                      modelType.set("protobuf-message")
                   }
               }"""
         )
@@ -556,7 +558,7 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "Invalid generatorName 'python'. Supported values: java, kotlin, avro, protobuf",
+                "Invalid generatorName 'python'. Supported values: java, kotlin",
             ),
         )
     }

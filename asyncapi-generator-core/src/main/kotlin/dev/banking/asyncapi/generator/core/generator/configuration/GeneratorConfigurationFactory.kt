@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.PROTOBUF
+import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 
 /**
  * Assembles core generator configuration from frontend-neutral requests.
@@ -15,37 +14,37 @@ object GeneratorConfigurationFactory {
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
-        val protobufModels = request.protobufModels()
+        val modelType =
+            request.models?.let { models ->
+                ModelTypeResolver.resolve(
+                    generatorName = request.generatorName,
+                    configuredModelType = models.modelType,
+                )
+            }
+        validateModelAnnotation(request, modelType)
+        val protobufModels = request.protobufModels(modelType)
 
         return GeneratorConfiguration(
-            language =
-                GeneratorSourceLanguageResolver.resolve(
-                    generatorName = request.generatorName,
-                    protobufModelType = protobufModels?.modelType,
-                ),
+            language = GeneratorSourceLanguageResolver.resolve(request.generatorName),
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
                     javaSourceOutputDirectory = request.javaSourceOutputDirectory,
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
-            models =
-                request.models?.packageName?.takeUnless { request.generatorName == PROTOBUF }?.let { packageName ->
-                    ModelGeneration.Enabled(
-                        packageName = packageName,
-                        annotation = request.models.annotation,
-                        javaModelType = request.models.javaModelType,
-                    )
-                } ?: ModelGeneration.Disabled,
+            models = request.jvmModels(modelType),
             schemas =
                 buildList {
                     request.schemas.avroProjection?.packageName?.let { packageName ->
                         add(SchemaGeneration.AvroProjection(packageName))
                     }
-                    request.schemas.nativeAvro?.let { nativeAvro ->
+                    val nativeAvro = request.schemas.nativeAvro
+                    if (nativeAvro != null || modelType == ModelType.AVRO_SPECIFIC_RECORD) {
                         add(
                             SchemaGeneration.NativeAvro(
-                                generateSpecificRecords = nativeAvro.generateSpecificRecords,
+                                generateSpecificRecords =
+                                    modelType == ModelType.AVRO_SPECIFIC_RECORD ||
+                                        nativeAvro?.generateSpecificRecords == true,
                             ),
                         )
                     }
@@ -127,16 +126,6 @@ object GeneratorConfigurationFactory {
             throw IllegalArgumentException("models.packageName is required when models are configured")
         }
 
-        if (request.models?.javaModelType == JavaModelType.RECORD && request.generatorName != JAVA) {
-            throw IllegalArgumentException("models.javaModelType=record is only supported when generatorName is java")
-        }
-
-        if (request.models?.protobufModelType != null && request.generatorName != PROTOBUF) {
-            throw IllegalArgumentException(
-                "models.protobufModelType is only supported when generatorName is protobuf",
-            )
-        }
-
         if (request.schemas.avroProjection != null && request.schemas.avroProjection.packageName == null) {
             throw IllegalArgumentException(
                 "schemas.avroProjection.packageName is required when schemas.avroProjection is configured",
@@ -216,14 +205,64 @@ object GeneratorConfigurationFactory {
                 "$path is required when models.packageName is not configured",
             )
 
-    private fun GeneratorConfigurationRequest.protobufModels(): ProtobufModelGeneration? =
+    private fun validateModelAnnotation(
+        request: GeneratorConfigurationRequest,
+        modelType: ModelType?,
+    ) {
+        if (
+            request.models?.annotation != null &&
+            modelType !in
+            setOf(
+                ModelType.KOTLIN_DATA_CLASS,
+                ModelType.JAVA_CLASS,
+                ModelType.JAVA_RECORD,
+            )
+        ) {
+            throw IllegalArgumentException(
+                "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
+                    "and java-record model types",
+            )
+        }
+    }
+
+    private fun GeneratorConfigurationRequest.jvmModels(modelType: ModelType?): ModelGeneration =
+        models?.packageName?.let { packageName ->
+            when (modelType) {
+                ModelType.KOTLIN_DATA_CLASS,
+                ModelType.JAVA_CLASS,
+                ->
+                    ModelGeneration.Enabled(
+                        packageName = packageName,
+                        annotation = models.annotation,
+                        javaModelType = JavaModelType.CLASS,
+                    )
+                ModelType.JAVA_RECORD ->
+                    ModelGeneration.Enabled(
+                        packageName = packageName,
+                        annotation = models.annotation,
+                        javaModelType = JavaModelType.RECORD,
+                    )
+                ModelType.AVRO_SPECIFIC_RECORD,
+                ModelType.PROTOBUF_MESSAGE,
+                null,
+                -> ModelGeneration.Disabled
+            }
+        } ?: ModelGeneration.Disabled
+
+    private fun GeneratorConfigurationRequest.protobufModels(
+        modelType: ModelType?,
+    ): ProtobufModelGeneration? =
         models
-            ?.takeIf { generatorName == PROTOBUF }
+            ?.takeIf { modelType == ModelType.PROTOBUF_MESSAGE }
             ?.packageName
             ?.let { packageName ->
                 ProtobufModelGeneration(
                     packageName = packageName,
-                    modelType = models.protobufModelType ?: ProtobufModelType.JAVA,
+                    modelType =
+                        when (generatorName) {
+                            GeneratorName.KOTLIN -> ProtobufModelType.KOTLIN
+                            GeneratorName.JAVA -> ProtobufModelType.JAVA
+                        },
                 )
             }
 }

@@ -15,16 +15,14 @@ import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedType
  */
 class MavenModelConfiguration {
     var modelAnnotation: String? = null
-    var javaModelType: String? = null
-    var protobufModelType: String? = null
+    var modelType: String? = null
 
     fun toRequest(modelPackage: String?): GeneratorConfigurationRequest.Models? =
         GeneratorConfigurationRequest.models(
             enabled = true,
             packageName = modelPackage,
             annotation = modelAnnotation,
-            javaModelType = javaModelType,
-            protobufModelType = protobufModelType,
+            modelType = modelType,
         )
 }
 

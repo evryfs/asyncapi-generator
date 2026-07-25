@@ -239,7 +239,7 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
             outputDirectory(outputPath("target/generated-sources/asyncapi"))
             modelPackage("com.example.record.model")
-            modelConfig(modelConfig(javaModelType = "record"))
+            modelConfig(modelConfig(modelType = "java-record"))
             generatorName("java")
         }.execute()
 
@@ -292,7 +292,7 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_native_avro.yaml"))
             outputDirectory(outputDirectory)
             schemaConfig(schemaConfig(nativeAvro = nativeAvro(enabled = true)))
-            generatorName("avro")
+            generatorName("java")
         }.execute()
 
         val schemaFile = outputDirectory.resolve("com/example/avro/UserCreated.avsc")
@@ -311,7 +311,8 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
             outputDirectory(outputDirectory)
             modelPackage("com.example.protobuf")
-            generatorName("protobuf")
+            modelConfig(modelConfig(modelType = "protobuf-message"))
+            generatorName("java")
         }.execute()
 
         val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
@@ -333,7 +334,7 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
             outputDirectory(outputDirectory)
             schemaConfig(schemaConfig(nativeProtobuf = nativeProtobuf(enabled = true)))
-            generatorName("protobuf")
+            generatorName("java")
         }.execute()
 
         val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
@@ -343,7 +344,7 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate native protobuf Java messages and Kotlin DSL`() {
+    fun `should generate native protobuf Java messages and Kotlin DSL for Kotlin generator`() {
         val outputDirectory = outputPath("target/generated-sources/asyncapi-native-protobuf-kotlin")
 
         AsyncApiGeneratorMojo().apply {
@@ -351,8 +352,8 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
             outputDirectory(outputDirectory)
             modelPackage("com.example.protobuf")
-            modelConfig(modelConfig(protobufModelType = "kotlin"))
-            generatorName("protobuf")
+            modelConfig(modelConfig(modelType = "protobuf-message"))
+            generatorName("kotlin")
         }.execute()
 
         assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
@@ -408,26 +409,27 @@ class AsyncApiGeneratorMojoTest {
         val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
-            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro, protobuf",
+            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin",
             exception.message,
         )
     }
 
     @Test
-    fun `should fail when java model type is invalid`() {
+    fun `should fail when model type is invalid`() {
         val mojo =
             AsyncApiGeneratorMojo().apply {
                 project(MavenProject())
                 inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
-                outputDirectory(outputPath("target/should-fail-java-model-type"))
+                outputDirectory(outputPath("target/should-fail-model-type"))
                 modelPackage("com.fail")
-                modelConfig(modelConfig(javaModelType = "data"))
+                modelConfig(modelConfig(modelType = "data"))
                 generatorName("java")
             }
         val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
-            "Invalid models.javaModelType 'data'. Supported values: class, record",
+            "Invalid modelConfig.modelType 'data'. Supported values: kotlin-data-class, java-class, " +
+                "java-record, avro-specific-record, protobuf-message",
             exception.message,
         )
     }

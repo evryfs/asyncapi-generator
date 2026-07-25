@@ -15,8 +15,7 @@ import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSourceLanguageResolver
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -43,8 +42,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         .choice(
             GeneratorName.KOTLIN.configurationValue to GeneratorName.KOTLIN,
             GeneratorName.JAVA.configurationValue to GeneratorName.JAVA,
-            GeneratorName.AVRO.configurationValue to GeneratorName.AVRO,
-            GeneratorName.PROTOBUF.configurationValue to GeneratorName.PROTOBUF,
         ).default(GeneratorName.KOTLIN)
 
     private val modelsPackage by option("--models-package", help = "Package for generated models")
@@ -54,20 +51,13 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         help = "Fully qualified annotation added to generated model classes",
     )
 
-    private val modelsJavaModelType by option(
-        "--models-java-model-type",
-        help = "Java model shape for generated models (default: class)",
+    private val modelsModelType by option(
+        "--models-model-type",
+        help = "Payload model implementation; defaults from the selected source generator",
     ).choice(
-        JavaModelType.CLASS.configurationValue to JavaModelType.CLASS,
-        JavaModelType.RECORD.configurationValue to JavaModelType.RECORD,
-    )
-
-    private val modelsProtobufModelType by option(
-        "--models-protobuf-model-type",
-        help = "Generated Protobuf model API (default: java)",
-    ).choice(
-        ProtobufModelType.JAVA.configurationValue to ProtobufModelType.JAVA,
-        ProtobufModelType.KOTLIN.configurationValue to ProtobufModelType.KOTLIN,
+        *ModelType.entries
+            .map { modelType -> modelType.configurationValue to modelType }
+            .toTypedArray(),
     )
 
     private val schemasAvroProjection by option(
@@ -183,12 +173,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
         val sourceRootName =
-            if (
-                GeneratorSourceLanguageResolver.resolve(
-                    generatorName = generator,
-                    protobufModelType = modelsProtobufModelType,
-                ) == SourceLanguage.KOTLIN
-            ) {
+            if (GeneratorSourceLanguageResolver.resolve(generator) == SourceLanguage.KOTLIN) {
                 "src/main/kotlin"
             } else {
                 "src/main/java"
@@ -221,8 +206,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         GeneratorConfigurationRequest.models(
             packageName = modelsPackage,
             annotation = modelsAnnotation,
-            javaModelType = modelsJavaModelType?.configurationValue,
-            protobufModelType = modelsProtobufModelType?.configurationValue,
+            modelType = modelsModelType?.configurationValue,
         )
 
     private fun schemaRequest(): GeneratorConfigurationRequest.Schemas =

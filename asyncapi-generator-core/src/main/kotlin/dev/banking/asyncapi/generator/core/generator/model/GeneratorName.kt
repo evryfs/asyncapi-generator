@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
+
 /**
  * Generator implementation selected by user-facing configuration.
  *
@@ -8,11 +10,16 @@ package dev.banking.asyncapi.generator.core.generator.model
  */
 enum class GeneratorName(
     val configurationValue: String,
+    val profile: GeneratorProfile,
 ) {
-    JAVA("java"),
-    KOTLIN("kotlin"),
-    AVRO("avro"),
-    PROTOBUF("protobuf"),
+    JAVA(
+        configurationValue = "java",
+        profile = GeneratorProfile.Source(SourceLanguage.JAVA),
+    ),
+    KOTLIN(
+        configurationValue = "kotlin",
+        profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
+    ),
     ;
 
     companion object {

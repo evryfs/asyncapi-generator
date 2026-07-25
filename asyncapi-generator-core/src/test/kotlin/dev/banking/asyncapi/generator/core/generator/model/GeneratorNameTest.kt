@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -34,19 +35,17 @@ class GeneratorNameTest {
                 path = "generatorName",
             ),
         )
+    }
+
+    @Test
+    fun `generator names expose typed source profiles`() {
         assertEquals(
-            GeneratorName.AVRO,
-            GeneratorName.fromConfigurationValue(
-                value = "avro",
-                path = "generatorName",
-            ),
+            GeneratorProfile.Source(SourceLanguage.JAVA),
+            GeneratorName.JAVA.profile,
         )
         assertEquals(
-            GeneratorName.PROTOBUF,
-            GeneratorName.fromConfigurationValue(
-                value = "protobuf",
-                path = "generatorName",
-            ),
+            GeneratorProfile.Source(SourceLanguage.KOTLIN),
+            GeneratorName.KOTLIN.profile,
         )
     }
 
@@ -61,7 +60,7 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: java, kotlin, avro, protobuf",
+            "Invalid generatorName 'python'. Supported values: java, kotlin",
             exception.message,
         )
     }
