@@ -157,6 +157,32 @@
                             <schemaPackage>com.example.complete.schema.json</schemaPackage>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>generate-asyncapi-yaml</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>asyncapi-yaml</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                            <outputFile>${project.build.directory}/documents/asyncapi.yaml</outputFile>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-asyncapi-json</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>asyncapi-json</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                            <outputFile>${project.build.directory}/documents/asyncapi.json</outputFile>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

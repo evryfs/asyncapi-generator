@@ -22,7 +22,8 @@ data class GeneratorConfiguration(
         get() = (profile as? GeneratorProfile.Source)?.language
 
     fun hasConfiguredOutputs(): Boolean =
-        models != ModelGeneration.Disabled ||
+        output.document != null ||
+            models != ModelGeneration.Disabled ||
             schemas.isNotEmpty() ||
             clients.isNotEmpty()
 }

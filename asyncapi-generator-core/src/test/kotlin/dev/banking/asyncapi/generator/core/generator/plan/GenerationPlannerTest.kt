@@ -3,6 +3,8 @@ package dev.banking.asyncapi.generator.core.generator.plan
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
@@ -24,6 +26,37 @@ class GenerationPlannerTest {
 
     @TempDir
     lateinit var tempDir: Path
+
+    @Test
+    fun `plan includes bundled document output task when configured`() {
+        val outputFile = tempDir.resolve("asyncapi.json").toFile()
+        val plan =
+            planner.plan(
+                GeneratorConfiguration(
+                    profile = GeneratorProfile.Document(DocumentFormat.JSON),
+                    output =
+                        GeneratorOutputConfiguration(
+                            sourceOutputDirectory = tempDir.resolve("sources").toFile(),
+                            resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                            document =
+                                DocumentOutput(
+                                    file = outputFile,
+                                    format = DocumentFormat.JSON,
+                                ),
+                        ),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                GenerationTask.DocumentArtifact(
+                    file = outputFile,
+                    format = DocumentFormat.JSON,
+                ),
+            ),
+            plan.tasks,
+        )
+    }
 
     @Test
     fun `plan includes model and schema artifact tasks when enabled`() {

@@ -13,4 +13,17 @@ data class GeneratorOutputConfiguration(
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
     val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    val document: DocumentOutput? = null,
+)
+
+/**
+ * Bundled AsyncAPI document output selected by the generator profile.
+ *
+ * Expected behavior is covered by:
+ * - `GenerationPlannerTest`
+ * - `AsyncApiGeneratorOutputContractTest`
+ */
+data class DocumentOutput(
+    val file: File,
+    val format: DocumentFormat,
 )

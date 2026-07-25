@@ -128,7 +128,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val bundler = AsyncApiBundler()
         val generator = AsyncApiGenerator()
 
-        val root = AsyncApiRegistry.readYaml(inputFile.get().asFile, context)
+        val root = AsyncApiRegistry.read(inputFile.get().asFile, context)
         val asyncApiDocument = parser.parse(root)
         val validationErrors = validator.validate(asyncApiDocument)
 
@@ -136,12 +136,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         validationErrors.throwErrors()
 
         val bundled = bundler.bundle(asyncApiDocument)
-
-        if (outputFile.isPresent) {
-            val file = outputFile.get().asFile
-            logger.lifecycle("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
-            AsyncApiRegistry.writeYaml(file, bundled)
-        }
 
         val genNameString = generatorName.get()
         val targetGenerator =
@@ -169,6 +163,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     sourceOutputDirectory = codegenSourceRoot,
                     javaSourceOutputDirectory = javaSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
+                    outputFile = outputFile.orNull?.asFile,
                     schemaPackageName = schemasPackageName.orNull,
                     models =
                         modelRequest(

@@ -2,10 +2,12 @@ package dev.banking.asyncapi.generator.core.generator.plan
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import java.io.File
 
 /**
  * Planned generator work item.
@@ -14,6 +16,11 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
  * - `GenerationPlannerTest`
  */
 sealed interface GenerationTask {
+    data class DocumentArtifact(
+        val file: File,
+        val format: DocumentFormat,
+    ) : GenerationTask
+
     data class ModelArtifacts(
         val language: SourceLanguage,
         val packageName: String,

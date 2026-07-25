@@ -21,8 +21,7 @@
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
                             <outputFile>${project.build.directory}/bundled.yaml</outputFile>
-                            <generatorName>kotlin</generatorName>
-                            <!-- no model, client, or schema packages -->
+                            <generatorName>asyncapi-yaml</generatorName>
                         </configuration>
                     </execution>
                 </executions>

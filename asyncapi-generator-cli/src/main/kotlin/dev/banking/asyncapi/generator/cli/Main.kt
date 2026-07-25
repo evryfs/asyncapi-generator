@@ -26,7 +26,7 @@ import java.io.File
 fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
-    private val input by option("--input", "-i", help = "Path to AsyncAPI YAML file")
+    private val input by option("--input", "-i", help = "Path to AsyncAPI YAML or JSON file")
         .file(mustExist = true, canBeDir = false, mustBeReadable = true)
         .required()
     private val codegenOutputDirectory by option("--codegen-output", help = "Codegen output directory")
@@ -35,7 +35,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val resourceOutputDirectory by option("--resource-output", help = "Resource output directory")
         .file(canBeFile = false)
         .default(File("./generated-resources/asyncapi"))
-    private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
+    private val outputFile by option("--output-file", help = "Write the bundled AsyncAPI document to a file")
         .file(canBeDir = false)
 
     private val generator by option("--generator", "-g", help = "Generator profile (default: kotlin)")
@@ -157,7 +157,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         echo("Generating AsyncAPI code from $input...")
 
         val context = AsyncApiContext()
-        val root = AsyncApiRegistry.readYaml(input, context)
+        val root = AsyncApiRegistry.read(input, context)
         val parser = AsyncApiParser(context)
         val document = parser.parse(root)
 
@@ -175,9 +175,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
         val bundler = AsyncApiBundler()
         val bundledDoc = bundler.bundle(document)
-        outputFile?.let { file ->
-            AsyncApiRegistry.writeYaml(file, bundledDoc)
-        }
         val sourceRootName =
             when (GeneratorSourceLanguageResolver.resolveOrNull(generator)) {
                 SourceLanguage.KOTLIN -> "src/main/kotlin"
@@ -197,6 +194,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                         sourceOutputDirectory = sourceRoot,
                         javaSourceOutputDirectory = javaSourceRoot,
                         resourceOutputDirectory = resourceOutputDirectory,
+                        outputFile = outputFile,
                         schemaPackageName = schemasPackage,
                         models = modelRequest(),
                         schemas = schemaRequest(),

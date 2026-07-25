@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 
@@ -32,6 +33,14 @@ enum class GeneratorName(
     JSON_SCHEMA(
         configurationValue = "json-schema",
         profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+    ),
+    ASYNCAPI_YAML(
+        configurationValue = "asyncapi-yaml",
+        profile = GeneratorProfile.Document(DocumentFormat.YAML),
+    ),
+    ASYNCAPI_JSON(
+        configurationValue = "asyncapi-json",
+        profile = GeneratorProfile.Document(DocumentFormat.JSON),
     ),
     ;
 

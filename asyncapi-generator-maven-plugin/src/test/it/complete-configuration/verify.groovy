@@ -103,3 +103,12 @@ assert !jsonSchemaOnlyOutput
     .listFiles()
     .any { file -> file.name.endsWith(".java") || file.name.endsWith(".kt") } :
     "JSON Schema-only generation must not create source models"
+
+def asyncApiYaml = new File(basedir, "target/documents/asyncapi.yaml")
+assert asyncApiYaml.isFile() : "Expected AsyncAPI YAML document generation"
+assert asyncApiYaml.text.startsWith("asyncapi:")
+
+def asyncApiJson = new File(basedir, "target/documents/asyncapi.json")
+assert asyncApiJson.isFile() : "Expected AsyncAPI JSON document generation"
+assert asyncApiJson.text.startsWith("{")
+assert asyncApiJson.text.contains('"asyncapi"')

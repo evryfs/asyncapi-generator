@@ -73,10 +73,6 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             validationErrors.logWarnings()
             validationErrors.throwErrors()
             val bundled = bundler.bundle(asyncApiParsed)
-            outputFile?.let { file ->
-                log.info("Writing bundled AsyncAPI specification to: ${file.absolutePath}")
-                AsyncApiRegistry.writeYaml(file, bundled)
-            }
             val targetGenerator =
                 GeneratorName.fromConfigurationValue(
                     value = generatorName,
@@ -96,6 +92,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                         sourceOutputDirectory = outputDirectory,
                         javaSourceOutputDirectory = outputDirectory,
                         resourceOutputDirectory = outputDirectory,
+                        outputFile = outputFile,
                         schemaPackageName = schemaPackage,
                         models = modelRequest,
                         schemas =

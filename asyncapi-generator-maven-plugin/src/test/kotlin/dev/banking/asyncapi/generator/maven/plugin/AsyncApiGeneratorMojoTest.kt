@@ -424,7 +424,7 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should allow bundle-only output with no packages`() {
+    fun `should write bundled YAML through the AsyncAPI YAML profile`() {
         val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.yaml")
         if (bundledFile.exists()) bundledFile.delete()
         val bundleOnlyOutputDir = outputPath("target/generated-sources/asyncapi-bundle-only")
@@ -434,14 +434,50 @@ class AsyncApiGeneratorMojoTest {
             inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
             outputDirectory(bundleOnlyOutputDir)
             outputFile(bundledFile)
-            generatorName("kotlin")
+            generatorName("asyncapi-yaml")
         }.execute()
 
         assertTrue(bundledFile.exists(), "Bundled output file should exist")
-        assertTrue(bundledFile.length() > 0, "Bundled output file should not be empty")
+        assertTrue(bundledFile.readText().startsWith("asyncapi:"))
         assertFalse(
             bundleOnlyOutputDir.resolve("com").exists(),
             "No code should be generated when packages are not set",
+        )
+    }
+
+    @Test
+    fun `should write bundled JSON through the AsyncAPI JSON profile`() {
+        val bundledFile = File("target/generated-sources/asyncapi/bundled/asyncapi.bundle-only.json")
+        if (bundledFile.exists()) bundledFile.delete()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputPath("target/generated-sources/asyncapi-json-bundle-only"))
+            outputFile(bundledFile)
+            generatorName("asyncapi-json")
+        }.execute()
+
+        assertTrue(bundledFile.exists(), "Bundled output file should exist")
+        assertTrue(bundledFile.readText().startsWith("{"))
+        assertTrue(bundledFile.readText().contains("\"asyncapi\""))
+    }
+
+    @Test
+    fun `should reject document profile without output file`() {
+        val exception =
+            assertThrows<MojoExecutionException> {
+                AsyncApiGeneratorMojo().apply {
+                    project(MavenProject())
+                    inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+                    outputDirectory(outputPath("target/generated-sources/asyncapi-document-without-output"))
+                    generatorName("asyncapi-yaml")
+                }.execute()
+            }
+
+        assertEquals(
+            "outputFile is required when generatorName is asyncapi-yaml",
+            exception.message,
         )
     }
 
@@ -473,7 +509,7 @@ class AsyncApiGeneratorMojoTest {
 
         assertEquals(
             "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
-                "json-schema",
+                "json-schema, asyncapi-yaml, asyncapi-json",
             exception.message,
         )
     }

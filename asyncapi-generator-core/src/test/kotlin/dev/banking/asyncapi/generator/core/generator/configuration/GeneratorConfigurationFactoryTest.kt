@@ -98,6 +98,66 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create resolves AsyncAPI YAML document generator profile`() {
+        val outputFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.ASYNCAPI_YAML,
+                    outputFile = outputFile,
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Document(DocumentFormat.YAML), configuration.profile)
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.YAML,
+            ),
+            configuration.output.document,
+        )
+        assertTrue(configuration.hasConfiguredOutputs())
+    }
+
+    @Test
+    fun `create resolves AsyncAPI JSON document generator profile`() {
+        val outputFile = tempDir.resolve("asyncapi.json").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.ASYNCAPI_JSON,
+                    outputFile = outputFile,
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Document(DocumentFormat.JSON), configuration.profile)
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.JSON,
+            ),
+            configuration.output.document,
+        )
+    }
+
+    @Test
+    fun `create defaults bundled document output to YAML for source profiles`() {
+        val outputFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(outputFile = outputFile),
+            )
+
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.YAML,
+            ),
+            configuration.output.document,
+        )
+    }
+
+    @Test
     fun `create resolves Kotlin Protobuf models from the source generator`() {
         val configuration =
             GeneratorConfigurationFactory.create(
@@ -564,6 +624,85 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create rejects document generator without output file`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(generatorName = GeneratorName.ASYNCAPI_JSON),
+                )
+            }
+
+        assertEquals(
+            "outputFile is required when generatorName is asyncapi-json",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects model configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_YAML,
+                        outputFile = tempDir.resolve("asyncapi.yaml").toFile(),
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models cannot be configured when generatorName is asyncapi-yaml",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects schema configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_JSON,
+                        outputFile = tempDir.resolve("asyncapi.json").toFile(),
+                        schemaPackageName = "com.example.schema",
+                    ),
+                )
+            }
+
+        assertEquals(
+            "schemas cannot be configured when generatorName is asyncapi-json",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects client configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_YAML,
+                        outputFile = tempDir.resolve("asyncapi.yaml").toFile(),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        modelPackageName = "com.example.model",
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "clients cannot be configured when generatorName is asyncapi-yaml",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create rejects model annotation without model package`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -764,6 +903,7 @@ class GeneratorConfigurationFactoryTest {
     private fun request(
         generatorName: GeneratorName = GeneratorName.KOTLIN,
         javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
+        outputFile: File? = null,
         schemaPackageName: String? = null,
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
@@ -774,6 +914,7 @@ class GeneratorConfigurationFactoryTest {
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             javaSourceOutputDirectory = javaSourceOutputDirectory,
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+            outputFile = outputFile,
             schemaPackageName = schemaPackageName,
             models = models,
             schemas = schemas,

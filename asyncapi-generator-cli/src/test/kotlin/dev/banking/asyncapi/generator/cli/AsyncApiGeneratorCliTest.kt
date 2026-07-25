@@ -256,17 +256,54 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should allow bundle-only output with no packages`(@TempDir tempDir: Path) {
+    fun `should write bundled YAML through the AsyncAPI YAML profile`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--output-file", outputFile.absolutePath
+                "--output-file", outputFile.absolutePath,
+                "--generator", "asyncapi-yaml",
             )
         )
         assertTrue(outputFile.exists(), "Bundled output file should exist")
-        assertTrue(outputFile.length() > 0, "Bundled output file should not be empty")
+        assertTrue(outputFile.readText().startsWith("asyncapi:"))
+    }
+
+    @Test
+    fun `should write bundled JSON through the AsyncAPI JSON profile`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val outputFile = tempDir.resolve("bundled.json").toFile()
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--output-file", outputFile.absolutePath,
+                "--generator", "asyncapi-json",
+            )
+        )
+        assertTrue(outputFile.exists(), "Bundled output file should exist")
+        assertTrue(outputFile.readText().startsWith("{"))
+        assertTrue(outputFile.readText().contains("\"asyncapi\""))
+    }
+
+    @Test
+    fun `should reject document profile without output file`() {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val exception =
+            assertFailsWith<UsageError> {
+                cli.parse(
+                    arrayOf(
+                        "-i", inputFile.absolutePath,
+                        "--generator", "asyncapi-json",
+                    ),
+                )
+            }
+
+        assertTrue(
+            exception.message.orEmpty().contains(
+                "outputFile is required when generatorName is asyncapi-json",
+            ),
+        )
     }
 
     @Test

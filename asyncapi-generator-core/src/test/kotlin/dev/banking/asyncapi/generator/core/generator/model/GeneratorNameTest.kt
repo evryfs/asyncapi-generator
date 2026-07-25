@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import org.junit.jupiter.api.Test
@@ -57,6 +58,20 @@ class GeneratorNameTest {
                 path = "generatorName",
             ),
         )
+        assertEquals(
+            GeneratorName.ASYNCAPI_YAML,
+            GeneratorName.fromConfigurationValue(
+                value = "asyncapi-yaml",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.ASYNCAPI_JSON,
+            GeneratorName.fromConfigurationValue(
+                value = "asyncapi-json",
+                path = "generatorName",
+            ),
+        )
     }
 
     @Test
@@ -88,6 +103,18 @@ class GeneratorNameTest {
     }
 
     @Test
+    fun `document generator names expose typed document profiles`() {
+        assertEquals(
+            GeneratorProfile.Document(DocumentFormat.YAML),
+            GeneratorName.ASYNCAPI_YAML.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Document(DocumentFormat.JSON),
+            GeneratorName.ASYNCAPI_JSON.profile,
+        )
+    }
+
+    @Test
     fun `fromConfigurationValue rejects unsupported configuration values`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -98,7 +125,8 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, json-schema",
+            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
+                "json-schema, asyncapi-yaml, asyncapi-json",
             exception.message,
         )
     }

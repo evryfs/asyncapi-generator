@@ -15,6 +15,15 @@ class GenerationPlanner {
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
+                configuration.output.document?.let { document ->
+                    add(
+                        GenerationTask.DocumentArtifact(
+                            file = document.file,
+                            format = document.format,
+                        ),
+                    )
+                }
+
                 when (val models = configuration.models) {
                     ModelGeneration.Disabled -> Unit
                     is ModelGeneration.Enabled ->

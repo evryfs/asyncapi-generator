@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
+import dev.banking.asyncapi.generator.core.generator.artifact.DocumentArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.JsonSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifactGeneration
@@ -27,6 +28,7 @@ class AsyncApiGenerator {
     private val generationInputFactory = GenerationInputFactory()
     private val generationInputCompatibilityValidator = GenerationInputCompatibilityValidator()
     private val generationPlanner = GenerationPlanner()
+    private val documentArtifactGeneration = DocumentArtifactGeneration()
     private val modelArtifactGeneration = ModelArtifactGeneration()
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
     private val jsonSchemaArtifactGeneration = JsonSchemaArtifactGeneration()
@@ -53,6 +55,11 @@ class AsyncApiGenerator {
 
         generationPlan.tasks.forEach { task ->
             when (task) {
+                is GenerationTask.DocumentArtifact ->
+                    documentArtifactGeneration.generate(
+                        task = task,
+                        asyncApiDocument = asyncApiDocument,
+                    )
                 is GenerationTask.ModelArtifacts ->
                     modelArtifactGeneration.generateModelArtifacts(
                         task = task,

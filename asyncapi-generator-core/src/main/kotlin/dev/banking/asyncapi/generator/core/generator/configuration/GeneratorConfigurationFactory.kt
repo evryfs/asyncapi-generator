@@ -14,6 +14,7 @@ object GeneratorConfigurationFactory {
     fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
         validate(request)
 
+        val profile = request.generatorName.profile
         val modelType =
             request.models?.let { models ->
                 ModelTypeResolver.resolve(
@@ -25,12 +26,25 @@ object GeneratorConfigurationFactory {
         val protobufModels = request.protobufModels(modelType)
 
         return GeneratorConfiguration(
-            profile = request.generatorName.profile,
+            profile = profile,
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
                     javaSourceOutputDirectory = request.javaSourceOutputDirectory,
                     resourceOutputDirectory = request.resourceOutputDirectory,
+                    document =
+                        request.outputFile?.let { outputFile ->
+                            DocumentOutput(
+                                file = outputFile,
+                                format =
+                                    when (profile) {
+                                        is GeneratorProfile.Document -> profile.format
+                                        is GeneratorProfile.Schema,
+                                        is GeneratorProfile.Source,
+                                        -> DocumentFormat.YAML
+                                    },
+                            )
+                        },
                 ),
             models = request.jvmModels(modelType),
             schemas = request.schemaGeneration(modelType, protobufModels),
@@ -182,14 +196,27 @@ object GeneratorConfigurationFactory {
                 }
             }
             is GeneratorProfile.Document -> {
+                if (request.outputFile == null) {
+                    throw IllegalArgumentException(
+                        "outputFile is required when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
+                if (request.models != null) {
+                    throw IllegalArgumentException(
+                        "models cannot be configured when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
                 if (
-                    request.models != null ||
-                    request.schemas != GeneratorConfigurationRequest.Schemas() ||
-                    request.clients != GeneratorConfigurationRequest.Clients()
+                    request.schemaPackageName != null ||
+                    request.schemas != GeneratorConfigurationRequest.Schemas()
                 ) {
                     throw IllegalArgumentException(
-                        "model, schema, and client configuration cannot be used with document generatorName " +
-                            request.generatorName.configurationValue,
+                        "schemas cannot be configured when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
+                if (request.clients != GeneratorConfigurationRequest.Clients()) {
+                    throw IllegalArgumentException(
+                        "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}",
                     )
                 }
             }

@@ -70,7 +70,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `should allow bundle-only output with no packages`() {
+    fun `should write bundled YAML through the AsyncAPI YAML profile`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
         File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
@@ -81,18 +81,42 @@ class AsyncApiPluginTest {
                   inputFile.set(file("api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   outputFile.set(layout.buildDirectory.file("bundled.yaml"))
-                  generatorName.set("kotlin")
-                  // no models/clients/schemas output blocks set
+                  generatorName.set("asyncapi-yaml")
               }"""
         )
         val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
         val bundledFile = File(projectDir, "build/bundled.yaml")
         assertTrue(bundledFile.exists(), "Bundled file should exist")
-        assertTrue(bundledFile.length() > 0, "Bundled file should not be empty")
+        assertTrue(bundledFile.readText().startsWith("asyncapi:"))
         val codegenRoot = File(projectDir, "build/generated/asyncapi/src/main/kotlin")
         val hasKotlinFiles = codegenRoot.exists() && codegenRoot.walkTopDown().any { it.isFile && it.extension == "kt" }
         assertTrue(!hasKotlinFiles, "No Kotlin files should be generated when packages are not set")
+    }
+
+    @Test
+    fun `should write bundled JSON through the AsyncAPI JSON profile`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        File(yamlUrl.toURI()).copyTo(File(projectDir, "api.yaml"))
+        GradleTestHelper.writeBuildScript(
+            projectDir, """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  outputFile.set(layout.buildDirectory.file("bundled.json"))
+                  generatorName.set("asyncapi-json")
+              }"""
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+
+        val bundledFile = File(projectDir, "build/bundled.json")
+        assertTrue(bundledFile.exists(), "Bundled file should exist")
+        assertTrue(bundledFile.readText().startsWith("{"))
+        assertTrue(bundledFile.readText().contains("\"asyncapi\""))
     }
 
     @Test
@@ -625,7 +649,7 @@ class AsyncApiPluginTest {
         assertTrue(
             result.output.contains(
                 "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
-                    "json-schema",
+                    "json-schema, asyncapi-yaml, asyncapi-json",
             ),
         )
     }

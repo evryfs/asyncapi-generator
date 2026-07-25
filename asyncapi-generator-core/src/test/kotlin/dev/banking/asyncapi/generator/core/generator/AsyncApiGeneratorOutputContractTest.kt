@@ -4,6 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
@@ -95,6 +97,43 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
         assertTrue(schemaArtifact.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
         assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json").exists())
+    }
+
+    @Test
+    fun `generate writes bundled AsyncAPI document as YAML`() {
+        val outputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+
+        generator.generate(
+            asyncApiDocument = bundledDocument(),
+            generatorConfiguration =
+                documentGeneratorConfiguration(
+                    outputFile = outputFile,
+                    format = DocumentFormat.YAML,
+                ),
+        )
+
+        assertTrue(outputFile.exists())
+        assertTrue(outputFile.readText().startsWith("asyncapi:"))
+        assertTrue(outputFile.readText().contains("components:"))
+    }
+
+    @Test
+    fun `generate writes bundled AsyncAPI document as JSON`() {
+        val outputFile = tempDir.resolve("bundled/asyncapi.json").toFile()
+
+        generator.generate(
+            asyncApiDocument = bundledDocument(),
+            generatorConfiguration =
+                documentGeneratorConfiguration(
+                    outputFile = outputFile,
+                    format = DocumentFormat.JSON,
+                ),
+        )
+
+        assertTrue(outputFile.exists())
+        assertTrue(outputFile.readText().startsWith("{"))
+        assertTrue(outputFile.readText().contains("\"asyncapi\""))
+        assertTrue(outputFile.readText().contains("\"components\""))
     }
 
     @Test
@@ -322,5 +361,23 @@ class AsyncApiGeneratorOutputContractTest {
             models = models,
             schemas = schemas,
             clients = clients,
+        )
+
+    private fun documentGeneratorConfiguration(
+        outputFile: File,
+        format: DocumentFormat,
+    ): GeneratorConfiguration =
+        GeneratorConfiguration(
+            profile = GeneratorProfile.Document(format),
+            output =
+                GeneratorOutputConfiguration(
+                    sourceOutputDirectory = tempDir.resolve("sources").toFile(),
+                    resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                    document =
+                        DocumentOutput(
+                            file = outputFile,
+                            format = format,
+                        ),
+                ),
         )
 }
