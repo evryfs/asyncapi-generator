@@ -62,7 +62,7 @@ internal object KafkaKeyContractResolver {
             javaTypeName = keyType.javaTypeName,
             kotlinTypeName = keyType.kotlinTypeName,
             importName = keyType.importName,
-            nullable = resolvedSchema.nullable == true || resolvedSchema.type.isTypeNullable(),
+            nullable = resolvedSchema.type.isTypeNullable(),
             isModel = keyType.isModel,
         )
     }

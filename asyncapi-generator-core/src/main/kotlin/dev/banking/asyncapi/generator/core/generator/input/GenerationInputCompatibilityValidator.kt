@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -64,6 +65,8 @@ class GenerationInputCompatibilityValidator {
                         isSupported = { schema -> schema.format.isNativeProtobuf },
                     )
                 }
+                is GenerationTask.JsonSchemaArtifacts ->
+                    requireJsonSchema(generationInput)
                 is GenerationTask.HeaderModelArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
@@ -92,12 +95,44 @@ class GenerationInputCompatibilityValidator {
             )
         }
 
-        val payloadName = generationInput.schemas.keys.firstOrNull() ?: return
+        val payloadName = generationInput.schemas.keys.firstOrNull()
+        if (payloadName == null) {
+            throw MissingSchemaGenerationInput(
+                output = output,
+                supportedInput = supportedInput,
+            )
+        }
         throw UnsupportedSchemaGenerationInput(
             output = output,
             payloadName = payloadName,
             inputFormat = "an AsyncAPI Schema Object",
             supportedInput = supportedInput,
+        )
+    }
+
+    private fun requireJsonSchema(generationInput: GenerationInput) {
+        val incompatibleSchema =
+            generationInput.multiFormatSchemas.entries
+                .firstOrNull { (_, schema) -> !schema.format.isJsonSchemaDraft07 }
+        if (incompatibleSchema != null) {
+            throw UnsupportedSchemaGenerationInput(
+                output = "JSON Schema generation",
+                payloadName = incompatibleSchema.key,
+                inputFormat = "schemaFormat '${incompatibleSchema.value.schemaFormat}'",
+                supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+            )
+        }
+
+        if (
+            generationInput.declaredSchemas.isNotEmpty() ||
+            generationInput.multiFormatSchemas.isNotEmpty()
+        ) {
+            return
+        }
+
+        throw MissingSchemaGenerationInput(
+            output = "JSON Schema generation",
+            supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
         )
     }
 

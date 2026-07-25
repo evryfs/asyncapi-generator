@@ -50,6 +50,13 @@ class GeneratorNameTest {
                 path = "generatorName",
             ),
         )
+        assertEquals(
+            GeneratorName.JSON_SCHEMA,
+            GeneratorName.fromConfigurationValue(
+                value = "json-schema",
+                path = "generatorName",
+            ),
+        )
     }
 
     @Test
@@ -74,6 +81,10 @@ class GeneratorNameTest {
             GeneratorProfile.Schema(SchemaType.PROTOBUF),
             GeneratorName.PROTOBUF_SCHEMA.profile,
         )
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+            GeneratorName.JSON_SCHEMA.profile,
+        )
     }
 
     @Test
@@ -87,7 +98,7 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema",
+            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, json-schema",
             exception.message,
         )
     }

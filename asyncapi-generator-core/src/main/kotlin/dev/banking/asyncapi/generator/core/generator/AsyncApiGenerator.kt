@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
+import dev.banking.asyncapi.generator.core.generator.artifact.JsonSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeProtobufArtifactGeneration
@@ -28,6 +29,7 @@ class AsyncApiGenerator {
     private val generationPlanner = GenerationPlanner()
     private val modelArtifactGeneration = ModelArtifactGeneration()
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
+    private val jsonSchemaArtifactGeneration = JsonSchemaArtifactGeneration()
     private val nativeAvroArtifactGeneration = NativeAvroArtifactGeneration()
     private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration()
     private val springKafkaClientGeneration = SpringKafkaClientGeneration()
@@ -92,6 +94,12 @@ class AsyncApiGenerator {
                         task = task,
                         generationInput = generationInput,
                         resourceOutputDirectory = generatorConfiguration.output.resourceOutputDirectory,
+                        artifactWriter = artifactWriter,
+                    )
+                is GenerationTask.JsonSchemaArtifacts ->
+                    jsonSchemaArtifactGeneration.generate(
+                        task = task,
+                        generationInput = generationInput,
                         artifactWriter = artifactWriter,
                     )
             }

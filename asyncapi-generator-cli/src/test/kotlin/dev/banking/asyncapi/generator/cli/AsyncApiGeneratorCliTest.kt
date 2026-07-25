@@ -140,6 +140,31 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should generate JSON Schemas through the schema-only profile`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-package", "com.example.cli.schema",
+                "-g", "json-schema",
+            ),
+        )
+
+        val schemaFile = resourceDir.resolve("com/example/cli/schema/User.schema.json")
+        assertTrue(schemaFile.exists(), "JSON Schema output should exist")
+        assertTrue(schemaFile.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
+        assertFalse(
+            codegenDir.walkTopDown().any { it.extension == "java" || it.extension == "kt" },
+            "JSON Schema-only generation must not create source models",
+        )
+    }
+
+    @Test
     fun `should generate native avro schema and specific record source`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()

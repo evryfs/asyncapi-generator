@@ -29,6 +29,10 @@ enum class GeneratorName(
         configurationValue = "protobuf-schema",
         profile = GeneratorProfile.Schema(SchemaType.PROTOBUF),
     ),
+    JSON_SCHEMA(
+        configurationValue = "json-schema",
+        profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+    ),
     ;
 
     companion object {

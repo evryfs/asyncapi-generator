@@ -78,6 +78,8 @@ class GenerationPlanner {
                                     schemaPackageName = schema.schemaPackageName,
                                 ),
                             )
+                        is SchemaGeneration.JsonSchema ->
+                            add(GenerationTask.JsonSchemaArtifacts(schema.packageName))
                     }
                 }
             },

@@ -155,7 +155,6 @@ class SchemaParser(
         val deprecated = parserNode.optional("deprecated")?.coerce<Boolean>()
         val bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap)
 
-        val nullable = parserNode.optional("nullable")?.coerce<Boolean>()
         val readOnly = parserNode.optional("readOnly")?.coerce<Boolean>()
         val writeOnly = parserNode.optional("writeOnly")?.coerce<Boolean>()
 
@@ -205,7 +204,6 @@ class SchemaParser(
                 ifSchema = ifSchema,
                 thenSchema = thenSchema,
                 elseSchema = elseSchema,
-                nullable = nullable,
                 readOnly = readOnly,
                 writeOnly = writeOnly,
                 discriminator = discriminator,

@@ -88,3 +88,18 @@ assert !protobufSchemaOnlyOutput
     .listFiles()
     .any { file -> file.name.endsWith(".java") || file.name.endsWith(".kt") } :
     "Protobuf schema-only generation must not create runtime message sources"
+
+def jsonSchemaOnlyOutput = new File(
+    basedir,
+    "target/generated-schemas/json/com/example/complete/schema/json",
+)
+def jsonSchemaOnlyArtifact = new File(
+    jsonSchemaOnlyOutput,
+    "AccountUpdatedV1Payload.schema.json",
+)
+assert jsonSchemaOnlyArtifact.isFile() : "Expected JSON Schema-only generation"
+assert jsonSchemaOnlyArtifact.text.contains('"$schema" : "http://json-schema.org/draft-07/schema#"')
+assert !jsonSchemaOnlyOutput
+    .listFiles()
+    .any { file -> file.name.endsWith(".java") || file.name.endsWith(".kt") } :
+    "JSON Schema-only generation must not create source models"

@@ -26,15 +26,13 @@ components:
           additionalProperties:
             $ref: '#/components/schemas/MetaData'
         metadataIntegers:
-          type: object
+          type: [object, "null"]
           additionalProperties:
             type: integer
-          nullable: true
         metadata:
-          type: object
+          type: [object, "null"]
           additionalProperties:
             type: string
-          nullable: true
         orderId:
           description: Unique identifier for the order.
           type: string

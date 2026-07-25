@@ -34,7 +34,6 @@ class SchemaMerger {
             description = override.description ?: base.description,
             default = override.default ?: base.default,
             const = override.const ?: base.const,
-            nullable = override.nullable ?: base.nullable,
             readOnly = override.readOnly ?: base.readOnly,
             writeOnly = override.writeOnly ?: base.writeOnly,
 

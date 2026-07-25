@@ -55,4 +55,8 @@ sealed interface GenerationTask {
         val models: ProtobufModelGeneration? = null,
         val schemaPackageName: String? = null,
     ) : GenerationTask
+
+    data class JsonSchemaArtifacts(
+        val packageName: String,
+    ) : GenerationTask
 }

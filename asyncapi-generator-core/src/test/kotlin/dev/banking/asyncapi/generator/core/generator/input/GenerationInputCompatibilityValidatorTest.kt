@@ -151,6 +151,117 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `allows AsyncAPI and native Draft 07 schemas for JSON Schema generation`() {
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = mapOf("UserCreated" to Schema(type = "object")),
+                    multiFormatSchemas =
+                        mapOf(
+                            "UserUpdated" to
+                                MultiFormatSchema(
+                                    schemaFormat = "application/schema+json;version=draft-07",
+                                    schema = mapOf("type" to "object"),
+                                ),
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.JsonSchemaArtifacts(
+                            packageName = "com.example.schema",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects incompatible native formats for JSON Schema generation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
+                validator.validate(
+                    generationInput = generationInputWithMultiFormatSchema(),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.JsonSchemaArtifacts(
+                                    packageName = "com.example.schema",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("JSON Schema generation cannot consume payload 'UserCreated'"))
+        assertTrue(
+            error.message!!.contains(
+                "Supported input: AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas.",
+            ),
+        )
+    }
+
+    @Test
+    fun `rejects incompatible native formats when regular JSON schemas are also present`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = mapOf("UserCreated" to Schema(type = "object")),
+                            multiFormatSchemas =
+                                mapOf(
+                                    "UserUpdated" to
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+                                            schema = mapOf("type" to "record"),
+                                        ),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels = emptyList(),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.JsonSchemaArtifacts(
+                                    packageName = "com.example.schema",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("JSON Schema generation cannot consume payload 'UserUpdated'"))
+    }
+
+    @Test
+    fun `rejects empty input for schema generation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.MissingSchemaGenerationInput> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            polymorphicRelationships = emptyMap(),
+                            channels = emptyList(),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.JsonSchemaArtifacts(
+                                    packageName = "com.example.schema",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("did not find any compatible schemas"))
+    }
+
+    @Test
     fun `allows native avro multi format messages for spring kafka client generation`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),

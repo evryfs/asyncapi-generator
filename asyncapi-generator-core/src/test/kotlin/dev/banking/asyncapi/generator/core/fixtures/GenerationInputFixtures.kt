@@ -107,6 +107,93 @@ internal class GenerationInputFixtures {
             channels = emptyList(),
         )
 
+    fun generationInputWithJsonSchemas(): GenerationInput {
+        val addressSchema =
+            Schema(
+                type = "object",
+                required = listOf("city"),
+                properties =
+                    mapOf(
+                        "city" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+            )
+        val accountSchema =
+            Schema(
+                id = "urn:example:my-account",
+                comment = "Generated from the AsyncAPI account payload.",
+                type = "object",
+                required = listOf("accountId"),
+                properties =
+                    linkedMapOf(
+                        "accountId" to
+                            SchemaInterface.SchemaInline(
+                                Schema(
+                                    type = listOf("string", "null"),
+                                    default = null,
+                                    defaultSet = true,
+                                ),
+                            ),
+                        "address" to
+                            SchemaInterface.SchemaReference(
+                                Reference(
+                                    ref = "#/components/schemas/Address",
+                                    model = addressSchema,
+                                ),
+                            ),
+                    ),
+                ifSchema =
+                    SchemaInterface.SchemaInline(
+                        Schema(
+                            properties =
+                                mapOf(
+                                    "accountId" to
+                                        SchemaInterface.SchemaInline(
+                                            Schema(type = "string", pattern = "^A"),
+                                        ),
+                                ),
+                        ),
+                    ),
+                thenSchema = SchemaInterface.SchemaInline(Schema(required = listOf("address"))),
+                discriminator = "accountType",
+                deprecated = true,
+            )
+
+        return GenerationInput(
+            schemas =
+                linkedMapOf(
+                    "MyAccount" to accountSchema,
+                    "Address" to addressSchema,
+                ),
+            polymorphicRelationships = emptyMap(),
+            channels = emptyList(),
+        )
+    }
+
+    fun generationInputWithNativeJsonSchema(): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            multiFormatSchemas =
+                mapOf(
+                    "MyAccount" to
+                        MultiFormatSchema(
+                            schemaFormat = "application/schema+json;version=draft-07",
+                            schema =
+                                linkedMapOf(
+                                    "type" to "object",
+                                    "properties" to
+                                        mapOf(
+                                            "address" to
+                                                mapOf(
+                                                    $$"$ref" to "#/components/schemas/Address",
+                                                ),
+                                        ),
+                                ),
+                        ),
+                ),
+            polymorphicRelationships = emptyMap(),
+            channels = emptyList(),
+        )
+
     fun documentWithMessageHeaders(): AsyncApiDocument =
         AsyncApiDocument(
             asyncapi = "3.0.0",

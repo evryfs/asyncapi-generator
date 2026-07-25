@@ -305,6 +305,28 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
+    fun `should generate JSON Schemas through the schema-only profile`() {
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-json-schema-profile")
+        outputDirectory.deleteRecursively()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputDirectory)
+            schemaPackage("com.example.json.schema")
+            generatorName("json-schema")
+        }.execute()
+
+        val schemaFile = outputDirectory.resolve("com/example/json/schema/User.schema.json")
+        assertTrue(schemaFile.exists(), "JSON Schema output should exist")
+        assertTrue(schemaFile.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
+        assertFalse(
+            outputDirectory.walkTopDown().any { it.extension == "java" || it.extension == "kt" },
+            "JSON Schema-only generation must not create source models",
+        )
+    }
+
+    @Test
     fun `should preserve native Avro schema content through the schema-only profile`() {
         val outputDirectory = outputPath("target/generated-sources/asyncapi-native-avro-schema-profile")
         outputDirectory.deleteRecursively()
@@ -450,7 +472,8 @@ class AsyncApiGeneratorMojoTest {
         val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
-            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro-schema, protobuf-schema",
+            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
+                "json-schema",
             exception.message,
         )
     }

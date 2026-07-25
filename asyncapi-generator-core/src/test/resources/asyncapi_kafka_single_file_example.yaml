@@ -489,8 +489,7 @@ components:
           type: string
           writeOnly: true
         nickname:
-          type: string
-          nullable: true
+          type: [string, "null"]
       required: [ name, age ]
       minProperties: 2
       maxProperties: 5

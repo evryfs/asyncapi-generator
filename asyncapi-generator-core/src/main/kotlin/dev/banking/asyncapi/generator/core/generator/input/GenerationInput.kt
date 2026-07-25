@@ -11,12 +11,17 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * [GenerationInput] is produced after loading, normalizing, and analyzing the
  * AsyncAPI document. It does not contain rendered artifacts or write targets.
  *
+ * [schemas] contains the normalized and analyzed view used by source generators.
+ * [declaredSchemas] retains the contract view used by schema artifact generators
+ * that must preserve JSON Schema semantics.
+ *
  * Expected behavior is covered by:
  * - `GenerationInputTest`
  * - `GenerationInputFactoryTest`
  */
 data class GenerationInput(
     val schemas: Map<String, Schema>,
+    val declaredSchemas: Map<String, Schema> = schemas,
     val multiFormatSchemas: Map<String, MultiFormatSchema> = emptyMap(),
     val polymorphicRelationships: Map<String, List<String>>,
     val channels: List<AnalyzedChannel>,

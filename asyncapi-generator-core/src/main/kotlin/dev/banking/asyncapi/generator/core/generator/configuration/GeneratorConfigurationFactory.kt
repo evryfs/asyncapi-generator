@@ -341,7 +341,11 @@ object GeneratorConfigurationFactory {
                             ),
                         )
                     SchemaType.JSON_SCHEMA ->
-                        throw IllegalArgumentException("JSON Schema generation is not implemented yet")
+                        listOf(
+                            SchemaGeneration.JsonSchema(
+                                packageName = requireNotNull(schemaPackageName),
+                            ),
+                        )
                 }
             is GeneratorProfile.Document -> emptyList()
         }

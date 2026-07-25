@@ -143,6 +143,20 @@
                             <schemaPackage>com.example.complete.schema.protobuf</schemaPackage>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>generate-json-schema-only</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>json-schema</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                            <outputDirectory>${project.build.directory}/generated-schemas/json</outputDirectory>
+                            <schemaPackage>com.example.complete.schema.json</schemaPackage>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

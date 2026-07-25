@@ -76,6 +76,28 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create resolves JSON Schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.JSON_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.JSON_SCHEMA), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.JsonSchema(
+                    packageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create resolves Kotlin Protobuf models from the source generator`() {
         val configuration =
             GeneratorConfigurationFactory.create(

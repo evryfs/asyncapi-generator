@@ -416,6 +416,42 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate JSON Schemas through the schema-only profile`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        File(yamlUrl.toURI()).copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir,
+            """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("json-schema")
+                  schemas {
+                      packageName.set("com.example.json.schema")
+                  }
+              }""",
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaFile =
+            File(projectDir, "build/generated-resources/asyncapi/com/example/json/schema/User.schema.json")
+        assertTrue(schemaFile.exists(), "JSON Schema output should exist")
+        assertTrue(schemaFile.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
+        assertFalse(
+            File(projectDir, "build/generated/asyncapi")
+                .walkTopDown()
+                .any { it.extension == "java" || it.extension == "kt" },
+            "JSON Schema-only generation must not create source models",
+        )
+    }
+
+    @Test
     fun `should generate native avro schema and specific record source`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_avro.yaml")
@@ -588,7 +624,8 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema",
+                "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
+                    "json-schema",
             ),
         )
     }

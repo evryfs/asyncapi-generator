@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProf
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import org.junit.jupiter.api.Test
@@ -67,6 +68,33 @@ class AsyncApiGeneratorOutputContractTest {
 
         assertTrue(resourceOutputDirectory.resolve("com/example/avro/Task.avsc").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/avro/Task.avsc").exists())
+    }
+
+    @Test
+    fun `generate writes JSON Schema artifacts to resource output directory`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = bundledDocument(),
+            generatorConfiguration =
+                GeneratorConfiguration(
+                    profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+                    output =
+                        GeneratorOutputConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            javaSourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                        ),
+                    schemas = listOf(SchemaGeneration.JsonSchema(packageName = "com.example.jsonschema")),
+                ),
+        )
+
+        val schemaArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json")
+        assertTrue(schemaArtifact.exists())
+        assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
+        assertTrue(schemaArtifact.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
+        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json").exists())
     }
 
     @Test

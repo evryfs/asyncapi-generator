@@ -104,6 +104,21 @@ class GenerationPlannerTest {
     }
 
     @Test
+    fun `plan includes JSON Schema artifact task when enabled`() {
+        val plan =
+            planner.plan(
+                generatorConfiguration(
+                    schemas = listOf(SchemaGeneration.JsonSchema(packageName = "com.example.schema")),
+                ),
+            )
+
+        assertEquals(
+            listOf(GenerationTask.JsonSchemaArtifacts(packageName = "com.example.schema")),
+            plan.tasks,
+        )
+    }
+
+    @Test
     fun `plan includes model annotation on model artifact task when configured`() {
         val plan =
             planner.plan(

@@ -141,6 +141,30 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class MissingSchemaGenerationInput(
+        output: String,
+        supportedInput: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output did not find any compatible schemas in the AsyncAPI document.")
+                appendLine("Supported input: $supportedInput.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class InvalidJsonSchema(
+        payloadName: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("JSON Schema generation failed for payload '$payloadName'.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class InvalidNativeAvroSchema(
         payloadName: String,
         schemaFormat: String,

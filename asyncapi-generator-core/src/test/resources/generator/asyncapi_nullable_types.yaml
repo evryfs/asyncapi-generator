@@ -12,13 +12,11 @@ components:
         requiredString:
           type: string # Should be String
         optionalString:
-          type: string
-          nullable: true # OpenAPI 3.0+ style nullable. Should be String?
+          type: [string, "null"] # JSON Schema nullable union. Should be String?
         nullableStringArray:
-          type: array
+          type: [array, "null"] # Array itself is nullable. Should be List<String>?
           items:
             type: string
-          nullable: true # Array itself is nullable. Should be List<String>?
         stringOrNull:
           type: [string, "null"] # JSON Schema style nullable. Should be String?
         integerOrNull:

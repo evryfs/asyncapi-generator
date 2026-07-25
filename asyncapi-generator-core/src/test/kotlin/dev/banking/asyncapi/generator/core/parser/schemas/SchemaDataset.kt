@@ -128,7 +128,7 @@ fun complexObject() = Schema(
         "age" to SchemaInterface.SchemaInline(Schema(type = "integer", default = 18, defaultSet = true, minimum = 0)),
         "email" to SchemaInterface.SchemaInline(Schema(type = "string", format = "email", readOnly = true)),
         "password" to SchemaInterface.SchemaInline(Schema(type = "string", writeOnly = true)),
-        "nickname" to SchemaInterface.SchemaInline(Schema(type = "string", nullable = true))
+        "nickname" to SchemaInterface.SchemaInline(Schema(type = listOf("string", "null")))
     ),
     dependencies = mapOf("password" to listOf("email")),
     propertyNames = SchemaInterface.SchemaInline(Schema(pattern = "^[a-z]+$")),
