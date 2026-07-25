@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.maven.plugin
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.avroProjection
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.consumer
@@ -12,14 +11,11 @@ import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.inputSpec
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.modelPackage
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeAvro
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.nativeProtobuf
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputDirectory
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputFile
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.outputPath
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.producer
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.project
-import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.schemaPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.validationAnnotations
 import org.apache.maven.plugin.MojoExecutionException
@@ -268,22 +264,6 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
-    fun `should generate avro projection under the shared output directory`() {
-        AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
-            outputDirectory(outputPath("target/generated-sources/asyncapi"))
-            modelPackage("com.example.avro.model")
-            schemaPackage("com.example.avro.schema")
-            schemaConfig(schemaConfig(avroProjection = avroProjection()))
-            generatorName("kotlin")
-        }.execute()
-
-        val schemaDir = File("target/generated-sources/asyncapi/com/example/avro/schema")
-        assertTrue(schemaDir.exists(), "Schema directory should exist")
-    }
-
-    @Test
     fun `should generate Avro schemas through the schema-only profile`() {
         val outputDirectory = outputPath("target/generated-sources/asyncapi-avro-schema-profile")
         outputDirectory.deleteRecursively()
@@ -354,7 +334,8 @@ class AsyncApiGeneratorMojoTest {
             project(MavenProject())
             inputSpec(inputPath("asyncapi_native_avro.yaml"))
             outputDirectory(outputDirectory)
-            schemaConfig(schemaConfig(nativeAvro = nativeAvro(enabled = true)))
+            modelPackage("com.example.avro")
+            modelConfig(modelConfig(modelType = "avro-specific-record"))
             generatorName("java")
         }.execute()
 
@@ -489,10 +470,26 @@ class AsyncApiGeneratorMojoTest {
                 inputSpec(File("src/test/resources/non_existent.yaml"))
                 outputDirectory(outputPath("target/should-fail"))
                 modelPackage("com.fail")
+                generatorName("kotlin")
             }
 
         val exception = assertThrows<MojoExecutionException> { mojo.execute() }
         assertTrue(exception.message.orEmpty().startsWith("Input specification not found:"))
+    }
+
+    @Test
+    fun `should validate generator configuration before reading input specification`() {
+        val mojo =
+            AsyncApiGeneratorMojo().apply {
+                project(MavenProject())
+                inputSpec(File("src/test/resources/non_existent.yaml"))
+                outputDirectory(outputPath("target/should-fail-configuration"))
+                modelPackage("com.fail")
+                generatorName(null)
+            }
+
+        val exception = assertThrows<MojoExecutionException> { mojo.execute() }
+        assertEquals("generatorName is required", exception.message)
     }
 
     @Test

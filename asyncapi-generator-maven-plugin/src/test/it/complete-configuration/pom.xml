@@ -26,7 +26,6 @@
                             <outputDirectory>${project.build.directory}/generated-sources/kotlin</outputDirectory>
                             <modelPackage>com.example.complete.kotlin.model</modelPackage>
                             <clientPackage>com.example.complete.kotlin.client</clientPackage>
-                            <schemaPackage>com.example.complete.kotlin.schema</schemaPackage>
                             <modelConfig>
                                 <modelAnnotation>com.example.codegen.GeneratedPayload</modelAnnotation>
                             </modelConfig>
@@ -47,11 +46,6 @@
                                     <payloadParameter>jakarta.validation.Valid</payloadParameter>
                                 </validationAnnotations>
                             </clientConfig>
-                            <schemaConfig>
-                                <avroProjection>
-                                    <enabled>true</enabled>
-                                </avroProjection>
-                            </schemaConfig>
                         </configuration>
                     </execution>
 
@@ -86,11 +80,6 @@
                             <modelConfig>
                                 <modelType>avro-specific-record</modelType>
                             </modelConfig>
-                            <schemaConfig>
-                                <nativeAvro>
-                                    <enabled>true</enabled>
-                                </nativeAvro>
-                            </schemaConfig>
                         </configuration>
                     </execution>
 
@@ -108,11 +97,6 @@
                             <modelConfig>
                                 <modelType>protobuf-message</modelType>
                             </modelConfig>
-                            <schemaConfig>
-                                <nativeProtobuf>
-                                    <enabled>true</enabled>
-                                </nativeProtobuf>
-                            </schemaConfig>
                         </configuration>
                     </execution>
 

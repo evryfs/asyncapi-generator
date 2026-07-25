@@ -35,12 +35,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
+                            <generatorName>avro-schema</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputSpec>
-                            <modelPackage>com.example.b.model</modelPackage>
                             <schemaPackage>com.example.b.schema</schemaPackage>
-                            <schemaConfig>
-                                <avroProjection/>
-                            </schemaConfig>
                         </configuration>
                     </execution>
                 </executions>

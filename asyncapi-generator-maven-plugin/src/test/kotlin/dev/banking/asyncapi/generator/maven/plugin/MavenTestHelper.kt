@@ -45,15 +45,11 @@ object MavenTestHelper {
         writeField("modelConfig", value)
     }
 
-    fun Mojo.schemaConfig(value: MavenSchemaConfiguration?) {
-        writeField("schemaConfig", value)
-    }
-
     fun Mojo.clientConfig(value: MavenClientConfiguration?) {
         writeField("clientConfig", value)
     }
 
-    fun Mojo.generatorName(value: String) {
+    fun Mojo.generatorName(value: String?) {
         writeField("generatorName", value)
     }
 
@@ -70,36 +66,6 @@ object MavenTestHelper {
         MavenModelConfiguration().apply {
             this.modelAnnotation = modelAnnotation
             this.modelType = modelType
-        }
-
-    fun schemaConfig(
-        avroProjection: MavenAvroProjectionConfiguration? = null,
-        nativeAvro: MavenNativeAvroConfiguration? = null,
-        nativeProtobuf: MavenNativeProtobufConfiguration? = null,
-    ): MavenSchemaConfiguration =
-        MavenSchemaConfiguration().apply {
-            this.avroProjection = avroProjection
-            this.nativeAvro = nativeAvro
-            this.nativeProtobuf = nativeProtobuf
-        }
-
-    fun avroProjection(enabled: Boolean? = null): MavenAvroProjectionConfiguration =
-        MavenAvroProjectionConfiguration().apply {
-            this.enabled = enabled
-        }
-
-    fun nativeAvro(
-        enabled: Boolean? = null,
-        generateSpecificRecords: Boolean? = null,
-    ): MavenNativeAvroConfiguration =
-        MavenNativeAvroConfiguration().apply {
-            this.enabled = enabled
-            this.generateSpecificRecords = generateSpecificRecords
-        }
-
-    fun nativeProtobuf(enabled: Boolean? = null): MavenNativeProtobufConfiguration =
-        MavenNativeProtobufConfiguration().apply {
-            this.enabled = enabled
         }
 
     fun clientConfig(

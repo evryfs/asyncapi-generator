@@ -10,8 +10,8 @@ def bModelDir = new File(codegenBase, "com/example/b/model")
 
 // Assertions to verify the presence or absence of directories based on the configuration
 assert aModelDir.exists() : "Expected model directory for contract A"
-assert bModelDir.exists() : "Expected model directory for contract B"
 assert aClientDir.exists() : "Expected client directory for contract A (per-execution springKafka client)"
-assert !aSchemaDir.exists() : "Did not expect schema directory for contract A (no avroProjection schema)"
+assert !aSchemaDir.exists() : "Did not expect schema directory for contract A"
 assert !bClientDir.exists() : "Did not expect client directory for contract B (no springKafka client)"
-assert bSchemaDir.exists() : "Expected schema directory for contract B (per-execution avroProjection schema)"
+assert !bModelDir.exists() : "Did not expect source models from the schema-only contract B execution"
+assert bSchemaDir.exists() : "Expected schema directory for contract B (per-execution schema profile)"

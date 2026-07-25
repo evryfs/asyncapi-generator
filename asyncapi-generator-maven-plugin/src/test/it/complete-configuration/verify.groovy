@@ -12,10 +12,6 @@ def consumer = new File(
     kotlinOutput,
     "com/example/complete/kotlin/client/consumer/AccountEventsConsumer.kt",
 )
-def projectedSchema = new File(
-    kotlinOutput,
-    "com/example/complete/kotlin/schema/AccountUpdatedV1Payload.avsc",
-)
 
 assert bundledSpec.isFile() : "Expected outputFile to contain the bundled AsyncAPI document"
 assert kotlinModel.isFile() : "Expected the configured Kotlin model package"
@@ -29,7 +25,6 @@ assert producer.text.contains("fun sendAccountUpdatedV1(")
 assert producer.text.contains("X_EXAMPLE_CORRELATION_ID")
 assert producer.text.contains('account.\\${kafka.environment}.events.v1')
 assert consumer.text.contains("fun listenAccountUpdatedV1(")
-assert projectedSchema.isFile() : "Expected the configured Avro projection package"
 
 def javaRecord = new File(
     basedir,
