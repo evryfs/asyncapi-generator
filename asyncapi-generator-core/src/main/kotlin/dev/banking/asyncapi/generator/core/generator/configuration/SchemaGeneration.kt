@@ -17,9 +17,11 @@ sealed interface SchemaGeneration {
 
     data class NativeAvro(
         val generateSpecificRecords: Boolean = true,
+        val schemaPackageName: String? = null,
     ) : SchemaGeneration
 
     data class NativeProtobuf(
         val models: ProtobufModelGeneration? = null,
+        val schemaPackageName: String? = null,
     ) : SchemaGeneration
 }

@@ -85,6 +85,72 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `allows native Avro schemas when Avro schema generation includes native artifacts`() {
+        validator.validate(
+            generationInput = generationInputWithMultiFormatSchema(),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.AvroSchemaArtifacts(
+                            packageName = "com.example.avro",
+                        ),
+                        GenerationTask.NativeAvroArtifacts(
+                            generateSpecificRecords = false,
+                            schemaPackageName = "com.example.avro",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects AsyncAPI Schema Objects for native Protobuf generation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = mapOf("UserCreated" to Schema(type = "object")),
+                            polymorphicRelationships = emptyMap(),
+                            channels = emptyList(),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.NativeProtobufArtifacts(
+                                    schemaPackageName = "com.example.protobuf",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Native Protobuf generation cannot consume payload 'UserCreated'"))
+        assertTrue(error.message!!.contains("Supported input: native Protobuf schemas."))
+    }
+
+    @Test
+    fun `rejects native Avro schemas for native Protobuf generation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
+                validator.validate(
+                    generationInput = generationInputWithMultiFormatSchema(),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.NativeProtobufArtifacts(
+                                    schemaPackageName = "com.example.protobuf",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("application/vnd.apache.avro+json;version=1.9.0"))
+        assertTrue(error.message!!.contains("Supported input: native Protobuf schemas."))
+    }
+
+    @Test
     fun `allows native avro multi format messages for spring kafka client generation`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),

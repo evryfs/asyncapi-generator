@@ -384,6 +384,38 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `should generate Avro schemas through the schema-only profile`() {
+        val projectDir = Files.createTempDirectory("gradleTest").toFile()
+        val yamlUrl = GradleTestHelper.resourceFile("asyncapi_kafka_complex.yaml")
+        val specsDir = File(projectDir, "specs").apply { mkdirs() }
+        File(yamlUrl.toURI()).copyTo(File(specsDir, "api.yaml"), overwrite = true)
+        GradleTestHelper.writeBuildScript(
+            projectDir,
+            """
+              plugins { id("dev.banking.asyncapi.generator") }
+              asyncapiGenerate {
+                  inputFile.set(file("specs/api.yaml"))
+                  codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
+                  resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
+                  generatorName.set("avro-schema")
+                  schemas {
+                      packageName.set("com.example.avro.schema")
+                  }
+              }""",
+        )
+
+        val result = GradleTestHelper.runGradle(projectDir, "generateAsyncApi")
+
+        assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
+        val schemaDirectory =
+            File(projectDir, "build/generated-resources/asyncapi/com/example/avro/schema")
+        assertTrue(
+            schemaDirectory.walkTopDown().any { it.extension == "avsc" },
+            "At least one Avro schema should be generated",
+        )
+    }
+
+    @Test
     fun `should generate native avro schema and specific record source`() {
         val projectDir = Files.createTempDirectory("gradleTest").toFile()
         val yamlUrl = GradleTestHelper.resourceFile("asyncapi_native_avro.yaml")
@@ -463,11 +495,9 @@ class AsyncApiPluginTest {
                   inputFile.set(file("specs/api.yaml"))
                   codegenOutputDirectory.set(layout.buildDirectory.dir("generated/asyncapi"))
                   resourceOutputDirectory.set(layout.buildDirectory.dir("generated-resources/asyncapi"))
-                  generatorName.set("java")
+                  generatorName.set("protobuf-schema")
                   schemas {
-                      nativeProtobuf {
-                          enabled.set(true)
-                      }
+                      packageName.set("com.example.protobuf")
                   }
               }"""
         )
@@ -558,7 +588,7 @@ class AsyncApiPluginTest {
         assertEquals(TaskOutcome.FAILED, result.task(":generateAsyncApi")?.outcome)
         assertTrue(
             result.output.contains(
-                "Invalid generatorName 'python'. Supported values: java, kotlin",
+                "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema",
             ),
         )
     }

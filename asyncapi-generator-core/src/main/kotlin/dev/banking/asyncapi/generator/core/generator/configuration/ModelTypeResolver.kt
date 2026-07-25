@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Resolves model defaults and validates model compatibility for a generator.
@@ -13,8 +14,9 @@ object ModelTypeResolver {
         generatorName: GeneratorName,
         configuredModelType: ModelType?,
     ): ModelType {
-        val supportedModelTypes = supportedModelTypes(generatorName)
-        val modelType = configuredModelType ?: defaultModelType(generatorName)
+        val sourceLanguage = GeneratorSourceLanguageResolver.resolve(generatorName)
+        val supportedModelTypes = supportedModelTypes(sourceLanguage)
+        val modelType = configuredModelType ?: defaultModelType(sourceLanguage)
 
         if (modelType !in supportedModelTypes) {
             throw IllegalArgumentException(
@@ -27,21 +29,21 @@ object ModelTypeResolver {
         return modelType
     }
 
-    private fun defaultModelType(generatorName: GeneratorName): ModelType =
-        when (generatorName) {
-            GeneratorName.KOTLIN -> ModelType.KOTLIN_DATA_CLASS
-            GeneratorName.JAVA -> ModelType.JAVA_CLASS
+    private fun defaultModelType(sourceLanguage: SourceLanguage): ModelType =
+        when (sourceLanguage) {
+            SourceLanguage.KOTLIN -> ModelType.KOTLIN_DATA_CLASS
+            SourceLanguage.JAVA -> ModelType.JAVA_CLASS
         }
 
-    private fun supportedModelTypes(generatorName: GeneratorName): List<ModelType> =
-        when (generatorName) {
-            GeneratorName.KOTLIN ->
+    private fun supportedModelTypes(sourceLanguage: SourceLanguage): List<ModelType> =
+        when (sourceLanguage) {
+            SourceLanguage.KOTLIN ->
                 listOf(
                     ModelType.KOTLIN_DATA_CLASS,
                     ModelType.AVRO_SPECIFIC_RECORD,
                     ModelType.PROTOBUF_MESSAGE,
                 )
-            GeneratorName.JAVA ->
+            SourceLanguage.JAVA ->
                 listOf(
                     ModelType.JAVA_CLASS,
                     ModelType.JAVA_RECORD,

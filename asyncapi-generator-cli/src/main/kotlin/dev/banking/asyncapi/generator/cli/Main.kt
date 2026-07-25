@@ -38,10 +38,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val outputFile by option("--output-file", help = "Write bundled AsyncAPI YAML to file")
         .file(canBeDir = false)
 
-    private val generator by option("--generator", "-g", help = "Target language (default: kotlin)")
+    private val generator by option("--generator", "-g", help = "Generator profile (default: kotlin)")
         .choice(
-            GeneratorName.KOTLIN.configurationValue to GeneratorName.KOTLIN,
-            GeneratorName.JAVA.configurationValue to GeneratorName.JAVA,
+            *GeneratorName.entries
+                .map { generatorName -> generatorName.configurationValue to generatorName }
+                .toTypedArray(),
         ).default(GeneratorName.KOTLIN)
 
     private val modelsPackage by option("--models-package", help = "Package for generated models")
@@ -68,6 +69,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     private val schemasAvroProjectionPackage by option(
         "--schemas-avro-projection-package",
         help = "Package for generated Avro projection schemas",
+    )
+
+    private val schemasPackage by option(
+        "--schemas-package",
+        help = "Package for schema-only generator output",
     )
 
     private val schemasNativeAvro by option(
@@ -173,12 +179,15 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             AsyncApiRegistry.writeYaml(file, bundledDoc)
         }
         val sourceRootName =
-            if (GeneratorSourceLanguageResolver.resolve(generator) == SourceLanguage.KOTLIN) {
-                "src/main/kotlin"
-            } else {
-                "src/main/java"
-        }
-        val sourceRoot = codegenOutputDirectory.resolve(sourceRootName)
+            when (GeneratorSourceLanguageResolver.resolveOrNull(generator)) {
+                SourceLanguage.KOTLIN -> "src/main/kotlin"
+                SourceLanguage.JAVA -> "src/main/java"
+                null -> null
+            }
+        val sourceRoot =
+            sourceRootName
+                ?.let(codegenOutputDirectory::resolve)
+                ?: codegenOutputDirectory
         val javaSourceRoot = codegenOutputDirectory.resolve("src/main/java")
         val generatorConfiguration =
             try {
@@ -188,6 +197,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                         sourceOutputDirectory = sourceRoot,
                         javaSourceOutputDirectory = javaSourceRoot,
                         resourceOutputDirectory = resourceOutputDirectory,
+                        schemaPackageName = schemasPackage,
                         models = modelRequest(),
                         schemas = schemaRequest(),
                         clients = clientRequest(),

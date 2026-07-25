@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
@@ -34,7 +35,7 @@ abstract class AbstractJavaGeneratorClass {
         val effectiveClientPackage = clientPackage ?: modelPackage
         val generatorConfiguration =
             GeneratorConfiguration(
-                language = SourceLanguage.JAVA,
+                profile = GeneratorProfile.Source(SourceLanguage.JAVA),
                 output =
                     GeneratorOutputConfiguration(
                         sourceOutputDirectory = codegenOutputDirectory,

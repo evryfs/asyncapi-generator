@@ -60,3 +60,31 @@ def protobufKotlinDsl = new File(protobufOutput, "AccountSnapshotKt.kt")
 assert nativeProtobufSchema.isFile() : "Expected native Protobuf schema generation"
 assert protobufJavaMessage.isFile() : "Expected the Protobuf Java runtime message"
 assert protobufKotlinDsl.isFile() : "Expected the configured Protobuf Kotlin DSL"
+
+def avroSchemaOnlyOutput = new File(
+    basedir,
+    "target/generated-schemas/avro/com/example/complete/schema/avro",
+)
+def avroSchemaOnlyArtifact = new File(
+    avroSchemaOnlyOutput,
+    "AccountUpdatedV1Payload.avsc",
+)
+assert avroSchemaOnlyArtifact.isFile() : "Expected Avro schema-only generation"
+assert !avroSchemaOnlyOutput
+    .listFiles()
+    .any { file -> file.name.endsWith(".java") || file.name.endsWith(".kt") } :
+    "Avro schema-only generation must not create source models"
+
+def protobufSchemaOnlyOutput = new File(
+    basedir,
+    "target/generated-schemas/protobuf/com/example/complete/schema/protobuf",
+)
+def protobufSchemaOnlyArtifact = new File(
+    protobufSchemaOnlyOutput,
+    "AccountSnapshot.proto",
+)
+assert protobufSchemaOnlyArtifact.isFile() : "Expected Protobuf schema-only generation"
+assert !protobufSchemaOnlyOutput
+    .listFiles()
+    .any { file -> file.name.endsWith(".java") || file.name.endsWith(".kt") } :
+    "Protobuf schema-only generation must not create runtime message sources"

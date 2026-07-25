@@ -19,11 +19,14 @@ class NativeProtobufArtifactGeneration {
         generationInput: GenerationInput,
         artifactWriter: GeneratedArtifactWriter,
     ) {
-        artifactWriter.write(
+        val result =
             nativeProtobufGenerator.render(
                 schemas = generationInput.multiFormatSchemas,
                 models = task.models,
-            ),
+            ).inSchemaPackage(task.schemaPackageName)
+
+        artifactWriter.write(
+            result,
         )
     }
 }

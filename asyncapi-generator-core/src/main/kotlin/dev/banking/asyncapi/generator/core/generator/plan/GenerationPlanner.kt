@@ -20,7 +20,7 @@ class GenerationPlanner {
                     is ModelGeneration.Enabled ->
                         add(
                             GenerationTask.ModelArtifacts(
-                                language = configuration.language,
+                                language = configuration.requireSourceLanguage(),
                                 packageName = models.packageName,
                                 annotation = models.annotation,
                                 javaModelType = models.javaModelType,
@@ -34,7 +34,7 @@ class GenerationPlanner {
                             if (client.headers.enabled) {
                                 add(
                                     GenerationTask.HeaderModelArtifacts(
-                                        language = configuration.language,
+                                        language = configuration.requireSourceLanguage(),
                                         packageName = "${client.packageName}.header",
                                     ),
                                 )
@@ -42,7 +42,7 @@ class GenerationPlanner {
                             client.springKafka?.takeIf { it.hasEnabledOutput() }?.let { springKafka ->
                                 add(
                                     GenerationTask.SpringKafkaClient(
-                                        language = configuration.language,
+                                        language = configuration.requireSourceLanguage(),
                                         clientPackage = client.packageName,
                                         modelPackage = client.modelPackageName,
                                         generateHeaders = client.headers.enabled,
@@ -56,7 +56,7 @@ class GenerationPlanner {
                             }
                         }
                         is ClientGeneration.QuarkusKafka ->
-                            add(GenerationTask.QuarkusKafkaClient(configuration.language))
+                            add(GenerationTask.QuarkusKafkaClient(configuration.requireSourceLanguage()))
                     }
                 }
 
@@ -68,12 +68,14 @@ class GenerationPlanner {
                             add(
                                 GenerationTask.NativeAvroArtifacts(
                                     generateSpecificRecords = schema.generateSpecificRecords,
+                                    schemaPackageName = schema.schemaPackageName,
                                 ),
                             )
                         is SchemaGeneration.NativeProtobuf ->
                             add(
                                 GenerationTask.NativeProtobufArtifacts(
                                     models = schema.models,
+                                    schemaPackageName = schema.schemaPackageName,
                                 ),
                             )
                     }
@@ -83,4 +85,9 @@ class GenerationPlanner {
 
     private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
         producer.enabled || consumer.enabled
+
+    private fun GeneratorConfiguration.requireSourceLanguage() =
+        requireNotNull(sourceLanguage) {
+            "Source language is required for model and client generation"
+        }
 }

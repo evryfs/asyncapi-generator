@@ -115,6 +115,34 @@
                             </schemaConfig>
                         </configuration>
                     </execution>
+
+                    <execution>
+                        <id>generate-avro-schema-only</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>avro-schema</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                            <outputDirectory>${project.build.directory}/generated-schemas/avro</outputDirectory>
+                            <schemaPackage>com.example.complete.schema.avro</schemaPackage>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>generate-protobuf-schema-only</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <generatorName>protobuf-schema</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/native-protobuf.yaml</inputSpec>
+                            <outputDirectory>${project.build.directory}/generated-schemas/protobuf</outputDirectory>
+                            <schemaPackage>com.example.complete.schema.protobuf</schemaPackage>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>

@@ -33,6 +33,7 @@ class AsyncApiPlugin : Plugin<Project> {
             modelsAnnotation.set(extension.models.annotation)
             modelsModelType.set(extension.models.modelType)
 
+            schemasPackageName.set(extension.schemas.packageName)
             avroProjectionEnabled.set(extension.schemas.avroProjection.enabled)
             avroProjectionPackageName.set(extension.schemas.avroProjection.packageName)
             nativeAvroEnabled.set(extension.schemas.nativeAvro.enabled)

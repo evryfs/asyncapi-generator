@@ -96,6 +96,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                         sourceOutputDirectory = outputDirectory,
                         javaSourceOutputDirectory = outputDirectory,
                         resourceOutputDirectory = outputDirectory,
+                        schemaPackageName = schemaPackage,
                         models = modelRequest,
                         schemas =
                             schemaConfig?.toRequest(schemaPackage)

@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -35,6 +36,20 @@ class GeneratorNameTest {
                 path = "generatorName",
             ),
         )
+        assertEquals(
+            GeneratorName.AVRO_SCHEMA,
+            GeneratorName.fromConfigurationValue(
+                value = "avro-schema",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.PROTOBUF_SCHEMA,
+            GeneratorName.fromConfigurationValue(
+                value = "protobuf-schema",
+                path = "generatorName",
+            ),
+        )
     }
 
     @Test
@@ -50,6 +65,18 @@ class GeneratorNameTest {
     }
 
     @Test
+    fun `schema generator names expose typed schema profiles`() {
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.AVRO),
+            GeneratorName.AVRO_SCHEMA.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.PROTOBUF),
+            GeneratorName.PROTOBUF_SCHEMA.profile,
+        )
+    }
+
+    @Test
     fun `fromConfigurationValue rejects unsupported configuration values`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -60,7 +87,7 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: java, kotlin",
+            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema",
             exception.message,
         )
     }

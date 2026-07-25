@@ -127,6 +127,20 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class UnsupportedSchemaGenerationInput(
+        output: String,
+        payloadName: String,
+        inputFormat: String,
+        supportedInput: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output cannot consume payload '$payloadName' because it uses $inputFormat.")
+                appendLine("Supported input: $supportedInput.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class InvalidNativeAvroSchema(
         payloadName: String,
         schemaFormat: String,

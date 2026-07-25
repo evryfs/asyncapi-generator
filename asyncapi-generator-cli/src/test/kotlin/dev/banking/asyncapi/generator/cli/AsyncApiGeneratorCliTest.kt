@@ -116,6 +116,30 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
+    fun `should generate Avro schemas through the schema-only profile`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
+        val codegenDir = tempDir.resolve("codegen").toFile()
+        val resourceDir = tempDir.resolve("resources").toFile()
+
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "--codegen-output", codegenDir.absolutePath,
+                "--resource-output", resourceDir.absolutePath,
+                "--schemas-package", "com.example.cli.schema",
+                "-g", "avro-schema",
+            ),
+        )
+
+        val schemaDir = resourceDir.resolve("com/example/cli/schema")
+        assertTrue(schemaDir.exists(), "Schema output directory should exist")
+        assertTrue(
+            schemaDir.walkTopDown().any { it.extension == "avsc" },
+            "At least one Avro schema should be generated",
+        )
+    }
+
+    @Test
     fun `should generate native avro schema and specific record source`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
         val codegenDir = tempDir.resolve("codegen").toFile()
@@ -171,8 +195,8 @@ class AsyncApiGeneratorCliTest {
                 "-i", inputFile.absolutePath,
                 "--codegen-output", codegenDir.absolutePath,
                 "--resource-output", resourceDir.absolutePath,
-                "--schemas-native-protobuf",
-                "-g", "java",
+                "--schemas-package", "com.example.protobuf",
+                "-g", "protobuf-schema",
             )
         )
 

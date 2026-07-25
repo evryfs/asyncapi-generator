@@ -11,5 +11,11 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
  */
 object GeneratorSourceLanguageResolver {
     fun resolve(generatorName: GeneratorName): SourceLanguage =
-        (generatorName.profile as GeneratorProfile.Source).language
+        resolveOrNull(generatorName)
+            ?: throw IllegalArgumentException(
+                "generatorName '${generatorName.configurationValue}' does not generate source code",
+            )
+
+    fun resolveOrNull(generatorName: GeneratorName): SourceLanguage? =
+        (generatorName.profile as? GeneratorProfile.Source)?.language
 }

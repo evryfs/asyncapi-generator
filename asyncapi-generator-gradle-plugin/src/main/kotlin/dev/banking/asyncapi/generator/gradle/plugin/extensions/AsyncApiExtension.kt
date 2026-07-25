@@ -58,6 +58,7 @@ abstract class AsyncApiModelsExtension @Inject constructor(objects: ObjectFactor
  * - `AsyncApiPluginTest`
  */
 abstract class AsyncApiSchemasExtension @Inject constructor(objects: ObjectFactory) {
+    val packageName: Property<String> = objects.property(String::class.java)
     val avroProjection: AsyncApiAvroProjectionExtension =
         objects.newInstance(AsyncApiAvroProjectionExtension::class.java)
     val nativeAvro: AsyncApiNativeAvroExtension =

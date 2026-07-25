@@ -18,6 +18,7 @@ data class GeneratorConfigurationRequest(
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
     val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    val schemaPackageName: String? = null,
     val models: Models? = null,
     val schemas: Schemas = Schemas(),
     val clients: Clients = Clients(),

@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
@@ -355,7 +356,7 @@ class GenerationPlannerTest {
         clients: List<ClientGeneration> = emptyList(),
     ): GeneratorConfiguration =
         GeneratorConfiguration(
-            language = language,
+            profile = GeneratorProfile.Source(language),
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = tempDir.resolve("sources").toFile(),

@@ -53,6 +53,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val schemasPackageName: Property<String>
+
+    @get:Input
+    @get:Optional
     abstract val avroProjectionEnabled: Property<Boolean>
 
     @get:Input
@@ -147,11 +151,15 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             )
         // Calculate Source Root
         val sourceRootName =
-            when (GeneratorSourceLanguageResolver.resolve(targetGenerator)) {
+            when (GeneratorSourceLanguageResolver.resolveOrNull(targetGenerator)) {
                 KOTLIN -> "src/main/kotlin"
                 JAVA -> "src/main/java"
+                null -> null
         }
-        val codegenSourceRoot = codegenOutputDirectory.get().asFile.resolve(sourceRootName)
+        val codegenSourceRoot =
+            sourceRootName
+                ?.let(codegenOutputDirectory.get().asFile::resolve)
+                ?: codegenOutputDirectory.get().asFile
         val javaSourceRoot = codegenOutputDirectory.get().asFile.resolve("src/main/java")
 
         val generatorConfiguration =
@@ -161,6 +169,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     sourceOutputDirectory = codegenSourceRoot,
                     javaSourceOutputDirectory = javaSourceRoot,
                     resourceOutputDirectory = resourceOutputDirectory.get().asFile,
+                    schemaPackageName = schemasPackageName.orNull,
                     models =
                         modelRequest(
                             enabled = modelsEnabled.orNull,

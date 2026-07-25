@@ -31,12 +31,15 @@ class NativeProtobufArtifactGenerationTest {
             )
 
         generation.generate(
-            task = GenerationTask.NativeProtobufArtifacts(),
+            task =
+                GenerationTask.NativeProtobufArtifacts(
+                    schemaPackageName = "com.example.schemas",
+                ),
             generationInput = fixtures.generationInputWithNativeProtobufSchema(),
             artifactWriter = artifactWriter,
         )
 
-        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertTrue(resourceOutputDirectory.resolve("com/example/schemas/UserCreated.proto").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
         assertFalse(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
     }

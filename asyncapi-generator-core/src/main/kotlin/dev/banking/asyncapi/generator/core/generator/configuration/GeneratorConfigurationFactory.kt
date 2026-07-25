@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Assembles core generator configuration from frontend-neutral requests.
@@ -25,7 +25,7 @@ object GeneratorConfigurationFactory {
         val protobufModels = request.protobufModels(modelType)
 
         return GeneratorConfiguration(
-            language = GeneratorSourceLanguageResolver.resolve(request.generatorName),
+            profile = request.generatorName.profile,
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = request.sourceOutputDirectory,
@@ -33,29 +33,7 @@ object GeneratorConfigurationFactory {
                     resourceOutputDirectory = request.resourceOutputDirectory,
                 ),
             models = request.jvmModels(modelType),
-            schemas =
-                buildList {
-                    request.schemas.avroProjection?.packageName?.let { packageName ->
-                        add(SchemaGeneration.AvroProjection(packageName))
-                    }
-                    val nativeAvro = request.schemas.nativeAvro
-                    if (nativeAvro != null || modelType == ModelType.AVRO_SPECIFIC_RECORD) {
-                        add(
-                            SchemaGeneration.NativeAvro(
-                                generateSpecificRecords =
-                                    modelType == ModelType.AVRO_SPECIFIC_RECORD ||
-                                        nativeAvro?.generateSpecificRecords == true,
-                            ),
-                        )
-                    }
-                    if (request.schemas.nativeProtobuf != null || protobufModels != null) {
-                        add(
-                            SchemaGeneration.NativeProtobuf(
-                                models = protobufModels,
-                            ),
-                        )
-                    }
-                },
+            schemas = request.schemaGeneration(modelType, protobufModels),
             clients =
                 buildList {
                     request.clients.kafka?.let { kafka ->
@@ -118,6 +96,8 @@ object GeneratorConfigurationFactory {
     }
 
     private fun validate(request: GeneratorConfigurationRequest) {
+        validateProfileConfiguration(request)
+
         if (request.models?.annotation != null && request.models.packageName == null) {
             throw IllegalArgumentException("models.packageName is required when models.annotation is configured")
         }
@@ -149,6 +129,10 @@ object GeneratorConfigurationFactory {
             value = request.models?.packageName,
         )
         validatePackageName(
+            path = "schemaPackage",
+            value = request.schemaPackageName,
+        )
+        validatePackageName(
             path = "schemas.avroProjection.packageName",
             value = request.schemas.avroProjection?.packageName,
         )
@@ -168,6 +152,48 @@ object GeneratorConfigurationFactory {
             path = "clients.quarkusKafka.modelPackageName",
             value = request.clients.quarkusKafka?.modelPackageName,
         )
+    }
+
+    private fun validateProfileConfiguration(request: GeneratorConfigurationRequest) {
+        when (request.generatorName.profile) {
+            is GeneratorProfile.Source -> Unit
+            is GeneratorProfile.Schema -> {
+                if (request.models != null) {
+                    throw IllegalArgumentException(
+                        "models cannot be configured when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
+                if (request.clients != GeneratorConfigurationRequest.Clients()) {
+                    throw IllegalArgumentException(
+                        "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
+                if (request.schemas != GeneratorConfigurationRequest.Schemas()) {
+                    throw IllegalArgumentException(
+                        "schemaConfig cannot be configured when generatorName is " +
+                            request.generatorName.configurationValue +
+                            "; the generator name already selects the schema type",
+                    )
+                }
+                if (request.schemaPackageName == null) {
+                    throw IllegalArgumentException(
+                        "schemaPackage is required when generatorName is ${request.generatorName.configurationValue}",
+                    )
+                }
+            }
+            is GeneratorProfile.Document -> {
+                if (
+                    request.models != null ||
+                    request.schemas != GeneratorConfigurationRequest.Schemas() ||
+                    request.clients != GeneratorConfigurationRequest.Clients()
+                ) {
+                    throw IllegalArgumentException(
+                        "model, schema, and client configuration cannot be used with document generatorName " +
+                            request.generatorName.configurationValue,
+                    )
+                }
+            }
+        }
     }
 
     private fun validatePackageName(
@@ -259,10 +285,64 @@ object GeneratorConfigurationFactory {
                 ProtobufModelGeneration(
                     packageName = packageName,
                     modelType =
-                        when (generatorName) {
-                            GeneratorName.KOTLIN -> ProtobufModelType.KOTLIN
-                            GeneratorName.JAVA -> ProtobufModelType.JAVA
+                        when (GeneratorSourceLanguageResolver.resolve(generatorName)) {
+                            SourceLanguage.KOTLIN -> ProtobufModelType.KOTLIN
+                            SourceLanguage.JAVA -> ProtobufModelType.JAVA
                         },
                 )
             }
+
+    private fun GeneratorConfigurationRequest.schemaGeneration(
+        modelType: ModelType?,
+        protobufModels: ProtobufModelGeneration?,
+    ): List<SchemaGeneration> =
+        when (val profile = generatorName.profile) {
+            is GeneratorProfile.Source ->
+                buildList {
+                    schemas.avroProjection?.packageName?.let { packageName ->
+                        add(SchemaGeneration.AvroProjection(packageName))
+                    }
+                    val nativeAvro = schemas.nativeAvro
+                    if (nativeAvro != null || modelType == ModelType.AVRO_SPECIFIC_RECORD) {
+                        add(
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords =
+                                    modelType == ModelType.AVRO_SPECIFIC_RECORD ||
+                                        nativeAvro?.generateSpecificRecords == true,
+                                schemaPackageName = schemaPackageName,
+                            ),
+                        )
+                    }
+                    if (schemas.nativeProtobuf != null || protobufModels != null) {
+                        add(
+                            SchemaGeneration.NativeProtobuf(
+                                models = protobufModels,
+                                schemaPackageName = schemaPackageName,
+                            ),
+                        )
+                    }
+                }
+            is GeneratorProfile.Schema ->
+                when (profile.type) {
+                    SchemaType.AVRO ->
+                        listOf(
+                            SchemaGeneration.AvroProjection(
+                                packageName = requireNotNull(schemaPackageName),
+                            ),
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = false,
+                                schemaPackageName = schemaPackageName,
+                            ),
+                        )
+                    SchemaType.PROTOBUF ->
+                        listOf(
+                            SchemaGeneration.NativeProtobuf(
+                                schemaPackageName = schemaPackageName,
+                            ),
+                        )
+                    SchemaType.JSON_SCHEMA ->
+                        throw IllegalArgumentException("JSON Schema generation is not implemented yet")
+                }
+            is GeneratorProfile.Document -> emptyList()
+        }
 }

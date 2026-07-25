@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 
 /**
  * Generator implementation selected by user-facing configuration.
@@ -19,6 +20,14 @@ enum class GeneratorName(
     KOTLIN(
         configurationValue = "kotlin",
         profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
+    ),
+    AVRO_SCHEMA(
+        configurationValue = "avro-schema",
+        profile = GeneratorProfile.Schema(SchemaType.AVRO),
+    ),
+    PROTOBUF_SCHEMA(
+        configurationValue = "protobuf-schema",
+        profile = GeneratorProfile.Schema(SchemaType.PROTOBUF),
     ),
     ;
 

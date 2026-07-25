@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
@@ -283,7 +284,7 @@ class AsyncApiGeneratorOutputContractTest {
         clients: List<ClientGeneration> = emptyList(),
     ): GeneratorConfiguration =
         GeneratorConfiguration(
-            language = SourceLanguage.KOTLIN,
+            profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
             output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,

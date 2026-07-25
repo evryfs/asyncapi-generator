@@ -284,6 +284,47 @@ class AsyncApiGeneratorMojoTest {
     }
 
     @Test
+    fun `should generate Avro schemas through the schema-only profile`() {
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-avro-schema-profile")
+        outputDirectory.deleteRecursively()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputSpec(inputPath("asyncapi_kafka_complex.yaml"))
+            outputDirectory(outputDirectory)
+            schemaPackage("com.example.avro.schema")
+            generatorName("avro-schema")
+        }.execute()
+
+        val schemaDirectory = outputDirectory.resolve("com/example/avro/schema")
+        assertTrue(schemaDirectory.exists(), "Schema directory should exist")
+        assertTrue(
+            schemaDirectory.walkTopDown().any { it.extension == "avsc" },
+            "At least one Avro schema should be generated",
+        )
+    }
+
+    @Test
+    fun `should preserve native Avro schema content through the schema-only profile`() {
+        val outputDirectory = outputPath("target/generated-sources/asyncapi-native-avro-schema-profile")
+        outputDirectory.deleteRecursively()
+
+        AsyncApiGeneratorMojo().apply {
+            project(MavenProject())
+            inputSpec(inputPath("asyncapi_native_avro.yaml"))
+            outputDirectory(outputDirectory)
+            schemaPackage("com.example.schemas")
+            generatorName("avro-schema")
+        }.execute()
+
+        val schemaFile = outputDirectory.resolve("com/example/schemas/UserCreated.avsc")
+        val specificRecordFile = outputDirectory.resolve("com/example/avro/UserCreated.java")
+        assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
+        assertTrue(schemaFile.readText().contains("\"namespace\" : \"com.example.avro\""))
+        assertFalse(specificRecordFile.exists(), "Schema-only generation must not create SpecificRecord sources")
+    }
+
+    @Test
     fun `should generate native avro schema and specific record in shared output directory`() {
         val outputDirectory = outputPath("target/generated-sources/asyncapi-native-avro")
 
@@ -333,8 +374,8 @@ class AsyncApiGeneratorMojoTest {
             project(MavenProject())
             inputSpec(inputPath("asyncapi_native_protobuf.yaml"))
             outputDirectory(outputDirectory)
-            schemaConfig(schemaConfig(nativeProtobuf = nativeProtobuf(enabled = true)))
-            generatorName("java")
+            schemaPackage("com.example.protobuf")
+            generatorName("protobuf-schema")
         }.execute()
 
         val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
@@ -409,7 +450,7 @@ class AsyncApiGeneratorMojoTest {
         val exception = assertThrows<MojoExecutionException> { mojo.execute() }
 
         assertEquals(
-            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin",
+            "Invalid generatorName 'invalid-lang'. Supported values: java, kotlin, avro-schema, protobuf-schema",
             exception.message,
         )
     }

@@ -24,9 +24,55 @@ class GeneratorConfigurationFactoryTest {
         ).forEach { (generatorName, sourceLanguage) ->
             assertEquals(
                 sourceLanguage,
-                GeneratorConfigurationFactory.create(request(generatorName = generatorName)).language,
+                GeneratorConfigurationFactory.create(request(generatorName = generatorName)).sourceLanguage,
             )
         }
+    }
+
+    @Test
+    fun `create resolves Avro schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.AVRO_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.AVRO), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.AvroProjection(packageName = "com.example.schema"),
+                SchemaGeneration.NativeAvro(
+                    generateSpecificRecords = false,
+                    schemaPackageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create resolves Protobuf schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.PROTOBUF_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.PROTOBUF), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    schemaPackageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
     }
 
     @Test
@@ -43,7 +89,7 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        assertEquals(SourceLanguage.KOTLIN, configuration.language)
+        assertEquals(SourceLanguage.KOTLIN, configuration.sourceLanguage)
         assertEquals(ModelGeneration.Disabled, configuration.models)
         assertEquals(
             listOf(
@@ -73,7 +119,7 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        assertEquals(SourceLanguage.JAVA, configuration.language)
+        assertEquals(SourceLanguage.JAVA, configuration.sourceLanguage)
         assertEquals(
             listOf(
                 SchemaGeneration.NativeProtobuf(
@@ -439,6 +485,63 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create rejects schema generator without schema package`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(generatorName = GeneratorName.AVRO_SCHEMA),
+                )
+            }
+
+        assertEquals(
+            "schemaPackage is required when generatorName is avro-schema",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects source configuration for schema generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.PROTOBUF_SCHEMA,
+                        schemaPackageName = "com.example.schema",
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models cannot be configured when generatorName is protobuf-schema",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects schema config for schema generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.AVRO_SCHEMA,
+                        schemaPackageName = "com.example.schema",
+                        schemas =
+                            GeneratorConfigurationRequest.Schemas(
+                                nativeAvro = GeneratorConfigurationRequest.NativeAvro(),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "schemaConfig cannot be configured when generatorName is avro-schema; " +
+                "the generator name already selects the schema type",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create rejects model annotation without model package`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -639,6 +742,7 @@ class GeneratorConfigurationFactoryTest {
     private fun request(
         generatorName: GeneratorName = GeneratorName.KOTLIN,
         javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
+        schemaPackageName: String? = null,
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
         clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
@@ -648,6 +752,7 @@ class GeneratorConfigurationFactoryTest {
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             javaSourceOutputDirectory = javaSourceOutputDirectory,
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+            schemaPackageName = schemaPackageName,
             models = models,
             schemas = schemas,
             clients = clients,
