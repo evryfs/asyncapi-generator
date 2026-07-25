@@ -17,7 +17,11 @@ import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
 import java.io.File
 
-@Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+@Mojo(
+    name = "generate",
+    defaultPhase = LifecyclePhase.GENERATE_SOURCES,
+    threadSafe = true,
+)
 class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(defaultValue = "\${project}", readonly = true)
     private lateinit var project: MavenProject
@@ -107,8 +111,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 )
             if (generatorConfiguration.hasConfiguredOutputs()) {
                 generator.generate(bundled, generatorConfiguration)
+                MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
             }
-            project.addCompileSourceRoot(outputDirectory.absolutePath)
             log.info("asyncapi-generator-maven-plugin completed successfully")
         } catch (e: MojoExecutionException) {
             throw e

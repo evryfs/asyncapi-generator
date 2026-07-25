@@ -8,7 +8,8 @@
     </parent>
 
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
-    <name>asyncapi-generator-maven-plugin</name>
+    <name>AsyncAPI Generator Maven Plugin</name>
+    <description>Generate source code, schemas, and bundled documents from YAML and JSON AsyncAPI specifications</description>
     <packaging>maven-plugin</packaging>
 
     <dependencies>
@@ -165,6 +166,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
