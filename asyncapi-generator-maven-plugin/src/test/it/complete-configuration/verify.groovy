@@ -109,3 +109,29 @@ def asyncApiJson = new File(basedir, "target/documents/asyncapi.json")
 assert asyncApiJson.isFile() : "Expected AsyncAPI JSON document generation"
 assert asyncApiJson.text.startsWith("{")
 assert asyncApiJson.text.contains('"asyncapi"')
+
+def compiledClasses = new File(basedir, "target/classes")
+assert new File(
+    compiledClasses,
+    "com/example/complete/kotlin/model/AccountUpdatedV1Payload.class",
+).isFile() : "Expected the generated Kotlin model to compile"
+assert new File(
+    compiledClasses,
+    "com/example/complete/kotlin/client/producer/AccountEventsProducer.class",
+).isFile() : "Expected the generated Kotlin producer contract to compile"
+assert new File(
+    compiledClasses,
+    "com/example/complete/kotlin/client/consumer/AccountEventsConsumer.class",
+).isFile() : "Expected the generated Kotlin consumer contract to compile"
+assert new File(
+    compiledClasses,
+    "com/example/complete/java/model/AccountUpdatedV1Payload.class",
+).isFile() : "Expected the generated Java record to compile"
+assert new File(
+    compiledClasses,
+    "com/example/complete/avro/AccountSnapshot.class",
+).isFile() : "Expected the generated Avro SpecificRecord to compile"
+assert new File(
+    compiledClasses,
+    "com/example/complete/protobuf/AccountSnapshot.class",
+).isFile() : "Expected the generated Protobuf message to compile"
