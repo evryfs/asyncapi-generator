@@ -109,14 +109,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         help = "Package containing model types used by generated Kafka clients",
     )
 
-    private val clientsKafkaHeaders by option(
-        "--clients-kafka-headers",
-        help = "Generate typed Kafka header models when headers are defined (default: true)",
-    ).choice(
-        "true" to true,
-        "false" to false,
-    )
-
     private val clientsKafkaSpringKafka by option(
         "--clients-kafka-spring-kafka",
         help = "Enable Spring Kafka client generation under Kafka clients",
@@ -242,7 +234,6 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     enabled = true.takeIf { clientsKafka },
                     packageName = clientsKafkaPackage,
                     modelPackageName = clientsKafkaModelPackage,
-                    headers = GeneratorConfigurationRequest.kafkaHeaders(enabled = clientsKafkaHeaders),
                     springKafka =
                         GeneratorConfigurationRequest.kafkaSpringKafka(
                             enabled = true.takeIf { clientsKafkaSpringKafka },

@@ -87,14 +87,21 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = false)),
+                    schemas =
+                        listOf(
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = true,
+                                modelPackageName = "com.example.avro",
+                            ),
+                        ),
                 ),
             )
 
         assertEquals(
             listOf(
                 GenerationTask.NativeAvroArtifacts(
-                    generateSpecificRecords = false,
+                    generateSpecificRecords = true,
+                    modelPackageName = "com.example.avro",
                 ),
             ),
             plan.tasks,
@@ -116,10 +123,6 @@ class GenerationPlannerTest {
                 GenerationTask.KafkaKeyModelArtifacts(
                     language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
-                ),
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
-                    packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(),
                 GenerationTask.NativeAvroArtifacts(generateSpecificRecords = true),
@@ -183,10 +186,6 @@ class GenerationPlannerTest {
                 GenerationTask.KafkaKeyModelArtifacts(
                     language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
-                ),
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
-                    packageName = "com.example.client.header",
                 ),
                 springKafkaClientTask(),
                 GenerationTask.NativeProtobufArtifacts(models = models),
@@ -270,7 +269,7 @@ class GenerationPlannerTest {
     }
 
     @Test
-    fun `plan includes header and Spring Kafka client tasks for Spring Kafka client generation`() {
+    fun `plan includes Spring Kafka client task for Spring Kafka client generation`() {
         val plan =
             planner.plan(
                 generatorConfiguration(
@@ -279,37 +278,7 @@ class GenerationPlannerTest {
             )
 
         assertEquals(
-            listOf(
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
-                    packageName = "com.example.client.header",
-                ),
-                springKafkaClientTask(),
-            ),
-            plan.tasks,
-        )
-    }
-
-    @Test
-    fun `plan can disable Kafka header generation`() {
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    clients =
-                        listOf(
-                            kafkaClientGeneration(
-                                headers = ClientGeneration.Headers(enabled = false),
-                            ),
-                        ),
-                ),
-            )
-
-        assertEquals(
-            listOf(
-                springKafkaClientTask(
-                    generateHeaders = false,
-                ),
-            ),
+            listOf(springKafkaClientTask()),
             plan.tasks,
         )
     }
@@ -358,10 +327,6 @@ class GenerationPlannerTest {
 
         assertEquals(
             listOf(
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
-                    packageName = "com.example.client.header",
-                ),
                 springKafkaClientTask(
                     generateProducers = false,
                     generateConsumers = true,
@@ -382,36 +347,6 @@ class GenerationPlannerTest {
                     clients =
                         listOf(
                             kafkaClientGeneration(
-                                springKafka =
-                                    ClientGeneration.SpringKafka(
-                                        producer = ClientGeneration.Producer(enabled = false),
-                                        consumer = ClientGeneration.Consumer(enabled = false),
-                                    ),
-                            ),
-                        ),
-                ),
-            )
-
-        assertEquals(
-            listOf(
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
-                    packageName = "com.example.client.header",
-                ),
-            ),
-            plan.tasks,
-        )
-    }
-
-    @Test
-    fun `plan skips Kafka tasks when every Kafka capability is disabled`() {
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    clients =
-                        listOf(
-                            kafkaClientGeneration(
-                                headers = ClientGeneration.Headers(enabled = false),
                                 springKafka =
                                     ClientGeneration.SpringKafka(
                                         producer = ClientGeneration.Producer(enabled = false),
@@ -449,10 +384,6 @@ class GenerationPlannerTest {
                     language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
                 ),
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.JAVA,
-                    packageName = "com.example.client.header",
-                ),
                 springKafkaClientTask(
                     language = SourceLanguage.JAVA,
                 ),
@@ -485,13 +416,11 @@ class GenerationPlannerTest {
     private fun kafkaClientGeneration(
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
-        headers: ClientGeneration.Headers = ClientGeneration.Headers(),
         springKafka: ClientGeneration.SpringKafka? = ClientGeneration.SpringKafka(),
     ): ClientGeneration.Kafka =
         ClientGeneration.Kafka(
             packageName = clientPackage,
             modelPackageName = modelPackage,
-            headers = headers,
             springKafka = springKafka,
         )
 
@@ -499,7 +428,6 @@ class GenerationPlannerTest {
         language: SourceLanguage = SourceLanguage.KOTLIN,
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
-        generateHeaders: Boolean = true,
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
         clientContract: ClientContract = ClientContract.INTERFACE,
@@ -510,7 +438,6 @@ class GenerationPlannerTest {
             language = language,
             clientPackage = clientPackage,
             modelPackage = modelPackage,
-            generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
             clientContract = clientContract,

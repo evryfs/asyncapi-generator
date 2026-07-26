@@ -62,10 +62,6 @@ object GeneratorConfigurationFactory {
                                     configuredModelPackageName = kafka.modelPackageName,
                                     modelsPackageName = request.models?.packageName,
                                 ),
-                                headers =
-                                    ClientGeneration.Headers(
-                                        enabled = kafka.headers.enabled,
-                                    ),
                                 springKafka =
                                     kafka.springKafka?.let { springKafka ->
                                         ClientGeneration.SpringKafka(
@@ -339,11 +335,16 @@ object GeneratorConfigurationFactory {
                     }
                     val nativeAvro = schemas.nativeAvro
                     if (nativeAvro != null || modelType == ModelType.AVRO_SPECIFIC_RECORD) {
+                        val generateSpecificRecords =
+                            modelType == ModelType.AVRO_SPECIFIC_RECORD ||
+                                nativeAvro?.generateSpecificRecords == true
                         add(
                             SchemaGeneration.NativeAvro(
-                                generateSpecificRecords =
-                                    modelType == ModelType.AVRO_SPECIFIC_RECORD ||
-                                        nativeAvro?.generateSpecificRecords == true,
+                                generateSpecificRecords = generateSpecificRecords,
+                                modelPackageName =
+                                    models
+                                        ?.packageName
+                                        ?.takeIf { generateSpecificRecords },
                                 schemaPackageName = schemaPackageName,
                             ),
                         )

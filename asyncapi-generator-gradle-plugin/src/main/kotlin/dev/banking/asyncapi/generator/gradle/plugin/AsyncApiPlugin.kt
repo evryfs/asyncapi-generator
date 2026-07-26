@@ -43,7 +43,6 @@ class AsyncApiPlugin : Plugin<Project> {
             kafkaEnabled.set(extension.clients.kafka.enabled)
             kafkaPackageName.set(extension.clients.kafka.packageName)
             kafkaModelPackageName.set(extension.clients.kafka.modelPackageName)
-            kafkaHeadersEnabled.set(extension.clients.kafka.headers.enabled)
             kafkaSpringKafkaEnabled.set(extension.clients.kafka.springKafka.enabled)
             kafkaSpringKafkaProducerEnabled.set(extension.clients.kafka.springKafka.producer.enabled)
             kafkaSpringKafkaConsumerEnabled.set(extension.clients.kafka.springKafka.consumer.enabled)

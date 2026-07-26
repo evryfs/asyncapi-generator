@@ -238,7 +238,6 @@ class SpringKafkaClientGenerationTest {
                                     message.copy(
                                         headers =
                                             AnalyzedMessageHeaders(
-                                                typeName = "UserEventHeaders",
                                                 properties =
                                                     linkedMapOf(
                                                         "occurredAt" to
@@ -428,7 +427,6 @@ class SpringKafkaClientGenerationTest {
             language = language,
             clientPackage = "com.example.client",
             modelPackage = "com.example.model",
-            generateHeaders = true,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
             validationAnnotations = validationAnnotations,

@@ -311,7 +311,7 @@ Spring Kafka output is configured under `clients.kafka.springKafka`.
 
 Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.kafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
 
-Kafka client configuration can also be narrowed by capability. `clients.kafka.headers.enabled` controls typed header model generation, and `clients.kafka.springKafka.producer.enabled` / `clients.kafka.springKafka.consumer.enabled` control whether producer and consumer artifacts are generated.
+AsyncAPI-defined Kafka headers are generated as individual producer and consumer method parameters. `clients.kafka.springKafka.producer.enabled` and `clients.kafka.springKafka.consumer.enabled` control whether producer and consumer artifacts are generated.
 
 For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer and consumer APIs.
 

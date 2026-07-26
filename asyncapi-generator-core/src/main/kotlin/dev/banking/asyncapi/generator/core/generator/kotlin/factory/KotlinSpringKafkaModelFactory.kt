@@ -23,7 +23,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
-    private val generateHeaders: Boolean = true,
     private val generateProducers: Boolean = true,
     private val generateConsumers: Boolean = true,
     private val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
@@ -84,7 +83,6 @@ class KotlinSpringKafkaModelFactory(
                                 parameterName = "receivedKey",
                                 consumer = true,
                             ),
-                        headerType = payload.headerTypeName,
                         headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
@@ -159,7 +157,6 @@ class KotlinSpringKafkaModelFactory(
                                 parameterName = "messageKey",
                                 consumer = false,
                             ),
-                        headerType = payload.headerTypeName,
                         headerProperties = headerProperties,
                         payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
                     )
@@ -223,7 +220,6 @@ class KotlinSpringKafkaModelFactory(
 
     private fun payload(msg: AnalyzedMessage): KafkaPayload {
         val type = resolvePayloadType(msg)
-        val headers = if (generateHeaders) msg.headers else null
         return KafkaPayload(
             messageName = msg.messageName,
             payloadType = type,
@@ -235,9 +231,7 @@ class KotlinSpringKafkaModelFactory(
                 } else {
                     "$modelPackage.$type"
                 },
-            headerTypeName = headers?.typeName,
-            headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
-            headerProperties = KafkaHeaderPropertyFactory.create(headers),
+            headerProperties = KafkaHeaderPropertyFactory.create(msg.headers, msg.messageName),
         )
     }
 
@@ -253,15 +247,7 @@ class KotlinSpringKafkaModelFactory(
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
 
     private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
-        if (generateHeaders) {
-            copy(
-                headerTypeName = headers?.typeName,
-                headerImportName = headers?.typeName?.let { "$clientPackage.header.$it" },
-                headerProperties = KafkaHeaderPropertyFactory.create(headers),
-            )
-        } else {
-            this
-        }
+        copy(headerProperties = KafkaHeaderPropertyFactory.create(headers, messageName))
 
     private fun KafkaHeaderProperty.consumerDescription(): List<String> =
         toKDocLines(

@@ -99,8 +99,74 @@ class GenerationInputCompatibilityValidatorTest {
                             schemaPackageName = "com.example.avro",
                         ),
                     ),
+            ),
+        )
+    }
+
+    @Test
+    fun `allows native Avro model package matching the schema namespace`() {
+        validator.validate(
+            generationInput =
+                generationInputWithMultiFormatSchema(
+                    namespace = "com.example.avro",
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.NativeAvroArtifacts(
+                            generateSpecificRecords = true,
+                            modelPackageName = "com.example.avro",
+                        ),
+                    ),
                 ),
         )
+    }
+
+    @Test
+    fun `rejects native Avro model package differing from the schema namespace`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
+                validator.validate(
+                    generationInput =
+                        generationInputWithMultiFormatSchema(
+                            namespace = "com.example.contract",
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.NativeAvroArtifacts(
+                                    generateSpecificRecords = true,
+                                    modelPackageName = "com.example.configured",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("payload 'UserCreated'"))
+        assertTrue(error.message!!.contains("modelPackage 'com.example.configured'"))
+        assertTrue(error.message!!.contains("Avro namespace 'com.example.contract'"))
+    }
+
+    @Test
+    fun `rejects configured native Avro model package when the schema has no namespace`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
+                validator.validate(
+                    generationInput = generationInputWithMultiFormatSchema(),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.NativeAvroArtifacts(
+                                    generateSpecificRecords = true,
+                                    modelPackageName = "com.example.configured",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Avro namespace '<default package>'"))
     }
 
     @Test
@@ -324,10 +390,12 @@ class GenerationInputCompatibilityValidatorTest {
         assertTrue(error.message!!.contains("Native Avro, Protobuf, and other explicit schema formats"))
     }
 
-    private fun generationInputWithMultiFormatSchema(): GenerationInput =
+    private fun generationInputWithMultiFormatSchema(
+        namespace: String? = null,
+    ): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas = mapOf("UserCreated" to nativeAvroSchema()),
+            multiFormatSchemas = mapOf("UserCreated" to nativeAvroSchema(namespace)),
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
         )
@@ -356,10 +424,18 @@ class GenerationInputCompatibilityValidatorTest {
                 ),
         )
 
-    private fun nativeAvroSchema(): MultiFormatSchema =
+    private fun nativeAvroSchema(
+        namespace: String? = null,
+    ): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
-            schema = mapOf("type" to "record", "name" to "UserCreated", "fields" to emptyList<Any>()),
+            schema =
+                buildMap {
+                    put("type", "record")
+                    put("name", "UserCreated")
+                    namespace?.let { put("namespace", it) }
+                    put("fields", emptyList<Any>())
+                },
         )
 
     private fun nativeProtobufSchema(): MultiFormatSchema =

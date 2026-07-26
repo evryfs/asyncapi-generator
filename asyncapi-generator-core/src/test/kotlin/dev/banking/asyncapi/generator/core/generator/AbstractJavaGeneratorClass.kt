@@ -27,7 +27,6 @@ abstract class AbstractJavaGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
-        generateKafkaHeaders: Boolean = true,
         generateQuarkusKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
         javaModelType: JavaModelType = JavaModelType.CLASS,
@@ -65,7 +64,6 @@ abstract class AbstractJavaGeneratorClass {
                                 ClientGeneration.Kafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
-                                    headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
                                     springKafka = ClientGeneration.SpringKafka(),
                                 ),
                             )

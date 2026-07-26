@@ -79,7 +79,9 @@ class ModelArtifactGenerationTest {
                 .resolve("com/example/model/User.java")
                 .readText()
         assertTrue(content.contains("import com.example.GeneratedPayload;"))
-        assertTrue(content.contains("@GeneratedPayload\npublic class User"))
+        assertTrue(content.lineSequence().zipWithNext().any { (annotation, declaration) ->
+            annotation == "@GeneratedPayload" && declaration.startsWith("public class User")
+        })
     }
 
     @Test
@@ -106,40 +108,6 @@ class ModelArtifactGenerationTest {
         assertTrue(sourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
         assertFalse(sourceOutputDirectory.resolve("com/example/model/UserCreated.kt").exists())
         assertFalse(resourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
-    }
-
-    @Test
-    fun `generate header model artifacts writes Java header artifacts through writer`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
-        val artifactWriter =
-            FileSystemGeneratedArtifactWriter(
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
-            )
-
-        generation.generateHeaderModelArtifacts(
-            task =
-                GenerationTask.HeaderModelArtifacts(
-                    language = SourceLanguage.JAVA,
-                    packageName = "com.example.client.header",
-                ),
-            asyncApiDocument = fixtures.documentWithMessageHeaders(),
-            generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            artifactWriter = artifactWriter,
-        )
-
-        assertTrue(
-            sourceOutputDirectory
-                .resolve("com/example/client/header/TopicUserEventsHeadersUserSignup.java")
-                .exists(),
-        )
-        assertFalse(
-            resourceOutputDirectory
-                .resolve("com/example/client/header/TopicUserEventsHeadersUserSignup.java")
-                .exists(),
-        )
     }
 
     @Test

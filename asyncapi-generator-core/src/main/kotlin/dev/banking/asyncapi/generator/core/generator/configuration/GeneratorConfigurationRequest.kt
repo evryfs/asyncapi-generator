@@ -54,12 +54,7 @@ data class GeneratorConfigurationRequest(
     data class Kafka(
         val packageName: String? = null,
         val modelPackageName: String? = null,
-        val headers: KafkaHeaders = KafkaHeaders(),
         val springKafka: KafkaSpringKafka? = null,
-    )
-
-    data class KafkaHeaders(
-        val enabled: Boolean = true,
     )
 
     data class KafkaSpringKafka(
@@ -145,7 +140,6 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             modelPackageName: String? = null,
-            headers: KafkaHeaders? = null,
             springKafka: KafkaSpringKafka? = null,
         ): Kafka? =
             when {
@@ -153,21 +147,13 @@ data class GeneratorConfigurationRequest(
                 enabled == true ||
                     packageName != null ||
                     modelPackageName != null ||
-                    headers != null ||
                     springKafka != null ->
                     Kafka(
                         packageName = packageName,
                         modelPackageName = modelPackageName,
-                        headers = headers ?: KafkaHeaders(),
                         springKafka = springKafka,
                     )
                 else -> null
-            }
-
-        fun kafkaHeaders(enabled: Boolean? = null): KafkaHeaders? =
-            when (enabled) {
-                null -> null
-                else -> KafkaHeaders(enabled = enabled)
             }
 
         fun kafkaSpringKafka(

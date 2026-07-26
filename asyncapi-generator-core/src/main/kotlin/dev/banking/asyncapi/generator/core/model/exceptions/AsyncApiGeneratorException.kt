@@ -213,6 +213,36 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class NativeAvroModelPackageMismatch(
+        payloadName: String,
+        configuredPackage: String,
+        schemaNamespace: String?,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                val namespace = schemaNamespace ?: "<default package>"
+                appendLine()
+                appendLine("Native Avro model generation failed for payload '$payloadName'.")
+                appendLine(
+                    "Configured modelPackage '$configuredPackage' does not match " +
+                        "the Avro namespace '$namespace'.",
+                )
+                appendLine(
+                    "Apache Avro determines SpecificRecord packages from the schema namespace; " +
+                        "the generator cannot override it safely.",
+                )
+                if (schemaNamespace == null) {
+                    appendLine(
+                        "Add namespace '$configuredPackage' to the native Avro schema.",
+                    )
+                } else {
+                    appendLine(
+                        "Set modelPackage to '$schemaNamespace' or update the native Avro schema namespace.",
+                    )
+                }
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedNativeAvroPayloadType(
         payloadName: String,
         schemaFormat: String,

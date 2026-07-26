@@ -34,16 +34,10 @@ sealed interface GenerationTask {
         val packageName: String,
     ) : GenerationTask
 
-    data class HeaderModelArtifacts(
-        val language: SourceLanguage,
-        val packageName: String,
-    ) : GenerationTask
-
     data class SpringKafkaClient(
         val language: SourceLanguage,
         val clientPackage: String,
         val modelPackage: String,
-        val generateHeaders: Boolean = true,
         val generateProducers: Boolean = true,
         val generateConsumers: Boolean = true,
         val clientContract: ClientContract = ClientContract.INTERFACE,
@@ -61,6 +55,7 @@ sealed interface GenerationTask {
 
     data class NativeAvroArtifacts(
         val generateSpecificRecords: Boolean = true,
+        val modelPackageName: String? = null,
         val schemaPackageName: String? = null,
     ) : GenerationTask
 

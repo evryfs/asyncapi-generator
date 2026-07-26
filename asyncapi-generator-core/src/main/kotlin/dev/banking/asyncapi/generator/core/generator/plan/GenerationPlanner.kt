@@ -56,21 +56,12 @@ class GenerationPlanner {
                                     ),
                                 )
                             }
-                            if (client.headers.enabled) {
-                                add(
-                                    GenerationTask.HeaderModelArtifacts(
-                                        language = configuration.requireSourceLanguage(),
-                                        packageName = "${client.packageName}.header",
-                                    ),
-                                )
-                            }
                             springKafka?.let {
                                 add(
                                     GenerationTask.SpringKafkaClient(
                                         language = configuration.requireSourceLanguage(),
                                         clientPackage = client.packageName,
                                         modelPackage = client.modelPackageName,
-                                        generateHeaders = client.headers.enabled,
                                         generateProducers = springKafka.producer.enabled,
                                         generateConsumers = springKafka.consumer.enabled,
                                         clientContract = springKafka.clientContract,
@@ -93,6 +84,7 @@ class GenerationPlanner {
                             add(
                                 GenerationTask.NativeAvroArtifacts(
                                     generateSpecificRecords = schema.generateSpecificRecords,
+                                    modelPackageName = schema.modelPackageName,
                                     schemaPackageName = schema.schemaPackageName,
                                 ),
                             )

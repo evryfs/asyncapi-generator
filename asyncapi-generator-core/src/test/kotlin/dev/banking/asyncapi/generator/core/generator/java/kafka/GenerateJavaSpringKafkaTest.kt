@@ -87,23 +87,28 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
     }
 
     @Test
-    fun `should generate header classes for spring kafka client in Java`() {
+    fun `should generate message headers as individual spring kafka client parameters in Java`() {
         val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi-java-message-headers")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-message-headers")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
 
         generateElement(
             yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
             modelPackage = modelPackage,
             clientPackage = clientPackage,
             generateModels = true,
             generateSpringKafkaClient = true,
         )
 
-        val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
-        assertTrue(headerDir.exists(), "Spring Kafka client should generate header classes")
+        assertFalse(headerDir.exists(), "Spring Kafka clients should not generate typed header models")
 
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
         assertFalse(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
@@ -155,57 +160,6 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         )
         assertTrue(producerContent.contains("Unique identifier for a given instance"))
         assertFalse(producerContent.contains("record.headers().add"))
-    }
-
-    @Test
-    fun `should not reference typed headers when Kafka header generation is disabled for Java`() {
-        val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
-        val modelPackage = "dev.banking.test.userservice.v1.model"
-        val clientPackage = "dev.banking.test.userservice.v1.client"
-        val outputDir = File("target/generated-sources/asyncapi-java-spring-kafka-no-headers")
-        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-spring-kafka-no-headers")
-        outputDir.deleteRecursively()
-        resourceOutputDirectory.deleteRecursively()
-
-        generateElement(
-            yaml = yaml,
-            codegenOutputDirectory = outputDir,
-            resourceOutputDirectory = resourceOutputDirectory,
-            modelPackage = modelPackage,
-            clientPackage = clientPackage,
-            generateModels = true,
-            generateSpringKafkaClient = true,
-            generateKafkaHeaders = false,
-        )
-
-        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val headerDir = clientDir.resolve("header")
-        assertFalse(headerDir.exists(), "Header classes should not be generated when Kafka headers are disabled")
-
-        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
-        assertFalse(consumerContent.contains(".client.header."))
-        assertFalse(consumerContent.contains("TopicUserEventsHeadersUserSignup"))
-        assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertTrue(consumerContent.contains("void listenUserSignup("))
-        assertTrue(consumerContent.contains("@Payload UserSignupPayload payload"))
-        assertFalse(consumerContent.contains("receivedKey"))
-        assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
-        assertFalse(consumerContent.contains("correlationId"))
-        assertFalse(consumerContent.contains("applicationInstanceId"))
-        assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
-
-        val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
-        assertFalse(producerContent.contains(".client.header."))
-        assertFalse(producerContent.contains("TopicUserEventsHeadersUserSignup"))
-        assertFalse(producerContent.contains("StandardCharsets"))
-        assertFalse(producerContent.contains("record.headers().add"))
-        assertFalse(producerContent.contains("import org.springframework.messaging.handler.annotation.Header;"))
-        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders;"))
-        assertFalse(producerContent.contains("@Header("))
-        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> sendUserSignup("))
-        assertTrue(producerContent.contains("@Payload UserSignupPayload payload"))
-        assertFalse(producerContent.contains("messageKey"))
-        assertFalse(producerContent.contains("correlationId"))
     }
 
     @Test

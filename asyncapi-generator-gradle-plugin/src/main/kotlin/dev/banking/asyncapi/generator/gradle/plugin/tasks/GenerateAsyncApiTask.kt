@@ -89,10 +89,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
-    abstract val kafkaHeadersEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
     abstract val kafkaSpringKafkaEnabled: Property<Boolean>
 
     @get:Input
@@ -185,7 +181,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                             kafkaEnabled = kafkaEnabled.orNull,
                             kafkaPackageName = kafkaPackageName.orNull,
                             kafkaModelPackageName = kafkaModelPackageName.orNull,
-                            kafkaHeadersEnabled = kafkaHeadersEnabled.orNull,
                             kafkaSpringKafkaEnabled = kafkaSpringKafkaEnabled.orNull,
                             kafkaSpringKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled.orNull,
                             kafkaSpringKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled.orNull,
@@ -242,7 +237,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         kafkaEnabled: Boolean?,
         kafkaPackageName: String?,
         kafkaModelPackageName: String?,
-        kafkaHeadersEnabled: Boolean?,
         kafkaSpringKafkaEnabled: Boolean?,
         kafkaSpringKafkaProducerEnabled: Boolean?,
         kafkaSpringKafkaConsumerEnabled: Boolean?,
@@ -256,7 +250,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     enabled = kafkaEnabled,
                     packageName = kafkaPackageName,
                     modelPackageName = kafkaModelPackageName,
-                    headersEnabled = kafkaHeadersEnabled,
                     springKafkaEnabled = kafkaSpringKafkaEnabled,
                     springKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled,
                     springKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled,
@@ -273,7 +266,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         enabled: Boolean?,
         packageName: String?,
         modelPackageName: String?,
-        headersEnabled: Boolean?,
         springKafkaEnabled: Boolean?,
         springKafkaProducerEnabled: Boolean?,
         springKafkaConsumerEnabled: Boolean?,
@@ -282,7 +274,6 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             enabled = enabled,
             packageName = packageName,
             modelPackageName = modelPackageName,
-            headers = GeneratorConfigurationRequest.kafkaHeaders(enabled = headersEnabled),
             springKafka =
                 GeneratorConfigurationRequest.kafkaSpringKafka(
                     enabled = springKafkaEnabled,

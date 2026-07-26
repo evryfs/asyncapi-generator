@@ -213,6 +213,31 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create carries the configured model package into native Avro model generation`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.avro",
+                            modelType = ModelType.AVRO_SPECIFIC_RECORD,
+                        ),
+                ),
+            )
+
+        assertEquals(ModelGeneration.Disabled, configuration.models)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeAvro(
+                    generateSpecificRecords = true,
+                    modelPackageName = "com.example.avro",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
     fun `create enables model generation when model package is configured`() {
         val configuration =
             GeneratorConfigurationFactory.create(
@@ -336,7 +361,7 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create maps kafka header and spring kafka generation options`() {
+    fun `create maps spring kafka generation options`() {
         val validationAnnotations =
             ClientValidationAnnotations(
                 clientContract =
@@ -359,7 +384,6 @@ class GeneratorConfigurationFactoryTest {
                             kafka =
                                 GeneratorConfigurationRequest.Kafka(
                                     packageName = "com.example.client",
-                                    headers = GeneratorConfigurationRequest.KafkaHeaders(enabled = false),
                                     springKafka =
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
                                             clientContract = ClientContract.INTERFACE,
@@ -382,7 +406,6 @@ class GeneratorConfigurationFactoryTest {
                 ClientGeneration.Kafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.model",
-                    headers = ClientGeneration.Headers(enabled = false),
                     springKafka =
                         ClientGeneration.SpringKafka(
                             clientContract = ClientContract.INTERFACE,

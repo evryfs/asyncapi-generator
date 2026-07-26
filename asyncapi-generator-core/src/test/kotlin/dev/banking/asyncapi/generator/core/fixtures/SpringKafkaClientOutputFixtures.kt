@@ -57,7 +57,6 @@ internal class SpringKafkaClientOutputFixtures(
                             ClientGeneration.Kafka(
                                 packageName = CLIENT_PACKAGE,
                                 modelPackageName = MODEL_PACKAGE,
-                                headers = ClientGeneration.Headers(enabled = true),
                                 springKafka =
                                     ClientGeneration.SpringKafka(
                                         topicParameterProperties = topicParameterProperties,

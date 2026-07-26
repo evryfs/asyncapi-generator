@@ -37,23 +37,4 @@ class JavaModelPreparerTest {
         assertEquals("com.example.model", status.packageName)
         assertEquals(listOf("ACTIVE", "INACTIVE"), status.values)
     }
-
-    @Test
-    fun `prepare headers maps message headers into Java model items`() {
-        val items =
-            preparer.prepareHeaders(
-                input = fixtures.generationInputWithObjectEnumAndPrimitive(),
-                asyncApiDocument = fixtures.documentWithMessageHeaders(),
-                packageName = "com.example.client.header",
-            )
-
-        val header = items.filterIsInstance<GeneratorItem.ClassModel>().single()
-        assertEquals("TopicUserEventsHeadersUserSignup", header.name)
-        assertEquals("com.example.client.header", header.packageName)
-        assertEquals(
-            listOf("correlationId", "applicationInstanceId"),
-            header.properties.map { it.name },
-        )
-        assertEquals(listOf("String", "String"), header.properties.map { it.typeName })
-    }
 }

@@ -11,7 +11,6 @@ class KotlinSpringKafkaGenerator(
     outputDir: File,
     clientPackage: String,
     modelPackage: String,
-    generateHeaders: Boolean = true,
     generateProducers: Boolean = true,
     generateConsumers: Boolean = true,
     topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
@@ -21,7 +20,6 @@ class KotlinSpringKafkaGenerator(
         KotlinSpringKafkaModelFactory(
             clientPackage = clientPackage,
             modelPackage = modelPackage,
-            generateHeaders = generateHeaders,
             generateProducers = generateProducers,
             generateConsumers = generateConsumers,
             topicParameterProperties = topicParameterProperties,

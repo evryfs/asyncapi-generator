@@ -74,14 +74,6 @@ class AsyncApiGenerator {
                         sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                         artifactWriter = artifactWriter,
                     )
-                is GenerationTask.HeaderModelArtifacts ->
-                    modelArtifactGeneration.generateHeaderModelArtifacts(
-                        task = task,
-                        asyncApiDocument = asyncApiDocument,
-                        generationInput = generationInput,
-                        sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
-                        artifactWriter = artifactWriter,
-                    )
                 is GenerationTask.SpringKafkaClient ->
                     springKafkaClientGeneration.generate(
                         task = task,

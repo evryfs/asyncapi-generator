@@ -69,7 +69,6 @@ sealed interface GeneratorItem {
         val payloadType: String,
         val payloadDescription: List<String> = emptyList(),
         val keyParameter: KeyParameter? = null,
-        val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
         val requiredHeaderAnnotation: String? = null,
@@ -90,7 +89,6 @@ sealed interface GeneratorItem {
         val payloadDescription: List<String> = emptyList(),
         val payloadBindingAnnotation: String? = null,
         val keyParameter: KeyParameter? = null,
-        val headerType: String? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
     ) {

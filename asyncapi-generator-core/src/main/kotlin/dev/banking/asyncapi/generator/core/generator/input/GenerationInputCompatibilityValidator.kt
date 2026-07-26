@@ -1,8 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
+import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeAvroModelPackageMismatch
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -13,7 +15,9 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
  * Expected behavior is covered by:
  * - `GenerationInputCompatibilityValidatorTest`
  */
-class GenerationInputCompatibilityValidator {
+class GenerationInputCompatibilityValidator(
+    private val nativeAvroSchemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
+) {
 
     fun validate(
         generationInput: GenerationInput,
@@ -56,6 +60,12 @@ class GenerationInputCompatibilityValidator {
                             isSupported = { schema -> schema.format.isNativeAvro },
                         )
                     }
+                    if (task.generateSpecificRecords && task.modelPackageName != null) {
+                        validateNativeAvroModelPackage(
+                            generationInput = generationInput,
+                            configuredPackage = task.modelPackageName,
+                        )
+                    }
                 }
                 is GenerationTask.NativeProtobufArtifacts -> {
                     requireNativeSchema(
@@ -68,7 +78,6 @@ class GenerationInputCompatibilityValidator {
                 is GenerationTask.JsonSchemaArtifacts ->
                     requireJsonSchema(generationInput)
                 is GenerationTask.DocumentArtifact,
-                is GenerationTask.HeaderModelArtifacts,
                 is GenerationTask.KafkaKeyModelArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
@@ -110,6 +119,27 @@ class GenerationInputCompatibilityValidator {
             inputFormat = "an AsyncAPI Schema Object",
             supportedInput = supportedInput,
         )
+    }
+
+    private fun validateNativeAvroModelPackage(
+        generationInput: GenerationInput,
+        configuredPackage: String,
+    ) {
+        generationInput.multiFormatSchemas
+            .filterValues { schema -> schema.format.isNativeAvro }
+            .forEach { (payloadName, schema) ->
+                val schemaNamespace =
+                    nativeAvroSchemaParser
+                        .parse(payloadName, schema)
+                        .namespace
+                if (schemaNamespace != configuredPackage) {
+                    throw NativeAvroModelPackageMismatch(
+                        payloadName = payloadName,
+                        configuredPackage = configuredPackage,
+                        schemaNamespace = schemaNamespace,
+                    )
+                }
+            }
     }
 
     private fun requireJsonSchema(generationInput: GenerationInput) {

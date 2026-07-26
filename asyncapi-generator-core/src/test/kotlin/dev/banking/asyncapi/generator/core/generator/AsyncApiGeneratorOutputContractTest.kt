@@ -186,6 +186,38 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate rejects mismatched native Avro model package before writing artifacts`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
+                generator.generate(
+                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            javaSourceOutputDirectory = javaSourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            schemas =
+                                listOf(
+                                    SchemaGeneration.NativeAvro(
+                                        generateSpecificRecords = true,
+                                        modelPackageName = "com.example.configured",
+                                    ),
+                                ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("modelPackage 'com.example.configured'"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(javaSourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
     fun `generate writes native Protobuf schema artifacts to resource output directory`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
@@ -351,7 +383,6 @@ class AsyncApiGeneratorOutputContractTest {
                             ClientGeneration.Kafka(
                                 packageName = "com.example.kafka",
                                 modelPackageName = "com.example.model",
-                                headers = ClientGeneration.Headers(enabled = false),
                                 springKafka = ClientGeneration.SpringKafka(),
                             ),
                         ),
@@ -391,7 +422,6 @@ class AsyncApiGeneratorOutputContractTest {
                             ClientGeneration.Kafka(
                                 packageName = "com.example.kafka",
                                 modelPackageName = "com.example.protobuf",
-                                headers = ClientGeneration.Headers(enabled = false),
                                 springKafka = ClientGeneration.SpringKafka(),
                             ),
                         ),

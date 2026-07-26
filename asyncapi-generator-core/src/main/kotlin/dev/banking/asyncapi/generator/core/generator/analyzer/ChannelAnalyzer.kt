@@ -106,8 +106,6 @@ class ChannelAnalyzer {
                 }
             val headers =
                 MessageHeaderAnalyzer.analyze(
-                    channelName = channelName,
-                    messageKey = messageId,
                     message = message,
                 )
             val keySchema = message.kafkaKeySchema()

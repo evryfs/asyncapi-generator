@@ -64,7 +64,6 @@ internal class MavenGeneratedOutputRegistrar(
         when (this) {
             is GenerationTask.ModelArtifacts,
             is GenerationTask.KafkaKeyModelArtifacts,
-            is GenerationTask.HeaderModelArtifacts,
             is GenerationTask.SpringKafkaClient,
             is GenerationTask.QuarkusKafkaClient,
             -> listOf(output.sourceOutputDirectory)
@@ -93,7 +92,6 @@ internal class MavenGeneratedOutputRegistrar(
             is GenerationTask.NativeProtobufArtifacts,
             -> true
             is GenerationTask.DocumentArtifact,
-            is GenerationTask.HeaderModelArtifacts,
             is GenerationTask.KafkaKeyModelArtifacts,
             is GenerationTask.ModelArtifacts,
             is GenerationTask.QuarkusKafkaClient,

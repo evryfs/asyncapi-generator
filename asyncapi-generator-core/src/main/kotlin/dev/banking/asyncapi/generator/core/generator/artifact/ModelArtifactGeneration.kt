@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import java.io.File
 
 /**
@@ -90,48 +89,4 @@ class ModelArtifactGeneration(
         )
     }
 
-    fun generateHeaderModelArtifacts(
-        task: GenerationTask.HeaderModelArtifacts,
-        asyncApiDocument: AsyncApiDocument,
-        generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
-        when (task.language) {
-            KOTLIN -> {
-                val headerModels =
-                    kotlinModelPreparer.prepareHeaders(
-                        input = generationInput,
-                        asyncApiDocument = asyncApiDocument,
-                        packageName = task.packageName,
-                    )
-                if (headerModels.isNotEmpty()) {
-                    val generator =
-                        KotlinGenerator(
-                            packageName = task.packageName,
-                            outputDir = sourceOutputDirectory,
-                            generationModel = headerModels,
-                        )
-                    artifactWriter.write(generator.render())
-                }
-            }
-            JAVA -> {
-                val headerModels =
-                    javaModelPreparer.prepareHeaders(
-                        input = generationInput,
-                        asyncApiDocument = asyncApiDocument,
-                        packageName = task.packageName,
-                    )
-                if (headerModels.isNotEmpty()) {
-                    val generator =
-                        JavaGenerator(
-                            packageName = task.packageName,
-                            outputDir = sourceOutputDirectory,
-                            generationModel = headerModels,
-                        )
-                    artifactWriter.write(generator.render())
-                }
-            }
-        }
-    }
 }

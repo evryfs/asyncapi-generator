@@ -11,8 +11,6 @@ data class KafkaPayload(
     val payloadDescription: String? = null,
     val importName: String? = null,
     val keySchema: SchemaInterface? = null,
-    val headerTypeName: String? = null,
-    val headerImportName: String? = null,
     val headerProperties: List<KafkaHeaderProperty> = emptyList(),
 )
 

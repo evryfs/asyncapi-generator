@@ -18,6 +18,7 @@ sealed interface SchemaGeneration {
 
     data class NativeAvro(
         val generateSpecificRecords: Boolean = true,
+        val modelPackageName: String? = null,
         val schemaPackageName: String? = null,
     ) : SchemaGeneration
 

@@ -17,7 +17,6 @@ class KafkaHeaderPropertyFactoryTest {
         val properties =
             KafkaHeaderPropertyFactory.create(
                 AnalyzedMessageHeaders(
-                    typeName = "AccountEventHeaders",
                     properties =
                         linkedMapOf(
                             "correlationId" to
@@ -36,6 +35,7 @@ class KafkaHeaderPropertyFactoryTest {
                             "nullableCode",
                         ),
                 ),
+                messageName = "AccountEvent",
             )
 
         assertEquals(
@@ -103,7 +103,6 @@ class KafkaHeaderPropertyFactoryTest {
         val property =
             KafkaHeaderPropertyFactory.create(
                 AnalyzedMessageHeaders(
-                    typeName = "AccountEventHeaders",
                     properties =
                         mapOf(
                             "requestId" to
@@ -116,6 +115,7 @@ class KafkaHeaderPropertyFactoryTest {
                         ),
                     requiredProperties = listOf("requestId"),
                 ),
+                messageName = "AccountEvent",
             ).single()
 
         assertEquals("UUID", property.javaTypeName)
@@ -141,9 +141,9 @@ class KafkaHeaderPropertyFactoryTest {
                 assertFailsWith<UnsupportedKafkaHeaderSchema> {
                     KafkaHeaderPropertyFactory.create(
                         AnalyzedMessageHeaders(
-                            typeName = "AccountEventHeaders",
                             properties = mapOf("unsupportedHeader" to schema),
                         ),
+                        messageName = "AccountEvent",
                     )
                 }
 

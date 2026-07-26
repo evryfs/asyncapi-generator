@@ -115,7 +115,6 @@ class ChannelAnalyzerTest {
 
         val analyzed = analyzer.analyze(doc).channels.single().messages.single()
 
-        assertEquals("TopicUserEventsHeadersUserSignup", analyzed.headers?.typeName)
         assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
     }
 
@@ -167,7 +166,6 @@ class ChannelAnalyzerTest {
         assertEquals("accountUpdateAlias", analyzed.messageId)
         assertEquals("AccountUpdatedV1", analyzed.messageName)
         assertEquals("AccountChange", analyzed.payloadTypeName)
-        assertEquals("TopicAccountEventsHeadersAccountUpdatedV1", analyzed.headers?.typeName)
     }
 
     @Test

@@ -10,13 +10,8 @@ sealed interface ClientGeneration {
     data class Kafka(
         val packageName: String,
         val modelPackageName: String,
-        val headers: Headers = Headers(),
         val springKafka: SpringKafka? = null,
     ) : ClientGeneration
-
-    data class Headers(
-        val enabled: Boolean = true,
-    )
 
     data class SpringKafka(
         val clientContract: ClientContract = ClientContract.INTERFACE,

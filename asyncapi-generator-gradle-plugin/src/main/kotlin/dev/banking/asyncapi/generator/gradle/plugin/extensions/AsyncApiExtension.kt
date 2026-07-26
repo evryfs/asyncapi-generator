@@ -142,28 +142,12 @@ abstract class AsyncApiKafkaExtension @Inject constructor(objects: ObjectFactory
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
     val packageName: Property<String> = objects.property(String::class.java)
     val modelPackageName: Property<String> = objects.property(String::class.java)
-    val headers: AsyncApiKafkaHeadersExtension =
-        objects.newInstance(AsyncApiKafkaHeadersExtension::class.java)
     val springKafka: AsyncApiKafkaSpringKafkaExtension =
         objects.newInstance(AsyncApiKafkaSpringKafkaExtension::class.java)
-
-    fun headers(action: Action<AsyncApiKafkaHeadersExtension>) {
-        action.execute(headers)
-    }
 
     fun springKafka(action: Action<AsyncApiKafkaSpringKafkaExtension>) {
         action.execute(springKafka)
     }
-}
-
-/**
- * Gradle Kafka header generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- */
-abstract class AsyncApiKafkaHeadersExtension @Inject constructor(objects: ObjectFactory) {
-    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
 }
 
 /**

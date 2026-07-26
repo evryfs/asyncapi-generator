@@ -8,12 +8,15 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHea
  * Expected behavior is exercised by `KafkaHeaderPropertyFactoryTest`.
  */
 internal object KafkaHeaderPropertyFactory {
-    fun create(headers: AnalyzedMessageHeaders?): List<KafkaHeaderProperty> {
+    fun create(
+        headers: AnalyzedMessageHeaders?,
+        messageName: String,
+    ): List<KafkaHeaderProperty> {
         if (headers == null) return emptyList()
 
         val parameterNames =
             KafkaHeaderParameterNames.resolve(
-                headerContractName = headers.typeName,
+                headerContractName = messageName,
                 wireNames = headers.properties.keys,
             )
 
@@ -21,7 +24,7 @@ internal object KafkaHeaderPropertyFactory {
             val required = wireName in headers.requiredProperties
             val headerType =
                 KafkaHeaderTypeResolver.resolve(
-                    headerContractName = headers.typeName,
+                    headerContractName = messageName,
                     wireName = wireName,
                     schema = schema,
                 )
