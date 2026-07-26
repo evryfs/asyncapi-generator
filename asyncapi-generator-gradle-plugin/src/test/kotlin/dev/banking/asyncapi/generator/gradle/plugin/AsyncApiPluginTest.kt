@@ -217,6 +217,41 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `reuses the configuration cache for named executions`() {
+        val projectDirectory = testProject()
+        copyResource(projectDirectory, "asyncapi_valid_content_kotlin.yaml")
+        GradleTestHelper.writeBuildScript(
+            projectDirectory,
+            kotlinBuildScript(
+                executionName = "models",
+                executionConfiguration =
+                    """
+                    generatorName.set("kotlin")
+                    inputSpec.set(file("api.yaml"))
+                    modelPackage.set("com.example.model")
+                    """,
+            ),
+        )
+
+        val firstRun =
+            GradleTestHelper.runGradle(
+                projectDirectory,
+                "generateAsyncApi",
+                "--configuration-cache",
+            )
+        val secondRun =
+            GradleTestHelper.runGradle(
+                projectDirectory,
+                "generateAsyncApi",
+                "--configuration-cache",
+            )
+
+        assertEquals(TaskOutcome.SUCCESS, firstRun.task(":generateModelsAsyncApi")?.outcome)
+        assertEquals(TaskOutcome.UP_TO_DATE, secondRun.task(":generateModelsAsyncApi")?.outcome)
+        assertTrue(secondRun.output.contains("Reusing configuration cache."))
+    }
+
+    @Test
     fun `writes bundled YAML through the AsyncAPI YAML profile`() {
         val projectDirectory = testProject()
         copyResource(projectDirectory, "asyncapi_kafka_complex.yaml")
