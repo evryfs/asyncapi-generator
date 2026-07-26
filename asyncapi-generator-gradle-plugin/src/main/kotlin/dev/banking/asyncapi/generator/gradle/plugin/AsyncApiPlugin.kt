@@ -25,6 +25,7 @@ class AsyncApiPlugin : Plugin<Project> {
                 group = "asyncapi"
                 description = "Generates every configured AsyncAPI execution."
             }
+        val outputRegistrar = GradleGeneratedOutputRegistrar(project)
 
         extension.executions.all {
             val execution = this
@@ -63,6 +64,7 @@ class AsyncApiPlugin : Plugin<Project> {
             aggregateTask.configure {
                 dependsOn(executionTask)
             }
+            outputRegistrar.register(executionTask)
         }
     }
 
