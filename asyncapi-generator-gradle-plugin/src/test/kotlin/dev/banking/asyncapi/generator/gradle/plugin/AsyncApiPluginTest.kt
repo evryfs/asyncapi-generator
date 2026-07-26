@@ -252,6 +252,66 @@ class AsyncApiPluginTest {
     }
 
     @Test
+    fun `regenerates output when an external contract input changes`() {
+        val projectDirectory = testProject()
+        val inputDirectory = File(projectDirectory, "contract").apply(File::mkdirs)
+        GradleTestHelper
+            .resourceFile("external-input/main.yaml")
+            .copyTo(File(inputDirectory, "main.yaml"))
+        val externalSchema =
+            GradleTestHelper
+                .resourceFile("external-input/schemas.yaml")
+                .copyTo(File(inputDirectory, "schemas.yaml"))
+        GradleTestHelper.writeBuildScript(
+            projectDirectory,
+            kotlinBuildScript(
+                executionName = "models",
+                executionConfiguration =
+                    """
+                    generatorName.set("kotlin")
+                    inputSpec.set(file("contract/main.yaml"))
+                    modelPackage.set("com.example.model")
+                    """,
+            ),
+        )
+
+        val firstRun =
+            GradleTestHelper.runGradle(
+                projectDirectory,
+                "generateAsyncApi",
+                "--configuration-cache",
+            )
+        val unchangedRun =
+            GradleTestHelper.runGradle(
+                projectDirectory,
+                "generateAsyncApi",
+                "--configuration-cache",
+            )
+        externalSchema.writeText(
+            externalSchema
+                .readText()
+                .replace("type: string", "type: integer"),
+        )
+        val changedRun =
+            GradleTestHelper.runGradle(
+                projectDirectory,
+                "generateAsyncApi",
+                "--configuration-cache",
+            )
+
+        assertEquals(TaskOutcome.SUCCESS, firstRun.task(":generateModelsAsyncApi")?.outcome)
+        assertEquals(TaskOutcome.UP_TO_DATE, unchangedRun.task(":generateModelsAsyncApi")?.outcome)
+        assertEquals(TaskOutcome.SUCCESS, changedRun.task(":generateModelsAsyncApi")?.outcome)
+        assertTrue(changedRun.output.contains("Reusing configuration cache."))
+        assertTrue(
+            File(
+                projectDirectory,
+                "build/generated/asyncapi/models/com/example/model/ExternalUpdatePayload.kt",
+            ).readText().contains("val value: Int"),
+        )
+    }
+
+    @Test
     fun `writes bundled YAML through the AsyncAPI YAML profile`() {
         val projectDirectory = testProject()
         copyResource(projectDirectory, "asyncapi_kafka_complex.yaml")

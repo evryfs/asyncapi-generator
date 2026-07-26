@@ -59,6 +59,12 @@ class AsyncApiPlugin : Plugin<Project> {
                     payloadParameterValidationAnnotation.set(
                         extension.clientConfig.validationAnnotations.payloadParameter,
                     )
+
+                    val discoveredInputFiles =
+                        project.providers.of(AsyncApiInputFilesValueSource::class.java) {
+                            parameters.inputSpec.set(execution.inputSpec)
+                        }
+                    inputFiles.from(discoveredInputFiles)
                 }
 
             aggregateTask.configure {

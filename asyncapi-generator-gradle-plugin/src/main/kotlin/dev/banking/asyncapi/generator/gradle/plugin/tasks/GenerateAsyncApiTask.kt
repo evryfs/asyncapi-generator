@@ -14,12 +14,14 @@ import dev.banking.asyncapi.generator.gradle.plugin.GradleModelConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleProducerConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleValidationAnnotationsConfiguration
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
@@ -39,6 +41,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val inputSpec: RegularFileProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputFiles: ConfigurableFileCollection
 
     @get:OutputFile
     @get:Optional
