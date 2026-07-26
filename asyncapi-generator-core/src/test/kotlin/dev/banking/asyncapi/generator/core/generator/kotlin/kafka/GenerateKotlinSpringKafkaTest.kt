@@ -155,6 +155,51 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
     }
 
     @Test
+    fun `should generate spring kafka contracts for messages without a payload`() {
+        val yaml = File("src/test/resources/generator/asyncapi_payloadless_message.yaml")
+        val modelPackage = "dev.banking.test.cache.v1.model"
+        val clientPackage = "dev.banking.test.cache.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi-kotlin-payloadless")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-kotlin-payloadless")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+
+        generateElement(
+            yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+        )
+
+        val clientDir = outputDir.resolve("dev/banking/test/cache/v1/client")
+        val consumerContent = clientDir.resolve("consumer/CacheEventsConsumer.kt").readText()
+        assertTrue(consumerContent.contains("fun listenCacheInvalidatedV1("))
+        assertTrue(consumerContent.contains("receivedTopic: String,"))
+        assertTrue(consumerContent.contains("receivedKey: String,"))
+        assertTrue(consumerContent.contains("correlationId: String,"))
+        assertTrue(consumerContent.contains("sourceSystem: String? = null,"))
+        assertTrue(consumerContent.contains("This Message Object declares no payload."))
+        assertFalse(consumerContent.contains("payload:"))
+        assertFalse(consumerContent.lineSequence().any { line -> line.trim() == "@Payload" })
+        assertFalse(consumerContent.contains("handler.annotation.Payload"))
+
+        val producerContent = clientDir.resolve("producer/CacheEventsProducer.kt").readText()
+        assertTrue(producerContent.contains("fun sendCacheInvalidatedV1("))
+        assertTrue(producerContent.contains("messageKey: String,"))
+        assertTrue(producerContent.contains("correlationId: String,"))
+        assertTrue(producerContent.contains("sourceSystem: String? = null,"))
+        assertTrue(producerContent.contains("This Message Object declares no payload."))
+        assertFalse(producerContent.contains("payload:"))
+        assertFalse(producerContent.lineSequence().any { line -> line.trim() == "@Payload" })
+        assertFalse(producerContent.contains("handler.annotation.Payload"))
+        assertFalse(producerContent.contains("MessageBuilder.withPayload"))
+        assertFalse(outputDir.resolve("dev/banking/test/cache/v1/model/CacheInvalidatedV1Payload.kt").exists())
+    }
+
+    @Test
     fun `should generate spring kafka client with native avro payload type`() {
         val yaml = File("src/test/resources/generator/asyncapi_native_avro_spring_kafka_client.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"

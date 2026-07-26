@@ -194,6 +194,52 @@ class ChannelAnalyzerTest {
     }
 
     @Test
+    fun `should preserve messages without a payload`() {
+        val keySchema = Schema(type = "string")
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "CacheInvalidatedV1" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "CacheInvalidatedV1",
+                                    headers =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "correlationId" to
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(type = "string"),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                    bindings = kafkaKeyBinding(keySchema),
+                                ),
+                            ),
+                    ),
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("cacheEvents" to ChannelInterface.ChannelInline(channel)),
+            )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals("CacheInvalidatedV1", analyzed.messageName)
+        assertEquals(false, analyzed.hasPayload)
+        assertEquals(null, analyzed.payloadTypeName)
+        assertEquals(null, analyzed.schema)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
+        assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
+    }
+
+    @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
         val keySchema = Schema(type = "integer", format = "int64")

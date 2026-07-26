@@ -36,6 +36,13 @@ import {{.}};
  * no-op {@code @KafkaHandler} override. Filters should distinguish expected
  * ignored messages from unknown messages so new or malformed message types are
  * not silently discarded.
+{{#hasPayloadlessMethods}}
+ *
+ * <p>Payload-less messages cannot be selected through {@code @KafkaHandler}
+ * payload-type dispatch. Route those messages explicitly from an
+ * application-owned listener adapter when this channel contains multiple
+ * message types.
+{{/hasPayloadlessMethods}}
 {{/hasMultipleMethods}}
 {{#hasSingleMethod}}
  *
@@ -51,7 +58,9 @@ import {{.}};
  *     @Override
  *     @KafkaListener(topics = {{name}}.{{topicAddressConstantName}})
  *     public void {{methodName}}(
+{{#hasPayload}}
  *             {{payloadType}} payload,
+{{/hasPayload}}
  *             String receivedTopic{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}
  *             {{typeName}} {{parameterName}}{{parameterSuffix}}
@@ -108,7 +117,11 @@ public interface {{name}} {
      * select it for class-level listener dispatch.
      *
 {{/hasMultipleMethods}}
-{{#hasParameterDocumentation}}
+{{^hasPayload}}
+     * <p>This Message Object declares no payload. The generated method binds
+     * only Kafka record metadata, any contract-defined key, and message headers.
+     *
+{{/hasPayload}}
 {{#payloadDescriptionFirstLine}}
      * @param payload {{.}}
 {{/payloadDescriptionFirstLine}}
@@ -132,10 +145,11 @@ public interface {{name}} {
      *   {{.}}
 {{/descriptionTailLines}}
 {{/headerProperties}}
-{{/hasParameterDocumentation}}
      */
     default void {{methodName}}(
+{{#hasPayload}}
         @Payload {{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload,
+{{/hasPayload}}
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) {{#requiredHeaderAnnotation}}@{{.}} {{/requiredHeaderAnnotation}}String receivedTopic{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = {{required}}) {{#annotations}}{{{.}}} {{/annotations}}{{typeName}} {{parameterName}}{{parameterSuffix}}

@@ -36,6 +36,12 @@ import {{{.}}}
  * no-op `@KafkaHandler` override. Filters should distinguish expected ignored
  * messages from unknown messages so new or malformed message types are not
  * silently discarded.
+{{#hasPayloadlessMethods}}
+ *
+ * Payload-less messages cannot be selected through `@KafkaHandler` payload-type
+ * dispatch. Route those messages explicitly from an application-owned listener
+ * adapter when this channel contains multiple message types.
+{{/hasPayloadlessMethods}}
 {{/hasMultipleMethods}}
 {{#hasSingleMethod}}
  *
@@ -52,7 +58,9 @@ import {{{.}}}
  *         topics = [{{name}}.{{topicAddressConstantName}}],
  *     )
  *     override fun {{methodName}}(
+{{#hasPayload}}
  *         payload: {{payloadType}},
+{{/hasPayload}}
  *         receivedTopic: String{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}
  *         {{parameterName}}: {{typeName}}{{#hasHeaders}},{{/hasHeaders}}
@@ -106,7 +114,11 @@ interface {{name}} {
      * for class-level listener dispatch.
      *
 {{/hasMultipleMethods}}
-{{#hasParameterDocumentation}}
+{{^hasPayload}}
+     * This Message Object declares no payload. The generated method binds only
+     * Kafka record metadata, any contract-defined key, and message headers.
+     *
+{{/hasPayload}}
 {{#payloadDescriptionFirstLine}}
      * @param [payload] {{{.}}}
 {{/payloadDescriptionFirstLine}}
@@ -130,15 +142,16 @@ interface {{name}} {
      *   {{{.}}}
 {{/descriptionTailLines}}
 {{/headerProperties}}
-{{/hasParameterDocumentation}}
      */
     fun {{methodName}}(
+{{#hasPayload}}
         @Payload
 {{#payloadParameterAnnotation}}
         @{{.}}
 {{/payloadParameterAnnotation}}
         payload: {{payloadType}},
 
+{{/hasPayload}}
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true)
         receivedTopic: String{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
 {{#keyParameter}}

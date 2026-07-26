@@ -1,0 +1,31 @@
+asyncapi: 3.0.0
+info:
+  title: Cache Events
+  version: 1.0.0
+channels:
+  cacheEvents:
+    address: cache.events.v1
+    messages:
+      CacheInvalidatedV1:
+        $ref: "#/components/messages/CacheInvalidatedV1"
+components:
+  messages:
+    CacheInvalidatedV1:
+      name: CacheInvalidatedV1
+      headers:
+        type: object
+        required:
+          - correlationId
+        properties:
+          correlationId:
+            type: string
+            description: Identifier used to correlate related messages.
+          sourceSystem:
+            type: string
+            description: Optional name of the system that produced the message.
+      bindings:
+        kafka:
+          key:
+            type: string
+            description: Cache entry identifier used as the Kafka record key.
+          bindingVersion: "0.4.0"

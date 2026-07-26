@@ -28,7 +28,7 @@ import {{{.}}};
  * independent publication contract. Override every method the application
  * intends to publish.
 {{/hasMultipleMethods}}
-{{#hasSingleMethod}}
+{{#hasSinglePayloadMethod}}
  *
  * <p>Example implementation:
  *
@@ -72,7 +72,7 @@ import {{{.}}};
 {{/sendMethods}}
  * }
  * }</pre>
-{{/hasSingleMethod}}
+{{/hasSinglePayloadMethod}}
  */
 {{#clientContractAnnotation}}
 @{{.}}
@@ -106,6 +106,12 @@ public interface {{name}} {
      * returns an exceptionally completed future until the application
      * overrides this method.
      *
+{{^hasPayload}}
+     * <p>This Message Object declares no payload. Implementations own how the
+     * absent Kafka record value is represented for the configured producer and
+     * serializer.
+     *
+{{/hasPayload}}
 {{#hasParameterDocumentation}}
 {{#payloadDescriptionFirstLine}}
      * @param payload {{{.}}}
@@ -134,7 +140,9 @@ public interface {{name}} {
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> {{methodName}}(
+{{#hasPayload}}
         {{#payloadBindingAnnotation}}@{{{.}}} {{/payloadBindingAnnotation}}{{#payloadParameterAnnotation}}@{{.}} {{/payloadParameterAnnotation}}{{payloadType}} payload{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{/hasPayload}}
 {{#keyParameter}}
         {{#annotations}}{{{.}}} {{/annotations}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/keyParameter}}

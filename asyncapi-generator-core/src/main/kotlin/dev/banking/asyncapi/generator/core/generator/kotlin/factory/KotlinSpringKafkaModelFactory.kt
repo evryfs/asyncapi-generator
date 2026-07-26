@@ -76,15 +76,22 @@ class KotlinSpringKafkaModelFactory(
                         methodName = payload.methodName("listen"),
                         payloadType = payload.payloadType,
                         payloadDescription =
-                            toKDocLines(payload.payloadDescription)
-                                .ifEmpty { listOf("Message payload.") },
+                            if (payload.hasPayload) {
+                                toKDocLines(payload.payloadDescription)
+                                    .ifEmpty { listOf("Message payload.") }
+                            } else {
+                                emptyList()
+                            },
                         keyParameter =
                             keyContracts.getValue(payload)?.toKotlinKeyParameter(
                                 parameterName = "receivedKey",
                                 consumer = true,
                             ),
                         headerProperties = headerProperties,
-                        payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
+                        payloadParameterAnnotation =
+                            validationAnnotations.payloadParameter
+                                ?.simpleName
+                                ?.takeIf { payload.hasPayload },
                     )
                 }
             val keyAnnotations =
@@ -99,10 +106,14 @@ class KotlinSpringKafkaModelFactory(
                         JakartaValidationImportResolver.resolve(keyAnnotations) +
                         "org.springframework.kafka.support.KafkaHeaders" +
                         "org.springframework.messaging.handler.annotation.Header" +
-                        "org.springframework.messaging.handler.annotation.Payload" +
                         listOfNotNull(
+                            "org.springframework.messaging.handler.annotation.Payload".takeIf {
+                                methods.any { method -> method.hasPayload }
+                            },
                             validationAnnotations.clientContract?.value,
-                            validationAnnotations.payloadParameter?.value,
+                            validationAnnotations.payloadParameter?.value?.takeIf {
+                                methods.any { method -> method.payloadParameterAnnotation != null }
+                            },
                         )
                 )
                     .distinct()
@@ -149,16 +160,23 @@ class KotlinSpringKafkaModelFactory(
                         methodName = payload.methodName("send"),
                         payloadType = payload.payloadType,
                         payloadDescription =
-                            toKDocLines(payload.payloadDescription)
-                                .ifEmpty { listOf("Message payload.") },
-                        payloadBindingAnnotation = "Payload",
+                            if (payload.hasPayload) {
+                                toKDocLines(payload.payloadDescription)
+                                    .ifEmpty { listOf("Message payload.") }
+                            } else {
+                                emptyList()
+                            },
+                        payloadBindingAnnotation = "Payload".takeIf { payload.hasPayload },
                         keyParameter =
                             keyContracts.getValue(payload)?.toKotlinKeyParameter(
                                 parameterName = "messageKey",
                                 consumer = false,
                             ),
                         headerProperties = headerProperties,
-                        payloadParameterAnnotation = validationAnnotations.payloadParameter?.simpleName,
+                        payloadParameterAnnotation =
+                            validationAnnotations.payloadParameter
+                                ?.simpleName
+                                ?.takeIf { payload.hasPayload },
                     )
                 }
             val keyAnnotations =
@@ -223,10 +241,10 @@ class KotlinSpringKafkaModelFactory(
         return KafkaPayload(
             messageName = msg.messageName,
             payloadType = type,
-            payloadDescription = msg.schema.description,
+            payloadDescription = msg.schema?.description,
             keySchema = msg.keySchema,
             importName =
-                if (isPrimitive(type)) {
+                if (type == null || isPrimitive(type)) {
                     null
                 } else {
                     "$modelPackage.$type"
@@ -235,14 +253,16 @@ class KotlinSpringKafkaModelFactory(
         )
     }
 
-    private fun resolvePayloadType(msg: AnalyzedMessage): String =
-        when (msg.schema.type.getPrimaryType()) {
+    private fun resolvePayloadType(msg: AnalyzedMessage): String? {
+        val schema = msg.schema ?: return null
+        return when (schema.type.getPrimaryType()) {
             "string" -> "String"
             "integer" -> "Int"
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
             else -> msg.payloadTypeName
         }
+    }
 
     private fun isPrimitive(type: String): Boolean = type in setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
 

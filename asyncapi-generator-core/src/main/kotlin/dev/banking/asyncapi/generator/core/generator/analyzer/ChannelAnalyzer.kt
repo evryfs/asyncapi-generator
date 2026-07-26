@@ -129,8 +129,6 @@ class ChannelAnalyzer {
                 else -> {}
             }
 
-            if (typeName == null) return@forEach
-
             if (payloadSchema != null) {
                 analyzedMessages.add(
                     AnalyzedMessage(
@@ -142,11 +140,22 @@ class ChannelAnalyzer {
                         messageId = messageId,
                     ),
                 )
+            } else if (message.payload == null) {
+                analyzedMessages.add(
+                    AnalyzedMessage(
+                        messageName = messageName,
+                        payloadTypeName = null,
+                        schema = null,
+                        keySchema = keySchema,
+                        headers = headers,
+                        messageId = messageId,
+                    ),
+                )
             } else if (multiFormatSchema != null) {
                 analyzedMultiFormatMessages.add(
                     AnalyzedMultiFormatMessage(
                         messageName = messageName,
-                        payloadName = typeName,
+                        payloadName = checkNotNull(typeName),
                         schema = multiFormatSchema,
                         keySchema = keySchema,
                         headers = headers,
