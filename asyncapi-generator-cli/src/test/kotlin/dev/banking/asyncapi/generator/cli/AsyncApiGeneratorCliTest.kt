@@ -18,59 +18,57 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate kotlin code from valid input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
-                "--input", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--models-package", "com.example.cli.model",
-                "--clients-kafka-package", "com.example.cli.client",
-                "--clients-kafka-spring-kafka",
-                "--generator", "kotlin",
+                "--input-spec", inputFile.absolutePath,
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--client-package", "com.example.cli.client",
+                "--client-type", "spring-kafka",
+                "--client-contract", "interface",
+                "--generator-name", "kotlin",
             )
         )
-        val packageDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
+        val packageDir = outputDirectory.resolve("com/example/cli/client")
         assertTrue(packageDir.exists(), "Output package directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output directory should contain generated files")
     }
 
     @Test
-    fun `should generate client with explicit model package when models are not generated`(@TempDir tempDir: Path) {
+    fun `should generate client and model outputs from shared package configuration`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
-                "--input", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--clients-kafka-package", "com.example.cli.client",
-                "--clients-kafka-model-package", "com.example.cli.model",
-                "--clients-kafka-spring-kafka",
-                "--generator", "kotlin",
+                "--input-spec", inputFile.absolutePath,
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--client-package", "com.example.cli.client",
+                "--client-type", "spring-kafka",
+                "--client-contract", "interface",
+                "--generator-name", "kotlin",
             )
         )
-        val clientDir = codegenDir.resolve("src/main/kotlin/com/example/cli/client")
-        val modelDir = codegenDir.resolve("src/main/kotlin/com/example/cli/model")
+        val clientDir = outputDirectory.resolve("com/example/cli/client")
+        val modelDir = outputDirectory.resolve("com/example/cli/model")
         assertTrue(clientDir.exists(), "Client output directory should exist")
-        assertTrue(!modelDir.exists(), "Model output directory should not exist when models are not generated")
+        assertTrue(modelDir.exists(), "Model output directory should exist")
     }
 
     @Test
     fun `should generate java code from valid input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--models-package", "com.example.cli.model",
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
                 "-g", "java"
             )
         )
-        val packageDir = codegenDir.resolve("src/main/java/com/example/cli/model")
+        val packageDir = outputDirectory.resolve("com/example/cli/model")
         assertTrue(packageDir.exists(), "Java output directory should exist")
         assertTrue(packageDir.list()?.isNotEmpty() == true, "Output should not be empty")
     }
@@ -78,88 +76,59 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should accept java record model type for java model generation`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--models-package", "com.example.cli.model",
-                "--models-model-type", "java-record",
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--model-type", "java-record",
                 "-g", "java",
             )
         )
 
-        val packageDir = codegenDir.resolve("src/main/java/com/example/cli/model")
+        val packageDir = outputDirectory.resolve("com/example/cli/model")
         assertTrue(packageDir.exists(), "Java output directory should exist")
         val generatedRecord = packageDir.resolve("User.java")
         assertTrue(generatedRecord.readText().contains("public record User("))
     }
 
     @Test
-    fun `should generate avro schema when schema mode is avro projection`(@TempDir tempDir: Path) {
+    fun `should generate Avro schemas through the schema-only profile`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--models-package", "com.example.cli.model",
-                "--schemas-avro-projection-package", "com.example.cli.schema",
-                "-g", "kotlin",
+                "--output-directory", outputDirectory.absolutePath,
+                "--schema-package", "com.example.cli.schema",
+                "-g", "avro-schema",
             )
         )
-        val schemaDir = resourceDir.resolve("com/example/cli/schema")
+        val schemaDir = outputDirectory.resolve("com/example/cli/schema")
         assertTrue(schemaDir.exists(), "Schema output directory should exist")
         assertTrue(schemaDir.list()?.isNotEmpty() == true, "Schema directory should not be empty")
     }
 
     @Test
-    fun `should generate Avro schemas through the schema-only profile`(@TempDir tempDir: Path) {
-        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
-
-        cli.parse(
-            arrayOf(
-                "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--schemas-package", "com.example.cli.schema",
-                "-g", "avro-schema",
-            ),
-        )
-
-        val schemaDir = resourceDir.resolve("com/example/cli/schema")
-        assertTrue(schemaDir.exists(), "Schema output directory should exist")
-        assertTrue(
-            schemaDir.walkTopDown().any { it.extension == "avsc" },
-            "At least one Avro schema should be generated",
-        )
-    }
-
-    @Test
     fun `should generate JSON Schemas through the schema-only profile`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
 
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--schemas-package", "com.example.cli.schema",
+                "--output-directory", outputDirectory.absolutePath,
+                "--schema-package", "com.example.cli.schema",
                 "-g", "json-schema",
             ),
         )
 
-        val schemaFile = resourceDir.resolve("com/example/cli/schema/User.schema.json")
+        val schemaFile = outputDirectory.resolve("com/example/cli/schema/User.schema.json")
         assertTrue(schemaFile.exists(), "JSON Schema output should exist")
         assertTrue(schemaFile.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
         assertFalse(
-            codegenDir.walkTopDown().any { it.extension == "java" || it.extension == "kt" },
+            outputDirectory.walkTopDown().any { it.extension == "java" || it.extension == "kt" },
             "JSON Schema-only generation must not create source models",
         )
     }
@@ -167,20 +136,19 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate native avro schema and specific record source`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--schemas-native-avro",
-                "-g", "kotlin",
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.avro",
+                "--model-type", "avro-specific-record",
+                "-g", "java",
             )
         )
 
-        val schemaFile = resourceDir.resolve("com/example/avro/UserCreated.avsc")
-        val specificRecordFile = codegenDir.resolve("src/main/java/com/example/avro/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/avro/UserCreated.avsc")
+        val specificRecordFile = outputDirectory.resolve("com/example/avro/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Avro schema output should exist")
         assertTrue(specificRecordFile.exists(), "SpecificRecord source output should exist")
         assertTrue(specificRecordFile.readText().contains("extends org.apache.avro.specific.SpecificRecordBase"))
@@ -189,21 +157,19 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate native protobuf schema and Java message types by default`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--models-package", "com.example.protobuf",
-                "--models-model-type", "protobuf-message",
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.protobuf",
+                "--model-type", "protobuf-message",
                 "-g", "java",
             )
         )
 
-        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
-        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(schemaFile.readText().contains("message UserCreated"))
         assertTrue(javaMessageFile.exists(), "Native Protobuf Java message output should exist")
@@ -213,20 +179,18 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate native protobuf schema without model generation when model package is omitted`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--schemas-package", "com.example.protobuf",
+                "--output-directory", outputDirectory.absolutePath,
+                "--schema-package", "com.example.protobuf",
                 "-g", "protobuf-schema",
             )
         )
 
-        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
-        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertFalse(javaMessageFile.exists(), "Native Protobuf Java message output should not exist")
     }
@@ -234,22 +198,20 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should generate native protobuf Java messages and Kotlin DSL`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
-        val resourceDir = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
             arrayOf(
                 "-i", inputFile.absolutePath,
-                "--codegen-output", codegenDir.absolutePath,
-                "--resource-output", resourceDir.absolutePath,
-                "--models-package", "com.example.protobuf",
-                "--models-model-type", "protobuf-message",
+                "--output-directory", outputDirectory.absolutePath,
+                "--model-package", "com.example.protobuf",
+                "--model-type", "protobuf-message",
                 "-g", "kotlin",
             )
         )
 
-        val schemaFile = resourceDir.resolve("com/example/protobuf/UserCreated.proto")
-        val javaMessageFile = codegenDir.resolve("src/main/java/com/example/protobuf/UserCreated.java")
-        val kotlinDslFile = codegenDir.resolve("src/main/kotlin/com/example/protobuf/UserCreatedKt.kt")
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
+        val kotlinDslFile = outputDirectory.resolve("com/example/protobuf/UserCreatedKt.kt")
         assertTrue(schemaFile.exists(), "Native Protobuf schema output should exist")
         assertTrue(javaMessageFile.exists(), "Required Protobuf Java message output should exist")
         assertTrue(kotlinDslFile.exists(), "Protobuf Kotlin DSL output should exist")
@@ -263,7 +225,7 @@ class AsyncApiGeneratorCliTest {
             arrayOf(
                 "-i", inputFile.absolutePath,
                 "--output-file", outputFile.absolutePath,
-                "--generator", "asyncapi-yaml",
+                "--generator-name", "asyncapi-yaml",
             )
         )
         assertTrue(outputFile.exists(), "Bundled output file should exist")
@@ -278,7 +240,7 @@ class AsyncApiGeneratorCliTest {
             arrayOf(
                 "-i", inputFile.absolutePath,
                 "--output-file", outputFile.absolutePath,
-                "--generator", "asyncapi-json",
+                "--generator-name", "asyncapi-json",
             )
         )
         assertTrue(outputFile.exists(), "Bundled output file should exist")
@@ -294,7 +256,7 @@ class AsyncApiGeneratorCliTest {
                 cli.parse(
                     arrayOf(
                         "-i", inputFile.absolutePath,
-                        "--generator", "asyncapi-json",
+                        "--generator-name", "asyncapi-json",
                     ),
                 )
             }
@@ -309,45 +271,46 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if kafka spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         val exception =
             assertFailsWith<UsageError> {
                 cli.parse(
                     arrayOf(
                         "-i", inputFile.absolutePath,
-                        "--codegen-output", codegenDir.absolutePath,
-                        "--models-package", "com.example.cli.model",
-                        "--clients-kafka-spring-kafka",
+                        "--output-directory", outputDirectory.absolutePath,
+                        "--model-package", "com.example.cli.model",
+                        "--client-type", "spring-kafka",
+                        "--client-contract", "interface",
+                        "--generator-name", "kotlin",
                     )
                 )
             }
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "clients.kafka.packageName is required when clients.kafka is configured",
+                "clientPackage is required when clientConfig is configured",
             ),
         )
     }
 
     @Test
-    fun `should fail if avro projection is enabled without schema package`(@TempDir tempDir: Path) {
+    fun `should fail if schema generator is used without schema package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         val exception =
             assertFailsWith<UsageError> {
                 cli.parse(
                     arrayOf(
                         "-i", inputFile.absolutePath,
-                        "--codegen-output", codegenDir.absolutePath,
-                        "--models-package", "com.example.cli.model",
-                        "--schemas-avro-projection",
+                        "--output-directory", outputDirectory.absolutePath,
+                        "--generator-name", "avro-schema",
                     )
                 )
             }
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "schemas.avroProjection.packageName is required when schemas.avroProjection is configured",
+                "schemaPackage is required when generatorName is avro-schema",
             ),
         )
     }
@@ -355,14 +318,15 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if model annotation is set without model package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         val exception =
             assertFailsWith<UsageError> {
                 cli.parse(
                     arrayOf(
                         "-i", inputFile.absolutePath,
-                        "--codegen-output", codegenDir.absolutePath,
-                        "--models-annotation", "com.example.NoArg",
+                        "--output-directory", outputDirectory.absolutePath,
+                        "--model-annotation", "com.example.NoArg",
+                        "--generator-name", "kotlin",
                     )
                 )
             }
@@ -377,14 +341,14 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if model type is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         assertFailsWith<BadParameterValue> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "--codegen-output", codegenDir.absolutePath,
-                    "--models-package", "com.example.cli.model",
-                    "--models-model-type", "data",
+                    "--output-directory", outputDirectory.absolutePath,
+                    "--model-package", "com.example.cli.model",
+                    "--model-type", "data",
                     "-g", "java",
                 )
             )
@@ -394,15 +358,15 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if java record model type is configured for kotlin`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         val exception =
             assertFailsWith<UsageError> {
                 cli.parse(
                     arrayOf(
                         "-i", inputFile.absolutePath,
-                        "--codegen-output", codegenDir.absolutePath,
-                        "--models-package", "com.example.cli.model",
-                        "--models-model-type", "java-record",
+                        "--output-directory", outputDirectory.absolutePath,
+                        "--model-package", "com.example.cli.model",
+                        "--model-type", "java-record",
                         "-g", "kotlin",
                     )
                 )
@@ -417,13 +381,14 @@ class AsyncApiGeneratorCliTest {
 
     @Test
     fun `should fail if input file is missing`(@TempDir tempDir: Path) {
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         assertFailsWith<UsageError> {
             cli.parse(
                 arrayOf(
                     "-i", "non_existent.yaml",
-                    "--codegen-output", codegenDir.absolutePath,
-                    "--models-package", "com.example.cli.model"
+                    "--output-directory", outputDirectory.absolutePath,
+                    "--model-package", "com.example.cli.model",
+                    "-g", "kotlin",
                 )
             )
         }
@@ -432,13 +397,13 @@ class AsyncApiGeneratorCliTest {
     @Test
     fun `should fail if generator name is invalid`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val codegenDir = tempDir.resolve("codegen").toFile()
+        val outputDirectory = tempDir.resolve("generated").toFile()
         assertFailsWith<BadParameterValue> {
             cli.parse(
                 arrayOf(
                     "-i", inputFile.absolutePath,
-                    "--codegen-output", codegenDir.absolutePath,
-                    "--models-package", "com.example.cli.model",
+                    "--output-directory", outputDirectory.absolutePath,
+                    "--model-package", "com.example.cli.model",
                     "-g", "invalid-gen"
                 )
             )
