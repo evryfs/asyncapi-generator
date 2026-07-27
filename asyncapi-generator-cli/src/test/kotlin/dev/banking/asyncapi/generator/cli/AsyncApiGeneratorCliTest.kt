@@ -9,11 +9,26 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.writeText
 import kotlin.test.assertFailsWith
 
 class AsyncApiGeneratorCliTest {
 
     private val cli = AsyncApiGeneratorCli()
+
+    @Test
+    fun `should describe the supported generation workflows in command help`() {
+        val help = requireNotNull(AsyncApiGeneratorCli().getFormattedHelp())
+
+        assertTrue(help.contains("Generate payload models, client contracts, schema artifacts"))
+        assertTrue(help.contains("Generation"))
+        assertTrue(help.contains("Outputs"))
+        assertTrue(help.contains("Models"))
+        assertTrue(help.contains("Clients"))
+        assertTrue(help.contains("--generator-name"))
+        assertTrue(help.contains("--topic-parameter-property"))
+        assertTrue(help.contains("Generate Kotlin models and Spring Kafka contracts"))
+    }
 
     @Test
     fun `should generate kotlin code from valid input`(@TempDir tempDir: Path) {
@@ -54,6 +69,93 @@ class AsyncApiGeneratorCliTest {
         val modelDir = outputDirectory.resolve("com/example/cli/model")
         assertTrue(clientDir.exists(), "Client output directory should exist")
         assertTrue(modelDir.exists(), "Model output directory should exist")
+    }
+
+    @Test
+    fun `should apply complete consumer client configuration from CLI options`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
+        val outputDirectory = tempDir.resolve("generated").toFile()
+
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "-g", "kotlin",
+                "-o", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--client-package", "com.example.cli.client",
+                "--client-type", "spring-kafka",
+                "--client-contract", "interface",
+                "--topic-parameter-property", "environment=kafka.environment",
+                "--client-contract-validation-annotation",
+                "org.springframework.validation.annotation.Validated",
+                "--payload-parameter-validation-annotation", "jakarta.validation.Valid",
+                "--no-generate-producer",
+            ),
+        )
+
+        val clientDirectory = outputDirectory.resolve("com/example/cli/client")
+        val consumerFile = clientDirectory.resolve("consumer/MyAccountUpdatedConsumer.kt")
+        val producerFile = clientDirectory.resolve("producer/MyAccountUpdatedProducer.kt")
+
+        assertTrue(consumerFile.exists(), "Consumer contract should be generated")
+        assertFalse(producerFile.exists(), "Producer contract should be disabled")
+        val consumer = consumerFile.readText()
+        assertTrue(consumer.contains("import jakarta.validation.Valid"))
+        assertTrue(consumer.contains("import org.springframework.validation.annotation.Validated"))
+        assertTrue(consumer.contains("@Validated"))
+        assertTrue(consumer.contains("@Valid"))
+        assertTrue(consumer.contains("my.accounts.\\${'$'}{kafka.environment}.updated.v1"))
+    }
+
+    @Test
+    fun `should allow consumer generation to be disabled`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
+        val outputDirectory = tempDir.resolve("generated").toFile()
+
+        cli.parse(
+            arrayOf(
+                "-i", inputFile.absolutePath,
+                "-g", "kotlin",
+                "-o", outputDirectory.absolutePath,
+                "--model-package", "com.example.cli.model",
+                "--client-package", "com.example.cli.client",
+                "--client-type", "spring-kafka",
+                "--client-contract", "interface",
+                "--topic-parameter-property", "environment=kafka.environment",
+                "--no-generate-consumer",
+            ),
+        )
+
+        val clientDirectory = outputDirectory.resolve("com/example/cli/client")
+        assertTrue(
+            clientDirectory.resolve("producer/MyAccountUpdatedProducer.kt").exists(),
+            "Producer contract should be generated",
+        )
+        assertFalse(
+            clientDirectory.resolve("consumer/MyAccountUpdatedConsumer.kt").exists(),
+            "Consumer contract should be disabled",
+        )
+    }
+
+    @Test
+    fun `should reject incomplete client configuration before reading the contract`(@TempDir tempDir: Path) {
+        val invalidInput = tempDir.resolve("invalid.yaml")
+        invalidInput.writeText("not: [valid")
+
+        val exception =
+            assertFailsWith<UsageError> {
+                cli.parse(
+                    arrayOf(
+                        "-i", invalidInput.toFile().absolutePath,
+                        "-g", "kotlin",
+                        "--model-package", "com.example.cli.model",
+                        "--client-package", "com.example.cli.client",
+                        "--client-type", "spring-kafka",
+                    ),
+                )
+            }
+
+        assertTrue(exception.message.orEmpty().contains("clientConfig.clientContract is required"))
     }
 
     @Test
