@@ -36,6 +36,8 @@ class CliPackagedApplicationIT {
         assertTrue(result.stdout.contains("Usage: asyncapi-generator"))
         assertTrue(result.stdout.contains("--input-spec"))
         assertTrue(result.stdout.contains("--generator-name"))
+        assertTrue(result.stdout.contains("Run a repeatable generation request from an argument file"))
+        assertTrue(result.stdout.contains("@generation.args"))
     }
 
     @Test
@@ -62,6 +64,33 @@ class CliPackagedApplicationIT {
                 "--output-file",
                 outputFile.absolutePath,
             )
+
+        assertEquals(0, result.exitCode, result.output)
+        assertTrue(result.stdout.contains("Generation complete."))
+        assertTrue(outputFile.exists())
+        assertTrue(outputFile.readText().startsWith("asyncapi:"))
+    }
+
+    @Test
+    fun `should generate a bundled document from an argument file`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
+        val outputFile = tempDir.resolve("bundled output.yaml").toFile()
+        val argumentFile =
+            tempDir.resolve("generation arguments.txt").toFile().apply {
+                writeText(
+                    """
+                    # One option or value per line keeps repeatable invocations readable.
+                    --input-spec
+                    "${inputFile.absolutePath}"
+                    --generator-name
+                    asyncapi-yaml
+                    --output-file
+                    "${outputFile.absolutePath}"
+                    """.trimIndent(),
+                )
+            }
+
+        val result = PackagedCliFixture.run("@${argumentFile.absolutePath}")
 
         assertEquals(0, result.exitCode, result.output)
         assertTrue(result.stdout.contains("Generation complete."))

@@ -25,6 +25,7 @@ fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorCliTest`
  * - `CliDiagnosticsTest`
+ * - `CliPackagedApplicationIT`
  */
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     override val printHelpOnEmptyArgs: Boolean = true
@@ -68,6 +69,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
           Generate Avro schema artifacts:
             asyncapi-generator -i asyncapi.yaml -g avro-schema \
               --schema-package com.example.events.schema
+
+          Run a repeatable generation request from an argument file:
+            asyncapi-generator @generation.args
         """.trimIndent()
 
     override fun run() {
