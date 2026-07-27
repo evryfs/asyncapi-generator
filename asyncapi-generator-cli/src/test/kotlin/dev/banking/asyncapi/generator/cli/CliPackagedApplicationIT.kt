@@ -33,6 +33,7 @@ class CliPackagedApplicationIT {
         val result = PackagedCliFixture.run("--help")
 
         assertEquals(0, result.exitCode)
+        assertTrue(result.stderr.isBlank(), result.stderr)
         assertTrue(result.stdout.contains("Usage: asyncapi-generator"))
         assertTrue(result.stdout.contains("--input-spec"))
         assertTrue(result.stdout.contains("--generator-name"))
