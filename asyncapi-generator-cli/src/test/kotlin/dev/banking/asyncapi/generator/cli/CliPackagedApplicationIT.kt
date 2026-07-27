@@ -39,6 +39,16 @@ class CliPackagedApplicationIT {
     }
 
     @Test
+    fun `should generate shell completion from the packaged CLI`() {
+        val result = PackagedCliFixture.run("--generate-completion", "bash")
+
+        assertEquals(0, result.exitCode)
+        assertTrue(result.stdout.contains("asyncapi-generator"))
+        assertTrue(result.stdout.contains("--generator-name"))
+        assertTrue(result.stdout.contains("--topic-parameter-property"))
+    }
+
+    @Test
     fun `should generate a bundled document through the packaged CLI`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()

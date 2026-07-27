@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.core.BadParameterValue
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.parse
+import com.github.ajalt.clikt.testing.test
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
 import kotlin.io.path.writeText
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class AsyncApiGeneratorCliTest {
@@ -28,7 +30,21 @@ class AsyncApiGeneratorCliTest {
         assertTrue(help.contains("--generator-name"))
         assertTrue(help.contains("--topic-parameter-property"))
         assertTrue(help.contains("--version"))
+        assertTrue(help.contains("--generate-completion"))
         assertTrue(help.contains("Generate Kotlin models and Spring Kafka contracts"))
+    }
+
+    @Test
+    fun `should generate shell completion from the typed option contract`() {
+        val result =
+            AsyncApiGeneratorCli().test(
+                arrayOf("--generate-completion", "zsh"),
+            )
+
+        assertEquals(0, result.statusCode, result.output)
+        assertTrue(result.stdout.contains("asyncapi-generator"))
+        assertTrue(result.stdout.contains("--generator-name"))
+        assertTrue(result.stdout.contains("--topic-parameter-property"))
     }
 
     @Test

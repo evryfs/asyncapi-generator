@@ -5,6 +5,7 @@ import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
+import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
@@ -35,6 +36,9 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     .`package`
                     .implementationVersion
                     ?: "development",
+        )
+        completionOption(
+            help = "Generate a completion script for Bash, Zsh, or Fish.",
         )
     }
 
