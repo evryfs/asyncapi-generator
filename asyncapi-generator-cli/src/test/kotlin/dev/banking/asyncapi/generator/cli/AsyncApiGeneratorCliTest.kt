@@ -27,6 +27,7 @@ class AsyncApiGeneratorCliTest {
         assertTrue(help.contains("Clients"))
         assertTrue(help.contains("--generator-name"))
         assertTrue(help.contains("--topic-parameter-property"))
+        assertTrue(help.contains("--version"))
         assertTrue(help.contains("Generate Kotlin models and Spring Kafka contracts"))
     }
 

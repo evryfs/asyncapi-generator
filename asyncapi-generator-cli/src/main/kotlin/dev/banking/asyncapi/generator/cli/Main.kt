@@ -6,6 +6,7 @@ import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
@@ -26,6 +27,16 @@ fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
  */
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     override val printHelpOnEmptyArgs: Boolean = true
+
+    init {
+        versionOption(
+            version =
+                AsyncApiGeneratorCli::class.java
+                    .`package`
+                    .implementationVersion
+                    ?: "development",
+        )
+    }
 
     private val generationOptions by CliGenerationOptions()
     private val outputOptions by CliOutputOptions()

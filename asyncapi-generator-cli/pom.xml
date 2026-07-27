@@ -105,6 +105,7 @@
                 <configuration>
                     <systemPropertyVariables>
                         <asyncapi.generator.cli.jar>${project.build.directory}/${project.build.finalName}.jar</asyncapi.generator.cli.jar>
+                        <asyncapi.generator.cli.version>${project.version}</asyncapi.generator.cli.version>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -123,6 +124,10 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>dev.banking.asyncapi.generator.cli.MainKt</mainClass>
+                                    <manifestEntries>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                             <filters>

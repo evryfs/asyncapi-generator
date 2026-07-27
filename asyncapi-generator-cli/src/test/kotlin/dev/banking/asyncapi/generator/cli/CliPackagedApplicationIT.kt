@@ -18,13 +18,24 @@ import kotlin.test.assertTrue
 class CliPackagedApplicationIT {
 
     @Test
+    fun `should report the packaged CLI version`() {
+        val result = PackagedCliFixture.run("--version")
+
+        assertEquals(0, result.exitCode)
+        assertEquals(
+            "asyncapi-generator version ${PackagedCliFixture.expectedVersion}",
+            result.stdout.trim(),
+        )
+    }
+
+    @Test
     fun `should expose command help from the packaged CLI`() {
         val result = PackagedCliFixture.run("--help")
 
         assertEquals(0, result.exitCode)
-        assertTrue(result.output.contains("Usage: asyncapi-generator"))
-        assertTrue(result.output.contains("--input-spec"))
-        assertTrue(result.output.contains("--generator-name"))
+        assertTrue(result.stdout.contains("Usage: asyncapi-generator"))
+        assertTrue(result.stdout.contains("--input-spec"))
+        assertTrue(result.stdout.contains("--generator-name"))
     }
 
     @Test
@@ -43,7 +54,7 @@ class CliPackagedApplicationIT {
             )
 
         assertEquals(0, result.exitCode, result.output)
-        assertTrue(result.output.contains("Generation complete."))
+        assertTrue(result.stdout.contains("Generation complete."))
         assertTrue(outputFile.exists())
         assertTrue(outputFile.readText().startsWith("asyncapi:"))
     }
@@ -64,9 +75,9 @@ class CliPackagedApplicationIT {
             )
 
         assertEquals(1, result.exitCode)
-        assertTrue(result.output.contains("Malformed input document: ${inputFile.absolutePath}"))
-        assertFalse(result.output.contains("DocumentReadException"))
-        assertFalse(result.output.contains("\tat "))
+        assertTrue(result.stderr.contains("Malformed input document: ${inputFile.absolutePath}"))
+        assertFalse(result.stderr.contains("DocumentReadException"))
+        assertFalse(result.stderr.contains("\tat "))
         assertFalse(outputFile.exists())
     }
 }

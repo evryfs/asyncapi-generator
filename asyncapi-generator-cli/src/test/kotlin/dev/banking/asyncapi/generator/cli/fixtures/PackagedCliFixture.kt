@@ -11,6 +11,12 @@ import java.util.concurrent.TimeUnit
  */
 internal object PackagedCliFixture {
 
+    val expectedVersion: String
+        get() =
+            requireNotNull(System.getProperty(CLI_VERSION_PROPERTY)) {
+                "Missing packaged CLI system property: $CLI_VERSION_PROPERTY"
+            }
+
     fun run(vararg arguments: String): PackagedCliResult {
         val executableJar =
             File(
@@ -22,24 +28,34 @@ internal object PackagedCliFixture {
             "Packaged CLI does not exist: ${executableJar.absolutePath}"
         }
 
-        val process =
-            ProcessBuilder(
-                javaExecutable().absolutePath,
-                "-jar",
-                executableJar.absolutePath,
-                *arguments,
-            ).redirectErrorStream(true)
-                .start()
+        val standardOutput = File.createTempFile("asyncapi-generator-cli-", ".stdout")
+        val standardError = File.createTempFile("asyncapi-generator-cli-", ".stderr")
 
-        if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-            process.destroyForcibly()
-            error("Packaged CLI did not finish within $PROCESS_TIMEOUT_SECONDS seconds")
+        try {
+            val process =
+                ProcessBuilder(
+                    javaExecutable().absolutePath,
+                    "-jar",
+                    executableJar.absolutePath,
+                    *arguments,
+                ).redirectOutput(standardOutput)
+                    .redirectError(standardError)
+                    .start()
+
+            if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                process.destroyForcibly()
+                error("Packaged CLI did not finish within $PROCESS_TIMEOUT_SECONDS seconds")
+            }
+
+            return PackagedCliResult(
+                exitCode = process.exitValue(),
+                stdout = standardOutput.readText(),
+                stderr = standardError.readText(),
+            )
+        } finally {
+            standardOutput.delete()
+            standardError.delete()
         }
-
-        return PackagedCliResult(
-            exitCode = process.exitValue(),
-            output = process.inputStream.bufferedReader().use { reader -> reader.readText() },
-        )
     }
 
     private fun javaExecutable(): File =
@@ -49,6 +65,7 @@ internal object PackagedCliFixture {
         )
 
     private const val CLI_JAR_PROPERTY = "asyncapi.generator.cli.jar"
+    private const val CLI_VERSION_PROPERTY = "asyncapi.generator.cli.version"
     private const val PROCESS_TIMEOUT_SECONDS = 60L
 }
 
@@ -57,5 +74,9 @@ internal object PackagedCliFixture {
  */
 internal data class PackagedCliResult(
     val exitCode: Int,
-    val output: String,
-)
+    val stdout: String,
+    val stderr: String,
+) {
+    val output: String
+        get() = stdout + stderr
+}
