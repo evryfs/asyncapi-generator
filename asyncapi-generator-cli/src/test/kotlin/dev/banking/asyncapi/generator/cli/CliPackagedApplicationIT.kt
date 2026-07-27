@@ -158,6 +158,74 @@ class CliPackagedApplicationIT {
     }
 
     @Test
+    fun `should generate native Avro output through the packaged CLI`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
+        val outputDirectory = tempDir.resolve("generated").toFile()
+
+        val result =
+            PackagedCliFixture.run(
+                "--input-spec",
+                inputFile.absolutePath,
+                "--generator-name",
+                "java",
+                "--output-directory",
+                outputDirectory.absolutePath,
+                "--model-package",
+                "com.example.avro",
+                "--schema-package",
+                "com.example.avro.schema",
+                "--model-type",
+                "avro-specific-record",
+            )
+
+        assertEquals(0, result.exitCode, result.output)
+        val schemaFile = outputDirectory.resolve("com/example/avro/schema/UserCreated.avsc")
+        val specificRecordFile = outputDirectory.resolve("com/example/avro/UserCreated.java")
+
+        assertTrue(schemaFile.isFile)
+        assertTrue(schemaFile.readText().contains("\"type\" : \"record\""))
+        assertTrue(specificRecordFile.isFile)
+        assertTrue(
+            specificRecordFile.readText()
+                .contains("extends org.apache.avro.specific.SpecificRecordBase"),
+        )
+    }
+
+    @Test
+    fun `should generate native Protobuf output through the packaged CLI`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
+        val outputDirectory = tempDir.resolve("generated").toFile()
+
+        val result =
+            PackagedCliFixture.run(
+                "--input-spec",
+                inputFile.absolutePath,
+                "--generator-name",
+                "kotlin",
+                "--output-directory",
+                outputDirectory.absolutePath,
+                "--model-package",
+                "com.example.protobuf",
+                "--schema-package",
+                "com.example.protobuf.schema",
+                "--model-type",
+                "protobuf-message",
+            )
+
+        assertEquals(0, result.exitCode, result.output)
+        val schemaFile = outputDirectory.resolve("com/example/protobuf/schema/UserCreated.proto")
+        val javaMessageFile = outputDirectory.resolve("com/example/protobuf/UserCreated.java")
+        val kotlinDslFile = outputDirectory.resolve("com/example/protobuf/UserCreatedKt.kt")
+
+        assertTrue(schemaFile.isFile)
+        assertTrue(schemaFile.readText().contains("message UserCreated"))
+        assertTrue(javaMessageFile.isFile)
+        assertTrue(javaMessageFile.readText().contains("public final class UserCreated"))
+        assertTrue(kotlinDslFile.isFile)
+        assertTrue(kotlinDslFile.readText().contains("public object UserCreatedKt"))
+    }
+
+    @Test
     fun `should return a failure status for malformed input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-malformed.yaml")
         val outputFile = tempDir.resolve("should-not-be-generated.yaml").toFile()
