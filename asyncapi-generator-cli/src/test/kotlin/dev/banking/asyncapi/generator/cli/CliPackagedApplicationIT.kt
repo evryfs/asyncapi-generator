@@ -99,6 +99,64 @@ class CliPackagedApplicationIT {
     }
 
     @Test
+    fun `should generate complete Spring Kafka output through the packaged CLI`(@TempDir tempDir: Path) {
+        val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
+        val outputDirectory = tempDir.resolve("generated").toFile()
+
+        val result =
+            PackagedCliFixture.run(
+                "--input-spec",
+                inputFile.absolutePath,
+                "--generator-name",
+                "kotlin",
+                "--output-directory",
+                outputDirectory.absolutePath,
+                "--model-package",
+                "com.example.cli.model",
+                "--client-package",
+                "com.example.cli.client",
+                "--model-annotation",
+                "com.example.codegen.GeneratedPayload",
+                "--model-type",
+                "kotlin-data-class",
+                "--client-type",
+                "spring-kafka",
+                "--client-contract",
+                "interface",
+                "--generate-producer",
+                "--generate-consumer",
+                "--topic-parameter-property",
+                "environment=kafka.environment",
+                "--client-contract-validation-annotation",
+                "org.springframework.validation.annotation.Validated",
+                "--payload-parameter-validation-annotation",
+                "jakarta.validation.Valid",
+            )
+
+        assertEquals(0, result.exitCode, result.output)
+        val model =
+            outputDirectory.resolve("com/example/cli/model/MyAccountUpdatedPayload.kt")
+                .readText()
+        val producer =
+            outputDirectory.resolve("com/example/cli/client/producer/MyAccountUpdatedProducer.kt")
+                .readText()
+        val consumer =
+            outputDirectory.resolve("com/example/cli/client/consumer/MyAccountUpdatedConsumer.kt")
+                .readText()
+
+        assertTrue(model.contains("import com.example.codegen.GeneratedPayload"))
+        assertTrue(model.contains("@GeneratedPayload"))
+        assertTrue(producer.contains("@Validated"))
+        assertTrue(producer.contains("@Valid"))
+        assertTrue(producer.contains("fun sendMyAccountUpdated("))
+        assertTrue(producer.contains("CompletableFuture<RecordMetadata>"))
+        assertTrue(consumer.contains("@Validated"))
+        assertTrue(consumer.contains("@Valid"))
+        assertTrue(consumer.contains("fun listenMyAccountUpdated("))
+        assertTrue(consumer.contains("my.accounts.\\${'$'}{kafka.environment}.updated.v1"))
+    }
+
+    @Test
     fun `should return a failure status for malformed input`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-malformed.yaml")
         val outputFile = tempDir.resolve("should-not-be-generated.yaml").toFile()
