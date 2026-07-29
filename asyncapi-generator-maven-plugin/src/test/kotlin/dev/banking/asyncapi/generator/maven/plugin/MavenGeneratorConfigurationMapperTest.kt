@@ -76,6 +76,37 @@ class MavenGeneratorConfigurationMapperTest {
     }
 
     @Test
+    fun `rejects Spring Kafka configuration with both contracts disabled`() {
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                mapConfiguration(
+                    generatorName = "kotlin",
+                    modelPackage = "com.example.model",
+                    clientPackage = "com.example.client",
+                    clientConfig =
+                        MavenClientConfiguration().apply {
+                            clientType = "spring-kafka"
+                            clientContract = "interface"
+                            producer =
+                                MavenProducerConfiguration().apply {
+                                    enabled = false
+                                }
+                            consumer =
+                                MavenConsumerConfiguration().apply {
+                                    enabled = false
+                                }
+                        },
+                )
+            }
+
+        assertEquals(
+            "Spring Kafka client generation requires at least one enabled contract: " +
+                "producer.enabled or consumer.enabled",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `rejects schema package when selected outputs do not generate schemas`() {
         val exception =
             assertThrows<IllegalArgumentException> {

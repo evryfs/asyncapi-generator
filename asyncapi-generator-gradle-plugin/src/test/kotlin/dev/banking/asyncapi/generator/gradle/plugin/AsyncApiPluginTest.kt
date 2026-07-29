@@ -474,7 +474,7 @@ class AsyncApiPluginTest {
     }
 
     @Test
-    fun `generates Kotlin Spring Kafka clients`() {
+    fun `generates Kotlin Spring Kafka clients independently of operation actions`() {
         val projectDirectory = testProject()
         copyResource(projectDirectory, "asyncapi_kafka_complex.yaml")
         GradleTestHelper.writeBuildScript(
@@ -496,11 +496,14 @@ class AsyncApiPluginTest {
         val result = GradleTestHelper.runGradle(projectDirectory, "generateAsyncApi")
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(File(projectDirectory, "build/generated/client/com/example/kafka/client").isDirectory)
+        assertGeneratedClientContracts(
+            projectDirectory = projectDirectory,
+            extension = "kt",
+        )
     }
 
     @Test
-    fun `generates Java Spring Kafka clients`() {
+    fun `generates Java Spring Kafka clients independently of operation actions`() {
         val projectDirectory = testProject()
         copyResource(projectDirectory, "asyncapi_kafka_complex.yaml")
         GradleTestHelper.writeBuildScript(
@@ -522,7 +525,10 @@ class AsyncApiPluginTest {
         val result = GradleTestHelper.runGradle(projectDirectory, "generateAsyncApi")
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":generateAsyncApi")?.outcome)
-        assertTrue(File(projectDirectory, "build/generated/client/com/example/kafka/client").isDirectory)
+        assertGeneratedClientContracts(
+            projectDirectory = projectDirectory,
+            extension = "java",
+        )
     }
 
     @Test
@@ -803,6 +809,28 @@ class AsyncApiPluginTest {
             clientContract.set("interface")
         }
         """
+
+    private fun assertGeneratedClientContracts(
+        projectDirectory: File,
+        extension: String,
+    ) {
+        val clientDirectory =
+            File(
+                projectDirectory,
+                "build/generated/client/com/example/kafka/client",
+            )
+        listOf(
+            "producer/UserSignedUpProducer.$extension",
+            "consumer/UserSignedUpConsumer.$extension",
+            "producer/UserLoggedOutProducer.$extension",
+            "consumer/UserLoggedOutConsumer.$extension",
+        ).forEach { relativePath ->
+            assertTrue(
+                clientDirectory.resolve(relativePath).isFile,
+                "Expected channel-driven client contract: $relativePath",
+            )
+        }
+    }
 
     private fun kotlinBuildScript(
         executionName: String,
