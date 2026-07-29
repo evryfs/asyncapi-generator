@@ -24,34 +24,7 @@ class ChannelAnalyzerTest {
     private val analyzer = ChannelAnalyzer()
 
     @Test
-    fun `should default to both producer and consumer if no operations`() {
-        val channel = Channel(
-            messages = mapOf(
-                "msg" to MessageInterface.MessageInline(
-                    Message(
-                        name = "MyMessage",
-                        payload = SchemaInterface.SchemaInline(
-                            Schema(title = "MyPayload", type = "object")
-                        )
-                    )
-                )
-            )
-        )
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel))
-        )
-
-        val result = analyzer.analyze(doc)
-        val analyzed = result.channels.first()
-
-        assertTrue(analyzed.isProducer, "Should be producer")
-        assertTrue(analyzed.isConsumer, "Should be consumer")
-    }
-
-    @Test
-    fun `should respect send operation as producer`() {
+    fun `should analyze channel contracts independently of operations`() {
         val channelObj = Channel(
             messages = mapOf(
                 "msg" to MessageInterface.MessageInline(
@@ -78,11 +51,10 @@ class ChannelAnalyzerTest {
             operations = mapOf("myOp" to OperationInterface.OperationInline(op))
         )
 
-        val result = analyzer.analyze(doc)
-        val analyzed = result.channels.first()
+        val withoutOperations = analyzer.analyze(doc.copy(operations = null))
+        val withSendOperation = analyzer.analyze(doc)
 
-        assertTrue(analyzed.isProducer, "Should be producer")
-        assertEquals(false, analyzed.isConsumer, "Should NOT be consumer")
+        assertEquals(withoutOperations, withSendOperation)
     }
 
     @Test

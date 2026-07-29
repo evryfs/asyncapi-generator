@@ -51,8 +51,6 @@ class KafkaKeyModelSelectorTest {
                         AnalyzedChannel(
                             channelName = "accountEvents",
                             topic = "accounts.events",
-                            isProducer = true,
-                            isConsumer = true,
                             messages = emptyList(),
                             multiFormatMessages =
                                 listOf(
@@ -83,8 +81,6 @@ class KafkaKeyModelSelectorTest {
                         AnalyzedChannel(
                             channelName = "accountEvents",
                             topic = "accounts.events",
-                            isProducer = true,
-                            isConsumer = true,
                             messages = emptyList(),
                             multiFormatMessages =
                                 listOf(

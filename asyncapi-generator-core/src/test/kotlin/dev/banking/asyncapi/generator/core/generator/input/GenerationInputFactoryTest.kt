@@ -25,8 +25,6 @@ class GenerationInputFactoryTest {
         val channel = input.channels.single()
         assertEquals("userEvents", channel.channelName)
         assertEquals("user.events", channel.topic)
-        assertTrue(channel.isProducer)
-        assertTrue(channel.isConsumer)
         assertEquals("UserCreated", channel.messages.single().messageName)
         assertEquals("UserCreatedPayload", channel.messages.single().payloadTypeName)
     }

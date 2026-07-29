@@ -409,8 +409,6 @@ class GenerationInputCompatibilityValidatorTest {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "users",
-                        isProducer = true,
-                        isConsumer = true,
                         messages = emptyList(),
                         multiFormatMessages =
                             listOf(
