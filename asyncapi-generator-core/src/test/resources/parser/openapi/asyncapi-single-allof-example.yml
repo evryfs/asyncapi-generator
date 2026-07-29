@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: Something
+  version: 1.0.0
+  tags:
+    - name: "Something"
+
+channels:
+  someEvents:
+    messages:
+      EventMessage:
+        $ref: '#/components/messages/EventMessage'
+components:
+  messages:
+    EventMessage:
+      name: EventMessage
+      payload:
+        allOf:
+          - $ref: './common-components.yml#/components/schemas/BaseMessage'
+          - type: object
+            properties:
+              message:
+                $ref: "./openapi-example-nested.yml#/components/schemas/Message"
+            required:
+              - id
+              - actionType
+              - entityType
+              - initiatedBy
+              - eventDateTime
+              - message

@@ -1,0 +1,24 @@
+openapi: 3.0.0
+info:
+  title: example-nested-common
+  version: 0.0.1
+  description: something
+servers:
+  - url: 'http://localhost:8080'
+paths: { }
+components:
+  schemas:
+    Message:
+      type: object
+      title: Message
+      properties:
+        text:
+          type: string
+        actionType:
+          $ref: "#/components/schemas/ActionType"
+    ActionType:
+      title: ActionType
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
