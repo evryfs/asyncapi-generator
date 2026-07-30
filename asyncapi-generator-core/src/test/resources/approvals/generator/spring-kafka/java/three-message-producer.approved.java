@@ -67,10 +67,8 @@ public interface MyAccountLifecycleProducer {
      * overrides this method.
      *
      * @param payload Details about a newly created account.
-     * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
@@ -95,10 +93,8 @@ public interface MyAccountLifecycleProducer {
      *
      * @param payload Details about an account update.
      * @param messageKey Numeric identifier of the updated account.
-     * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
@@ -124,10 +120,8 @@ public interface MyAccountLifecycleProducer {
      *
      * @param payload Details about a closed account.
      * @param messageKey Identifies a particular account closure.
-     * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */

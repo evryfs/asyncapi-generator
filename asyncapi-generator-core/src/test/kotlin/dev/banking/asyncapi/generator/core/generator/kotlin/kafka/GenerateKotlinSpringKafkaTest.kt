@@ -112,18 +112,22 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertTrue(consumerContent.contains("correlationId: String? = null"))
         assertTrue(consumerContent.contains("applicationInstanceId: String? = null"))
+        assertTrue(consumerContent.contains("schemaVersion: String? = null"))
         assertTrue(
             consumerContent.contains(
-                "@param [correlationId] Value bound from the `correlationId` Kafka message header.",
+                "@param [correlationId] Correlation ID set by application",
             ),
         )
-        assertTrue(consumerContent.contains("Correlation ID set by application"))
         assertTrue(
             consumerContent.contains(
-                "@param [applicationInstanceId] Value bound from the `applicationInstanceId` Kafka message header.",
+                "@param [applicationInstanceId] Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(consumerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            consumerContent.contains(
+                "@param [schemaVersion] Value of the `schemaVersion` Kafka message header.",
+            ),
+        )
         assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
@@ -139,18 +143,22 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(producerContent.contains("KafkaHeaders.KEY"))
         assertTrue(producerContent.contains("correlationId: String? = null"))
         assertTrue(producerContent.contains("applicationInstanceId: String? = null"))
+        assertTrue(producerContent.contains("schemaVersion: String? = null"))
         assertTrue(
             producerContent.contains(
-                "@param [correlationId] Value for the `correlationId` Kafka message header.",
+                "@param [correlationId] Correlation ID set by application",
             ),
         )
-        assertTrue(producerContent.contains("Correlation ID set by application"))
         assertTrue(
             producerContent.contains(
-                "@param [applicationInstanceId] Value for the `applicationInstanceId` Kafka message header.",
+                "@param [applicationInstanceId] Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(producerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            producerContent.contains(
+                "@param [schemaVersion] Value of the `schemaVersion` Kafka message header.",
+            ),
+        )
         assertFalse(producerContent.contains("record.headers().add"))
     }
 

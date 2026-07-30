@@ -76,9 +76,8 @@ interface MyAccountUpdatedConsumer {
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
      * @param [receivedKey] Identifies an account within an institution.
-     * @param [X_EXAMPLE_CORRELATION_ID] Value bound from the `X-EXAMPLE-CORRELATION-ID` Kafka message header. Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Value bound from the `X-EXAMPLE-SOURCE-SYSTEM` Kafka message header. Optional name of the system that produced the
-     *   message.
+     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
+     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
      */
     fun listenMyAccountUpdated(
         @Payload

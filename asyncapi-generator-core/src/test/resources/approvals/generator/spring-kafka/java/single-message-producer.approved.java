@@ -95,10 +95,8 @@ public interface MyAccountUpdatedProducer {
      *
      * @param payload Details about an account update.
      * @param messageKey Identifies an account within an institution.
-     * @param X_EXAMPLE_CORRELATION_ID Value for the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value for the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Implementations must add this value to the outgoing
-     * Kafka record. Optional name of the system that produced the message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */

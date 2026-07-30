@@ -118,19 +118,23 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("receivedKey"))
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertTrue(consumerContent.contains("@Nullable String correlationId,"))
-        assertTrue(consumerContent.contains("@Nullable String applicationInstanceId"))
+        assertTrue(consumerContent.contains("@Nullable String applicationInstanceId,"))
+        assertTrue(consumerContent.contains("@Nullable String schemaVersion"))
         assertTrue(
             consumerContent.contains(
-                "@param correlationId Value bound from the {@code correlationId} Kafka message header.",
+                "@param correlationId Correlation ID set by application",
             ),
         )
-        assertTrue(consumerContent.contains("Correlation ID set by application"))
         assertTrue(
             consumerContent.contains(
-                "@param applicationInstanceId Value bound from the {@code applicationInstanceId} Kafka message header.",
+                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(consumerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            consumerContent.contains(
+                "@param schemaVersion Value of the {@code schemaVersion} Kafka message header.",
+            ),
+        )
         assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
@@ -146,19 +150,23 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders;"))
         assertFalse(producerContent.contains("KafkaHeaders.KEY"))
         assertTrue(producerContent.contains("@Nullable String correlationId,"))
-        assertTrue(producerContent.contains("@Nullable String applicationInstanceId"))
+        assertTrue(producerContent.contains("@Nullable String applicationInstanceId,"))
+        assertTrue(producerContent.contains("@Nullable String schemaVersion"))
         assertTrue(
             producerContent.contains(
-                "@param correlationId Value for the {@code correlationId} Kafka message header.",
+                "@param correlationId Correlation ID set by application",
             ),
         )
-        assertTrue(producerContent.contains("Correlation ID set by application"))
         assertTrue(
             producerContent.contains(
-                "@param applicationInstanceId Value for the {@code applicationInstanceId} Kafka message header.",
+                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(producerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            producerContent.contains(
+                "@param schemaVersion Value of the {@code schemaVersion} Kafka message header.",
+            ),
+        )
         assertFalse(producerContent.contains("record.headers().add"))
     }
 

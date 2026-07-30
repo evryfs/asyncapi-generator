@@ -66,7 +66,7 @@ class KotlinSpringKafkaModelFactory(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
                                 typeName = header.kotlinTypeName + if (header.nullable) "?" else "",
-                                description = header.consumerDescription(),
+                                description = header.parameterDescription(),
                                 required = header.required,
                                 defaultValue = if (header.required) null else "null",
                             )
@@ -145,7 +145,7 @@ class KotlinSpringKafkaModelFactory(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
                                 typeName = header.kotlinTypeName + if (header.nullable) "?" else "",
-                                description = header.producerDescription(),
+                                description = header.parameterDescription(),
                                 required = header.required,
                                 defaultValue = if (header.required) null else "null",
                                 bindingAnnotation =
@@ -269,22 +269,11 @@ class KotlinSpringKafkaModelFactory(
     private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
         copy(headerProperties = KafkaHeaderPropertyFactory.create(headers, messageName))
 
-    private fun KafkaHeaderProperty.consumerDescription(): List<String> =
-        toKDocLines(
-            buildString {
-                append("Value bound from the `$wireName` Kafka message header.")
-                description?.let { value -> append(" $value") }
-            },
-        )
-
-    private fun KafkaHeaderProperty.producerDescription(): List<String> =
-        toKDocLines(
-            buildString {
-                append("Value for the `$wireName` Kafka message header. ")
-                append("Implementations must add this value to the outgoing Kafka record.")
-                description?.let { value -> append(" $value") }
-            },
-        )
+    private fun KafkaHeaderProperty.parameterDescription(): List<String> =
+        description
+            ?.takeIf { value -> value.isNotBlank() }
+            ?.let(::toKDocLines)
+            ?: listOf("Value of the `$wireName` Kafka message header.")
 
     private fun KafkaKeyContract.toKotlinKeyParameter(
         parameterName: String,

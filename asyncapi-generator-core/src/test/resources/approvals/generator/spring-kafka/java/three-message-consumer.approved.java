@@ -78,10 +78,8 @@ public interface MyAccountLifecycleConsumer {
      *
      * @param payload Details about a newly created account.
      * @param receivedTopic Kafka topic from which the record was received.
-     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
-     *   messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
-     *   message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      */
     default void listenMyAccountCreated(
         @Payload @Valid MyAccountCreatedPayload payload,
@@ -101,10 +99,8 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about an account update.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Numeric identifier of the updated account.
-     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
-     *   messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
-     *   message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      */
     default void listenMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
@@ -125,10 +121,8 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about a closed account.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Identifies a particular account closure.
-     * @param X_EXAMPLE_CORRELATION_ID Value bound from the {@code X-EXAMPLE-CORRELATION-ID} Kafka message header. Identifier used to correlate related
-     *   messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Value bound from the {@code X-EXAMPLE-SOURCE-SYSTEM} Kafka message header. Optional name of the system that produced the
-     *   message.
+     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
+     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
      */
     default void listenMyAccountClosed(
         @Payload @Valid MyAccountClosedPayload payload,
