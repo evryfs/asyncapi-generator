@@ -1,0 +1,17 @@
+asyncapi: 3.0.0
+info:
+  title: Recursive Node Schemas
+  version: 1.0.0
+components:
+  schemas:
+    RecursiveNodePayload:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecursiveNodePayload"

@@ -118,19 +118,23 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(consumerContent.contains("receivedKey"))
         assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
         assertTrue(consumerContent.contains("@Nullable String correlationId,"))
-        assertTrue(consumerContent.contains("@Nullable String applicationInstanceId"))
+        assertTrue(consumerContent.contains("@Nullable String applicationInstanceId,"))
+        assertTrue(consumerContent.contains("@Nullable String schemaVersion"))
         assertTrue(
             consumerContent.contains(
-                "@param correlationId Value bound from the {@code correlationId} Kafka message header.",
+                "@param correlationId Correlation ID set by application",
             ),
         )
-        assertTrue(consumerContent.contains("Correlation ID set by application"))
         assertTrue(
             consumerContent.contains(
-                "@param applicationInstanceId Value bound from the {@code applicationInstanceId} Kafka message header.",
+                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(consumerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            consumerContent.contains(
+                "@param schemaVersion Value of the {@code schemaVersion} Kafka message header.",
+            ),
+        )
         assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
@@ -146,19 +150,23 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders;"))
         assertFalse(producerContent.contains("KafkaHeaders.KEY"))
         assertTrue(producerContent.contains("@Nullable String correlationId,"))
-        assertTrue(producerContent.contains("@Nullable String applicationInstanceId"))
+        assertTrue(producerContent.contains("@Nullable String applicationInstanceId,"))
+        assertTrue(producerContent.contains("@Nullable String schemaVersion"))
         assertTrue(
             producerContent.contains(
-                "@param correlationId Value for the {@code correlationId} Kafka message header.",
+                "@param correlationId Correlation ID set by application",
             ),
         )
-        assertTrue(producerContent.contains("Correlation ID set by application"))
         assertTrue(
             producerContent.contains(
-                "@param applicationInstanceId Value for the {@code applicationInstanceId} Kafka message header.",
+                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
             ),
         )
-        assertTrue(producerContent.contains("Unique identifier for a given instance"))
+        assertTrue(
+            producerContent.contains(
+                "@param schemaVersion Value of the {@code schemaVersion} Kafka message header.",
+            ),
+        )
         assertFalse(producerContent.contains("record.headers().add"))
     }
 
@@ -321,5 +329,42 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertTrue(producerContent.contains("@Payload UserCreatedProtobuf payload"))
         assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> sendUserCreatedProtobuf"))
+    }
+
+    @Test
+    fun `should generate models and clients from an externally referenced message payload`() {
+        val yaml = File("src/test/resources/generator/external-message-payload/main.yaml")
+        val modelPackage = "dev.banking.test.account.model"
+        val clientPackage = "dev.banking.test.account.client"
+        val outputDir = File("target/generated-sources/asyncapi-java-external-message")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-external-message")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+
+        generateElement(
+            yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+        )
+
+        val modelDir = outputDir.resolve("dev/banking/test/account/model")
+        val clientDir = outputDir.resolve("dev/banking/test/account/client")
+        val payload = modelDir.resolve("MyAccountCreatedV1Payload.java")
+        val details = modelDir.resolve("MyAccountDetails.java")
+        val producer = clientDir.resolve("producer/MyAccountCreatedProducer.java")
+        val consumer = clientDir.resolve("consumer/MyAccountCreatedConsumer.java")
+
+        assertTrue(payload.isFile, "Referenced payload model should be generated")
+        assertTrue(details.isFile, "Referenced supporting model should be generated")
+        assertTrue(payload.readText().contains("private String accountId;"))
+        assertTrue(payload.readText().contains("private MyAccountDetails details;"))
+        assertTrue(producer.isFile, "Producer contract should be generated")
+        assertTrue(consumer.isFile, "Consumer contract should be generated")
+        assertTrue(producer.readText().contains("MyAccountCreatedV1Payload payload"))
+        assertTrue(consumer.readText().contains("MyAccountCreatedV1Payload payload"))
     }
 }

@@ -67,7 +67,7 @@ class JavaSpringKafkaModelFactory(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
                                 typeName = header.javaTypeName,
-                                description = header.consumerDescription(),
+                                description = header.parameterDescription(),
                                 required = header.required,
                                 requiredAnnotation = if (header.nullable) null else "@NotNull",
                                 nullableAnnotation = if (header.nullable) "@Nullable" else null,
@@ -157,7 +157,7 @@ class JavaSpringKafkaModelFactory(
                                 wireName = header.wireName,
                                 parameterName = header.parameterName,
                                 typeName = header.javaTypeName,
-                                description = header.producerDescription(),
+                                description = header.parameterDescription(),
                                 required = header.required,
                                 requiredAnnotation = if (header.nullable) null else "@NotNull",
                                 nullableAnnotation = if (header.nullable) "@Nullable" else null,
@@ -322,22 +322,11 @@ class JavaSpringKafkaModelFactory(
     private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
         copy(headerProperties = KafkaHeaderPropertyFactory.create(headers, messageName))
 
-    private fun KafkaHeaderProperty.consumerDescription(): List<String> =
-        DocumentationUtils.toJavaDocLines(
-            buildString {
-                append("Value bound from the {@code $wireName} Kafka message header.")
-                description?.let { value -> append(" $value") }
-            },
-        )
-
-    private fun KafkaHeaderProperty.producerDescription(): List<String> =
-        DocumentationUtils.toJavaDocLines(
-            buildString {
-                append("Value for the {@code $wireName} Kafka message header. ")
-                append("Implementations must add this value to the outgoing Kafka record.")
-                description?.let { value -> append(" $value") }
-            },
-        )
+    private fun KafkaHeaderProperty.parameterDescription(): List<String> =
+        description
+            ?.takeIf { value -> value.isNotBlank() }
+            ?.let(DocumentationUtils::toJavaDocLines)
+            ?: listOf("Value of the {@code $wireName} Kafka message header.")
 
     private fun KafkaKeyContract.toJavaKeyParameter(
         parameterName: String,

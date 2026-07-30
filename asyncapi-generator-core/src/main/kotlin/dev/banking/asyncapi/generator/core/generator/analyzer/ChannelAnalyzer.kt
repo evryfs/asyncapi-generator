@@ -1,15 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class ChannelAnalyzer {
     fun analyze(document: AsyncApiDocument): ChannelAnalysisResult {
@@ -45,80 +40,50 @@ class ChannelAnalyzer {
         val analyzedMultiFormatMessages = mutableListOf<AnalyzedMultiFormatMessage>()
 
         messages.forEach { (messageId, msgInterface) ->
-            val message =
-                when (msgInterface) {
-                    is MessageInterface.MessageInline -> msgInterface.message
-                    is MessageInterface.MessageReference -> msgInterface.reference.model as? Message
-                } ?: return@forEach
-
-            var payloadSchema: Schema? = null
-            var multiFormatSchema: MultiFormatSchema? = null
-            var typeName: String? = null
+            val message = MessagePayloadResolver.resolveMessage(msgInterface) ?: return@forEach
             val messageName = MessageNameResolver.resolve(message, messageId)
-            val inlinePayloadTypeName =
-                if (messageName.endsWith("Payload")) {
-                    messageName
-                } else {
-                    "${messageName}Payload"
-                }
             val headers =
                 MessageHeaderAnalyzer.analyze(
                     message = message,
                 )
             val keySchema = message.kafkaKeySchema()
 
-            when (val p = message.payload) {
-                is SchemaInterface.SchemaInline -> {
-                    payloadSchema = p.schema
-                    typeName = inlinePayloadTypeName
-                }
-                is SchemaInterface.SchemaReference -> {
-                    typeName = MapperUtil.toPascalCase(p.reference.ref.substringAfterLast('/'))
-                    when (val referencedModel = p.reference.model) {
-                        is Schema -> payloadSchema = referencedModel
-                        is MultiFormatSchema -> multiFormatSchema = referencedModel
+            when (val payload = MessagePayloadResolver.resolvePayload(message, messageId)) {
+                is ResolvedMessagePayload.AsyncApi ->
+                    analyzedMessages.add(
+                        AnalyzedMessage(
+                            messageName = messageName,
+                            payloadTypeName = payload.typeName,
+                            schema = payload.schema,
+                            keySchema = keySchema,
+                            headers = headers,
+                            messageId = messageId,
+                        ),
+                    )
+                is ResolvedMessagePayload.MultiFormat ->
+                    analyzedMultiFormatMessages.add(
+                        AnalyzedMultiFormatMessage(
+                            messageName = messageName,
+                            payloadName = payload.typeName,
+                            schema = payload.schema,
+                            keySchema = keySchema,
+                            headers = headers,
+                            messageId = messageId,
+                        ),
+                    )
+                null ->
+                    if (message.payload == null) {
+                        analyzedMessages.add(
+                            AnalyzedMessage(
+                                messageName = messageName,
+                                payloadTypeName = null,
+                                schema = null,
+                                keySchema = keySchema,
+                                headers = headers,
+                                messageId = messageId,
+                            ),
+                        )
                     }
-                }
-                is SchemaInterface.MultiFormatSchemaInline -> {
-                    multiFormatSchema = p.multiFormatSchema
-                    typeName = inlinePayloadTypeName
-                }
-                else -> {}
-            }
-
-            if (payloadSchema != null) {
-                analyzedMessages.add(
-                    AnalyzedMessage(
-                        messageName = messageName,
-                        payloadTypeName = typeName,
-                        schema = payloadSchema,
-                        keySchema = keySchema,
-                        headers = headers,
-                        messageId = messageId,
-                    ),
-                )
-            } else if (message.payload == null) {
-                analyzedMessages.add(
-                    AnalyzedMessage(
-                        messageName = messageName,
-                        payloadTypeName = null,
-                        schema = null,
-                        keySchema = keySchema,
-                        headers = headers,
-                        messageId = messageId,
-                    ),
-                )
-            } else if (multiFormatSchema != null) {
-                analyzedMultiFormatMessages.add(
-                    AnalyzedMultiFormatMessage(
-                        messageName = messageName,
-                        payloadName = checkNotNull(typeName),
-                        schema = multiFormatSchema,
-                        keySchema = keySchema,
-                        headers = headers,
-                        messageId = messageId,
-                    ),
-                )
             }
         }
 

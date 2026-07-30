@@ -21,6 +21,8 @@ components:
           applicationInstanceId:
             description: Unique identifier for a given instance of the publishing application
             type: string
+          schemaVersion:
+            type: string
       payload:
         type: object
         properties:
