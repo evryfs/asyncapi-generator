@@ -10,10 +10,7 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageExample
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.*
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -67,7 +64,7 @@ fun lightMeasured() = Message(
     ),
 
     payload = SchemaInterface.SchemaReference(
-        Reference("#/components/schemas/lightMeasuredPayload", referenceCategoryKey = SCHEMA)
+        Reference("#/components/schemas/lightMeasuredPayload", referenceCategoryKey = COMPONENT)
     ),
 
     examples = listOf(
@@ -150,7 +147,7 @@ fun referencedMessage() = Reference(
 fun refPayloadMessage() = Message(
     name = "RefPayload",
     payload = SchemaInterface.SchemaReference(
-        Reference("#/components/schemas/MySchema", referenceCategoryKey = SCHEMA)
+        Reference("#/components/schemas/MySchema", referenceCategoryKey = COMPONENT)
     )
 )
 
