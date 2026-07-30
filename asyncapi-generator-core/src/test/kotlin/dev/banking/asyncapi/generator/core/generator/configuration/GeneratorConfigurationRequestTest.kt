@@ -12,7 +12,7 @@ class GeneratorConfigurationRequestTest {
                 enabled = false,
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = "record",
+                modelType = "java-record",
             ),
         )
 
@@ -20,12 +20,12 @@ class GeneratorConfigurationRequestTest {
             GeneratorConfigurationRequest.Models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = JavaModelType.RECORD,
+                modelType = ModelType.JAVA_RECORD,
             ),
             GeneratorConfigurationRequest.models(
                 packageName = "com.example.model",
                 annotation = "com.example.NoArg",
-                javaModelType = "record",
+                modelType = "java-record",
             ),
         )
     }
@@ -72,12 +72,8 @@ class GeneratorConfigurationRequestTest {
         assertNull(GeneratorConfigurationRequest.nativeProtobuf(enabled = false))
 
         assertEquals(
-            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = true),
+            GeneratorConfigurationRequest.NativeProtobuf,
             GeneratorConfigurationRequest.nativeProtobuf(enabled = true),
-        )
-        assertEquals(
-            GeneratorConfigurationRequest.NativeProtobuf(generateJavaMessageTypes = false),
-            GeneratorConfigurationRequest.nativeProtobuf(generateJavaMessageTypes = false),
         )
     }
 
@@ -134,10 +130,36 @@ class GeneratorConfigurationRequestTest {
         )
         assertEquals(
             GeneratorConfigurationRequest.KafkaSpringKafka(
+                topicParameterProperties = mapOf("environment" to "kafka.environment"),
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                topicParameterProperties = mapOf("environment" to "kafka.environment"),
+            ),
+        )
+
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
                 producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
             ),
             GeneratorConfigurationRequest.kafkaSpringKafka(
                 producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+            ),
+        )
+
+        val validationAnnotations =
+            ClientValidationAnnotations(
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
+                    ),
+            )
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaSpringKafka(
+                validationAnnotations = validationAnnotations,
+            ),
+            GeneratorConfigurationRequest.kafkaSpringKafka(
+                validationAnnotations = validationAnnotations,
             ),
         )
     }

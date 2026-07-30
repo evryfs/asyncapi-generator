@@ -1,0 +1,27 @@
+{
+  "type" : "object",
+  "required" : [ "accountId" ],
+  "properties" : {
+    "accountId" : {
+      "type" : [ "string", "null" ],
+      "default" : null
+    },
+    "address" : {
+      "$ref" : "Address.schema.json"
+    }
+  },
+  "$id" : "urn:example:my-account",
+  "$comment" : "Generated from the AsyncAPI account payload.",
+  "if" : {
+    "properties" : {
+      "accountId" : {
+        "type" : "string",
+        "pattern" : "^A"
+      }
+    }
+  },
+  "then" : {
+    "required" : [ "address" ]
+  },
+  "$schema" : "http://json-schema.org/draft-07/schema#"
+}

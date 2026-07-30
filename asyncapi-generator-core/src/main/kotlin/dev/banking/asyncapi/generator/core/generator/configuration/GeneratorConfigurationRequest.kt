@@ -14,10 +14,12 @@ import java.io.File
  * - `GeneratorConfigurationRequestTest`
  */
 data class GeneratorConfigurationRequest(
-    val language: GeneratorName,
+    val generatorName: GeneratorName,
     val sourceOutputDirectory: File,
     val resourceOutputDirectory: File,
     val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    val outputFile: File? = null,
+    val schemaPackageName: String? = null,
     val models: Models? = null,
     val schemas: Schemas = Schemas(),
     val clients: Clients = Clients(),
@@ -25,7 +27,7 @@ data class GeneratorConfigurationRequest(
     data class Models(
         val packageName: String? = null,
         val annotation: String? = null,
-        val javaModelType: JavaModelType = JavaModelType.CLASS,
+        val modelType: ModelType? = null,
     )
 
     data class Schemas(
@@ -42,9 +44,7 @@ data class GeneratorConfigurationRequest(
         val generateSpecificRecords: Boolean = true,
     )
 
-    data class NativeProtobuf(
-        val generateJavaMessageTypes: Boolean = true,
-    )
+    data object NativeProtobuf
 
     data class Clients(
         val kafka: Kafka? = null,
@@ -54,15 +54,13 @@ data class GeneratorConfigurationRequest(
     data class Kafka(
         val packageName: String? = null,
         val modelPackageName: String? = null,
-        val headers: KafkaHeaders = KafkaHeaders(),
         val springKafka: KafkaSpringKafka? = null,
     )
 
-    data class KafkaHeaders(
-        val enabled: Boolean = true,
-    )
-
     data class KafkaSpringKafka(
+        val clientContract: ClientContract = ClientContract.INTERFACE,
+        val topicParameterProperties: Map<String, String> = emptyMap(),
+        val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producer: KafkaProducer = KafkaProducer(),
         val consumer: KafkaConsumer = KafkaConsumer(),
     )
@@ -85,19 +83,24 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             annotation: String? = null,
-            javaModelType: String? = null,
+            modelType: String? = null,
         ): Models? =
             when {
                 enabled == false -> null
-                enabled == true || packageName != null || annotation != null || javaModelType != null ->
+                enabled == true ||
+                    packageName != null ||
+                    annotation != null ||
+                    modelType != null ->
                     Models(
                         packageName = packageName,
                         annotation = annotation,
-                        javaModelType =
-                            JavaModelType.fromConfigurationValue(
-                                value = javaModelType,
-                                path = "models.javaModelType",
-                            ),
+                        modelType =
+                            modelType?.let {
+                                ModelType.fromConfigurationValue(
+                                    value = it,
+                                    path = "modelConfig.modelType",
+                                )
+                            },
                     )
                 else -> null
             }
@@ -126,12 +129,10 @@ data class GeneratorConfigurationRequest(
 
         fun nativeProtobuf(
             enabled: Boolean? = null,
-            generateJavaMessageTypes: Boolean? = null,
         ): NativeProtobuf? =
             when {
                 enabled == false -> null
-                enabled == true || generateJavaMessageTypes != null ->
-                    NativeProtobuf(generateJavaMessageTypes = generateJavaMessageTypes ?: true)
+                enabled == true -> NativeProtobuf
                 else -> null
             }
 
@@ -139,7 +140,6 @@ data class GeneratorConfigurationRequest(
             enabled: Boolean? = null,
             packageName: String? = null,
             modelPackageName: String? = null,
-            headers: KafkaHeaders? = null,
             springKafka: KafkaSpringKafka? = null,
         ): Kafka? =
             when {
@@ -147,39 +147,43 @@ data class GeneratorConfigurationRequest(
                 enabled == true ||
                     packageName != null ||
                     modelPackageName != null ||
-                    headers != null ||
                     springKafka != null ->
                     Kafka(
                         packageName = packageName,
                         modelPackageName = modelPackageName,
-                        headers = headers ?: KafkaHeaders(),
                         springKafka = springKafka,
                     )
                 else -> null
             }
 
-        fun kafkaHeaders(enabled: Boolean? = null): KafkaHeaders? =
-            when (enabled) {
-                null -> null
-                else -> KafkaHeaders(enabled = enabled)
-            }
-
         fun kafkaSpringKafka(
             enabled: Boolean? = null,
+            clientContract: ClientContract = ClientContract.INTERFACE,
+            topicParameterProperties: Map<String, String> = emptyMap(),
+            validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
             producer: KafkaProducer? = null,
             consumer: KafkaConsumer? = null,
         ): KafkaSpringKafka? =
             when {
                 enabled == false -> null
-                enabled == true || producer != null || consumer != null ->
+                enabled == true ||
+                    topicParameterProperties.isNotEmpty() ||
+                    validationAnnotations != ClientValidationAnnotations() ||
+                    producer != null ||
+                    consumer != null ->
                     KafkaSpringKafka(
+                        clientContract = clientContract,
+                        topicParameterProperties = topicParameterProperties,
+                        validationAnnotations = validationAnnotations,
                         producer = producer ?: KafkaProducer(),
                         consumer = consumer ?: KafkaConsumer(),
                     )
                 else -> null
             }
 
-        fun kafkaProducer(enabled: Boolean? = null): KafkaProducer? =
+        fun kafkaProducer(
+            enabled: Boolean? = null,
+        ): KafkaProducer? =
             when (enabled) {
                 null -> null
                 else -> KafkaProducer(enabled = enabled)

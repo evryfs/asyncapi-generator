@@ -19,11 +19,14 @@ class NativeAvroArtifactGeneration {
         generationInput: GenerationInput,
         artifactWriter: GeneratedArtifactWriter,
     ) {
-        artifactWriter.write(
+        val result =
             nativeAvroGenerator.render(
                 schemas = generationInput.multiFormatSchemas,
                 generateSpecificRecords = task.generateSpecificRecords,
-            ),
+            ).inSchemaPackage(task.schemaPackageName)
+
+        artifactWriter.write(
+            result,
         )
     }
 }

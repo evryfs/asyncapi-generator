@@ -1,0 +1,20 @@
+asyncapi: '3.0.0'
+info:
+  title: Complete Maven Configuration Native Avro
+  version: '1.0.0'
+components:
+  schemas:
+    AccountSnapshot:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        type: record
+        name: AccountSnapshot
+        namespace: com.example.complete.avro
+        fields:
+          - name: accountId
+            type: string
+          - name: displayName
+            type:
+              - 'null'
+              - string
+            default: null

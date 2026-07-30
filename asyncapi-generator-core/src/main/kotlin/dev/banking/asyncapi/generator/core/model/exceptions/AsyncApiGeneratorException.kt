@@ -42,6 +42,135 @@ sealed class AsyncApiGeneratorException(
         }
     }
 
+    class InvalidKafkaHeaderName(
+        headerContractName: String,
+        wireName: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Kafka header generation failed for '$headerContractName'.")
+                appendLine("Header '$wireName' cannot be represented as a Java or Kotlin parameter.")
+                appendLine("Reason: $reason")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class KafkaHeaderParameterNameCollision(
+        headerContractName: String,
+        wireNames: List<String>,
+        parameterName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Kafka header generation failed for '$headerContractName'.")
+                appendLine(
+                    "Header names collide after source-parameter normalization: " +
+                        "${wireNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} -> '$parameterName'",
+                )
+                appendLine("Use distinct header names that remain unique after non-identifier characters are replaced with underscores.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class UnsupportedKafkaHeaderSchema(
+        headerContractName: String,
+        wireName: String,
+        schemaType: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for header contract '$headerContractName'.")
+                appendLine("Header '$wireName' uses unsupported schema type '$schemaType'.")
+                appendLine(
+                    "Generated Kafka header parameters support scalar string, integer, number, and boolean schemas.",
+                )
+                appendLine("Use a supported scalar schema for this message header.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class SpringKafkaClientMethodNameCollision(
+        channelName: String,
+        messageIds: List<String>,
+        generatedMessageName: String,
+        methodNames: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine(
+                    "Channel messages " +
+                        messageIds.joinToString(prefix = "[", postfix = "]") { "'$it'" } +
+                        " resolve to generated message name '$generatedMessageName'.",
+                )
+                appendLine(
+                    "Each of these client methods would be generated more than once: " +
+                        methodNames.joinToString(prefix = "[", postfix = "]") { "'$it'" },
+                )
+                appendLine(
+                    "Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted.",
+                )
+                appendLine("Names must remain unique after conversion to source-code identifiers.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class SpringKafkaClientChannelWithoutMessages(
+        channelName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine("The channel does not declare any messages.")
+                appendLine(
+                    "Declare at least one Message Object under channels.$channelName.messages " +
+                        "before generating client contracts.",
+                )
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class SpringKafkaClientContractNameCollision(
+        channelNames: List<String>,
+        generatedBaseName: String,
+        contractNames: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed because channel IDs collide after normalization.")
+                appendLine(
+                    "${channelNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} " +
+                        "resolve to generated contract base name '$generatedBaseName'.",
+                )
+                appendLine(
+                    "The following contracts would be written more than once: " +
+                        contractNames.joinToString(prefix = "[", postfix = "]") { "'$it'" },
+                )
+                appendLine(
+                    "Use channel IDs that remain unique after conversion to PascalCase source-code identifiers.",
+                )
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class UnsupportedKafkaKeySchema(
+        messageName: String,
+        schemaType: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for message '$messageName'.")
+                appendLine("The Kafka record key uses unsupported schema type '$schemaType'.")
+                appendLine(
+                    "Generated Kafka key parameters support scalar string, integer, number, and boolean schemas, " +
+                        "and object schemas represented by generated key models.",
+                )
+                appendLine("Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedPayloadSchemaFormat(
         output: String,
         payloadName: String,
@@ -52,6 +181,44 @@ sealed class AsyncApiGeneratorException(
                 appendLine("$output cannot consume payload '$payloadName' because it uses schemaFormat '$schemaFormat'.")
                 appendLine("This output currently supports AsyncAPI Schema Object payloads only.")
                 appendLine("Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class UnsupportedSchemaGenerationInput(
+        output: String,
+        payloadName: String,
+        inputFormat: String,
+        supportedInput: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output cannot consume payload '$payloadName' because it uses $inputFormat.")
+                appendLine("Supported input: $supportedInput.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class MissingSchemaGenerationInput(
+        output: String,
+        supportedInput: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output did not find any compatible schemas in the AsyncAPI document.")
+                appendLine("Supported input: $supportedInput.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class InvalidJsonSchema(
+        payloadName: String,
+        reason: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("JSON Schema generation failed for payload '$payloadName'.")
+                appendLine("Reason: $reason")
                 appendLine()
             }.trimEnd(),
         )
@@ -84,6 +251,36 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class NativeAvroModelPackageMismatch(
+        payloadName: String,
+        configuredPackage: String,
+        schemaNamespace: String?,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                val namespace = schemaNamespace ?: "<default package>"
+                appendLine()
+                appendLine("Native Avro model generation failed for payload '$payloadName'.")
+                appendLine(
+                    "Configured modelPackage '$configuredPackage' does not match " +
+                        "the Avro namespace '$namespace'.",
+                )
+                appendLine(
+                    "Apache Avro determines SpecificRecord packages from the schema namespace; " +
+                        "the generator cannot override it safely.",
+                )
+                if (schemaNamespace == null) {
+                    appendLine(
+                        "Add namespace '$configuredPackage' to the native Avro schema.",
+                    )
+                } else {
+                    appendLine(
+                        "Set modelPackage to '$schemaNamespace' or update the native Avro schema namespace.",
+                    )
+                }
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedNativeAvroPayloadType(
         payloadName: String,
         schemaFormat: String,
@@ -112,14 +309,15 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
-    class NativeProtobufJavaGenerationFailed(
+    class NativeProtobufModelGenerationFailed(
         payloadName: String,
         schemaFormat: String,
+        modelType: String,
         reason: String,
     ) : AsyncApiGeneratorException(
             buildString {
                 appendLine()
-                appendLine("Java Protobuf message generation failed for native Protobuf payload '$payloadName'.")
+                appendLine("Protobuf $modelType model generation failed for native Protobuf payload '$payloadName'.")
                 appendLine("The payload uses schemaFormat '$schemaFormat'.")
                 appendLine("Reason: $reason")
                 appendLine()

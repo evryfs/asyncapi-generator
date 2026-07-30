@@ -4,14 +4,36 @@ info:
   version: 1.0.0
 channels:
   userEvents:
-    address: user.events.v1
+    address: user.{environment}.events.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
     messages:
       UserSignedUp:
         $ref: "#/components/messages/UserSignedUp"
+  auditEvents:
+    address: audit.events.v1
+    messages:
+      AuditRecorded:
+        $ref: "#/components/messages/AuditRecorded"
+operations:
+  receiveAuditRecorded:
+    action: receive
+    channel:
+      $ref: "#/channels/auditEvents"
+    messages:
+      - $ref: "#/channels/auditEvents/messages/AuditRecorded"
 components:
   messages:
     UserSignedUp:
       name: UserSignedUp
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
+    AuditRecorded:
+      name: AuditRecorded
       payload:
         type: object
         properties:

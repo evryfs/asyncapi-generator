@@ -1,23 +1,35 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class GeneratorNameTest {
     @Test
-    fun `fromConfigurationValue defaults to kotlin when value is not configured`() {
-        assertEquals(
-            GeneratorName.KOTLIN,
-            GeneratorName.fromConfigurationValue(
-                value = null,
-                path = "generatorName",
-            ),
-        )
+    fun `fromConfigurationValue requires generator name`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorName.fromConfigurationValue(
+                    value = null,
+                    path = "generatorName",
+                )
+            }
+
+        assertEquals("generatorName is required", exception.message)
     }
 
     @Test
     fun `fromConfigurationValue parses supported configuration values`() {
+        assertEquals(
+            GeneratorName.JAVA,
+            GeneratorName.fromConfigurationValue(
+                value = "java",
+                path = "generatorName",
+            ),
+        )
         assertEquals(
             GeneratorName.KOTLIN,
             GeneratorName.fromConfigurationValue(
@@ -26,11 +38,79 @@ class GeneratorNameTest {
             ),
         )
         assertEquals(
-            GeneratorName.JAVA,
+            GeneratorName.AVRO_SCHEMA,
             GeneratorName.fromConfigurationValue(
-                value = "java",
+                value = "avro-schema",
                 path = "generatorName",
             ),
+        )
+        assertEquals(
+            GeneratorName.PROTOBUF_SCHEMA,
+            GeneratorName.fromConfigurationValue(
+                value = "protobuf-schema",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.JSON_SCHEMA,
+            GeneratorName.fromConfigurationValue(
+                value = "json-schema",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.ASYNCAPI_YAML,
+            GeneratorName.fromConfigurationValue(
+                value = "asyncapi-yaml",
+                path = "generatorName",
+            ),
+        )
+        assertEquals(
+            GeneratorName.ASYNCAPI_JSON,
+            GeneratorName.fromConfigurationValue(
+                value = "asyncapi-json",
+                path = "generatorName",
+            ),
+        )
+    }
+
+    @Test
+    fun `generator names expose typed source profiles`() {
+        assertEquals(
+            GeneratorProfile.Source(SourceLanguage.JAVA),
+            GeneratorName.JAVA.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Source(SourceLanguage.KOTLIN),
+            GeneratorName.KOTLIN.profile,
+        )
+    }
+
+    @Test
+    fun `schema generator names expose typed schema profiles`() {
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.AVRO),
+            GeneratorName.AVRO_SCHEMA.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.PROTOBUF),
+            GeneratorName.PROTOBUF_SCHEMA.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+            GeneratorName.JSON_SCHEMA.profile,
+        )
+    }
+
+    @Test
+    fun `document generator names expose typed document profiles`() {
+        assertEquals(
+            GeneratorProfile.Document(DocumentFormat.YAML),
+            GeneratorName.ASYNCAPI_YAML.profile,
+        )
+        assertEquals(
+            GeneratorProfile.Document(DocumentFormat.JSON),
+            GeneratorName.ASYNCAPI_JSON.profile,
         )
     }
 
@@ -45,7 +125,8 @@ class GeneratorNameTest {
             }
 
         assertEquals(
-            "Invalid generatorName 'python'. Supported values: kotlin, java",
+            "Invalid generatorName 'python'. Supported values: java, kotlin, avro-schema, protobuf-schema, " +
+                "json-schema, asyncapi-yaml, asyncapi-json",
             exception.message,
         )
     }

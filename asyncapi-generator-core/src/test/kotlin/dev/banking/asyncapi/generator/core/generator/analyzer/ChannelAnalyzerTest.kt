@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -22,34 +24,7 @@ class ChannelAnalyzerTest {
     private val analyzer = ChannelAnalyzer()
 
     @Test
-    fun `should default to both producer and consumer if no operations`() {
-        val channel = Channel(
-            messages = mapOf(
-                "msg" to MessageInterface.MessageInline(
-                    Message(
-                        name = "MyMessage",
-                        payload = SchemaInterface.SchemaInline(
-                            Schema(title = "MyPayload", type = "object")
-                        )
-                    )
-                )
-            )
-        )
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel))
-        )
-
-        val result = analyzer.analyze(doc)
-        val analyzed = result.channels.first()
-
-        assertTrue(analyzed.isProducer, "Should be producer")
-        assertTrue(analyzed.isConsumer, "Should be consumer")
-    }
-
-    @Test
-    fun `should respect send operation as producer`() {
+    fun `should analyze channel contracts independently of operations`() {
         val channelObj = Channel(
             messages = mapOf(
                 "msg" to MessageInterface.MessageInline(
@@ -76,11 +51,10 @@ class ChannelAnalyzerTest {
             operations = mapOf("myOp" to OperationInterface.OperationInline(op))
         )
 
-        val result = analyzer.analyze(doc)
-        val analyzed = result.channels.first()
+        val withoutOperations = analyzer.analyze(doc.copy(operations = null))
+        val withSendOperation = analyzer.analyze(doc)
 
-        assertTrue(analyzed.isProducer, "Should be producer")
-        assertEquals(false, analyzed.isConsumer, "Should NOT be consumer")
+        assertEquals(withoutOperations, withSendOperation)
     }
 
     @Test
@@ -113,19 +87,141 @@ class ChannelAnalyzerTest {
 
         val analyzed = analyzer.analyze(doc).channels.single().messages.single()
 
-        assertEquals("TopicUserEventsHeadersUserSignup", analyzed.headers?.typeName)
+        assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
+    }
+
+    @Test
+    fun `should keep message identity independent from title and referenced payload type`() {
+        val payloadSchema = Schema(type = "object")
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "accountUpdateAlias" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "AccountUpdatedV1",
+                                    title = "Human-readable account update",
+                                    headers =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "correlationId" to
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(type = "string"),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                    payload =
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "#/components/schemas/AccountChange",
+                                                model = payloadSchema,
+                                            ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
+            )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals("accountUpdateAlias", analyzed.messageId)
+        assertEquals("AccountUpdatedV1", analyzed.messageName)
+        assertEquals("AccountChange", analyzed.payloadTypeName)
+    }
+
+    @Test
+    fun `should preserve Kafka key schema from message binding`() {
+        val keySchema = Schema(type = "integer", format = "int64")
+        val channel = Channel(
+            messages = mapOf(
+                "AccountUpdated" to MessageInterface.MessageInline(
+                    Message(
+                        name = "AccountUpdated",
+                        payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                        bindings = kafkaKeyBinding(keySchema),
+                    ),
+                ),
+            ),
+        )
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info("Title", "1.0"),
+            channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
+        )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
+    }
+
+    @Test
+    fun `should preserve messages without a payload`() {
+        val keySchema = Schema(type = "string")
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "CacheInvalidatedV1" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "CacheInvalidatedV1",
+                                    headers =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "correlationId" to
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(type = "string"),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                    bindings = kafkaKeyBinding(keySchema),
+                                ),
+                            ),
+                    ),
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("cacheEvents" to ChannelInterface.ChannelInline(channel)),
+            )
+
+        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+
+        assertEquals("CacheInvalidatedV1", analyzed.messageName)
+        assertEquals(false, analyzed.hasPayload)
+        assertEquals(null, analyzed.payloadTypeName)
+        assertEquals(null, analyzed.schema)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
         assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
     }
 
     @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
+        val keySchema = Schema(type = "integer", format = "int64")
         val channel = Channel(
             messages = mapOf(
                 "msg" to MessageInterface.MessageInline(
                     Message(
                         name = "MyMessage",
                         payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                        bindings = kafkaKeyBinding(keySchema),
                     ),
                 ),
             ),
@@ -140,9 +236,11 @@ class ChannelAnalyzerTest {
 
         assertTrue(analyzed.messages.isEmpty())
         val multiFormatMessage = analyzed.multiFormatMessages.single()
+        assertEquals("msg", multiFormatMessage.messageId)
         assertEquals("MyMessage", multiFormatMessage.messageName)
         assertEquals("MyMessagePayload", multiFormatMessage.payloadName)
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), multiFormatMessage.keySchema)
     }
 
     @Test
@@ -182,5 +280,16 @@ class ChannelAnalyzerTest {
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema = mapOf("type" to "record", "name" to "UserCreated", "fields" to emptyList<Any>()),
+        )
+
+    private fun kafkaKeyBinding(schema: Schema): Map<String, BindingInterface> =
+        mapOf(
+            "kafka" to
+                BindingInterface.BindingInline(
+                    Binding(
+                        content = emptyMap(),
+                        kafkaKeySchema = SchemaInterface.SchemaInline(schema),
+                    ),
+                ),
         )
 }

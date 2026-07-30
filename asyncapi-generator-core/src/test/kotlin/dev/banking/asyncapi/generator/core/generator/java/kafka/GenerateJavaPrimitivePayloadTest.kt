@@ -20,8 +20,6 @@ class GenerateJavaPrimitivePayloadTest {
             AnalyzedChannel(
                 channelName = "simple/topic",
                 topic = "simple.topic.v1",
-                isProducer = true,
-                isConsumer = true,
                 messages =
                     listOf(
                         AnalyzedMessage(
@@ -43,40 +41,49 @@ class GenerateJavaPrimitivePayloadTest {
         assertTrue(consumerFile.exists(), "Consumer should be generated")
         val consumerContent = consumerFile.readText()
         assertTrue(
-            consumerContent.contains("void onSimpleStringMessage("),
+            consumerContent.contains("void listenSimpleStringMessage("),
             "Consumer should expose the contract method",
         )
         assertTrue(
-            consumerContent.contains("@Valid @NotNull String payload"),
+            consumerContent.contains("@Payload String payload"),
             "Consumer should expose the primitive payload type directly",
         )
-        assertTrue(consumerContent.contains("@Nullable String key"), "Consumer should expose the nullable Kafka record key")
-        assertFalse(consumerContent.contains("ConsumerRecord"), "Consumer contract should not own listener record mapping")
+        assertFalse(
+            consumerContent.contains("receivedKey"),
+            "Consumer should omit a key not declared by the contract",
+        )
+        assertFalse(
+            consumerContent.contains("ConsumerRecord"),
+            "Consumer contract should not own listener record mapping"
+        )
 
         val producerFile =
             outputDir.resolve(
-                packageName.replace(
-                    '.',
-                    '/'
-                ) + "/producer/SimpleTopicProducerSimpleStringMessage.java"
+                packageName.replace('.', '/') + "/producer/SimpleTopicProducer.java",
             )
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
         assertTrue(
-            producerContent.contains("interface SimpleTopicProducerSimpleStringMessage"),
+            producerContent.contains("interface SimpleTopicProducer {"),
             "Producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContent.contains("@Valid @NotNull String payload"),
+            producerContent.contains("@Payload String payload"),
             "Producer should expose the primitive payload type directly",
         )
-        assertTrue(producerContent.contains("@NotNull String key"), "Producer should expose the Kafka record key")
-        assertFalse(producerContent.contains("KafkaTemplate"), "Producer contract should not own KafkaTemplate wiring")
-        assertFalse(producerContent.contains("CompletableFuture"), "Producer contract should not own send results")
+        assertFalse(producerContent.contains("messageKey"), "Producer should omit a key not declared by the contract")
+        assertFalse(
+            producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"),
+            "Producer contract should not own KafkaTemplate wiring",
+        )
+        assertTrue(
+            producerContent.contains("CompletableFuture<RecordMetadata> sendSimpleStringMessage("),
+            "Producer contract should expose the asynchronous send result",
+        )
     }
 
     @Test
-    fun `should generate one producer per payload for multiple messages`() {
+    fun `should generate one producer method per payload for multiple messages`() {
         val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive.multi"
         val stringSchema = Schema(type = "string")
@@ -85,8 +92,6 @@ class GenerateJavaPrimitivePayloadTest {
             AnalyzedChannel(
                 channelName = "multi/topic",
                 topic = "multi.topic.v1",
-                isProducer = true,
-                isConsumer = true,
                 messages =
                     listOf(
                         AnalyzedMessage(
@@ -108,31 +113,33 @@ class GenerateJavaPrimitivePayloadTest {
                 packageName,
             )
         generator.generate(listOf(channel))
-        val producerFileA =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerStringMessage.java")
-        val producerFileB =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducerIntMessage.java")
-        assertTrue(producerFileA.exists(), "StringMessage producer should be generated")
-        assertTrue(producerFileB.exists(), "IntMessage producer should be generated")
-        val producerContentA = producerFileA.readText()
-        val producerContentB = producerFileB.readText()
+        val producerFile =
+            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducer.java")
+        assertTrue(producerFile.exists(), "Channel producer should be generated")
+        val producerContent = producerFile.readText()
         assertTrue(
-            producerContentA.contains("interface MultiTopicProducerStringMessage"),
-            "StringMessage producer should be generated as a contract interface",
+            producerContent.contains("interface MultiTopicProducer {"),
+            "Channel producer should be generated as a contract interface",
         )
         assertTrue(
-            producerContentA.contains("@Valid @NotNull String payload"),
+            producerContent.contains("CompletableFuture<RecordMetadata> sendStringMessage("),
+            "StringMessage should have a dedicated producer method",
+        )
+        assertTrue(
+            producerContent.contains("@Payload String payload"),
             "StringMessage producer should expose the primitive payload type directly",
         )
         assertTrue(
-            producerContentB.contains("interface MultiTopicProducerIntMessage"),
-            "IntMessage producer should be generated as a contract interface",
+            producerContent.contains("CompletableFuture<RecordMetadata> sendIntMessage("),
+            "IntMessage should have a dedicated producer method",
         )
         assertTrue(
-            producerContentB.contains("@Valid @NotNull Integer payload"),
+            producerContent.contains("@Payload Integer payload"),
             "IntMessage producer should expose the primitive payload type directly",
         )
-        assertFalse(producerContentA.contains("KafkaTemplate"), "StringMessage producer should not own KafkaTemplate wiring")
-        assertFalse(producerContentB.contains("KafkaTemplate"), "IntMessage producer should not own KafkaTemplate wiring")
+        assertFalse(
+            producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"),
+            "Producer contract should not own KafkaTemplate wiring",
+        )
     }
 }

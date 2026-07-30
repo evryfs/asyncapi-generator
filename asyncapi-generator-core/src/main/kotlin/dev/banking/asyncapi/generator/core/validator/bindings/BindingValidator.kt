@@ -4,12 +4,14 @@ package dev.banking.asyncapi.generator.core.validator.bindings
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeAny
 
 class BindingValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
+    private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }
 
     private val protocolValidators = mapOf(
         "kafka" to KafkaBindingValidator(asyncApiContext)
@@ -17,6 +19,10 @@ class BindingValidator(
     )
 
     fun validate(binding: Binding, bindingName: String, results: ValidationResults) {
+        binding.kafkaKeySchema?.let { keySchema ->
+            schemaValidator.validateInterface(keySchema, "$bindingName Kafka key", results)
+        }
+
         if (binding.content.isEmpty()) {
             results.warn(
                 "$bindingName is empty — no protocol-specific binding properties are defined.",

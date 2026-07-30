@@ -6,8 +6,11 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 
 data class Schema(
+    @get:JsonProperty($$"$id")
     val id: String? = null, // is $id in JSON/Yaml Schema
+    @get:JsonProperty($$"$schema")
     val schema: String? = null, // is $schema in JSON/Yaml Schema
+    @get:JsonProperty($$"$comment")
     val comment: String? = null, // is $comment in JSON/Yaml Schema
     val title: String? = null,
     val description: String? = null,
@@ -59,7 +62,6 @@ data class Schema(
 
     val enum: List<Any?>? = null,
     val const: Any? = null,
-    val nullable: Boolean? = null,
     val readOnly: Boolean? = null,
     val writeOnly: Boolean? = null,
 

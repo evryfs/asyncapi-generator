@@ -56,6 +56,20 @@ class SchemaFormatTest {
     }
 
     @Test
+    fun `fromValue recognizes JSON Schema Draft 07 formats`() {
+        assertEquals(
+            SchemaFormat.JSON_SCHEMA_DRAFT_07_JSON,
+            SchemaFormat.fromValue(AsyncApiConstants.JSON_SCHEMA_DRAFT_07_JSON),
+        )
+        assertEquals(
+            SchemaFormat.JSON_SCHEMA_DRAFT_07_YAML,
+            SchemaFormat.fromValue(AsyncApiConstants.JSON_SCHEMA_DRAFT_07_YAML),
+        )
+        assertTrue(SchemaFormat.JSON_SCHEMA_DRAFT_07_JSON.isJsonSchemaDraft07)
+        assertTrue(SchemaFormat.JSON_SCHEMA_DRAFT_07_YAML.isJsonSchemaDraft07)
+    }
+
+    @Test
     fun `fromValue returns null for unknown schema format`() {
         assertNull(SchemaFormat.fromValue("application/unknown"))
     }

@@ -1,56 +1,19 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.operations.Operation
-import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class ChannelAnalyzer {
-    private data class ChannelUsage(
-        var isProducer: Boolean = false,
-        var isConsumer: Boolean = false,
-    )
-
     fun analyze(document: AsyncApiDocument): ChannelAnalysisResult {
         val channels = document.channels ?: return ChannelAnalysisResult(emptyList())
-        val operations = document.operations ?: emptyMap()
-
-        val channelUsage = mutableMapOf<String, ChannelUsage>()
-        channels.keys.forEach { name -> channelUsage[name] = ChannelUsage() }
-
-        operations.values.forEach { opInterface ->
-            val op =
-                when (opInterface) {
-                    is OperationInterface.OperationInline -> opInterface.operation
-                    is OperationInterface.OperationReference -> opInterface.reference.model as? Operation
-                } ?: return@forEach
-            val channelRef = op.channel ?: return@forEach
-            val targetChannelName =
-                channels.entries
-                    .find { (_, chInterface) ->
-                        val ch =
-                            if (chInterface is ChannelInterface.ChannelInline) {
-                                chInterface.channel
-                            } else {
-                                (chInterface as ChannelInterface.ChannelReference).reference.model
-                            }
-                        ch === channelRef.model
-                    }?.key ?: return@forEach
-
-            val usage = channelUsage[targetChannelName]!!
-            if (op.action == "send") {
-                usage.isProducer = true
-            } else if (op.action == "receive") {
-                usage.isConsumer = true
-            }
-        }
 
         val analyzedChannels =
             channels.mapNotNull { (name, chInterface) ->
@@ -60,16 +23,11 @@ class ChannelAnalyzer {
                         is ChannelInterface.ChannelReference -> chInterface.reference.model as? Channel
                     } ?: return@mapNotNull null
 
-                val usage = channelUsage[name]!!
-                val finalProducer = if (!usage.isProducer && !usage.isConsumer) true else usage.isProducer
-                val finalConsumer = if (!usage.isProducer && !usage.isConsumer) true else usage.isConsumer
                 val resolvedMessages = resolveMessages(channelName = name, messages = channel.messages)
 
                 AnalyzedChannel(
                     channelName = name,
                     topic = channel.address ?: name, // Fallback if address missing
-                    isProducer = finalProducer,
-                    isConsumer = finalConsumer,
                     messages = resolvedMessages.messages,
                     multiFormatMessages = resolvedMessages.multiFormatMessages,
                 )
@@ -86,7 +44,7 @@ class ChannelAnalyzer {
         val analyzedMessages = mutableListOf<AnalyzedMessage>()
         val analyzedMultiFormatMessages = mutableListOf<AnalyzedMultiFormatMessage>()
 
-        messages.forEach { (name, msgInterface) ->
+        messages.forEach { (messageId, msgInterface) ->
             val message =
                 when (msgInterface) {
                     is MessageInterface.MessageInline -> msgInterface.message
@@ -96,14 +54,18 @@ class ChannelAnalyzer {
             var payloadSchema: Schema? = null
             var multiFormatSchema: MultiFormatSchema? = null
             var typeName: String? = null
-            val baseName = MapperUtil.toPascalCase(message.name ?: message.title ?: name)
-            val inlinePayloadTypeName = if (baseName.endsWith("Payload")) baseName else "${baseName}Payload"
+            val messageName = MessageNameResolver.resolve(message, messageId)
+            val inlinePayloadTypeName =
+                if (messageName.endsWith("Payload")) {
+                    messageName
+                } else {
+                    "${messageName}Payload"
+                }
             val headers =
                 MessageHeaderAnalyzer.analyze(
-                    channelName = channelName,
-                    messageKey = name,
                     message = message,
                 )
+            val keySchema = message.kafkaKeySchema()
 
             when (val p = message.payload) {
                 is SchemaInterface.SchemaInline -> {
@@ -124,24 +86,37 @@ class ChannelAnalyzer {
                 else -> {}
             }
 
-            if (typeName == null) return@forEach
-
             if (payloadSchema != null) {
                 analyzedMessages.add(
                     AnalyzedMessage(
-                        messageName = baseName,
+                        messageName = messageName,
                         payloadTypeName = typeName,
                         schema = payloadSchema,
+                        keySchema = keySchema,
                         headers = headers,
+                        messageId = messageId,
+                    ),
+                )
+            } else if (message.payload == null) {
+                analyzedMessages.add(
+                    AnalyzedMessage(
+                        messageName = messageName,
+                        payloadTypeName = null,
+                        schema = null,
+                        keySchema = keySchema,
+                        headers = headers,
+                        messageId = messageId,
                     ),
                 )
             } else if (multiFormatSchema != null) {
                 analyzedMultiFormatMessages.add(
                     AnalyzedMultiFormatMessage(
-                        messageName = baseName,
-                        payloadName = typeName,
+                        messageName = messageName,
+                        payloadName = checkNotNull(typeName),
                         schema = multiFormatSchema,
+                        keySchema = keySchema,
                         headers = headers,
+                        messageId = messageId,
                     ),
                 )
             }

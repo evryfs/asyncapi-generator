@@ -70,6 +70,9 @@ internal enum class GeneratorApprovalFormat(
     NATIVE_AVRO_SCHEMA("native-avro/schema", "avsc"),
     NATIVE_AVRO_SPECIFIC_RECORD("native-avro/specific-record", "java"),
     NATIVE_PROTOBUF_SCHEMA("native-protobuf/schema", "proto"),
+    JSON_SCHEMA("json-schema/schema", "json"),
+    SPRING_KAFKA_JAVA("spring-kafka/java", "java"),
+    SPRING_KAFKA_KOTLIN("spring-kafka/kotlin", "kt"),
 }
 
 private class GeneratorApprovalNamer(

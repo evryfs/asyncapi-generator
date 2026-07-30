@@ -5,9 +5,11 @@ import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractJavaGeneratorClass {
@@ -25,7 +27,6 @@ abstract class AbstractJavaGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
-        generateKafkaHeaders: Boolean = true,
         generateQuarkusKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
         javaModelType: JavaModelType = JavaModelType.CLASS,
@@ -34,43 +35,48 @@ abstract class AbstractJavaGeneratorClass {
         val effectiveClientPackage = clientPackage ?: modelPackage
         val generatorConfiguration =
             GeneratorConfiguration(
-                language = GeneratorName.JAVA,
+                profile = GeneratorProfile.Source(SourceLanguage.JAVA),
                 output =
                 GeneratorOutputConfiguration(
                     sourceOutputDirectory = codegenOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                 ),
                 models =
-                if (generateModels) {
-                    ModelGeneration.Enabled(
-                        packageName = modelPackage,
-                        annotation = modelAnnotation,
-                        javaModelType = javaModelType,
-                    )
-                } else {
-                    ModelGeneration.Disabled
-                },
+                    if (generateModels) {
+                        ModelGeneration.Enabled(
+                            packageName = modelPackage,
+                            annotation =
+                                modelAnnotation?.let { value ->
+                                    QualifiedTypeName.fromConfigurationValue(
+                                        value = value,
+                                        path = "modelConfig.modelAnnotation",
+                                    )
+                                },
+                            javaModelType = javaModelType,
+                        )
+                    } else {
+                        ModelGeneration.Disabled
+                    },
                 clients =
-                buildList {
-                    if (generateSpringKafkaClient) {
-                        add(
-                            ClientGeneration.Kafka(
-                                packageName = effectiveClientPackage,
-                                modelPackageName = modelPackage,
-                                headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
-                                springKafka = ClientGeneration.SpringKafka(),
-                            ),
-                        )
-                    }
-                    if (generateQuarkusKafkaClient) {
-                        add(
-                            ClientGeneration.QuarkusKafka(
-                                packageName = effectiveClientPackage,
-                                modelPackageName = modelPackage,
-                            ),
-                        )
-                    }
-                },
+                    buildList {
+                        if (generateSpringKafkaClient) {
+                            add(
+                                ClientGeneration.Kafka(
+                                    packageName = effectiveClientPackage,
+                                    modelPackageName = modelPackage,
+                                    springKafka = ClientGeneration.SpringKafka(),
+                                ),
+                            )
+                        }
+                        if (generateQuarkusKafkaClient) {
+                            add(
+                                ClientGeneration.QuarkusKafka(
+                                    packageName = effectiveClientPackage,
+                                    modelPackageName = modelPackage,
+                                ),
+                            )
+                        }
+                    },
             )
         generator.generate(
             asyncApiDocument = bundled,

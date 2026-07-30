@@ -3,8 +3,8 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import java.io.File
 
@@ -22,6 +22,11 @@ class SpringKafkaClientGeneration {
         @Suppress("UNUSED_PARAMETER")
         resourceOutputDirectory: File,
     ) {
+        SpringKafkaClientContractValidator.validate(
+            channels = generationInput.channels,
+            task = task,
+        )
+
         when (task.language) {
             KOTLIN -> generateKotlinClient(task, generationInput, sourceOutputDirectory)
             JAVA -> generateJavaClient(task, generationInput, sourceOutputDirectory)
@@ -38,9 +43,10 @@ class SpringKafkaClientGeneration {
                 outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
-                generateHeaders = task.generateHeaders,
                 generateProducers = task.generateProducers,
                 generateConsumers = task.generateConsumers,
+                topicParameterProperties = task.topicParameterProperties,
+                validationAnnotations = task.validationAnnotations,
             )
         kafkaGenerator.generate(generationInput.channels)
     }
@@ -55,9 +61,10 @@ class SpringKafkaClientGeneration {
                 outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
-                generateHeaders = task.generateHeaders,
                 generateProducers = task.generateProducers,
                 generateConsumers = task.generateConsumers,
+                topicParameterProperties = task.topicParameterProperties,
+                validationAnnotations = task.validationAnnotations,
             )
         kafkaGenerator.generate(generationInput.channels)
     }

@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
@@ -9,28 +8,19 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
- * Resolves generated header DTO metadata from AsyncAPI message headers.
+ * Resolves individual client contract parameters from AsyncAPI message headers.
  *
  * Expected behavior is covered by:
  * - `ChannelAnalyzerTest`
- * - `JavaModelPreparerTest`
- * - `KotlinModelPreparerTest`
  */
 object MessageHeaderAnalyzer {
     fun analyze(
-        channelName: String,
-        messageKey: String,
         message: Message,
     ): AnalyzedMessageHeaders? {
         val properties = collectProperties(message)
         if (properties.isEmpty()) return null
 
-        val channelNamePascal = MapperUtil.toPascalCase(channelName)
-        val messageName = message.name ?: message.title ?: messageKey
-        val messageNamePascal = MapperUtil.toPascalCase(messageName)
-
         return AnalyzedMessageHeaders(
-            typeName = "Topic${channelNamePascal}Headers$messageNamePascal",
             properties = properties,
             requiredProperties = collectRequiredProperties(message),
         )

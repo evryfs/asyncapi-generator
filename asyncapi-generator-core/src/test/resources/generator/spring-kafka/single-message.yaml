@@ -1,0 +1,56 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Update API
+  version: 1.0.0
+channels:
+  myAccountUpdated:
+    address: my.accounts.{environment}.updated.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+    messages:
+      myAccountUpdated:
+        $ref: '#/components/messages/MyAccountUpdated'
+operations:
+  publishMyAccountUpdates:
+    action: send
+    channel:
+      $ref: '#/channels/myAccountUpdated'
+  consumeMyAccountUpdates:
+    action: receive
+    channel:
+      $ref: '#/channels/myAccountUpdated'
+components:
+  messages:
+    MyAccountUpdated:
+      name: MyAccountUpdated
+      bindings:
+        kafka:
+          key:
+            $ref: './key-schemas.yaml#/myAccountKey'
+          bindingVersion: '0.5.0'
+      headers:
+        $ref: '#/components/schemas/MessageHeaders'
+      payload:
+        $ref: '#/components/schemas/MyAccountUpdatedPayload'
+  schemas:
+    MessageHeaders:
+      type: object
+      required:
+        - X-EXAMPLE-CORRELATION-ID
+      properties:
+        X-EXAMPLE-CORRELATION-ID:
+          type: string
+          description: Identifier used to correlate related messages.
+        X-EXAMPLE-SOURCE-SYSTEM:
+          type: string
+          description: Optional name of the system that produced the message.
+    MyAccountUpdatedPayload:
+      type: object
+      description: Details about an account update.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the updated account.

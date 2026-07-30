@@ -19,22 +19,28 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
                             <generatorName>kotlin</generatorName>
-                            <models>
-                                <packageName>com.example.contract.model</packageName>
-                            </models>
-                            <clients>
-                                <kafka>
-                                    <packageName>com.example.contract.client</packageName>
-                                    <springKafka>
-                                        <enabled>true</enabled>
-                                    </springKafka>
-                                </kafka>
-                            </clients>
+                            <modelPackage>com.example.contract.model</modelPackage>
+                            <clientPackage>com.example.contract.client</clientPackage>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <clientConfig>
+                        <clientType>spring-kafka</clientType>
+                        <clientContract>interface</clientContract>
+                        <producer/>
+                        <consumer/>
+                        <topicParameterProperties>
+                            <environment>kafka.environment</environment>
+                        </topicParameterProperties>
+                        <validationAnnotations>
+                            <clientContract>org.springframework.validation.annotation.Validated</clientContract>
+                            <payloadParameter>jakarta.validation.Valid</payloadParameter>
+                        </validationAnnotations>
+                    </clientConfig>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -48,7 +48,10 @@ class JavaClassGenerator(
             )
         }
 
-        val imports = importMapper.computeImports(model.name, model.properties)
+        val imports =
+            (importMapper.computeImports(model.name, model.properties) + model.classAnnotationImports)
+                .distinct()
+                .sorted()
         val implementsClause = if (model.implementsInterfaces.isNotEmpty()) {
             " implements " + model.implementsInterfaces.joinToString(", ")
         } else {
@@ -62,7 +65,8 @@ class JavaClassGenerator(
             fields = fields,
             allFields = fields,
             imports = imports,
-            implementsClause = implementsClause
+            implementsClause = implementsClause,
+            classAnnotations = model.classAnnotations,
         )
 
         val writer = StringWriter()

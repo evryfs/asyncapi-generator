@@ -7,7 +7,7 @@
     <version>1.0-SNAPSHOT</version>
 
     <name>AsyncAPI Generator</name>
-    <description>Generate Code and Schemas from Yaml AsyncAPI specification</description>
+    <description>Generate source code, schemas, and bundled documents from YAML and JSON AsyncAPI specifications</description>
     <url>https://github.com/evryfs/asyncapi-generator</url>
 
     <licenses>
@@ -85,6 +85,7 @@
         <maven.surefire.plugin.version>3.2.5</maven.surefire.plugin.version>
         <build.helper.maven.plugin.version>3.5.0</build.helper.maven.plugin.version>
         <maven.remote.resources.plugin.version>3.3.0</maven.remote.resources.plugin.version>
+        <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
     </properties>
 
     <dependencyManagement>
@@ -93,6 +94,11 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
+                <version>${kotlin.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-compiler-embeddable</artifactId>
                 <version>${kotlin.version}</version>
             </dependency>
 
@@ -152,6 +158,11 @@
             <dependency>
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.java.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-kotlin</artifactId>
                 <version>${protobuf.java.version}</version>
             </dependency>
             <dependency>

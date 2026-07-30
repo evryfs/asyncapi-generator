@@ -1,12 +1,14 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
 import com.github.os72.protocjar.Protoc
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidNativeProtobufSchema
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeProtobufJavaGenerationFailed
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeProtobufModelGenerationFailed
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import java.io.File
 import java.io.IOException
@@ -15,8 +17,8 @@ import java.nio.file.Path
 import kotlin.io.path.deleteIfExists
 
 /**
- * Renders native Protobuf `schemaFormat` payloads into `.proto` and Java
- * message artifacts.
+ * Renders native Protobuf `schemaFormat` payloads into `.proto` artifacts and
+ * optional Java or Kotlin model APIs.
  *
  * Expected behavior is covered by:
  * - `NativeProtobufGeneratorTest`
@@ -28,7 +30,7 @@ class NativeProtobufGenerator(
 
     fun render(
         schemas: Map<String, MultiFormatSchema>,
-        generateJavaMessageTypes: Boolean = false,
+        models: ProtobufModelGeneration? = null,
     ): GenerationResult {
         val parsedSchemas =
             schemas
@@ -42,14 +44,14 @@ class NativeProtobufGenerator(
                 }
 
         val schemaArtifacts = parsedSchemas.map(::renderSchemaArtifact)
-        val javaArtifacts =
-            if (generateJavaMessageTypes) {
-                parsedSchemas.flatMap(::renderJavaMessageArtifacts)
+        val modelArtifacts =
+            if (models != null) {
+                parsedSchemas.flatMap { parsedSchema -> renderModelArtifacts(parsedSchema, models) }
             } else {
                 emptyList()
             }
 
-        return GenerationResult(schemaArtifacts + javaArtifacts)
+        return GenerationResult(schemaArtifacts + modelArtifacts)
     }
 
     private fun renderSchemaArtifact(parsedSchema: ParsedNativeProtobufSchema): GeneratedArtifact {
@@ -66,62 +68,86 @@ class NativeProtobufGenerator(
         )
     }
 
-    private fun renderJavaMessageArtifacts(parsedSchema: ParsedNativeProtobufSchema): List<GeneratedArtifact> {
-        validateJavaMessageGenerationSupport(parsedSchema)
+    private fun renderModelArtifacts(
+        parsedSchema: ParsedNativeProtobufSchema,
+        models: ProtobufModelGeneration,
+    ): List<GeneratedArtifact> {
+        validateModelGenerationSupport(parsedSchema, models)
 
         val sourceDirectory = Files.createTempDirectory("asyncapi-native-protobuf-schemas-")
         val sourceSchemaFile = sourceDirectory.resolve("${parsedSchema.payloadName}.proto")
         val destinationDirectory = Files.createTempDirectory("asyncapi-native-protobuf-java-")
+        val kotlinDestinationDirectory =
+            models.modelType
+                .takeIf { it == ProtobufModelType.KOTLIN }
+                ?.let { Files.createTempDirectory("asyncapi-native-protobuf-kotlin-") }
 
         try {
             Files.writeString(sourceSchemaFile, parsedSchema.protobufSchema.content.trimEnd() + System.lineSeparator())
+            val compilerArguments =
+                buildList {
+                    add("-v$protocVersion")
+                    add("--proto_path=${sourceDirectory.toAbsolutePath()}")
+                    add("--java_out=${destinationDirectory.toAbsolutePath()}")
+                    kotlinDestinationDirectory?.let { add("--kotlin_out=${it.toAbsolutePath()}") }
+                    add(sourceSchemaFile.fileName.toString())
+                }
             val exitCode =
-                Protoc.runProtoc(
-                    arrayOf(
-                        "-v$protocVersion",
-                        "--proto_path=${sourceDirectory.toAbsolutePath()}",
-                        "--java_out=${destinationDirectory.toAbsolutePath()}",
-                        sourceSchemaFile.fileName.toString(),
-                    ),
-                )
+                Protoc.runProtoc(compilerArguments.toTypedArray())
 
             if (exitCode != 0) {
-                throw NativeProtobufJavaGenerationFailed(
+                throw NativeProtobufModelGenerationFailed(
                     payloadName = parsedSchema.payloadName,
                     schemaFormat = parsedSchema.schema.schemaFormat,
+                    modelType = models.modelType.configurationValue,
                     reason = "protoc exited with status code $exitCode.",
                 )
             }
 
-            return generatedJavaFiles(destinationDirectory)
-                .map { sourceFile ->
-                    GeneratedArtifact(
-                        relativePath = destinationDirectory.relativeUnixPathTo(sourceFile),
-                        content = Files.readString(sourceFile).trimEnd() + System.lineSeparator(),
-                        kind = GeneratedArtifactKind.JAVA_SOURCE,
-                    )
+            return buildList {
+                addAll(generatedSourceArtifacts(destinationDirectory, ".java", GeneratedArtifactKind.JAVA_SOURCE))
+                kotlinDestinationDirectory?.let { kotlinDirectory ->
+                    addAll(generatedSourceArtifacts(kotlinDirectory, ".kt", GeneratedArtifactKind.SOURCE))
                 }
+            }
+        } catch (ex: NativeProtobufModelGenerationFailed) {
+            throw ex
         } catch (ex: IOException) {
-            throw protobufJavaGenerationFailed(parsedSchema, ex)
+            throw protobufModelGenerationFailed(parsedSchema, models, ex)
         } catch (ex: RuntimeException) {
-            throw protobufJavaGenerationFailed(parsedSchema, ex)
+            throw protobufModelGenerationFailed(parsedSchema, models, ex)
         } finally {
             sourceSchemaFile.deleteIfExists()
             sourceDirectory.toFile().deleteRecursively()
             destinationDirectory.toFile().deleteRecursively()
+            kotlinDestinationDirectory?.toFile()?.deleteRecursively()
         }
     }
 
-    private fun validateJavaMessageGenerationSupport(parsedSchema: ParsedNativeProtobufSchema) {
+    private fun validateModelGenerationSupport(
+        parsedSchema: ParsedNativeProtobufSchema,
+        models: ProtobufModelGeneration,
+    ) {
         val protobufSchema = parsedSchema.protobufSchema
         val payloadName = parsedSchema.payloadName
         val schemaFormat = parsedSchema.schema.schemaFormat
+        val schemaPackageName = protobufSchema.javaPackageName ?: protobufSchema.protoPackageName
 
-        if (protobufSchema.javaPackageName.isNullOrBlank() && protobufSchema.protoPackageName.isNullOrBlank()) {
+        if (schemaPackageName.isNullOrBlank()) {
             throw InvalidNativeProtobufSchema(
                 payloadName = payloadName,
                 schemaFormat = schemaFormat,
-                reason = "Java Protobuf message generation requires either `option java_package = \"...\";` or a `package ...;` declaration.",
+                reason = "Protobuf model generation requires either `option java_package = \"...\";` or a `package ...;` declaration.",
+            )
+        }
+
+        if (schemaPackageName != models.packageName) {
+            throw InvalidNativeProtobufSchema(
+                payloadName = payloadName,
+                schemaFormat = schemaFormat,
+                reason =
+                    "Configured model package '${models.packageName}' must match the Protobuf Java package " +
+                        "'$schemaPackageName'.",
             )
         }
 
@@ -129,7 +155,7 @@ class NativeProtobufGenerator(
             throw InvalidNativeProtobufSchema(
                 payloadName = payloadName,
                 schemaFormat = schemaFormat,
-                reason = "Java Protobuf message generation requires `option java_multiple_files = true;` so the payload message is generated as a top-level Java class.",
+                reason = "Protobuf model generation requires `option java_multiple_files = true;` so the payload message is generated as a top-level Java class.",
             )
         }
 
@@ -137,29 +163,42 @@ class NativeProtobufGenerator(
             throw InvalidNativeProtobufSchema(
                 payloadName = payloadName,
                 schemaFormat = schemaFormat,
-                reason = "Java Protobuf message generation requires a top-level message named '$payloadName'.",
+                reason = "Protobuf model generation requires a top-level message named '$payloadName'.",
             )
         }
     }
 
-    private fun generatedJavaFiles(directory: Path): List<Path> =
+    private fun generatedSourceArtifacts(
+        directory: Path,
+        extension: String,
+        kind: GeneratedArtifactKind,
+    ): List<GeneratedArtifact> =
         Files.walk(directory).use { paths ->
             paths
-                .filter { path -> Files.isRegularFile(path) && path.fileName.toString().endsWith(".java") }
+                .filter { path -> Files.isRegularFile(path) && path.fileName.toString().endsWith(extension) }
                 .sorted()
                 .toList()
+                .map { sourceFile ->
+                    GeneratedArtifact(
+                        relativePath = directory.relativeUnixPathTo(sourceFile),
+                        content = Files.readString(sourceFile).trimEnd() + System.lineSeparator(),
+                        kind = kind,
+                    )
+                }
         }
 
     private fun Path.relativeUnixPathTo(file: Path): String =
         relativize(file).toString().replace(File.separatorChar, '/')
 
-    private fun protobufJavaGenerationFailed(
+    private fun protobufModelGenerationFailed(
         parsedSchema: ParsedNativeProtobufSchema,
+        models: ProtobufModelGeneration,
         exception: Exception,
-    ): NativeProtobufJavaGenerationFailed =
-        NativeProtobufJavaGenerationFailed(
+    ): NativeProtobufModelGenerationFailed =
+        NativeProtobufModelGenerationFailed(
             payloadName = parsedSchema.payloadName,
             schemaFormat = parsedSchema.schema.schemaFormat,
+            modelType = models.modelType.configurationValue,
             reason = exception.message ?: exception::class.simpleName.orEmpty(),
         )
 

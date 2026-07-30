@@ -15,12 +15,24 @@ class GenerationPlanner {
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
+                val keyModelPackages = mutableSetOf<String>()
+                val hasNativePayloadModels = configuration.hasNativePayloadModels()
+
+                configuration.output.document?.let { document ->
+                    add(
+                        GenerationTask.DocumentArtifact(
+                            file = document.file,
+                            format = document.format,
+                        ),
+                    )
+                }
+
                 when (val models = configuration.models) {
                     ModelGeneration.Disabled -> Unit
                     is ModelGeneration.Enabled ->
                         add(
                             GenerationTask.ModelArtifacts(
-                                language = configuration.language,
+                                language = configuration.requireSourceLanguage(),
                                 packageName = models.packageName,
                                 annotation = models.annotation,
                                 javaModelType = models.javaModelType,
@@ -31,29 +43,36 @@ class GenerationPlanner {
                 configuration.clients.forEach { client ->
                     when (client) {
                         is ClientGeneration.Kafka -> {
-                            if (client.headers.enabled) {
+                            val springKafka = client.springKafka
+                            if (
+                                hasNativePayloadModels &&
+                                springKafka != null &&
+                                keyModelPackages.add(client.modelPackageName)
+                            ) {
                                 add(
-                                    GenerationTask.HeaderModelArtifacts(
-                                        language = configuration.language,
-                                        packageName = "${client.packageName}.header",
+                                    GenerationTask.KafkaKeyModelArtifacts(
+                                        language = configuration.requireSourceLanguage(),
+                                        packageName = client.modelPackageName,
                                     ),
                                 )
                             }
-                            client.springKafka?.takeIf { it.hasEnabledOutput() }?.let { springKafka ->
+                            springKafka?.let {
                                 add(
                                     GenerationTask.SpringKafkaClient(
-                                        language = configuration.language,
+                                        language = configuration.requireSourceLanguage(),
                                         clientPackage = client.packageName,
                                         modelPackage = client.modelPackageName,
-                                        generateHeaders = client.headers.enabled,
                                         generateProducers = springKafka.producer.enabled,
                                         generateConsumers = springKafka.consumer.enabled,
+                                        clientContract = springKafka.clientContract,
+                                        topicParameterProperties = springKafka.topicParameterProperties,
+                                        validationAnnotations = springKafka.validationAnnotations,
                                     ),
                                 )
                             }
                         }
                         is ClientGeneration.QuarkusKafka ->
-                            add(GenerationTask.QuarkusKafkaClient(configuration.language))
+                            add(GenerationTask.QuarkusKafkaClient(configuration.requireSourceLanguage()))
                     }
                 }
 
@@ -65,19 +84,37 @@ class GenerationPlanner {
                             add(
                                 GenerationTask.NativeAvroArtifacts(
                                     generateSpecificRecords = schema.generateSpecificRecords,
+                                    modelPackageName = schema.modelPackageName,
+                                    schemaPackageName = schema.schemaPackageName,
                                 ),
                             )
                         is SchemaGeneration.NativeProtobuf ->
                             add(
                                 GenerationTask.NativeProtobufArtifacts(
-                                    generateJavaMessageTypes = schema.generateJavaMessageTypes,
+                                    models = schema.models,
+                                    schemaPackageName = schema.schemaPackageName,
                                 ),
                             )
+                        is SchemaGeneration.JsonSchema ->
+                            add(GenerationTask.JsonSchemaArtifacts(schema.packageName))
                     }
                 }
             },
         )
 
-    private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
-        producer.enabled || consumer.enabled
+    private fun GeneratorConfiguration.hasNativePayloadModels(): Boolean =
+        schemas.any { schema ->
+            when (schema) {
+                is SchemaGeneration.NativeAvro -> schema.generateSpecificRecords
+                is SchemaGeneration.NativeProtobuf -> schema.models != null
+                is SchemaGeneration.AvroProjection,
+                is SchemaGeneration.JsonSchema,
+                -> false
+            }
+        }
+
+    private fun GeneratorConfiguration.requireSourceLanguage() =
+        requireNotNull(sourceLanguage) {
+            "Source language is required for model and client generation"
+        }
 }

@@ -83,6 +83,9 @@ enum class SchemaFormat(
     val isNativeProtobuf: Boolean
         get() = family == SchemaFormatFamily.PROTOBUF
 
+    val isJsonSchemaDraft07: Boolean
+        get() = family == SchemaFormatFamily.JSON_SCHEMA_DRAFT_07
+
     companion object {
         private val byValue = entries.associateBy(SchemaFormat::value)
 

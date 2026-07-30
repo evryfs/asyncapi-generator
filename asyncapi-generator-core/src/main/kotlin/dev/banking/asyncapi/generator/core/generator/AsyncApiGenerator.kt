@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
+import dev.banking.asyncapi.generator.core.generator.artifact.DocumentArtifactGeneration
+import dev.banking.asyncapi.generator.core.generator.artifact.JsonSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeProtobufArtifactGeneration
@@ -26,8 +28,10 @@ class AsyncApiGenerator {
     private val generationInputFactory = GenerationInputFactory()
     private val generationInputCompatibilityValidator = GenerationInputCompatibilityValidator()
     private val generationPlanner = GenerationPlanner()
+    private val documentArtifactGeneration = DocumentArtifactGeneration()
     private val modelArtifactGeneration = ModelArtifactGeneration()
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
+    private val jsonSchemaArtifactGeneration = JsonSchemaArtifactGeneration()
     private val nativeAvroArtifactGeneration = NativeAvroArtifactGeneration()
     private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration()
     private val springKafkaClientGeneration = SpringKafkaClientGeneration()
@@ -51,6 +55,11 @@ class AsyncApiGenerator {
 
         generationPlan.tasks.forEach { task ->
             when (task) {
+                is GenerationTask.DocumentArtifact ->
+                    documentArtifactGeneration.generate(
+                        task = task,
+                        asyncApiDocument = asyncApiDocument,
+                    )
                 is GenerationTask.ModelArtifacts ->
                     modelArtifactGeneration.generateModelArtifacts(
                         task = task,
@@ -58,10 +67,9 @@ class AsyncApiGenerator {
                         sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                         artifactWriter = artifactWriter,
                     )
-                is GenerationTask.HeaderModelArtifacts ->
-                    modelArtifactGeneration.generateHeaderModelArtifacts(
+                is GenerationTask.KafkaKeyModelArtifacts ->
+                    modelArtifactGeneration.generateKafkaKeyModelArtifacts(
                         task = task,
-                        asyncApiDocument = asyncApiDocument,
                         generationInput = generationInput,
                         sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                         artifactWriter = artifactWriter,
@@ -92,6 +100,12 @@ class AsyncApiGenerator {
                         task = task,
                         generationInput = generationInput,
                         resourceOutputDirectory = generatorConfiguration.output.resourceOutputDirectory,
+                        artifactWriter = artifactWriter,
+                    )
+                is GenerationTask.JsonSchemaArtifacts ->
+                    jsonSchemaArtifactGeneration.generate(
+                        task = task,
+                        generationInput = generationInput,
                         artifactWriter = artifactWriter,
                     )
             }

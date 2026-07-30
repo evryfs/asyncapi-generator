@@ -19,18 +19,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi-a.yaml</inputFile>
-                            <models>
-                                <packageName>com.example.a.model</packageName>
-                            </models>
-                            <clients>
-                                <kafka>
-                                    <packageName>com.example.a.client</packageName>
-                                    <springKafka>
-                                        <enabled>true</enabled>
-                                    </springKafka>
-                                </kafka>
-                            </clients>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi-a.yaml</inputSpec>
+                            <modelPackage>com.example.a.model</modelPackage>
+                            <clientPackage>com.example.a.client</clientPackage>
+                            <clientConfig>
+                                <clientType>spring-kafka</clientType>
+                                <clientContract>interface</clientContract>
+                            </clientConfig>
                         </configuration>
                     </execution>
                     <execution>
@@ -40,15 +35,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputFile>
-                            <models>
-                                <packageName>com.example.b.model</packageName>
-                            </models>
-                            <schemas>
-                                <avroProjection>
-                                    <packageName>com.example.b.schema</packageName>
-                                </avroProjection>
-                            </schemas>
+                            <generatorName>avro-schema</generatorName>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi-b.yaml</inputSpec>
+                            <schemaPackage>com.example.b.schema</schemaPackage>
                         </configuration>
                     </execution>
                 </executions>

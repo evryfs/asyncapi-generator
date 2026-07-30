@@ -10,46 +10,46 @@ object MavenTestHelper {
 
     fun inputPath(path: String): File =
         File("src/test/resources/$path").also {
-            require(it.exists()) { "Missing YAML test file: ${it.absolutePath}" }
+            require(it.exists()) { "Missing document test file: ${it.absolutePath}" }
         }
 
     fun Mojo.project(value: Any) {
         writeField("project", value)
     }
 
-    fun Mojo.inputFile(value: Any) {
-        writeField("inputFile", value)
+    fun Mojo.inputSpec(value: Any) {
+        writeField("inputSpec", value)
     }
 
     fun Mojo.outputFile(value: Any?) {
         writeField("outputFile", value)
     }
 
-    fun Mojo.codegenOutputDirectory(value: Any) {
-        writeField("codegenOutputDirectory", value)
+    fun Mojo.outputDirectory(value: Any) {
+        writeField("outputDirectory", value)
     }
 
-    fun Mojo.resourceOutputDirectory(value: Any) {
-        writeField("resourceOutputDirectory", value)
+    fun Mojo.modelPackage(value: String?) {
+        writeField("modelPackage", value)
     }
 
-    fun Mojo.javaSourceOutputDirectory(value: Any) {
-        writeField("javaSourceOutputDirectory", value)
+    fun Mojo.clientPackage(value: String?) {
+        writeField("clientPackage", value)
     }
 
-    fun Mojo.models(value: MavenModelGenerationConfiguration?) {
-        writeField("models", value)
+    fun Mojo.schemaPackage(value: String?) {
+        writeField("schemaPackage", value)
     }
 
-    fun Mojo.schemas(value: MavenSchemaGenerationConfiguration?) {
-        writeField("schemas", value)
+    fun Mojo.modelConfig(value: MavenModelConfiguration?) {
+        writeField("modelConfig", value)
     }
 
-    fun Mojo.clients(value: MavenClientGenerationConfiguration?) {
-        writeField("clients", value)
+    fun Mojo.clientConfig(value: MavenClientConfiguration?) {
+        writeField("clientConfig", value)
     }
 
-    fun Mojo.generatorName(value: String) {
+    fun Mojo.generatorName(value: String?) {
         writeField("generatorName", value)
     }
 
@@ -59,115 +59,48 @@ object MavenTestHelper {
         field.set(this, value)
     }
 
-    fun models(
-        packageName: String? = null,
-        annotation: String? = null,
-        javaModelType: String? = null,
-        enabled: Boolean? = null,
-    ): MavenModelGenerationConfiguration =
-        MavenModelGenerationConfiguration().apply {
-            this.packageName = packageName
-            this.annotation = annotation
-            this.javaModelType = javaModelType
-            this.enabled = enabled
+    fun modelConfig(
+        modelAnnotation: String? = null,
+        modelType: String? = null,
+    ): MavenModelConfiguration =
+        MavenModelConfiguration().apply {
+            this.modelAnnotation = modelAnnotation
+            this.modelType = modelType
         }
 
-    fun schemas(
-        avroProjection: MavenAvroProjectionConfiguration? = null,
-        nativeAvro: MavenNativeAvroConfiguration? = null,
-        nativeProtobuf: MavenNativeProtobufConfiguration? = null,
-    ): MavenSchemaGenerationConfiguration =
-        MavenSchemaGenerationConfiguration().apply {
-            this.avroProjection = avroProjection
-            this.nativeAvro = nativeAvro
-            this.nativeProtobuf = nativeProtobuf
-        }
-
-    fun avroProjection(
-        packageName: String? = null,
-        enabled: Boolean? = null,
-    ): MavenAvroProjectionConfiguration =
-        MavenAvroProjectionConfiguration().apply {
-            this.packageName = packageName
-            this.enabled = enabled
-        }
-
-    fun nativeAvro(
-        enabled: Boolean? = null,
-        generateSpecificRecords: Boolean? = null,
-    ): MavenNativeAvroConfiguration =
-        MavenNativeAvroConfiguration().apply {
-            this.enabled = enabled
-            this.generateSpecificRecords = generateSpecificRecords
-        }
-
-    fun nativeProtobuf(
-        enabled: Boolean? = null,
-        generateJavaMessageTypes: Boolean? = null,
-    ): MavenNativeProtobufConfiguration =
-        MavenNativeProtobufConfiguration().apply {
-            this.enabled = enabled
-            this.generateJavaMessageTypes = generateJavaMessageTypes
-        }
-
-    fun clients(
-        kafka: MavenKafkaConfiguration? = null,
-        quarkusKafka: MavenQuarkusKafkaConfiguration? = null,
-    ): MavenClientGenerationConfiguration =
-        MavenClientGenerationConfiguration().apply {
-            this.kafka = kafka
-            this.quarkusKafka = quarkusKafka
-        }
-
-    fun kafka(
-        packageName: String? = null,
-        modelPackageName: String? = null,
-        enabled: Boolean? = null,
-        headers: MavenKafkaHeadersConfiguration? = null,
-        springKafka: MavenKafkaSpringKafkaConfiguration? = springKafka(),
-    ): MavenKafkaConfiguration =
-        MavenKafkaConfiguration().apply {
-            this.packageName = packageName
-            this.modelPackageName = modelPackageName
-            this.enabled = enabled
-            this.headers = headers
-            this.springKafka = springKafka
-        }
-
-    fun kafkaHeaders(enabled: Boolean? = null): MavenKafkaHeadersConfiguration =
-        MavenKafkaHeadersConfiguration().apply {
-            this.enabled = enabled
-        }
-
-    fun springKafka(
-        enabled: Boolean? = null,
-        producer: MavenKafkaProducerConfiguration? = null,
-        consumer: MavenKafkaConsumerConfiguration? = null,
-    ): MavenKafkaSpringKafkaConfiguration =
-        MavenKafkaSpringKafkaConfiguration().apply {
-            this.enabled = enabled
+    fun clientConfig(
+        clientType: String? = null,
+        clientContract: String? = null,
+        producer: MavenProducerConfiguration? = null,
+        consumer: MavenConsumerConfiguration? = null,
+        topicParameterProperties: Map<String, String>? = null,
+        validationAnnotations: MavenValidationAnnotationsConfiguration? = null,
+    ): MavenClientConfiguration =
+        MavenClientConfiguration().apply {
+            this.clientType = clientType
+            this.clientContract = clientContract
             this.producer = producer
             this.consumer = consumer
+            this.topicParameterProperties = topicParameterProperties
+            this.validationAnnotations = validationAnnotations
         }
 
-    fun kafkaProducer(enabled: Boolean? = null): MavenKafkaProducerConfiguration =
-        MavenKafkaProducerConfiguration().apply {
+    fun producer(enabled: Boolean? = null): MavenProducerConfiguration =
+        MavenProducerConfiguration().apply {
             this.enabled = enabled
         }
 
-    fun kafkaConsumer(enabled: Boolean? = null): MavenKafkaConsumerConfiguration =
-        MavenKafkaConsumerConfiguration().apply {
+    fun consumer(enabled: Boolean? = null): MavenConsumerConfiguration =
+        MavenConsumerConfiguration().apply {
             this.enabled = enabled
         }
 
-    fun quarkusKafka(
-        packageName: String? = null,
-        modelPackageName: String? = null,
-        enabled: Boolean? = null,
-    ): MavenQuarkusKafkaConfiguration =
-        MavenQuarkusKafkaConfiguration().apply {
-            this.packageName = packageName
-            this.modelPackageName = modelPackageName
-            this.enabled = enabled
+    fun validationAnnotations(
+        clientContract: String? = null,
+        payloadParameter: String? = null,
+    ): MavenValidationAnnotationsConfiguration =
+        MavenValidationAnnotationsConfiguration().apply {
+            this.clientContract = clientContract
+            this.payloadParameter = payloadParameter
         }
 }

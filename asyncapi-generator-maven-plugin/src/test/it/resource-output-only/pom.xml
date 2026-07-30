@@ -14,17 +14,13 @@
                 <executions>
                     <execution>
                         <id>resource-only</id>
-                        <phase>compile</phase>
+                        <phase>generate-sources</phase>
                         <goals><goal>generate</goal></goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
-                            <resourceOutputDirectory>${project.build.directory}/custom-resources</resourceOutputDirectory>
-                            <generatorName>kotlin</generatorName>
-                            <schemas>
-                                <avroProjection>
-                                    <packageName>com.example.avro</packageName>
-                                </avroProjection>
-                            </schemas>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                            <outputDirectory>${project.build.directory}/custom-resources</outputDirectory>
+                            <generatorName>avro-schema</generatorName>
+                            <schemaPackage>com.example.avro</schemaPackage>
                         </configuration>
                     </execution>
                 </executions>

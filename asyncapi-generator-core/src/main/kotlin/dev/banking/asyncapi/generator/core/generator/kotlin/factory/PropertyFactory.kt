@@ -28,7 +28,7 @@ class PropertyFactory(
     ): PropertyModel {
         val (finalPropSchema, baseKotlinType) = resolveTypeAndSchema(propertyName, propSchemaInterface)
 
-        val isExplicitlyNullableFromSchema = finalPropSchema?.let { it.nullable == true || it.type.isTypeNullable() } ?: false
+        val isExplicitlyNullableFromSchema = finalPropSchema?.type.isTypeNullable()
         val isRequiredByParent = requiredProperties.contains(propertyName)
         val isNullable = !isRequiredByParent || isExplicitlyNullableFromSchema
 

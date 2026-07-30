@@ -9,6 +9,9 @@ import {{.}};
  * {{{.}}}
 {{/classDocLines}}
  */
+{{#classAnnotations}}
+{{{.}}}
+{{/classAnnotations}}
 public class {{className}}{{#parentClass}} extends {{parentClass}}{{/parentClass}}{{implementsClause}} {
 
 {{#fields}}

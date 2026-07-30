@@ -30,7 +30,7 @@ class PropertyFactory(
         val (finalPropSchema, baseJavaType) = resolveTypeAndSchema(propertyName, propSchemaInterface)
 
         val isRequired = requiredProperties.contains(propertyName)
-        val isSchemaNullable = finalPropSchema?.let { it.nullable == true || it.type.isTypeNullable() } ?: false
+        val isSchemaNullable = finalPropSchema?.type.isTypeNullable()
 
         val annotations = mutableListOf<String>()
         annotations.addAll(constraintMapper.buildAnnotations(finalPropSchema))

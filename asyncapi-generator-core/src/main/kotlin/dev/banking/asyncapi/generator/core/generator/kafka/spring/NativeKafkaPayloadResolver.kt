@@ -21,12 +21,14 @@ class NativeKafkaPayloadResolver(
                 messageName = message.messageName,
                 payloadType = payloadType.typeName,
                 importName = payloadType.importName,
+                keySchema = message.keySchema,
             )
         } ?: nativeProtobufPayloadTypeResolver.resolve(message)?.let { payloadType ->
             KafkaPayload(
                 messageName = message.messageName,
                 payloadType = payloadType.typeName,
                 importName = payloadType.importName,
+                keySchema = message.keySchema,
             )
         }
 }

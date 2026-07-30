@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Message payload backed by an explicit non-AsyncAPI `schemaFormat`.
@@ -15,5 +16,7 @@ data class AnalyzedMultiFormatMessage(
     val messageName: String,
     val payloadName: String,
     val schema: MultiFormatSchema,
+    val keySchema: SchemaInterface? = null,
     val headers: AnalyzedMessageHeaders? = null,
+    val messageId: String = messageName,
 )

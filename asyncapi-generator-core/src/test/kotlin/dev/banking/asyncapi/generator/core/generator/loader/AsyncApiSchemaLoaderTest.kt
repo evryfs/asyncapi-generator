@@ -1,10 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.loader
 
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -43,6 +46,92 @@ class AsyncApiSchemaLoaderTest {
         val doc = docWithComponents(components)
         val loaded = AsyncApiSchemaLoader.load(doc)
         assertTrue(loaded.containsKey("UserSignedUpPayload"))
+    }
+
+    @Test
+    fun `should use the message id instead of title for inline generated schema names`() {
+        val keySchema = Schema(type = "object")
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "accountUpdatedV2" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    title = "Human-readable account update",
+                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    bindings = kafkaBinding(SchemaInterface.SchemaInline(keySchema)),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+
+        assertTrue(loaded.containsKey("AccountUpdatedV2Payload"))
+        assertTrue(loaded.containsKey("AccountUpdatedV2Key"))
+        assertFalse(loaded.containsKey("HumanReadableAccountUpdatePayload"))
+        assertFalse(loaded.containsKey("HumanReadableAccountUpdateKey"))
+    }
+
+    @Test
+    fun `should harvest inline object schemas from Kafka message keys`() {
+        val keySchema =
+            Schema(
+                type = "object",
+                properties =
+                    mapOf(
+                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+            )
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "AccountUpdated" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "AccountUpdated",
+                                    bindings = kafkaBinding(SchemaInterface.SchemaInline(keySchema)),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+
+        assertSame(keySchema, loaded["AccountUpdatedKey"])
+    }
+
+    @Test
+    fun `should harvest external referenced object schemas from Kafka message keys`() {
+        val keySchema = Schema(type = "object", title = "External title is not the reference identity")
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "AccountUpdated" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "AccountUpdated",
+                                    bindings =
+                                        kafkaBinding(
+                                            SchemaInterface.SchemaReference(
+                                                Reference(
+                                                    ref = "./key-schemas.yaml#/AccountKey",
+                                                    model = keySchema,
+                                                ),
+                                            ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+
+        assertSame(keySchema, loaded["AccountKey"])
     }
 
     @Test
@@ -94,5 +183,16 @@ class AsyncApiSchemaLoaderTest {
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema = mapOf("type" to "record", "name" to "UserCreated", "fields" to emptyList<Any>()),
+        )
+
+    private fun kafkaBinding(keySchema: SchemaInterface): Map<String, BindingInterface> =
+        mapOf(
+            "kafka" to
+                BindingInterface.BindingInline(
+                    Binding(
+                        content = emptyMap(),
+                        kafkaKeySchema = keySchema,
+                    ),
+                ),
         )
 }

@@ -1,7 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
 import dev.banking.asyncapi.generator.core.fixtures.GeneratedJavaCompiler
+import dev.banking.asyncapi.generator.core.fixtures.GeneratedKotlinCompiler
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -16,6 +19,7 @@ class NativeProtobufGeneratorTest {
     private val generator = NativeProtobufGenerator()
     private val fixtures = GenerationInputFixtures()
     private val javaCompiler = GeneratedJavaCompiler()
+    private val kotlinCompiler = GeneratedKotlinCompiler()
 
     @TempDir
     lateinit var tempDir: Path
@@ -33,11 +37,11 @@ class NativeProtobufGeneratorTest {
     }
 
     @Test
-    fun `render returns Java message artifacts for native Protobuf schemas when enabled`() {
+    fun `render returns Java message artifacts when Java Protobuf models are configured`() {
         val result =
             generator.render(
                 fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
-                generateJavaMessageTypes = true,
+                models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
             )
 
         val schemaArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.proto" }
@@ -58,7 +62,7 @@ class NativeProtobufGeneratorTest {
         val result =
             generator.render(
                 fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
-                generateJavaMessageTypes = true,
+                models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
             )
         val compilation = javaCompiler.compile(result.artifacts, tempDir)
 
@@ -74,6 +78,28 @@ class NativeProtobufGeneratorTest {
             assertEquals("user-123", messageClass.getMethod("getUserId").invoke(parsed))
             assertEquals("user@example.com", messageClass.getMethod("getEmail").invoke(parsed))
         }
+    }
+
+    @Test
+    fun `render returns Java messages and Kotlin DSL artifacts for Kotlin Protobuf models`() {
+        val result =
+            generator.render(
+                fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
+                models =
+                    ProtobufModelGeneration(
+                        packageName = "com.example.protobuf",
+                        modelType = ProtobufModelType.KOTLIN,
+                    ),
+            )
+
+        val messageArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }
+        val kotlinArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreatedKt.kt" }
+
+        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, messageArtifact.kind)
+        assertEquals(GeneratedArtifactKind.SOURCE, kotlinArtifact.kind)
+        assertTrue(kotlinArtifact.content.contains("public object UserCreatedKt"))
+        assertTrue(kotlinArtifact.content.contains("public inline fun userCreated"))
+        kotlinCompiler.compile(result.artifacts, tempDir)
     }
 
     @Test
@@ -135,15 +161,33 @@ class NativeProtobufGeneratorTest {
     }
 
     @Test
-    fun `render rejects Java message generation when java multiple files is not enabled`() {
+    fun `render rejects model generation when java multiple files is not enabled`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.InvalidNativeProtobufSchema> {
                 generator.render(
                     fixtures.generationInputWithNativeProtobufSchema().multiFormatSchemas,
-                    generateJavaMessageTypes = true,
+                    models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
                 )
             }
 
-        assertTrue(error.message!!.contains("Java Protobuf message generation requires `option java_multiple_files = true;`"))
+        assertTrue(error.message!!.contains("Protobuf model generation requires `option java_multiple_files = true;`"))
+    }
+
+    @Test
+    fun `render rejects model package that differs from native Protobuf package`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.InvalidNativeProtobufSchema> {
+                generator.render(
+                    fixtures.generationInputWithNativeProtobufJavaMessageSchema().multiFormatSchemas,
+                    models = ProtobufModelGeneration(packageName = "com.example.other"),
+                )
+            }
+
+        assertTrue(
+            error.message!!.contains(
+                "Configured model package 'com.example.other' must match the Protobuf Java package " +
+                    "'com.example.protobuf'",
+            ),
+        )
     }
 }

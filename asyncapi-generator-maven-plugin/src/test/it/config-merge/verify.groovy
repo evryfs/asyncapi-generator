@@ -1,18 +1,15 @@
 def codegenBase = new File(basedir, "target/generated-sources/asyncapi")
-def resourceBase = new File(basedir, "target/generated-resources/asyncapi")
 
-// define where the generated files should be for each contract, based on the configuration in the pom.xml
-def aClientDir = new File(codegenBase, "com/example/a/client")
-def aSchemaDir = new File(resourceBase, "com/example/a/schema")
-def bClientDir = new File(codegenBase, "com/example/b/client")
-def bSchemaDir = new File(resourceBase, "com/example/b/schema")
+def aProducerDir = new File(codegenBase, "com/example/a/client/producer")
+def aConsumerDir = new File(codegenBase, "com/example/a/client/consumer")
+def bProducerDir = new File(codegenBase, "com/example/b/client/producer")
+def bConsumerDir = new File(codegenBase, "com/example/b/client/consumer")
 def aModelDir = new File(codegenBase, "com/example/a/model")
 def bModelDir = new File(codegenBase, "com/example/b/model")
 
-// assert that the expected directories exist or do not exist based on the configuration in the pom.xml
 assert aModelDir.exists() : "Expected model directory for contract A"
 assert bModelDir.exists() : "Expected model directory for contract B"
-assert aClientDir.exists() : "Expected client directory for contract A (global springKafka client)"
-assert aSchemaDir.exists() : "Expected schema directory for contract A (global avroProjection schema)"
-assert !bClientDir.exists() : "Did not expect client directory for contract B (disabled springKafka client)"
-assert !bSchemaDir.exists() : "Did not expect schema directory for contract B (disabled avroProjection schema)"
+assert aProducerDir.exists() : "Expected inherited producer configuration for contract A"
+assert aConsumerDir.exists() : "Expected inherited consumer configuration for contract A"
+assert bProducerDir.exists() : "Expected inherited producer configuration for contract B"
+assert !bConsumerDir.exists() : "Did not expect disabled consumer generation for contract B"

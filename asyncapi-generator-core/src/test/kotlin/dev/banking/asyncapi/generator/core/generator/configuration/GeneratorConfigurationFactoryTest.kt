@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -14,6 +15,227 @@ import kotlin.test.assertTrue
 class GeneratorConfigurationFactoryTest {
     @TempDir
     lateinit var tempDir: Path
+
+    @Test
+    fun `create resolves generator names to source languages`() {
+        mapOf(
+            GeneratorName.JAVA to SourceLanguage.JAVA,
+            GeneratorName.KOTLIN to SourceLanguage.KOTLIN,
+        ).forEach { (generatorName, sourceLanguage) ->
+            assertEquals(
+                sourceLanguage,
+                GeneratorConfigurationFactory.create(request(generatorName = generatorName)).sourceLanguage,
+            )
+        }
+    }
+
+    @Test
+    fun `create resolves Avro schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.AVRO_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.AVRO), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.AvroProjection(packageName = "com.example.schema"),
+                SchemaGeneration.NativeAvro(
+                    generateSpecificRecords = false,
+                    schemaPackageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create resolves Protobuf schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.PROTOBUF_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.PROTOBUF), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    schemaPackageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create resolves JSON Schema generator profile`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.JSON_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Schema(SchemaType.JSON_SCHEMA), configuration.profile)
+        assertEquals(null, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.JsonSchema(
+                    packageName = "com.example.schema",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create resolves AsyncAPI YAML document generator profile`() {
+        val outputFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.ASYNCAPI_YAML,
+                    outputFile = outputFile,
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Document(DocumentFormat.YAML), configuration.profile)
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.YAML,
+            ),
+            configuration.output.document,
+        )
+        assertTrue(configuration.hasConfiguredOutputs())
+    }
+
+    @Test
+    fun `create resolves AsyncAPI JSON document generator profile`() {
+        val outputFile = tempDir.resolve("asyncapi.json").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.ASYNCAPI_JSON,
+                    outputFile = outputFile,
+                ),
+            )
+
+        assertEquals(GeneratorProfile.Document(DocumentFormat.JSON), configuration.profile)
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.JSON,
+            ),
+            configuration.output.document,
+        )
+    }
+
+    @Test
+    fun `create defaults bundled document output to YAML for source profiles`() {
+        val outputFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(outputFile = outputFile),
+            )
+
+        assertEquals(
+            DocumentOutput(
+                file = outputFile,
+                format = DocumentFormat.YAML,
+            ),
+            configuration.output.document,
+        )
+    }
+
+    @Test
+    fun `create resolves Kotlin Protobuf models from the source generator`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.KOTLIN,
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.protobuf",
+                            modelType = ModelType.PROTOBUF_MESSAGE,
+                        ),
+                ),
+            )
+
+        assertEquals(SourceLanguage.KOTLIN, configuration.sourceLanguage)
+        assertEquals(ModelGeneration.Disabled, configuration.models)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    models =
+                        ProtobufModelGeneration(
+                            packageName = "com.example.protobuf",
+                            modelType = ProtobufModelType.KOTLIN,
+                        ),
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create resolves Java Protobuf models from the source generator`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.JAVA,
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.protobuf",
+                            modelType = ModelType.PROTOBUF_MESSAGE,
+                        ),
+                ),
+            )
+
+        assertEquals(SourceLanguage.JAVA, configuration.sourceLanguage)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeProtobuf(
+                    models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
+
+    @Test
+    fun `create carries the configured model package into native Avro model generation`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.avro",
+                            modelType = ModelType.AVRO_SPECIFIC_RECORD,
+                        ),
+                ),
+            )
+
+        assertEquals(ModelGeneration.Disabled, configuration.models)
+        assertEquals(
+            listOf(
+                SchemaGeneration.NativeAvro(
+                    generateSpecificRecords = true,
+                    modelPackageName = "com.example.avro",
+                ),
+            ),
+            configuration.schemas,
+        )
+    }
 
     @Test
     fun `create enables model generation when model package is configured`() {
@@ -31,7 +253,11 @@ class GeneratorConfigurationFactoryTest {
         assertEquals(
             ModelGeneration.Enabled(
                 packageName = "com.example.model",
-                annotation = "com.example.NoArg",
+                annotation =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "com.example.NoArg",
+                        path = "modelConfig.modelAnnotation",
+                    ),
                 javaModelType = JavaModelType.CLASS,
             ),
             configuration.models,
@@ -44,11 +270,11 @@ class GeneratorConfigurationFactoryTest {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
-                    language = JAVA,
+                    generatorName = JAVA,
                     models =
                         GeneratorConfigurationRequest.Models(
                             packageName = "com.example.model",
-                            javaModelType = JavaModelType.RECORD,
+                            modelType = ModelType.JAVA_RECORD,
                         ),
                 ),
             )
@@ -135,7 +361,20 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create maps kafka header and spring kafka generation options`() {
+    fun `create maps spring kafka generation options`() {
+        val validationAnnotations =
+            ClientValidationAnnotations(
+                clientContract =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "org.springframework.validation.annotation.Validated",
+                        path = "clients.kafka.springKafka.validationAnnotations.clientContract",
+                    ),
+                payloadParameter =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
+                    ),
+            )
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
@@ -145,10 +384,16 @@ class GeneratorConfigurationFactoryTest {
                             kafka =
                                 GeneratorConfigurationRequest.Kafka(
                                     packageName = "com.example.client",
-                                    headers = GeneratorConfigurationRequest.KafkaHeaders(enabled = false),
                                     springKafka =
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
-                                            producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                                            clientContract = ClientContract.INTERFACE,
+                                            topicParameterProperties =
+                                                mapOf("environment" to "kafka.environment"),
+                                            validationAnnotations = validationAnnotations,
+                                            producer =
+                                                GeneratorConfigurationRequest.KafkaProducer(
+                                                    enabled = false,
+                                                ),
                                             consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
                                         ),
                                 ),
@@ -161,15 +406,90 @@ class GeneratorConfigurationFactoryTest {
                 ClientGeneration.Kafka(
                     packageName = "com.example.client",
                     modelPackageName = "com.example.model",
-                    headers = ClientGeneration.Headers(enabled = false),
                     springKafka =
                         ClientGeneration.SpringKafka(
-                            producer = ClientGeneration.Producer(enabled = false),
+                            clientContract = ClientContract.INTERFACE,
+                            topicParameterProperties =
+                                TopicParameterProperties.fromConfigurationValues(
+                                    values = mapOf("environment" to "kafka.environment"),
+                                    path = "clients.kafka.springKafka.topicParameterProperties",
+                                ),
+                            validationAnnotations = validationAnnotations,
+                            producer =
+                                ClientGeneration.Producer(
+                                    enabled = false,
+                                ),
                             consumer = ClientGeneration.Consumer(enabled = true),
                         ),
                 ),
             ),
             configuration.clients,
+        )
+    }
+
+    @Test
+    fun `create rejects spring kafka configuration without an enabled contract`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        springKafka =
+                                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                producer =
+                                                    GeneratorConfigurationRequest.KafkaProducer(
+                                                        enabled = false,
+                                                    ),
+                                                consumer =
+                                                    GeneratorConfigurationRequest.KafkaConsumer(
+                                                        enabled = false,
+                                                    ),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "Spring Kafka client generation requires at least one enabled contract: " +
+                "producer.enabled or consumer.enabled",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects invalid topic parameter property mappings`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        springKafka =
+                                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                topicParameterProperties =
+                                                    mapOf("environment" to "${'$'}{kafka.environment}"),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "clients.kafka.springKafka.topicParameterProperties.environment must be a Spring property name " +
+                "without placeholder syntax, for example kafka.environment",
+            exception.message,
         )
     }
 
@@ -222,16 +542,13 @@ class GeneratorConfigurationFactoryTest {
                 request(
                     schemas =
                         GeneratorConfigurationRequest.Schemas(
-                            nativeProtobuf =
-                                GeneratorConfigurationRequest.NativeProtobuf(
-                                    generateJavaMessageTypes = false,
-                                ),
+                            nativeProtobuf = GeneratorConfigurationRequest.NativeProtobuf,
                         ),
                 ),
             )
 
         assertEquals(
-            listOf(SchemaGeneration.NativeProtobuf(generateJavaMessageTypes = false)),
+            listOf(SchemaGeneration.NativeProtobuf()),
             configuration.schemas,
         )
     }
@@ -313,6 +630,142 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create rejects schema generator without schema package`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(generatorName = GeneratorName.AVRO_SCHEMA),
+                )
+            }
+
+        assertEquals(
+            "schemaPackage is required when generatorName is avro-schema",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects source configuration for schema generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.PROTOBUF_SCHEMA,
+                        schemaPackageName = "com.example.schema",
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models cannot be configured when generatorName is protobuf-schema",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects schema generation options for schema generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.AVRO_SCHEMA,
+                        schemaPackageName = "com.example.schema",
+                        schemas =
+                            GeneratorConfigurationRequest.Schemas(
+                                nativeAvro = GeneratorConfigurationRequest.NativeAvro(),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "schema generation options cannot be configured when generatorName is avro-schema; " +
+                "the generator name already selects the schema type",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects document generator without output file`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(generatorName = GeneratorName.ASYNCAPI_JSON),
+                )
+            }
+
+        assertEquals(
+            "outputFile is required when generatorName is asyncapi-json",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects model configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_YAML,
+                        outputFile = tempDir.resolve("asyncapi.yaml").toFile(),
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "models cannot be configured when generatorName is asyncapi-yaml",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects schema configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_JSON,
+                        outputFile = tempDir.resolve("asyncapi.json").toFile(),
+                        schemaPackageName = "com.example.schema",
+                    ),
+                )
+            }
+
+        assertEquals(
+            "schemas cannot be configured when generatorName is asyncapi-json",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects client configuration for document generator`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.ASYNCAPI_YAML,
+                        outputFile = tempDir.resolve("asyncapi.yaml").toFile(),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        modelPackageName = "com.example.model",
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "clients cannot be configured when generatorName is asyncapi-yaml",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create rejects model annotation without model package`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
@@ -326,6 +779,38 @@ class GeneratorConfigurationFactoryTest {
         assertEquals(
             "models.packageName is required when models.annotation is configured",
             exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects an empty model annotation`() {
+        assertConfigurationError(
+            expectedMessage = "modelConfig.modelAnnotation cannot be empty",
+            request =
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            annotation = " ",
+                        ),
+                ),
+        )
+    }
+
+    @Test
+    fun `create rejects a model annotation without a fully qualified name`() {
+        assertConfigurationError(
+            expectedMessage =
+                "modelConfig.modelAnnotation must be a fully qualified type name, " +
+                    "for example com.example.GeneratedPayload",
+            request =
+                request(
+                    models =
+                        GeneratorConfigurationRequest.Models(
+                            packageName = "com.example.model",
+                            annotation = "GeneratedPayload",
+                        ),
+                ),
         )
     }
 
@@ -355,14 +840,61 @@ class GeneratorConfigurationFactoryTest {
                         models =
                             GeneratorConfigurationRequest.Models(
                                 packageName = "com.example.model",
-                                javaModelType = JavaModelType.RECORD,
+                                modelType = ModelType.JAVA_RECORD,
                             ),
                     ),
                 )
             }
 
         assertEquals(
-            "models.javaModelType=record is only supported when generatorName is java",
+            "modelConfig.modelType 'java-record' is not supported when generatorName is kotlin. " +
+                "Supported values: kotlin-data-class, avro-specific-record, protobuf-message",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects Kotlin data class model generation for Java`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        generatorName = GeneratorName.JAVA,
+                        models =
+                            GeneratorConfigurationRequest.Models(
+                                packageName = "com.example.model",
+                                modelType = ModelType.KOTLIN_DATA_CLASS,
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "modelConfig.modelType 'kotlin-data-class' is not supported when generatorName is java. " +
+                "Supported values: java-class, java-record, avro-specific-record, protobuf-message",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects model annotation for native payload model`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models =
+                            GeneratorConfigurationRequest.Models(
+                                packageName = "com.example.model",
+                                annotation = "com.example.GeneratedPayload",
+                                modelType = ModelType.AVRO_SPECIFIC_RECORD,
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
+                "and java-record model types",
             exception.message,
         )
     }
@@ -464,17 +996,21 @@ class GeneratorConfigurationFactoryTest {
     }
 
     private fun request(
-        language: GeneratorName = GeneratorName.KOTLIN,
+        generatorName: GeneratorName = GeneratorName.KOTLIN,
         javaSourceOutputDirectory: File = tempDir.resolve("sources").toFile(),
+        outputFile: File? = null,
+        schemaPackageName: String? = null,
         models: GeneratorConfigurationRequest.Models? = null,
         schemas: GeneratorConfigurationRequest.Schemas = GeneratorConfigurationRequest.Schemas(),
         clients: GeneratorConfigurationRequest.Clients = GeneratorConfigurationRequest.Clients(),
     ): GeneratorConfigurationRequest =
         GeneratorConfigurationRequest(
-            language = language,
+            generatorName = generatorName,
             sourceOutputDirectory = tempDir.resolve("sources").toFile(),
             javaSourceOutputDirectory = javaSourceOutputDirectory,
             resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+            outputFile = outputFile,
+            schemaPackageName = schemaPackageName,
             models = models,
             schemas = schemas,
             clients = clients,

@@ -40,66 +40,87 @@ sealed interface GeneratorItem {
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
+        val topicAddressConstantName: String,
+        val topicAddress: String,
         val methods: List<ConsumerMethod>,
+        val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
-    ) : GeneratorItem
+    ) : GeneratorItem {
+        val hasSingleMethod: Boolean get() = methods.size == 1
+        val hasMultipleMethods: Boolean get() = methods.size > 1
+        val hasPayloadlessMethods: Boolean get() = methods.any { method -> !method.hasPayload }
+    }
 
     data class KafkaProducerClass(
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-        val topic: String,
+        val topicAddressConstantName: String,
+        val topicAddress: String,
         val sendMethods: List<SendMethod>,
-        val kafkaValueType: String,
+        val clientContractAnnotation: String? = null,
         val imports: List<String> = emptyList(),
-    ) : GeneratorItem
+    ) : GeneratorItem {
+        val hasSingleMethod: Boolean get() = sendMethods.size == 1
+        val hasMultipleMethods: Boolean get() = sendMethods.size > 1
+        val hasSinglePayloadMethod: Boolean get() = hasSingleMethod && sendMethods.single().hasPayload
+    }
 
     data class ConsumerMethod(
+        val messageName: String,
         val methodName: String,
-        val payloadType: String,
+        val payloadType: String?,
         val payloadDescription: List<String> = emptyList(),
-        val keyDescription: List<String> = emptyList(),
-        val keyType: String?,
-        val headerType: String? = null,
+        val keyParameter: KeyParameter? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
+        val payloadParameterAnnotation: String? = null,
     ) {
+        val hasPayload: Boolean get() = payloadType != null
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
-        val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||
-            keyDescription.isNotEmpty() ||
-            headerProperties.any { it.description.isNotEmpty() }
+        val hasAdditionalParameters: Boolean get() = keyParameter != null || hasHeaders
         val payloadDescriptionFirstLine: String? get() = payloadDescription.firstOrNull()
         val payloadDescriptionTailLines: List<String> get() = payloadDescription.drop(1)
-        val keyDescriptionFirstLine: String? get() = keyDescription.firstOrNull()
-        val keyDescriptionTailLines: List<String> get() = keyDescription.drop(1)
     }
 
     data class SendMethod(
+        val messageName: String,
         val methodName: String,
-        val payloadType: String,
+        val payloadType: String?,
         val payloadDescription: List<String> = emptyList(),
-        val keyDescription: List<String> = emptyList(),
-        val keyType: String?,
-        val headerType: String? = null,
+        val payloadBindingAnnotation: String? = null,
+        val keyParameter: KeyParameter? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
+        val payloadParameterAnnotation: String? = null,
     ) {
+        val hasPayload: Boolean get() = payloadType != null
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
+        val hasAdditionalParameters: Boolean get() = keyParameter != null || hasHeaders
         val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||
-            keyDescription.isNotEmpty() ||
+            keyParameter?.description?.isNotEmpty() == true ||
             headerProperties.any { it.description.isNotEmpty() }
         val payloadDescriptionFirstLine: String? get() = payloadDescription.firstOrNull()
         val payloadDescriptionTailLines: List<String> get() = payloadDescription.drop(1)
-        val keyDescriptionFirstLine: String? get() = keyDescription.firstOrNull()
-        val keyDescriptionTailLines: List<String> get() = keyDescription.drop(1)
+    }
+
+    data class KeyParameter(
+        val parameterName: String,
+        val typeName: String,
+        val description: List<String> = emptyList(),
+        val required: Boolean,
+        val annotations: List<String> = emptyList(),
+    ) {
+        val descriptionFirstLine: String? get() = description.firstOrNull()
+        val descriptionTailLines: List<String> get() = description.drop(1)
     }
 
     data class HeaderProperty(
-        val name: String,
-        val accessorName: String,
+        val wireName: String,
         val parameterName: String,
         val typeName: String,
         val description: List<String> = emptyList(),
         val required: Boolean = false,
         val defaultValue: String? = null,
+        val bindingAnnotation: String? = null,
     ) {
         val descriptionFirstLine: String? get() = description.firstOrNull()
         val descriptionTailLines: List<String> get() = description.drop(1)

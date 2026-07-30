@@ -26,6 +26,7 @@ class GenerationInputFactory(
 
         return GenerationInput(
             schemas = analyzedSchemas,
+            declaredSchemas = schemas,
             multiFormatSchemas = multiFormatSchemas,
             polymorphicRelationships = polymorphicRelationships,
             channels = analyzedChannels,

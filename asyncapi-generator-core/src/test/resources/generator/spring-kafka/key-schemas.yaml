@@ -1,0 +1,13 @@
+myAccountKey:
+  type: object
+  description: Identifies an account within an institution.
+  required:
+    - institutionId
+    - accountId
+  properties:
+    institutionId:
+      type: string
+      description: Institution that owns the account.
+    accountId:
+      type: string
+      description: Account identifier within the institution.

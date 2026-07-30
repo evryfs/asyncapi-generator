@@ -9,3 +9,10 @@ components:
         topic: my.topic
         partitions: 3
         replicas: 1
+  messageBindings:
+    ValidKafkaMessageBinding:
+      kafka:
+        key:
+          type: string
+          pattern: '^[A-Z0-9]+$'
+        bindingVersion: '0.5.0'

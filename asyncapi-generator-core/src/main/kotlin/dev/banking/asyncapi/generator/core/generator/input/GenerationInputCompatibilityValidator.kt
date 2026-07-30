@@ -1,7 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
+import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientContractValidator
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeAvroModelPackageMismatch
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 
@@ -11,12 +16,19 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
  * Expected behavior is covered by:
  * - `GenerationInputCompatibilityValidatorTest`
  */
-class GenerationInputCompatibilityValidator {
+class GenerationInputCompatibilityValidator(
+    private val nativeAvroSchemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
+) {
 
     fun validate(
         generationInput: GenerationInput,
         generationPlan: GenerationPlan,
     ) {
+        val hasAvroProjection =
+            generationPlan.tasks.any { task -> task is GenerationTask.AvroSchemaArtifacts }
+        val hasNativeAvro =
+            generationPlan.tasks.any { task -> task is GenerationTask.NativeAvroArtifacts }
+
         generationPlan.tasks.forEach { task ->
             when (task) {
                 is GenerationTask.ModelArtifacts ->
@@ -24,23 +36,142 @@ class GenerationInputCompatibilityValidator {
                         output = "Model generation",
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                     )
-                is GenerationTask.SpringKafkaClient ->
+                is GenerationTask.SpringKafkaClient -> {
+                    SpringKafkaClientContractValidator.validate(
+                        channels = generationInput.channels,
+                        task = task,
+                    )
                     rejectUnsupportedMultiFormatMessages(
                         output = "Spring Kafka client generation",
                         generationInput = generationInput,
                     )
+                }
                 is GenerationTask.AvroSchemaArtifacts ->
-                    rejectMultiFormatSchemas(
-                        output = "Avro Projection",
-                        multiFormatSchemas = generationInput.multiFormatSchemas,
+                    if (!hasNativeAvro) {
+                        rejectMultiFormatSchemas(
+                            output = "Avro Projection",
+                            multiFormatSchemas = generationInput.multiFormatSchemas,
+                        )
+                    }
+                is GenerationTask.NativeAvroArtifacts -> {
+                    if (
+                        task.generateSpecificRecords ||
+                        !hasAvroProjection ||
+                        generationInput.schemas.isEmpty()
+                    ) {
+                        requireNativeSchema(
+                            output = "Native Avro generation",
+                            generationInput = generationInput,
+                            supportedInput = "native Avro schemas",
+                            isSupported = { schema -> schema.format.isNativeAvro },
+                        )
+                    }
+                    if (task.generateSpecificRecords && task.modelPackageName != null) {
+                        validateNativeAvroModelPackage(
+                            generationInput = generationInput,
+                            configuredPackage = task.modelPackageName,
+                        )
+                    }
+                }
+                is GenerationTask.NativeProtobufArtifacts -> {
+                    requireNativeSchema(
+                        output = "Native Protobuf generation",
+                        generationInput = generationInput,
+                        supportedInput = "native Protobuf schemas",
+                        isSupported = { schema -> schema.format.isNativeProtobuf },
                     )
-                is GenerationTask.HeaderModelArtifacts,
-                is GenerationTask.NativeAvroArtifacts,
-                is GenerationTask.NativeProtobufArtifacts,
+                }
+                is GenerationTask.JsonSchemaArtifacts ->
+                    requireJsonSchema(generationInput)
+                is GenerationTask.DocumentArtifact,
+                is GenerationTask.KafkaKeyModelArtifacts,
                 is GenerationTask.QuarkusKafkaClient,
                 -> Unit
             }
         }
+    }
+
+    private fun requireNativeSchema(
+        output: String,
+        generationInput: GenerationInput,
+        supportedInput: String,
+        isSupported: (MultiFormatSchema) -> Boolean,
+    ) {
+        if (generationInput.multiFormatSchemas.values.any(isSupported)) {
+            return
+        }
+
+        val firstSchema =
+            generationInput.multiFormatSchemas.entries.firstOrNull()
+        if (firstSchema != null) {
+            throw UnsupportedSchemaGenerationInput(
+                output = output,
+                payloadName = firstSchema.key,
+                inputFormat = "schemaFormat '${firstSchema.value.schemaFormat}'",
+                supportedInput = supportedInput,
+            )
+        }
+
+        val payloadName = generationInput.schemas.keys.firstOrNull()
+        if (payloadName == null) {
+            throw MissingSchemaGenerationInput(
+                output = output,
+                supportedInput = supportedInput,
+            )
+        }
+        throw UnsupportedSchemaGenerationInput(
+            output = output,
+            payloadName = payloadName,
+            inputFormat = "an AsyncAPI Schema Object",
+            supportedInput = supportedInput,
+        )
+    }
+
+    private fun validateNativeAvroModelPackage(
+        generationInput: GenerationInput,
+        configuredPackage: String,
+    ) {
+        generationInput.multiFormatSchemas
+            .filterValues { schema -> schema.format.isNativeAvro }
+            .forEach { (payloadName, schema) ->
+                val schemaNamespace =
+                    nativeAvroSchemaParser
+                        .parse(payloadName, schema)
+                        .namespace
+                if (schemaNamespace != configuredPackage) {
+                    throw NativeAvroModelPackageMismatch(
+                        payloadName = payloadName,
+                        configuredPackage = configuredPackage,
+                        schemaNamespace = schemaNamespace,
+                    )
+                }
+            }
+    }
+
+    private fun requireJsonSchema(generationInput: GenerationInput) {
+        val incompatibleSchema =
+            generationInput.multiFormatSchemas.entries
+                .firstOrNull { (_, schema) -> !schema.format.isJsonSchemaDraft07 }
+        if (incompatibleSchema != null) {
+            throw UnsupportedSchemaGenerationInput(
+                output = "JSON Schema generation",
+                payloadName = incompatibleSchema.key,
+                inputFormat = "schemaFormat '${incompatibleSchema.value.schemaFormat}'",
+                supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+            )
+        }
+
+        if (
+            generationInput.declaredSchemas.isNotEmpty() ||
+            generationInput.multiFormatSchemas.isNotEmpty()
+        ) {
+            return
+        }
+
+        throw MissingSchemaGenerationInput(
+            output = "JSON Schema generation",
+            supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+        )
     }
 
     private fun rejectMultiFormatSchemas(

@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -15,7 +16,11 @@ class KotlinModelPreparerTest {
             preparer.prepare(
                 input = fixtures.generationInputWithObjectEnumAndPrimitive(),
                 packageName = "com.example.model",
-                annotation = "jakarta.validation.Valid",
+                annotation =
+                    QualifiedTypeName.fromConfigurationValue(
+                        value = "jakarta.validation.Valid",
+                        path = "modelConfig.modelAnnotation",
+                    ),
             )
 
         assertEquals(listOf("User", "Status"), items.map { it.name })
@@ -31,24 +36,5 @@ class KotlinModelPreparerTest {
         val status = items.filterIsInstance<GeneratorItem.EnumClassModel>().single()
         assertEquals("com.example.model", status.packageName)
         assertEquals(listOf("ACTIVE", "INACTIVE"), status.values)
-    }
-
-    @Test
-    fun `prepare headers maps message headers into Kotlin model items`() {
-        val items =
-            preparer.prepareHeaders(
-                input = fixtures.generationInputWithObjectEnumAndPrimitive(),
-                asyncApiDocument = fixtures.documentWithMessageHeaders(),
-                packageName = "com.example.client.header",
-            )
-
-        val header = items.filterIsInstance<GeneratorItem.DataClassModel>().single()
-        assertEquals("TopicUserEventsHeadersUserSignup", header.name)
-        assertEquals("com.example.client.header", header.packageName)
-        assertEquals(
-            listOf("correlationId", "applicationInstanceId"),
-            header.properties.map { it.name },
-        )
-        assertEquals(listOf("String?", "String?"), header.properties.map { it.typeName })
     }
 }

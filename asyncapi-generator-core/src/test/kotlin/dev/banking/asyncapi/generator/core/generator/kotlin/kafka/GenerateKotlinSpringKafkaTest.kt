@@ -26,96 +26,66 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val producerDir = outputDir.resolve("$clientPath/producer")
         val consumerDir = outputDir.resolve("$clientPath/consumer")
 
-        val producerFile = producerDir.resolve("UserEventsProducerUserSignedUp.kt")
+        val producerFile = producerDir.resolve("UserEventsProducer.kt")
         assertTrue(producerFile.exists(), "Producer should be generated")
         val producerContent = producerFile.readText()
-        assertTrue(producerContent.contains("interface UserEventsProducerUserSignedUp"))
-        assertTrue(producerContent.contains("@Validated"))
-        assertTrue(producerContent.contains("Producer contract for publishing messages to the `user.events.v1` topic."))
+        assertTrue(producerContent.contains("interface UserEventsProducer {"))
+        assertFalse(producerContent.contains("@Validated"))
+        assertTrue(
+            producerContent.contains(
+                "Defines the Spring Kafka producer contract for messages published to the " +
+                    "`user.events.v1` AsyncAPI channel.",
+            ),
+        )
         assertTrue(producerContent.contains("sendUserSignedUp"))
-        assertTrue(producerContent.contains("@param:Valid"))
+        assertFalse(producerContent.contains("@Valid"))
         assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(producerContent.contains("key: String"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
+        assertFalse(producerContent.contains("messageKey:"))
+        assertTrue(producerContent.contains("@Payload"))
+        assertFalse(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
+        assertFalse(producerContent.contains("@Header("))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertFalse(producerContent.contains("ProducerRecord"))
-        assertFalse(producerContent.contains("CompletableFuture"))
-        assertTrue(!producerContent.contains("@Component"), "Producer should not be annotated")
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
+        assertTrue(producerContent.contains("CompletableFuture.failedFuture("))
+        assertTrue(producerContent.contains("UnsupportedOperationException("))
+        assertFalse(
+            producerContent.lineSequence().any { line -> line.trim() == "@Component" },
+            "Producer should not be annotated",
+        )
 
         val consumerFile = consumerDir.resolve("UserEventsConsumer.kt")
         assertTrue(consumerFile.exists(), "Consumer should be generated")
         val consumerContent = consumerFile.readText()
         assertTrue(consumerContent.contains("interface UserEventsConsumer"))
-        assertTrue(consumerContent.contains("@Validated"))
-        assertTrue(consumerContent.contains("Consumer contract for handling messages from the `user.events.v1` topic."))
-        assertTrue(consumerContent.contains("fun onUserSignedUp"))
-        assertTrue(consumerContent.contains("@param:Valid"))
-        assertTrue(consumerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
-        assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
-        assertTrue(!consumerContent.contains("@KafkaListener"), "Consumer should not be annotated")
-    }
-
-    @Test
-    fun `should generate header classes for spring kafka client`() {
-        val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
-        val modelPackage = "dev.banking.test.userservice.v1.model"
-        val clientPackage = "dev.banking.test.userservice.v1.client"
-
-        generateElement(
-            yaml = yaml,
-            modelPackage = modelPackage,
-            clientPackage = clientPackage,
-            generateModels = true,
-            generateSpringKafkaClient = true,
-        )
-
-        val outputDir = File("target/generated-sources/asyncapi")
-        val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
-        assertTrue(headerDir.exists(), "Spring Kafka client should generate header classes")
-
-        val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        assertFalse(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
-        assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertTrue(consumerContent.contains("fun onUserSignup("))
-        assertTrue(consumerContent.contains("payload: UserSignupPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
-        assertTrue(consumerContent.contains("correlationId: String? = null"))
-        assertTrue(consumerContent.contains("applicationInstanceId: String? = null"))
-        assertTrue(consumerContent.contains("@param correlationId Correlation ID set by application"))
+        assertFalse(consumerContent.contains("@Validated"))
         assertTrue(
             consumerContent.contains(
-                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
+                "Defines the Spring Kafka consumer contract for messages received from the `user.events.v1` " +
+                    "AsyncAPI channel.",
             ),
         )
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
-
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.kt").readText()
-        assertFalse(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
-        assertFalse(producerContent.contains("import java.util.concurrent.CompletableFuture"))
-        assertFalse(producerContent.contains("import org.springframework.kafka.support.SendResult"))
-        assertTrue(producerContent.contains("interface UserEventsProducerUserSignup"))
-        assertTrue(producerContent.contains("fun sendUserSignup("))
-        assertTrue(producerContent.contains("payload: UserSignupPayload"))
-        assertTrue(producerContent.contains("correlationId: String? = null"))
-        assertTrue(producerContent.contains("applicationInstanceId: String? = null"))
-        assertTrue(producerContent.contains("@param correlationId Correlation ID set by application"))
-        assertTrue(
-            producerContent.contains(
-                "@param applicationInstanceId Unique identifier for a given instance of the publishing application",
-            ),
+        assertTrue(consumerContent.contains("fun listenUserSignedUp"))
+        assertFalse(consumerContent.contains("@Valid"))
+        assertTrue(consumerContent.contains("payload: UserSignedUpPayload"))
+        assertFalse(consumerContent.contains("receivedKey:"))
+        assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
+        assertFalse(consumerContent.contains("ConsumerRecord"))
+        assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
+        assertFalse(
+            consumerContent.lineSequence().any { line -> line.trimStart().startsWith("@KafkaListener") },
+            "Consumer should not be annotated",
         )
-        assertFalse(producerContent.contains("record.headers().add"))
     }
 
     @Test
-    fun `should not reference typed headers when Kafka header generation is disabled`() {
+    fun `should generate message headers as individual spring kafka client parameters`() {
         val yaml = File("src/test/resources/generator/asyncapi_message_headers.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
-        val outputDir = File("target/generated-sources/asyncapi-kotlin-spring-kafka-no-headers")
-        val resourceOutputDirectory = File("target/generated-resources/asyncapi-kotlin-spring-kafka-no-headers")
+        val outputDir = File("target/generated-sources/asyncapi-kotlin-message-headers")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-kotlin-message-headers")
         outputDir.deleteRecursively()
         resourceOutputDirectory.deleteRecursively()
 
@@ -127,33 +97,106 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
             clientPackage = clientPackage,
             generateModels = true,
             generateSpringKafkaClient = true,
-            generateKafkaHeaders = false,
         )
 
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
-        val headerDir = clientDir.resolve("header")
-        assertFalse(headerDir.exists(), "Header classes should not be generated when Kafka headers are disabled")
+        val headerDir = outputDir.resolve("dev/banking/test/userservice/v1/client/header")
+        assertFalse(headerDir.exists(), "Spring Kafka clients should not generate typed header models")
 
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        assertFalse(consumerContent.contains(".client.header."))
-        assertFalse(consumerContent.contains("TopicUserEventsHeadersUserSignup"))
+        assertFalse(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
-        assertTrue(consumerContent.contains("fun onUserSignup("))
+        assertTrue(consumerContent.contains("fun listenUserSignup("))
         assertTrue(consumerContent.contains("payload: UserSignupPayload"))
-        assertTrue(consumerContent.contains("key: String?"))
-        assertFalse(consumerContent.contains("correlationId:"))
-        assertFalse(consumerContent.contains("applicationInstanceId:"))
-        assertFalse(consumerContent.contains("{ }"), "Consumer methods should be abstract")
+        assertFalse(consumerContent.contains("receivedKey:"))
+        assertFalse(consumerContent.contains("KafkaHeaders.RECEIVED_KEY"))
+        assertTrue(consumerContent.contains("correlationId: String? = null"))
+        assertTrue(consumerContent.contains("applicationInstanceId: String? = null"))
+        assertTrue(
+            consumerContent.contains(
+                "@param [correlationId] Value bound from the `correlationId` Kafka message header.",
+            ),
+        )
+        assertTrue(consumerContent.contains("Correlation ID set by application"))
+        assertTrue(
+            consumerContent.contains(
+                "@param [applicationInstanceId] Value bound from the `applicationInstanceId` Kafka message header.",
+            ),
+        )
+        assertTrue(consumerContent.contains("Unique identifier for a given instance"))
+        assertTrue(consumerContent.contains(") = Unit"), "Consumer methods should have no-op defaults")
 
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserSignup.kt").readText()
-        assertFalse(producerContent.contains(".client.header."))
-        assertFalse(producerContent.contains("TopicUserEventsHeadersUserSignup"))
-        assertFalse(producerContent.contains("record.headers().add"))
-        assertFalse(producerContent.contains("correlationId:"))
-        assertFalse(producerContent.contains("applicationInstanceId:"))
+        val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
+        assertFalse(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup"))
+        assertTrue(producerContent.contains("import java.util.concurrent.CompletableFuture"))
+        assertTrue(producerContent.contains("import org.apache.kafka.clients.producer.RecordMetadata"))
+        assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("fun sendUserSignup("))
         assertTrue(producerContent.contains("payload: UserSignupPayload"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertFalse(producerContent.contains("messageKey:"))
+        assertTrue(producerContent.contains("import org.springframework.messaging.handler.annotation.Header"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.support.KafkaHeaders"))
+        assertFalse(producerContent.contains("KafkaHeaders.KEY"))
+        assertTrue(producerContent.contains("correlationId: String? = null"))
+        assertTrue(producerContent.contains("applicationInstanceId: String? = null"))
+        assertTrue(
+            producerContent.contains(
+                "@param [correlationId] Value for the `correlationId` Kafka message header.",
+            ),
+        )
+        assertTrue(producerContent.contains("Correlation ID set by application"))
+        assertTrue(
+            producerContent.contains(
+                "@param [applicationInstanceId] Value for the `applicationInstanceId` Kafka message header.",
+            ),
+        )
+        assertTrue(producerContent.contains("Unique identifier for a given instance"))
+        assertFalse(producerContent.contains("record.headers().add"))
+    }
+
+    @Test
+    fun `should generate spring kafka contracts for messages without a payload`() {
+        val yaml = File("src/test/resources/generator/asyncapi_payloadless_message.yaml")
+        val modelPackage = "dev.banking.test.cache.v1.model"
+        val clientPackage = "dev.banking.test.cache.v1.client"
+        val outputDir = File("target/generated-sources/asyncapi-kotlin-payloadless")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-kotlin-payloadless")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+
+        generateElement(
+            yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+        )
+
+        val clientDir = outputDir.resolve("dev/banking/test/cache/v1/client")
+        val consumerContent = clientDir.resolve("consumer/CacheEventsConsumer.kt").readText()
+        assertTrue(consumerContent.contains("fun listenCacheInvalidatedV1("))
+        assertTrue(consumerContent.contains("receivedTopic: String,"))
+        assertTrue(consumerContent.contains("receivedKey: String,"))
+        assertTrue(consumerContent.contains("correlationId: String,"))
+        assertTrue(consumerContent.contains("sourceSystem: String? = null,"))
+        assertTrue(consumerContent.contains("This Message Object declares no payload."))
+        assertFalse(consumerContent.contains("payload:"))
+        assertFalse(consumerContent.lineSequence().any { line -> line.trim() == "@Payload" })
+        assertFalse(consumerContent.contains("handler.annotation.Payload"))
+
+        val producerContent = clientDir.resolve("producer/CacheEventsProducer.kt").readText()
+        assertTrue(producerContent.contains("fun sendCacheInvalidatedV1("))
+        assertTrue(producerContent.contains("messageKey: String,"))
+        assertTrue(producerContent.contains("correlationId: String,"))
+        assertTrue(producerContent.contains("sourceSystem: String? = null,"))
+        assertTrue(producerContent.contains("This Message Object declares no payload."))
+        assertFalse(producerContent.contains("payload:"))
+        assertFalse(producerContent.lineSequence().any { line -> line.trim() == "@Payload" })
+        assertFalse(producerContent.contains("handler.annotation.Payload"))
+        assertFalse(producerContent.contains("MessageBuilder.withPayload"))
+        assertFalse(outputDir.resolve("dev/banking/test/cache/v1/model/CacheInvalidatedV1Payload.kt").exists())
     }
 
     @Test
@@ -173,16 +216,16 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreated.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
 
         assertTrue(consumerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(consumerContent.contains("payload: UserCreated"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.avro.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
     @Test
@@ -202,16 +245,16 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreatedAvro.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
 
         assertTrue(consumerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(consumerContent.contains("payload: UserCreatedAvro"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.avro.UserCreatedAvro"))
         assertTrue(producerContent.contains("payload: UserCreatedAvro"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
     @Test
@@ -231,16 +274,16 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreated.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
 
         assertTrue(consumerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(consumerContent.contains("payload: UserCreated"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.protobuf.UserCreated"))
         assertTrue(producerContent.contains("payload: UserCreated"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
     @Test
@@ -260,15 +303,15 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         val outputDir = File("target/generated-sources/asyncapi")
         val clientDir = outputDir.resolve("dev/banking/test/userservice/v1/client")
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.kt").readText()
-        val producerContent = clientDir.resolve("producer/UserEventsProducerUserCreatedProtobuf.kt").readText()
+        val producerContent = clientDir.resolve("producer/UserEventsProducer.kt").readText()
 
         assertTrue(consumerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(consumerContent.contains("payload: UserCreatedProtobuf"))
-        assertTrue(consumerContent.contains("key: String?"))
+        assertFalse(consumerContent.contains("receivedKey:"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(producerContent.contains("import com.example.external.protobuf.UserCreatedProtobuf"))
         assertTrue(producerContent.contains("payload: UserCreatedProtobuf"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 }

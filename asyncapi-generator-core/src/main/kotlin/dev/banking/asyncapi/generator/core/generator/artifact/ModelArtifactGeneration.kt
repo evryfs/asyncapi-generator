@@ -3,13 +3,13 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import java.io.File
 
 /**
@@ -49,6 +49,7 @@ class ModelArtifactGeneration(
                     javaModelPreparer.prepare(
                         input = generationInput,
                         packageName = task.packageName,
+                        annotation = task.annotation,
                     )
                 val generator =
                     JavaGenerator(
@@ -62,48 +63,30 @@ class ModelArtifactGeneration(
         }
     }
 
-    fun generateHeaderModelArtifacts(
-        task: GenerationTask.HeaderModelArtifacts,
-        asyncApiDocument: AsyncApiDocument,
+    fun generateKafkaKeyModelArtifacts(
+        task: GenerationTask.KafkaKeyModelArtifacts,
         generationInput: GenerationInput,
         sourceOutputDirectory: File,
         artifactWriter: GeneratedArtifactWriter,
     ) {
-        when (task.language) {
-            KOTLIN -> {
-                val headerModels =
-                    kotlinModelPreparer.prepareHeaders(
-                        input = generationInput,
-                        asyncApiDocument = asyncApiDocument,
-                        packageName = task.packageName,
-                    )
-                if (headerModels.isNotEmpty()) {
-                    val generator =
-                        KotlinGenerator(
-                            packageName = task.packageName,
-                            outputDir = sourceOutputDirectory,
-                            generationModel = headerModels,
-                        )
-                    artifactWriter.write(generator.render())
-                }
-            }
-            JAVA -> {
-                val headerModels =
-                    javaModelPreparer.prepareHeaders(
-                        input = generationInput,
-                        asyncApiDocument = asyncApiDocument,
-                        packageName = task.packageName,
-                    )
-                if (headerModels.isNotEmpty()) {
-                    val generator =
-                        JavaGenerator(
-                            packageName = task.packageName,
-                            outputDir = sourceOutputDirectory,
-                            generationModel = headerModels,
-                        )
-                    artifactWriter.write(generator.render())
-                }
-            }
-        }
+        val keySchemas = KafkaKeyModelSelector.select(generationInput)
+        if (keySchemas.isEmpty()) return
+
+        generateModelArtifacts(
+            task =
+                GenerationTask.ModelArtifacts(
+                    language = task.language,
+                    packageName = task.packageName,
+                ),
+            generationInput =
+                generationInput.copy(
+                    schemas = keySchemas,
+                    declaredSchemas = keySchemas,
+                    multiFormatSchemas = emptyMap(),
+                ),
+            sourceOutputDirectory = sourceOutputDirectory,
+            artifactWriter = artifactWriter,
+        )
     }
+
 }

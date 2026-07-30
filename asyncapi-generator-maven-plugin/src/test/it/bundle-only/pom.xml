@@ -19,10 +19,9 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputFile>${project.basedir}/src/main/resources/asyncapi.yaml</inputFile>
+                            <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
                             <outputFile>${project.build.directory}/bundled.yaml</outputFile>
-                            <generatorName>kotlin</generatorName>
-                            <!-- no models/clients/schemas output blocks -->
+                            <generatorName>asyncapi-yaml</generatorName>
                         </configuration>
                     </execution>
                 </executions>

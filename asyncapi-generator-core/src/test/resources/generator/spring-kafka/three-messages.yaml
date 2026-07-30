@@ -1,0 +1,113 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Lifecycle API
+  version: 1.0.0
+channels:
+  myAccountLifecycle:
+    address: my.accounts.{environment}.lifecycle.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+    messages:
+      myAccountCreated:
+        $ref: '#/components/messages/MyAccountCreated'
+      myAccountUpdated:
+        $ref: '#/components/messages/MyAccountUpdated'
+      myAccountClosed:
+        $ref: '#/components/messages/MyAccountClosed'
+operations:
+  publishMyAccountLifecycleEvents:
+    action: send
+    channel:
+      $ref: '#/channels/myAccountLifecycle'
+  consumeMyAccountLifecycleEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/myAccountLifecycle'
+components:
+  messages:
+    MyAccountCreated:
+      name: MyAccountCreated
+      headers:
+        $ref: '#/components/schemas/MessageHeaders'
+      payload:
+        $ref: '#/components/schemas/MyAccountCreatedPayload'
+    MyAccountUpdated:
+      name: MyAccountUpdated
+      bindings:
+        kafka:
+          key:
+            type: integer
+            format: int64
+            minimum: 1
+            maximum: 9999999999
+            description: Numeric identifier of the updated account.
+          bindingVersion: '0.5.0'
+      headers:
+        $ref: '#/components/schemas/MessageHeaders'
+      payload:
+        $ref: '#/components/schemas/MyAccountUpdatedPayload'
+    MyAccountClosed:
+      name: MyAccountClosed
+      bindings:
+        kafka:
+          key:
+            title: My Account Closure Key
+            type: object
+            description: Identifies a particular account closure.
+            required:
+              - accountId
+              - closureSequence
+            properties:
+              accountId:
+                type: string
+                description: Identifier of the closed account.
+              closureSequence:
+                type: integer
+                format: int64
+                minimum: 1
+                description: Sequence number assigned to this closure.
+          bindingVersion: '0.5.0'
+      headers:
+        $ref: '#/components/schemas/MessageHeaders'
+      payload:
+        $ref: '#/components/schemas/MyAccountClosedPayload'
+  schemas:
+    MessageHeaders:
+      type: object
+      required:
+        - X-EXAMPLE-CORRELATION-ID
+      properties:
+        X-EXAMPLE-CORRELATION-ID:
+          type: string
+          description: Identifier used to correlate related messages.
+        X-EXAMPLE-SOURCE-SYSTEM:
+          type: string
+          description: Optional name of the system that produced the message.
+    MyAccountCreatedPayload:
+      type: object
+      description: Details about a newly created account.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the created account.
+    MyAccountUpdatedPayload:
+      type: object
+      description: Details about an account update.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the updated account.
+    MyAccountClosedPayload:
+      type: object
+      description: Details about a closed account.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the closed account.

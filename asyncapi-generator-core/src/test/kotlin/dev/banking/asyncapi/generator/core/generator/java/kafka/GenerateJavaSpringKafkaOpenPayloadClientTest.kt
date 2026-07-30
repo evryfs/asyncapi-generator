@@ -30,18 +30,17 @@ class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass(
         val modelFile = modelDir.resolve("RawEventPayload.java")
         assertFalse(modelFile.exists(), "Open payload should not generate a model class")
 
-        val producerContent = producerDir.resolve("UserRawEventsProducerRawEvent.java").readText()
-        assertTrue(producerContent.contains("interface UserRawEventsProducerRawEvent"))
-        assertTrue(producerContent.contains("void sendRawEvent"))
-        assertTrue(producerContent.contains("@Valid @NotNull Object payload"))
-        assertFalse(producerContent.contains("KafkaTemplate"))
-        assertFalse(producerContent.contains("CompletableFuture"))
+        val producerContent = producerDir.resolve("UserRawEventsProducer.java").readText()
+        assertTrue(producerContent.contains("interface UserRawEventsProducer {"))
+        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata> sendRawEvent("))
+        assertTrue(producerContent.contains("@Payload Object payload"))
+        assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
 
         val consumerContent = consumerDir.resolve("UserRawEventsConsumer.java").readText()
         assertTrue(consumerContent.contains("interface UserRawEventsConsumer"))
-        assertTrue(consumerContent.contains("void onRawEvent"))
-        assertTrue(consumerContent.contains("@Valid @NotNull Object payload"))
-        assertTrue(consumerContent.contains("@Nullable String key"))
+        assertTrue(consumerContent.contains("void listenRawEvent("))
+        assertTrue(consumerContent.contains("@Payload Object payload"))
+        assertFalse(consumerContent.contains("receivedKey"))
         assertFalse(consumerContent.contains("ConsumerRecord"))
     }
 }

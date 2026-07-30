@@ -5,8 +5,10 @@ import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
@@ -24,7 +26,6 @@ abstract class AbstractKotlinGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
-        generateKafkaHeaders: Boolean = true,
         generateQuarkusKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
     ): String {
@@ -32,7 +33,7 @@ abstract class AbstractKotlinGeneratorClass {
         val effectiveClientPackage = clientPackage ?: modelPackage
         val generatorConfiguration =
             GeneratorConfiguration(
-                language = GeneratorName.KOTLIN,
+                profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
                 output =
                     GeneratorOutputConfiguration(
                         sourceOutputDirectory = codegenOutputDirectory,
@@ -42,7 +43,13 @@ abstract class AbstractKotlinGeneratorClass {
                     if (generateModels) {
                         ModelGeneration.Enabled(
                             packageName = modelPackage,
-                            annotation = modelAnnotation,
+                            annotation =
+                                modelAnnotation?.let { value ->
+                                    QualifiedTypeName.fromConfigurationValue(
+                                        value = value,
+                                        path = "modelConfig.modelAnnotation",
+                                    )
+                                },
                         )
                     } else {
                         ModelGeneration.Disabled
@@ -54,7 +61,6 @@ abstract class AbstractKotlinGeneratorClass {
                                 ClientGeneration.Kafka(
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
-                                    headers = ClientGeneration.Headers(enabled = generateKafkaHeaders),
                                     springKafka = ClientGeneration.SpringKafka(),
                                 ),
                             )

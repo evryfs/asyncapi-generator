@@ -2,7 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
@@ -14,6 +15,11 @@ import kotlin.test.assertTrue
 class ModelArtifactGenerationTest {
     private val generation = ModelArtifactGeneration()
     private val fixtures = GenerationInputFixtures()
+    private val modelAnnotation =
+        QualifiedTypeName.fromConfigurationValue(
+            value = "com.example.GeneratedPayload",
+            path = "modelConfig.modelAnnotation",
+        )
 
     @TempDir
     lateinit var tempDir: Path
@@ -31,9 +37,9 @@ class ModelArtifactGenerationTest {
         generation.generateModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.KOTLIN,
+                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
-                    annotation = "com.example.NoArg",
+                    annotation = modelAnnotation,
                 ),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             sourceOutputDirectory = sourceOutputDirectory,
@@ -42,12 +48,44 @@ class ModelArtifactGenerationTest {
 
         val user = sourceOutputDirectory.resolve("com/example/model/User.kt")
         assertTrue(user.exists())
-        assertTrue(user.readText().contains("@NoArg"))
+        assertTrue(user.readText().contains("import com.example.GeneratedPayload"))
+        assertTrue(user.readText().contains("@GeneratedPayload"))
         assertFalse(resourceOutputDirectory.resolve("com/example/model/User.kt").exists())
     }
 
     @Test
-    fun `generate header model artifacts writes Java header artifacts through writer`() {
+    fun `generate model artifacts applies configured annotation to Java classes`() {
+        val sourceOutputDirectory = tempDir.resolve("java-class-sources").toFile()
+        val artifactWriter =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = tempDir.resolve("java-class-resources").toFile(),
+            )
+
+        generation.generateModelArtifacts(
+            task =
+                GenerationTask.ModelArtifacts(
+                    language = SourceLanguage.JAVA,
+                    packageName = "com.example.model",
+                    annotation = modelAnnotation,
+                ),
+            generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
+            sourceOutputDirectory = sourceOutputDirectory,
+            artifactWriter = artifactWriter,
+        )
+
+        val content =
+            sourceOutputDirectory
+                .resolve("com/example/model/User.java")
+                .readText()
+        assertTrue(content.contains("import com.example.GeneratedPayload;"))
+        assertTrue(content.lineSequence().zipWithNext().any { (annotation, declaration) ->
+            annotation == "@GeneratedPayload" && declaration.startsWith("public class User")
+        })
+    }
+
+    @Test
+    fun `generate Kafka key model artifacts writes only native payload key models`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
         val artifactWriter =
@@ -56,28 +94,20 @@ class ModelArtifactGenerationTest {
                 resourceOutputDirectory = resourceOutputDirectory,
             )
 
-        generation.generateHeaderModelArtifacts(
+        generation.generateKafkaKeyModelArtifacts(
             task =
-                GenerationTask.HeaderModelArtifacts(
-                    language = GeneratorName.JAVA,
-                    packageName = "com.example.client.header",
+                GenerationTask.KafkaKeyModelArtifacts(
+                    language = SourceLanguage.KOTLIN,
+                    packageName = "com.example.model",
                 ),
-            asyncApiDocument = fixtures.documentWithMessageHeaders(),
-            generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
+            generationInput = fixtures.generationInputWithNativeAvroMessageAndObjectKey(),
             sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 
-        assertTrue(
-            sourceOutputDirectory
-                .resolve("com/example/client/header/TopicUserEventsHeadersUserSignup.java")
-                .exists(),
-        )
-        assertFalse(
-            resourceOutputDirectory
-                .resolve("com/example/client/header/TopicUserEventsHeadersUserSignup.java")
-                .exists(),
-        )
+        assertTrue(sourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/model/UserCreated.kt").exists())
+        assertFalse(resourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt").exists())
     }
 
     @Test
@@ -93,8 +123,9 @@ class ModelArtifactGenerationTest {
         generation.generateModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    language = GeneratorName.JAVA,
+                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
+                    annotation = modelAnnotation,
                     javaModelType = JavaModelType.RECORD,
                 ),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
@@ -104,7 +135,8 @@ class ModelArtifactGenerationTest {
 
         val user = sourceOutputDirectory.resolve("com/example/model/User.java")
         assertTrue(user.exists())
-        assertTrue(user.readText().contains("public record User("))
+        assertTrue(user.readText().contains("import com.example.GeneratedPayload;"))
+        assertTrue(user.readText().contains("@GeneratedPayload\npublic record User("))
         assertFalse(resourceOutputDirectory.resolve("com/example/model/User.java").exists())
     }
 }

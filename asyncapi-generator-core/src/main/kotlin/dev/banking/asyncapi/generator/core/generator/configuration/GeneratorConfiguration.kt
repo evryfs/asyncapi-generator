@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Typed core configuration consumed by generator planning and generation.
@@ -12,14 +12,18 @@ import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
  * - `GenerationPlannerTest`
  */
 data class GeneratorConfiguration(
-    val language: GeneratorName,
+    val profile: GeneratorProfile,
     val output: GeneratorOutputConfiguration,
     val models: ModelGeneration = ModelGeneration.Disabled,
     val schemas: List<SchemaGeneration> = emptyList(),
     val clients: List<ClientGeneration> = emptyList(),
 ) {
+    val sourceLanguage: SourceLanguage?
+        get() = (profile as? GeneratorProfile.Source)?.language
+
     fun hasConfiguredOutputs(): Boolean =
-        models != ModelGeneration.Disabled ||
+        output.document != null ||
+            models != ModelGeneration.Disabled ||
             schemas.isNotEmpty() ||
             clients.isNotEmpty()
 }

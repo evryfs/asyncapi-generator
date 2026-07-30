@@ -1,0 +1,60 @@
+asyncapi: '3.0.0'
+info:
+  title: Complete Maven Configuration
+  version: '1.0.0'
+channels:
+  accountEvents:
+    address: account.{environment}.events.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+    messages:
+      accountUpdated:
+        $ref: '#/components/messages/AccountUpdated'
+operations:
+  publishAccountUpdated:
+    action: send
+    channel:
+      $ref: '#/channels/accountEvents'
+    messages:
+      - $ref: '#/channels/accountEvents/messages/accountUpdated'
+  consumeAccountUpdated:
+    action: receive
+    channel:
+      $ref: '#/channels/accountEvents'
+    messages:
+      - $ref: '#/channels/accountEvents/messages/accountUpdated'
+components:
+  messages:
+    AccountUpdated:
+      name: AccountUpdatedV1
+      title: Account Updated
+      headers:
+        type: object
+        required:
+          - X-EXAMPLE-CORRELATION-ID
+        properties:
+          X-EXAMPLE-CORRELATION-ID:
+            type: string
+            description: Identifier used to correlate related messages.
+      payload:
+        $ref: '#/components/schemas/AccountUpdatedV1Payload'
+      bindings:
+        kafka:
+          key:
+            type: string
+            description: Account identifier used as the Kafka record key.
+          bindingVersion: '0.4.0'
+  schemas:
+    AccountUpdatedV1Payload:
+      type: object
+      description: Details about an account update.
+      required:
+        - accountId
+      properties:
+        accountId:
+          type: string
+          description: Identifier of the updated account.
+        displayName:
+          type: string
+          description: Optional display name for the account.
