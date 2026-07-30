@@ -19,7 +19,14 @@ sealed interface ClientGeneration {
         val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
         val producer: Producer = Producer(),
         val consumer: Consumer = Consumer(),
-    )
+    ) {
+        init {
+            require(producer.enabled || consumer.enabled) {
+                "Spring Kafka client generation requires at least one enabled contract: " +
+                    "producer.enabled or consumer.enabled"
+            }
+        }
+    }
 
     data class Producer(
         val enabled: Boolean = true,

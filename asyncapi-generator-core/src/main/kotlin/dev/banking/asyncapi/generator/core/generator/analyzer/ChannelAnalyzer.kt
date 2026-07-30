@@ -7,51 +7,13 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.operations.Operation
-import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class ChannelAnalyzer {
-    private data class ChannelUsage(
-        var isProducer: Boolean = false,
-        var isConsumer: Boolean = false,
-    )
-
     fun analyze(document: AsyncApiDocument): ChannelAnalysisResult {
         val channels = document.channels ?: return ChannelAnalysisResult(emptyList())
-        val operations = document.operations ?: emptyMap()
-
-        val channelUsage = mutableMapOf<String, ChannelUsage>()
-        channels.keys.forEach { name -> channelUsage[name] = ChannelUsage() }
-
-        operations.values.forEach { opInterface ->
-            val op =
-                when (opInterface) {
-                    is OperationInterface.OperationInline -> opInterface.operation
-                    is OperationInterface.OperationReference -> opInterface.reference.model as? Operation
-                } ?: return@forEach
-            val channelRef = op.channel ?: return@forEach
-            val targetChannelName =
-                channels.entries
-                    .find { (_, chInterface) ->
-                        val ch =
-                            if (chInterface is ChannelInterface.ChannelInline) {
-                                chInterface.channel
-                            } else {
-                                (chInterface as ChannelInterface.ChannelReference).reference.model
-                            }
-                        ch === channelRef.model
-                    }?.key ?: return@forEach
-
-            val usage = channelUsage[targetChannelName]!!
-            if (op.action == "send") {
-                usage.isProducer = true
-            } else if (op.action == "receive") {
-                usage.isConsumer = true
-            }
-        }
 
         val analyzedChannels =
             channels.mapNotNull { (name, chInterface) ->
@@ -61,16 +23,11 @@ class ChannelAnalyzer {
                         is ChannelInterface.ChannelReference -> chInterface.reference.model as? Channel
                     } ?: return@mapNotNull null
 
-                val usage = channelUsage[name]!!
-                val finalProducer = if (!usage.isProducer && !usage.isConsumer) true else usage.isProducer
-                val finalConsumer = if (!usage.isProducer && !usage.isConsumer) true else usage.isConsumer
                 val resolvedMessages = resolveMessages(channelName = name, messages = channel.messages)
 
                 AnalyzedChannel(
                     channelName = name,
                     topic = channel.address ?: name, // Fallback if address missing
-                    isProducer = finalProducer,
-                    isConsumer = finalConsumer,
                     messages = resolvedMessages.messages,
                     multiFormatMessages = resolvedMessages.multiFormatMessages,
                 )

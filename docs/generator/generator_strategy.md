@@ -12,9 +12,22 @@ delegates specific tasks to specialized components.
 1.  **Prepare Input:** The parsed `AsyncApiDocument` is converted into `GenerationInput`. JSON-compatible AsyncAPI Schema Object payloads are kept separately from explicit multi-format schemas.
 2.  **Plan:** The typed generator configuration is converted into a `GenerationPlan` with explicit output tasks.
 3.  **Validate Compatibility:** The planned outputs are checked against the prepared input before any files are written.
-4.  **Analyze:** Schema and channel analyzers build generation-focused models such as relationships, payload names, channel directions, and message payload contracts.
+4.  **Analyze:** Schema and channel analyzers build generation-focused models such as relationships, payload names, topic addresses, message payload contracts, and Kafka key and header bindings.
 5.  **Generate:** Specialized generators render source and schema artifacts from the prepared input and planned tasks.
 6.  **Write:** Generated artifacts are written through the output contract into either source or resource output directories.
+
+---
+
+## Client Contract Selection
+
+Spring Kafka producer and consumer contract selection belongs to the typed generator configuration. When client
+generation is active, each enabled contract type is generated for every channel that declares at least one message.
+All messages declared by that channel contribute methods to the generated interface.
+
+AsyncAPI Operation Objects are not generation directives. Their `send` and `receive` actions continue through the
+reader, parser, validator, and bundler, but channel analysis does not use them to activate, suppress, or filter client
+contracts. This keeps generation deterministic for both application-oriented documents and channel-oriented
+integration contracts.
 
 ---
 

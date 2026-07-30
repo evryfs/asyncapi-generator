@@ -48,7 +48,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should generate kotlin code from valid input`(@TempDir tempDir: Path) {
+    fun `should generate producer and consumer contracts independently of operation actions`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputDirectory = tempDir.resolve("generated").toFile()
         cli.parse(
@@ -62,9 +62,18 @@ class AsyncApiGeneratorCliTest {
                 "--generator-name", "kotlin",
             )
         )
-        val packageDir = outputDirectory.resolve("com/example/cli/client")
-        assertTrue(packageDir.exists(), "Output package directory should exist")
-        assertTrue(packageDir.list()?.isNotEmpty() == true, "Output directory should contain generated files")
+        val clientDirectory = outputDirectory.resolve("com/example/cli/client")
+        listOf(
+            "producer/UserSignedUpProducer.kt",
+            "consumer/UserSignedUpConsumer.kt",
+            "producer/UserLoggedOutProducer.kt",
+            "consumer/UserLoggedOutConsumer.kt",
+        ).forEach { relativePath ->
+            assertTrue(
+                clientDirectory.resolve(relativePath).isFile,
+                "Expected channel-driven client contract: $relativePath",
+            )
+        }
     }
 
     @Test
