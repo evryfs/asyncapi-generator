@@ -58,8 +58,6 @@ class SpringKafkaClientMethodNameValidatorTest {
         AnalyzedChannel(
             channelName = "accountEvents",
             topic = "account.events",
-            isProducer = true,
-            isConsumer = true,
             messages = messages.toList(),
         )
 

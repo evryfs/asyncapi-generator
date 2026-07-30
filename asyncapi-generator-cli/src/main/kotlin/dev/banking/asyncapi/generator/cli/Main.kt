@@ -1,257 +1,138 @@
 package dev.banking.asyncapi.generator.cli
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
+import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.parameters.options.default
-import com.github.ajalt.clikt.parameters.options.flag
-import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.types.choice
-import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.completion.completionOption
+import com.github.ajalt.clikt.parameters.groups.provideDelegate
+import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSourceLanguageResolver
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import java.io.File
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
+import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 
 fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
+/**
+ * Command-line frontend for one AsyncAPI generation request.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiGeneratorCliTest`
+ * - `CliDiagnosticsTest`
+ * - `CliPackagedApplicationIT`
+ */
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
-    private val input by option("--input", "-i", help = "Path to AsyncAPI YAML or JSON file")
-        .file(mustExist = true, canBeDir = false, mustBeReadable = true)
-        .required()
-    private val codegenOutputDirectory by option("--codegen-output", help = "Codegen output directory")
-        .file(canBeFile = false)
-        .default(File("./generated-sources/asyncapi"))
-    private val resourceOutputDirectory by option("--resource-output", help = "Resource output directory")
-        .file(canBeFile = false)
-        .default(File("./generated-resources/asyncapi"))
-    private val outputFile by option("--output-file", help = "Write the bundled AsyncAPI document to a file")
-        .file(canBeDir = false)
+    override val printHelpOnEmptyArgs: Boolean = true
 
-    private val generator by option("--generator", "-g", help = "Generator profile (default: kotlin)")
-        .choice(
-            *GeneratorName.entries
-                .map { generatorName -> generatorName.configurationValue to generatorName }
-                .toTypedArray(),
-        ).default(GeneratorName.KOTLIN)
+    init {
+        versionOption(
+            version =
+                AsyncApiGeneratorCli::class.java
+                    .`package`
+                    .implementationVersion
+                    ?: "development",
+        )
+        completionOption(
+            help = "Generate a completion script for Bash, Zsh, or Fish.",
+        )
+    }
 
-    private val modelsPackage by option("--models-package", help = "Package for generated models")
+    private val generationOptions by CliGenerationOptions()
+    private val outputOptions by CliOutputOptions()
+    private val modelOptions by CliModelOptions()
+    private val clientOptions by CliClientOptions()
 
-    private val modelsAnnotation by option(
-        "--models-annotation",
-        help = "Fully qualified annotation added to generated model classes",
-    )
+    override fun help(context: Context): String =
+        "Generate payload models, client contracts, schema artifacts, or bundled documents from AsyncAPI."
 
-    private val modelsModelType by option(
-        "--models-model-type",
-        help = "Payload model implementation; defaults from the selected source generator",
-    ).choice(
-        *ModelType.entries
-            .map { modelType -> modelType.configurationValue to modelType }
-            .toTypedArray(),
-    )
+    override fun helpEpilog(context: Context): String =
+        """
+        Examples:
 
-    private val schemasAvroProjection by option(
-        "--schemas-avro-projection",
-        help = "Enable Avro projection schema generation",
-    ).flag(default = false)
+          Generate Kotlin payload models:
+            asyncapi-generator -i asyncapi.yaml -g kotlin \
+              --model-package com.example.events.model
 
-    private val schemasAvroProjectionPackage by option(
-        "--schemas-avro-projection-package",
-        help = "Package for generated Avro projection schemas",
-    )
+          Generate Kotlin models and Spring Kafka contracts:
+            asyncapi-generator -i asyncapi.yaml -g kotlin \
+              --model-package com.example.events.model \
+              --client-package com.example.events.client \
+              --client-type spring-kafka \
+              --client-contract interface
 
-    private val schemasPackage by option(
-        "--schemas-package",
-        help = "Package for schema-only generator output",
-    )
+          Generate Avro schema artifacts:
+            asyncapi-generator -i asyncapi.yaml -g avro-schema \
+              --schema-package com.example.events.schema
 
-    private val schemasNativeAvro by option(
-        "--schemas-native-avro",
-        help = "Enable native Avro schema artifact generation",
-    ).flag(default = false)
-
-    private val schemasNativeAvroGenerateSpecificRecords by option(
-        "--schemas-native-avro-generate-specific-records",
-        help = "Generate Apache Avro Java SpecificRecord classes for native Avro schemas (default: true)",
-    ).choice(
-        "true" to true,
-        "false" to false,
-    )
-
-    private val schemasNativeProtobuf by option(
-        "--schemas-native-protobuf",
-        help = "Enable native Protobuf schema artifact generation",
-    ).flag(default = false)
-
-    private val clientsKafka by option(
-        "--clients-kafka",
-        help = "Enable Kafka client generation",
-    ).flag(default = false)
-
-    private val clientsKafkaPackage by option(
-        "--clients-kafka-package",
-        help = "Package for generated Kafka clients",
-    )
-
-    private val clientsKafkaModelPackage by option(
-        "--clients-kafka-model-package",
-        help = "Package containing model types used by generated Kafka clients",
-    )
-
-    private val clientsKafkaSpringKafka by option(
-        "--clients-kafka-spring-kafka",
-        help = "Enable Spring Kafka client generation under Kafka clients",
-    ).flag(default = false)
-
-    private val clientsKafkaSpringKafkaProducer by option(
-        "--clients-kafka-spring-kafka-producer",
-        help = "Generate Spring Kafka producer APIs (default: true)",
-    ).choice(
-        "true" to true,
-        "false" to false,
-    )
-
-    private val clientsKafkaSpringKafkaConsumer by option(
-        "--clients-kafka-spring-kafka-consumer",
-        help = "Generate Spring Kafka consumer APIs (default: true)",
-    ).choice(
-        "true" to true,
-        "false" to false,
-    )
-
-    private val clientsQuarkusKafka by option(
-        "--clients-quarkus-kafka",
-        help = "Enable Quarkus Kafka client generation",
-    ).flag(default = false)
-
-    private val clientsQuarkusKafkaPackage by option(
-        "--clients-quarkus-kafka-package",
-        help = "Package for generated Quarkus Kafka clients",
-    )
-
-    private val clientsQuarkusKafkaModelPackage by option(
-        "--clients-quarkus-kafka-model-package",
-        help = "Package containing model types used by generated Quarkus Kafka clients",
-    )
+          Run a repeatable generation request from an argument file:
+            asyncapi-generator @generation.args
+        """.trimIndent()
 
     override fun run() {
-        echo("Generating AsyncAPI code from $input...")
+        val generatorConfiguration = generatorConfiguration()
+        echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
 
-        val context = AsyncApiContext()
-        val root = AsyncApiRegistry.read(input, context)
-        val parser = AsyncApiParser(context)
-        val document = parser.parse(root)
+        try {
+            val context = AsyncApiContext()
+            val root = AsyncApiRegistry.read(generationOptions.inputSpec, context)
+            val parser = AsyncApiParser(context)
+            val document = parser.parse(root)
 
-        val validator = AsyncApiValidator(context)
-        val results = validator.validate(document)
+            val validator = AsyncApiValidator(context)
+            val results = validator.validate(document)
+            reportWarnings(results)
+            results.throwErrors()
 
-        if (results.hasWarnings()) {
-            results.warnings.forEach { echo("WARN: ${it.message}") }
-        }
-
-        if (results.hasErrors()) {
-            results.errors.forEach { echo("ERROR: ${it.message}") }
-            throw RuntimeException("Validation failed with ${results.errors.size} errors.")
-        }
-
-        val bundler = AsyncApiBundler()
-        val bundledDoc = bundler.bundle(document)
-        val sourceRootName =
-            when (GeneratorSourceLanguageResolver.resolveOrNull(generator)) {
-                SourceLanguage.KOTLIN -> "src/main/kotlin"
-                SourceLanguage.JAVA -> "src/main/java"
-                null -> null
-            }
-        val sourceRoot =
-            sourceRootName
-                ?.let(codegenOutputDirectory::resolve)
-                ?: codegenOutputDirectory
-        val javaSourceRoot = codegenOutputDirectory.resolve("src/main/java")
-        val generatorConfiguration =
-            try {
-                GeneratorConfigurationFactory.create(
-                    GeneratorConfigurationRequest(
-                        generatorName = generator,
-                        sourceOutputDirectory = sourceRoot,
-                        javaSourceOutputDirectory = javaSourceRoot,
-                        resourceOutputDirectory = resourceOutputDirectory,
-                        outputFile = outputFile,
-                        schemaPackageName = schemasPackage,
-                        models = modelRequest(),
-                        schemas = schemaRequest(),
-                        clients = clientRequest(),
-                    ),
-                )
-            } catch (exception: IllegalArgumentException) {
-                throw UsageError(exception.message ?: "Invalid generator configuration")
-            }
-        if (generatorConfiguration.hasConfiguredOutputs()) {
+            val bundler = AsyncApiBundler()
+            val bundledDoc = bundler.bundle(document)
             AsyncApiGenerator().generate(bundledDoc, generatorConfiguration)
+        } catch (exception: Exception) {
+            throw CliktError(
+                message = exception.message ?: "AsyncAPI generation failed.",
+                cause = exception,
+            )
         }
+
         echo("Generation complete.")
     }
 
-    private fun modelRequest(): GeneratorConfigurationRequest.Models? =
-        GeneratorConfigurationRequest.models(
-            packageName = modelsPackage,
-            annotation = modelsAnnotation,
-            modelType = modelsModelType?.configurationValue,
-        )
+    private fun reportWarnings(results: ValidationResults) {
+        if (!results.hasWarnings()) {
+            return
+        }
 
-    private fun schemaRequest(): GeneratorConfigurationRequest.Schemas =
-        GeneratorConfigurationRequest.Schemas(
-            avroProjection =
-                GeneratorConfigurationRequest.avroProjection(
-                    enabled = true.takeIf { schemasAvroProjection },
-                    packageName = schemasAvroProjectionPackage,
-                ),
-            nativeAvro =
-                GeneratorConfigurationRequest.nativeAvro(
-                    enabled = true.takeIf { schemasNativeAvro },
-                    generateSpecificRecords = schemasNativeAvroGenerateSpecificRecords,
-                ),
-            nativeProtobuf =
-                GeneratorConfigurationRequest.nativeProtobuf(
-                    enabled = true.takeIf { schemasNativeProtobuf },
-                ),
+        echo(
+            message =
+                ValidationFindingFormatter.format(
+                    title = "Validation found ${results.warnings.size} warning(s):",
+                    findings = results.warnings,
+                    asyncApiContext = results.asyncApiContext,
+                ).trimEnd(),
+            err = true,
         )
+    }
 
-    private fun clientRequest(): GeneratorConfigurationRequest.Clients =
-        GeneratorConfigurationRequest.Clients(
-            kafka =
-                GeneratorConfigurationRequest.kafka(
-                    enabled = true.takeIf { clientsKafka },
-                    packageName = clientsKafkaPackage,
-                    modelPackageName = clientsKafkaModelPackage,
-                    springKafka =
-                        GeneratorConfigurationRequest.kafkaSpringKafka(
-                            enabled = true.takeIf { clientsKafkaSpringKafka },
-                            producer =
-                                GeneratorConfigurationRequest.kafkaProducer(
-                                    enabled = clientsKafkaSpringKafkaProducer,
-                                ),
-                            consumer =
-                                GeneratorConfigurationRequest.kafkaConsumer(
-                                    enabled = clientsKafkaSpringKafkaConsumer,
-                                ),
-                        ),
+    private fun generatorConfiguration() =
+        try {
+            CliGeneratorConfigurationMapper.map(
+                CliGeneratorConfigurationRequest(
+                    generatorName = generationOptions.generatorName.configurationValue,
+                    outputDirectory = outputOptions.outputDirectory,
+                    outputFile = outputOptions.outputFile,
+                    modelPackage = outputOptions.modelPackage,
+                    clientPackage = outputOptions.clientPackage,
+                    schemaPackage = outputOptions.schemaPackage,
+                    modelConfig = modelOptions.toConfiguration(),
+                    clientConfig = clientOptions.toConfiguration(),
                 ),
-            quarkusKafka =
-                GeneratorConfigurationRequest.quarkusKafka(
-                    enabled = true.takeIf { clientsQuarkusKafka },
-                    packageName = clientsQuarkusKafkaPackage,
-                    modelPackageName = clientsQuarkusKafkaModelPackage,
-                ),
-        )
+            )
+        } catch (exception: IllegalArgumentException) {
+            throw UsageError(exception.message ?: "Invalid generator configuration")
+        }
 }

@@ -1,0 +1,5 @@
+asyncapi: 3.0.0
+info:
+  title: CLI Diagnostics
+  version: release-candidate
+channels: {}

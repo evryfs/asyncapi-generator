@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientContractValidator
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
@@ -35,11 +36,16 @@ class GenerationInputCompatibilityValidator(
                         output = "Model generation",
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                     )
-                is GenerationTask.SpringKafkaClient ->
+                is GenerationTask.SpringKafkaClient -> {
+                    SpringKafkaClientContractValidator.validate(
+                        channels = generationInput.channels,
+                        task = task,
+                    )
                     rejectUnsupportedMultiFormatMessages(
                         output = "Spring Kafka client generation",
                         generationInput = generationInput,
                     )
+                }
                 is GenerationTask.AvroSchemaArtifacts ->
                     if (!hasNativeAvro) {
                         rejectMultiFormatSchemas(

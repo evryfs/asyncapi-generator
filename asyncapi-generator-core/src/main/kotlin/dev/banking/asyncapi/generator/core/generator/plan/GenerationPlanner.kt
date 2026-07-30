@@ -43,7 +43,7 @@ class GenerationPlanner {
                 configuration.clients.forEach { client ->
                     when (client) {
                         is ClientGeneration.Kafka -> {
-                            val springKafka = client.springKafka?.takeIf { it.hasEnabledOutput() }
+                            val springKafka = client.springKafka
                             if (
                                 hasNativePayloadModels &&
                                 springKafka != null &&
@@ -101,9 +101,6 @@ class GenerationPlanner {
                 }
             },
         )
-
-    private fun ClientGeneration.SpringKafka.hasEnabledOutput(): Boolean =
-        producer.enabled || consumer.enabled
 
     private fun GeneratorConfiguration.hasNativePayloadModels(): Boolean =
         schemas.any { schema ->

@@ -390,6 +390,41 @@ class GenerationInputCompatibilityValidatorTest {
         assertTrue(error.message!!.contains("Native Avro, Protobuf, and other explicit schema formats"))
     }
 
+    @Test
+    fun `rejects channels without messages for spring kafka client generation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "auditEvents",
+                                        topic = "audit.events",
+                                        messages = emptyList(),
+                                    ),
+                                ),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.SpringKafkaClient(
+                                    language = SourceLanguage.KOTLIN,
+                                    clientPackage = "com.example.kafka",
+                                    modelPackage = "com.example.model",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("channel 'auditEvents'"))
+        assertTrue(error.message!!.contains("does not declare any messages"))
+    }
+
     private fun generationInputWithMultiFormatSchema(
         namespace: String? = null,
     ): GenerationInput =
@@ -409,8 +444,6 @@ class GenerationInputCompatibilityValidatorTest {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "users",
-                        isProducer = true,
-                        isConsumer = true,
                         messages = emptyList(),
                         multiFormatMessages =
                             listOf(

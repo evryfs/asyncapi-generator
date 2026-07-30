@@ -22,7 +22,7 @@ class SpringKafkaClientGeneration {
         @Suppress("UNUSED_PARAMETER")
         resourceOutputDirectory: File,
     ) {
-        SpringKafkaClientMethodNameValidator.validate(
+        SpringKafkaClientContractValidator.validate(
             channels = generationInput.channels,
             task = task,
         )

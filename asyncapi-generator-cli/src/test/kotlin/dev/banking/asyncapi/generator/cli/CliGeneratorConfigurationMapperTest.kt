@@ -1,10 +1,12 @@
-package dev.banking.asyncapi.generator.maven.plugin
+package dev.banking.asyncapi.generator.cli
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -15,7 +17,7 @@ import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 
-class MavenGeneratorConfigurationMapperTest {
+class CliGeneratorConfigurationMapperTest {
     @TempDir
     lateinit var temporaryDirectory: Path
 
@@ -32,6 +34,74 @@ class MavenGeneratorConfigurationMapperTest {
             configuration.profile,
         )
         assertInstanceOf(ModelGeneration.Enabled::class.java, configuration.models)
+    }
+
+    @Test
+    fun `maps the complete Spring Kafka client configuration`() {
+        val configuration =
+            mapConfiguration(
+                generatorName = "kotlin",
+                modelPackage = "com.example.model",
+                clientPackage = "com.example.client",
+                clientConfig =
+                    CliClientConfiguration(
+                        clientType = "spring-kafka",
+                        clientContract = "interface",
+                        producer = CliProducerConfiguration(enabled = false),
+                        topicParameterProperties =
+                            mapOf(
+                                "environment" to "kafka.environment",
+                            ),
+                        validationAnnotations =
+                            CliValidationAnnotationsConfiguration(
+                                clientContract = "org.springframework.validation.annotation.Validated",
+                                payloadParameter = "jakarta.validation.Valid",
+                            ),
+                    ),
+            )
+
+        val kafka = configuration.clients.single() as ClientGeneration.Kafka
+        val springKafka = requireNotNull(kafka.springKafka)
+
+        assertFalse(springKafka.producer.enabled)
+        assertTrue(springKafka.consumer.enabled)
+        assertEquals(
+            mapOf("environment" to "kafka.environment"),
+            springKafka.topicParameterProperties.mappings,
+        )
+        assertEquals(
+            "org.springframework.validation.annotation.Validated",
+            springKafka.validationAnnotations.clientContract?.value,
+        )
+        assertEquals(
+            "jakarta.validation.Valid",
+            springKafka.validationAnnotations.payloadParameter?.value,
+        )
+    }
+
+    @Test
+    fun `rejects Spring Kafka configuration with both contracts disabled`() {
+        val exception =
+            assertThrows<IllegalArgumentException> {
+                mapConfiguration(
+                    generatorName = "kotlin",
+                    modelPackage = "com.example.model",
+                    clientPackage = "com.example.client",
+                    clientConfig =
+                        CliClientConfiguration(
+                            clientType = "spring-kafka",
+                            clientContract = "interface",
+                            producer = CliProducerConfiguration(enabled = false),
+                            consumer = CliConsumerConfiguration(enabled = false),
+                        ),
+                )
+            }
+
+        assertEquals(
+            "Spring Kafka client generation requires at least one enabled contract: " +
+                "producer.enabled or consumer.enabled",
+            exception.message,
+        )
     }
 
     @Test
@@ -76,37 +146,6 @@ class MavenGeneratorConfigurationMapperTest {
     }
 
     @Test
-    fun `rejects Spring Kafka configuration with both contracts disabled`() {
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                mapConfiguration(
-                    generatorName = "kotlin",
-                    modelPackage = "com.example.model",
-                    clientPackage = "com.example.client",
-                    clientConfig =
-                        MavenClientConfiguration().apply {
-                            clientType = "spring-kafka"
-                            clientContract = "interface"
-                            producer =
-                                MavenProducerConfiguration().apply {
-                                    enabled = false
-                                }
-                            consumer =
-                                MavenConsumerConfiguration().apply {
-                                    enabled = false
-                                }
-                        },
-                )
-            }
-
-        assertEquals(
-            "Spring Kafka client generation requires at least one enabled contract: " +
-                "producer.enabled or consumer.enabled",
-            exception.message,
-        )
-    }
-
-    @Test
     fun `rejects schema package when selected outputs do not generate schemas`() {
         val exception =
             assertThrows<IllegalArgumentException> {
@@ -142,9 +181,9 @@ class MavenGeneratorConfigurationMapperTest {
                 modelPackage = "com.example.avro",
                 schemaPackage = "com.example.schema",
                 modelConfig =
-                    MavenModelConfiguration().apply {
-                        modelType = "avro-specific-record"
-                    },
+                    CliModelConfiguration(
+                        modelType = "avro-specific-record",
+                    ),
             )
 
         val nativeAvro = configuration.schemas.single() as SchemaGeneration.NativeAvro
@@ -187,10 +226,10 @@ class MavenGeneratorConfigurationMapperTest {
         modelPackage: String? = null,
         clientPackage: String? = null,
         schemaPackage: String? = null,
-        modelConfig: MavenModelConfiguration? = null,
-        clientConfig: MavenClientConfiguration? = null,
-    ) = MavenGeneratorConfigurationMapper.map(
-        MavenGeneratorConfigurationRequest(
+        modelConfig: CliModelConfiguration? = null,
+        clientConfig: CliClientConfiguration? = null,
+    ) = CliGeneratorConfigurationMapper.map(
+        CliGeneratorConfigurationRequest(
             generatorName = generatorName,
             outputDirectory = outputDirectory,
             outputFile = outputFile,
