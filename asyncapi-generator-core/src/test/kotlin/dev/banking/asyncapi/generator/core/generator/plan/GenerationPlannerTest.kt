@@ -340,27 +340,6 @@ class GenerationPlannerTest {
     }
 
     @Test
-    fun `plan skips Spring Kafka client task when producer and consumer are disabled`() {
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    clients =
-                        listOf(
-                            kafkaClientGeneration(
-                                springKafka =
-                                    ClientGeneration.SpringKafka(
-                                        producer = ClientGeneration.Producer(enabled = false),
-                                        consumer = ClientGeneration.Consumer(enabled = false),
-                                    ),
-                            ),
-                        ),
-                ),
-            )
-
-        assertEquals(emptyList(), plan.tasks)
-    }
-
-    @Test
     fun `plan uses selected language for language-specific tasks`() {
         val plan =
             planner.plan(

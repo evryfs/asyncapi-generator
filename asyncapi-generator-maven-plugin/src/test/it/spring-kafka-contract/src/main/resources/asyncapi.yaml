@@ -11,10 +11,29 @@ channels:
     messages:
       UserSignedUp:
         $ref: "#/components/messages/UserSignedUp"
+  auditEvents:
+    address: audit.events.v1
+    messages:
+      AuditRecorded:
+        $ref: "#/components/messages/AuditRecorded"
+operations:
+  receiveAuditRecorded:
+    action: receive
+    channel:
+      $ref: "#/channels/auditEvents"
+    messages:
+      - $ref: "#/channels/auditEvents/messages/AuditRecorded"
 components:
   messages:
     UserSignedUp:
       name: UserSignedUp
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
+    AuditRecorded:
+      name: AuditRecorded
       payload:
         type: object
         properties:

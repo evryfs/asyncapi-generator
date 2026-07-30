@@ -307,11 +307,15 @@ Generated Java Protobuf message sources are produced by running `protoc` during 
 
 ### Spring Kafka Clients
 
-Spring Kafka output is configured under `clients.kafka.springKafka`.
+Spring Kafka output is configured through `clientConfig` with `clientType` set to `spring-kafka` and
+`clientContract` set to `interface`.
 
-Generated Spring Kafka clients use `models.packageName` for payload model types by default. If models are generated elsewhere, configure `clients.kafka.modelPackageName` to point the client API at that package without generating model output in the same execution.
+`clientPackage` controls where client contracts are generated, while `modelPackage` identifies the payload types used
+by those contracts.
 
-AsyncAPI-defined Kafka headers are generated as individual producer and consumer method parameters. `clients.kafka.springKafka.producer.enabled` and `clients.kafka.springKafka.consumer.enabled` control whether producer and consumer artifacts are generated.
+AsyncAPI-defined Kafka headers are generated as individual producer and consumer method parameters. Producer and
+consumer generation are enabled by default and can be controlled independently through the `producer.enabled` and
+`consumer.enabled` client settings. At least one contract type must remain enabled.
 
 For native Avro message payloads, generated Spring Kafka clients use the Java type declared by the Avro schema namespace and name. For example, a native Avro schema with `namespace: com.example.avro` and `name: UserCreated` is used as `com.example.avro.UserCreated` in generated producer and consumer APIs.
 
@@ -319,9 +323,19 @@ For native Protobuf message payloads, generated Spring Kafka clients use the Jav
 
 The generator does not configure Kafka Avro or Protobuf serializers and deserializers yet; applications still own that runtime wiring.
 
-Generated Spring Kafka clients are contract-only source artifacts. Producer-oriented channels generate producer interfaces with abstract send methods that expose the payload, Kafka record key, and contract-defined headers as method parameters. Consumer-oriented channels generate consumer interfaces with abstract handling methods that expose the payload, nullable Kafka record key, and contract-defined headers as method parameters. The generator does not create Spring Boot auto-configuration, `KafkaTemplate` wrappers, `@KafkaListener` classes, listener containers, serializer configuration, deserializer configuration, or schema registry configuration.
+Generated Spring Kafka clients are contract-only source artifacts. For every channel containing at least one message,
+the generator creates the enabled producer and consumer interfaces. Every message declared by the channel becomes a
+message-qualified method in each enabled contract. Producer methods have an exceptionally completed default
+implementation, while consumer methods have a no-op default implementation, so generated interfaces do not activate
+runtime behavior by themselves.
 
-The generated output depends on the channel direction from the AsyncAPI operations. Producer-oriented channels generate producer artifacts. Consumer-oriented channels generate consumer artifacts. When the channel direction is not declared, the generator treats the channel as both producer and consumer.
+AsyncAPI operations do not activate, suppress, or filter generated client contracts. Operation actions remain part of
+the parsed, validated, and bundled AsyncAPI document, but producer and consumer output is selected exclusively through
+generator configuration. This allows the same channel-oriented contract to generate both application roles even when
+operations are omitted or describe only one application perspective.
+
+The generator does not create Spring Boot auto-configuration, `KafkaTemplate` wrappers, `@KafkaListener` classes,
+listener containers, serializer configuration, deserializer configuration, or schema registry configuration.
 
 The Spring Kafka client surface is intentionally contract-first. Applications should implement the generated interfaces and own runtime wiring, topic resolution, Kafka template configuration, listener configuration, serialization, deserialization, and schema registry integration.
 

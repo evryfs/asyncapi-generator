@@ -33,7 +33,7 @@ class JavaSpringKafkaModelFactory(
     private val constraintMapper = ConstraintMapper()
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
-        if (!channel.shouldGenerateClient()) {
+        if (!generateConsumers && !generateProducers) {
             return emptyList()
         }
 
@@ -57,7 +57,7 @@ class JavaSpringKafkaModelFactory(
                 topicParameterProperties = topicParameterProperties,
         )
 
-        if (channel.isConsumer && generateConsumers) {
+        if (generateConsumers) {
             val consumerName = "${baseName}Consumer"
             val methods =
                 payloads.map { payload ->
@@ -148,7 +148,7 @@ class JavaSpringKafkaModelFactory(
             )
         }
 
-        if (channel.isProducer && generateProducers) {
+        if (generateProducers) {
             val sendMethods =
                 payloads.map { payload ->
                     val headerProperties =
@@ -370,9 +370,6 @@ class JavaSpringKafkaModelFactory(
             parameterSuffix = if (hasFollowingParameters) "," else "",
         )
     }
-
-    private fun AnalyzedChannel.shouldGenerateClient(): Boolean =
-        (isConsumer && generateConsumers) || (isProducer && generateProducers)
 
     private fun KafkaPayload.methodName(
         prefix: String,

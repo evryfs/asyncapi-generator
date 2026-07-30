@@ -20,8 +20,6 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             AnalyzedChannel(
                 channelName = "simple/topic",
                 topic = "simple.topic.v1",
-                isProducer = true,
-                isConsumer = true,
                 messages =
                     listOf(
                         AnalyzedMessage(
@@ -89,8 +87,6 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             AnalyzedChannel(
                 channelName = "multi/topic",
                 topic = "multi.topic.v1",
-                isProducer = true,
-                isConsumer = true,
                 messages =
                     listOf(
                         AnalyzedMessage(

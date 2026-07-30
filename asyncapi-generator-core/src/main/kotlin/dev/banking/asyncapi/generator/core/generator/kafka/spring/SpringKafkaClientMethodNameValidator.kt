@@ -42,8 +42,8 @@ internal object SpringKafkaClientMethodNameValidator {
         task: GenerationTask.SpringKafkaClient,
     ): List<String> =
         buildList {
-            if (isProducer && task.generateProducers) add("send")
-            if (isConsumer && task.generateConsumers) add("listen")
+            if (task.generateProducers) add("send")
+            if (task.generateConsumers) add("listen")
         }
 
     private fun AnalyzedChannel.messageIdentities(): List<MessageIdentity> =

@@ -35,8 +35,6 @@ internal class GenerationInputFixtures {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "user.events",
-                        isProducer = true,
-                        isConsumer = true,
                         messages =
                             listOf(
                                 AnalyzedMessage(
@@ -100,8 +98,6 @@ internal class GenerationInputFixtures {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "user.events",
-                        isProducer = true,
-                        isConsumer = true,
                         messages = emptyList(),
                         multiFormatMessages =
                             listOf(

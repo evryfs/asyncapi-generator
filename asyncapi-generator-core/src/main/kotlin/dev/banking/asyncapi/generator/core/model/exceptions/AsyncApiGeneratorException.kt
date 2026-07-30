@@ -116,6 +116,44 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class SpringKafkaClientChannelWithoutMessages(
+        channelName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine("The channel does not declare any messages.")
+                appendLine(
+                    "Declare at least one Message Object under channels.$channelName.messages " +
+                        "before generating client contracts.",
+                )
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class SpringKafkaClientContractNameCollision(
+        channelNames: List<String>,
+        generatedBaseName: String,
+        contractNames: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed because channel IDs collide after normalization.")
+                appendLine(
+                    "${channelNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} " +
+                        "resolve to generated contract base name '$generatedBaseName'.",
+                )
+                appendLine(
+                    "The following contracts would be written more than once: " +
+                        contractNames.joinToString(prefix = "[", postfix = "]") { "'$it'" },
+                )
+                appendLine(
+                    "Use channel IDs that remain unique after conversion to PascalCase source-code identifiers.",
+                )
+                appendLine()
+            }.trimEnd(),
+        )
+
     class UnsupportedKafkaKeySchema(
         messageName: String,
         schemaType: String,

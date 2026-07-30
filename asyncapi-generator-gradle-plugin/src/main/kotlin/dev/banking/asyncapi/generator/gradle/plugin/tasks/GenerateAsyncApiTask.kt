@@ -3,282 +3,172 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSourceLanguageResolver
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
+import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
+import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationMapper
+import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.gradle.plugin.GradleModelConfiguration
+import dev.banking.asyncapi.generator.gradle.plugin.GradleProducerConfiguration
+import dev.banking.asyncapi.generator.gradle.plugin.GradleValidationAnnotationsConfiguration
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
 import org.gradle.work.DisableCachingByDefault
 
-@DisableCachingByDefault(because = "Codegen output is cheap to reproduce and not worth caching")
+/**
+ * Generates the outputs configured by one named AsyncAPI execution.
+ *
+ * Expected behavior is covered by:
+ * - `AsyncApiPluginTest`
+ */
+@DisableCachingByDefault(because = "Code generation output is not yet configured for the Gradle build cache")
 abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:InputFile
     @get:PathSensitive(PathSensitivity.RELATIVE)
-    abstract val inputFile: RegularFileProperty
+    abstract val inputSpec: RegularFileProperty
+
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val inputFiles: ConfigurableFileCollection
 
     @get:OutputFile
     @get:Optional
     abstract val outputFile: RegularFileProperty
 
     @get:OutputDirectory
-    abstract val codegenOutputDirectory: DirectoryProperty
-
-    @get:OutputDirectory
-    abstract val resourceOutputDirectory: DirectoryProperty
-
-    @get:Input
-    @get:Optional
-    abstract val modelsEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val modelsPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val modelsAnnotation: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val modelsModelType: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val schemasPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val avroProjectionEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val avroProjectionPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val nativeAvroEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val nativeAvroGenerateSpecificRecords: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val nativeProtobufEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaModelPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaSpringKafkaEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaSpringKafkaProducerEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val kafkaSpringKafkaConsumerEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val quarkusKafkaEnabled: Property<Boolean>
-
-    @get:Input
-    @get:Optional
-    abstract val quarkusKafkaPackageName: Property<String>
-
-    @get:Input
-    @get:Optional
-    abstract val quarkusKafkaModelPackageName: Property<String>
+    abstract val outputDirectory: DirectoryProperty
 
     @get:Input
     abstract val generatorName: Property<String>
 
+    @get:Input
+    @get:Optional
+    abstract val modelPackage: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val clientPackage: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val schemaPackage: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val modelAnnotation: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val modelType: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val clientType: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val clientContract: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val producerEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val consumerEnabled: Property<Boolean>
+
+    @get:Input
+    @get:Optional
+    abstract val topicParameterProperties: MapProperty<String, String>
+
+    @get:Input
+    @get:Optional
+    abstract val clientContractValidationAnnotation: Property<String>
+
+    @get:Input
+    @get:Optional
+    abstract val payloadParameterValidationAnnotation: Property<String>
+
     @TaskAction
     fun generate() {
-        logger.lifecycle("asyncapi-generator-gradle-plugin started")
+        logger.lifecycle("AsyncAPI generation '${name}' started")
 
+        val generatorConfiguration =
+            GradleGeneratorConfigurationMapper.map(
+                GradleGeneratorConfigurationRequest(
+                    generatorName = generatorName.orNull,
+                    outputDirectory = outputDirectory.get().asFile,
+                    outputFile = outputFile.orNull?.asFile,
+                    modelPackage = modelPackage.orNull,
+                    clientPackage = clientPackage.orNull,
+                    schemaPackage = schemaPackage.orNull,
+                    modelConfig = modelConfiguration(),
+                    clientConfig = clientConfiguration(),
+                ),
+            )
         val context = AsyncApiContext()
-        val parser = AsyncApiParser(context)
-        val validator = AsyncApiValidator(context)
-        val bundler = AsyncApiBundler()
-        val generator = AsyncApiGenerator()
-
-        val root = AsyncApiRegistry.read(inputFile.get().asFile, context)
-        val asyncApiDocument = parser.parse(root)
-        val validationErrors = validator.validate(asyncApiDocument)
+        val root = AsyncApiRegistry.read(inputSpec.get().asFile, context)
+        val asyncApiDocument = AsyncApiParser(context).parse(root)
+        val validationErrors = AsyncApiValidator(context).validate(asyncApiDocument)
 
         validationErrors.logWarnings()
         validationErrors.throwErrors()
 
-        val bundled = bundler.bundle(asyncApiDocument)
+        val bundled = AsyncApiBundler().bundle(asyncApiDocument)
+        AsyncApiGenerator().generate(bundled, generatorConfiguration)
 
-        val genNameString = generatorName.get()
-        val targetGenerator =
-            GeneratorName.fromConfigurationValue(
-                value = genNameString,
-                path = "generatorName",
-            )
-        // Calculate Source Root
-        val sourceRootName =
-            when (GeneratorSourceLanguageResolver.resolveOrNull(targetGenerator)) {
-                KOTLIN -> "src/main/kotlin"
-                JAVA -> "src/main/java"
-                null -> null
-        }
-        val codegenSourceRoot =
-            sourceRootName
-                ?.let(codegenOutputDirectory.get().asFile::resolve)
-                ?: codegenOutputDirectory.get().asFile
-        val javaSourceRoot = codegenOutputDirectory.get().asFile.resolve("src/main/java")
-
-        val generatorConfiguration =
-            GeneratorConfigurationFactory.create(
-                GeneratorConfigurationRequest(
-                    generatorName = targetGenerator,
-                    sourceOutputDirectory = codegenSourceRoot,
-                    javaSourceOutputDirectory = javaSourceRoot,
-                    resourceOutputDirectory = resourceOutputDirectory.get().asFile,
-                    outputFile = outputFile.orNull?.asFile,
-                    schemaPackageName = schemasPackageName.orNull,
-                    models =
-                        modelRequest(
-                            enabled = modelsEnabled.orNull,
-                            packageName = modelsPackageName.orNull,
-                            annotation = modelsAnnotation.orNull,
-                            modelType = modelsModelType.orNull,
-                        ),
-                    schemas =
-                        schemaRequest(
-                            avroProjectionEnabled = avroProjectionEnabled.orNull,
-                            avroProjectionPackageName = avroProjectionPackageName.orNull,
-                            nativeAvroEnabled = nativeAvroEnabled.orNull,
-                            nativeAvroGenerateSpecificRecords = nativeAvroGenerateSpecificRecords.orNull,
-                            nativeProtobufEnabled = nativeProtobufEnabled.orNull,
-                        ),
-                    clients =
-                        clientRequest(
-                            kafkaEnabled = kafkaEnabled.orNull,
-                            kafkaPackageName = kafkaPackageName.orNull,
-                            kafkaModelPackageName = kafkaModelPackageName.orNull,
-                            kafkaSpringKafkaEnabled = kafkaSpringKafkaEnabled.orNull,
-                            kafkaSpringKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled.orNull,
-                            kafkaSpringKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled.orNull,
-                            quarkusKafkaEnabled = quarkusKafkaEnabled.orNull,
-                            quarkusKafkaPackageName = quarkusKafkaPackageName.orNull,
-                            quarkusKafkaModelPackageName = quarkusKafkaModelPackageName.orNull,
-                        ),
-                ),
-            )
-        if (generatorConfiguration.hasConfiguredOutputs()) {
-            generator.generate(bundled, generatorConfiguration)
-        }
-        logger.lifecycle("asyncapi-generator-gradle-plugin completed")
+        logger.lifecycle("AsyncAPI generation '${name}' completed")
     }
 
-    private fun modelRequest(
-        enabled: Boolean?,
-        packageName: String?,
-        annotation: String?,
-        modelType: String?,
-    ): GeneratorConfigurationRequest.Models? =
-        GeneratorConfigurationRequest.models(
-            enabled = enabled,
-            packageName = packageName,
-            annotation = annotation,
-            modelType = modelType,
-        )
+    private fun modelConfiguration(): GradleModelConfiguration? =
+        if (modelPackage.isPresent || modelAnnotation.isPresent || modelType.isPresent) {
+            GradleModelConfiguration(
+                modelAnnotation = modelAnnotation.orNull,
+                modelType = modelType.orNull,
+            )
+        } else {
+            null
+        }
 
-    private fun schemaRequest(
-        avroProjectionEnabled: Boolean?,
-        avroProjectionPackageName: String?,
-        nativeAvroEnabled: Boolean?,
-        nativeAvroGenerateSpecificRecords: Boolean?,
-        nativeProtobufEnabled: Boolean?,
-    ): GeneratorConfigurationRequest.Schemas =
-        GeneratorConfigurationRequest.Schemas(
-            avroProjection =
-                GeneratorConfigurationRequest.avroProjection(
-                    enabled = avroProjectionEnabled,
-                    packageName = avroProjectionPackageName,
-                ),
-            nativeAvro =
-                GeneratorConfigurationRequest.nativeAvro(
-                    enabled = nativeAvroEnabled,
-                    generateSpecificRecords = nativeAvroGenerateSpecificRecords,
-                ),
-            nativeProtobuf =
-                GeneratorConfigurationRequest.nativeProtobuf(
-                    enabled = nativeProtobufEnabled,
-                ),
-        )
+    private fun clientConfiguration(): GradleClientConfiguration? =
+        if (clientPackage.isPresent) {
+            GradleClientConfiguration(
+                clientType = clientType.orNull,
+                clientContract = clientContract.orNull,
+                producer = GradleProducerConfiguration(enabled = producerEnabled.orNull),
+                consumer = GradleConsumerConfiguration(enabled = consumerEnabled.orNull),
+                topicParameterProperties = topicParameterProperties.orNull.orEmpty(),
+                validationAnnotations = validationAnnotationsConfiguration(),
+            )
+        } else {
+            null
+        }
 
-    private fun clientRequest(
-        kafkaEnabled: Boolean?,
-        kafkaPackageName: String?,
-        kafkaModelPackageName: String?,
-        kafkaSpringKafkaEnabled: Boolean?,
-        kafkaSpringKafkaProducerEnabled: Boolean?,
-        kafkaSpringKafkaConsumerEnabled: Boolean?,
-        quarkusKafkaEnabled: Boolean?,
-        quarkusKafkaPackageName: String?,
-        quarkusKafkaModelPackageName: String?,
-    ): GeneratorConfigurationRequest.Clients =
-        GeneratorConfigurationRequest.Clients(
-            kafka =
-                kafkaRequest(
-                    enabled = kafkaEnabled,
-                    packageName = kafkaPackageName,
-                    modelPackageName = kafkaModelPackageName,
-                    springKafkaEnabled = kafkaSpringKafkaEnabled,
-                    springKafkaProducerEnabled = kafkaSpringKafkaProducerEnabled,
-                    springKafkaConsumerEnabled = kafkaSpringKafkaConsumerEnabled,
-                ),
-            quarkusKafka =
-                GeneratorConfigurationRequest.quarkusKafka(
-                    enabled = quarkusKafkaEnabled,
-                    packageName = quarkusKafkaPackageName,
-                    modelPackageName = quarkusKafkaModelPackageName,
-                ),
-        )
-
-    private fun kafkaRequest(
-        enabled: Boolean?,
-        packageName: String?,
-        modelPackageName: String?,
-        springKafkaEnabled: Boolean?,
-        springKafkaProducerEnabled: Boolean?,
-        springKafkaConsumerEnabled: Boolean?,
-    ): GeneratorConfigurationRequest.Kafka? =
-        GeneratorConfigurationRequest.kafka(
-            enabled = enabled,
-            packageName = packageName,
-            modelPackageName = modelPackageName,
-            springKafka =
-                GeneratorConfigurationRequest.kafkaSpringKafka(
-                    enabled = springKafkaEnabled,
-                    producer = GeneratorConfigurationRequest.kafkaProducer(enabled = springKafkaProducerEnabled),
-                    consumer = GeneratorConfigurationRequest.kafkaConsumer(enabled = springKafkaConsumerEnabled),
-                ),
-        )
+    private fun validationAnnotationsConfiguration(): GradleValidationAnnotationsConfiguration? =
+        if (
+            clientContractValidationAnnotation.isPresent ||
+            payloadParameterValidationAnnotation.isPresent
+        ) {
+            GradleValidationAnnotationsConfiguration(
+                clientContract = clientContractValidationAnnotation.orNull,
+                payloadParameter = payloadParameterValidationAnnotation.orNull,
+            )
+        } else {
+            null
+        }
 }

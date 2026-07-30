@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: External input tracking
+  version: 1.0.0
+channels:
+  updates:
+    address: example.updates
+    messages:
+      update:
+        $ref: '#/components/messages/ExternalUpdate'
+operations:
+  receiveUpdate:
+    action: receive
+    channel:
+      $ref: '#/channels/updates'
+    messages:
+      - $ref: '#/channels/updates/messages/update'
+components:
+  messages:
+    ExternalUpdate:
+      payload:
+        $ref: './schemas.yaml#/ExternalPayload'

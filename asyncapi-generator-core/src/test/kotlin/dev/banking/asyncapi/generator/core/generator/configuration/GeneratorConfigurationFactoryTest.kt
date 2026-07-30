@@ -428,6 +428,42 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create rejects spring kafka configuration without an enabled contract`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        springKafka =
+                                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                producer =
+                                                    GeneratorConfigurationRequest.KafkaProducer(
+                                                        enabled = false,
+                                                    ),
+                                                consumer =
+                                                    GeneratorConfigurationRequest.KafkaConsumer(
+                                                        enabled = false,
+                                                    ),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "Spring Kafka client generation requires at least one enabled contract: " +
+                "producer.enabled or consumer.enabled",
+            exception.message,
+        )
+    }
+
+    @Test
     fun `create rejects invalid topic parameter property mappings`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {
