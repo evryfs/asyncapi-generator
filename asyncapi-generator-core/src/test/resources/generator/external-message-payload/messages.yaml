@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Event Messages
+  version: 1.0.0
+components:
+  messages:
+    MyAccountCreatedV1:
+      name: MyAccountCreatedV1
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/MyAccountCreatedV1Payload"
+  schemas:
+    MyAccountCreatedV1Payload:
+      type: object
+      required:
+        - accountId
+        - details
+      properties:
+        accountId:
+          $ref: "./properties.yaml#/accountId"
+        details:
+          $ref: "#/components/schemas/MyAccountDetails"
+    MyAccountDetails:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string

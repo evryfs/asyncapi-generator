@@ -1,0 +1,53 @@
+asyncapi: 3.0.0
+info:
+  title: Spring Kafka Contract External Reference Messages IT
+  version: 1.0.0
+components:
+  messages:
+    AuditRecorded:
+      name: AuditRecorded
+      contentType: application/json
+      headers:
+        $ref: '#/components/schemas/DefaultHeaders'
+      payload:
+        $ref: '#/components/schemas/MyReferencedSchema'
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/MyMessageKey'
+          bindingVersion: 0.4.0
+      examples:
+        - name: Example 1
+          headers:
+            myFirstHeader: "myFirstHeader"
+            mySecondHeader: "mySecondHeader"
+          payload:
+            firstField: 33
+            secondField: "secondField"
+  schemas:
+    MyMessageKey:
+      type: string
+      description: MyMessageKey
+    MyReferencedSchema:
+      type: object
+      description: MyReferencedSchema
+      required:
+        - firstField
+      properties:
+        firstField:
+          type: integer
+          description: firstField
+        secondField:
+          type: string
+          description: secondField
+    DefaultHeaders:
+      type: object
+      required:
+        - myFirstHeader
+      properties:
+        myFirstHeader:
+          type: string
+          description: MyFirstHeader
+        mySecondHeader:
+          type: string
+          description: MySecondHeader

@@ -314,4 +314,41 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
         assertFalse(producerContent.contains("import org.springframework.kafka.core.KafkaTemplate"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
+
+    @Test
+    fun `should generate models and clients from an externally referenced message payload`() {
+        val yaml = File("src/test/resources/generator/external-message-payload/main.yaml")
+        val modelPackage = "dev.banking.test.account.model"
+        val clientPackage = "dev.banking.test.account.client"
+        val outputDir = File("target/generated-sources/asyncapi-kotlin-external-message")
+        val resourceOutputDirectory = File("target/generated-resources/asyncapi-kotlin-external-message")
+        outputDir.deleteRecursively()
+        resourceOutputDirectory.deleteRecursively()
+
+        generateElement(
+            yaml = yaml,
+            codegenOutputDirectory = outputDir,
+            resourceOutputDirectory = resourceOutputDirectory,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            generateModels = true,
+            generateSpringKafkaClient = true,
+        )
+
+        val modelDir = outputDir.resolve("dev/banking/test/account/model")
+        val clientDir = outputDir.resolve("dev/banking/test/account/client")
+        val payload = modelDir.resolve("MyAccountCreatedV1Payload.kt")
+        val details = modelDir.resolve("MyAccountDetails.kt")
+        val producer = clientDir.resolve("producer/MyAccountCreatedProducer.kt")
+        val consumer = clientDir.resolve("consumer/MyAccountCreatedConsumer.kt")
+
+        assertTrue(payload.isFile, "Referenced payload model should be generated")
+        assertTrue(details.isFile, "Referenced supporting model should be generated")
+        assertTrue(payload.readText().contains("val accountId: String"))
+        assertTrue(payload.readText().contains("val details: MyAccountDetails"))
+        assertTrue(producer.isFile, "Producer contract should be generated")
+        assertTrue(consumer.isFile, "Consumer contract should be generated")
+        assertTrue(producer.readText().contains("payload: MyAccountCreatedV1Payload"))
+        assertTrue(consumer.readText().contains("payload: MyAccountCreatedV1Payload"))
+    }
 }
