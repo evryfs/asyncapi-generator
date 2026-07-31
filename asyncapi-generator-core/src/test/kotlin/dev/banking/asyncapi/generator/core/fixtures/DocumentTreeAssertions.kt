@@ -1,5 +1,12 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
+import dev.banking.asyncapi.generator.core.reader.DocumentArray
+import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
+import dev.banking.asyncapi.generator.core.reader.DocumentNode
+import dev.banking.asyncapi.generator.core.reader.DocumentNull
+import dev.banking.asyncapi.generator.core.reader.DocumentNumber
+import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.reader.DocumentString
 import kotlin.test.fail
 
 /**
@@ -9,12 +16,36 @@ import kotlin.test.fail
  * a domain-oriented failure message when a fixture no longer has the expected
  * object shape.
  */
-internal fun Map<String, Any?>.childObject(key: String): Map<String, Any?> {
+internal fun DocumentObject.childObject(key: String): DocumentObject {
     val value = this[key]
-    if (value !is Map<*, *>) {
-        fail("Expected '$key' to be an object, but was ${value?.javaClass?.simpleName ?: "null"}")
+    if (value !is DocumentObject) {
+        fail("Expected '$key' to be an object, but was ${value?.let(::documentTypeName) ?: "absent"}")
     }
 
-    @Suppress("UNCHECKED_CAST")
-    return value as Map<String, Any?>
+    return value
 }
+
+internal fun DocumentObject.value(key: String): Any? = this[key]?.semanticValue()
+
+internal fun DocumentNode.semanticValue(): Any? =
+    when (this) {
+        is DocumentObject -> members.mapValuesTo(linkedMapOf()) { (_, member) ->
+            member.value.semanticValue()
+        }
+
+        is DocumentArray -> elements.map(DocumentNode::semanticValue)
+        is DocumentString -> value
+        is DocumentNumber -> value
+        is DocumentBoolean -> value
+        is DocumentNull -> null
+    }
+
+private fun documentTypeName(node: DocumentNode): String =
+    when (node) {
+        is DocumentObject -> "object"
+        is DocumentArray -> "array"
+        is DocumentString -> "string"
+        is DocumentNumber -> "number"
+        is DocumentBoolean -> "boolean"
+        is DocumentNull -> "null"
+    }

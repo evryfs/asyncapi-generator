@@ -2,7 +2,15 @@ package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.reader.DocumentArray
+import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
+import dev.banking.asyncapi.generator.core.reader.DocumentNode
+import dev.banking.asyncapi.generator.core.reader.DocumentNull
+import dev.banking.asyncapi.generator.core.reader.DocumentNumber
+import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.reader.DocumentString
 import dev.banking.asyncapi.generator.core.reader.InputDocument
+import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import java.io.File
 
 /**
@@ -24,33 +32,66 @@ object ParserNodeFactory {
         context.registerSource(document.source.file, document.source.content)
 
         val rootPath = "${buildFileId(document.source.file)}.$ROOT"
-        document.sourceMap.all().values.forEach { location ->
-            val parserPath = parserPath(rootPath, location.path)
-            context.registerSourceLocation(parserPath, location)
-
-            val normalizedPath = normalizeArrayPath(parserPath)
-            if (normalizedPath != parserPath) {
-                context.registerSourceLocation(normalizedPath, location)
-            }
-        }
+        registerSourceLocations(document.root, rootPath, context)
 
         return ParserNode(
             name = rootPath,
-            node = document.root,
+            node = document.root.toParserValue(),
             path = rootPath,
             context = context,
         )
     }
 
-    private fun parserPath(
-        rootPath: String,
-        readerPath: String,
-    ): String =
-        when {
-            readerPath == READER_ROOT_PATH -> rootPath
-            readerPath.startsWith("$READER_ROOT_PATH.") || readerPath.startsWith("$READER_ROOT_PATH[") ->
-                rootPath + readerPath.removePrefix(READER_ROOT_PATH)
-            else -> "$rootPath.$readerPath"
+    private fun registerSourceLocations(
+        node: DocumentNode,
+        path: String,
+        context: AsyncApiContext,
+        location: SourceLocation = node.location,
+    ) {
+        registerSourceLocation(path, location, context)
+
+        when (node) {
+            is DocumentObject -> node.members.forEach { (name, member) ->
+                registerSourceLocations(
+                    node = member.value,
+                    path = "$path.$name",
+                    context = context,
+                    location = member.keyLocation,
+                )
+            }
+
+            is DocumentArray -> node.elements.forEachIndexed { index, element ->
+                registerSourceLocations(element, "$path[$index]", context)
+            }
+
+            else -> Unit
+        }
+    }
+
+    private fun registerSourceLocation(
+        path: String,
+        location: SourceLocation,
+        context: AsyncApiContext,
+    ) {
+        context.registerSourceLocation(path, location)
+
+        val normalizedPath = normalizeArrayPath(path)
+        if (normalizedPath != path) {
+            context.registerSourceLocation(normalizedPath, location)
+        }
+    }
+
+    private fun DocumentNode.toParserValue(): Any? =
+        when (this) {
+            is DocumentObject -> members.mapValuesTo(linkedMapOf()) { (_, member) ->
+                member.value.toParserValue()
+            }
+
+            is DocumentArray -> elements.map { element -> element.toParserValue() }
+            is DocumentString -> value
+            is DocumentNumber -> value
+            is DocumentBoolean -> value
+            is DocumentNull -> null
         }
 
     private fun normalizeArrayPath(path: String): String =
@@ -59,6 +100,4 @@ object ParserNodeFactory {
     private fun buildFileId(file: File): String =
         file.nameWithoutExtension
             .replace(Regex("[^A-Za-z0-9_]"), "_")
-
-    private const val READER_ROOT_PATH = "root"
 }
