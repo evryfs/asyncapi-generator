@@ -1,0 +1,16 @@
+components:
+  schemas:
+    ParentNode:
+      type: object
+      required:
+        - child
+      properties:
+        child:
+          $ref: '#/components/schemas/ChildNode'
+    ChildNode:
+      type: object
+      required:
+        - parent
+      properties:
+        parent:
+          $ref: '#/components/schemas/ParentNode'

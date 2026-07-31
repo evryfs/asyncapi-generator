@@ -7,10 +7,12 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -88,6 +90,60 @@ class AsyncApiBundlerTest {
     }
 
     @Test
+    fun `bundling promotes mutually recursive schemas from an external schema document`(
+        @TempDir tempDir: Path,
+    ) {
+        val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external-mutual/asyncapi.yaml")
+
+        val components = bundled.components as ComponentInterface.ComponentInline
+        val schemas = components.component.schemas!!
+        assertThat(schemas.keys).containsExactly("ParentNode", "ChildNode")
+
+        val parent = schemas["ParentNode"] as SchemaInterface.SchemaInline
+        val childReference = parent.schema.properties!!["child"] as SchemaInterface.SchemaReference
+        assertThat(childReference.reference.ref).isEqualTo("#/components/schemas/ChildNode")
+
+        val child = schemas["ChildNode"] as SchemaInterface.SchemaInline
+        val parentReference = child.schema.properties!!["parent"] as SchemaInterface.SchemaReference
+        assertThat(parentReference.reference.ref).isEqualTo("#/components/schemas/ParentNode")
+
+        val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val jsonFile = tempDir.resolve("asyncapi.json").toFile()
+        AsyncApiRegistry.writeYaml(yamlFile, bundled)
+        AsyncApiRegistry.writeJson(jsonFile, bundled)
+
+        listOf(yamlFile, jsonFile).forEach { outputFile ->
+            assertThat(outputFile.readText())
+                .contains("#/components/schemas/ParentNode")
+                .contains("#/components/schemas/ChildNode")
+                .doesNotContain("schemas.yaml")
+            assertNotNull(BundlerFixtures().validatedDocument(outputFile))
+        }
+    }
+
+    @Test
+    fun `bundling rejects a promoted schema name that conflicts with a root schema`() {
+        assertThatThrownBy {
+            bundlerFixtures.bundledDocument("bundler/recursive-external-collision/root-schema-collision.yaml")
+        }
+            .isInstanceOf(AsyncApiBundlingException.PromotedSchemaNameCollision::class.java)
+            .hasMessageContaining("recursive external schema 'TreeNode'")
+            .hasMessageContaining("Existing schema: #/components/schemas/TreeNode")
+            .hasMessageContaining("external-tree.yaml#/components/schemas/TreeNode")
+    }
+
+    @Test
+    fun `bundling rejects distinct promoted schemas with the same name`() {
+        assertThatThrownBy {
+            bundlerFixtures.bundledDocument("bundler/recursive-external-collision/external-schema-collision.yaml")
+        }
+            .isInstanceOf(AsyncApiBundlingException.PromotedSchemaNameCollision::class.java)
+            .hasMessageContaining("recursive external schema 'SharedNode'")
+            .hasMessageContaining("first-node.yaml#/components/schemas/SharedNode")
+            .hasMessageContaining("second-node.yaml#/components/schemas/SharedNode")
+    }
+
+    @Test
     fun `bundling marks references as inline`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
 
@@ -98,6 +154,9 @@ class AsyncApiBundlerTest {
         assertThat(channelRef.reference.inline).isTrue()
         assertThat(channelRef.reference.model).isNotNull
         assertThat(messageInline.message.payload).isInstanceOf(SchemaInterface.SchemaInline::class.java)
+
+        val components = bundled.components as ComponentInterface.ComponentInline
+        assertThat(components.component.schemas).isNull()
     }
 
     private fun expectedSingleFileBundled(file: File): AsyncApiDocument {

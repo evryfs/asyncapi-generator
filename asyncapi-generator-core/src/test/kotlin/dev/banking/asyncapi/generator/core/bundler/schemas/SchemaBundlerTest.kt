@@ -77,6 +77,24 @@ class SchemaBundlerTest {
     }
 
     @Test
+    fun `bundle does not promote a recursive root component reference`() {
+        val nestedReference = Reference("#/components/schemas/Node")
+        val schema = Schema(
+            type = "object",
+            properties = mapOf("next" to SchemaInterface.SchemaReference(nestedReference)),
+        )
+        nestedReference.model = schema
+        val rootReference = Reference("#/components/schemas/Node", model = schema)
+        val schemaInterface = SchemaInterface.SchemaReference(rootReference)
+        val context = BundlingContext.empty()
+
+        val bundled = bundler.bundle(schemaInterface, context)
+
+        assertThat(bundled).isSameAs(schemaInterface)
+        assertThat(context.schemaPromotions.schemas()).isEmpty()
+    }
+
+    @Test
     fun `bundle keeps component multi format schema references without casting to schema`() {
         val schema = nativeAvroSchema()
         val schemaReference = Reference("#/components/schemas/UserCreated", model = schema)
