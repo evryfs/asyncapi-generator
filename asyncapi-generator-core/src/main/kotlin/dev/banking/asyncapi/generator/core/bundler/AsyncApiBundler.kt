@@ -27,13 +27,23 @@ class AsyncApiBundler : BundlingStage {
     private val componentBundler = ComponentBundler()
 
     override fun bundle(document: AsyncApiDocument): AsyncApiDocument {
-        val context = BundlingContext.empty()
+        val context = BundlingContext.withRootSchemas(componentBundler.schemas(document.components))
+        val bundledInfo = infoBundler.bundle(document.info, context)
+        val bundledServers = serverBundler.bundleServers(document.servers, context)
+        val bundledChannels = channelBundler.bundleMap(document.channels, context)
+        val bundledOperations = operationBundler.bundleMap(document.operations, context)
+        val bundledComponents = componentBundler.bundleComponents(document.components, context)
+        val componentsWithPromotedSchemas = componentBundler.mergeSchemas(
+            components = bundledComponents,
+            schemas = context.schemaPromotions.schemas(),
+        )
+
         return document.copy(
-            info = infoBundler.bundle(document.info, context),
-            servers = serverBundler.bundleServers(document.servers, context),
-            channels = channelBundler.bundleMap(document.channels, context),
-            operations = operationBundler.bundleMap(document.operations, context),
-            components = componentBundler.bundleComponents(document.components, context),
+            info = bundledInfo,
+            servers = bundledServers,
+            channels = bundledChannels,
+            operations = bundledOperations,
+            components = componentsWithPromotedSchemas,
         )
     }
 }

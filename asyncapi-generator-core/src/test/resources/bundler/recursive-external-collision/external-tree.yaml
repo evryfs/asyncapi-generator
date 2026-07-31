@@ -1,0 +1,9 @@
+components:
+  schemas:
+    TreeNode:
+      type: object
+      properties:
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'
