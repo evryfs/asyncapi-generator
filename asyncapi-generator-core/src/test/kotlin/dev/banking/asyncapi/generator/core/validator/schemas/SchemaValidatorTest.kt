@@ -147,6 +147,53 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `foreign component schemas resolve from all composition keywords`() {
+        val document = parse("validator/schemas/external/asyncapi_external_compositions.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `components schemas in a document path does not change the reference target`() {
+        val document = parse("validator/schemas/external/asyncapi_external_schema_map_path.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `unreferenced incompatible schemas in a foreign container are not validated`() {
+        val document = parse("validator/schemas/external/asyncapi_external_selected_schema.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `referenced transitive schemas use the same compatibility policy`() {
+        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
+            parse("validator/schemas/external/asyncapi_external_transitive_invalid.yaml")
+        }
+
+        assertEquals(1, exception.errors.size)
+        val finding = exception.errors.single()
+        assertEquals(ERROR, finding.severity)
+        assertTrue(
+            finding.message.contains(
+                "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            ),
+        )
+        assertEquals("foreign_container_transitive_invalid.yaml", finding.sourceLocation?.file?.name)
+        assertEquals(
+            "foreign_container_transitive_invalid.root.components.schemas." +
+                "InvalidDependency.properties.optionalName.nullable",
+            finding.path,
+        )
+        assertEquals(18, finding.line)
+    }
+
+    @Test
     fun `external schema keyword diagnostics point to the external source`() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             parse("validator/schemas/external/asyncapi_external_nullable.yaml")
@@ -160,9 +207,9 @@ class SchemaValidatorTest : AbstractValidatorTest() {
                 "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
             ),
         )
-        assertEquals("openapi_nullable.yaml", finding.sourceLocation?.file?.name)
+        assertEquals("foreign_container_nullable.yaml", finding.sourceLocation?.file?.name)
         assertEquals(
-            "openapi_nullable.root.components.schemas.ExternalPayload.properties.optionalName.nullable",
+            "foreign_container_nullable.root.components.schemas.ExternalPayload.properties.optionalName.nullable",
             finding.path,
         )
         assertEquals(13, finding.line)

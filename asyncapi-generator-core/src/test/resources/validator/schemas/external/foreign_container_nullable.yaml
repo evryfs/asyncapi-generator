@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Incompatible Schema Container
+  title: Foreign Schema Container With Incompatible Fragment
   version: 1.0.0
 paths: {}
 components:
@@ -11,4 +11,3 @@ components:
         optionalName:
           type: string
           nullable: true
-

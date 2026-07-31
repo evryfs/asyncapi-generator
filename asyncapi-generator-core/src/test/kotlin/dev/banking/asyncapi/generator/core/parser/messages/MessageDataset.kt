@@ -64,7 +64,7 @@ fun lightMeasured() = Message(
     ),
 
     payload = SchemaInterface.SchemaReference(
-        Reference("#/components/schemas/lightMeasuredPayload", referenceCategoryKey = COMPONENT)
+        Reference("#/components/schemas/lightMeasuredPayload", referenceCategoryKey = SCHEMA)
     ),
 
     examples = listOf(
@@ -147,7 +147,7 @@ fun referencedMessage() = Reference(
 fun refPayloadMessage() = Message(
     name = "RefPayload",
     payload = SchemaInterface.SchemaReference(
-        Reference("#/components/schemas/MySchema", referenceCategoryKey = COMPONENT)
+        Reference("#/components/schemas/MySchema", referenceCategoryKey = SCHEMA)
     )
 )
 

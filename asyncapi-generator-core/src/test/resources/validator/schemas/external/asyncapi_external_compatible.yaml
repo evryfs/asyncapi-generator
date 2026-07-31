@@ -8,5 +8,4 @@ components:
       type: object
       properties:
         payload:
-          $ref: "./openapi_compatible.yaml#/components/schemas/ExternalPayload"
-
+          $ref: "./foreign_container_compatible.yaml#/components/schemas/ExternalPayload"

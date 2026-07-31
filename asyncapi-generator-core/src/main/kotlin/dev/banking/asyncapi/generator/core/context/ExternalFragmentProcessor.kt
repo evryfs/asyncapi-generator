@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -14,6 +13,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.*
+import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
@@ -21,8 +21,6 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
-import dev.banking.asyncapi.generator.core.parser.components.ComponentParser
-import dev.banking.asyncapi.generator.core.parser.components.ComponentUnknownSchemaParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
@@ -41,7 +39,6 @@ import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
-import dev.banking.asyncapi.generator.core.validator.components.ComponentValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.messages.MessageTraitValidator
@@ -72,7 +69,7 @@ class ExternalFragmentProcessor(
         }
         val results = ValidationResults(context)
         when (category) {
-            SCHEMA -> parseAndValidateSchemas(rootNode, results)
+            SCHEMA -> parseAndValidateSchemas(rootNode, reference, results)
             CHANNEL -> parseAndValidateChannels(rootNode, results)
             MESSAGE -> parseAndValidateMessages(rootNode, results)
             MESSAGE_TRAIT -> parseAndValidateMessageTraits(rootNode, results)
@@ -88,18 +85,36 @@ class ExternalFragmentProcessor(
             EXTERNAL_DOC -> parseAndValidateExternalDocs(rootNode, results)
             TAG -> parseAndValidateTags(rootNode, results)
             BINDING -> parseAndValidateBindings(rootNode, results)
-            COMPONENT -> parseAndValidateComponent(rootNode, results)
             else -> { /* Should not happen */ }
         }
         results.logWarnings()
         results.throwErrors()
     }
 
-    private fun parseAndValidateSchemas(rootNode: ParserNode, results: ValidationResults) {
-        val parsed: Map<String, SchemaInterface> = SchemaParser(context).parseMap(rootNode)
+    private fun parseAndValidateSchemas(
+        rootNode: ParserNode,
+        reference: Reference,
+        results: ValidationResults,
+    ) {
+        val componentSchemaName = reference.ref.componentSchemaNameOrNull()
+        val schemasNode =
+            if (componentSchemaName == null) {
+                rootNode
+            } else {
+                rootNode.mandatory("components").mandatory("schemas")
+            }
+        val parsed: Map<String, SchemaInterface> = SchemaParser(context).parseMap(schemasNode)
         val validator = SchemaValidator(context)
-        parsed.forEach { (name, schema) ->
-            validator.validateInterface(schema, "External Schema '$name'", results)
+        if (componentSchemaName == null) {
+            validator.validateMap(parsed, "External", results)
+        } else {
+            parsed[componentSchemaName]?.let { schema ->
+                validator.validateInterface(
+                    schema,
+                    "External Schema '$componentSchemaName'",
+                    results,
+                )
+            }
         }
     }
 
@@ -258,18 +273,4 @@ class ExternalFragmentProcessor(
         }
     }
 
-    private fun parseAndValidateComponent(rootNode: ParserNode, results: ValidationResults) {
-        val isUnknownSchema = rootNode.optional("asyncapi") == null
-        if(isUnknownSchema){
-            rootNode.optional("components")?.let {
-                val parsed:ComponentInterface = ComponentUnknownSchemaParser(context).parseElement(it)
-                val validator = ComponentValidator(context)
-                validator.validateInterface(parsed, "External Component", results)
-            }
-            return
-        }
-        val parsed: ComponentInterface = ComponentParser(context).parseElement(rootNode)
-        val validator = ComponentValidator(context)
-        validator.validateInterface(parsed, "External Component", results)
-    }
 }

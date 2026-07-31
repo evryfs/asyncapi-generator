@@ -80,9 +80,8 @@ class ComponentValidator(
     }
 
     private fun validateSchemas(component: Component, contextString: String, results: ValidationResults) {
-        component.schemas?.forEach { (schemaName, schemaInterface) ->
-            val contextString = "$contextString Schema '$schemaName'"
-            schemaValidator.validateInterface(schemaInterface, contextString, results)
+        component.schemas?.let { schemas ->
+            schemaValidator.validateMap(schemas, contextString, results)
         }
     }
 

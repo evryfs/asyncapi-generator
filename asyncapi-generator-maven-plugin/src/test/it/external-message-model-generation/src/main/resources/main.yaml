@@ -8,3 +8,8 @@ channels:
     messages:
       myAccountCreatedV1:
         $ref: "./messages.yaml#/components/messages/MyAccountCreatedV1"
+  myAccountReviewed:
+    address: my.account.reviewed.v1
+    messages:
+      myAccountReviewedV1:
+        $ref: "./messages.yaml#/components/messages/MyAccountReviewedV1"

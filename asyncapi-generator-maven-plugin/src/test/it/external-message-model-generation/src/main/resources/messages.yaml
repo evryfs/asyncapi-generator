@@ -9,6 +9,11 @@ components:
       contentType: application/json
       payload:
         $ref: "#/components/schemas/MyAccountCreatedV1Payload"
+    MyAccountReviewedV1:
+      name: MyAccountReviewedV1
+      contentType: application/json
+      payload:
+        $ref: "./foreign-models.yaml#/components/schemas/MyAccountReviewedV1Payload"
   schemas:
     MyAccountCreatedV1Payload:
       type: object

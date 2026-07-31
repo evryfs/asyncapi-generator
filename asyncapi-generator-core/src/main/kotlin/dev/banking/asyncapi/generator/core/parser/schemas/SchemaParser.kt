@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.COMPONENT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import kotlin.String
 import kotlin.collections.Map
@@ -45,13 +44,10 @@ class SchemaParser(
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
         parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
-            val isComponents = reference.contains("components/schemas")
-            val isOf = parserNode.name.contains("[")
-            val categoryKey = if (isComponents && !isOf) COMPONENT else SCHEMA
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
-                    referenceCategoryKey = categoryKey
+                    referenceCategoryKey = SCHEMA
                 )
             ).also { asyncApiContext.register(it.reference, parserNode) }
         }

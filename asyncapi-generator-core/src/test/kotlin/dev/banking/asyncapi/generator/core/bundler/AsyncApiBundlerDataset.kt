@@ -13,7 +13,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.COMPONENT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -180,7 +179,7 @@ private fun expectedTestMessage(): Message =
         payload = SchemaInterface.SchemaReference(
             Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/validKotlinUserSchema").apply {
                 model = expectedValidKotlinUserSchema()
-                referenceCategoryKey = COMPONENT
+                referenceCategoryKey = SCHEMA
             }
         )
     )
@@ -191,7 +190,7 @@ private fun expectedAuditMessage(): Message =
         payload = SchemaInterface.SchemaReference(
             Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
                 model = expectedAuditMetadataSchema()
-                referenceCategoryKey = COMPONENT
+                referenceCategoryKey = SCHEMA
             }
         )
     )
@@ -234,7 +233,7 @@ private fun expectedExternalAuditChannelRef(): Reference =
                         payload = SchemaInterface.SchemaReference(
                             Reference("asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata").apply {
                                 model = expectedAuditMetadataSchema()
-                                referenceCategoryKey = COMPONENT
+                                referenceCategoryKey = SCHEMA
                             }
                         )
                     )

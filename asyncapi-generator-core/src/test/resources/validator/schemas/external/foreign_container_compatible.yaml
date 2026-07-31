@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Compatible Schema Container
+  title: Foreign Schema Container
   version: 1.0.0
 paths: {}
 components:
@@ -11,4 +11,3 @@ components:
         optionalName:
           type: [string, "null"]
           x-generator-note: Preserved extension metadata
-

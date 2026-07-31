@@ -1,0 +1,16 @@
+openapi: 3.0.3
+info:
+  title: Foreign Composition Components
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    BasePayload:
+      type: object
+      properties:
+        id:
+          type: string
+    StringPayload:
+      type: string
+    IntegerPayload:
+      type: integer
