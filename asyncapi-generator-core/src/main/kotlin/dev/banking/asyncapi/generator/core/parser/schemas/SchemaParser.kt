@@ -97,7 +97,7 @@ class SchemaParser(
         }
 
         val id = parserNode.optional($$"$id")?.coerce<String>()
-        val schema = parserNode.optional($$"$schema")?.coerce<String>()
+        val schema = parserNode.optional($$"$schema")?.node as? String
         val comment = parserNode.optional($$"$comment")?.coerce<String>()
         val title = parserNode.optional("title")?.coerce<String>()
         val description = parserNode.optional("description")?.coerce<String>()
@@ -112,9 +112,9 @@ class SchemaParser(
 
         val multipleOf = parserNode.optional("multipleOf")?.coerce<Number>()
         val maximum = parserNode.optional("maximum")?.coerce<Number>()
-        val exclusiveMaximum = parserNode.optional("exclusiveMaximum")?.coerce<Number>()
+        val exclusiveMaximum = parserNode.optional("exclusiveMaximum")?.node as? Number
         val minimum = parserNode.optional("minimum")?.coerce<Number>()
-        val exclusiveMinimum = parserNode.optional("exclusiveMinimum")?.coerce<Number>()
+        val exclusiveMinimum = parserNode.optional("exclusiveMinimum")?.node as? Number
 
         val maxLength = parserNode.optional("maxLength")?.coerce<Number>()
         val minLength = parserNode.optional("minLength")?.coerce<Number>()
@@ -122,7 +122,7 @@ class SchemaParser(
         val contentEncoding = parserNode.optional("contentEncoding")?.coerce<String>()
         val contentMediaType = parserNode.optional("contentMediaType")?.coerce<String>()
 
-        val items = parserNode.optional("items")?.let { parseElement(it) }
+        val items = parserNode.optional("items")?.takeUnless { it.node is List<*> }?.let { parseElement(it) }
         val additionalItems = parserNode.optional("additionalItems")?.let { parseElement(it) }
         val maxItems = parserNode.optional("maxItems")?.coerce<Number>()
         val minItems = parserNode.optional("minItems")?.coerce<Number>()
@@ -154,10 +154,11 @@ class SchemaParser(
         val enumValues = parserNode.optional("enum")?.coerce<List<Any?>>()
         val constValue = parserNode.optional("const")?.coerce<Any?>()
 
-        val discriminator = parserNode.optional("discriminator")?.coerce<String>()
+        val discriminator = parserNode.optional("discriminator")?.node as? String
         val externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
         val deprecated = parserNode.optional("deprecated")?.coerce<Boolean>()
         val bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap)
+        val extensions = parserNode.startsWith("x-")?.coerce<Map<String, Any?>>()
 
         val readOnly = parserNode.optional("readOnly")?.coerce<Boolean>()
         val writeOnly = parserNode.optional("writeOnly")?.coerce<Boolean>()
@@ -217,7 +218,8 @@ class SchemaParser(
                 discriminator = discriminator,
                 deprecated = deprecated,
                 externalDocs = externalDocs,
-                bindings = bindings
+                bindings = bindings,
+                extensions = extensions,
             ).also { asyncApiContext.register(it, parserNode) }
         )
     }

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.schemas
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
@@ -69,4 +70,5 @@ data class Schema(
     val deprecated: Boolean? = null,
     val externalDocs: ExternalDocInterface? = null,
     val bindings: Map<String, BindingInterface>? = null,
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

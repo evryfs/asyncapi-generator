@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Compatible Schema Keywords
+  version: 1.0.0
+components:
+  schemas:
+    CompatiblePayload:
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        optionalName:
+          type: [string, "null"]
+          examples:
+            - Example name
+          x-generator-note: Preserved extension metadata

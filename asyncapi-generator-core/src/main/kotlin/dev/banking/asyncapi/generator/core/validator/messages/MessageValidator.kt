@@ -1,12 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -37,43 +35,23 @@ class MessageValidator(
 
     private fun validatePayload(node: Message, contextString: String, results: ValidationResults) {
         val contextString = "$contextString Payload"
-        when (val payload = node.payload) {
-            is SchemaInterface.SchemaInline ->
-                schemaValidator.validate(payload.schema, contextString, results)
-
-            is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(payload.reference, contextString, results)
-
-            is SchemaInterface.MultiFormatSchemaInline -> {}
-            is SchemaInterface.BooleanSchema -> {}
-            null -> {}
-        }
+        node.payload?.let { payload -> schemaValidator.validateInterface(payload, contextString, results) }
     }
 
     private fun validateHeaders(node: Message, contextString: String, results: ValidationResults) {
         val headersSchema = node.headers ?: return
-        if (headersSchema is SchemaInterface.SchemaReference) {
-            referenceResolver.resolve(headersSchema.reference, "$contextString Headers", results)
-        }
-        val headers = extractHeaderProperties(headersSchema)
-        headers.forEach { (headerName, schemaInterface) ->
-            val contextString = "$contextString Header '$headerName'"
-            when (schemaInterface) {
-                is SchemaInterface.SchemaInline ->
-                    schemaValidator.validate(schemaInterface.schema, contextString, results)
+        schemaValidator.validateInterface(headersSchema, "$contextString Headers", results)
 
-                is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaInterface.reference, contextString, results)
-
-                is SchemaInterface.MultiFormatSchemaInline -> {
+        if (headersSchema is SchemaInterface.SchemaInline) {
+            headersSchema.schema.properties
+                ?.filterValues { schema -> schema is SchemaInterface.MultiFormatSchemaInline }
+                ?.forEach { (headerName, _) ->
                     results.warn(
-                        "$contextString MultiFormatSchema in headers are not validated (header '$headerName').",
+                        "$contextString Header '$headerName' uses a Multi Format Schema, which is not validated " +
+                            "in message headers.",
                         sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
                     )
                 }
-
-                is SchemaInterface.BooleanSchema -> {}
-            }
         }
     }
 
@@ -134,18 +112,4 @@ class MessageValidator(
         }
     }
 
-    private fun extractHeaderProperties(schemaInterface: SchemaInterface): Map<String, SchemaInterface> =
-        when (schemaInterface) {
-            is SchemaInterface.SchemaInline -> {
-                val schema = schemaInterface.schema
-                if (schema.type.getPrimaryType() == "object") schema.properties ?: emptyMap() else emptyMap()
-            }
-
-            is SchemaInterface.SchemaReference -> {
-                val schema = schemaInterface.reference.model as? Schema
-                if (schema?.type.getPrimaryType() == "object") schema?.properties ?: emptyMap() else emptyMap()
-            }
-
-            else -> emptyMap()
-        }
 }

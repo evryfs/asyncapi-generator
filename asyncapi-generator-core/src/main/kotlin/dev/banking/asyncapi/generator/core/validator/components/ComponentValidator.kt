@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -83,17 +82,7 @@ class ComponentValidator(
     private fun validateSchemas(component: Component, contextString: String, results: ValidationResults) {
         component.schemas?.forEach { (schemaName, schemaInterface) ->
             val contextString = "$contextString Schema '$schemaName'"
-            when (schemaInterface) {
-                is SchemaInterface.SchemaInline ->
-                    schemaValidator.validate(schemaInterface.schema, contextString, results)
-
-                is SchemaInterface.MultiFormatSchemaInline -> {}
-
-                is SchemaInterface.SchemaReference ->
-                    referenceResolver.resolve(schemaInterface.reference, contextString, results)
-
-                is SchemaInterface.BooleanSchema -> {}
-            }
+            schemaValidator.validateInterface(schemaInterface, contextString, results)
         }
     }
 

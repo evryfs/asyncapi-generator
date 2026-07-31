@@ -58,7 +58,19 @@ class AsyncApiContext {
         modelRepository.getSourceLocation(model, property)
             ?: modelRepository.getSourceLocation(model)
 
+    fun getSourceLocation(
+        model: Any,
+        fieldName: String,
+    ): SourceLocation? =
+        modelRepository.getSourceLocation(model, fieldName)
+            ?: modelRepository.getSourceLocation(model)
+
     fun getSourceLocation(model: Any): SourceLocation? = modelRepository.getSourceLocation(model)
+
+    fun getFieldNames(model: Any): Set<String> = modelRepository.getFieldNames(model)
+
+    fun getFieldValue(model: Any, fieldName: String): Any? =
+        modelRepository.getFieldValue(model, fieldName)
 
     fun pathSnippet(
         path: String,

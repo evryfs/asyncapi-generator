@@ -281,17 +281,19 @@ components:
   messages:
     lightMeasured:
       headers:
-        my-app-header:
-          type: object
-          required:
-            - correlationId
-          properties:
-            correlationId:
-              type: string
-              description: Correlation ID set by application
-            applicationInstanceId:
-              type: string
-              description: Unique identifier for a given instance of the publishing application
+        type: object
+        properties:
+          my-app-header:
+            type: object
+            required:
+              - correlationId
+            properties:
+              correlationId:
+                type: string
+                description: Correlation ID set by application
+              applicationInstanceId:
+                type: string
+                description: Unique identifier for a given instance of the publishing application
       name: lightMeasured
       title: Light measured
       summary: Inform about environmental lighting conditions of a particular streetlight.
@@ -677,13 +679,15 @@ components:
     commonHeaders:
 
       headers:
-        myHeaders:
-          type: object
-          properties:
-            my-app-header:
-              type: integer
-              minimum: 0
-              maximum: 100
+        type: object
+        properties:
+          myHeaders:
+            type: object
+            properties:
+              my-app-header:
+                type: integer
+                minimum: 0
+                maximum: 100
   operationTraits:
     logging:
       summary: Enables logging for this operation

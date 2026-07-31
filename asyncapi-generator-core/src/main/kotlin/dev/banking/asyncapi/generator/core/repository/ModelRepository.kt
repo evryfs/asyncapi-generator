@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
 /**
@@ -19,6 +20,8 @@ class ModelRepository(
     data class Model(
         val model: Any,
         val sourceLocation: SourceLocation?,
+        val fieldNames: Set<String>,
+        val fieldValues: Map<String, Any?>,
         val fieldLocations: Map<String, SourceLocation>,
         val fieldLines: Map<String, Int>,
         val fieldName: String?,
@@ -26,10 +29,12 @@ class ModelRepository(
         val nodePath: String?,
     )
 
-    private val modelsByInstance = LinkedHashMap<Any, Model>()
+    private val modelsByInstance = IdentityHashMap<Any, Model>()
     private val modelsByPath = LinkedHashMap<String, Any>()
 
     fun register(model: Any, node: ParserNode) {
+        val fieldNames = collectFieldNames(node)
+        val fieldValues = collectFieldValues(node)
         val fieldLocations = collectFieldLocations(node)
         val fieldLines = if (fieldLocations.isNotEmpty()) {
             fieldLocations.mapValues { (_, location) -> location.line }
@@ -46,7 +51,18 @@ class ModelRepository(
             model.sourceId = path.substringBefore(".root", path)
         }
 
-        modelsByInstance[model] = Model(model, sourceLocation, fieldLocations, fieldLines, fieldName, parentPath, path)
+        modelsByInstance[model] =
+            Model(
+                model,
+                sourceLocation,
+                fieldNames,
+                fieldValues,
+                fieldLocations,
+                fieldLines,
+                fieldName,
+                parentPath,
+                path,
+            )
         modelsByPath[path] = model
     }
 
@@ -67,12 +83,24 @@ class ModelRepository(
         return modelsByInstance[model]?.fieldLocations?.get(fieldName)
     }
 
+    fun getSourceLocation(model: Any, fieldName: String): SourceLocation? {
+        val entry = modelsByInstance[model] ?: return null
+        return entry.fieldLocations[fieldName]
+            ?: entry.nodePath?.let { path -> sourceRepository.getLocation("$path.$fieldName") }
+    }
+
     fun getSourceLocation(model: Any): SourceLocation? {
         val entry = modelsByInstance[model] ?: return null
         return entry.sourceLocation ?: entry.nodePath?.let { sourceRepository.findNearestLocation(it) }
     }
 
-    fun getModelsByInstance() = modelsByInstance.toMap()
+    fun getFieldNames(model: Any): Set<String> =
+        modelsByInstance[model]?.fieldNames.orEmpty()
+
+    fun getFieldValue(model: Any, fieldName: String): Any? =
+        modelsByInstance[model]?.fieldValues?.get(fieldName)
+
+    fun getModelsByInstance(): Map<Any, Model> = IdentityHashMap(modelsByInstance)
     fun getModelsByPath() = modelsByPath.toMap()
 
     fun findByReference(reference: Reference): Any? {
@@ -109,6 +137,24 @@ class ModelRepository(
         }
         return result
     }
+
+    private fun collectFieldNames(node: ParserNode): Set<String> =
+        when (val raw = node.node) {
+            is Map<*, *> -> raw.keys.filterIsInstance<String>().toCollection(linkedSetOf())
+            is List<*> -> raw.indices.mapTo(linkedSetOf()) { index -> "[$index]" }
+            else -> setOf("<value>")
+        }
+
+    private fun collectFieldValues(node: ParserNode): Map<String, Any?> =
+        when (val raw = node.node) {
+            is Map<*, *> ->
+                raw.entries
+                    .filter { (key, _) -> key is String }
+                    .associate { (key, value) -> key as String to value }
+
+            is List<*> -> raw.mapIndexed { index, value -> "[$index]" to value }.toMap()
+            else -> mapOf("<value>" to raw)
+        }
 
     private fun collectFieldLines(node: ParserNode): Map<String, Int> {
         val result = mutableMapOf<String, Int>()
