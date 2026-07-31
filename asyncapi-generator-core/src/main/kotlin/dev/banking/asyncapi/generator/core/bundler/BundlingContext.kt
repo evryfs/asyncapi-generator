@@ -1,6 +1,9 @@
 package dev.banking.asyncapi.generator.core.bundler
 
+import dev.banking.asyncapi.generator.core.bundler.schemas.PromotedSchemaRegistry
+import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaRecursionAnalyzer
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Carries traversal state while the bundler walks an AsyncAPI document.
@@ -14,22 +17,73 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
  * - `BundlingContextTest`
  */
 class BundlingContext private constructor(
-    private val visitedReferences: Set<String>,
+    private val visitedReferences: Set<ReferenceIdentity>,
+    internal val schemaPromotions: PromotedSchemaRegistry,
+    internal val schemaRecursion: SchemaRecursionAnalyzer,
+    internal val externalSchemaScope: Boolean,
+    private val rootSchemaDefinition: String?,
 ) {
 
-    fun hasVisited(reference: Reference): Boolean = hasVisited(reference.ref)
+    private data class ReferenceIdentity(
+        val sourceId: String?,
+        val ref: String,
+    )
 
-    fun hasVisited(reference: String): Boolean = reference in visitedReferences
+    fun hasVisited(reference: Reference): Boolean =
+        ReferenceIdentity(reference.sourceId, reference.ref) in visitedReferences
 
-    fun enter(reference: Reference): BundlingContext = enter(reference.ref)
+    fun hasVisited(reference: String): Boolean =
+        ReferenceIdentity(null, reference) in visitedReferences
+
+    fun enter(reference: Reference): BundlingContext =
+        copy(visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref))
 
     fun enter(reference: String): BundlingContext =
-        BundlingContext(visitedReferences + reference)
+        copy(visitedReferences = visitedReferences + ReferenceIdentity(null, reference))
+
+    internal fun enterExternalSchema(reference: Reference): BundlingContext =
+        copy(
+            visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref),
+            externalSchemaScope = true,
+            rootSchemaDefinition = null,
+        )
+
+    internal fun defineRootSchema(name: String): BundlingContext =
+        copy(rootSchemaDefinition = name)
+
+    internal fun definesRootSchema(name: String): Boolean =
+        rootSchemaDefinition == name
+
+    private fun copy(
+        visitedReferences: Set<ReferenceIdentity> = this.visitedReferences,
+        externalSchemaScope: Boolean = this.externalSchemaScope,
+        rootSchemaDefinition: String? = this.rootSchemaDefinition,
+    ): BundlingContext =
+        BundlingContext(
+            visitedReferences = visitedReferences,
+            schemaPromotions = schemaPromotions,
+            schemaRecursion = schemaRecursion,
+            externalSchemaScope = externalSchemaScope,
+            rootSchemaDefinition = rootSchemaDefinition,
+        )
 
     companion object {
-        fun empty(): BundlingContext = BundlingContext(emptySet())
+        fun empty(): BundlingContext = withRootSchemas(emptyMap())
+
+        internal fun withRootSchemas(rootSchemas: Map<String, SchemaInterface>): BundlingContext =
+            BundlingContext(
+                visitedReferences = emptySet(),
+                schemaPromotions = PromotedSchemaRegistry(rootSchemas),
+                schemaRecursion = SchemaRecursionAnalyzer(),
+                externalSchemaScope = false,
+                rootSchemaDefinition = null,
+            )
 
         fun from(visitedReferences: Set<String>): BundlingContext =
-            BundlingContext(visitedReferences)
+            empty().copy(
+                visitedReferences = visitedReferences.mapTo(linkedSetOf()) { reference ->
+                    ReferenceIdentity(null, reference)
+                },
+            )
     }
 }

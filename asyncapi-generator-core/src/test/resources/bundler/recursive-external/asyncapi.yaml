@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Recursive external schema bundling
+  version: 1.0.0
+channels:
+  treeEvents:
+    address: tree.events
+    messages:
+      treeUpdated:
+        name: TreeUpdated
+        payload:
+          $ref: './schemas.yaml#/components/schemas/TreeNode'

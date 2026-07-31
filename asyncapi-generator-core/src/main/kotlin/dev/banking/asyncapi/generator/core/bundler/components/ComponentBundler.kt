@@ -20,6 +20,7 @@ import dev.banking.asyncapi.generator.core.bundler.servers.ServerVariableBundler
 import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Bundles component objects and references.
@@ -79,7 +80,7 @@ class ComponentBundler {
         bundleComponent(component, BundlingContext.from(visited))
 
     fun bundleComponent(component: Component, context: BundlingContext): Component {
-        val bundledSchemas = schemaBundler.bundleMap(component.schemas, context)
+        val bundledSchemas = schemaBundler.bundleComponentMap(component.schemas, context)
         val bundledServers = component.servers?.let { serverBundler.bundleServers(it, context) }
         val bundledChannels = component.channels?.let { channelBundler.bundleMap(it, context) }
         val bundledOperations = component.operations?.let { operationBundler.bundleMap(it, context) }
@@ -119,5 +120,41 @@ class ComponentBundler {
             operationBindings = bundledOperationBindings,
             messageBindings = bundledMessageBindings,
         )
+    }
+
+    internal fun schemas(components: ComponentInterface?): Map<String, SchemaInterface> =
+        when (components) {
+            null -> emptyMap()
+            is ComponentInterface.ComponentInline -> components.component.schemas.orEmpty()
+            is ComponentInterface.ComponentReference -> components.reference.requireModel<Component>().schemas.orEmpty()
+        }
+
+    internal fun mergeSchemas(
+        components: ComponentInterface?,
+        schemas: Map<String, SchemaInterface>,
+    ): ComponentInterface? {
+        if (schemas.isEmpty()) return components
+
+        return when (components) {
+            null ->
+                ComponentInterface.ComponentInline(
+                    Component(schemas = schemas),
+                )
+
+            is ComponentInterface.ComponentInline ->
+                ComponentInterface.ComponentInline(
+                    components.component.copy(
+                        schemas = components.component.schemas.orEmpty() + schemas,
+                    ),
+                )
+
+            is ComponentInterface.ComponentReference -> {
+                val component = components.reference.requireModel<Component>()
+                components.reference.model = component.copy(
+                    schemas = component.schemas.orEmpty() + schemas,
+                )
+                components
+            }
+        }
     }
 }
