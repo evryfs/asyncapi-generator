@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Transitive External Schema
+  version: 1.0.0
+components:
+  schemas:
+    LocalEnvelope:
+      type: object
+      properties:
+        payload:
+          $ref: "./foreign_container_transitive_invalid.yaml#/components/schemas/SelectedPayload"

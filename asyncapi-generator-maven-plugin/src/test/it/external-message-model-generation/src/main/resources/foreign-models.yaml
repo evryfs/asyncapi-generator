@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: Foreign Account Models
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    MyAccountReviewedV1Payload:
+      type: object
+      required:
+        - reviewId
+        - metadata
+      properties:
+        reviewId:
+          type: string
+        metadata:
+          $ref: "#/components/schemas/MyAccountReviewMetadata"
+    MyAccountReviewMetadata:
+      type: object
+      required:
+        - reviewer
+      properties:
+        reviewer:
+          type: string

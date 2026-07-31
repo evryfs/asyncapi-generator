@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
+import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -151,7 +152,6 @@ class SchemaBundler {
     }
 
     private fun isComponentSchemaRef(ref: String): Boolean {
-        val pointer = ref.substringAfter("#", "")
-        return pointer.startsWith("/components/schemas/")
+        return ref.componentSchemaNameOrNull() != null
     }
 }

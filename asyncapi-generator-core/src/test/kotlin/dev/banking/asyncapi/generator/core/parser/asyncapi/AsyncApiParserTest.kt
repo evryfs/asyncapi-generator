@@ -112,9 +112,9 @@ class AsyncApiParserTest : ParserTestSupport() {
             simpleStringSchema,
             "simpleString schema should be retrievable by path from ModelRepository"
         )
-        assertEquals(429, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::title))
-        assertEquals(430, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::description))
-        assertEquals(431, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::type))
+        assertEquals(431, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::title))
+        assertEquals(432, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::description))
+        assertEquals(433, asyncApiContext.getLine(simpleStringSchema, simpleStringSchema::type))
     }
 
     @Test
@@ -128,7 +128,7 @@ class AsyncApiParserTest : ParserTestSupport() {
         val schemaLocation = assertNotNull(asyncApiContext.getSourceLocation(simpleStringSchema))
         assertEquals("asyncapi_kafka_single_file_example.yaml", schemaLocation.file.name)
         assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString", schemaLocation.path)
-        assertEquals(428, schemaLocation.line)
+        assertEquals(430, schemaLocation.line)
         assertTrue(schemaLocation.column > 0)
 
         val titleLocation = assertNotNull(
@@ -136,7 +136,7 @@ class AsyncApiParserTest : ParserTestSupport() {
         )
         assertEquals("asyncapi_kafka_single_file_example.yaml", titleLocation.file.name)
         assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString.title", titleLocation.path)
-        assertEquals(429, titleLocation.line)
+        assertEquals(431, titleLocation.line)
         assertTrue(titleLocation.column > 0)
     }
 }

@@ -12,7 +12,7 @@ data class Reference(
     @get:JsonIgnore
     var sourceId: String? = null,
     @get:JsonIgnore
-    var referenceCategoryKey: ReferenceCategoryKey? = null, // External fragment loading needs explicit expected type, path-guessing is brittle.
+    var referenceCategoryKey: ReferenceCategoryKey? = null, // The model type expected at the reference target.
 ) {
 
     @get:JsonIgnore

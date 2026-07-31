@@ -16,7 +16,7 @@ components:
       name: EventMessage
       payload:
         allOf:
-          - $ref: './common-components.yml#/components/schemas/BaseMessage'
+          - $ref: './openapi-composition-components.yml#/components/schemas/BaseMessage'
           - type: object
             properties:
               message:

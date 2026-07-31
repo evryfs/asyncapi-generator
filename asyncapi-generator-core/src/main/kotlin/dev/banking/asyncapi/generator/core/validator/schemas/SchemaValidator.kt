@@ -1,16 +1,21 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeAny
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import java.util.Collections
+import java.util.IdentityHashMap
 
 class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
@@ -21,12 +26,32 @@ class SchemaValidator(
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validateInterface(schemaInterface: SchemaInterface, contextString: String, results: ValidationResults) {
+        validateInterface(schemaInterface, contextString, results, newVisitedSet())
+    }
+
+    fun validateMap(
+        schemas: Map<String, SchemaInterface>,
+        contextString: String,
+        results: ValidationResults,
+    ) {
+        val visited = newVisitedSet()
+        schemas.forEach { (name, schema) ->
+            validateInterface(schema, "$contextString Schema '$name'", results, visited)
+        }
+    }
+
+    private fun validateInterface(
+        schemaInterface: SchemaInterface,
+        contextString: String,
+        results: ValidationResults,
+        visited: MutableSet<Any>,
+    ) {
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
-                validate(schemaInterface.schema, contextString, results)
+                validate(schemaInterface.schema, contextString, results, visited)
 
             is SchemaInterface.SchemaReference ->
-                referenceResolver.resolve(schemaInterface.reference, contextString, results)
+                validateReference(schemaInterface.reference, contextString, results, visited)
 
             is SchemaInterface.MultiFormatSchemaInline -> {}
             is SchemaInterface.BooleanSchema -> {}
@@ -34,6 +59,21 @@ class SchemaValidator(
     }
 
     fun validate(node: Schema, contextString: String, results: ValidationResults) {
+        validate(node, contextString, results, newVisitedSet())
+    }
+
+    private fun validate(
+        node: Schema,
+        contextString: String,
+        results: ValidationResults,
+        visited: MutableSet<Any>,
+    ) {
+        if (!visited.add(node)) {
+            return
+        }
+        validateKeywords(node, contextString, results)
+        validateDialect(node, contextString, results)
+        validateKeywordRepresentations(node, contextString, results)
         validateType(node, contextString, results)
         validateEnum(node, contextString, results)
         validateConst(node, contextString, results)
@@ -49,22 +89,140 @@ class SchemaValidator(
         validateBindings(node, contextString, results)
 
         // Recursive validation for nested schemas
-        node.properties?.forEach { (name, subSchema) -> validateInterface(subSchema, name, results) }
-        node.definitions?.forEach { (name, subSchema) -> validateInterface(subSchema, name, results) }
-        node.items?.let { validateInterface(it, contextString, results) }
-        node.additionalItems?.let { validateInterface(it, contextString, results) }
-        node.additionalProperties?.let { validateInterface(it, contextString, results) }
-        node.contains?.let { validateInterface(it, contextString, results) }
-        node.propertyNames?.let { validateInterface(it, contextString, results) }
+        node.properties?.forEach { (name, subSchema) ->
+            validateInterface(subSchema, name, results, visited)
+        }
+        node.definitions?.forEach { (name, subSchema) ->
+            validateInterface(subSchema, name, results, visited)
+        }
+        node.items?.let { validateInterface(it, contextString, results, visited) }
+        node.additionalItems?.let { validateInterface(it, contextString, results, visited) }
+        node.additionalProperties?.let { validateInterface(it, contextString, results, visited) }
+        node.contains?.let { validateInterface(it, contextString, results, visited) }
+        node.propertyNames?.let { validateInterface(it, contextString, results, visited) }
 
-        node.allOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
-        node.anyOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
-        node.oneOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.allOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.anyOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.oneOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
 
-        node.not?.let { subSchema -> validateInterface(subSchema, contextString, results) }
-        node.ifSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
-        node.thenSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
-        node.elseSchema?.let { subSchema -> validateInterface(subSchema, contextString, results) }
+        node.not?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.ifSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.thenSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.elseSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+    }
+
+    private fun validateReference(
+        reference: Reference,
+        contextString: String,
+        results: ValidationResults,
+        visited: MutableSet<Any>,
+    ) {
+        if (!visited.add(reference)) {
+            return
+        }
+        validateKeywords(reference, contextString, results)
+        referenceResolver.resolve(reference, contextString, results)
+        when (val resolved = reference.model) {
+            is Schema -> validate(resolved, contextString, results, visited)
+            is Reference -> validateReference(resolved, contextString, results, visited)
+            is SchemaInterface ->
+                validateInterface(resolved, contextString, results, visited)
+        }
+    }
+
+    private fun newVisitedSet(): MutableSet<Any> =
+        Collections.newSetFromMap(IdentityHashMap())
+
+    private fun validateKeywords(node: Any, contextString: String, results: ValidationResults) {
+        asyncApiContext.getFieldNames(node).forEach { keyword ->
+            val classification = SchemaKeywordPolicy.classify(keyword)
+            val severity = classification.severity ?: return@forEach
+            val explanation = classification.explanation ?: return@forEach
+            val sourceLocation = asyncApiContext.getSourceLocation(node, keyword)
+            val message = "$contextString Schema Object keyword '$keyword' $explanation"
+
+            when (severity) {
+                ERROR ->
+                    results.error(
+                        message = message,
+                        sourceLocation = sourceLocation,
+                        doc = classification.doc,
+                    )
+
+                WARNING ->
+                    results.warn(
+                        message = message,
+                        sourceLocation = sourceLocation,
+                        doc = classification.doc,
+                    )
+            }
+        }
+    }
+
+    private fun validateKeywordRepresentations(node: Schema, contextString: String, results: ValidationResults) {
+        if ("items" in asyncApiContext.getFieldNames(node)) {
+            val items = asyncApiContext.getFieldValue(node, "items")
+            when {
+                items is List<*> ->
+                    results.error(
+                        "$contextString Schema Object keyword 'items' does not support tuple validation. Use a " +
+                            "single Schema Object in 'items'.",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
+                    )
+
+                items !is Map<*, *> && items !is Boolean ->
+                    results.error(
+                        "$contextString Schema Object keyword 'items' must contain a Schema Object or a boolean schema.",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
+                    )
+            }
+        }
+
+        listOf("exclusiveMinimum", "exclusiveMaximum").forEach { keyword ->
+            if (keyword in asyncApiContext.getFieldNames(node) &&
+                asyncApiContext.getFieldValue(node, keyword) !is Number
+            ) {
+                results.error(
+                    "$contextString Schema Object keyword '$keyword' must contain a numeric boundary.",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, keyword),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
+                )
+            }
+        }
+
+        if ("discriminator" in asyncApiContext.getFieldNames(node) &&
+            asyncApiContext.getFieldValue(node, "discriminator") !is String
+        ) {
+            results.error(
+                "$contextString Schema Object keyword 'discriminator' must contain the name of a required " +
+                    "string property.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, "discriminator"),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
+            )
+        }
+    }
+
+    private fun validateDialect(node: Schema, contextString: String, results: ValidationResults) {
+        if ("\$schema" !in asyncApiContext.getFieldNames(node)) return
+        val dialect = node.schema
+        if (dialect == null) {
+            results.error(
+                "$contextString Schema Object keyword '\$schema' must contain a schema dialect URI.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, "\$schema"),
+                doc = "https://json-schema.org/draft-07/schema",
+            )
+            return
+        }
+        if (dialect.removeSuffix("#") in SUPPORTED_DRAFT_7_DIALECTS) return
+
+        results.error(
+            "$contextString declares schema dialect '$dialect', but the generator supports AsyncAPI 3.0 Schema " +
+                "Object semantics based on JSON Schema Draft 7. Remove '\$schema' or declare the Draft 7 dialect.",
+            sourceLocation = asyncApiContext.getSourceLocation(node, "\$schema"),
+            doc = "https://json-schema.org/draft-07/schema",
+        )
     }
 
     private fun validateType(node: Schema, contextString: String, results: ValidationResults) {
@@ -415,5 +573,13 @@ class SchemaValidator(
             "null" -> value == null
             else -> true
         }
+    }
+
+    private companion object {
+        val SUPPORTED_DRAFT_7_DIALECTS =
+            setOf(
+                "http://json-schema.org/draft-07/schema",
+                "https://json-schema.org/draft-07/schema",
+            )
     }
 }

@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
+import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
@@ -20,6 +22,197 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val results = asyncApiValidator.validate(document)
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `supported keywords and extension properties pass validation`() {
+        val document = parse("validator/schemas/asyncapi_validator_schema_keyword_compatible.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+
+        val components = (document.components as ComponentInterface.ComponentInline).component
+        val payload = components.schemas?.getValue("CompatiblePayload") as SchemaInterface.SchemaInline
+        val optionalName = payload.schema.properties?.getValue("optionalName") as SchemaInterface.SchemaInline
+        assertEquals(
+            "Preserved extension metadata",
+            optionalName.schema.extensions?.get("x-generator-note"),
+        )
+    }
+
+    @Test
+    fun `unsupported schema keywords and explicit dialect mismatch produce structured diagnostics`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_keyword_diagnostics.yaml")
+
+        assertEquals(9, results.errors.size)
+        assertEquals(1, results.warnings.size)
+
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path =
+                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedNullable.nullable",
+            line = 9,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword '\$defs' is not supported under the generator's JSON Schema Draft 7 semantics",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDefinitionKeyword.\$defs",
+            line = 13,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains =
+                "keyword 'unevaluatedProperties' is not supported under the generator's " +
+                    "JSON Schema Draft 7 semantics",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path =
+                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas." +
+                    "UnsupportedStructuralKeyword.unevaluatedProperties",
+            line = 19,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'minLenght' is not supported by the generator",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnknownKeyword.minLenght",
+            line = 23,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "declares schema dialect 'https://json-schema.org/draft/2020-12/schema'",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDialect.\$schema",
+            line = 26,
+        )
+        assertFinding(
+            results,
+            severity = WARNING,
+            messageContains = "keyword 'example' is an unsupported annotation",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.IgnoredAnnotation.example",
+            line = 31,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NullableReference.nullable",
+            line = 35,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'items' does not support tuple validation",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.TupleItems.items",
+            line = 39,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'exclusiveMinimum' must contain a numeric boundary",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path =
+                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.InvalidExclusiveMinimum." +
+                    "exclusiveMinimum",
+            line = 46,
+        )
+        assertFinding(
+            results,
+            severity = ERROR,
+            messageContains = "keyword 'discriminator' must contain the name of a required string property",
+            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
+            path =
+                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas." +
+                    "InvalidDiscriminator.discriminator",
+            line = 50,
+        )
+    }
+
+    @Test
+    fun `foreign container does not change compatible external schema semantics`() {
+        val document = parse("validator/schemas/external/asyncapi_external_compatible.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `foreign component schemas resolve from all composition keywords`() {
+        val document = parse("validator/schemas/external/asyncapi_external_compositions.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `components schemas in a document path does not change the reference target`() {
+        val document = parse("validator/schemas/external/asyncapi_external_schema_map_path.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `unreferenced incompatible schemas in a foreign container are not validated`() {
+        val document = parse("validator/schemas/external/asyncapi_external_selected_schema.yaml")
+        val results = asyncApiValidator.validate(document)
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `referenced transitive schemas use the same compatibility policy`() {
+        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
+            parse("validator/schemas/external/asyncapi_external_transitive_invalid.yaml")
+        }
+
+        assertEquals(1, exception.errors.size)
+        val finding = exception.errors.single()
+        assertEquals(ERROR, finding.severity)
+        assertTrue(
+            finding.message.contains(
+                "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            ),
+        )
+        assertEquals("foreign_container_transitive_invalid.yaml", finding.sourceLocation?.file?.name)
+        assertEquals(
+            "foreign_container_transitive_invalid.root.components.schemas." +
+                "InvalidDependency.properties.optionalName.nullable",
+            finding.path,
+        )
+        assertEquals(18, finding.line)
+    }
+
+    @Test
+    fun `external schema keyword diagnostics point to the external source`() {
+        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
+            parse("validator/schemas/external/asyncapi_external_nullable.yaml")
+        }
+
+        assertEquals(1, exception.errors.size)
+        val finding = exception.errors.single()
+        assertEquals(ERROR, finding.severity)
+        assertTrue(
+            finding.message.contains(
+                "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            ),
+        )
+        assertEquals("foreign_container_nullable.yaml", finding.sourceLocation?.file?.name)
+        assertEquals(
+            "foreign_container_nullable.root.components.schemas.ExternalPayload.properties.optionalName.nullable",
+            finding.path,
+        )
+        assertEquals(13, finding.line)
     }
 
     @Test

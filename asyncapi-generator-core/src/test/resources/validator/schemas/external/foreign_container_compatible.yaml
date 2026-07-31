@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info:
+  title: Foreign Schema Container
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    ExternalPayload:
+      type: object
+      properties:
+        optionalName:
+          type: [string, "null"]
+          x-generator-note: Preserved extension metadata

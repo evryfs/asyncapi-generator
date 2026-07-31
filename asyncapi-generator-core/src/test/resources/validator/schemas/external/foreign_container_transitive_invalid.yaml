@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Foreign Container With Invalid Dependency
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    SelectedPayload:
+      type: object
+      properties:
+        dependency:
+          $ref: "#/components/schemas/InvalidDependency"
+    InvalidDependency:
+      type: object
+      properties:
+        optionalName:
+          type: string
+          nullable: true

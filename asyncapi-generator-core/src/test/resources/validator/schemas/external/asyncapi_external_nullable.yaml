@@ -1,0 +1,11 @@
+asyncapi: 3.0.0
+info:
+  title: Incompatible External Schema
+  version: 1.0.0
+components:
+  schemas:
+    LocalEnvelope:
+      type: object
+      properties:
+        payload:
+          $ref: "./foreign_container_nullable.yaml#/components/schemas/ExternalPayload"

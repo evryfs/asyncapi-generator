@@ -1,0 +1,56 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Keyword Diagnostics
+  version: 1.0.0
+components:
+  schemas:
+    UnsupportedNullable:
+      type: string
+      nullable: true
+
+    NewerDefinitionKeyword:
+      type: object
+      $defs:
+        Identifier:
+          type: string
+
+    UnsupportedStructuralKeyword:
+      type: object
+      unevaluatedProperties: false
+
+    UnknownKeyword:
+      type: string
+      minLenght: 3
+
+    NewerDialect:
+      $schema: https://json-schema.org/draft/2020-12/schema
+      type: object
+
+    IgnoredAnnotation:
+      type: string
+      example: Example value
+
+    NullableReference:
+      $ref: "#/components/schemas/UnsupportedNullable"
+      nullable: true
+
+    TupleItems:
+      type: array
+      items:
+        - type: string
+        - type: integer
+
+    InvalidExclusiveMinimum:
+      type: number
+      minimum: 0
+      exclusiveMinimum: not-a-number
+
+    InvalidDiscriminator:
+      type: object
+      discriminator:
+        propertyName: eventType
+      required:
+        - eventType
+      properties:
+        eventType:
+          type: string

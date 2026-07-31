@@ -1,0 +1,30 @@
+openapi: 3.0.0
+info:
+  title: Composition components
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    ActionType:
+      title: ActionType
+      enum:
+        - CREATE
+        - UPDATE
+        - DELETE
+    BaseMessage:
+      title: BaseMessage
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        entityType:
+          type: string
+          readOnly: true
+        initiatedBy:
+          type: string
+        actionType:
+          $ref: '#/components/schemas/ActionType'
+        eventDateTime:
+          type: string
+          format: date-time

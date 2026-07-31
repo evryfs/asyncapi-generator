@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.COMPONENT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -330,7 +329,7 @@ class SchemaParserTest : ParserTestSupport() {
             "UserRef",
         )
         val nestedObjectSchema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaReference).reference
-        val expectedSchema = Reference(ref = "#/components/schemas/SimpleObject", referenceCategoryKey = COMPONENT)
+        val expectedSchema = Reference(ref = "#/components/schemas/SimpleObject", referenceCategoryKey = SCHEMA)
         assertThat(expectedSchema)
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
