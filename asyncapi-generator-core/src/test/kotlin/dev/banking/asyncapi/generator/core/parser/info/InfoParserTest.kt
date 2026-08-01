@@ -1,119 +1,164 @@
 package dev.banking.asyncapi.generator.core.parser.info
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
-import org.assertj.core.api.Assertions.assertThat
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
+import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class InfoParserTest : ParserTestSupport() {
+class InfoParserTest {
 
-    private val parser = InfoParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = InfoParser(context)
 
     @Test
     fun `parse valid info object`() {
-        val infoNode = readNode("parser/info/asyncapi_parser_info_valid.yaml", "info")
+        val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("info")
+
         val result = parser.parseMap(infoNode)
-        val expected = simpleInfo()
-        assertThat(result)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expected)
+
+        assertEquals("Simple Info Test", result.title)
+        assertEquals("1.2.3", result.version)
+        assertEquals("A simple description", result.description)
+        assertEquals("https://example.com/terms", result.termsOfService)
+        assertEquals("Support", result.contact?.name)
+        assertEquals("https://support.example.com", result.contact?.url)
+        assertEquals("support@example.com", result.contact?.email)
+        assertEquals("Apache 2.0", result.license?.name)
+        assertEquals("https://www.apache.org/licenses/LICENSE-2.0", result.license?.url)
+
+        val tag = assertIs<TagInterface.TagInline>(assertNotNull(result.tags).single()).tag
+        assertEquals("general", tag.name)
+        assertEquals("General tag", tag.description)
+
+        val externalDoc = assertIs<ExternalDocInterface.ExternalDocInline>(result.externalDocs).externalDoc
+        assertEquals("https://example.com/docs", externalDoc.url)
+        assertEquals("Documentation", externalDoc.description)
+        assertEquals(mapOf("x-custom-extension" to "value"), result.extensions)
     }
 
     @Test
     fun `parse info reports missing title`() {
-        val infoNode = readNode("parser/info/asyncapi_parser_info_invalid.yaml", "info")
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("info")
 
-        assertMissingRequiredMember(
-            memberName = "title",
-            path = "asyncapi_parser_info_invalid.root.info.title",
-            sourcePath = "root.info",
-            sourceFile = "asyncapi_parser_info_invalid.yaml",
-        ) {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(infoNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("title", diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals("asyncapi_parser_info_invalid.root.info.title", diagnostic.path)
+        assertEquals("root.info", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse info reports missing version`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_invalid.yaml",
-            "infoMissingVersion",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoMissingVersion")
 
-        assertMissingRequiredMember(
-            memberName = "version",
-            path = "asyncapi_parser_info_invalid.root.infoMissingVersion.version",
-            sourcePath = "root.infoMissingVersion",
-            sourceFile = "asyncapi_parser_info_invalid.yaml",
-        ) {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(infoNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("version", diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals("asyncapi_parser_info_invalid.root.infoMissingVersion.version", diagnostic.path)
+        assertEquals("root.infoMissingVersion", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse info reports explicit null title`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_invalid.yaml",
-            "infoNullTitle",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoNullTitle")
 
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.NULL,
-            actualValue = null,
-            path = "asyncapi_parser_info_invalid.root.infoNullTitle.title",
-            sourcePath = "root.infoNullTitle.title",
-            sourceFile = "asyncapi_parser_info_invalid.yaml",
-        ) {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(infoNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NULL, diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals("asyncapi_parser_info_invalid.root.infoNullTitle.title", diagnostic.path)
+        assertEquals("root.infoNullTitle.title", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse info reports explicit null description`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_invalid.yaml",
-            "infoNullDescription",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoNullDescription")
 
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.NULL,
-            actualValue = null,
-            path = "asyncapi_parser_info_invalid.root.infoNullDescription.description",
-            sourcePath = "root.infoNullDescription.description",
-            sourceFile = "asyncapi_parser_info_invalid.yaml",
-        ) {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(infoNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NULL, diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals("asyncapi_parser_info_invalid.root.infoNullDescription.description", diagnostic.path)
+        assertEquals("root.infoNullDescription.description", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse info reports missing license name`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_invalid.yaml",
-            "infoMissingLicenseName",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoMissingLicenseName")
 
-        assertMissingRequiredMember(
-            memberName = "name",
-            path = "asyncapi_parser_info_invalid.root.infoMissingLicenseName.license.name",
-            sourcePath = "root.infoMissingLicenseName.license",
-            sourceFile = "asyncapi_parser_info_invalid.yaml",
-        ) {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(infoNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("name", diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals("asyncapi_parser_info_invalid.root.infoMissingLicenseName.license.name", diagnostic.path)
+        assertEquals("root.infoMissingLicenseName.license", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse info preserves nested and null extensions in source order`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_valid.yaml",
-            "infoWithExtensions",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoWithExtensions")
 
         val extensions = parser.parseMap(infoNode).extensions
 
@@ -135,10 +180,10 @@ class InfoParserTest : ParserTestSupport() {
 
     @Test
     fun `parse info without extensions returns null extensions`() {
-        val infoNode = readNode(
-            "parser/info/asyncapi_parser_info_valid.yaml",
-            "infoWithoutExtensions",
-        )
+        val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoWithoutExtensions")
 
         assertNull(parser.parseMap(infoNode).extensions)
     }
