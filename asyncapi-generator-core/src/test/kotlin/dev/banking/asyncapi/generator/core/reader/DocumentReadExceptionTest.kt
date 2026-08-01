@@ -1,9 +1,12 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
+import assertk.assertFailure
+import assertk.assertions.isInstanceOf
+import assertk.assertions.messageContains
+import dev.banking.asyncapi.generator.core.document.DocumentFormat
+import dev.banking.asyncapi.generator.core.document.DocumentSource
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class DocumentReadExceptionTest {
 
@@ -11,21 +14,35 @@ class DocumentReadExceptionTest {
 
     @Test
     fun `empty document error includes the source file`() {
-        val source = ReaderFixtures.yamlSource("empty.yaml")
-        val error = assertFailsWith<DocumentReadException.EmptyDocument> {
+        val file = TestResources.file("reader/yaml/empty.yaml")
+        val source = DocumentSource(
+            id = "empty",
+            file = file,
+            content = file.readText(),
+            format = DocumentFormat.YAML,
+        )
+
+        assertFailure {
             reader.read(source)
-        }
-        assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
+        }.isInstanceOf<DocumentReadException.EmptyDocument>()
+            .messageContains(source.file.absolutePath)
     }
 
     @Test
     fun `duplicate key error includes the key and source file`() {
-        val source = ReaderFixtures.yamlSource("duplicate-key.yaml")
-        val error = assertFailsWith<DocumentReadException.DuplicateKey> {
-            reader.read(source)
-        }
-        assertTrue(error.message.orEmpty().contains("title"))
-        assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
-    }
+        val file = TestResources.file("reader/yaml/duplicate-key.yaml")
+        val source = DocumentSource(
+            id = "duplicate-key",
+            file = file,
+            content = file.readText(),
+            format = DocumentFormat.YAML,
+        )
 
+        val failure = assertFailure {
+            reader.read(source)
+        }.isInstanceOf<DocumentReadException.DuplicateKey>()
+
+        failure.messageContains("title")
+        failure.messageContains(source.file.absolutePath)
+    }
 }

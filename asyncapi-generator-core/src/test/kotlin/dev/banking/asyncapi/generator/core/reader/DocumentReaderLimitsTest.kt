@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import dev.banking.asyncapi.generator.core.fixtures.writeTestFile
+import assertk.assertFailure
+import assertk.assertions.isInstanceOf
+import assertk.assertions.messageContains
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class DocumentReaderLimitsTest {
 
@@ -14,17 +14,17 @@ class DocumentReaderLimitsTest {
 
     @Test
     fun `bounds file reads before loading the complete content`() {
-        val file = tempDir.writeTestFile("oversized.yaml", "123456789")
+        val file = tempDir.resolve("oversized.yaml").toFile()
+        file.writeText("123456789")
         val limits =
             DocumentReaderLimits.DEFAULT.copy(
                 maxDocumentBytes = 8,
                 maxDocumentCharacters = 8,
             )
 
-        val error = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+        assertFailure {
             limits.readContent(file)
-        }
-
-        assertTrue(error.message.orEmpty().contains(file.absolutePath))
+        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
+            .messageContains(file.absolutePath)
     }
 }
