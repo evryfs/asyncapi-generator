@@ -31,10 +31,8 @@ class OperationParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+        parserNode.members().forEach { node ->
+            val reference = node.optional($$"$ref")?.expect<String>()
             val operationInterface = if (reference != null) {
                 OperationInterface.OperationReference(
                     Reference(
@@ -45,10 +43,10 @@ class OperationParser(
             } else {
                 OperationInterface.OperationInline(
                     Operation(
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        action = node.mandatory("action").coerce<String>(),
+                        title = node.optional("title")?.expect<String>(),
+                        summary = node.optional("summary")?.expect<String>(),
+                        description = node.optional("description")?.expect<String>(),
+                        action = node.required("action").expect<String>(),
                         channel = node.optional("channel")?.let(referenceParser::parseElement),
                         messages = node.optional("messages")?.let(referenceParser::parseList),
                         bindings = node.optional("bindings")?.let(bindingParser::parseMap),

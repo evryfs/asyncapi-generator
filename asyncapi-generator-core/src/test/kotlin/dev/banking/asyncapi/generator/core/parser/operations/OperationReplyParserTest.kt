@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -77,19 +77,60 @@ class OperationReplyParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse operation reply with missing address location throws Mandatory`() {
+    fun `parse operation reply with missing address location reports the required member and source`() {
         val replyNode = readNode(
             "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
             "components",
             "operationReplyCases",
             "MissingAddressLocation",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory 'location'",
-            "asyncapi_parser_operation_reply_invalid.yaml",
-            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingAddressLocation.address.location",
+        assertMissingRequiredMember(
+            memberName = "location",
+            path = "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingAddressLocation.address.location",
+            sourcePath = "root.components.operationReplyCases.MissingAddressLocation.address",
+            sourceFile = "asyncapi_parser_operation_reply_invalid.yaml",
         ) {
             parser.parseElement(replyNode)
+        }
+    }
+
+    @Test
+    fun `parse operation reply with null reference reports its expected type and source`() {
+        val replyNode = readNode(
+            "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
+            "components",
+            "operationReplyCases",
+            "NullReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.NullReference.\$ref",
+            sourcePath = "root.components.operationReplyCases.NullReference.\$ref",
+            sourceFile = "asyncapi_parser_operation_reply_invalid.yaml",
+        ) {
+            parser.parseElement(replyNode)
+        }
+    }
+
+    @Test
+    fun `parse operation reply map from an array reports the container type and source`() {
+        val repliesNode = readNode(
+            "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
+            "components",
+            "operationReplyCases",
+            "ArrayInsteadOfMap",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("channel" to mapOf("\$ref" to "#/channels/myChannel"))),
+            path = "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.ArrayInsteadOfMap",
+            sourcePath = "root.components.operationReplyCases.ArrayInsteadOfMap",
+            sourceFile = "asyncapi_parser_operation_reply_invalid.yaml",
+        ) {
+            parser.parseMap(repliesNode)
         }
     }
 }

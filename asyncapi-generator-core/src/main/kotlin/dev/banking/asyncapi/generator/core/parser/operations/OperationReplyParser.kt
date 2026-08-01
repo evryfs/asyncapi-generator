@@ -22,15 +22,13 @@ class OperationReplyParser(
     private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationReplyInterface {
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
         val operationReplyInterface = if (reference != null) {
             OperationReplyInterface.OperationReplyReference(
                 Reference(

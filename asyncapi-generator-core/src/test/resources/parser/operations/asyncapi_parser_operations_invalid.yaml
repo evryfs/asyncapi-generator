@@ -4,7 +4,15 @@ info:
   version: 1.0.0
 channels: {}
 operations:
-  # Case 1: Missing Action (Parser Error)
   MissingAction:
     channel:
       $ref: '#/channels/myChannel'
+operationCases:
+  BooleanAction:
+    invalidOperation:
+      action: false
+  NullReference:
+    invalidOperation:
+      $ref: null
+  ArrayInsteadOfMap:
+    - action: send

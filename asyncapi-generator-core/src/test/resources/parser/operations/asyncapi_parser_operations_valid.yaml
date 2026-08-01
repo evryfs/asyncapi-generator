@@ -66,3 +66,5 @@ operations:
         - $ref: "#/components/messages/turnOn"
     externalDocs:
       url: 'https://example.com/api/oauth/dialog'
+  referencedOperation:
+    $ref: '#/operations/receiveLightMeasurement'
