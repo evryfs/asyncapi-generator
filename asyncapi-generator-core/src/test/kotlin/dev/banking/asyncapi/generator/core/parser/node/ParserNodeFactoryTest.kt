@@ -99,8 +99,8 @@ class ParserNodeFactoryTest {
         )
         val document = reader.read(source)
         val title = ParserNodeFactory.root(document, context)
-            .required("info")
-            .required("title")
+            .expectObject().required("info")
+            .expectObject().required("title")
 
         val failure = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             title.expect<Boolean>()

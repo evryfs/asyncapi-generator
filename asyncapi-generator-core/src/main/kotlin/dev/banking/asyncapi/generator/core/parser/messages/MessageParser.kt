@@ -31,17 +31,18 @@ class MessageParser(
     private val correlationIdParser = CorrelationIdParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, MessageInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): MessageInterface {
-        parserNode.expectOnlyMembers(
+        val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(
             objectType = "Message Object",
             allowedMembers = MESSAGE_OBJECT_MEMBERS,
         )
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             MessageInterface.MessageReference(
                 Reference(
@@ -52,19 +53,19 @@ class MessageParser(
         } else {
             MessageInterface.MessageInline(
                 Message(
-                    name = parserNode.optional("name")?.expect<String>(),
-                    title = parserNode.optional("title")?.expect<String>(),
-                    summary = parserNode.optional("summary")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    contentType = parserNode.optional("contentType")?.expect<String>(),
-                    headers = parserNode.optional("headers")?.let(schemaParser::parseElement),
-                    payload = parserNode.optional("payload")?.let(schemaParser::parseElement),
-                    correlationId = parserNode.optional("correlationId")?.let(correlationIdParser::parseElement),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    examples = parserNode.optional("examples")?.let(messageExampleParser::parseList),
-                    traits = parserNode.optional("traits")?.let(messageTraitParser::parseList),
+                    name = objectNode.optional("name")?.expect<String>(),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    contentType = objectNode.optional("contentType")?.expect<String>(),
+                    headers = objectNode.optional("headers")?.let(schemaParser::parseElement),
+                    payload = objectNode.optional("payload")?.let(schemaParser::parseElement),
+                    correlationId = objectNode.optional("correlationId")?.let(correlationIdParser::parseElement),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    examples = objectNode.optional("examples")?.let(messageExampleParser::parseList),
+                    traits = objectNode.optional("traits")?.let(messageTraitParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

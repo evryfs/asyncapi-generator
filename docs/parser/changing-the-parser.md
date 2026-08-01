@@ -38,27 +38,34 @@ supported AsyncAPI contract.
 
 ## 3. Use the narrow parser operation
 
+Select the structural view once when parsing an object:
+
+```kotlin
+val objectNode = node.expectObject()
+```
+
 For a required scalar member:
 
 ```kotlin
-val name = node.required("name").expect<String>()
+val name = objectNode.required("name").expect<String>()
 ```
 
 For an optional scalar member:
 
 ```kotlin
-val description = node.optional("description")?.expect<String>()
+val description = objectNode.optional("description")?.expect<String>()
 ```
 
 For a typed collection, express the full nested type:
 
 ```kotlin
-val tags = node.optional("tags")?.expect<List<String>>()
+val tags = objectNode.optional("tags")?.expect<List<String>>()
 ```
 
-For a domain object or map, use `members()` and delegate each child to the
-appropriate parser. For an array of domain objects, use `elements()`. These
-operations reject the wrong container shape and preserve child paths.
+For a domain object or map, use `expectObject().members()` and delegate each
+child to the appropriate parser. For an array of domain objects, use
+`expectArray().elements()`. The structural expectations reject the wrong
+container shape, and the views preserve child paths.
 
 Use `toPlainValue()` only when the specification intentionally accepts any
 JSON-compatible value. Do not use it to avoid defining a known field's type.

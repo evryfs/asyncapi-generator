@@ -105,17 +105,21 @@ while preventing format-dependent truncation.
 
 ## Parser cursor API
 
-`ParserNode` is a source-aware cursor over one `DocumentNode`.
+`ParserNode` is a source-aware cursor over one `DocumentNode`. Structural
+navigation is available only after selecting an object or array view.
 
-| Operation            | Contract                                                                                         |
-|----------------------|--------------------------------------------------------------------------------------------------|
-| `required(name)`     | Requires the current node to be an object and the named member to be present; returns its cursor |
-| `optional(name)`     | Requires the current node to be an object; returns the member cursor or `null` when absent       |
-| `members()`          | Requires an object and returns one cursor per member, preserving names and paths                 |
-| `elements()`         | Requires an array and returns one cursor per element with indexed paths                          |
-| `expect<T>()`        | Checks the complete requested Kotlin runtime type, including nested list and map values          |
-| `startsWith(prefix)` | Returns an object cursor containing matching members, or `null` when none match                  |
-| `toPlainValue()`     | Recursively removes source metadata and returns maps, lists, scalars, or null                    |
+| Owner              | Operation                     | Contract                                                                                |
+|--------------------|-------------------------------|-----------------------------------------------------------------------------------------|
+| `ParserNode`       | `expectObject()`              | Requires an object and returns its object navigation view                               |
+| `ParserNode`       | `expectArray()`               | Requires an array and returns its indexed navigation view                               |
+| `ParserNode`       | `expect<T>()`                 | Checks the complete requested Kotlin runtime type, including nested list and map values |
+| `ParserNode`       | `toPlainValue()`              | Recursively removes source metadata and returns maps, lists, scalars, or null           |
+| `ParserObjectNode` | `required(name)`              | Requires the named member to be present and returns its cursor                          |
+| `ParserObjectNode` | `optional(name)`              | Returns the member cursor or `null` when absent                                         |
+| `ParserObjectNode` | `members()`                   | Returns one cursor per member, preserving names and paths                               |
+| `ParserObjectNode` | `membersStartingWith(prefix)` | Returns matching member cursors with their original names and paths                     |
+| `ParserObjectNode` | `expectOnlyMembers(...)`      | Rejects members outside an object's supported set and allowed specification extensions  |
+| `ParserArrayNode`  | `elements()`                  | Returns one cursor per element with indexed paths                                       |
 
 `expect<T>()` performs type checking, not coercion. A string is not converted to
 a boolean or number, and a scalar is not wrapped in a collection. Map keys and
@@ -132,11 +136,11 @@ at a free-form boundary.
 
 Absence and explicit null are different parser states.
 
-| Input state        | `optional("field")`          | `required("field")`                | `expect<String>()`               | `expect<String?>()` |
-|--------------------|------------------------------|------------------------------------|----------------------------------|---------------------|
-| Member absent      | `null`                       | Missing-required-member diagnostic | Not applicable                   | Not applicable      |
-| Member is `null`   | Cursor over `DocumentNull`   | Cursor over `DocumentNull`         | Unexpected-value-type diagnostic | `null`              |
-| Member is a string | Cursor over `DocumentString` | Cursor over `DocumentString`       | String value                     | String value        |
+| Input state        | Object view `optional("field")` | Object view `required("field")`  | `expect<String>()`               | `expect<String?>()` |
+|--------------------|---------------------------------|------------------------------------|----------------------------------|---------------------|
+| Member absent      | `null`                          | Missing-required-member diagnostic | Not applicable                   | Not applicable      |
+| Member is `null`   | Cursor over `DocumentNull`      | Cursor over `DocumentNull`         | Unexpected-value-type diagnostic | `null`              |
+| Member is a string | Cursor over `DocumentString`    | Cursor over `DocumentString`       | String value                     | String value        |
 
 Callers must not use a nullable expectation merely to make malformed nulls
 disappear. Use it only when the corresponding domain contract permits explicit
@@ -245,5 +249,5 @@ values: `Map<String, Any?>`, `List<Any?>`, `String`, `Number`, `Boolean`, or
 Use `toPlainValue()` only at those boundaries. The returned value has no
 `SourceLocation`, so the containing model and its registered field locations
 remain the source of downstream diagnostics. Known structural fields must use
-`expect<T>()`, `members()`, or `elements()` instead of being treated as
+`expect<T>()`, `expectObject()`, or `expectArray()` instead of being treated as
 free-form.

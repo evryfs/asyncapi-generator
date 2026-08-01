@@ -32,13 +32,14 @@ class ChannelParser(
     private val externalDocsParser: ExternalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): ChannelInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             ChannelInterface.ChannelReference(
                 Reference(
@@ -49,16 +50,16 @@ class ChannelParser(
         } else {
             ChannelInterface.ChannelInline(
                 Channel(
-                    address = parserNode.optional("address")?.expect<String>(),
-                    messages = parserNode.optional("messages")?.let(messageParser::parseMap),
-                    title = parserNode.optional("title")?.expect<String>(),
-                    summary = parserNode.optional("summary")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    servers = parserNode.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
-                    parameters = parserNode.optional("parameters")?.let(parameterParser::parseMap),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
+                    address = objectNode.optional("address")?.expect<String>(),
+                    messages = objectNode.optional("messages")?.let(messageParser::parseMap),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    servers = objectNode.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
+                    parameters = objectNode.optional("parameters")?.let(parameterParser::parseMap),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

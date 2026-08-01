@@ -24,9 +24,15 @@ class ParserNodeTest {
                 sourceLine = "object: { member: true }",
             ).withProfile(AsyncApiParserProfile.V3_0)
 
-        assertEquals(AsyncApiParserProfile.V3_0, node.required("object").profile)
-        assertEquals(AsyncApiParserProfile.V3_0, node.required("object").members().single().profile)
-        assertEquals(AsyncApiParserProfile.V3_0, node.required("array").elements().single().profile)
+        assertEquals(AsyncApiParserProfile.V3_0, node.expectObject().required("object").profile)
+        assertEquals(
+            AsyncApiParserProfile.V3_0,
+            node.expectObject().required("object").expectObject().members().single().profile,
+        )
+        assertEquals(
+            AsyncApiParserProfile.V3_0,
+            node.expectObject().required("array").expectArray().elements().single().profile,
+        )
     }
 
     @Test
@@ -37,7 +43,7 @@ class ParserNodeTest {
         )
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            node.required("missing")
+            node.expectObject().required("missing")
         }
 
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
@@ -61,8 +67,8 @@ class ParserNodeTest {
             sourceLine = "explicit: null",
         )
 
-        assertNull(node.optional("absent"))
-        val explicitNull = assertIs<ParserNode>(node.optional("explicit"))
+        assertNull(node.expectObject().optional("absent"))
+        val explicitNull = assertIs<ParserNode>(node.expectObject().optional("explicit"))
         assertIs<DocumentNull>(explicitNull.node)
         assertNull(explicitNull.expect<String?>())
     }
@@ -72,7 +78,7 @@ class ParserNodeTest {
         val node = ParserNodeFixtures.node(
             value = mapOf("explicit" to null),
             sourceLine = "explicit: null",
-        ).required("explicit")
+        ).expectObject().required("explicit")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             node.expect<String>()
@@ -102,29 +108,45 @@ class ParserNodeTest {
 
         assertEquals(
             listOf("test.root.first", "test.root.second"),
-            objectNode.members().map(ParserNode::path),
+            objectNode.expectObject().members().map(ParserNode::path),
         )
         assertEquals(
             listOf("test.root[0]", "test.root[1]"),
-            arrayNode.elements().map(ParserNode::path),
+            arrayNode.expectArray().elements().map(ParserNode::path),
         )
     }
 
     @Test
-    fun `members rejects an array with a structured type diagnostic`() {
+    fun `expect object rejects an array with a structured type diagnostic`() {
         val node = ParserNodeFixtures.node(
             value = listOf("value"),
             sourceLine = "- value",
         )
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            node.members()
+            node.expectObject().members()
         }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
         assertEquals("Map<String, Any?>", diagnostic.expectedType)
         assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
         assertEquals("test.root", diagnostic.path)
+    }
+
+    @Test
+    fun `object view selects members by prefix without changing their paths`() {
+        val node = ParserNodeFixtures.node(
+            value = linkedMapOf("name" to "example", "x-owner" to "team", "x-null" to null),
+            sourceLine = "name: example",
+        )
+
+        val extensions = node.expectObject().membersStartingWith("x-")
+
+        assertEquals(listOf("x-owner", "x-null"), extensions.map(ParserNode::name))
+        assertEquals(
+            listOf("test.root.x-owner", "test.root.x-null"),
+            extensions.map(ParserNode::path),
+        )
     }
 
     @Test
@@ -135,7 +157,7 @@ class ParserNodeTest {
         )
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            node.expectOnlyMembers("Test Object", setOf("known"))
+            node.expectObject().expectOnlyMembers("Test Object", setOf("known"))
         }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
@@ -149,14 +171,14 @@ class ParserNodeTest {
     }
 
     @Test
-    fun `elements rejects an object with a structured type diagnostic`() {
+    fun `expect array rejects an object with a structured type diagnostic`() {
         val node = ParserNodeFixtures.node(
             value = mapOf("value" to true),
             sourceLine = "value: true",
         )
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            node.elements()
+            node.expectArray().elements()
         }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)

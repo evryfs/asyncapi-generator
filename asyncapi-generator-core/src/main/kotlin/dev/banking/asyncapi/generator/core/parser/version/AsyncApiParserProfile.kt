@@ -31,7 +31,7 @@ internal enum class AsyncApiSpecificationLine(
                 .map(AsyncApiParserProfile::displayName)
 
         fun select(root: ParserNode): ParserNode {
-            val versionNode = root.required("asyncapi")
+            val versionNode = root.expectObject().required("asyncapi")
             val declaredVersion = versionNode.expect<String>()
             val version = AsyncApiSpecificationVersion.parse(declaredVersion)
                 ?: throw parserFailure(

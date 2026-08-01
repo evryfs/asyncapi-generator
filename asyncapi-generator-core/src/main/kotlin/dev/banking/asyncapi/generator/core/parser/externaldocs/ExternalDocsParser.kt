@@ -18,7 +18,7 @@ class ExternalDocsParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ExternalDocInterface> = buildMap {
-        val nodes = parserNode.members()
+        val nodes = parserNode.expectObject().members()
         nodes.forEach { node ->
             val externalDoc = parseElement(node)
             put(node.name, externalDoc)
@@ -26,7 +26,8 @@ class ExternalDocsParser(
     }
 
     fun parseElement(node: ParserNode): ExternalDocInterface {
-        node.optional($$"$ref")?.expect<String>()?.let { reference ->
+        val objectNode = node.expectObject()
+        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return ExternalDocInterface.ExternalDocReference(
                 Reference(
                     ref = reference,
@@ -36,8 +37,8 @@ class ExternalDocsParser(
         }
         return ExternalDocInterface.ExternalDocInline(
             ExternalDoc(
-                description = node.optional("description")?.expect<String>(),
-                url = node.required("url").expect<String>()
+                description = objectNode.optional("description")?.expect<String>(),
+                url = objectNode.required("url").expect<String>()
             ).also { asyncApiContext.register(it, node) }
         )
     }

@@ -28,19 +28,20 @@ class OperationTraitParser(
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationTraitInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<OperationTraitInterface> = buildList {
-        parserNode.elements().forEach { node ->
+        parserNode.expectArray().elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationTraitInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val operationTraitInterface = if (reference != null) {
             OperationTraitInterface.OperationTraitReference(
                 Reference(
@@ -51,13 +52,13 @@ class OperationTraitParser(
         } else {
             OperationTraitInterface.OperationTraitInline(
                 OperationTrait(
-                    title = parserNode.optional("title")?.expect<String>(),
-                    summary = parserNode.optional("summary")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    security = parserNode.optional("security")?.let(securitySchemeParser::parseMap),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseMap),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

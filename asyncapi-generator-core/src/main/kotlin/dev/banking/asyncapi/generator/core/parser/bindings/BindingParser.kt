@@ -20,13 +20,13 @@ class BindingParser(
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     fun parseMap(parserNode: ParserNode): Map<String, BindingInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): BindingInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val reference = parserNode.expectObject().optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             BindingInterface.BindingReference(
                 Reference(
@@ -47,8 +47,10 @@ class BindingParser(
 
     private fun ParserNode.kafkaKeyNode(): ParserNode? =
         if (name == "kafka") {
-            optional("key")
+            expectObject().optional("key")
         } else {
-            optional("kafka")?.optional("key")
+            expectObject().optional("kafka")?.let { kafka ->
+                kafka.expectObject().optional("key")
+            }
         }
 }

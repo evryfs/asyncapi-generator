@@ -33,13 +33,14 @@ class OperationParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             OperationInterface.OperationReference(
                 Reference(
@@ -50,18 +51,18 @@ class OperationParser(
         } else {
             OperationInterface.OperationInline(
                 Operation(
-                    title = parserNode.optional("title")?.expect<String>(),
-                    summary = parserNode.optional("summary")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    action = parserNode.required("action").expect<String>(),
-                    channel = parserNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
-                    messages = parserNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    traits = parserNode.optional("traits")?.let(operationTraitParser::parseList),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    reply = parserNode.optional("reply")?.let(operationReplyParser::parseElement),
-                    security = parserNode.optional("security")?.let(securitySchemeParser::parseList),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    action = objectNode.required("action").expect<String>(),
+                    channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
+                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    traits = objectNode.optional("traits")?.let(operationTraitParser::parseList),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    reply = objectNode.optional("reply")?.let(operationReplyParser::parseElement),
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

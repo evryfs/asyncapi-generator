@@ -22,37 +22,40 @@ class InfoParser(
     private val tagParser = TagParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Info {
+        val objectNode = parserNode.expectObject()
         return Info(
-            title = parserNode.required("title").expect<String>(),
-            version = parserNode.required("version").expect<String>(),
-            description = parserNode.optional("description")?.expect<String>(),
-            termsOfService = parserNode.optional("termsOfService")?.expect<String>(),
-            contact = parserNode.optional("contact")?.let(::parseContact),
-            license = parserNode.optional("license")?.let(::parseLicense),
-            tags = parserNode.optional("tags")?.let(tagParser::parseList),
-            externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+            title = objectNode.required("title").expect<String>(),
+            version = objectNode.required("version").expect<String>(),
+            description = objectNode.optional("description")?.expect<String>(),
+            termsOfService = objectNode.optional("termsOfService")?.expect<String>(),
+            contact = objectNode.optional("contact")?.let(::parseContact),
+            license = objectNode.optional("license")?.let(::parseLicense),
+            tags = objectNode.optional("tags")?.let(tagParser::parseList),
+            externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
             extensions = parseExtensions(parserNode),
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseContact(parserNode: ParserNode): Contact {
+        val objectNode = parserNode.expectObject()
         return Contact(
-            name = parserNode.optional("name")?.expect<String>(),
-            url = parserNode.optional("url")?.expect<String>(),
-            email = parserNode.optional("email")?.expect<String>()
+            name = objectNode.optional("name")?.expect<String>(),
+            url = objectNode.optional("url")?.expect<String>(),
+            email = objectNode.optional("email")?.expect<String>()
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseLicense(parserNode: ParserNode): License {
+        val objectNode = parserNode.expectObject()
         return License(
-            name = parserNode.required("name").expect<String>(),
-            url = parserNode.optional("url")?.expect<String>()
+            name = objectNode.required("name").expect<String>(),
+            url = objectNode.optional("url")?.expect<String>()
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseExtensions(parserNode: ParserNode): Map<String, Any?>? {
-        val extensions = parserNode.members()
-            .filter { member -> member.name.startsWith("x-") }
+        val extensions = parserNode.expectObject()
+            .membersStartingWith("x-")
             .associateTo(linkedMapOf()) { member ->
                 member.name to member.toPlainValue()
             }

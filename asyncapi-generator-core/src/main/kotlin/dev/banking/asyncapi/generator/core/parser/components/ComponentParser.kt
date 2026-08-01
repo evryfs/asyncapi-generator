@@ -48,28 +48,29 @@ class ComponentParser(
     private val operationTraitParser = OperationTraitParser(asyncApiContext)
     private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
 
-    fun parseElement(node: ParserNode): ComponentInterface =
+    fun parseElement(node: ParserNode): ComponentInterface = with(node.expectObject()) {
         ComponentInterface.ComponentInline(
             Component(
-                schemas = node.optional("schemas")?.let(schemaParser::parseMap),
-                servers = node.optional("servers")?.let(serverParser::parseMap),
-                channels = node.optional("channels")?.let(channelParser::parseMap),
-                operations = node.optional("operations")?.let(operationParser::parseMap),
-                messages = node.optional("messages")?.let(messageParser::parseMap),
-                securitySchemes = node.optional("securitySchemes")?.let(securitySchemeParser::parseMap),
-                serverVariables = node.optional("serverVariables")?.let(serverVariableParser::parseMap),
-                parameters = node.optional("parameters")?.let(parameterParser::parseMap),
-                correlationIds = node.optional("correlationIds")?.let(correlationIdParser::parseMap),
-                replies = node.optional("replies")?.let(operationReplyParser::parseMap),
-                replyAddresses = node.optional("replyAddresses")?.let(operationReplyAddressParser::parseMap),
-                externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseMap),
-                tags = node.optional("tags")?.let(tagParser::parseMap),
-                operationTraits = node.optional("operationTraits")?.let(operationTraitParser::parseMap),
-                messageTraits = node.optional("messageTraits")?.let(messageTraitParser::parseMap),
-                serverBindings = node.optional("serverBindings")?.let(bindingParser::parseMap),
-                channelBindings = node.optional("channelBindings")?.let(bindingParser::parseMap),
-                operationBindings = node.optional("operationBindings")?.let(bindingParser::parseMap),
-                messageBindings = node.optional("messageBindings")?.let(bindingParser::parseMap),
+                schemas = optional("schemas")?.let(schemaParser::parseMap),
+                servers = optional("servers")?.let(serverParser::parseMap),
+                channels = optional("channels")?.let(channelParser::parseMap),
+                operations = optional("operations")?.let(operationParser::parseMap),
+                messages = optional("messages")?.let(messageParser::parseMap),
+                securitySchemes = optional("securitySchemes")?.let(securitySchemeParser::parseMap),
+                serverVariables = optional("serverVariables")?.let(serverVariableParser::parseMap),
+                parameters = optional("parameters")?.let(parameterParser::parseMap),
+                correlationIds = optional("correlationIds")?.let(correlationIdParser::parseMap),
+                replies = optional("replies")?.let(operationReplyParser::parseMap),
+                replyAddresses = optional("replyAddresses")?.let(operationReplyAddressParser::parseMap),
+                externalDocs = optional("externalDocs")?.let(externalDocsParser::parseMap),
+                tags = optional("tags")?.let(tagParser::parseMap),
+                operationTraits = optional("operationTraits")?.let(operationTraitParser::parseMap),
+                messageTraits = optional("messageTraits")?.let(messageTraitParser::parseMap),
+                serverBindings = optional("serverBindings")?.let(bindingParser::parseMap),
+                channelBindings = optional("channelBindings")?.let(bindingParser::parseMap),
+                operationBindings = optional("operationBindings")?.let(bindingParser::parseMap),
+                messageBindings = optional("messageBindings")?.let(bindingParser::parseMap),
             ).also { asyncApiContext.register(it, node) }
         )
+    }
 }

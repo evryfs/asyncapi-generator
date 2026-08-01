@@ -23,7 +23,7 @@ class ReferenceParser(
         parserNode: ParserNode,
         category: ReferenceCategoryKey = REFERENCE,
     ): List<Reference> = buildList {
-        val nodes = parserNode.elements()
+        val nodes = parserNode.expectArray().elements()
         nodes.forEach { node ->
             add(parseElement(node, category))
         }
@@ -33,7 +33,7 @@ class ReferenceParser(
         parserNode: ParserNode,
         category: ReferenceCategoryKey = REFERENCE,
     ): Reference {
-        val reference = parserNode.required($$"$ref").expect<String>()
+        val reference = parserNode.expectObject().required($$"$ref").expect<String>()
         return Reference(
             ref = reference,
             referenceCategoryKey = category,

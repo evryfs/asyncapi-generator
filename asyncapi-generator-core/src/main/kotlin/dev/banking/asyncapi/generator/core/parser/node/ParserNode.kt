@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentNode
 import dev.banking.asyncapi.generator.core.document.DocumentObject
@@ -25,80 +23,40 @@ data class ParserNode(
     val profile: AsyncApiParserProfile? = null,
 ) {
 
+    internal fun child(
+        name: String,
+        node: DocumentNode,
+        path: String,
+    ): ParserNode = ParserNode(name, node, path, context, profile)
+
     fun withProfile(profile: AsyncApiParserProfile): ParserNode =
         copy(profile = profile)
 
-    fun required(nodeKey: String): ParserNode {
-        val currentNode = objectNode()
-        val childPath = "$path.$nodeKey"
-        val childNode = currentNode[nodeKey]
-            ?: throw AsyncApiParseException.ParserDiagnosticFailure(
-                diagnostic = ParserDiagnostic.MissingRequiredMember(
-                    memberName = nodeKey,
-                    path = childPath,
-                    sourceLocation = currentNode.location,
+    /** Requires this value to be an object and exposes object navigation. */
+    fun expectObject(): ParserObjectNode =
+        ParserObjectNode(
+            parserNode = this,
+            documentObject = node as? DocumentObject
+                ?: ParserValueExpectation.unexpectedType(
+                    node = node,
+                    expectedType = typeOf<Map<String, Any?>>(),
+                    path = path,
+                    context = context,
                 ),
-                context = context,
-            )
-        return ParserNode(nodeKey, childNode, childPath, context, profile)
-    }
-
-    fun optional(nodeKey: String): ParserNode? {
-        val currentNodeMap = objectNode()
-        val childNode = currentNodeMap[nodeKey]
-            ?: return null
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context, profile)
-    }
-
-    fun members(): List<ParserNode> =
-        objectNode().members.map { (memberName, member) ->
-            ParserNode(memberName, member.value, "$path.$memberName", context, profile)
-        }
-
-    fun expectOnlyMembers(
-        objectType: String,
-        allowedMembers: Set<String>,
-        specificationExtensionsAllowed: Boolean = true,
-    ) {
-        val unexpectedMember = objectNode().members.entries.firstOrNull { (memberName, _) ->
-            memberName !in allowedMembers &&
-                    !(specificationExtensionsAllowed && memberName.startsWith("x-"))
-        } ?: return
-        val (memberName, member) = unexpectedMember
-        throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic = ParserDiagnostic.UnexpectedObjectMember(
-                memberName = memberName,
-                objectType = objectType,
-                specificationExtensionsAllowed = specificationExtensionsAllowed,
-                path = "$path.$memberName",
-                sourceLocation = member.keyLocation,
-            ),
-            context = context,
         )
-    }
 
-    fun elements(): List<ParserNode> =
-        arrayNode().elements.mapIndexed { index, element ->
-            ParserNode("$name[$index]", element, "$path[$index]", context, profile)
-        }
-
-    fun startsWith(prefix: String): ParserNode? {
-        val currentMap = node as? DocumentObject
-            ?: return null
-        val matchingEntries = currentMap.members.filter { (key, _) ->
-            key.startsWith(prefix)
-        }
-        if (matchingEntries.isEmpty()) {
-            return null
-        }
-        return ParserNode(
-            "$name(prefix:$prefix)",
-            DocumentObject(matchingEntries, currentMap.location),
-            "$path.(prefix:$prefix)",
-            context,
-            profile,
+    /** Requires this value to be an array and exposes array navigation. */
+    fun expectArray(): ParserArrayNode =
+        ParserArrayNode(
+            parserNode = this,
+            documentArray = node as? DocumentArray
+                ?: ParserValueExpectation.unexpectedType(
+                    node = node,
+                    expectedType = typeOf<List<Any?>>(),
+                    path = path,
+                    context = context,
+                ),
         )
-    }
 
     inline fun <reified T> expect(): T =
         ParserValueExpectation.cast(
@@ -112,22 +70,4 @@ data class ParserNode(
 
     /** Converts this source-located node to plain maps, lists, scalars, or null. */
     fun toPlainValue(): Any? = node.toValue()
-
-    private fun objectNode(): DocumentObject =
-        node as? DocumentObject
-            ?: ParserValueExpectation.unexpectedType(
-                node = node,
-                expectedType = typeOf<Map<String, Any?>>(),
-                path = path,
-                context = context,
-            )
-
-    private fun arrayNode(): DocumentArray =
-        node as? DocumentArray
-            ?: ParserValueExpectation.unexpectedType(
-                node = node,
-                expectedType = typeOf<List<Any?>>(),
-                path = path,
-                context = context,
-            )
 }

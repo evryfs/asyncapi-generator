@@ -28,13 +28,14 @@ class ServerParser(
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): ServerInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             ServerInterface.ServerReference(
                 Reference(
@@ -45,17 +46,17 @@ class ServerParser(
         } else {
             ServerInterface.ServerInline(
                 Server(
-                    host = parserNode.required("host").expect<String>(),
-                    protocol = parserNode.required("protocol").expect<String>(),
-                    protocolVersion = parserNode.optional("protocolVersion")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    title = parserNode.optional("title")?.expect<String>(),
-                    summary = parserNode.optional("summary")?.expect<String>(),
-                    variables = parserNode.optional("variables")?.let(serverVariableParser::parseMap),
-                    security = parserNode.optional("security")?.let(securitySchemeParser::parseList),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    host = objectNode.required("host").expect<String>(),
+                    protocol = objectNode.required("protocol").expect<String>(),
+                    protocolVersion = objectNode.optional("protocolVersion")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    variables = objectNode.optional("variables")?.let(serverVariableParser::parseMap),
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
+                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

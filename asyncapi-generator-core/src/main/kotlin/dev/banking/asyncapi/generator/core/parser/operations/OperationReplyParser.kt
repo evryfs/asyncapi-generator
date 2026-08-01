@@ -24,13 +24,14 @@ class OperationReplyParser(
     private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationReplyInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val operationReplyInterface = if (reference != null) {
             OperationReplyInterface.OperationReplyReference(
                 Reference(
@@ -41,9 +42,9 @@ class OperationReplyParser(
         } else {
             OperationReplyInterface.OperationReplyInline(
                 OperationReply(
-                    address = parserNode.optional("address")?.let(operationReplyAddressParser::parseElement),
-                    channel = parserNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
-                    messages = parserNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) }
+                    address = objectNode.optional("address")?.let(operationReplyAddressParser::parseElement),
+                    channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) }
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

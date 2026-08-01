@@ -19,13 +19,14 @@ class ServerVariableParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerVariableInterface> = buildMap {
-        parserNode.members().forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): ServerVariableInterface {
-        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             ServerVariableInterface.ServerVariableReference(
                 Reference(
@@ -36,10 +37,10 @@ class ServerVariableParser(
         } else {
             ServerVariableInterface.ServerVariableInline(
                 ServerVariable(
-                    enum = parserNode.optional("enum")?.expect<List<String>>(),
-                    default = parserNode.optional("default")?.expect<String>(),
-                    description = parserNode.optional("description")?.expect<String>(),
-                    examples = parserNode.optional("examples")?.expect<List<String>>(),
+                    enum = objectNode.optional("enum")?.expect<List<String>>(),
+                    default = objectNode.optional("default")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    examples = objectNode.optional("examples")?.expect<List<String>>(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

@@ -33,15 +33,16 @@ class AsyncApiParser(
 
     fun parse(parserNode: ParserNode): AsyncApiDocument {
         val root = AsyncApiSpecificationLine.select(parserNode)
+        val rootObject = root.expectObject()
         return AsyncApiDocument(
-            asyncapi = root.required("asyncapi").expect<String>(),
-            id = root.optional("id")?.expect<String>(),
-            info = root.required("info").let(infoParser::parseMap),
-            servers = root.optional("servers")?.let(serverParser::parseMap),
-            defaultContentType = root.optional("defaultContentType")?.expect<String>(),
-            channels = root.optional("channels")?.let(channelParser::parseMap),
-            operations = root.optional("operations")?.let(operationParser::parseMap),
-            components = root.optional("components")?.let(componentParser::parseElement),
+            asyncapi = rootObject.required("asyncapi").expect<String>(),
+            id = rootObject.optional("id")?.expect<String>(),
+            info = rootObject.required("info").let(infoParser::parseMap),
+            servers = rootObject.optional("servers")?.let(serverParser::parseMap),
+            defaultContentType = rootObject.optional("defaultContentType")?.expect<String>(),
+            channels = rootObject.optional("channels")?.let(channelParser::parseMap),
+            operations = rootObject.optional("operations")?.let(operationParser::parseMap),
+            components = rootObject.optional("components")?.let(componentParser::parseElement),
         ).also { asyncApiContext.register(it, root) }
     }
 }
