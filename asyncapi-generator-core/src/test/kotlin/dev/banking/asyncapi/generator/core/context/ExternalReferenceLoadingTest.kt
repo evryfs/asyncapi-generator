@@ -3,10 +3,12 @@ package dev.banking.asyncapi.generator.core.context
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -71,6 +73,15 @@ class ExternalReferenceLoadingTest : ParserTestSupport() {
     fun `dispatches a standalone external fragment using its reference category`() {
         parseDocument("parser/references/external/message-main.yaml")
 
+        val reference = assertIs<Reference>(
+            asyncApiContext.modelRepository.getModelsByPath()[
+                "message_main.root.components.messages.ExternalEvent"
+            ],
+        )
+        assertEquals(
+            AsyncApiParserProfile.V3_0,
+            asyncApiContext.modelRepository.getReferenceOrigin(reference)?.parserProfile,
+        )
         val message = assertNotNull(
             asyncApiContext.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
         )

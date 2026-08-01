@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCat
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -14,6 +15,19 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 
 class ParserNodeTest {
+
+    @Test
+    fun `child cursors retain the selected parser profile`() {
+        val node =
+            ParserNodeFixtures.node(
+                value = mapOf("object" to mapOf("member" to true), "array" to listOf(false)),
+                sourceLine = "object: { member: true }",
+            ).withProfile(AsyncApiParserProfile.V3_0)
+
+        assertEquals(AsyncApiParserProfile.V3_0, node.required("object").profile)
+        assertEquals(AsyncApiParserProfile.V3_0, node.required("object").members().single().profile)
+        assertEquals(AsyncApiParserProfile.V3_0, node.required("array").elements().single().profile)
+    }
 
     @Test
     fun `required reports a structured source-located diagnostic for an absent member`() {

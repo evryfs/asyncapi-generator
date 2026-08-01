@@ -14,7 +14,7 @@ the file, line, column, and parser path that introduced a value.
 | Reader | File format detection, bounded file access, YAML or JSON syntax and safety limits, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules |
 | Document contract | Immutable format-independent nodes, document source identity, input format, and source locations shared between producers and consumers | YAML/Jackson/SnakeYAML implementation details or AsyncAPI domain rules |
 | Parser-node adapter | Parser paths and registration of reader-provided locations in the load context | Format-specific syntax |
-| Domain parser | Supported AsyncAPI object structure, required members, runtime value types, references, and domain-model construction | General schema validation, bundling, or output generation |
+| Domain parser | AsyncAPI version-profile selection, supported object structure, required members, runtime value types, references, and domain-model construction | General schema validation, bundling, or output generation |
 | Schema parser | AsyncAPI Schema Object keywords, boolean schemas, references, Multi Format Schema dispatch, and native schema assets | Validation of all JSON Schema keyword combinations or generator support for every schema format |
 | External reference loader | URI/path resolution, document identity, JSON Pointer selection, cycle/deduplication guards, category-directed fragment parsing, and loading referenced files | Ordinary inline object traversal or bundling references into one document |
 | Validator | Semantic constraints on the parsed model and reference resolution findings | YAML/JSON syntax and parser value typing |
@@ -76,10 +76,20 @@ scalars and nested generic elements have their expected runtime types. For
 example, a channel's `messages` member must be an object; a list is rejected
 instead of being assigned synthetic map keys.
 
-The validator owns semantic rules that require interpretation of an already
-constructed model, such as supported AsyncAPI versions, cross-field rules, and
-reference resolution findings. The facade intentionally invokes both stages,
-but their error categories and implementation packages remain separate.
+The parser selects an implemented AsyncAPI major/minor profile before mapping
+the root object. Version selection must happen before structural parsing because
+the selected specification defines which object members and shapes can be
+interpreted. Patch versions share their major/minor profile. The validator owns
+semantic rules that require interpretation of an already constructed model,
+such as cross-field rules and reference resolution findings. The facade
+intentionally invokes both stages, but their error categories and implementation
+packages remain separate.
+
+Parser profiles travel with parser nodes rather than the shared load context.
+This permits complete external AsyncAPI documents to select their own profile
+while raw external fragments inherit the profile of the document that refers to
+them. Version-specific behavior belongs behind the profile; domain parsers must
+not compare raw version strings.
 
 ## Reference loading boundary
 

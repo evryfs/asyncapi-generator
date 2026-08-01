@@ -70,6 +70,30 @@ class AsyncApiDocumentLoaderTest {
     }
 
     @Test
+    fun `rejects a known specification line without an implemented parser profile`() {
+        val file =
+            tempDir.writeTestFile(
+                "unsupported-version.yaml",
+                """
+                asyncapi: 3.1.0
+                info:
+                  title: Unsupported version
+                  version: 1.0.0
+                """.trimIndent(),
+            )
+
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            loader.load(file)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
+
+        assertTrue(diagnostic.knownVersionLine)
+        assertEquals("unsupported_version.root.asyncapi", diagnostic.path)
+        assertEquals(1, diagnostic.sourceLocation.line)
+        assertEquals(11, diagnostic.sourceLocation.column)
+    }
+
+    @Test
     fun `parser rejects a syntactically valid array root with a source aware diagnostic`() {
         val file =
             tempDir.writeTestFile(
@@ -104,12 +128,12 @@ class AsyncApiDocumentLoaderTest {
             )
         }
 
-        assertEquals(3, exception.errors.size)
+        assertEquals(2, exception.errors.size)
         assertEquals(
             "asyncapi_validator_document_invalid.yaml",
             exception.errors.first().sourceLocation?.file?.name,
         )
-        assertTrue(exception.message.orEmpty().contains("Validation failed with 3 error(s)"))
+        assertTrue(exception.message.orEmpty().contains("Validation failed with 2 error(s)"))
     }
 
     @Test

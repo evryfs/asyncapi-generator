@@ -24,6 +24,22 @@ internal object ParserDiagnosticFormatter {
                     context = context,
                 )
 
+            is ParserDiagnostic.InvalidSpecificationVersion ->
+                buildMessage(
+                    header =
+                        "Invalid AsyncAPI specification version '${diagnostic.declaredVersion}': " +
+                            "expected major.minor.patch with an optional alphanumeric suffix.",
+                    diagnostic = diagnostic,
+                    context = context,
+                )
+
+            is ParserDiagnostic.UnsupportedSpecificationVersion ->
+                buildMessage(
+                    header = unsupportedVersionMessage(diagnostic),
+                    diagnostic = diagnostic,
+                    context = context,
+                )
+
             is ParserDiagnostic.InvalidReference ->
                 buildMessage(
                     header = "Invalid reference '${diagnostic.reference}': ${diagnostic.reason}.",
@@ -47,6 +63,19 @@ internal object ParserDiagnosticFormatter {
                     context = context,
                 )
         }
+
+    private fun unsupportedVersionMessage(
+        diagnostic: ParserDiagnostic.UnsupportedSpecificationVersion,
+    ): String {
+        val reason =
+            if (diagnostic.knownVersionLine) {
+                "is recognized, but its parser profile is not implemented"
+            } else {
+                "is not supported"
+            }
+        return "AsyncAPI specification version '${diagnostic.declaredVersion}' $reason. " +
+            "Supported version lines: ${diagnostic.supportedVersionLines.joinToString()}."
+    }
 
     private fun unexpectedValueMessage(
         diagnostic: ParserDiagnostic.UnexpectedValueType,

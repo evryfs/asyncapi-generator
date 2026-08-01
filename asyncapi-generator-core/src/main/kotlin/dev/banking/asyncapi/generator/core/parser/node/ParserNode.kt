@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentNode
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import kotlin.reflect.typeOf
 
 /**
@@ -21,7 +22,10 @@ data class ParserNode(
     val node: DocumentNode,
     val path: String,
     val context: AsyncApiContext,
+    val profile: AsyncApiParserProfile? = null,
 ) {
+
+    fun withProfile(profile: AsyncApiParserProfile): ParserNode = copy(profile = profile)
 
     fun required(nodeKey: String): ParserNode {
         val currentNode = objectNode()
@@ -35,24 +39,24 @@ data class ParserNode(
                 ),
                 context = context,
             )
-        return ParserNode(nodeKey, childNode, childPath, context)
+        return ParserNode(nodeKey, childNode, childPath, context, profile)
     }
 
     fun optional(nodeKey: String): ParserNode? {
         val currentNodeMap = objectNode()
         val childNode = currentNodeMap[nodeKey]
             ?: return null
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
+        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context, profile)
     }
 
     fun members(): List<ParserNode> =
         objectNode().members.map { (memberName, member) ->
-            ParserNode(memberName, member.value, "$path.$memberName", context)
+            ParserNode(memberName, member.value, "$path.$memberName", context, profile)
         }
 
     fun elements(): List<ParserNode> =
         arrayNode().elements.mapIndexed { index, element ->
-            ParserNode("$name[$index]", element, "$path[$index]", context)
+            ParserNode("$name[$index]", element, "$path[$index]", context, profile)
         }
 
     fun startsWith(prefix: String): ParserNode? {
@@ -69,6 +73,7 @@ data class ParserNode(
             DocumentObject(matchingEntries, currentMap.location),
             "$path.(prefix:$prefix)",
             context,
+            profile,
         )
     }
 

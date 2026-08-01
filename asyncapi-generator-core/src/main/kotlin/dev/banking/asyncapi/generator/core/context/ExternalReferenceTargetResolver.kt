@@ -27,6 +27,7 @@ internal object ExternalReferenceTargetResolver {
                         node = member.value,
                         path = "${currentNode.path}.$memberName",
                         context = currentNode.context,
+                        profile = currentNode.profile,
                     )
                 }
 
@@ -39,6 +40,7 @@ internal object ExternalReferenceTargetResolver {
                         node = documentNode[index],
                         path = "${currentNode.path}[$index]",
                         context = currentNode.context,
+                        profile = currentNode.profile,
                     )
                 }
 

@@ -19,6 +19,7 @@ class AsyncApiExternalContext(
         val file: String,
         val pointer: String,
         val category: String,
+        val parserProfile: String,
     )
 
     private val documents = mutableMapOf<String, ParserNode>()
@@ -27,9 +28,10 @@ class AsyncApiExternalContext(
     private val pathResolver = ExternalReferencePathResolver()
 
     fun loadExternal(reference: Reference) {
+        val referenceOrigin = context.modelRepository.getReferenceOrigin(reference)
         val resolved = try {
             val sourceFile =
-                context.modelRepository.getReferenceOrigin(reference)?.file
+                referenceOrigin?.file
                     ?: reference.sourceId?.let(context::findFileById)
                     ?: context.getCurrentFile()
             pathResolver.resolve(
@@ -54,12 +56,12 @@ class AsyncApiExternalContext(
         val rootNode = documents.getOrPut(documentKey) {
             AsyncApiRegistry.read(externalFile, context)
         }
-        val target = ExternalReferenceTargetResolver.resolve(rootNode, resolved.pointer)
-            ?: throw missingTarget(reference)
-
         val isAsyncApiDocument =
             (rootNode.node as? DocumentObject)?.member("asyncapi") != null
         if (isAsyncApiDocument) {
+            if (ExternalReferenceTargetResolver.resolve(rootNode, resolved.pointer) == null) {
+                throw missingTarget(reference)
+            }
             if (!loadedDocuments.add(documentKey)) return
             val parser = AsyncApiParser(context)
             val parsed = parser.parse(rootNode)
@@ -67,10 +69,15 @@ class AsyncApiExternalContext(
             result.logWarnings()
             result.throwErrors()
         } else {
+            val parserProfile = referenceOrigin?.parserProfile
+            val profiledRoot = parserProfile?.let(rootNode::withProfile) ?: rootNode
+            val target = ExternalReferenceTargetResolver.resolve(profiledRoot, resolved.pointer)
+                ?: throw missingTarget(reference)
             val fragmentIdentity = FragmentIdentity(
                 file = documentKey,
                 pointer = resolved.pointer.toString(),
                 category = reference.referenceCategoryKey?.name.orEmpty(),
+                parserProfile = parserProfile?.name.orEmpty(),
             )
             if (!loadedFragments.add(fragmentIdentity)) return
             ExternalFragmentProcessor(context).parseAndValidate(

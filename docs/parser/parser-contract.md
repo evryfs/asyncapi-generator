@@ -61,6 +61,25 @@ root produces an `unexpected-value-type` parser diagnostic at the root source
 location. This keeps format syntax errors separate from AsyncAPI structural
 errors.
 
+## AsyncAPI specification versions
+
+Before parsing the domain structure, `AsyncApiParser` requires `asyncapi` to be
+a string in `major.minor.patch` form with an optional alphanumeric suffix. The
+declared value is preserved in `AsyncApiDocument`, while its major/minor line
+selects an `AsyncApiParserProfile`. Patch releases share the same profile.
+
+The parser recognizes the published 3.0 and 3.1 specification lines but only
+the 3.0 parser profile is currently implemented. Therefore `3.0.x` documents
+are supported, including suffixed values such as `3.0.0-rc1`; `3.1.x` produces
+a diagnostic explaining that the version is known but its parser profile has
+not been implemented. Other version lines are unsupported rather than being
+silently interpreted as 3.0.
+
+Profiles are carried by parser nodes. Complete external AsyncAPI documents
+select their own profile, while raw external fragments inherit the profile of
+the reference that loads them. Version-dependent parsing must use this profile
+instead of comparing the raw `asyncapi` string.
+
 File access failures are normalized as `UnreadableDocument`; Jackson and
 SnakeYAML exceptions do not escape as the top-level failure. Both readers apply
 the same default limits of 20 MiB for UTF-8 input and decoded document length,
@@ -145,6 +164,8 @@ Current categories are:
 | --- | --- |
 | `parser.missing-required-member` | An object does not contain a required member |
 | `parser.unexpected-value-type` | A value or nested value has the wrong runtime type |
+| `parser.invalid-specification-version` | The `asyncapi` value does not have the required version form |
+| `parser.unsupported-specification-version` | The declared version has no implemented parser profile |
 | `parser.invalid-reference` | A reference is not a supported URI reference with JSON Pointer semantics |
 | `parser.reference-document-not-found` | The external document does not exist or is unreadable |
 | `parser.reference-target-not-found` | The JSON Pointer target does not exist in the loaded document |

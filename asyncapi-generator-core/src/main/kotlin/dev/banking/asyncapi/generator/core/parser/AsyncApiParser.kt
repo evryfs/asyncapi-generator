@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.parser.components.ComponentParser
 import dev.banking.asyncapi.generator.core.parser.info.InfoParser
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiSpecificationLine
 
 /**
  * Parses a reader-backed parser-node tree into an AsyncAPI document model.
@@ -31,15 +32,16 @@ class AsyncApiParser(
     private val componentParser = ComponentParser(asyncApiContext)
 
     fun parse(parserNode: ParserNode): AsyncApiDocument {
+        val root = AsyncApiSpecificationLine.select(parserNode)
         return AsyncApiDocument(
-            asyncapi = parserNode.required("asyncapi").expect<String>(),
-            id = parserNode.optional("id")?.expect<String>(),
-            info = parserNode.required("info").let(infoParser::parseMap),
-            servers = parserNode.optional("servers")?.let(serverParser::parseMap),
-            defaultContentType = parserNode.optional("defaultContentType")?.expect<String>(),
-            channels = parserNode.optional("channels")?.let(channelParser::parseMap),
-            operations = parserNode.optional("operations")?.let(operationParser::parseMap),
-            components = parserNode.optional("components")?.let(componentParser::parseElement),
-        ).also { asyncApiContext.register(it, parserNode) }
+            asyncapi = root.required("asyncapi").expect<String>(),
+            id = root.optional("id")?.expect<String>(),
+            info = root.required("info").let(infoParser::parseMap),
+            servers = root.optional("servers")?.let(serverParser::parseMap),
+            defaultContentType = root.optional("defaultContentType")?.expect<String>(),
+            channels = root.optional("channels")?.let(channelParser::parseMap),
+            operations = root.optional("operations")?.let(operationParser::parseMap),
+            components = root.optional("components")?.let(componentParser::parseElement),
+        ).also { asyncApiContext.register(it, root) }
     }
 }

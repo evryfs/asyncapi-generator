@@ -33,17 +33,8 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
     fun `validation findings include source locations for top level document diagnostics`() {
         val validationResults = validate("validator/asyncapi/asyncapi_validator_document_invalid.yaml")
 
-        assertEquals(3, validationResults.errors.size)
-        assertEquals(3, validationResults.findings.size)
-
-        assertFinding(
-            validationResults,
-            severity = ERROR,
-            messageContains = "AsyncAPI version '2.6.0' is not be supported",
-            sourceFile = "asyncapi_validator_document_invalid.yaml",
-            path = "asyncapi_validator_document_invalid.root.asyncapi",
-            line = 1,
-        )
+        assertEquals(2, validationResults.errors.size)
+        assertEquals(2, validationResults.findings.size)
         assertFinding(
             validationResults,
             severity = ERROR,

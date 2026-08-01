@@ -293,6 +293,7 @@ class ExternalFragmentProcessor(
             node = targetObject,
             path = parentPath,
             context = target.context,
+            profile = target.profile,
         )
     }
 

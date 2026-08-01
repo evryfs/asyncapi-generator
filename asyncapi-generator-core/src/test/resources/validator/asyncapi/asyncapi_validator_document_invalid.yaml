@@ -1,4 +1,4 @@
-asyncapi: 2.6.0
+asyncapi: 3.0.0
 id: not-a-uri
 defaultContentType: not-a-mime-type
 info:

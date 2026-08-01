@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.MIME_TYPE
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.SEMANTIC_VERSION
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URI
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -32,7 +31,6 @@ class AsyncApiValidator(
     override fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults {
         val results = ValidationResults(asyncApiContext)
 
-        validateAsyncApiVersion(asyncApiDocument, results)
         validateIdentifier(asyncApiDocument, results)
         validateDefaultContentType(asyncApiDocument, results)
 
@@ -57,27 +55,6 @@ class AsyncApiValidator(
             componentValidator.validateInterface(component, contextString, results)
         }
         return results
-    }
-
-    private fun validateAsyncApiVersion(node: AsyncApiDocument, results: ValidationResults) {
-        val asyncApiVersion = node.asyncapi.let(::sanitizeString)
-
-        if (asyncApiVersion.isBlank()) {
-            results.error(
-                "The 'asyncapi' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
-            )
-        } else if (!SEMANTIC_VERSION.matches(asyncApiVersion)) {
-            results.error(
-                "Invalid AsyncAPI version format '$asyncApiVersion'. Expected 'major.minor.patch' (e.g., 3.0.0).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
-            )
-        } else if (!asyncApiVersion.startsWith("3.")) {
-            results.error(
-                "AsyncAPI version '$asyncApiVersion' is not be supported by this plugin.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::asyncapi),
-            )
-        }
     }
 
     private fun validateIdentifier(node: AsyncApiDocument, results: ValidationResults) {

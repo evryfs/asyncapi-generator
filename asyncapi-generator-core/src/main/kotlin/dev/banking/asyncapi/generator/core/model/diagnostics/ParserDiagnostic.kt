@@ -8,6 +8,8 @@ enum class ParserDiagnosticCategory(
 ) {
     MISSING_REQUIRED_MEMBER("parser.missing-required-member"),
     UNEXPECTED_VALUE_TYPE("parser.unexpected-value-type"),
+    INVALID_SPECIFICATION_VERSION("parser.invalid-specification-version"),
+    UNSUPPORTED_SPECIFICATION_VERSION("parser.unsupported-specification-version"),
     INVALID_REFERENCE("parser.invalid-reference"),
     REFERENCE_DOCUMENT_NOT_FOUND("parser.reference-document-not-found"),
     REFERENCE_TARGET_NOT_FOUND("parser.reference-target-not-found"),
@@ -55,6 +57,32 @@ sealed interface ParserDiagnostic {
     ) : ParserDiagnostic {
         override val category: ParserDiagnosticCategory =
             ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE
+    }
+
+    data class InvalidSpecificationVersion(
+        val declaredVersion: String,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.INVALID_SPECIFICATION_VERSION
+        override val expectedType: String = "AsyncAPI version in major.minor.patch format"
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = declaredVersion
+    }
+
+    data class UnsupportedSpecificationVersion(
+        val declaredVersion: String,
+        val knownVersionLine: Boolean,
+        val supportedVersionLines: List<String>,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.UNSUPPORTED_SPECIFICATION_VERSION
+        override val expectedType: String = "supported AsyncAPI version"
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = declaredVersion
     }
 
     data class InvalidReference(

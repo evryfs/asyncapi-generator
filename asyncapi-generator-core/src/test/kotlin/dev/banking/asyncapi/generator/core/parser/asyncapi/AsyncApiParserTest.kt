@@ -1,7 +1,10 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -10,6 +13,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertNotNull
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class AsyncApiParserTest : ParserTestSupport() {
 
@@ -167,6 +172,65 @@ class AsyncApiParserTest : ParserTestSupport() {
         ) {
             parser.parse(rootNode)
         }
+    }
+
+    @Test
+    fun `parse document with malformed specification version reports its source`() {
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parse(invalidCase("MalformedVersion"))
+        }
+        val diagnostic = assertIs<ParserDiagnostic.InvalidSpecificationVersion>(exception.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.INVALID_SPECIFICATION_VERSION, diagnostic.category)
+        assertEquals("3.0", diagnostic.declaredVersion)
+        assertEquals("asyncapi_parser_invalid.root.cases.MalformedVersion.asyncapi", diagnostic.path)
+        assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)
+        assertEquals(12, diagnostic.sourceLocation.line)
+        assertTrue(exception.message.orEmpty().contains("expected major.minor.patch"))
+    }
+
+    @Test
+    fun `parse document distinguishes a known unimplemented specification version`() {
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parse(invalidCase("KnownUnimplementedVersion"))
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNSUPPORTED_SPECIFICATION_VERSION, diagnostic.category)
+        assertEquals("3.1.0", diagnostic.declaredVersion)
+        assertTrue(diagnostic.knownVersionLine)
+        assertEquals(listOf("3.0.x"), diagnostic.supportedVersionLines)
+        assertTrue(exception.message.orEmpty().contains("recognized, but its parser profile is not implemented"))
+    }
+
+    @Test
+    fun `parse document rejects an unknown future specification version`() {
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parse(invalidCase("UnknownVersion"))
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
+
+        assertEquals("3.5.0", diagnostic.declaredVersion)
+        assertEquals(false, diagnostic.knownVersionLine)
+        assertTrue(exception.message.orEmpty().contains("is not supported"))
+        assertTrue(exception.message.orEmpty().contains("Supported version lines: 3.0.x"))
+    }
+
+    @Test
+    fun `parse document rejects an old specification major version`() {
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parse(invalidCase("OldMajorVersion"))
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
+
+        assertEquals("2.6.0", diagnostic.declaredVersion)
+        assertEquals(false, diagnostic.knownVersionLine)
+    }
+
+    @Test
+    fun `supported patch and suffixed versions retain their declared value`() {
+        assertEquals("3.0.7", parser.parse(invalidCase("SupportedPatchVersion")).asyncapi)
+        assertEquals("3.0.0-rc1", parser.parse(invalidCase("SupportedSuffixedVersion")).asyncapi)
     }
 
     @Test

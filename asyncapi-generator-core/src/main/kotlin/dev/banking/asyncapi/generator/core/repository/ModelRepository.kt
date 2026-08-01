@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import java.io.File
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
@@ -39,6 +40,7 @@ class ModelRepository(
         val sourcePathId: String,
         val parserPath: String,
         val sourceLocation: SourceLocation?,
+        val parserProfile: AsyncApiParserProfile?,
     )
 
     private val modelsByInstance = IdentityHashMap<Any, Model>()
@@ -69,6 +71,7 @@ class ModelRepository(
                     sourcePathId = sourcePathId,
                     parserPath = path,
                     sourceLocation = sourceLocation,
+                    parserProfile = node.profile,
                 )
             }
         }
