@@ -41,34 +41,36 @@ class OperationReplyParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse operation reply with missing channel ref throws Mandatory`() {
+    fun `parse operation reply reports missing channel ref`() {
         val replyNode = readNode(
             "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
             "components",
             "operationReplyCases",
             "MissingChannelReference",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
-            "asyncapi_parser_operation_reply_invalid.yaml",
-            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingChannelReference.channel.\$ref",
+        assertMissingRequiredMember(
+            memberName = $$"$ref",
+            path = "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingChannelReference.channel.\$ref",
+            sourcePath = "root.components.operationReplyCases.MissingChannelReference.channel",
+            sourceFile = "asyncapi_parser_operation_reply_invalid.yaml",
         ) {
             parser.parseElement(replyNode)
         }
     }
 
     @Test
-    fun `parse operation reply with missing message ref throws Mandatory with indexed path`() {
+    fun `parse operation reply reports missing message ref at indexed path`() {
         val replyNode = readNode(
             "parser/operations/asyncapi_parser_operation_reply_invalid.yaml",
             "components",
             "operationReplyCases",
             "MissingMessageReference",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
-            "asyncapi_parser_operation_reply_invalid.yaml",
-            "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingMessageReference.messages[0].\$ref",
+        assertMissingRequiredMember(
+            memberName = $$"$ref",
+            path = "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingMessageReference.messages[0].\$ref",
+            sourcePath = "root.components.operationReplyCases.MissingMessageReference.messages[0]",
+            sourceFile = "asyncapi_parser_operation_reply_invalid.yaml",
         ) {
             parser.parseElement(replyNode)
         }

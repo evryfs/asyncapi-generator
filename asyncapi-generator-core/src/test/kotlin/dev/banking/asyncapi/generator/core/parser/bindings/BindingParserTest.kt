@@ -1,11 +1,13 @@
 package dev.banking.asyncapi.generator.core.parser.bindings
 
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class BindingParserTest : ParserTestSupport() {
@@ -26,6 +28,45 @@ class BindingParserTest : ParserTestSupport() {
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
             .isEqualTo(userSignedUpChannelBinding())
+    }
+
+    @Test
+    fun `parse binding preserves plain nested and null values`() {
+        val channelBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "channelBindings",
+        )
+
+        val bindings = parser.parseMap(channelBindingsNode)
+        val binding = (bindings.getValue("plainChannel") as BindingInterface.BindingInline).binding
+
+        assertEquals(
+            mapOf(
+                "custom" to mapOf(
+                    "enabled" to true,
+                    "attempts" to 3,
+                    "values" to listOf("primary", 7, false, null),
+                    "metadata" to mapOf("nullable" to null),
+                ),
+            ),
+            binding.content,
+        )
+    }
+
+    @Test
+    fun `parse binding reference preserves category`() {
+        val channelBindingsNode = readNode(
+            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
+            "components",
+            "channelBindings",
+        )
+
+        val bindings = parser.parseMap(channelBindingsNode)
+        val reference = (bindings.getValue("referencedChannel") as BindingInterface.BindingReference).reference
+
+        assertEquals("#/components/channelBindings/userSignedUpChannel", reference.ref)
+        assertEquals(BINDING, reference.referenceCategoryKey)
     }
 
     @Test
@@ -94,18 +135,63 @@ class BindingParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse binding with invalid structure throws UnexpectedValue`() {
+    fun `parse binding reports invalid inline structure`() {
         val channelBindingsNode = readNode(
             "parser/bindings/asyncapi_parser_binding_invalid.yaml",
             "components",
             "channelBindings",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_binding_invalid.yaml",
-            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "this-should-be-a-map",
+            path = "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
+            sourcePath = "root.components.channelBindings.InvalidBindingStructure",
+            sourceFile = "asyncapi_parser_binding_invalid.yaml",
         ) {
             parser.parseMap(channelBindingsNode)
+        }
+    }
+
+    @Test
+    fun `parse binding reports explicit null ref before inline parsing`() {
+        val bindingNode = readNode(
+            "parser/bindings/asyncapi_parser_binding_invalid.yaml",
+            "components",
+            "bindingCases",
+            "NullReference",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_binding_invalid.root.components.bindingCases.NullReference.badBinding.\$ref",
+            sourcePath = "root.components.bindingCases.NullReference.badBinding.\$ref",
+            sourceFile = "asyncapi_parser_binding_invalid.yaml",
+        ) {
+            parser.parseMap(bindingNode)
+        }
+    }
+
+    @Test
+    fun `parse binding map reports list container`() {
+        val bindingNode = readNode(
+            "parser/bindings/asyncapi_parser_binding_invalid.yaml",
+            "components",
+            "bindingCases",
+            "InvalidBindingsContainer",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("kafka" to mapOf("topic" to "invalid"))),
+            path = "asyncapi_parser_binding_invalid.root.components.bindingCases.InvalidBindingsContainer",
+            sourcePath = "root.components.bindingCases.InvalidBindingsContainer",
+            sourceFile = "asyncapi_parser_binding_invalid.yaml",
+        ) {
+            parser.parseMap(bindingNode)
         }
     }
 }

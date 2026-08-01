@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.externaldocs
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
@@ -36,17 +36,39 @@ class ExternalDocsParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse external docs missing url throws RequiredObject`() {
+    fun `parse external docs reports missing url`() {
         val externalDocsNode = readNode(
             "parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml",
             "components",
             "externalDocs",
             "MissingUrl",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory 'url'",
-            "asyncapi_parser_externaldocs_invalid.yaml",
-            "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
+        assertMissingRequiredMember(
+            memberName = "url",
+            path = "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
+            sourcePath = "root.components.externalDocs.MissingUrl",
+            sourceFile = "asyncapi_parser_externaldocs_invalid.yaml",
+        ) {
+            parser.parseElement(externalDocsNode)
+        }
+    }
+
+    @Test
+    fun `parse external docs reports explicit null ref before inline parsing`() {
+        val externalDocsNode = readNode(
+            "parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml",
+            "components",
+            "externalDocs",
+            "NullReference",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.NullReference.\$ref",
+            sourcePath = "root.components.externalDocs.NullReference.\$ref",
+            sourceFile = "asyncapi_parser_externaldocs_invalid.yaml",
         ) {
             parser.parseElement(externalDocsNode)
         }

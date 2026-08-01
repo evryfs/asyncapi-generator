@@ -20,10 +20,9 @@ class BindingParser(
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     fun parseMap(parserNode: ParserNode): Map<String, BindingInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
+        val nodes = parserNode.members()
         nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+            val reference = node.optional($$"$ref")?.expect<String>()
             val binding = if (reference != null) {
                 BindingInterface.BindingReference(
                     Reference(
@@ -32,7 +31,7 @@ class BindingParser(
                     ).also { asyncApiContext.register(it, node) }
                 )
             } else {
-                val content = node.coerce<Map<String, Any?>>()
+                val content = node.expect<Map<String, Any?>>()
                 BindingInterface.BindingInline(
                     Binding(
                         content = content,

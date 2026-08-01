@@ -19,14 +19,14 @@ class ReferenceParser(
 ) {
 
     fun parseList(parserNode: ParserNode): List<Reference> = buildList {
-        val nodes = parserNode.extractNodes()
+        val nodes = parserNode.elements()
         nodes.forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): Reference {
-        val reference = parserNode.mandatory($$"$ref").coerce<String>()
+        val reference = parserNode.required($$"$ref").expect<String>()
         return Reference(
             ref = reference,
             referenceCategoryKey = REFERENCE

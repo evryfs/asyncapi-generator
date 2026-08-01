@@ -53,10 +53,11 @@ class OperationParserTest : ParserTestSupport() {
             "parser/operations/asyncapi_validator_operations_inline_message_error.yaml",
             "operations",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
-            "asyncapi_validator_operations_inline_message_error.yaml",
-            "asyncapi_validator_operations_inline_message_error.root.operations.testOperation.messages[0].\$ref",
+        assertMissingRequiredMember(
+            memberName = $$"$ref",
+            path = "asyncapi_validator_operations_inline_message_error.root.operations.testOperation.messages[0].\$ref",
+            sourcePath = "root.operations.testOperation.messages[0]",
+            sourceFile = "asyncapi_validator_operations_inline_message_error.yaml",
         ) {
             parser.parseMap(operationsNode)
         }

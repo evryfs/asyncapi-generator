@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.references
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
@@ -41,55 +41,100 @@ class ReferenceParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse reference missing ref throws Mandatory`() {
+    fun `parse reference reports missing ref`() {
         val referenceNode = readNode(
             "parser/references/asyncapi_parser_reference_invalid.yaml",
             "components",
             "references",
             "MissingReference",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
-            "asyncapi_parser_reference_invalid.yaml",
-            "asyncapi_parser_reference_invalid.root.components.references.MissingReference.\$ref",
+        assertMissingRequiredMember(
+            memberName = $$"$ref",
+            path = "asyncapi_parser_reference_invalid.root.components.references.MissingReference.\$ref",
+            sourcePath = "root.components.references.MissingReference",
+            sourceFile = "asyncapi_parser_reference_invalid.yaml",
         ) {
             parser.parseElement(referenceNode)
         }
     }
 
     @Test
-    fun `parse reference with non-string ref throws UnexpectedValue`() {
+    fun `parse reference reports non-string ref`() {
         val referenceNode = readNode(
             "parser/references/asyncapi_parser_reference_invalid.yaml",
             "components",
             "references",
             "NumericReference",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "12345",
-            "quote the value",
-            "asyncapi_parser_reference_invalid.yaml",
-            "asyncapi_parser_reference_invalid.root.components.references.NumericReference.\$ref",
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 12345,
+            path = "asyncapi_parser_reference_invalid.root.components.references.NumericReference.\$ref",
+            sourcePath = "root.components.references.NumericReference.\$ref",
+            sourceFile = "asyncapi_parser_reference_invalid.yaml",
         ) {
             parser.parseElement(referenceNode)
         }
     }
 
     @Test
-    fun `parse reference list missing ref throws Mandatory with indexed path`() {
+    fun `parse reference reports explicit null ref`() {
+        val referenceNode = readNode(
+            "parser/references/asyncapi_parser_reference_invalid.yaml",
+            "components",
+            "references",
+            "NullReference",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_reference_invalid.root.components.references.NullReference.\$ref",
+            sourcePath = "root.components.references.NullReference.\$ref",
+            sourceFile = "asyncapi_parser_reference_invalid.yaml",
+        ) {
+            parser.parseElement(referenceNode)
+        }
+    }
+
+    @Test
+    fun `parse reference list reports missing ref at element path`() {
         val referencesNode = readNode(
             "parser/references/asyncapi_parser_reference_invalid.yaml",
             "components",
             "references",
             "ReferenceList",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
-            "asyncapi_parser_reference_invalid.yaml",
-            "asyncapi_parser_reference_invalid.root.components.references.ReferenceList[0].\$ref",
+        assertMissingRequiredMember(
+            memberName = $$"$ref",
+            path = "asyncapi_parser_reference_invalid.root.components.references.ReferenceList[0].\$ref",
+            sourcePath = "root.components.references.ReferenceList[0]",
+            sourceFile = "asyncapi_parser_reference_invalid.yaml",
         ) {
             parser.parseList(referencesNode)
+        }
+    }
+
+    @Test
+    fun `parse reference list reports object container`() {
+        val referenceNode = readNode(
+            "parser/references/asyncapi_parser_reference_invalid.yaml",
+            "components",
+            "references",
+            "MissingReference",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("summary" to "Reference object missing its reference value"),
+            path = "asyncapi_parser_reference_invalid.root.components.references.MissingReference",
+            sourcePath = "root.components.references.MissingReference",
+            sourceFile = "asyncapi_parser_reference_invalid.yaml",
+        ) {
+            parser.parseList(referenceNode)
         }
     }
 }

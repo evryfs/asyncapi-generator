@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.parameters
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.junit.jupiter.api.Test
@@ -32,36 +32,103 @@ class ParameterParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse parameter with invalid structure throws UnexpectedValue`() {
+    fun `parse parameter reports invalid inline structure`() {
         val parametersNode = readNode(
             "parser/parameters/asyncapi_parser_parameter_invalid.yaml",
             "components",
             "parameterCases",
             "InvalidParameterStructure",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_parameter_invalid.yaml",
-            "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidParameterStructure.badParameter",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidParameterStructure.badParameter",
+            sourcePath = "root.components.parameterCases.InvalidParameterStructure.badParameter",
+            sourceFile = "asyncapi_parser_parameter_invalid.yaml",
         ) {
             parser.parseMap(parametersNode)
         }
     }
 
     @Test
-    fun `parse parameter with boolean location throws UnexpectedValue`() {
+    fun `parse parameter reports boolean location`() {
         val parametersNode = readNode(
             "parser/parameters/asyncapi_parser_parameter_invalid.yaml",
             "components",
             "parameterCases",
             "BooleanLocation",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "found Boolean true",
-            "quote the value",
-            "asyncapi_parser_parameter_invalid.yaml",
-            "asyncapi_parser_parameter_invalid.root.components.parameterCases.BooleanLocation.badParameter.location",
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = true,
+            path = "asyncapi_parser_parameter_invalid.root.components.parameterCases.BooleanLocation.badParameter.location",
+            sourcePath = "root.components.parameterCases.BooleanLocation.badParameter.location",
+            sourceFile = "asyncapi_parser_parameter_invalid.yaml",
+        ) {
+            parser.parseMap(parametersNode)
+        }
+    }
+
+    @Test
+    fun `parse parameter reports non-string ref before inline parsing`() {
+        val parametersNode = readNode(
+            "parser/parameters/asyncapi_parser_parameter_invalid.yaml",
+            "components",
+            "parameterCases",
+            "NumericReference",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 42,
+            path = "asyncapi_parser_parameter_invalid.root.components.parameterCases.NumericReference.badParameter.\$ref",
+            sourcePath = "root.components.parameterCases.NumericReference.badParameter.\$ref",
+            sourceFile = "asyncapi_parser_parameter_invalid.yaml",
+        ) {
+            parser.parseMap(parametersNode)
+        }
+    }
+
+    @Test
+    fun `parse parameter reports invalid enum element at its index`() {
+        val parametersNode = readNode(
+            "parser/parameters/asyncapi_parser_parameter_invalid.yaml",
+            "components",
+            "parameterCases",
+            "InvalidEnumElement",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 7,
+            path = "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidEnumElement.badParameter.enum[1]",
+            sourcePath = "root.components.parameterCases.InvalidEnumElement.badParameter.enum[1]",
+            sourceFile = "asyncapi_parser_parameter_invalid.yaml",
+        ) {
+            parser.parseMap(parametersNode)
+        }
+    }
+
+    @Test
+    fun `parse parameter reports null example at its index`() {
+        val parametersNode = readNode(
+            "parser/parameters/asyncapi_parser_parameter_invalid.yaml",
+            "components",
+            "parameterCases",
+            "InvalidExamplesElement",
+        )
+
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidExamplesElement.badParameter.examples[1]",
+            sourcePath = "root.components.parameterCases.InvalidExamplesElement.badParameter.examples[1]",
+            sourceFile = "asyncapi_parser_parameter_invalid.yaml",
         ) {
             parser.parseMap(parametersNode)
         }

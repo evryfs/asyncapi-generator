@@ -3,10 +3,15 @@ package dev.banking.asyncapi.generator.core.parser
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.ParserFixtures
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import org.assertj.core.api.Assertions.assertThat
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 /**
  * Shared support for parser-stage tests.
@@ -28,7 +33,7 @@ abstract class ParserTestSupport {
         vararg nodePath: String,
     ): ParserNode {
         return nodePath.fold(readRoot(path)) { node, key ->
-            node.mandatory(key)
+            node.required(key)
         }
     }
 
@@ -45,5 +50,44 @@ abstract class ParserTestSupport {
             assertThat(error.message).contains(expected)
         }
         return error
+    }
+
+    protected fun assertMissingRequiredMember(
+        memberName: String,
+        path: String,
+        sourcePath: String,
+        sourceFile: String,
+        block: () -> Unit,
+    ): ParserDiagnostic.MissingRequiredMember {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure>(block = block)
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals(memberName, diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals(path, diagnostic.path)
+        assertEquals(sourcePath, diagnostic.sourceLocation.path)
+        assertEquals(sourceFile, diagnostic.sourceLocation.file.name)
+        return diagnostic
+    }
+
+    protected fun assertUnexpectedValueType(
+        expectedType: String,
+        actualType: ParserValueType,
+        actualValue: Any?,
+        path: String,
+        sourcePath: String,
+        sourceFile: String,
+        block: () -> Unit,
+    ): ParserDiagnostic.UnexpectedValueType {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure>(block = block)
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals(expectedType, diagnostic.expectedType)
+        assertEquals(actualType, diagnostic.actualType)
+        assertEquals(actualValue, diagnostic.actualValue)
+        assertEquals(path, diagnostic.path)
+        assertEquals(sourcePath, diagnostic.sourceLocation.path)
+        assertEquals(sourceFile, diagnostic.sourceLocation.file.name)
+        return diagnostic
     }
 }
