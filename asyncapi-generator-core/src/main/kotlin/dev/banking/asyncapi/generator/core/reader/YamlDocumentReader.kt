@@ -15,12 +15,14 @@ import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.Mark
 import org.yaml.snakeyaml.error.MarkedYAMLException
+import org.yaml.snakeyaml.error.YAMLException
 import org.yaml.snakeyaml.nodes.MappingNode
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.reader.ReaderException
 import java.io.File
 
 /**
@@ -35,16 +37,24 @@ import java.io.File
  * - `DocumentReaderContractTest`
  * - `DocumentLocationTest`
  */
-class YamlDocumentReader : DocumentReader {
+class YamlDocumentReader internal constructor(
+    private val limits: DocumentReaderLimits,
+) : DocumentReader {
+    constructor() : this(DocumentReaderLimits.DEFAULT)
+
     private val yaml =
         Yaml(
             LoaderOptions().apply {
                 isProcessComments = true
                 isAllowDuplicateKeys = false
+                maxAliasesForCollections = limits.maxAliasesForCollections
+                nestingDepthLimit = limits.maxNestingDepth
+                codePointLimit = limits.maxDocumentCharacters
             },
         )
 
     override fun read(source: DocumentSource): InputDocument {
+        limits.requireDocumentSize(source)
         if (source.content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
@@ -54,6 +64,10 @@ class YamlDocumentReader : DocumentReader {
                 yaml.compose(source.content.reader())
             } catch (ex: MarkedYAMLException) {
                 throw DocumentReadException.MalformedDocument(source.file, ex)
+            } catch (ex: ReaderException) {
+                throw DocumentReadException.MalformedDocument(source.file, ex)
+            } catch (ex: YAMLException) {
+                throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
         val root = parseNode(

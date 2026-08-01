@@ -11,7 +11,7 @@ the file, line, column, and parser path that introduced a value.
 | Stage | Owns | Does not own |
 | --- | --- | --- |
 | Document loading facade | One isolated load context, reader selection, root parsing, external reference loading, semantic validation, and returned warnings | Bundling and generation |
-| Reader | File format detection, YAML or JSON syntax, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules |
+| Reader | File format detection, bounded file access, YAML or JSON syntax and safety limits, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules |
 | Document contract | Immutable format-independent nodes, document source identity, input format, and source locations shared between producers and consumers | YAML/Jackson/SnakeYAML implementation details or AsyncAPI domain rules |
 | Parser-node adapter | Parser paths and registration of reader-provided locations in the load context | Format-specific syntax |
 | Domain parser | Supported AsyncAPI object structure, required members, runtime value types, references, and domain-model construction | General schema validation, bundling, or output generation |

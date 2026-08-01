@@ -52,4 +52,27 @@ class DocumentReaderRegistryTest {
             DocumentReaderRegistry.read(file)
         }
     }
+
+    @Test
+    fun `normalizes missing file access failures`() {
+        val file = tempDir.resolve("missing.yaml").toFile()
+
+        val error = assertFailsWith<DocumentReadException.UnreadableDocument> {
+            DocumentReaderRegistry.read(file)
+        }
+
+        assertEquals(file.absolutePath, error.message.orEmpty().substringAfterLast(": "))
+    }
+
+    @Test
+    fun `rejects malformed UTF-8 as a document read failure`() {
+        val file = tempDir.resolve("malformed-utf8.yaml").toFile()
+        file.writeBytes(byteArrayOf(0xC3.toByte(), 0x28))
+
+        val error = assertFailsWith<DocumentReadException.MalformedDocument> {
+            DocumentReaderRegistry.read(file)
+        }
+
+        assertEquals(file.absolutePath, error.message.orEmpty().substringAfterLast(": "))
+    }
 }

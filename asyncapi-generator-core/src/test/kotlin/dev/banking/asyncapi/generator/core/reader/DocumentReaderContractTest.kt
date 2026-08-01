@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.fixtures.childObject
 import dev.banking.asyncapi.generator.core.fixtures.semanticValue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -50,6 +51,24 @@ class DocumentReaderContractTest {
 
         assertIs<DocumentNull>(reader.read(yamlSource).root)
         assertIs<DocumentNull>(jsonReader.read(jsonSource).root)
+    }
+
+    @Test
+    fun `readers enforce the same encoded document size limit`() {
+        val limits =
+            DocumentReaderLimits.DEFAULT.copy(
+                maxDocumentBytes = 16,
+                maxDocumentCharacters = 16,
+            )
+        val yamlSource = ReaderFixtures.yamlSource("invalid-root.yaml").copy(content = "value: 1234567890")
+        val jsonSource = ReaderFixtures.jsonSource("invalid-root.json").copy(content = """{"value":1234567890}""")
+
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            YamlDocumentReader(limits).read(yamlSource)
+        }
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            JsonDocumentReader(limits).read(jsonSource)
+        }
     }
 
     @Test

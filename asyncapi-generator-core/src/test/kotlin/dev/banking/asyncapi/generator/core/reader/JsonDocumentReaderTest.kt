@@ -76,6 +76,24 @@ class JsonDocumentReaderTest {
     }
 
     @Test
+    fun `normalizes nesting limit failures`() {
+        val constrainedReader =
+            JsonDocumentReader(
+                DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
+            )
+        val source =
+            ReaderFixtures.jsonSource("invalid-root.json").copy(
+                content = """{"root":{"child":{"leaf":true}}}""",
+            )
+
+        val error = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            constrainedReader.read(source)
+        }
+
+        assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
+    }
+
+    @Test
     fun `records source locations for root object fields and array items`() {
         val document = reader.read(ReaderFixtures.jsonSource("source-map.json"))
         val root = assertIs<DocumentObject>(document.root)

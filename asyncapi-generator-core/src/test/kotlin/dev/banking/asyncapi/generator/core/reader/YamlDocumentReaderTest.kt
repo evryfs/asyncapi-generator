@@ -45,6 +45,18 @@ class YamlDocumentReaderTest {
     }
 
     @Test
+    fun `normalizes invalid yaml characters as malformed input`() {
+        val source =
+            ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                content = "value: \u0001",
+            )
+
+        assertFailsWith<DocumentReadException.MalformedDocument> {
+            reader.read(source)
+        }
+    }
+
+    @Test
     fun `reads an array root without applying AsyncAPI rules`() {
         val source = ReaderFixtures.yamlSource("invalid-root.yaml")
         val document = reader.read(source)
@@ -60,6 +72,51 @@ class YamlDocumentReaderTest {
         val source = ReaderFixtures.yamlSource("non-scalar-key.yaml")
         assertFailsWith<DocumentReadException.InvalidMappingKey> {
             reader.read(source)
+        }
+    }
+
+    @Test
+    fun `normalizes nesting limit failures`() {
+        val constrainedReader =
+            YamlDocumentReader(
+                DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
+            )
+        val source =
+            ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                content =
+                    """
+                    root:
+                      child:
+                        leaf: true
+                    """.trimIndent(),
+            )
+
+        val error = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            constrainedReader.read(source)
+        }
+
+        assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
+    }
+
+    @Test
+    fun `limits expanded collection aliases`() {
+        val constrainedReader =
+            YamlDocumentReader(
+                DocumentReaderLimits.DEFAULT.copy(maxAliasesForCollections = 1),
+            )
+        val source =
+            ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                content =
+                    """
+                    base: &base
+                      value: true
+                    first: *base
+                    second: *base
+                    """.trimIndent(),
+            )
+
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            constrainedReader.read(source)
         }
     }
 

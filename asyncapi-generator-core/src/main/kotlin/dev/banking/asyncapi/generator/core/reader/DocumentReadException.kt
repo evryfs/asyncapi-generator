@@ -29,6 +29,16 @@ sealed class DocumentReadException(
         cause: Throwable,
     ) : DocumentReadException("Malformed input document: ${file.absolutePath}", cause)
 
+    class UnreadableDocument(
+        file: File,
+        cause: Throwable,
+    ) : DocumentReadException("Unable to read input document: ${file.absolutePath}", cause)
+
+    class ResourceLimitExceeded(
+        file: File,
+        cause: Throwable,
+    ) : DocumentReadException("Input document exceeds reader resource limits: ${file.absolutePath}", cause)
+
     class InvalidMappingKey(
         file: File,
         line: Int,

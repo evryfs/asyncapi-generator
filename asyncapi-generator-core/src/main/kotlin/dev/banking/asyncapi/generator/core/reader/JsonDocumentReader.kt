@@ -1,10 +1,14 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonFactoryBuilder
 import com.fasterxml.jackson.core.JsonLocation
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.core.StreamReadConstraints
+import com.fasterxml.jackson.core.exc.StreamConstraintsException
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentMember
@@ -28,10 +32,22 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * - `DocumentReaderContractTest`
  * - `DocumentLocationTest`
  */
-class JsonDocumentReader : DocumentReader {
-    private val jsonFactory = JsonFactory()
+class JsonDocumentReader internal constructor(
+    private val limits: DocumentReaderLimits,
+) : DocumentReader {
+    constructor() : this(DocumentReaderLimits.DEFAULT)
+
+    private val jsonFactory: JsonFactory =
+        JsonFactoryBuilder()
+            .streamReadConstraints(
+                StreamReadConstraints.builder()
+                    .maxDocumentLength(limits.maxDocumentCharacters.toLong())
+                    .maxNestingDepth(limits.maxNestingDepth)
+                    .build(),
+            ).build()
 
     override fun read(source: DocumentSource): InputDocument {
+        limits.requireDocumentSize(source)
         if (source.content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
@@ -52,7 +68,9 @@ class JsonDocumentReader : DocumentReader {
             }
         } catch (ex: DocumentReadException) {
             throw ex
-        } catch (ex: JsonParseException) {
+        } catch (ex: StreamConstraintsException) {
+            throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
+        } catch (ex: JsonProcessingException) {
             throw DocumentReadException.MalformedDocument(source.file, ex)
         }
     }

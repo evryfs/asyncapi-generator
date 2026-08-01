@@ -53,6 +53,17 @@ root produces an `unexpected-value-type` parser diagnostic at the root source
 location. This keeps format syntax errors separate from AsyncAPI structural
 errors.
 
+File access failures are normalized as `UnreadableDocument`; Jackson and
+SnakeYAML exceptions do not escape as the top-level failure. Both readers apply
+the same default limits of 20 MiB for UTF-8 input and decoded document length,
+plus a nesting depth of 100. YAML additionally permits at most 50 expanded
+collection aliases. Size, depth, and alias violations are reported as
+`ResourceLimitExceeded`. These limits bound untrusted input while remaining
+well above ordinary AsyncAPI contract sizes.
+
+File input is decoded as strict UTF-8. Malformed byte sequences are rejected as
+`MalformedDocument` rather than being silently replaced before syntax parsing.
+
 YAML presentation details such as quoting and block style do not survive as
 semantic data. Quoted numbers and booleans remain strings. JSON-compatible YAML
 booleans `true` and `false` become booleans; YAML 1.1 words such as `yes`, `no`,
