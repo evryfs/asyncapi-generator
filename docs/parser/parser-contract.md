@@ -1,0 +1,181 @@
+# Parser contract
+
+This reference defines the current file-reading and parser-facing contract in
+`asyncapi-generator-core`.
+
+## Public file-loading entry point
+
+```kotlin
+val result = AsyncApiDocumentLoader().load(file)
+val document = result.document
+val warnings = result.warnings
+val renderedWarnings = result.formatWarnings()
+```
+
+Each call creates an isolated `AsyncApiContext`. The loader accepts `.yaml`,
+`.yml`, and `.json` files, reads and structurally parses the root document,
+eagerly loads supported external references, and runs semantic validation.
+Reader, parser, external-reference, and validation errors are thrown. A
+successful result contains the existing `AsyncApiDocument` domain model and an
+immutable copy of validation warnings.
+
+Bundling and generation are not performed by this API.
+
+## Reader contract
+
+`DocumentReaderRegistry.read(File)` selects a reader by case-insensitive file
+extension. `DocumentReaderRegistry.read(DocumentSource)` uses the explicitly
+declared `DocumentFormat`.
+
+Both readers return an `InputDocument` with a `DocumentObject` root and the same
+semantic node categories:
+
+| Node | Plain runtime value | Location |
+| --- | --- | --- |
+| `DocumentObject` | `Map<String, Any?>` | Object start; every member also has a key location |
+| `DocumentArray` | `List<Any?>` | Array start; every element has its own location |
+| `DocumentString` | `String` | Scalar token |
+| `DocumentNumber` | `Number` | Scalar token |
+| `DocumentBoolean` | `Boolean` | Scalar token |
+| `DocumentNull` | `null` | Null token |
+
+Readers reject empty documents, malformed syntax, non-object roots, invalid
+mapping keys, and duplicate keys with `DocumentReadException`. They do not know
+which AsyncAPI fields are legal.
+
+YAML presentation details such as quoting and block style do not survive as
+semantic data. Quoted numbers and booleans remain strings. JSON-compatible YAML
+booleans `true` and `false` become booleans; YAML 1.1 words such as `yes`, `no`,
+`on`, and `off` remain strings.
+
+## Parser cursor API
+
+`ParserNode` is a source-aware cursor over one `DocumentNode`.
+
+| Operation | Contract |
+| --- | --- |
+| `required(name)` | Requires the current node to be an object and the named member to be present; returns its cursor |
+| `optional(name)` | Requires the current node to be an object; returns the member cursor or `null` when absent |
+| `members()` | Requires an object and returns one cursor per member, preserving names and paths |
+| `elements()` | Requires an array and returns one cursor per element with indexed paths |
+| `expect<T>()` | Checks the complete requested Kotlin runtime type, including nested list and map values |
+| `startsWith(prefix)` | Returns an object cursor containing matching members, or `null` when none match |
+| `toPlainValue()` | Recursively removes source metadata and returns maps, lists, scalars, or null |
+
+`expect<T>()` performs type checking, not coercion. A string is not converted to
+a boolean or number, and a scalar is not wrapped in a collection. Map keys and
+nested collection elements are checked recursively, so
+`expect<Map<String, List<Boolean>>>()` cannot hide an invalid nested value behind
+an unchecked cast.
+
+`expect<Any?>()` and `toPlainValue()` both allow any JSON-compatible value.
+`expect<T>()` should be preferred when the AsyncAPI field has a defined shape;
+`toPlainValue()` communicates that source metadata is intentionally discarded
+at a free-form boundary.
+
+## Absent and null values
+
+Absence and explicit null are different parser states.
+
+| Input state | `optional("field")` | `required("field")` | `expect<String>()` | `expect<String?>()` |
+| --- | --- | --- | --- | --- |
+| Member absent | `null` | Missing-required-member diagnostic | Not applicable | Not applicable |
+| Member is `null` | Cursor over `DocumentNull` | Cursor over `DocumentNull` | Unexpected-value-type diagnostic | `null` |
+| Member is a string | Cursor over `DocumentString` | Cursor over `DocumentString` | String value | String value |
+
+Callers must not use a nullable expectation merely to make malformed nulls
+disappear. Use it only when the corresponding domain contract permits explicit
+null. When presence itself is significant, retain the member cursor separately;
+`SchemaParser` does this for `default` through its `defaultSet` flag.
+
+## Parser diagnostics
+
+Strict parser failures throw
+`AsyncApiParseException.ParserDiagnosticFailure`. Its `diagnostic` is structured
+data; the exception message is a human-readable rendering with a source snippet.
+
+Every `ParserDiagnostic` exposes:
+
+- a stable category and string code;
+- expected type or condition;
+- actual value category and actual plain value when applicable;
+- parser path; and
+- `SourceLocation`, containing source identifier, file, one-based line, and
+  one-based column.
+
+Current categories are:
+
+| Code | Meaning |
+| --- | --- |
+| `parser.missing-required-member` | An object does not contain a required member |
+| `parser.unexpected-value-type` | A value or nested value has the wrong runtime type |
+| `parser.invalid-reference` | A reference is not a supported URI reference with JSON Pointer semantics |
+| `parser.reference-document-not-found` | The external document does not exist or is unreadable |
+| `parser.reference-target-not-found` | The JSON Pointer target does not exist in the loaded document |
+
+Diagnostic messages may include targeted hints for common quoted scalar
+mistakes. The category and structured fields, rather than rendered prose, are
+the stable surface for programmatic assertions.
+
+## Reference behavior
+
+A Reference Object must be an object containing a string `$ref`. A missing
+member produces a missing-required-member diagnostic; an explicit null or a
+non-string value produces an unexpected-value-type diagnostic. Domain parsers
+must attach the concrete `ReferenceCategoryKey` used to parse external
+fragments.
+
+Internal references do not load a file. External paths are resolved relative to
+the source document that owns the reference. Canonical file paths distinguish
+same-named files in different directories. URI percent encoding is decoded for
+file paths, and JSON Pointer `~0` and `~1` escapes are supported when selecting
+targets.
+
+External targets have two modes:
+
+- A target document with an `asyncapi` member is parsed and validated as a full
+  AsyncAPI document.
+- A fragment-only document is parsed and validated using the reference category,
+  such as schema, message, channel, operation, server, parameter, or binding.
+
+Loading is eager and deduplicated. It preserves each file's source locations and
+does not bundle or inline the model.
+
+## Schema Object behavior
+
+`SchemaParser` is specialized because Schema Objects are recursive and permit
+shapes that ordinary AsyncAPI objects do not:
+
+- Boolean schemas are represented as `SchemaInterface.BooleanSchema`.
+- String `$ref` values produce schema references.
+- `type` accepts a string, an array of strings, or explicit null as represented
+  by the existing model API.
+- Recursive keywords such as `properties`, `items`, `allOf`, `anyOf`, `oneOf`,
+  `not`, conditional schemas, and schema-valued dependencies recurse through
+  `SchemaParser`.
+- Property dependencies are lists of strings; schema dependencies are parsed as
+  schemas.
+- `default`, `const`, `examples`, and enum values preserve JSON-compatible plain
+  values. `defaultSet` distinguishes an absent default from an explicit null.
+- Known AsyncAPI Schema Object formats delegate back to ordinary schema parsing.
+  Known native or other Multi Format Schema values are preserved as
+  `MultiFormatSchema`; native Avro and Protobuf schemas may load supported
+  external schema assets.
+- Unknown `schemaFormat` values are rejected by the existing schema-format
+  contract.
+
+The schema parser constructs model shape. `SchemaValidator` remains responsible
+for semantic keyword policy and combinations.
+
+## Extensions and free-form values
+
+Extension members beginning with `x-` and specification fields explicitly
+defined as free-form cross the typed parser boundary as JSON-compatible plain
+values: `Map<String, Any?>`, `List<Any?>`, `String`, `Number`, `Boolean`, or
+`null`.
+
+Use `toPlainValue()` only at those boundaries. The returned value has no
+`SourceLocation`, so the containing model and its registered field locations
+remain the source of downstream diagnostics. Known structural fields must use
+`expect<T>()`, `members()`, or `elements()` instead of being treated as
+free-form.
