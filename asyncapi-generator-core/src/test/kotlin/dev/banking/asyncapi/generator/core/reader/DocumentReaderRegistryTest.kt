@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
 import dev.banking.asyncapi.generator.core.fixtures.value
 import dev.banking.asyncapi.generator.core.fixtures.writeTestFile
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class DocumentReaderRegistryTest {
 
@@ -19,9 +21,10 @@ class DocumentReaderRegistryTest {
     fun `reads yaml files through the registry`() {
         val file = ReaderFixtures.yamlFile("registry-asyncapi.yaml")
         val document = DocumentReaderRegistry.read(file)
+        val root = assertIs<DocumentObject>(document.root)
         assertEquals(DocumentFormat.YAML, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
-        assertEquals("3.0.0", document.root.value("asyncapi"))
+        assertEquals("3.0.0", root.value("asyncapi"))
     }
 
     @Test
@@ -36,9 +39,10 @@ class DocumentReaderRegistryTest {
     fun `reads json files through the registry`() {
         val file = ReaderFixtures.jsonFile("registry-asyncapi.json")
         val document = DocumentReaderRegistry.read(file)
+        val root = assertIs<DocumentObject>(document.root)
         assertEquals(DocumentFormat.JSON, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
-        assertEquals("3.0.0", document.root.value("asyncapi"))
+        assertEquals("3.0.0", root.value("asyncapi"))
     }
 
     @Test

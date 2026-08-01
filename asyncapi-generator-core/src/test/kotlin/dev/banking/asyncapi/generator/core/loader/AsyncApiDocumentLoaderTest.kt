@@ -3,6 +3,9 @@ package dev.banking.asyncapi.generator.core.loader
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.fixtures.writeTestFile
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class AsyncApiDocumentLoaderTest {
@@ -63,6 +67,33 @@ class AsyncApiDocumentLoaderTest {
         assertEquals("invalid_type.root.asyncapi", exception.diagnostic.path)
         assertEquals("invalid-type.yaml", exception.diagnostic.sourceLocation.file.name)
         assertEquals(1, exception.diagnostic.sourceLocation.line)
+    }
+
+    @Test
+    fun `parser rejects a syntactically valid array root with a source aware diagnostic`() {
+        val file =
+            tempDir.writeTestFile(
+                "array-root.yaml",
+                """
+                - asyncapi
+                - info
+                """.trimIndent(),
+            )
+
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            loader.load(file)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(exception.diagnostic)
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
+        assertEquals(listOf("asyncapi", "info"), diagnostic.actualValue)
+        assertEquals("array_root.root", diagnostic.path)
+        assertEquals("root", diagnostic.sourceLocation.path)
+        assertEquals("array-root.yaml", diagnostic.sourceLocation.file.name)
+        assertEquals(1, diagnostic.sourceLocation.line)
+        assertEquals(1, diagnostic.sourceLocation.column)
     }
 
     @Test

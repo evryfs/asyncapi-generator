@@ -40,9 +40,7 @@ class JsonDocumentReader : DocumentReader {
             jsonFactory.createParser(source.content).use { parser ->
                 val rootToken = parser.nextToken()
                     ?: throw DocumentReadException.EmptyDocument(source.file)
-                val rootValue = parseNode(parser, rootToken, ROOT_PATH, source)
-                val root = rootValue as? DocumentObject
-                    ?: throw DocumentReadException.InvalidRoot(source.file, typeName(rootValue))
+                val root = parseNode(parser, rootToken, ROOT_PATH, source)
                 val trailingToken = parser.nextToken()
                 if (trailingToken != null) {
                     throw malformed(source, parser, "Unexpected content after JSON root")
@@ -152,16 +150,6 @@ class JsonDocumentReader : DocumentReader {
         message: String,
     ): DocumentReadException.MalformedDocument =
         DocumentReadException.MalformedDocument(source.file, JsonParseException(parser, message))
-
-    private fun typeName(value: DocumentNode): String =
-        when (value) {
-            is DocumentObject -> "object"
-            is DocumentArray -> "array"
-            is DocumentString -> "string"
-            is DocumentNumber -> "number"
-            is DocumentBoolean -> "boolean"
-            is DocumentNull -> "null"
-        }
 
     private companion object {
         const val ROOT_PATH = "root"

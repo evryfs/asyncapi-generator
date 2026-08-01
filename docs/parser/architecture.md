@@ -39,12 +39,14 @@ the distinction between a missing member and a member whose value is explicitly
 `null`, and requires source locations to be reconstructed after parsing.
 
 The reader instead produces the neutral `document` package contract.
-`InputDocument` has a `DocumentObject` root, and the sealed `DocumentNode`
-hierarchy represents objects, arrays, strings, numbers, booleans, and null.
-Every node has a `SourceLocation`; object members also retain the key location.
-Objects and arrays defensively copy their contents and expose unmodifiable
-collections, which makes the reader/parser handoff stable for the lifetime of a
-load.
+`InputDocument` has a `DocumentNode` root, and the sealed node hierarchy
+represents objects, arrays, strings, numbers, booleans, and null. This lets the
+reader represent every syntactically valid YAML or JSON root without applying
+the AsyncAPI object-root rule; the domain parser owns that structural
+requirement. Every node has a `SourceLocation`; object members also retain the
+key location. Objects and arrays defensively copy their contents and expose
+unmodifiable collections, which makes the reader/parser handoff stable for the
+lifetime of a load.
 
 SnakeYAML and Jackson remain internal reader implementations. They already
 provide the syntax trees and token locations needed for YAML and JSON, while

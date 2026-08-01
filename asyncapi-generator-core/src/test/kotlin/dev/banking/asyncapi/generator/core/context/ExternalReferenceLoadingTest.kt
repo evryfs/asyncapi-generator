@@ -37,6 +37,14 @@ class ExternalReferenceLoadingTest : ParserTestSupport() {
             "percent encoded URI and pointer",
             resolvedSchema(schemas, "EncodedReference").description,
         )
+        assertEquals(
+            true,
+            resolvedBooleanSchema(schemas, "BooleanRootReference").value,
+        )
+        assertEquals(
+            "array root target",
+            resolvedSchema(schemas, "ArrayRootReference").description,
+        )
     }
 
     @Test
@@ -125,6 +133,14 @@ class ExternalReferenceLoadingTest : ParserTestSupport() {
     ): Schema {
         val reference = (schemas.getValue(name) as SchemaInterface.SchemaReference).reference
         return assertIs<Schema>(asyncApiContext.findReference(reference))
+    }
+
+    private fun resolvedBooleanSchema(
+        schemas: Map<String, SchemaInterface>,
+        name: String,
+    ): SchemaInterface.BooleanSchema {
+        val reference = (schemas.getValue(name) as SchemaInterface.SchemaReference).reference
+        return assertIs<SchemaInterface.BooleanSchema>(asyncApiContext.findReference(reference))
     }
 
     private inline fun <reified T : ParserDiagnostic> assertReferenceFailure(

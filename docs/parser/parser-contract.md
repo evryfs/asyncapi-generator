@@ -27,8 +27,8 @@ Bundling and generation are not performed by this API.
 extension. `DocumentReaderRegistry.read(DocumentSource)` uses the explicitly
 declared `DocumentFormat`.
 
-Both readers return an `InputDocument` with a `DocumentObject` root and the same
-semantic node categories:
+Both readers return an `InputDocument` whose root is a `DocumentNode` and whose
+contents use the same semantic node categories:
 
 These shared types live in the neutral `document` package. Reader
 implementations produce them, while the parser and other source-aware consumers
@@ -43,9 +43,15 @@ depend on them without depending on a concrete YAML or JSON reader.
 | `DocumentBoolean` | `Boolean` | Scalar token |
 | `DocumentNull` | `null` | Null token |
 
-Readers reject empty documents, malformed syntax, non-object roots, invalid
-mapping keys, and duplicate keys with `DocumentReadException`. They do not know
-which AsyncAPI fields are legal.
+Readers reject empty documents, malformed syntax, invalid mapping keys, and
+duplicate keys with `DocumentReadException`. A syntactically valid document may
+have an object, array, scalar, or null root; readers do not apply the AsyncAPI
+requirement that the root be an object.
+
+The AsyncAPI parser requires the root cursor to contain an object. Any other
+root produces an `unexpected-value-type` parser diagnostic at the root source
+location. This keeps format syntax errors separate from AsyncAPI structural
+errors.
 
 YAML presentation details such as quoting and block style do not survive as
 semantic data. Quoted numbers and booleans remain strings. JSON-compatible YAML
@@ -141,6 +147,12 @@ External targets have two modes:
   AsyncAPI document.
 - A fragment-only document is parsed and validated using the reference category,
   such as schema, message, channel, operation, server, parameter, or binding.
+
+An external fragment container does not need to be an AsyncAPI document or have
+an object root. JSON Pointer selection can traverse object or array containers,
+and a root scalar can be selected directly when the reference category permits
+that value, such as a boolean Schema Object. The selected target must satisfy
+the structure required by its reference category.
 
 Loading is eager and deduplicated. It preserves each file's source locations and
 does not bundle or inline the model.

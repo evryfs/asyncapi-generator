@@ -56,13 +56,11 @@ class YamlDocumentReader : DocumentReader {
                 throw DocumentReadException.MalformedDocument(source.file, ex)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
-        val rootValue = parseNode(
+        val root = parseNode(
             node = rootNode,
             path = ROOT_PATH,
             source = source,
         )
-        val root = rootValue as? DocumentObject
-            ?: throw DocumentReadException.InvalidRoot(source.file, typeName(rootValue))
 
         return InputDocument(
             source = source,
@@ -176,16 +174,6 @@ class YamlDocumentReader : DocumentReader {
             line = mark.line + 1,
             column = mark.column + 1,
         )
-
-    private fun typeName(value: DocumentNode): String =
-        when (value) {
-            is DocumentObject -> "object"
-            is DocumentArray -> "array"
-            is DocumentString -> "string"
-            is DocumentNumber -> "number"
-            is DocumentBoolean -> "boolean"
-            is DocumentNull -> "null"
-        }
 
     private companion object {
         const val ROOT_PATH = "root"

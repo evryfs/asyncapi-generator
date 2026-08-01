@@ -18,3 +18,7 @@ components:
       $ref: './left/shared.yaml#/components/schemas/Shared'
     RightReference:
       $ref: './right/shared.yaml#/components/schemas/Shared'
+    BooleanRootReference:
+      $ref: './boolean-schema.yaml'
+    ArrayRootReference:
+      $ref: './array-schemas.yaml#/0'

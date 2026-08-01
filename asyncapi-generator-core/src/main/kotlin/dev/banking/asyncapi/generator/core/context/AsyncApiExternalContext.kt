@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.context
 
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -56,7 +57,9 @@ class AsyncApiExternalContext(
         val target = ExternalReferenceTargetResolver.resolve(rootNode, resolved.pointer)
             ?: throw missingTarget(reference)
 
-        if (rootNode.optional("asyncapi") != null) {
+        val isAsyncApiDocument =
+            (rootNode.node as? DocumentObject)?.member("asyncapi") != null
+        if (isAsyncApiDocument) {
             if (!loadedDocuments.add(documentKey)) return
             val parser = AsyncApiParser(context)
             val parsed = parser.parse(rootNode)

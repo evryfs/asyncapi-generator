@@ -29,11 +29,6 @@ sealed class DocumentReadException(
         cause: Throwable,
     ) : DocumentReadException("Malformed input document: ${file.absolutePath}", cause)
 
-    class InvalidRoot(
-        file: File,
-        actualType: String,
-    ) : DocumentReadException("Invalid input document root in ${file.absolutePath}: expected object, found $actualType")
-
     class InvalidMappingKey(
         file: File,
         line: Int,

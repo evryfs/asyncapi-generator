@@ -28,12 +28,4 @@ class DocumentReadExceptionTest {
         assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
     }
 
-    @Test
-    fun `invalid root error includes the source file`() {
-        val source = ReaderFixtures.yamlSource("invalid-root.yaml")
-        val error = assertFailsWith<DocumentReadException.InvalidRoot> {
-            reader.read(source)
-        }
-        assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
-    }
 }
