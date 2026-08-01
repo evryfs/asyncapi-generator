@@ -20,26 +20,28 @@ class BindingParser(
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     fun parseMap(parserNode: ParserNode): Map<String, BindingInterface> = buildMap {
-        val nodes = parserNode.members()
-        nodes.forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val binding = if (reference != null) {
-                BindingInterface.BindingReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = BINDING
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                val content = node.expect<Map<String, Any?>>()
-                BindingInterface.BindingInline(
-                    Binding(
-                        content = content,
-                        kafkaKeySchema = node.kafkaKeyNode()?.let(schemaParser::parseElement),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, binding)
+        parserNode.members().forEach { node ->
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): BindingInterface {
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            BindingInterface.BindingReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = BINDING,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            val content = parserNode.expect<Map<String, Any?>>()
+            BindingInterface.BindingInline(
+                Binding(
+                    content = content,
+                    kafkaKeySchema = parserNode.kafkaKeyNode()?.let(schemaParser::parseElement),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 

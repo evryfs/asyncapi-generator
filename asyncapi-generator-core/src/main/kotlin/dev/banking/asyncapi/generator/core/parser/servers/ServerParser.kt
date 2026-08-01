@@ -29,32 +29,35 @@ class ServerParser(
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
         parserNode.members().forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val serverInterface = if (reference != null) {
-                ServerInterface.ServerReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = SERVER,
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ServerInterface.ServerInline(
-                    Server(
-                        host = node.required("host").expect<String>(),
-                        protocol = node.required("protocol").expect<String>(),
-                        protocolVersion = node.optional("protocolVersion")?.expect<String>(),
-                        description = node.optional("description")?.expect<String>(),
-                        title = node.optional("title")?.expect<String>(),
-                        summary = node.optional("summary")?.expect<String>(),
-                        variables = node.optional("variables")?.let(serverVariableParser::parseMap),
-                        security = node.optional("security")?.let(securitySchemeParser::parseList),
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, serverInterface)
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ServerInterface {
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ServerInterface.ServerReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = SERVER,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ServerInterface.ServerInline(
+                Server(
+                    host = parserNode.required("host").expect<String>(),
+                    protocol = parserNode.required("protocol").expect<String>(),
+                    protocolVersion = parserNode.optional("protocolVersion")?.expect<String>(),
+                    description = parserNode.optional("description")?.expect<String>(),
+                    title = parserNode.optional("title")?.expect<String>(),
+                    summary = parserNode.optional("summary")?.expect<String>(),
+                    variables = parserNode.optional("variables")?.let(serverVariableParser::parseMap),
+                    security = parserNode.optional("security")?.let(securitySchemeParser::parseList),
+                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
+                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }

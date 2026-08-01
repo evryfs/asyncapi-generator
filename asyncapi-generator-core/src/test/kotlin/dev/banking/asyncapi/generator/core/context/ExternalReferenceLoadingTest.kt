@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
@@ -101,6 +102,20 @@ class ExternalReferenceLoadingTest : ParserTestSupport() {
         val message = assertIs<Message>(asyncApiContext.findReference(reference))
         assertEquals("RootEvent", message.name)
         assertEquals("message-root.yaml", asyncApiContext.getSourceLocation(message)?.file?.name)
+    }
+
+    @Test
+    fun `loads a whole file containing one server object`() {
+        parseDocument("parser/references/external/server-root-main.yaml")
+
+        val reference = assertIs<Reference>(
+            asyncApiContext.modelRepository.getModelsByPath()[
+                "server_root_main.root.components.servers.RootServer"
+            ],
+        )
+        val server = assertIs<Server>(asyncApiContext.findReference(reference))
+        assertEquals("events.example.com", server.host)
+        assertEquals("server-root.yaml", asyncApiContext.getSourceLocation(server)?.file?.name)
     }
 
     @Test

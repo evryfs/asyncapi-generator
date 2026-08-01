@@ -19,28 +19,30 @@ class ParameterParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ParameterInterface> = buildMap {
-        val nodes = parserNode.members()
-        nodes.forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val parameterInterface = if (reference != null) {
-                ParameterInterface.ParameterReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = PARAMETER,
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ParameterInterface.ParameterInline(
-                    Parameter(
-                        description = node.optional("description")?.expect<String>(),
-                        location = node.optional("location")?.expect<String>(),
-                        enum = node.optional("enum")?.expect<List<String>>(),
-                        default = node.optional("default")?.expect<String>(),
-                        examples = node.optional("examples")?.expect<List<String>>(),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, parameterInterface)
+        parserNode.members().forEach { node ->
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ParameterInterface {
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ParameterInterface.ParameterReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = PARAMETER,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ParameterInterface.ParameterInline(
+                Parameter(
+                    description = parserNode.optional("description")?.expect<String>(),
+                    location = parserNode.optional("location")?.expect<String>(),
+                    enum = parserNode.optional("enum")?.expect<List<String>>(),
+                    default = parserNode.optional("default")?.expect<String>(),
+                    examples = parserNode.optional("examples")?.expect<List<String>>(),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }

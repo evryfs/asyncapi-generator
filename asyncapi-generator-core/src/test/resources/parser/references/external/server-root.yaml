@@ -1,0 +1,3 @@
+host: events.example.com
+protocol: kafka
+description: Whole-file server target

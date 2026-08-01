@@ -1,0 +1,8 @@
+asyncapi: 3.0.0
+info:
+  title: Whole-file server fragment
+  version: 1.0.0
+components:
+  servers:
+    RootServer:
+      $ref: './server-root.yaml'

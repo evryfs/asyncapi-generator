@@ -34,33 +34,36 @@ class OperationParser(
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationInterface> = buildMap {
         parserNode.members().forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val operationInterface = if (reference != null) {
-                OperationInterface.OperationReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = OPERATION
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                OperationInterface.OperationInline(
-                    Operation(
-                        title = node.optional("title")?.expect<String>(),
-                        summary = node.optional("summary")?.expect<String>(),
-                        description = node.optional("description")?.expect<String>(),
-                        action = node.required("action").expect<String>(),
-                        channel = node.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
-                        messages = node.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                        traits = node.optional("traits")?.let(operationTraitParser::parseList),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                        reply = node.optional("reply")?.let(operationReplyParser::parseElement),
-                        security = node.optional("security")?.let(securitySchemeParser::parseList),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, operationInterface)
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): OperationInterface {
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            OperationInterface.OperationReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = OPERATION,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            OperationInterface.OperationInline(
+                Operation(
+                    title = parserNode.optional("title")?.expect<String>(),
+                    summary = parserNode.optional("summary")?.expect<String>(),
+                    description = parserNode.optional("description")?.expect<String>(),
+                    action = parserNode.required("action").expect<String>(),
+                    channel = parserNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    messages = parserNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
+                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
+                    traits = parserNode.optional("traits")?.let(operationTraitParser::parseList),
+                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    reply = parserNode.optional("reply")?.let(operationReplyParser::parseElement),
+                    security = parserNode.optional("security")?.let(securitySchemeParser::parseList),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }

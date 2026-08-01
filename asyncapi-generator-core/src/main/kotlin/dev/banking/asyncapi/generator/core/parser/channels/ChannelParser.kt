@@ -33,31 +33,34 @@ class ChannelParser(
 
     fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> = buildMap {
         parserNode.members().forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val channel = if (reference != null) {
-                ChannelInterface.ChannelReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = CHANNEL
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ChannelInterface.ChannelInline(
-                    Channel(
-                        address = node.optional("address")?.expect<String>(),
-                        messages = node.optional("messages")?.let(messageParser::parseMap),
-                        title = node.optional("title")?.expect<String>(),
-                        summary = node.optional("summary")?.expect<String>(),
-                        description = node.optional("description")?.expect<String>(),
-                        servers = node.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
-                        parameters = node.optional("parameters")?.let(parameterParser::parseMap),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, channel)
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ChannelInterface {
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ChannelInterface.ChannelReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = CHANNEL,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ChannelInterface.ChannelInline(
+                Channel(
+                    address = parserNode.optional("address")?.expect<String>(),
+                    messages = parserNode.optional("messages")?.let(messageParser::parseMap),
+                    title = parserNode.optional("title")?.expect<String>(),
+                    summary = parserNode.optional("summary")?.expect<String>(),
+                    description = parserNode.optional("description")?.expect<String>(),
+                    servers = parserNode.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
+                    parameters = parserNode.optional("parameters")?.let(parameterParser::parseMap),
+                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }
