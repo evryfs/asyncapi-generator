@@ -65,7 +65,7 @@ class SchemaParser(
         }
         parserNode.optional("schemaFormat")?.coerce<String>()?.let { format ->
             val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
-            val schemaNode = parserNode.required("schema")
+            val schemaNode = parserNode.mandatory("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
             }

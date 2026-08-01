@@ -36,7 +36,7 @@ class CorrelationIdParser(
         }
         return CorrelationIdInterface.CorrelationIdInline(
             CorrelationId(
-                location = node.required("location").coerce<String>(),
+                location = node.mandatory("location").coerce<String>(),
                 description = node.optional("description")?.coerce<String>(),
             ).also { asyncApiContext.register(it, node) }
         )

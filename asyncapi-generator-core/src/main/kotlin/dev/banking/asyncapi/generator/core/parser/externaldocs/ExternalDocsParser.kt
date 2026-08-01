@@ -37,7 +37,7 @@ class ExternalDocsParser(
         return ExternalDocInterface.ExternalDocInline(
             ExternalDoc(
                 description = node.optional("description")?.coerce<String>(),
-                url = node.required("url").coerce<String>()
+                url = node.mandatory("url").coerce<String>()
             ).also { asyncApiContext.register(it, node) }
         )
     }

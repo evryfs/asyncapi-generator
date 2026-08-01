@@ -28,15 +28,15 @@ class CorrelationIdParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse correlation ID missing location reports missing required member`() {
+    fun `parse correlation ID missing location throws RequiredObject`() {
         val correlationIdNode = readNode(
             "parser/correlations/asyncapi_parser_correlationid_invalid.yaml",
             "components",
             "correlationIds",
             "MissingLocationId",
         )
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member 'location'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'location'",
             "asyncapi_parser_correlationid_invalid.yaml",
             "asyncapi_parser_correlationid_invalid.root.components.correlationIds.MissingLocationId.location",
         ) {

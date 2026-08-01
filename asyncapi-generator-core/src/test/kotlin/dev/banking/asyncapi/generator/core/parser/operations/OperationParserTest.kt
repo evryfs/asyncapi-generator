@@ -36,10 +36,10 @@ class OperationParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse operation missing action reports missing required member`() {
+    fun `parse operation missing action throws RequiredObject`() {
         val operationsNode = readNode("parser/operations/asyncapi_parser_operations_invalid.yaml", "operations")
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member 'action'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'action'",
             "asyncapi_parser_operations_invalid.yaml",
             "asyncapi_parser_operations_invalid.root.operations.MissingAction.action",
         ) {
@@ -53,8 +53,8 @@ class OperationParserTest : ParserTestSupport() {
             "parser/operations/asyncapi_validator_operations_inline_message_error.yaml",
             "operations",
         )
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member '\$ref'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory '\$ref'",
             "asyncapi_validator_operations_inline_message_error.yaml",
             "asyncapi_validator_operations_inline_message_error.root.operations.testOperation.messages[0].\$ref",
         ) {

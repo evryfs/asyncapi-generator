@@ -8,6 +8,9 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
     class EmptyYamlFile(fileName: String) :
         AsyncApiParseException("Empty Yaml file : $fileName")
 
+    class Mandatory(name: String, path: String, context: AsyncApiContext) :
+        AsyncApiParseException(buildMessage("Missing mandatory '$name'", path, context))
+
     class UnexpectedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
 

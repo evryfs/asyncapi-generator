@@ -79,6 +79,9 @@ internal object ParserValueExpectation {
         path: String,
         context: AsyncApiContext,
     ): Any {
+        if (expectedType.arguments.isNotEmpty()) {
+            unexpectedType(node, expectedType, path, context)
+        }
         val value = node.toValue()
             ?: unexpectedType(node, expectedType, path, context)
         val expectedClass = expectedType.classifier as? KClass<*>

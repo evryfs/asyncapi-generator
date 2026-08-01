@@ -48,7 +48,7 @@ class TagParser(
         } else {
             TagInterface.TagInline(
                 Tag(
-                    name = parserNode.required("name").coerce<String>(),
+                    name = parserNode.mandatory("name").coerce<String>(),
                     description = parserNode.optional("description")?.coerce<String>(),
                     externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                 ).also { asyncApiContext.register(it, parserNode) }

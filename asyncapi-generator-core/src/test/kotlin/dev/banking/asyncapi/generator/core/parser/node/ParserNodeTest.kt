@@ -231,6 +231,23 @@ class ParserNodeTest {
     }
 
     @Test
+    fun `expect rejects generic classifiers whose arguments cannot be validated`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf(1),
+            sourceLine = "value: [1]",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Collection<String>>()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<Collection<String>>(), diagnostic.expectedType)
+        assertEquals(List::class, diagnostic.actualType)
+        assertEquals(listOf(1), diagnostic.actualValue)
+        assertEquals("test.root.value", diagnostic.path)
+    }
+
+    @Test
     fun `optional distinguishes an absent member from explicit null`() {
         val node = ParserNodeFixtures.value(
             value = mapOf("description" to null),

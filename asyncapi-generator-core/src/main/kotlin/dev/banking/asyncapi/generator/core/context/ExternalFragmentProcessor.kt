@@ -101,7 +101,7 @@ class ExternalFragmentProcessor(
             if (componentSchemaName == null) {
                 rootNode
             } else {
-                rootNode.required("components").required("schemas")
+                rootNode.mandatory("components").mandatory("schemas")
             }
         val parsed: Map<String, SchemaInterface> = SchemaParser(context).parseMap(schemasNode)
         val validator = SchemaValidator(context)

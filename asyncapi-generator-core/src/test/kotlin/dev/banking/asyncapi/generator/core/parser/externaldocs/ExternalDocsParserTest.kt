@@ -36,15 +36,15 @@ class ExternalDocsParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse external docs missing url reports missing required member`() {
+    fun `parse external docs missing url throws RequiredObject`() {
         val externalDocsNode = readNode(
             "parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml",
             "components",
             "externalDocs",
             "MissingUrl",
         )
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member 'url'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'url'",
             "asyncapi_parser_externaldocs_invalid.yaml",
             "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
         ) {

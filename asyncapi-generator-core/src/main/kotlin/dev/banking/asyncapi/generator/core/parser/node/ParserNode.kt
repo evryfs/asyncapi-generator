@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentNode
+import dev.banking.asyncapi.generator.core.reader.DocumentNull
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.toValue
 import kotlin.reflect.typeOf
@@ -23,6 +24,15 @@ data class ParserNode(
     val path: String,
     val context: AsyncApiContext,
 ) {
+
+    fun mandatory(nodeKey: String): ParserNode {
+        val currentNode = node as? DocumentObject
+            ?: throw AsyncApiParseException.Mandatory(nodeKey, path, context)
+        val childNode = currentNode[nodeKey]
+            ?.takeUnless { child -> child is DocumentNull }
+            ?: throw AsyncApiParseException.Mandatory(nodeKey, "$path.$nodeKey", context)
+        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
+    }
 
     fun required(nodeKey: String): ParserNode {
         val currentNode = objectNode()

@@ -48,7 +48,7 @@ class OperationParser(
                         title = node.optional("title")?.coerce<String>(),
                         summary = node.optional("summary")?.coerce<String>(),
                         description = node.optional("description")?.coerce<String>(),
-                        action = node.required("action").coerce<String>(),
+                        action = node.mandatory("action").coerce<String>(),
                         channel = node.optional("channel")?.let(referenceParser::parseElement),
                         messages = node.optional("messages")?.let(referenceParser::parseList),
                         bindings = node.optional("bindings")?.let(bindingParser::parseMap),

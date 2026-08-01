@@ -28,15 +28,15 @@ class OperationReplyAddressParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse operation reply address missing location reports missing required member`() {
+    fun `parse operation reply address missing location throws Mandatory`() {
         val addressNode = readNode(
             "parser/operations/asyncapi_parser_operation_reply_address_invalid.yaml",
             "components",
             "operationReplyAddressCases",
             "MissingLocation",
         )
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member 'location'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'location'",
             "asyncapi_parser_operation_reply_address_invalid.yaml",
             "asyncapi_parser_operation_reply_address_invalid.root.components.operationReplyAddressCases.MissingLocation.location",
         ) {

@@ -110,15 +110,15 @@ class SecuritySchemeParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse security scheme missing type reports missing required member`() {
+    fun `parse security scheme missing type throws RequiredObject`() {
         val schemeNode = readNode(
             "parser/security/asyncapi_parser_security_invalid.yaml",
             "components",
             "securitySchemes",
             "MissingType",
         )
-        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
-            "Missing required member 'type'",
+        assertParseFailure<AsyncApiParseException.Mandatory>(
+            "Missing mandatory 'type'",
             "asyncapi_parser_security_invalid.yaml",
             "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
         ) {
