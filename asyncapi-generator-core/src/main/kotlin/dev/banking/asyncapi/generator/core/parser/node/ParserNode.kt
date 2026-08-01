@@ -1,14 +1,10 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.toValue
 import kotlin.reflect.typeOf
@@ -26,15 +22,6 @@ data class ParserNode(
     val path: String,
     val context: AsyncApiContext,
 ) {
-
-    fun mandatory(nodeKey: String): ParserNode {
-        val currentNodeMap = node as? DocumentObject
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, path, context)
-        val childNode = currentNodeMap[nodeKey]
-            ?.takeUnless { it is DocumentNull }
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, "$path.$nodeKey", context)
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
-    }
 
     fun required(nodeKey: String): ParserNode {
         val currentNode = objectNode()
@@ -85,45 +72,6 @@ data class ParserNode(
         )
     }
 
-    fun extractNodes(): List<ParserNode> = when (val currentNodeValue = node) {
-        is DocumentObject -> {
-            currentNodeValue.members
-                .map { (key, member) ->
-                    ParserNode(key, member.value, "$path.$key", context)
-                }
-        }
-        is DocumentArray -> {
-            currentNodeValue.elements.mapIndexed { index, value ->
-                ParserNode("$name[$index]", value, "$path[$index]", context)
-            }
-        }
-        else -> {
-            val foundType = currentNodeValue.toValue()?.javaClass?.simpleName ?: "null"
-            throw UnexpectedValue(foundType, "Map/List", path, context)
-        }
-    }
-
-    inline fun <reified T> coerce(): T {
-        val normalized = normalize(node)
-        val received = normalized?.javaClass?.simpleName ?: "null"
-        val expected = T::class.simpleName ?: "null"
-        return when (T::class) {
-            String::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Boolean::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Number::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            List::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Map::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Any::class -> normalized as T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            else -> throw UnexpectedValue(received, expected, path, context, normalized)
-        }
-    }
-
     inline fun <reified T> expect(): T =
         ParserValueExpectation.cast(
             ParserValueExpectation.expect(
@@ -136,18 +84,6 @@ data class ParserNode(
 
     /** Converts this source-located node to plain maps, lists, scalars, or null. */
     fun toPlainValue(): Any? = node.toValue()
-
-    fun normalize(value: Any?): Any? {
-        val dataToNormalize = if (value is ParserNode) {
-            value.node
-        } else {
-            value
-        }
-        return when (dataToNormalize) {
-            is DocumentNode -> dataToNormalize.toValue()
-            else -> dataToNormalize
-        }
-    }
 
     private fun objectNode(): DocumentObject =
         node as? DocumentObject

@@ -32,11 +32,11 @@ class AsyncApiParser(
 
     fun parse(parserNode: ParserNode): AsyncApiDocument {
         return AsyncApiDocument(
-            asyncapi = parserNode.mandatory("asyncapi").coerce<String>(),
-            id = parserNode.optional("id")?.coerce<String>(),
-            info = parserNode.mandatory("info").let(infoParser::parseMap),
+            asyncapi = parserNode.required("asyncapi").expect<String>(),
+            id = parserNode.optional("id")?.expect<String>(),
+            info = parserNode.required("info").let(infoParser::parseMap),
             servers = parserNode.optional("servers")?.let(serverParser::parseMap),
-            defaultContentType = parserNode.optional("defaultContentType")?.coerce<String>(),
+            defaultContentType = parserNode.optional("defaultContentType")?.expect<String>(),
             channels = parserNode.optional("channels")?.let(channelParser::parseMap),
             operations = parserNode.optional("operations")?.let(operationParser::parseMap),
             components = parserNode.optional("components")?.let(componentParser::parseElement),

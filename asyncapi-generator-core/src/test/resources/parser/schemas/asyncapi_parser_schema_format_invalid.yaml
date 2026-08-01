@@ -12,3 +12,5 @@ components:
       schemaFormat: true
       schema:
         type: object
+    MissingSchema:
+      schemaFormat: application/schema+json;version=draft-07

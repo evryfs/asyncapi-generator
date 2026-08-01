@@ -8,13 +8,12 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
+import dev.banking.asyncapi.generator.core.reader.DocumentNull
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.DocumentString
-import dev.banking.asyncapi.generator.core.reader.toValue
 import kotlin.String
 import kotlin.collections.Map
 
@@ -34,27 +33,25 @@ class SchemaParser(
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<SchemaInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
         if (isBooleanSchema(parserNode)) {
-            val bool = parserNode.coerce<Boolean>()
+            val bool = parserNode.expect<Boolean>()
             return SchemaInterface.BooleanSchema(
                 value = bool,
             ).also { asyncApiContext.register(it, parserNode) }
         }
-        parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
+        parserNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
@@ -62,17 +59,17 @@ class SchemaParser(
                 )
             ).also { asyncApiContext.register(it.reference, parserNode) }
         }
-        parserNode.optional("schemaFormat")?.coerce<String>()?.let { format ->
+        parserNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
-            val schemaNode = parserNode.mandatory("schema")
+            val schemaNode = parserNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
             }
             val schemaContent =
                 if (schemaFormat.isNativeAvro || schemaFormat.isNativeProtobuf) {
-                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.node.toValue()
+                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.toPlainValue()
                 } else {
-                    schemaNode.node.toValue()
+                    schemaNode.toPlainValue()
                 }
             val multiFormatSchema =
                 MultiFormatSchema(
@@ -88,7 +85,7 @@ class SchemaParser(
 
 
     fun parseSchema(parserNode: ParserNode): SchemaInterface {
-        parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
+        parserNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return SchemaInterface.SchemaReference(
                 Reference(
                     ref = reference,
@@ -97,37 +94,37 @@ class SchemaParser(
             )
         }
 
-        val id = parserNode.optional($$"$id")?.coerce<String>()
-        val schema = parserNode.optional($$"$schema")?.node?.toValue() as? String
-        val comment = parserNode.optional($$"$comment")?.coerce<String>()
-        val title = parserNode.optional("title")?.coerce<String>()
-        val description = parserNode.optional("description")?.coerce<String>()
-        var type = parserNode.optional("type")?.toPlainValue()
-        val format = parserNode.optional("format")?.coerce<String>()
+        val id = parserNode.optional($$"$id")?.expect<String>()
+        val schema = parserNode.optional($$"$schema")?.expect<String>()
+        val comment = parserNode.optional($$"$comment")?.expect<String>()
+        val title = parserNode.optional("title")?.expect<String>()
+        val description = parserNode.optional("description")?.expect<String>()
+        var type = parserNode.optional("type")?.let(::parseType)
+        val format = parserNode.optional("format")?.expect<String>()
 
-        val defaultNode = extractDefaultNode(parserNode)
-        val default = defaultNode?.normalize(defaultNode.node)
+        val defaultNode = parserNode.optional("default")
+        val default = defaultNode?.toPlainValue()
         val defaultSet = defaultNode != null
 
-        val examples = parserNode.optional("examples")?.coerce<List<Any?>>()
+        val examples = parserNode.optional("examples")?.expect<List<Any?>>()
 
-        val multipleOf = parserNode.optional("multipleOf")?.coerce<Number>()
-        val maximum = parserNode.optional("maximum")?.coerce<Number>()
-        val exclusiveMaximum = parserNode.optional("exclusiveMaximum")?.node?.toValue() as? Number
-        val minimum = parserNode.optional("minimum")?.coerce<Number>()
-        val exclusiveMinimum = parserNode.optional("exclusiveMinimum")?.node?.toValue() as? Number
+        val multipleOf = parserNode.optional("multipleOf")?.expect<Number>()
+        val maximum = parserNode.optional("maximum")?.expect<Number>()
+        val exclusiveMaximum = parserNode.optional("exclusiveMaximum")?.expect<Number>()
+        val minimum = parserNode.optional("minimum")?.expect<Number>()
+        val exclusiveMinimum = parserNode.optional("exclusiveMinimum")?.expect<Number>()
 
-        val maxLength = parserNode.optional("maxLength")?.coerce<Number>()
-        val minLength = parserNode.optional("minLength")?.coerce<Number>()
-        val pattern = parserNode.optional("pattern")?.coerce<String>()
-        val contentEncoding = parserNode.optional("contentEncoding")?.coerce<String>()
-        val contentMediaType = parserNode.optional("contentMediaType")?.coerce<String>()
+        val maxLength = parserNode.optional("maxLength")?.expect<Number>()
+        val minLength = parserNode.optional("minLength")?.expect<Number>()
+        val pattern = parserNode.optional("pattern")?.expect<String>()
+        val contentEncoding = parserNode.optional("contentEncoding")?.expect<String>()
+        val contentMediaType = parserNode.optional("contentMediaType")?.expect<String>()
 
         val items = parserNode.optional("items")?.takeUnless { it.node is DocumentArray }?.let { parseElement(it) }
         val additionalItems = parserNode.optional("additionalItems")?.let { parseElement(it) }
-        val maxItems = parserNode.optional("maxItems")?.coerce<Number>()
-        val minItems = parserNode.optional("minItems")?.coerce<Number>()
-        val uniqueItems = parserNode.optional("uniqueItems")?.coerce<Boolean>()
+        val maxItems = parserNode.optional("maxItems")?.expect<Number>()
+        val minItems = parserNode.optional("minItems")?.expect<Number>()
+        val uniqueItems = parserNode.optional("uniqueItems")?.expect<Boolean>()
         val contains = parserNode.optional("contains")?.let { parseElement(it) }
 
         val properties = parserNode.optional("properties")?.let(::parseMap)
@@ -135,16 +132,16 @@ class SchemaParser(
         val additionalProperties = parserNode.optional("additionalProperties")?.let(::parseElement)
         val propertyNames = parserNode.optional("propertyNames")?.let { parseElement(it) }
 
-        val required = parserNode.optional("required")?.coerce<List<String>>()
+        val required = parserNode.optional("required")?.expect<List<String>>()
 
         val dependencies = parserNode.optional("dependencies")?.let(::parseDependencies)
         val definitions = parserNode.optional("definitions")?.let(::parseMap)
-        val maxProperties = parserNode.optional("maxProperties")?.coerce<Number>()
-        val minProperties = parserNode.optional("minProperties")?.coerce<Number>()
+        val maxProperties = parserNode.optional("maxProperties")?.expect<Number>()
+        val minProperties = parserNode.optional("minProperties")?.expect<Number>()
 
-        val allOf = parserNode.optional("allOf")?.extractNodes()?.map { parseElement(it) }
-        val anyOf = parserNode.optional("anyOf")?.extractNodes()?.map { parseElement(it) }
-        val oneOf = parserNode.optional("oneOf")?.extractNodes()?.map { parseElement(it) }
+        val allOf = parserNode.optional("allOf")?.elements()?.map { parseElement(it) }
+        val anyOf = parserNode.optional("anyOf")?.elements()?.map { parseElement(it) }
+        val oneOf = parserNode.optional("oneOf")?.elements()?.map { parseElement(it) }
 
         val not = parserNode.optional("not")?.let(::parseElement)
 
@@ -152,17 +149,17 @@ class SchemaParser(
         val thenSchema = parserNode.optional("then")?.let { parseElement(it) }
         val elseSchema = parserNode.optional("else")?.let { parseElement(it) }
 
-        val enumValues = parserNode.optional("enum")?.coerce<List<Any?>>()
+        val enumValues = parserNode.optional("enum")?.expect<List<Any?>>()
         val constValue = parserNode.optional("const")?.toPlainValue()
 
-        val discriminator = parserNode.optional("discriminator")?.node?.toValue() as? String
+        val discriminator = parserNode.optional("discriminator")?.expect<String>()
         val externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
-        val deprecated = parserNode.optional("deprecated")?.coerce<Boolean>()
+        val deprecated = parserNode.optional("deprecated")?.expect<Boolean>()
         val bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap)
-        val extensions = parserNode.startsWith("x-")?.coerce<Map<String, Any?>>()
+        val extensions = parserNode.startsWith("x-")?.expect<Map<String, Any?>>()
 
-        val readOnly = parserNode.optional("readOnly")?.coerce<Boolean>()
-        val writeOnly = parserNode.optional("writeOnly")?.coerce<Boolean>()
+        val readOnly = parserNode.optional("readOnly")?.expect<Boolean>()
+        val writeOnly = parserNode.optional("writeOnly")?.expect<Boolean>()
 
         if (type == null) {
             if (enumValues != null && !enumValues.isEmpty())
@@ -225,19 +222,12 @@ class SchemaParser(
         )
     }
 
-    private fun extractDefaultNode(parserNode: ParserNode): ParserNode? {
-        val currentMap = parserNode.node as? DocumentObject
-        return if (currentMap != null && currentMap.members.containsKey("default")) {
-            ParserNode(
-                name = "default",
-                node = currentMap.members.getValue("default").value,
-                path = "${parserNode.path}.default",
-                context = parserNode.context,
-            )
-        } else {
-            null
+    private fun parseType(parserNode: ParserNode): Any? =
+        when (parserNode.node) {
+            is DocumentNull -> null
+            is DocumentArray -> parserNode.expect<List<String>>()
+            else -> parserNode.expect<String>()
         }
-    }
 
     private fun isBooleanSchema(node: ParserNode): Boolean {
         val value = node.node
@@ -249,14 +239,12 @@ class SchemaParser(
     }
 
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {
-        parserNode.coerce<Map<*, *>>()
-        val nodes = parserNode.extractNodes()
-        return nodes.associate { dependency ->
+        return parserNode.members().associate { dependency ->
             val dependencyValue = dependency.node
             val parsedValue: Any = when (dependencyValue) {
-                is DocumentArray -> dependency.coerce<List<String>>()
-                is DocumentObject -> parseElement(dependency)
-                else -> throw UnexpectedValue(javaClass.simpleName, "Map/List", dependency.path, asyncApiContext)
+                is DocumentArray -> dependency.expect<List<String>>()
+                is DocumentObject, is DocumentBoolean -> parseElement(dependency)
+                else -> dependency.expect<Map<String, Any?>>()
             }
             dependency.name to parsedValue
         }

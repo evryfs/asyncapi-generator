@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class SchemaParserTest : ParserTestSupport() {
 
@@ -337,19 +338,20 @@ class SchemaParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun parseSchemas_parser_InvalidCoercions_schema_parser_assertion_yaml() {
+    fun `parse schema with quoted numeric constraint reports its expected type and source`() {
         val schemaNode = readNode(
             "schemas/asyncapi_schema_parser_assertion.yaml",
             "components",
             "schemas",
             "InvalidCoercions",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Number",
-            "found String \"10\"",
-            "quoted numbers are strings in YAML",
-            "asyncapi_schema_parser_assertion.yaml",
-            "asyncapi_schema_parser_assertion.root.components.schemas.InvalidCoercions.maxLength",
+        assertUnexpectedValueType(
+            expectedType = "Number",
+            actualType = ParserValueType.STRING,
+            actualValue = "10",
+            path = "asyncapi_schema_parser_assertion.root.components.schemas.InvalidCoercions.maxLength",
+            sourcePath = "root.components.schemas.InvalidCoercions.maxLength",
+            sourceFile = "asyncapi_schema_parser_assertion.yaml",
         ) {
             parser.parseElement(schemaNode)
         }
@@ -366,7 +368,7 @@ class SchemaParserTest : ParserTestSupport() {
         val productSchema = (parser.parseElement(productNode) as SchemaInterface.SchemaInline).schema
 
         assertNotNull(productSchema.dependencies, "Product schema should have dependencies")
-        assertEquals(2, productSchema.dependencies.size, "Product schema should have 2 dependencies")
+        assertEquals(3, productSchema.dependencies.size, "Product schema should have 3 dependencies")
 
         val creditCardDependency = productSchema.dependencies["credit_card"]
         assertNotNull(creditCardDependency, "Credit card dependency should exist")
@@ -383,6 +385,10 @@ class SchemaParserTest : ParserTestSupport() {
         val nameDependencySchema = (nameDependency as SchemaInterface.SchemaInline).schema
         assertEquals("object", nameDependencySchema.type, "Schema dependency type should be object")
         assertEquals(listOf("category"), nameDependencySchema.required, "Schema dependency required property missing")
+
+        val unrestrictedDependency = productSchema.dependencies["unrestricted"]
+        assertTrue(unrestrictedDependency is SchemaInterface.BooleanSchema)
+        assertEquals(true, (unrestrictedDependency as SchemaInterface.BooleanSchema).value)
     }
 
     @Test
@@ -514,36 +520,210 @@ class SchemaParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse Schema with invalid enum type throws InvalidValue`() {
+    fun `parse schema with invalid enum type reports its expected type and source`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
             "components",
             "schemas",
             "InvalidEnumSchema",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected List",
-            "asyncapi_parser_schema_negative_test.yaml",
-            "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidEnumSchema.enum",
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-list",
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidEnumSchema.enum",
+            sourcePath = "root.components.schemas.InvalidEnumSchema.enum",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
         ) {
             parser.parseElement(schemaNode)
         }
     }
 
     @Test
-    fun `parse Schema with invalid dependencies type (list instead of map) throws InvalidValue`() {
+    fun `parse schema with invalid dependencies container reports its expected type and source`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
             "components",
             "schemas",
             "MissingDependenciesObject",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_schema_negative_test.yaml",
-            "asyncapi_parser_schema_negative_test.root.components.schemas.MissingDependenciesObject.dependencies",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf("wrong", "type"),
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.MissingDependenciesObject.dependencies",
+            sourcePath = "root.components.schemas.MissingDependenciesObject.dependencies",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
         ) {
             parser.parseElement(schemaNode)
         }
     }
+
+    @Test
+    fun `parse schema preserves an explicit null default`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_valid.yaml",
+            "components",
+            "schemas",
+            "explicitNullDefault",
+        )
+
+        val schema = (parser.parseElement(schemaNode) as SchemaInterface.SchemaInline).schema
+
+        assertNull(schema.default)
+        assertTrue(schema.defaultSet)
+    }
+
+    @Test
+    fun `parse schema with numeric type reports its expected type and source`() {
+        val schemaNode = negativeSchema("InvalidTypeSchema")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 123,
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidTypeSchema.type",
+            sourcePath = "root.components.schemas.InvalidTypeSchema.type",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with numeric type-array entry reports the nested value and source`() {
+        val schemaNode = negativeSchema("InvalidTypeArraySchema")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 7,
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidTypeArraySchema.type[1]",
+            sourcePath = "root.components.schemas.InvalidTypeArraySchema.type[1]",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with null reference reports its expected type and source`() {
+        val schemaNode = negativeSchema("NullReferenceSchema")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.NullReferenceSchema.\$ref",
+            sourcePath = "root.components.schemas.NullReferenceSchema.\$ref",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with boolean schema URI reports its expected type and source`() {
+        val schemaNode = negativeSchema("InvalidSchemaUri")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = false,
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidSchemaUri.\$schema",
+            sourcePath = "root.components.schemas.InvalidSchemaUri.\$schema",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with quoted exclusive maximum reports its expected type and source`() {
+        val schemaNode = negativeSchema("InvalidExclusiveMaximum")
+        assertUnexpectedValueType(
+            expectedType = "Number",
+            actualType = ParserValueType.STRING,
+            actualValue = "10",
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidExclusiveMaximum.exclusiveMaximum",
+            sourcePath = "root.components.schemas.InvalidExclusiveMaximum.exclusiveMaximum",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with object discriminator reports its expected type and source`() {
+        val schemaNode = negativeSchema("InvalidDiscriminator")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("propertyName" to "eventType"),
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidDiscriminator.discriminator",
+            sourcePath = "root.components.schemas.InvalidDiscriminator.discriminator",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema with object composition reports the expected array and source`() {
+        val schemaNode = negativeSchema("InvalidAllOf")
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("invalid" to mapOf("type" to "string")),
+            path = "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidAllOf.allOf",
+            sourcePath = "root.components.schemas.InvalidAllOf.allOf",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse schema map from an array reports the container type and source`() {
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
+            "components",
+            "schemaCases",
+            "ArrayInsteadOfMap",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("type" to "string")),
+            path = "asyncapi_parser_schema_negative_test.root.components.schemaCases.ArrayInsteadOfMap",
+            sourcePath = "root.components.schemaCases.ArrayInsteadOfMap",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseMap(schemasNode)
+        }
+    }
+
+    @Test
+    fun `parse schema list from an object reports the container type and source`() {
+        val schemasNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
+            "components",
+            "schemaCases",
+            "ObjectInsteadOfList",
+        )
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("schema" to mapOf("type" to "string")),
+            path = "asyncapi_parser_schema_negative_test.root.components.schemaCases.ObjectInsteadOfList",
+            sourcePath = "root.components.schemaCases.ObjectInsteadOfList",
+            sourceFile = "asyncapi_parser_schema_negative_test.yaml",
+        ) {
+            parser.parseList(schemasNode)
+        }
+    }
+
+    private fun negativeSchema(name: String) =
+        readNode(
+            "parser/schemas/asyncapi_parser_schema_negative_test.yaml",
+            "components",
+            "schemas",
+            name,
+        )
 }

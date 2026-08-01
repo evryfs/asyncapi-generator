@@ -195,3 +195,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/turnOnOffPayload'
         - $ref: '#/components/schemas/dimLightPayload'
+
+    explicitNullDefault:
+      type: string
+      default: null

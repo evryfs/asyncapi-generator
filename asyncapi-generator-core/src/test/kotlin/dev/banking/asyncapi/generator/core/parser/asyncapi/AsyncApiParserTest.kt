@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -139,4 +140,67 @@ class AsyncApiParserTest : ParserTestSupport() {
         assertEquals(431, titleLocation.line)
         assertTrue(titleLocation.column > 0)
     }
+
+    @Test
+    fun `parse document missing AsyncAPI version reports the required member and source`() {
+        val rootNode = invalidCase("MissingVersion")
+        assertMissingRequiredMember(
+            memberName = "asyncapi",
+            path = "asyncapi_parser_invalid.root.cases.MissingVersion.asyncapi",
+            sourcePath = "root.cases.MissingVersion",
+            sourceFile = "asyncapi_parser_invalid.yaml",
+        ) {
+            parser.parse(rootNode)
+        }
+    }
+
+    @Test
+    fun `parse document with boolean AsyncAPI version reports its expected type and source`() {
+        val rootNode = invalidCase("BooleanVersion")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = false,
+            path = "asyncapi_parser_invalid.root.cases.BooleanVersion.asyncapi",
+            sourcePath = "root.cases.BooleanVersion.asyncapi",
+            sourceFile = "asyncapi_parser_invalid.yaml",
+        ) {
+            parser.parse(rootNode)
+        }
+    }
+
+    @Test
+    fun `parse document missing info reports the required member and source`() {
+        val rootNode = invalidCase("MissingInfo")
+        assertMissingRequiredMember(
+            memberName = "info",
+            path = "asyncapi_parser_invalid.root.cases.MissingInfo.info",
+            sourcePath = "root.cases.MissingInfo",
+            sourceFile = "asyncapi_parser_invalid.yaml",
+        ) {
+            parser.parse(rootNode)
+        }
+    }
+
+    @Test
+    fun `parse document with null default content type reports its expected type and source`() {
+        val rootNode = invalidCase("NullDefaultContentType")
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_invalid.root.cases.NullDefaultContentType.defaultContentType",
+            sourcePath = "root.cases.NullDefaultContentType.defaultContentType",
+            sourceFile = "asyncapi_parser_invalid.yaml",
+        ) {
+            parser.parse(rootNode)
+        }
+    }
+
+    private fun invalidCase(name: String) =
+        readNode(
+            "parser/asyncapi/asyncapi_parser_invalid.yaml",
+            "cases",
+            name,
+        )
 }

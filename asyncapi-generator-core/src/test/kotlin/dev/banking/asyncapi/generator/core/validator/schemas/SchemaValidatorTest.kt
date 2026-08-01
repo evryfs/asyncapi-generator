@@ -1,6 +1,9 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
@@ -10,6 +13,7 @@ import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class SchemaValidatorTest : AbstractValidatorTest() {
@@ -44,7 +48,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     fun `unsupported schema keywords and explicit dialect mismatch produce structured diagnostics`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_keyword_diagnostics.yaml")
 
-        assertEquals(9, results.errors.size)
+        assertEquals(7, results.errors.size)
         assertEquals(1, results.warnings.size)
 
         assertFinding(
@@ -115,26 +119,6 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.TupleItems.items",
             line = 39,
-        )
-        assertFinding(
-            results,
-            severity = ERROR,
-            messageContains = "keyword 'exclusiveMinimum' must contain a numeric boundary",
-            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
-            path =
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.InvalidExclusiveMinimum." +
-                    "exclusiveMinimum",
-            line = 46,
-        )
-        assertFinding(
-            results,
-            severity = ERROR,
-            messageContains = "keyword 'discriminator' must contain the name of a required string property",
-            sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
-            path =
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas." +
-                    "InvalidDiscriminator.discriminator",
-            line = 50,
         )
     }
 
@@ -216,14 +200,19 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `schema with invalid type field throws validation error`() {
-        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_type.yaml")
-        val validationResults = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+    fun `schema with structurally invalid type is rejected during parsing`() {
+        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parse("validator/schemas/asyncapi_validator_schema_invalid_type.yaml")
         }
 
-        assertEquals(1, exception.errors.size, "Expected exactly one validation error for invalid schema type.")
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(exception.diagnostic)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(123, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_validator_schema_invalid_type.root.components.schemas.InvalidTypeSchema.type",
+            diagnostic.path,
+        )
     }
 
     @Test

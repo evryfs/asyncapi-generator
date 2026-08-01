@@ -1,0 +1,18 @@
+cases:
+  MissingVersion:
+    info:
+      title: Missing version
+      version: 1.0.0
+  BooleanVersion:
+    asyncapi: false
+    info:
+      title: Boolean version
+      version: 1.0.0
+  MissingInfo:
+    asyncapi: 3.0.0
+  NullDefaultContentType:
+    asyncapi: 3.0.0
+    info:
+      title: Null content type
+      version: 1.0.0
+    defaultContentType: null

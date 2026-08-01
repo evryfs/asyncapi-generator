@@ -14,7 +14,7 @@ class AsyncApiRegistryTest {
         val root = AsyncApiRegistry.read(file, context)
         assertEquals("source_map.root", root.name)
         assertEquals("source_map.root", root.path)
-        assertEquals("3.0.0", root.optional("asyncapi")?.coerce<String>())
+        assertEquals("3.0.0", root.optional("asyncapi")?.expect<String>())
         assertEquals(1, context.sourceRepository.getLine("source_map.root"))
         assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
         assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
@@ -28,7 +28,7 @@ class AsyncApiRegistryTest {
         val root = AsyncApiRegistry.read(file, context)
         assertEquals("source_map.root", root.name)
         assertEquals("source_map.root", root.path)
-        assertEquals("3.0.0", root.optional("asyncapi")?.coerce<String>())
+        assertEquals("3.0.0", root.optional("asyncapi")?.expect<String>())
         assertEquals(1, context.sourceRepository.getLine("source_map.root"))
         assertEquals(3, context.sourceRepository.getLine("source_map.root.info"))
         assertEquals(4, context.sourceRepository.getLine("source_map.root.info.title"))
@@ -41,6 +41,6 @@ class AsyncApiRegistryTest {
         val file = TestResources.file("reader/yaml/source-map.yaml")
         val root = AsyncApiRegistry.readYaml(file, context)
         assertEquals("source_map.root", root.path)
-        assertEquals("Demo", root.optional("info")?.optional("title")?.coerce<String>())
+        assertEquals("Demo", root.optional("info")?.optional("title")?.expect<String>())
     }
 }

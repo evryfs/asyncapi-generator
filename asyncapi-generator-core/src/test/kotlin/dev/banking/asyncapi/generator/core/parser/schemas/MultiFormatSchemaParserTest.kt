@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -159,19 +160,38 @@ class MultiFormatSchemaParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse non-string schema format throws UnexpectedValue`() {
+    fun `parse non-string schema format reports its expected type and source`() {
         val schemaNode = readNode(
             "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
             "components",
             "schemas",
             "NonStringSchemaFormat",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "found Boolean true",
-            "quote the value",
-            "asyncapi_parser_schema_format_invalid.yaml",
-            "asyncapi_parser_schema_format_invalid.root.components.schemas.NonStringSchemaFormat.schemaFormat",
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = true,
+            path = "asyncapi_parser_schema_format_invalid.root.components.schemas.NonStringSchemaFormat.schemaFormat",
+            sourcePath = "root.components.schemas.NonStringSchemaFormat.schemaFormat",
+            sourceFile = "asyncapi_parser_schema_format_invalid.yaml",
+        ) {
+            parser.parseElement(schemaNode)
+        }
+    }
+
+    @Test
+    fun `parse multi-format schema missing schema content reports the required member and source`() {
+        val schemaNode = readNode(
+            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
+            "components",
+            "schemas",
+            "MissingSchema",
+        )
+        assertMissingRequiredMember(
+            memberName = "schema",
+            path = "asyncapi_parser_schema_format_invalid.root.components.schemas.MissingSchema.schema",
+            sourcePath = "root.components.schemas.MissingSchema",
+            sourceFile = "asyncapi_parser_schema_format_invalid.yaml",
         ) {
             parser.parseElement(schemaNode)
         }

@@ -17,3 +17,31 @@ components:
       type: object
       # dependencies should be an object/map
       dependencies: ["wrong", "type"]
+
+    InvalidTypeArraySchema:
+      type: [string, 7]
+
+    NullReferenceSchema:
+      $ref: null
+
+    InvalidSchemaUri:
+      $schema: false
+
+    InvalidExclusiveMaximum:
+      exclusiveMaximum: "10"
+
+    InvalidDiscriminator:
+      discriminator:
+        propertyName: eventType
+
+    InvalidAllOf:
+      allOf:
+        invalid:
+          type: string
+
+  schemaCases:
+    ArrayInsteadOfMap:
+      - type: string
+    ObjectInsteadOfList:
+      schema:
+        type: string
