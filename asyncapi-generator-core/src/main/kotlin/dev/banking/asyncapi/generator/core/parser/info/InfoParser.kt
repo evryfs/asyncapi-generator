@@ -24,8 +24,8 @@ class InfoParser(
     fun parseMap(parserNode: ParserNode): Info {
         parserNode.coerce<Map<*, *>>()
         return Info(
-            title = parserNode.mandatory("title").coerce<String>(),
-            version = parserNode.mandatory("version").coerce<String>(),
+            title = parserNode.required("title").coerce<String>(),
+            version = parserNode.required("version").coerce<String>(),
             description = parserNode.optional("description")?.coerce<String>(),
             termsOfService = parserNode.optional("termsOfService")?.coerce<String>(),
             contact = parserNode.optional("contact")?.let(::parseContact),
@@ -46,7 +46,7 @@ class InfoParser(
 
     private fun parseLicense(parserNode: ParserNode): License {
         return License(
-            name = parserNode.mandatory("name").coerce<String>(),
+            name = parserNode.required("name").coerce<String>(),
             url = parserNode.optional("url")?.coerce<String>()
         ).also { asyncApiContext.register(it, parserNode) }
     }

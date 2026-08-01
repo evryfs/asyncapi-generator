@@ -1,13 +1,14 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.toValue
+import kotlin.reflect.typeOf
 
 /**
  * Represents one parser input node together with its source path and context.
@@ -23,23 +24,36 @@ data class ParserNode(
     val context: AsyncApiContext,
 ) {
 
-    fun mandatory(nodeKey: String): ParserNode {
-        val currentNode = node as? DocumentObject
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, path, context)
+    fun required(nodeKey: String): ParserNode {
+        val currentNode = objectNode()
+        val childPath = "$path.$nodeKey"
         val childNode = currentNode[nodeKey]
-            ?.takeUnless { child -> child is DocumentNull }
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, "$path.$nodeKey", context)
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
+            ?: throw AsyncApiParseException.ParserDiagnosticFailure(
+                diagnostic = ParserDiagnostic.MissingRequiredMember(
+                    memberName = nodeKey,
+                    path = childPath,
+                    sourceLocation = currentNode.location,
+                ),
+                context = context,
+            )
+        return ParserNode(nodeKey, childNode, childPath, context)
     }
 
     fun optional(nodeKey: String): ParserNode? {
-        val currentNode = node as? DocumentObject
-            ?: return null
-        val childNode = currentNode[nodeKey]
-            ?.takeUnless { child -> child is DocumentNull }
-            ?: return null
+        val currentNode = objectNode()
+        val childNode = currentNode[nodeKey] ?: return null
         return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
     }
+
+    fun members(): List<ParserNode> =
+        objectNode().members.map { (memberName, member) ->
+            ParserNode(memberName, member.value, "$path.$memberName", context)
+        }
+
+    fun elements(): List<ParserNode> =
+        arrayNode().elements.mapIndexed { index, element ->
+            ParserNode("$name[$index]", element, "$path[$index]", context)
+        }
 
     fun startsWith(prefix: String): ParserNode? {
         val currentNode = node as? DocumentObject
@@ -77,6 +91,15 @@ data class ParserNode(
     }
 
     @Suppress("UNCHECKED_CAST")
+    inline fun <reified T> expect(): T =
+        ParserValueExpectation.expect(
+            node = node,
+            expectedType = typeOf<T>(),
+            path = path,
+            context = context,
+        ) as T
+
+    @Suppress("UNCHECKED_CAST")
     inline fun <reified T> coerce(): T {
         val normalized = normalize(node)
         val received = normalized?.javaClass?.simpleName ?: "null"
@@ -104,4 +127,22 @@ data class ParserNode(
             is DocumentNode -> value.toValue()
             else -> value
         }
+
+    private fun objectNode(): DocumentObject =
+        node as? DocumentObject
+            ?: ParserValueExpectation.unexpectedType(
+                node = node,
+                expectedType = typeOf<Map<String, Any?>>(),
+                path = path,
+                context = context,
+            )
+
+    private fun arrayNode(): DocumentArray =
+        node as? DocumentArray
+            ?: ParserValueExpectation.unexpectedType(
+                node = node,
+                expectedType = typeOf<List<Any?>>(),
+                path = path,
+                context = context,
+            )
 }

@@ -1,14 +1,12 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 sealed class AsyncApiParseException(message: String) : Exception(message) {
 
     class EmptyYamlFile(fileName: String) :
         AsyncApiParseException("Empty Yaml file : $fileName")
-
-    class Mandatory(name: String, path: String, context: AsyncApiContext) :
-        AsyncApiParseException(buildMessage("Missing mandatory '$name'", path, context))
 
     class UnexpectedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
@@ -41,6 +39,11 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
             )
         )
 
+    class ParserDiagnosticFailure(
+        val diagnostic: ParserDiagnostic,
+        context: AsyncApiContext,
+    ) : AsyncApiParseException(formatDiagnostic(diagnostic, context))
+
     companion object {
         private fun buildMessage(header: String, path: String, context: AsyncApiContext): String {
             val snippet = context.pathSnippet(path)
@@ -70,11 +73,54 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
             }
         }
 
+        private fun formatDiagnostic(
+            diagnostic: ParserDiagnostic,
+            context: AsyncApiContext,
+        ): String =
+            when (diagnostic) {
+                is ParserDiagnostic.MissingRequiredMember ->
+                    buildMessage(
+                        header = "Missing required member '${diagnostic.memberName}'.",
+                        diagnostic = diagnostic,
+                        context = context,
+                    )
+
+                is ParserDiagnostic.UnexpectedValueType ->
+                    buildMessage(
+                        header = unexpectedValueMessage(
+                            receivedValue = diagnostic.actualType?.simpleName ?: "null",
+                            expectedValue = renderType(diagnostic.expectedType.toString()),
+                            actualValue = diagnostic.actualValue,
+                        ),
+                        diagnostic = diagnostic,
+                        context = context,
+                    )
+            }
+
+        private fun buildMessage(
+            header: String,
+            diagnostic: ParserDiagnostic,
+            context: AsyncApiContext,
+        ): String {
+            val snippet = context.pathSnippet(diagnostic.path)
+            val fileName = diagnostic.sourceLocation.file.name
+            return buildString {
+                appendLine(header)
+                appendLine()
+                appendLine(snippet.ifBlank { "→ $fileName (${diagnostic.path})" })
+            }.trimEnd()
+        }
+
+        private fun renderType(type: String): String =
+            type
+                .replace("kotlin.collections.", "")
+                .replace("kotlin.", "")
+
         private fun scalarHint(
             expectedValue: String,
             actualValue: Any?,
         ): String? {
-            val expected = expectedValue.lowercase()
+            val expected = expectedValue.lowercase().removeSuffix("?")
             return when (expected) {
                 "boolean" if actualValue is String && actualValue.isJsonBooleanText() ->
                     "Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."

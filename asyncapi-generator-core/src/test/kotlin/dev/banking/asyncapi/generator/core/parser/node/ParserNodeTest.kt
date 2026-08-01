@@ -2,20 +2,27 @@ package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.fixtures.ParserNodeFixtures
 import dev.banking.asyncapi.generator.core.fixtures.assertMessageContains
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import org.junit.jupiter.api.Test
+import kotlin.reflect.typeOf
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class ParserNodeTest {
 
     @Test
-    fun `coerce reports quoted boolean as yaml string when boolean is expected`() {
+    fun `expect reports quoted boolean as yaml string when boolean is expected`() {
         val node = ParserNodeFixtures.scalar(
             value = "true",
             sourceLine = "deprecated: \"true\"",
         )
-        val error = assertFailsWith<AsyncApiParseException.UnexpectedValue> {
-            node.coerce<Boolean>()
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Boolean>()
         }
         error.assertMessageContains("expected Boolean")
         error.assertMessageContains("found String \"true\"")
@@ -24,13 +31,13 @@ class ParserNodeTest {
     }
 
     @Test
-    fun `coerce reports quoted number as yaml string when number is expected`() {
+    fun `expect reports quoted number as yaml string when number is expected`() {
         val node = ParserNodeFixtures.scalar(
             value = "12",
             sourceLine = "minLength: \"12\"",
         )
-        val error = assertFailsWith<AsyncApiParseException.UnexpectedValue> {
-            node.coerce<Number>()
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Number>()
         }
         error.assertMessageContains("expected Number")
         error.assertMessageContains("found String \"12\"")
@@ -39,17 +46,173 @@ class ParserNodeTest {
     }
 
     @Test
-    fun `coerce reports unquoted boolean when string is expected`() {
+    fun `expect reports unquoted boolean when string is expected`() {
         val node = ParserNodeFixtures.scalar(
             value = true,
             sourceLine = "version: true",
         )
-        val error = assertFailsWith<AsyncApiParseException.UnexpectedValue> {
-            node.coerce<String>()
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<String>()
         }
         error.assertMessageContains("expected String")
         error.assertMessageContains("found Boolean true")
         error.assertMessageContains("quote the value")
         error.assertMessageContains("version: true")
+    }
+
+    @Test
+    fun `expect accepts explicit null only for nullable types`() {
+        val node = ParserNodeFixtures.scalar(
+            value = null,
+            sourceLine = "description: null",
+        )
+
+        assertNull(node.expect<String?>())
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<String>()
+        }
+        val diagnostic = error.diagnostic as ParserDiagnostic.UnexpectedValueType
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals(typeOf<String>(), diagnostic.expectedType)
+        assertNull(diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals("test.root.value", diagnostic.path)
+        assertEquals("test.root.value", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `expect validates nested list element types at their exact path`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf("first", 2),
+            sourceLine = "values: [first, 2]",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<List<String>>()
+        }
+        val diagnostic = error.diagnostic as ParserDiagnostic.UnexpectedValueType
+        assertEquals(typeOf<String>(), diagnostic.expectedType)
+        assertEquals(Int::class, diagnostic.actualType)
+        assertEquals(2, diagnostic.actualValue)
+        assertEquals("test.root.value[1]", diagnostic.path)
+        assertEquals("test.root.value[1]", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `expect validates nested map value types at their exact path`() {
+        val node = ParserNodeFixtures.value(
+            value = linkedMapOf("name" to "example", "enabled" to true),
+            sourceLine = "value: {name: example, enabled: true}",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Map<String, String>>()
+        }
+        val diagnostic = error.diagnostic as ParserDiagnostic.UnexpectedValueType
+        assertEquals(typeOf<String>(), diagnostic.expectedType)
+        assertEquals(Boolean::class, diagnostic.actualType)
+        assertEquals(true, diagnostic.actualValue)
+        assertEquals("test.root.value.enabled", diagnostic.path)
+    }
+
+    @Test
+    fun `expect supports nullable nested values`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf("first", null),
+            sourceLine = "values: [first, null]",
+        )
+
+        assertEquals(listOf("first", null), node.expect<List<String?>>())
+    }
+
+    @Test
+    fun `expect preserves free form values`() {
+        val expected = linkedMapOf<String, Any?>(
+            "name" to "example",
+            "values" to listOf(1, true, null),
+        )
+        val node = ParserNodeFixtures.value(
+            value = expected,
+            sourceLine = "value: {name: example, values: [1, true, null]}",
+        )
+
+        assertEquals(expected, node.expect<Any>())
+    }
+
+    @Test
+    fun `optional distinguishes an absent member from explicit null`() {
+        val node = ParserNodeFixtures.value(
+            value = mapOf("description" to null),
+            sourceLine = "description: null",
+        )
+
+        assertNull(node.optional("missing"))
+        val explicitNull = assertNotNull(node.optional("description"))
+        assertNull(explicitNull.expect<String?>())
+    }
+
+    @Test
+    fun `required returns explicit null for deliberate type handling`() {
+        val node = ParserNodeFixtures.value(
+            value = mapOf("description" to null),
+            sourceLine = "description: null",
+        )
+
+        assertNull(node.required("description").expect<String?>())
+    }
+
+    @Test
+    fun `required reports an absent member with structured source information`() {
+        val node = ParserNodeFixtures.value(
+            value = emptyMap<String, Any?>(),
+            sourceLine = "info: {}",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.required("title")
+        }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("title", diagnostic.memberName)
+        assertEquals("test.root.value.title", diagnostic.path)
+        assertEquals("test.root.value", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `member navigation rejects a non-object node`() {
+        val node = ParserNodeFixtures.scalar(
+            value = "not-an-object",
+            sourceLine = "value: not-an-object",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.optional("title")
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<Map<String, Any?>>(), diagnostic.expectedType)
+        assertEquals(String::class, diagnostic.actualType)
+        assertEquals("test.root.value", diagnostic.path)
+    }
+
+    @Test
+    fun `members and elements preserve individual parser paths`() {
+        val objectNode = ParserNodeFixtures.value(
+            value = linkedMapOf("first" to true, "second" to false),
+            sourceLine = "value: {first: true, second: false}",
+        )
+        val arrayNode = ParserNodeFixtures.value(
+            value = listOf("first", "second"),
+            sourceLine = "value: [first, second]",
+        )
+
+        assertEquals(
+            listOf("test.root.value.first", "test.root.value.second"),
+            objectNode.members().map(ParserNode::path),
+        )
+        assertEquals(
+            listOf("test.root.value[0]", "test.root.value[1]"),
+            arrayNode.elements().map(ParserNode::path),
+        )
     }
 }

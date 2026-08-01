@@ -26,7 +26,7 @@ class ReferenceParser(
     }
 
     fun parseElement(parserNode: ParserNode): Reference {
-        val reference = parserNode.mandatory($$"$ref").coerce<String>()
+        val reference = parserNode.required($$"$ref").coerce<String>()
         return Reference(
             ref = reference,
             referenceCategoryKey = REFERENCE

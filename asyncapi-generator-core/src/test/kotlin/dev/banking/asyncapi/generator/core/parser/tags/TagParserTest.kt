@@ -36,14 +36,14 @@ class TagParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse tag missing name throws RequiredField`() { // or RequiredObject depending on parser logic
+    fun `parse tag missing name reports missing required member`() {
         val tagsNode = readNode(
             "parser/tags/asyncapi_parser_tag_invalid.yaml",
             "components",
             "tags",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory 'name'",
+        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
+            "Missing required member 'name'",
             "asyncapi_parser_tag_invalid.yaml",
             "asyncapi_parser_tag_invalid.root.components.tags.MissingName.name",
         ) {

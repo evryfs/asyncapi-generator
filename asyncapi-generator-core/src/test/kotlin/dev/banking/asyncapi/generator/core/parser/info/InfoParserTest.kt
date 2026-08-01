@@ -21,10 +21,10 @@ class InfoParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse Info missing mandatory fields throws RequiredObject`() {
+    fun `parse info missing title reports missing required member`() {
         val infoNode = readNode("parser/info/asyncapi_parser_info_invalid.yaml", "info")
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory 'title'",
+        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
+            "Missing required member 'title'",
             "asyncapi_parser_info_invalid.yaml",
             "asyncapi_parser_info_invalid.root.info.title",
         ) {

@@ -42,8 +42,8 @@ class ServerParser(
             } else {
                 ServerInterface.ServerInline(
                     Server(
-                        host = node.mandatory("host").coerce<String>(),
-                        protocol = node.mandatory("protocol").coerce<String>(),
+                        host = node.required("host").coerce<String>(),
+                        protocol = node.required("protocol").coerce<String>(),
                         protocolVersion = node.optional("protocolVersion")?.coerce<String>(),
                         description = node.optional("description")?.coerce<String>(),
                         title = node.optional("title")?.coerce<String>(),

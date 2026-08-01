@@ -28,7 +28,7 @@ abstract class ParserTestSupport {
         vararg nodePath: String,
     ): ParserNode {
         return nodePath.fold(readRoot(path)) { node, key ->
-            node.mandatory(key)
+            node.required(key)
         }
     }
 

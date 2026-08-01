@@ -41,15 +41,15 @@ class ReferenceParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse reference missing ref throws Mandatory`() {
+    fun `parse reference missing ref reports missing required member`() {
         val referenceNode = readNode(
             "parser/references/asyncapi_parser_reference_invalid.yaml",
             "components",
             "references",
             "MissingReference",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
+        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
+            "Missing required member '\$ref'",
             "asyncapi_parser_reference_invalid.yaml",
             "asyncapi_parser_reference_invalid.root.components.references.MissingReference.\$ref",
         ) {
@@ -77,15 +77,15 @@ class ReferenceParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse reference list missing ref throws Mandatory with indexed path`() {
+    fun `parse reference list missing ref reports indexed missing member`() {
         val referencesNode = readNode(
             "parser/references/asyncapi_parser_reference_invalid.yaml",
             "components",
             "references",
             "ReferenceList",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory '\$ref'",
+        assertParseFailure<AsyncApiParseException.ParserDiagnosticFailure>(
+            "Missing required member '\$ref'",
             "asyncapi_parser_reference_invalid.yaml",
             "asyncapi_parser_reference_invalid.root.components.references.ReferenceList[0].\$ref",
         ) {

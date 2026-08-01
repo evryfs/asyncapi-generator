@@ -37,7 +37,7 @@ class OperationReplyAddressParser(
         }
         return OperationReplyAddressInterface.OperationReplyAddressInline(
             OperationReplyAddress(
-                location = parserNode.mandatory("location").coerce<String>(),
+                location = parserNode.required("location").coerce<String>(),
                 description = parserNode.optional("description")?.coerce<String>()
             ).also { asyncApiContext.register(it, parserNode) }
         )

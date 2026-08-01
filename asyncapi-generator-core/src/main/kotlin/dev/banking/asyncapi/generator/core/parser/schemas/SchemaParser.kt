@@ -49,6 +49,12 @@ class SchemaParser(
     }
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
+        if (isBooleanSchema(parserNode)) {
+            val bool = parserNode.coerce<Boolean>()
+            return SchemaInterface.BooleanSchema(
+                value = bool,
+            ).also { asyncApiContext.register(it, parserNode) }
+        }
         parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
             return SchemaInterface.SchemaReference(
                 Reference(
@@ -59,7 +65,7 @@ class SchemaParser(
         }
         parserNode.optional("schemaFormat")?.coerce<String>()?.let { format ->
             val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
-            val schemaNode = parserNode.mandatory("schema")
+            val schemaNode = parserNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
             }
@@ -77,12 +83,6 @@ class SchemaParser(
                 )
             return SchemaInterface.MultiFormatSchemaInline(multiFormatSchema)
                 .also { asyncApiContext.register(multiFormatSchema, parserNode) }
-        }
-        if (isBooleanSchema(parserNode)) {
-            val bool = parserNode.coerce<Boolean>()
-            return SchemaInterface.BooleanSchema(
-                value = bool,
-            ).also { asyncApiContext.register(it, parserNode) }
         }
         return parseSchema(parserNode)
     }

@@ -42,7 +42,7 @@ class SecuritySchemeParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
-        val type = parserNode.mandatory("type").coerce<String>()
+        val type = parserNode.required("type").coerce<String>()
         val description = parserNode.optional("description")?.coerce<String>()
         val nameField = parserNode.optional("name")?.coerce<String>()
         val inField = parserNode.optional("in")?.coerce<String>()
