@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentNode
 import dev.banking.asyncapi.generator.core.reader.DocumentNull
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.reader.DocumentString
 import dev.banking.asyncapi.generator.core.reader.toValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
@@ -59,12 +60,15 @@ internal object ParserValueExpectation {
     ): Map<String, Any?> {
         val objectNode = node as? DocumentObject
             ?: unexpectedType(node, expectedType, path, context)
-        val keyType = expectedType.arguments.getOrNull(0)?.type ?: typeOf<String>()
-        require(keyType.classifier == String::class && !keyType.isMarkedNullable) {
-            "Parser object expectations require non-null String map keys, found $keyType"
-        }
+        val keyType = expectedType.arguments.getOrNull(0)?.type ?: typeOf<Any?>()
         val valueType = expectedType.arguments.getOrNull(1)?.type ?: typeOf<Any?>()
         return objectNode.members.mapValuesTo(linkedMapOf()) { (name, member) ->
+            expect(
+                node = DocumentString(name, member.keyLocation),
+                expectedType = keyType,
+                path = "$path.$name",
+                context = context,
+            )
             expect(member.value, valueType, "$path.$name", context)
         }
     }

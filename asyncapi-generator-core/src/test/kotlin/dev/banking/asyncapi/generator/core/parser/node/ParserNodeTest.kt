@@ -147,6 +147,21 @@ class ParserNodeTest {
     }
 
     @Test
+    fun `expect supports nullable outer collection values`() {
+        val nullNode = ParserNodeFixtures.scalar(
+            value = null,
+            sourceLine = "values: null",
+        )
+        val listNode = ParserNodeFixtures.value(
+            value = listOf("first"),
+            sourceLine = "values: [first]",
+        )
+
+        assertNull(nullNode.expect<List<String>?>())
+        assertEquals(listOf("first"), listNode.expect<List<String>?>())
+    }
+
+    @Test
     fun `expect preserves free form values`() {
         val expected = linkedMapOf<String, Any?>(
             "name" to "example",
@@ -158,6 +173,61 @@ class ParserNodeTest {
         )
 
         assertEquals(expected, node.expect<Any>())
+    }
+
+    @Test
+    fun `expect preserves star projected collection values`() {
+        val expectedList = listOf("first", 2, null)
+        val expectedMap = linkedMapOf<String, Any?>(
+            "name" to "example",
+            "values" to expectedList,
+        )
+        val listNode = ParserNodeFixtures.value(
+            value = expectedList,
+            sourceLine = "values: [first, 2, null]",
+        )
+        val mapNode = ParserNodeFixtures.value(
+            value = expectedMap,
+            sourceLine = "value: {name: example, values: [first, 2, null]}",
+        )
+
+        assertEquals(expectedList, listNode.expect<List<*>>())
+        assertEquals(expectedMap, mapNode.expect<Map<*, *>>())
+    }
+
+    @Test
+    fun `expect validates map key types at their exact member path`() {
+        val node = ParserNodeFixtures.value(
+            value = mapOf("name" to "example"),
+            sourceLine = "value: {name: example}",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Map<Int, String>>()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<Int>(), diagnostic.expectedType)
+        assertEquals(String::class, diagnostic.actualType)
+        assertEquals("name", diagnostic.actualValue)
+        assertEquals("test.root.value.name", diagnostic.path)
+        assertEquals("test.root.value.name", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `expect reports structural mismatches with a parser diagnostic`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf("first"),
+            sourceLine = "value: [first]",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Map<String, Any?>>()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<Map<String, Any?>>(), diagnostic.expectedType)
+        assertEquals(List::class, diagnostic.actualType)
+        assertEquals(listOf("first"), diagnostic.actualValue)
+        assertEquals("test.root.value", diagnostic.path)
     }
 
     @Test
