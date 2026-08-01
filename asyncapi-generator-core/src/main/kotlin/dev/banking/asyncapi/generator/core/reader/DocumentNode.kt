@@ -60,3 +60,16 @@ data class DocumentBoolean(
 data class DocumentNull(
     override val location: SourceLocation,
 ) : DocumentNode
+
+internal fun DocumentNode.toValue(): Any? =
+    when (this) {
+        is DocumentObject -> members.mapValuesTo(linkedMapOf()) { (_, member) ->
+            member.value.toValue()
+        }
+
+        is DocumentArray -> elements.map { element -> element.toValue() }
+        is DocumentString -> value
+        is DocumentNumber -> value
+        is DocumentBoolean -> value
+        is DocumentNull -> null
+    }

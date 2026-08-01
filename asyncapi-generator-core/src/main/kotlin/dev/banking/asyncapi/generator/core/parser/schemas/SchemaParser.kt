@@ -10,6 +10,12 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.reader.DocumentArray
+import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
+import dev.banking.asyncapi.generator.core.reader.DocumentNumber
+import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.reader.DocumentString
+import dev.banking.asyncapi.generator.core.reader.toValue
 import kotlin.String
 import kotlin.collections.Map
 
@@ -59,9 +65,9 @@ class SchemaParser(
             }
             val schemaContent =
                 if (schemaFormat.isNativeAvro || schemaFormat.isNativeProtobuf) {
-                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.node
+                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.node.toValue()
                 } else {
-                    schemaNode.node
+                    schemaNode.node.toValue()
                 }
             val multiFormatSchema =
                 MultiFormatSchema(
@@ -93,7 +99,7 @@ class SchemaParser(
         }
 
         val id = parserNode.optional($$"$id")?.coerce<String>()
-        val schema = parserNode.optional($$"$schema")?.node as? String
+        val schema = (parserNode.optional($$"$schema")?.node as? DocumentString)?.value
         val comment = parserNode.optional($$"$comment")?.coerce<String>()
         val title = parserNode.optional("title")?.coerce<String>()
         val description = parserNode.optional("description")?.coerce<String>()
@@ -108,9 +114,9 @@ class SchemaParser(
 
         val multipleOf = parserNode.optional("multipleOf")?.coerce<Number>()
         val maximum = parserNode.optional("maximum")?.coerce<Number>()
-        val exclusiveMaximum = parserNode.optional("exclusiveMaximum")?.node as? Number
+        val exclusiveMaximum = (parserNode.optional("exclusiveMaximum")?.node as? DocumentNumber)?.value
         val minimum = parserNode.optional("minimum")?.coerce<Number>()
-        val exclusiveMinimum = parserNode.optional("exclusiveMinimum")?.node as? Number
+        val exclusiveMinimum = (parserNode.optional("exclusiveMinimum")?.node as? DocumentNumber)?.value
 
         val maxLength = parserNode.optional("maxLength")?.coerce<Number>()
         val minLength = parserNode.optional("minLength")?.coerce<Number>()
@@ -118,7 +124,7 @@ class SchemaParser(
         val contentEncoding = parserNode.optional("contentEncoding")?.coerce<String>()
         val contentMediaType = parserNode.optional("contentMediaType")?.coerce<String>()
 
-        val items = parserNode.optional("items")?.takeUnless { it.node is List<*> }?.let { parseElement(it) }
+        val items = parserNode.optional("items")?.takeUnless { it.node is DocumentArray }?.let { parseElement(it) }
         val additionalItems = parserNode.optional("additionalItems")?.let { parseElement(it) }
         val maxItems = parserNode.optional("maxItems")?.coerce<Number>()
         val minItems = parserNode.optional("minItems")?.coerce<Number>()
@@ -150,7 +156,7 @@ class SchemaParser(
         val enumValues = parserNode.optional("enum")?.coerce<List<Any?>>()
         val constValue = parserNode.optional("const")?.coerce<Any?>()
 
-        val discriminator = parserNode.optional("discriminator")?.node as? String
+        val discriminator = (parserNode.optional("discriminator")?.node as? DocumentString)?.value
         val externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
         val deprecated = parserNode.optional("deprecated")?.coerce<Boolean>()
         val bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap)
@@ -221,18 +227,15 @@ class SchemaParser(
     }
 
     private fun extractDefaultNode(parserNode: ParserNode): ParserNode? {
-        val currentMap = parserNode.node as? Map<*, *>
-        return if (currentMap != null && currentMap.containsKey("default")) {
-            ParserNode("default", currentMap["default"], "${parserNode.path}.default", parserNode.context)
-        } else {
-            null
-        }
+        val currentNode = parserNode.node as? DocumentObject ?: return null
+        val defaultNode = currentNode["default"] ?: return null
+        return ParserNode("default", defaultNode, "${parserNode.path}.default", parserNode.context)
     }
 
     private fun isBooleanSchema(node: ParserNode): Boolean {
         val value = node.node
-        return value is Boolean ||
-                (value is String && (value.equals("true", ignoreCase = true) || value.equals(
+        return value is DocumentBoolean ||
+                (value is DocumentString && (value.value.equals("true", ignoreCase = true) || value.value.equals(
                     "false",
                     ignoreCase = true
                 )))
@@ -244,8 +247,8 @@ class SchemaParser(
         return nodes.associate { dependency ->
             val dependencyValue = dependency.node
             val parsedValue: Any = when (dependencyValue) {
-                is List<*> -> dependency.coerce<List<String>>()
-                is Map<*, *> -> parseElement(dependency)
+                is DocumentArray -> dependency.coerce<List<String>>()
+                is DocumentObject -> parseElement(dependency)
                 else -> throw UnexpectedValue(javaClass.simpleName, "Map/List", dependency.path, asyncApiContext)
             }
             dependency.name to parsedValue

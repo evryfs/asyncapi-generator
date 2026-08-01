@@ -3,7 +3,10 @@ package dev.banking.asyncapi.generator.core.repository
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.reader.DocumentArray
+import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.reader.toValue
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
@@ -113,16 +116,16 @@ class ModelRepository(
         val basePath = node.path
         val normalizedPath = basePath.replace("[", ".").replace("]", "")
         when (val raw = node.node) {
-            is Map<*, *> -> {
-                for (key in raw.keys.filterIsInstance<String>()) {
+            is DocumentObject -> {
+                for (key in raw.members.keys) {
                     val possiblePaths = sequenceOf("$basePath.$key", "$normalizedPath.$key")
                     val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
                     if (location != null) result[key] = location
                 }
             }
 
-            is List<*> -> {
-                raw.forEachIndexed { index, _ ->
+            is DocumentArray -> {
+                raw.elements.forEachIndexed { index, _ ->
                     val possiblePaths = sequenceOf("$basePath[$index]", "$normalizedPath.$index")
                     val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
                     if (location != null) result["[$index]"] = location
@@ -140,20 +143,21 @@ class ModelRepository(
 
     private fun collectFieldNames(node: ParserNode): Set<String> =
         when (val raw = node.node) {
-            is Map<*, *> -> raw.keys.filterIsInstance<String>().toCollection(linkedSetOf())
-            is List<*> -> raw.indices.mapTo(linkedSetOf()) { index -> "[$index]" }
+            is DocumentObject -> raw.members.keys.toCollection(linkedSetOf())
+            is DocumentArray -> raw.elements.indices.mapTo(linkedSetOf()) { index -> "[$index]" }
             else -> setOf("<value>")
         }
 
     private fun collectFieldValues(node: ParserNode): Map<String, Any?> =
         when (val raw = node.node) {
-            is Map<*, *> ->
-                raw.entries
-                    .filter { (key, _) -> key is String }
-                    .associate { (key, value) -> key as String to value }
+            is DocumentObject ->
+                raw.members.mapValues { (_, member) -> member.value.toValue() }
 
-            is List<*> -> raw.mapIndexed { index, value -> "[$index]" to value }.toMap()
-            else -> mapOf("<value>" to raw)
+            is DocumentArray -> raw.elements.mapIndexed { index, value ->
+                "[$index]" to value.toValue()
+            }.toMap()
+
+            else -> mapOf("<value>" to raw.toValue())
         }
 
     private fun collectFieldLines(node: ParserNode): Map<String, Int> {
@@ -161,16 +165,16 @@ class ModelRepository(
         val basePath = node.path
         val normalizedPath = basePath.replace("[", ".").replace("]", "")
         when (val raw = node.node) {
-            is Map<*, *> -> {
-                for (key in raw.keys.filterIsInstance<String>()) {
+            is DocumentObject -> {
+                for (key in raw.members.keys) {
                     val possiblePaths = sequenceOf("$basePath.$key", "$normalizedPath.$key")
                     val line = possiblePaths.mapNotNull(sourceRepository::getLine).firstOrNull()
                     if (line != null) result[key] = line
                 }
             }
 
-            is List<*> -> {
-                raw.forEachIndexed { index, _ ->
+            is DocumentArray -> {
+                raw.elements.forEachIndexed { index, _ ->
                     val possiblePaths = sequenceOf("$basePath.$index", "$normalizedPath.$index")
                     val line = possiblePaths.mapNotNull(sourceRepository::getLine).firstOrNull()
                     if (line != null) result["[$index]"] = line

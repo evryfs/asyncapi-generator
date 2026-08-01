@@ -2,11 +2,11 @@ package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
-import dev.banking.asyncapi.generator.core.fixtures.semanticValue
 import dev.banking.asyncapi.generator.core.reader.YamlDocumentReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 
 class ParserNodeFactoryTest {
 
@@ -19,7 +19,7 @@ class ParserNodeFactoryTest {
         val root = ParserNodeFactory.root(document, context)
         assertEquals("source_map.root", root.name)
         assertEquals("source_map.root", root.path)
-        assertEquals(document.root.semanticValue(), root.node)
+        assertSame(document.root, root.node)
         assertEquals(context, root.context)
     }
 
