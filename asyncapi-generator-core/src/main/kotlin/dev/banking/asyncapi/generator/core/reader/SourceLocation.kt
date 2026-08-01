@@ -6,7 +6,7 @@ import java.io.File
  * Location of a value in an input document.
  *
  * Expected behavior is covered by:
- * - `SourceMapTest`
+ * - `DocumentLocationTest`
  */
 data class SourceLocation(
     val sourceId: String,

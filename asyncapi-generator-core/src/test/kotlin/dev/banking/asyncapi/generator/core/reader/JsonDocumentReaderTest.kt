@@ -1,8 +1,10 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
-import dev.banking.asyncapi.generator.core.fixtures.assertSourceLocation
+import dev.banking.asyncapi.generator.core.fixtures.assertMemberLocation
+import dev.banking.asyncapi.generator.core.fixtures.assertNodeLocation
 import dev.banking.asyncapi.generator.core.fixtures.childObject
+import dev.banking.asyncapi.generator.core.fixtures.value
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -19,16 +21,16 @@ class JsonDocumentReaderTest {
         val example = document.root.childObject("components")
             .childObject("schemas")
             .childObject("Example")
-        assertEquals("3.0.0", document.root["asyncapi"])
-        assertEquals("Demo API", info["title"])
-        assertEquals("folded text", info["summary"])
-        assertEquals("literal\ntext", info["description"])
-        assertEquals(true, example["enabled"])
-        assertEquals("true", example["quotedEnabled"])
-        assertEquals(12, example["count"])
-        assertEquals("12", example["quotedCount"])
-        assertEquals(12.5, example["price"])
-        assertEquals(null, example["nullable"])
+        assertEquals("3.0.0", document.root.value("asyncapi"))
+        assertEquals("Demo API", info.value("title"))
+        assertEquals("folded text", info.value("summary"))
+        assertEquals("literal\ntext", info.value("description"))
+        assertEquals(true, example.value("enabled"))
+        assertEquals("true", example.value("quotedEnabled"))
+        assertEquals(12, example.value("count"))
+        assertEquals("12", example.value("quotedCount"))
+        assertEquals(12.5, example.value("price"))
+        assertEquals(null, example.value("nullable"))
     }
 
     @Test
@@ -68,11 +70,13 @@ class JsonDocumentReaderTest {
     @Test
     fun `records source locations for root object fields and array items`() {
         val document = reader.read(ReaderFixtures.jsonSource("source-map.json"))
-        document.assertSourceLocation("root", 1)
-        document.assertSourceLocation("root.asyncapi", 2)
-        document.assertSourceLocation("root.info", 3)
-        document.assertSourceLocation("root.info.title", 4)
-        document.assertSourceLocation("root.info.tags", 5)
-        document.assertSourceLocation("root.info.tags[0]", 6)
+        val info = document.root.childObject("info")
+        val tags = info["tags"] as DocumentArray
+        document.assertNodeLocation(document.root, "root", 1)
+        document.assertMemberLocation(document.root, "asyncapi", "root.asyncapi", 2)
+        document.assertMemberLocation(document.root, "info", "root.info", 3)
+        document.assertMemberLocation(info, "title", "root.info.title", 4)
+        document.assertMemberLocation(info, "tags", "root.info.tags", 5)
+        document.assertNodeLocation(tags[0], "root.info.tags[0]", 6)
     }
 }

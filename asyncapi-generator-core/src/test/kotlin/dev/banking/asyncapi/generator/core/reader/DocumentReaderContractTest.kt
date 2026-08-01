@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
 import dev.banking.asyncapi.generator.core.fixtures.childObject
+import dev.banking.asyncapi.generator.core.fixtures.semanticValue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -17,14 +18,14 @@ class DocumentReaderContractTest {
         val userRef = document.root.childObject("components")
             .childObject("schemas")
             .childObject("UserRef")
-        assertEquals("#/components/schemas/User", userRef["${'$'}ref"])
+        assertEquals("#/components/schemas/User", userRef["${'$'}ref"]?.semanticValue())
     }
 
     @Test
     fun `reader accepts object roots without validating AsyncAPI semantics`() {
         val document = reader.read(ReaderFixtures.yamlSource("non-asyncapi-object.yaml"))
-        assertTrue(document.root.containsKey("notAsyncApi"))
-        assertTrue(document.root.containsKey("stillReaderInput"))
+        assertTrue(document.root.members.containsKey("notAsyncApi"))
+        assertTrue(document.root.members.containsKey("stillReaderInput"))
     }
 
     @Test
@@ -32,6 +33,6 @@ class DocumentReaderContractTest {
         val yamlDocument = reader.read(ReaderFixtures.yamlSource("equivalent-document.yaml"))
         val jsonDocument = jsonReader.read(ReaderFixtures.jsonSource("equivalent-document.json"))
 
-        assertEquals(yamlDocument.root, jsonDocument.root)
+        assertEquals(yamlDocument.root.semanticValue(), jsonDocument.root.semanticValue())
     }
 }

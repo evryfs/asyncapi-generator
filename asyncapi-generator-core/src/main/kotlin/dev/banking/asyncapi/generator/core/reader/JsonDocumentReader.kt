@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonToken
  * Expected behavior is covered by:
  * - `JsonDocumentReaderTest`
  * - `DocumentReaderContractTest`
- * - `SourceMapTest`
+ * - `DocumentLocationTest`
  */
 class JsonDocumentReader : DocumentReader {
     private val jsonFactory = JsonFactory()
@@ -27,12 +27,10 @@ class JsonDocumentReader : DocumentReader {
 
         return try {
             jsonFactory.createParser(source.content).use { parser ->
-                val locations = linkedMapOf<String, SourceLocation>()
                 val rootToken = parser.nextToken()
                     ?: throw DocumentReadException.EmptyDocument(source.file)
-                val rootValue = parseNode(parser, rootToken, ROOT_PATH, source, locations)
-                @Suppress("UNCHECKED_CAST")
-                val root = rootValue as? Map<String, Any?>
+                val rootValue = parseNode(parser, rootToken, ROOT_PATH, source)
+                val root = rootValue as? DocumentObject
                     ?: throw DocumentReadException.InvalidRoot(source.file, typeName(rootValue))
                 val trailingToken = parser.nextToken()
                 if (trailingToken != null) {
@@ -41,7 +39,6 @@ class JsonDocumentReader : DocumentReader {
                 InputDocument(
                     source = source,
                     root = root,
-                    sourceMap = SourceMap(locations),
                 )
             }
         } catch (ex: DocumentReadException) {
@@ -56,18 +53,17 @@ class JsonDocumentReader : DocumentReader {
         token: JsonToken,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Any? {
-        locations.putIfAbsent(path, locationOf(source, path, parser.currentTokenLocation()))
+    ): DocumentNode {
+        val location = locationOf(source, path, parser.currentTokenLocation())
         return when (token) {
-            JsonToken.START_OBJECT -> parseObject(parser, path, source, locations)
-            JsonToken.START_ARRAY -> parseArray(parser, path, source, locations)
-            JsonToken.VALUE_STRING -> parser.valueAsString
-            JsonToken.VALUE_TRUE -> true
-            JsonToken.VALUE_FALSE -> false
-            JsonToken.VALUE_NUMBER_INT -> parser.numberValue
-            JsonToken.VALUE_NUMBER_FLOAT -> parser.doubleValue
-            JsonToken.VALUE_NULL -> null
+            JsonToken.START_OBJECT -> parseObject(parser, path, source, location)
+            JsonToken.START_ARRAY -> parseArray(parser, path, source, location)
+            JsonToken.VALUE_STRING -> DocumentString(parser.valueAsString, location)
+            JsonToken.VALUE_TRUE -> DocumentBoolean(true, location)
+            JsonToken.VALUE_FALSE -> DocumentBoolean(false, location)
+            JsonToken.VALUE_NUMBER_INT -> DocumentNumber(parser.numberValue, location)
+            JsonToken.VALUE_NUMBER_FLOAT -> DocumentNumber(parser.doubleValue, location)
+            JsonToken.VALUE_NULL -> DocumentNull(location)
             else -> throw malformed(source, parser, "Unexpected JSON token: $token")
         }
     }
@@ -76,14 +72,14 @@ class JsonDocumentReader : DocumentReader {
         parser: JsonParser,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Map<String, Any?> {
-        val result = linkedMapOf<String, Any?>()
+        location: SourceLocation,
+    ): DocumentObject {
+        val result = linkedMapOf<String, DocumentMember>()
         while (true) {
             val token = parser.nextToken()
                 ?: throw malformed(source, parser, "Unexpected end of JSON object")
             if (token == JsonToken.END_OBJECT) {
-                return result
+                return DocumentObject(result, location)
             }
             if (token != JsonToken.FIELD_NAME) {
                 throw malformed(source, parser, "Expected JSON field name, found $token")
@@ -103,8 +99,10 @@ class JsonDocumentReader : DocumentReader {
 
             val valueToken = parser.nextToken()
                 ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
-            locations[keyPath] = keyLocation
-            result[key] = parseNode(parser, valueToken, keyPath, source, locations)
+            result[key] = DocumentMember(
+                keyLocation = keyLocation,
+                value = parseNode(parser, valueToken, keyPath, source),
+            )
         }
     }
 
@@ -112,16 +110,16 @@ class JsonDocumentReader : DocumentReader {
         parser: JsonParser,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): List<Any?> {
-        val result = mutableListOf<Any?>()
+        location: SourceLocation,
+    ): DocumentArray {
+        val result = mutableListOf<DocumentNode>()
         while (true) {
             val token = parser.nextToken()
                 ?: throw malformed(source, parser, "Unexpected end of JSON array")
             if (token == JsonToken.END_ARRAY) {
-                return result
+                return DocumentArray(result, location)
             }
-            result += parseNode(parser, token, "$path[${result.size}]", source, locations)
+            result += parseNode(parser, token, "$path[${result.size}]", source)
         }
     }
 
@@ -144,12 +142,14 @@ class JsonDocumentReader : DocumentReader {
     ): DocumentReadException.MalformedDocument =
         DocumentReadException.MalformedDocument(source.file, JsonParseException(parser, message))
 
-    private fun typeName(value: Any?): String =
+    private fun typeName(value: DocumentNode): String =
         when (value) {
-            null -> "null"
-            is Map<*, *> -> "object"
-            is List<*> -> "array"
-            else -> value::class.simpleName ?: value.javaClass.simpleName
+            is DocumentObject -> "object"
+            is DocumentArray -> "array"
+            is DocumentString -> "string"
+            is DocumentNumber -> "number"
+            is DocumentBoolean -> "boolean"
+            is DocumentNull -> "null"
         }
 
     private companion object {

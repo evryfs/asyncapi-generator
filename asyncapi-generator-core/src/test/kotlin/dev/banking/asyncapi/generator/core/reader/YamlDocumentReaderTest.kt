@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
 import dev.banking.asyncapi.generator.core.fixtures.childObject
+import dev.banking.asyncapi.generator.core.fixtures.value
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -19,16 +20,16 @@ class YamlDocumentReaderTest {
         val example = document.root.childObject("components")
             .childObject("schemas")
             .childObject("Example")
-        assertEquals("3.0.0", document.root["asyncapi"])
-        assertEquals("Demo API", info["title"])
-        assertTrue((info["summary"] as String).startsWith("folded text"))
-        assertTrue((info["description"] as String).startsWith("literal\ntext"))
-        assertEquals(true, example["enabled"])
-        assertEquals("true", example["quotedEnabled"])
-        assertEquals(12, example["count"])
-        assertEquals("12", example["quotedCount"])
-        assertEquals(12.5, example["price"])
-        assertEquals(null, example["nullable"])
+        assertEquals("3.0.0", document.root.value("asyncapi"))
+        assertEquals("Demo API", info.value("title"))
+        assertTrue((info.value("summary") as String).startsWith("folded text"))
+        assertTrue((info.value("description") as String).startsWith("literal\ntext"))
+        assertEquals(true, example.value("enabled"))
+        assertEquals("true", example.value("quotedEnabled"))
+        assertEquals(12, example.value("count"))
+        assertEquals("12", example.value("quotedCount"))
+        assertEquals(12.5, example.value("price"))
+        assertEquals(null, example.value("nullable"))
     }
 
     @Test
@@ -58,7 +59,7 @@ class YamlDocumentReaderTest {
     @Test
     fun `returns linked map preserving input order`() {
         val document = reader.read(ReaderFixtures.yamlSource("order-preservation.yaml"))
-        assertIs<LinkedHashMap<String, Any?>>(document.root)
-        assertEquals(listOf("asyncapi", "info", "channels"), document.root.keys.toList())
+        assertIs<DocumentObject>(document.root)
+        assertEquals(listOf("asyncapi", "info", "channels"), document.root.members.keys.toList())
     }
 }

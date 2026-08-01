@@ -3,9 +3,8 @@ package dev.banking.asyncapi.generator.core.reader
 /**
  * Format-independent document produced by the reader stage.
  *
- * [InputDocument] is the parser input. It contains the semantic document tree
- * and the source map needed for diagnostics, but it does not contain parsed
- * AsyncAPI model objects.
+ * [InputDocument] is the parser input. Its immutable node tree contains both
+ * semantic values and their source locations, but no parsed AsyncAPI models.
  *
  * Expected behavior is covered by:
  * - `DocumentReaderContractTest`
@@ -13,6 +12,5 @@ package dev.banking.asyncapi.generator.core.reader
  */
 data class InputDocument(
     val source: DocumentSource,
-    val root: Map<String, Any?>,
-    val sourceMap: SourceMap,
+    val root: DocumentObject,
 )
