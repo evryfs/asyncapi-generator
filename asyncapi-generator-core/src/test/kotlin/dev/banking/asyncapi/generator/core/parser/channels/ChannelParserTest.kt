@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.channels
 
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -116,12 +116,100 @@ class ChannelParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse channel with invalid messages structure throws UnexpectedValue`() {
+    fun `parse referenced channel`() {
+        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
+        val result = parser.parseMap(channelsNode)
+
+        val reference = (result["referencedChannel"] as ChannelInterface.ChannelReference).reference
+        assertThat(reference.ref).isEqualTo("#/channels/lightingMeasured")
+    }
+
+    @Test
+    fun `parse channel with invalid messages structure reports its expected type and source`() {
         val channelsNode = readNode("parser/channels/asyncapi_parser_channel_invalid.yaml", "channels")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map/List",
-            "asyncapi_parser_channel_invalid.yaml",
-            "asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages",
+            sourcePath = "root.channels.InvalidMessages.messages",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
+        ) {
+            parser.parseMap(channelsNode)
+        }
+    }
+
+    @Test
+    fun `parse channel with boolean address reports its expected type and source`() {
+        val channelsNode = readNode(
+            "parser/channels/asyncapi_parser_channel_invalid.yaml",
+            "channelCases",
+            "InvalidAddress",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = false,
+            path = "asyncapi_parser_channel_invalid.root.channelCases.InvalidAddress.invalidChannel.address",
+            sourcePath = "root.channelCases.InvalidAddress.invalidChannel.address",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
+        ) {
+            parser.parseMap(channelsNode)
+        }
+    }
+
+    @Test
+    fun `parse channel with null reference reports its expected type and source`() {
+        val channelsNode = readNode(
+            "parser/channels/asyncapi_parser_channel_invalid.yaml",
+            "channelCases",
+            "NullReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_channel_invalid.root.channelCases.NullReference.invalidChannel.\$ref",
+            sourcePath = "root.channelCases.NullReference.invalidChannel.\$ref",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
+        ) {
+            parser.parseMap(channelsNode)
+        }
+    }
+
+    @Test
+    fun `parse scalar channel reports the entry type and source`() {
+        val channelsNode = readNode(
+            "parser/channels/asyncapi_parser_channel_invalid.yaml",
+            "channelCases",
+            "InvalidChannelStructure",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_channel_invalid.root.channelCases.InvalidChannelStructure.invalidChannel",
+            sourcePath = "root.channelCases.InvalidChannelStructure.invalidChannel",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
+        ) {
+            parser.parseMap(channelsNode)
+        }
+    }
+
+    @Test
+    fun `parse channel map from an array reports the container type and source`() {
+        val channelsNode = readNode(
+            "parser/channels/asyncapi_parser_channel_invalid.yaml",
+            "channelCases",
+            "ArrayInsteadOfMap",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("address" to "valid-address")),
+            path = "asyncapi_parser_channel_invalid.root.channelCases.ArrayInsteadOfMap",
+            sourcePath = "root.channelCases.ArrayInsteadOfMap",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
         ) {
             parser.parseMap(channelsNode)
         }

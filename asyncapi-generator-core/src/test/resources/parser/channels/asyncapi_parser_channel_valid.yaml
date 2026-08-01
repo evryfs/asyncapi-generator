@@ -107,6 +107,9 @@ channels:
       powerMessage:
         $ref: '#/components/messages/lightMeasured'
 
+  referencedChannel:
+    $ref: '#/channels/lightingMeasured'
+
 components:
   messages:
     lightMeasured: { name: lightMeasured }

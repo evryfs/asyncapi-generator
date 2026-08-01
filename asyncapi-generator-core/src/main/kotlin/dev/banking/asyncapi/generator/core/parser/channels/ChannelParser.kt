@@ -31,10 +31,8 @@ class ChannelParser(
     private val externalDocsParser: ExternalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+        parserNode.members().forEach { node ->
+            val reference = node.optional($$"$ref")?.expect<String>()
             val channel = if (reference != null) {
                 ChannelInterface.ChannelReference(
                     Reference(
@@ -45,11 +43,11 @@ class ChannelParser(
             } else {
                 ChannelInterface.ChannelInline(
                     Channel(
-                        address = node.optional("address")?.coerce<String>(),
+                        address = node.optional("address")?.expect<String>(),
                         messages = node.optional("messages")?.let(messageParser::parseMap),
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
+                        title = node.optional("title")?.expect<String>(),
+                        summary = node.optional("summary")?.expect<String>(),
+                        description = node.optional("description")?.expect<String>(),
                         servers = node.optional("servers")?.let(referenceParser::parseList),
                         parameters = node.optional("parameters")?.let(parameterParser::parseMap),
                         tags = node.optional("tags")?.let(tagParser::parseList),
