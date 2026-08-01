@@ -6,6 +6,10 @@ channels:
   InvalidMessages:
     messages: "not-a-map"
 channelCases:
+  ListMessages:
+    invalidChannel:
+      messages:
+        - $ref: '#/components/messages/Message'
   InvalidAddress:
     invalidChannel:
       address: false

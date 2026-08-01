@@ -140,6 +140,25 @@ class ChannelParserTest : ParserTestSupport() {
     }
 
     @Test
+    fun `parse channel with list shaped messages reports its expected type and source`() {
+        val channelNode = readNode(
+            "parser/channels/asyncapi_parser_channel_invalid.yaml",
+            "channelCases",
+            "ListMessages",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("\$ref" to "#/components/messages/Message")),
+            path = "asyncapi_parser_channel_invalid.root.channelCases.ListMessages.invalidChannel.messages",
+            sourcePath = "root.channelCases.ListMessages.invalidChannel.messages",
+            sourceFile = "asyncapi_parser_channel_invalid.yaml",
+        ) {
+            parser.parseMap(channelNode)
+        }
+    }
+
+    @Test
     fun `parse channel with boolean address reports its expected type and source`() {
         val channelsNode = readNode(
             "parser/channels/asyncapi_parser_channel_invalid.yaml",

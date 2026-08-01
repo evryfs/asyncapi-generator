@@ -6,7 +6,8 @@ channels:
   sample:
     address: test.resource.v1
     messages:
-      - $ref: '#/components/messages/SampleMessage'
+      SampleMessage:
+        $ref: '#/components/messages/SampleMessage'
 components:
   messages:
     SampleMessage:
