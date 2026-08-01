@@ -21,7 +21,7 @@ class MessageExampleParser(
             node.coerce<Map<*, *>>()
             val messageExample = MessageExample(
                 headers = node.optional("headers")?.coerce<Map<String, Any?>>(),
-                payload = node.optional("payload")?.coerce<Any?>(),
+                payload = node.optional("payload")?.toPlainValue(),
                 name = node.optional("name")?.coerce<String>(),
                 summary = node.optional("summary")?.coerce<String>()
             ).also { asyncApiContext.register(it, node) }

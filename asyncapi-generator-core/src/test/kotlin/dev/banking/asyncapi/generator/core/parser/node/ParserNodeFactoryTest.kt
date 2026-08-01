@@ -2,9 +2,14 @@ package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.reader.YamlDocumentReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class ParserNodeFactoryTest {
@@ -51,5 +56,25 @@ class ParserNodeFactoryTest {
         val normalizedArrayLocation = assertNotNull(context.sourceRepository.getLocation("source_map.root.info.tags.0"))
         assertEquals("source_map.root.info.tags.0", normalizedArrayLocation.path)
         assertEquals(5, normalizedArrayLocation.line)
+    }
+
+    @Test
+    fun `strict expectations report locations supplied by the document reader`() {
+        val context = AsyncApiContext()
+        val document = reader.read(ReaderFixtures.yamlSource("source-map.yaml"))
+        val title = ParserNodeFactory.root(document, context)
+            .required("info")
+            .required("title")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            title.expect<Boolean>()
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("source_map.root.info.title", diagnostic.path)
+        assertEquals(ReaderFixtures.yamlFile("source-map.yaml"), diagnostic.sourceLocation.file)
+        assertEquals(3, diagnostic.sourceLocation.line)
+        assertEquals(10, diagnostic.sourceLocation.column)
     }
 }

@@ -48,6 +48,12 @@ class SchemaParser(
     }
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
+        if (isBooleanSchema(parserNode)) {
+            val bool = parserNode.coerce<Boolean>()
+            return SchemaInterface.BooleanSchema(
+                value = bool,
+            ).also { asyncApiContext.register(it, parserNode) }
+        }
         parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
             return SchemaInterface.SchemaReference(
                 Reference(
@@ -77,12 +83,6 @@ class SchemaParser(
             return SchemaInterface.MultiFormatSchemaInline(multiFormatSchema)
                 .also { asyncApiContext.register(multiFormatSchema, parserNode) }
         }
-        if (isBooleanSchema(parserNode)) {
-            val bool = parserNode.coerce<Boolean>()
-            return SchemaInterface.BooleanSchema(
-                value = bool,
-            ).also { asyncApiContext.register(it, parserNode) }
-        }
         return parseSchema(parserNode)
     }
 
@@ -102,7 +102,7 @@ class SchemaParser(
         val comment = parserNode.optional($$"$comment")?.coerce<String>()
         val title = parserNode.optional("title")?.coerce<String>()
         val description = parserNode.optional("description")?.coerce<String>()
-        var type = parserNode.optional("type")?.coerce<Any>()
+        var type = parserNode.optional("type")?.toPlainValue()
         val format = parserNode.optional("format")?.coerce<String>()
 
         val defaultNode = extractDefaultNode(parserNode)
@@ -153,7 +153,7 @@ class SchemaParser(
         val elseSchema = parserNode.optional("else")?.let { parseElement(it) }
 
         val enumValues = parserNode.optional("enum")?.coerce<List<Any?>>()
-        val constValue = parserNode.optional("const")?.coerce<Any?>()
+        val constValue = parserNode.optional("const")?.toPlainValue()
 
         val discriminator = parserNode.optional("discriminator")?.node?.toValue() as? String
         val externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement)

@@ -1,8 +1,14 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 sealed class AsyncApiParseException(message: String) : Exception(message) {
+
+    class ParserDiagnosticFailure(
+        val diagnostic: ParserDiagnostic,
+        context: AsyncApiContext,
+    ) : AsyncApiParseException(ParserDiagnosticFormatter.format(diagnostic, context))
 
     class EmptyYamlFile(fileName: String) :
         AsyncApiParseException("Empty Yaml file : $fileName")
