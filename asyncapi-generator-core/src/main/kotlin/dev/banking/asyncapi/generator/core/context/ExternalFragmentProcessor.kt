@@ -13,7 +13,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.*
-import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
@@ -37,6 +36,8 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.reader.DocumentMember
+import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -58,7 +59,10 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
 ) {
-    fun parseAndValidate(rootNode: ParserNode, reference: Reference) {
+    internal fun parseAndValidate(
+        target: ExternalReferenceTargetResolver.Target,
+        reference: Reference,
+    ) {
         val category = reference.referenceCategoryKey
             ?: throw IllegalArgumentException("Missing referenceCategoryKey for ref '${reference.ref}'")
         if (category == REFERENCE) {
@@ -68,23 +72,24 @@ class ExternalFragmentProcessor(
             )
         }
         val results = ValidationResults(context)
+        val targetMap = singleTargetMap(target.node)
         when (category) {
-            SCHEMA -> parseAndValidateSchemas(rootNode, reference, results)
-            CHANNEL -> parseAndValidateChannels(rootNode, results)
-            MESSAGE -> parseAndValidateMessages(rootNode, results)
-            MESSAGE_TRAIT -> parseAndValidateMessageTraits(rootNode, results)
-            OPERATION -> parseAndValidateOperations(rootNode, results)
-            OPERATION_TRAIT -> parseAndValidateOperationTraits(rootNode, results)
-            OPERATION_REPLY -> parseAndValidateOperationReplies(rootNode, results)
-            OPERATION_REPLY_ADDRESS -> parseAndValidateOperationReplyAddresses(rootNode, results)
-            SERVER -> parseAndValidateServers(rootNode, results)
-            SERVER_VARIABLE -> parseAndValidateServerVariables(rootNode, results)
-            PARAMETER -> parseAndValidateParameters(rootNode, results)
-            SECURITY_SCHEME -> parseAndValidateSecuritySchemes(rootNode, results)
-            CORRELATION_ID -> parseAndValidateCorrelationIds(rootNode, results)
-            EXTERNAL_DOC -> parseAndValidateExternalDocs(rootNode, results)
-            TAG -> parseAndValidateTags(rootNode, results)
-            BINDING -> parseAndValidateBindings(rootNode, results)
+            SCHEMA -> parseAndValidateSchemas(target, reference, results)
+            CHANNEL -> parseAndValidateChannels(targetMap, results)
+            MESSAGE -> parseAndValidateMessages(targetMap, results)
+            MESSAGE_TRAIT -> parseAndValidateMessageTraits(targetMap, results)
+            OPERATION -> parseAndValidateOperations(targetMap, results)
+            OPERATION_TRAIT -> parseAndValidateOperationTraits(targetMap, results)
+            OPERATION_REPLY -> parseAndValidateOperationReplies(targetMap, results)
+            OPERATION_REPLY_ADDRESS -> parseAndValidateOperationReplyAddresses(targetMap, results)
+            SERVER -> parseAndValidateServers(targetMap, results)
+            SERVER_VARIABLE -> parseAndValidateServerVariables(targetMap, results)
+            PARAMETER -> parseAndValidateParameters(targetMap, results)
+            SECURITY_SCHEME -> parseAndValidateSecuritySchemes(targetMap, results)
+            CORRELATION_ID -> parseAndValidateCorrelationIds(targetMap, results)
+            EXTERNAL_DOC -> parseAndValidateExternalDocs(targetMap, results)
+            TAG -> parseAndValidateTags(targetMap, results)
+            BINDING -> parseAndValidateBindings(targetMap, results)
             else -> { /* Should not happen */ }
         }
         results.logWarnings()
@@ -92,30 +97,23 @@ class ExternalFragmentProcessor(
     }
 
     private fun parseAndValidateSchemas(
-        rootNode: ParserNode,
+        target: ExternalReferenceTargetResolver.Target,
         reference: Reference,
         results: ValidationResults,
     ) {
-        val componentSchemaName = reference.ref.componentSchemaNameOrNull()
-        val schemasNode =
-            if (componentSchemaName == null) {
-                rootNode
-            } else {
-                rootNode.required("components").required("schemas")
-            }
-        val parsed: Map<String, SchemaInterface> = SchemaParser(context).parseMap(schemasNode)
-        val validator = SchemaValidator(context)
-        if (componentSchemaName == null) {
-            validator.validateMap(parsed, "External", results)
-        } else {
-            parsed[componentSchemaName]?.let { schema ->
-                validator.validateInterface(
-                    schema,
-                    "External Schema '$componentSchemaName'",
-                    results,
-                )
-            }
+        val selectedSchema =
+            target.objectContainer?.let { container ->
+                SchemaParser(context).parseMap(container)[target.node.name]
+            } ?: SchemaParser(context).parseElement(target.node)
+        requireNotNull(selectedSchema) {
+            "Resolved schema target '${reference.ref}' was not produced by SchemaParser"
         }
+        val validator = SchemaValidator(context)
+        validator.validateInterface(
+            selectedSchema,
+            "External Schema '${target.node.name}'",
+            results,
+        )
     }
 
     private fun parseAndValidateChannels(rootNode: ParserNode, results: ValidationResults) {
@@ -271,6 +269,31 @@ class ExternalFragmentProcessor(
                 is BindingInterface.BindingReference -> resolver.resolve(bindingInterface.reference, ctx, results)
             }
         }
+    }
+
+    private fun singleTargetMap(target: ParserNode): ParserNode {
+        val memberName =
+            if (target.path == target.name) {
+                target.path.substringAfterLast('.')
+            } else {
+                target.name
+            }
+        val parentPath = target.path.removeSuffix(".$memberName")
+        val targetObject = DocumentObject(
+            members = mapOf(
+                memberName to DocumentMember(
+                    keyLocation = target.node.location,
+                    value = target.node,
+                ),
+            ),
+            location = target.node.location,
+        )
+        return ParserNode(
+            name = parentPath,
+            node = targetObject,
+            path = parentPath,
+            context = target.context,
+        )
     }
 
 }

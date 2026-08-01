@@ -8,6 +8,9 @@ enum class ParserDiagnosticCategory(
 ) {
     MISSING_REQUIRED_MEMBER("parser.missing-required-member"),
     UNEXPECTED_VALUE_TYPE("parser.unexpected-value-type"),
+    INVALID_REFERENCE("parser.invalid-reference"),
+    REFERENCE_DOCUMENT_NOT_FOUND("parser.reference-document-not-found"),
+    REFERENCE_TARGET_NOT_FOUND("parser.reference-target-not-found"),
 }
 
 /** JSON-compatible runtime value categories exposed by parser diagnostics. */
@@ -52,5 +55,42 @@ sealed interface ParserDiagnostic {
     ) : ParserDiagnostic {
         override val category: ParserDiagnosticCategory =
             ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE
+    }
+
+    data class InvalidReference(
+        val reference: String,
+        val reason: String,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory = ParserDiagnosticCategory.INVALID_REFERENCE
+        override val expectedType: String = "valid URI reference with a JSON Pointer fragment"
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = reference
+    }
+
+    data class ReferenceDocumentNotFound(
+        val reference: String,
+        val resolvedFile: String,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.REFERENCE_DOCUMENT_NOT_FOUND
+        override val expectedType: String = "existing readable reference document"
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = reference
+    }
+
+    data class ReferenceTargetNotFound(
+        val reference: String,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.REFERENCE_TARGET_NOT_FOUND
+        override val expectedType: String = "existing JSON Pointer target"
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = reference
     }
 }

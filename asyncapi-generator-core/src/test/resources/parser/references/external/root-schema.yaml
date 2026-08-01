@@ -1,0 +1,5 @@
+type: object
+description: root schema target
+properties:
+  id:
+    type: string

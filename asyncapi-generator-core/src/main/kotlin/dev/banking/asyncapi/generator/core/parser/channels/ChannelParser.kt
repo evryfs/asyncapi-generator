@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 /**
@@ -48,7 +49,7 @@ class ChannelParser(
                         title = node.optional("title")?.expect<String>(),
                         summary = node.optional("summary")?.expect<String>(),
                         description = node.optional("description")?.expect<String>(),
-                        servers = node.optional("servers")?.let(referenceParser::parseList),
+                        servers = node.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
                         parameters = node.optional("parameters")?.let(parameterParser::parseMap),
                         tags = node.optional("tags")?.let(tagParser::parseList),
                         externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),

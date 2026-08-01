@@ -1,0 +1,11 @@
+{
+  "Equivalent": {
+    "type": "object",
+    "description": "equivalent external schema",
+    "properties": {
+      "id": {
+        "type": "string"
+      }
+    }
+  }
+}

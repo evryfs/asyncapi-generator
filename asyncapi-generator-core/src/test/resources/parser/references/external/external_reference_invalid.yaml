@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid external references
+  version: 1.0.0
+components:
+  schemas:
+    MalformedReference:
+      $ref: './fragments.yaml#not-a-pointer'
+    MissingDocument:
+      $ref: './does-not-exist.yaml#/Missing'
+    MissingTarget:
+      $ref: './fragments.yaml#/components/schemas/Absent'

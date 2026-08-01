@@ -1,0 +1,5 @@
+components:
+  schemas:
+    "Escaped/Payload~V1":
+      type: string
+      description: escaped pointer target

@@ -2,11 +2,13 @@ package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.reader.DocumentArray
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import dev.banking.asyncapi.generator.core.reader.toValue
+import java.io.File
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
@@ -32,8 +34,16 @@ class ModelRepository(
         val nodePath: String?,
     )
 
+    internal data class ReferenceOrigin(
+        val file: File,
+        val sourcePathId: String,
+        val parserPath: String,
+        val sourceLocation: SourceLocation?,
+    )
+
     private val modelsByInstance = IdentityHashMap<Any, Model>()
     private val modelsByPath = LinkedHashMap<String, Any>()
+    private val referenceOrigins = IdentityHashMap<Reference, ReferenceOrigin>()
 
     fun register(model: Any, node: ParserNode) {
         val fieldNames = collectFieldNames(node)
@@ -51,7 +61,16 @@ class ModelRepository(
             ?: sourceRepository.findNearestLocation(path)
 
         if (model is Reference) {
-            model.sourceId = path.substringBefore(".root", path)
+            val sourcePathId = path.substringBefore(".root", path)
+            model.sourceId = sourceRepository.findStableIdByPathId(sourcePathId) ?: sourcePathId
+            sourceRepository.findFileById(sourcePathId)?.let { sourceFile ->
+                referenceOrigins[model] = ReferenceOrigin(
+                    file = sourceFile,
+                    sourcePathId = sourcePathId,
+                    parserPath = path,
+                    sourceLocation = sourceLocation,
+                )
+            }
         }
 
         modelsByInstance[model] =
@@ -67,6 +86,10 @@ class ModelRepository(
                 path,
             )
         modelsByPath[path] = model
+        val normalizedArrayPath = path.replace(Regex("""\[(\d+)]"""), ".$1")
+        if (normalizedArrayPath != path) {
+            modelsByPath[normalizedArrayPath] = model
+        }
     }
 
     fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
@@ -105,6 +128,9 @@ class ModelRepository(
 
     fun getModelsByInstance(): Map<Any, Model> = IdentityHashMap(modelsByInstance)
     fun getModelsByPath() = modelsByPath.toMap()
+
+    internal fun getReferenceOrigin(reference: Reference): ReferenceOrigin? =
+        referenceOrigins[reference]
 
     fun findByReference(reference: Reference): Any? {
         val normalized = normalize(reference) ?: return null
@@ -190,24 +216,19 @@ class ModelRepository(
     }
 
     private fun normalize(reference: Reference): String? {
-        val rawRef = reference.ref
-        val clean = rawRef.trim().trimStart('\'', '"', '|', '>')
-        if (clean.isEmpty()) return null
-        if (clean.startsWith("#/")) {
-            val fileId = reference.sourceId
-                ?: throw IllegalArgumentException("Reference requires a ID")
-            val suffix = clean
-                .removePrefix("#/")
-                .replace("/", ".")
-            return "$fileId.$ROOT.$suffix"
-        }
-
-        val docPart = clean.substringBefore('#').trim()
-        val pointer = clean.substringAfter('#', missingDelimiterValue = "").ifEmpty { return null }
-        val fileId = sourceRepository.fileIdForName(docPart) ?: return null
-        val suffix = pointer
-            .removePrefix("/")
-            .replace("/", ".")
-        return "$fileId.$ROOT.$suffix"
+        val origin = referenceOrigins[reference]
+        val sourcePathId = origin?.sourcePathId ?: reference.sourceId ?: return null
+        val sourceFile = origin?.file ?: sourceRepository.findFileById(sourcePathId) ?: return null
+        val parsed = runCatching { reference.ref.parseReference() }.getOrNull() ?: return null
+        val targetFile = parsed.resolveDocumentAgainst(sourceFile)
+        val fileId =
+            if (targetFile == null) {
+                sourcePathId
+            } else {
+                sourceRepository.findIdByFile(targetFile) ?: return null
+            }
+        val segments = parsed.pointerSegments()
+        if (segments.isEmpty()) return "$fileId.$ROOT"
+        return "$fileId.$ROOT.${segments.joinToString(".")}"
     }
 }

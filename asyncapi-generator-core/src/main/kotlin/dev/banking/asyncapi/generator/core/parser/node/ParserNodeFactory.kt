@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.reader.DocumentNode
 import dev.banking.asyncapi.generator.core.reader.DocumentObject
 import dev.banking.asyncapi.generator.core.reader.InputDocument
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
-import java.io.File
 
 /**
  * Creates parser nodes from reader-stage input documents.
@@ -25,9 +24,9 @@ object ParserNodeFactory {
         document: InputDocument,
         context: AsyncApiContext,
     ): ParserNode {
-        context.registerSource(document.source.file, document.source.content)
+        val sourceId = context.registerDocumentSource(document.source.file, document.source.content)
 
-        val rootPath = "${buildFileId(document.source.file)}.$ROOT"
+        val rootPath = "$sourceId.$ROOT"
         registerLocations(
             node = document.root,
             parserPath = rootPath,
@@ -90,7 +89,4 @@ object ParserNodeFactory {
     private fun normalizeArrayPath(path: String): String =
         path.replace(Regex("""\[(\d+)]"""), ".$1")
 
-    private fun buildFileId(file: File): String =
-        file.nameWithoutExtension
-            .replace(Regex("[^A-Za-z0-9_]"), "_")
 }

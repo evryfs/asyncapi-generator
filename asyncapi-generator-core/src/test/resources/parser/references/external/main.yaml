@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: External reference loading
+  version: 1.0.0
+components:
+  schemas:
+    EscapedReference:
+      $ref: './fragments.yaml#/components/schemas/Escaped~1Payload~0V1'
+    RootReference:
+      $ref: './root-schema.yaml'
+    YamlReference:
+      $ref: './equivalent.yaml#/Equivalent'
+    JsonReference:
+      $ref: './equivalent.json#/Equivalent'
+    EncodedReference:
+      $ref: './space%20dir/schema.yaml#/components/schemas/Encoded%20Name'
+    LeftReference:
+      $ref: './left/shared.yaml#/components/schemas/Shared'
+    RightReference:
+      $ref: './right/shared.yaml#/components/schemas/Shared'

@@ -32,6 +32,11 @@ class AsyncApiContext {
         sourceRepository.registerSource(file, content)
     }
 
+    internal fun registerDocumentSource(
+        file: File,
+        content: String,
+    ): String = sourceRepository.registerSourceAndGetPathId(file, content)
+
     fun registerLine(
         path: String,
         line: Int,

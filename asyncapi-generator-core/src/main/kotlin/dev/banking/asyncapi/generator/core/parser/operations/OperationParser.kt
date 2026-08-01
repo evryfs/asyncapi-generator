@@ -10,6 +10,8 @@ import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 /**
@@ -47,8 +49,8 @@ class OperationParser(
                         summary = node.optional("summary")?.expect<String>(),
                         description = node.optional("description")?.expect<String>(),
                         action = node.required("action").expect<String>(),
-                        channel = node.optional("channel")?.let(referenceParser::parseElement),
-                        messages = node.optional("messages")?.let(referenceParser::parseList),
+                        channel = node.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                        messages = node.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
                         bindings = node.optional("bindings")?.let(bindingParser::parseMap),
                         traits = node.optional("traits")?.let(operationTraitParser::parseList),
                         tags = node.optional("tags")?.let(tagParser::parseList),

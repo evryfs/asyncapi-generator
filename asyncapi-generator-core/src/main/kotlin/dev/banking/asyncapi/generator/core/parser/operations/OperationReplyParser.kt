@@ -6,6 +6,8 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 /**
@@ -40,8 +42,8 @@ class OperationReplyParser(
             OperationReplyInterface.OperationReplyInline(
                 OperationReply(
                     address = parserNode.optional("address")?.let(operationReplyAddressParser::parseElement),
-                    channel = parserNode.optional("channel")?.let(referenceParser::parseElement),
-                    messages = parserNode.optional("messages")?.let(referenceParser::parseList)
+                    channel = parserNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    messages = parserNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) }
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

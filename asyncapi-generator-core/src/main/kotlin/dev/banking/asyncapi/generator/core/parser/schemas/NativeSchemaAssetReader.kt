@@ -21,16 +21,20 @@ import java.io.IOException
 class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    private val pathResolver = ExternalReferencePathResolver(asyncApiContext)
+    private val pathResolver = ExternalReferencePathResolver()
 
     fun readIfExternalReference(schemaNode: ParserNode): String? {
         val reference = schemaNode.externalReferenceValue() ?: return null
         val sourceId = schemaNode.path.substringBefore(".root", missingDelimiterValue = "")
+        val sourceFile =
+            sourceId.takeIf(String::isNotBlank)
+                ?.let(asyncApiContext::findFileById)
+                ?: asyncApiContext.getCurrentFile()
         val file =
-            pathResolver.resolveFile(
+            pathResolver.resolve(
                 reference = reference,
-                sourceId = sourceId.ifBlank { null },
-            ) ?: return null
+                sourceFile = sourceFile,
+            )?.file ?: return null
 
         return try {
             file.readText()

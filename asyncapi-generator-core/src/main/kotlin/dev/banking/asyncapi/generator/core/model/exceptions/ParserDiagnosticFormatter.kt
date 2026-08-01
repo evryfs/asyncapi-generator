@@ -23,6 +23,29 @@ internal object ParserDiagnosticFormatter {
                     diagnostic = diagnostic,
                     context = context,
                 )
+
+            is ParserDiagnostic.InvalidReference ->
+                buildMessage(
+                    header = "Invalid reference '${diagnostic.reference}': ${diagnostic.reason}.",
+                    diagnostic = diagnostic,
+                    context = context,
+                )
+
+            is ParserDiagnostic.ReferenceDocumentNotFound ->
+                buildMessage(
+                    header =
+                        "Reference document for '${diagnostic.reference}' was not found or is not readable: " +
+                            diagnostic.resolvedFile,
+                    diagnostic = diagnostic,
+                    context = context,
+                )
+
+            is ParserDiagnostic.ReferenceTargetNotFound ->
+                buildMessage(
+                    header = "Reference target '${diagnostic.reference}' was not found.",
+                    diagnostic = diagnostic,
+                    context = context,
+                )
         }
 
     private fun unexpectedValueMessage(

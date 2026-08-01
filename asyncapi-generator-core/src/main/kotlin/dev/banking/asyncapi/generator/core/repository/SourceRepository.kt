@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.reader.SourceLocation
 import java.io.File
+import java.nio.charset.StandardCharsets
+import java.util.UUID
 import kotlin.math.max
 import kotlin.math.min
 
@@ -16,11 +18,13 @@ class SourceRepository {
     data class Source(
         val file: File,
         val id: String,
+        val pathId: String,
         val lines: List<String>,
     )
 
     // Map of file absolute path → Source
     private val sources = mutableMapOf<String, Source>()
+    private val sourcesByPathId = mutableMapOf<String, Source>()
 
     // Map of node path → line number
     internal val lineMap = mutableMapOf<String, Int>()
@@ -34,10 +38,36 @@ class SourceRepository {
         file: File,
         content: String,
     ) {
-        val id = file.nameWithoutExtension.replace(Regex("[^A-Za-z0-9_]"), "_")
-        val src = Source(file = file, id = id, lines = content.lines())
-        sources[file.absolutePath] = src
+        register(file, content)
+    }
+
+    internal fun registerSourceAndGetPathId(
+        file: File,
+        content: String,
+    ): String = register(file, content)
+
+    private fun register(
+        file: File,
+        content: String,
+    ): String {
+        val canonicalFile = file.canonicalFile
+        sources[canonicalFile.absolutePath]?.let { existing ->
+            current = existing
+            return existing.pathId
+        }
+
+        val preferredId = canonicalFile.nameWithoutExtension.replace(Regex("[^A-Za-z0-9_]"), "_")
+        val pathId = uniquePathId(preferredId, canonicalFile)
+        val src = Source(
+            file = canonicalFile,
+            id = preferredId,
+            pathId = pathId,
+            lines = content.lines(),
+        )
+        sources[canonicalFile.absolutePath] = src
+        sourcesByPathId[pathId] = src
         current = src
+        return pathId
     }
 
     fun registerLine(
@@ -61,23 +91,17 @@ class SourceRepository {
 
     fun getCurrentFile(): File = current.file
 
-    fun findFileById(id: String): File? = sources.values.firstOrNull { it.id == id }?.file
+    fun findFileById(id: String): File? = sourcesByPathId[id]?.file
+
+    fun findIdByFile(file: File): String? = sources[file.canonicalFile.absolutePath]?.pathId
+
+    fun findStableIdByPathId(pathId: String): String? = sourcesByPathId[pathId]?.id
 
     fun getAllSources(): Collection<Source> = sources.values
 
     fun getAllLines(): Map<String, Int> = lineMap.toMap()
 
     fun getAllLocations(): Map<String, SourceLocation> = locations.toMap()
-
-    fun fileIdForName(name: String): String? {
-        val clean = name.trim().trimStart('\'', '"', '|', '>')
-        // exact match on filename
-        sources.values.firstOrNull { it.file.name == clean }?.let { return it.id }
-        // fallback: basename
-        val base = File(clean).name
-        sources.values.firstOrNull { it.file.name == base }?.let { return it.id }
-        return null
-    }
 
     fun findNearestLine(path: String): Int? {
         findNearestLocation(path)?.let { return it.line }
@@ -126,9 +150,28 @@ class SourceRepository {
     }
 
     private fun sourceFor(location: SourceLocation): Source =
-        sources[location.file.absolutePath]
-            ?: sources.values.firstOrNull { it.id == location.sourceId }
+        sources[location.file.canonicalFile.absolutePath]
+            ?: sourcesByPathId[location.sourceId]
             ?: current
+
+    private fun uniquePathId(preferredId: String, file: File): String {
+        val existing = sourcesByPathId[preferredId]
+        if (existing == null || existing.file == file) return preferredId
+
+        val suffix = UUID.nameUUIDFromBytes(
+            file.absolutePath.toByteArray(StandardCharsets.UTF_8),
+        ).toString().substringBefore('-')
+        val base = "${preferredId}_$suffix"
+        var candidate = base
+        var discriminator = 2
+        while (
+            sourcesByPathId[candidate]?.file != null &&
+            sourcesByPathId[candidate]?.file != file
+        ) {
+            candidate = "${base}_${discriminator++}"
+        }
+        return candidate
+    }
 
     private fun nearestPaths(path: String): Sequence<String> = sequence {
         val candidates = linkedSetOf(

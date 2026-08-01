@@ -1,0 +1,5 @@
+components:
+  schemas:
+    Shared:
+      type: string
+      description: left shared schema
