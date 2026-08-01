@@ -25,7 +25,8 @@ data class ParserNode(
     val profile: AsyncApiParserProfile? = null,
 ) {
 
-    fun withProfile(profile: AsyncApiParserProfile): ParserNode = copy(profile = profile)
+    fun withProfile(profile: AsyncApiParserProfile): ParserNode =
+        copy(profile = profile)
 
     fun required(nodeKey: String): ParserNode {
         val currentNode = objectNode()
@@ -61,7 +62,7 @@ data class ParserNode(
     ) {
         val unexpectedMember = objectNode().members.entries.firstOrNull { (memberName, _) ->
             memberName !in allowedMembers &&
-                !(specificationExtensionsAllowed && memberName.startsWith("x-"))
+                    !(specificationExtensionsAllowed && memberName.startsWith("x-"))
         } ?: return
         val (memberName, member) = unexpectedMember
         throw AsyncApiParseException.ParserDiagnosticFailure(

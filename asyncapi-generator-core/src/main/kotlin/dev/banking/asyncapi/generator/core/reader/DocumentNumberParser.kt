@@ -12,9 +12,9 @@ internal object DocumentNumberParser {
 
     fun parseInteger(value: String): Number? {
         val integer = value.withoutSeparators().toBigIntegerOrNull() ?: return null
-        return when {
-            integer in minInt..maxInt -> integer.toInt()
-            integer in minLong..maxLong -> integer.toLong()
+        return when (integer) {
+            in minInt..maxInt -> integer.toInt()
+            in minLong..maxLong -> integer.toLong()
             else -> integer
         }
     }

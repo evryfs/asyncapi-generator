@@ -35,8 +35,8 @@ internal enum class AsyncApiSpecificationLine(
             val declaredVersion = versionNode.expect<String>()
             val version = AsyncApiSpecificationVersion.parse(declaredVersion)
                 ?: throw parserFailure(
-                    root,
-                    ParserDiagnostic.InvalidSpecificationVersion(
+                    root = root,
+                    diagnostic = ParserDiagnostic.InvalidSpecificationVersion(
                         declaredVersion = declaredVersion,
                         path = versionNode.path,
                         sourceLocation = versionNode.node.location,
@@ -46,10 +46,9 @@ internal enum class AsyncApiSpecificationLine(
                 candidate.major == version.major && candidate.minor == version.minor
             }
             val profile = specificationLine?.parserProfile
-            if (profile == null) {
-                throw parserFailure(
-                    root,
-                    ParserDiagnostic.UnsupportedSpecificationVersion(
+                ?: throw parserFailure(
+                    root = root,
+                    diagnostic = ParserDiagnostic.UnsupportedSpecificationVersion(
                         declaredVersion = declaredVersion,
                         knownVersionLine = specificationLine != null,
                         supportedVersionLines = supportedVersionLines,
@@ -57,7 +56,6 @@ internal enum class AsyncApiSpecificationLine(
                         sourceLocation = versionNode.node.location,
                     ),
                 )
-            }
             return root.withProfile(profile)
         }
 

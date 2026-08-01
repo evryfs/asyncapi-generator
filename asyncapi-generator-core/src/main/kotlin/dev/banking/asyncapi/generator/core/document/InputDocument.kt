@@ -8,6 +8,9 @@ package dev.banking.asyncapi.generator.core.document
  * The root may be any node representable by the input format; consumers own
  * domain-specific root-shape requirements.
  *
+ * @property source content and identity from which this document was read
+ * @property root source-located root value, which is not required to be an object
+ *
  * Expected behavior is covered by:
  * - `DocumentReaderContractTest`
  * - `YamlDocumentReaderTest`

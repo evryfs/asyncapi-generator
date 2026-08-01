@@ -38,14 +38,13 @@ class JsonDocumentReader internal constructor(
     constructor() : this(DocumentReaderLimits.DEFAULT)
 
     private val jsonFactory: JsonFactory =
-        JsonFactoryBuilder()
-            .streamReadConstraints(
-                StreamReadConstraints.builder()
-                    .maxDocumentLength(limits.maxDocumentCharacters.toLong())
-                    .maxNestingDepth(limits.maxNestingDepth)
-                    .maxNumberLength(limits.maxNumberCharacters)
-                    .build(),
-            ).build()
+        JsonFactoryBuilder().streamReadConstraints(
+            StreamReadConstraints.builder()
+                .maxDocumentLength(limits.maxDocumentCharacters.toLong())
+                .maxNestingDepth(limits.maxNestingDepth)
+                .maxNumberLength(limits.maxNumberCharacters)
+                .build(),
+        ).build()
 
     override fun read(source: DocumentSource): InputDocument {
         limits.requireDocumentSize(source)
