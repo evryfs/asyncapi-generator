@@ -1,12 +1,11 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import assertk.assertFailure
-import assertk.assertions.isInstanceOf
-import assertk.assertions.messageContains
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
 import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class DocumentReadExceptionTest {
 
@@ -22,10 +21,10 @@ class DocumentReadExceptionTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        val failure = assertFailsWith<DocumentReadException.EmptyDocument> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.EmptyDocument>()
-            .messageContains(source.file.absolutePath)
+        }
+        assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
     }
 
     @Test
@@ -38,11 +37,11 @@ class DocumentReadExceptionTest {
             format = DocumentFormat.YAML,
         )
 
-        val failure = assertFailure {
+        val failure = assertFailsWith<DocumentReadException.DuplicateKey> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.DuplicateKey>()
+        }
 
-        failure.messageContains("title")
-        failure.messageContains(source.file.absolutePath)
+        assertTrue(failure.message.orEmpty().contains("title"))
+        assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
     }
 }

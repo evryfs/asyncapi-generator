@@ -1,17 +1,13 @@
 package dev.banking.asyncapi.generator.core.document
 
-import assertk.assertFailure
-import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
-import assertk.assertions.isNull
-import assertk.assertions.isSameInstanceAs
-import assertk.assertions.isTrue
-import assertk.assertions.prop
 import org.junit.jupiter.api.Test
 import java.io.File
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 
 class DocumentNodeTest {
 
@@ -27,11 +23,9 @@ class DocumentNodeTest {
             location = location("root", line = 1, column = 1),
         )
 
-        assertThat(node.members.keys.toList()).isEqualTo(listOf("first", "second"))
-        assertThat(node.member("first")?.keyLocation?.column).isEqualTo(1)
-        assertThat(node["first"]?.location)
-            .isNotNull()
-            .isSameInstanceAs(firstValue.location)
+        assertEquals(listOf("first", "second"), node.members.keys.toList())
+        assertEquals(1, node.member("first")?.keyLocation?.column)
+        assertSame(firstValue.location, node["first"]?.location)
     }
 
     @Test
@@ -46,11 +40,9 @@ class DocumentNodeTest {
             location = location("root", line = 1, column = 1),
         )
 
-        assertThat(node.members.keys).contains("description")
-        assertThat(node["description"])
-            .isNotNull()
-            .isInstanceOf<DocumentNull>()
-        assertThat(node["missing"]).isNull()
+        assertContains(node.members.keys, "description")
+        assertIs<DocumentNull>(node["description"])
+        assertNull(node["missing"])
     }
 
     @Test
@@ -65,15 +57,11 @@ class DocumentNodeTest {
 
         source.clear()
 
-        assertThat(node["name"])
-            .isNotNull()
-            .isInstanceOf<DocumentString>()
-            .prop(DocumentString::value)
-            .isEqualTo("example")
-        assertFailure {
+        assertEquals("example", assertIs<DocumentString>(node["name"]).value)
+        assertFailsWith<UnsupportedOperationException> {
             @Suppress("UNCHECKED_CAST")
             (node.members as MutableMap<String, DocumentMember>).clear()
-        }.isInstanceOf<UnsupportedOperationException>()
+        }
     }
 
     @Test
@@ -85,14 +73,11 @@ class DocumentNodeTest {
 
         source.clear()
 
-        assertThat(node[0])
-            .isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value)
-            .isTrue()
-        assertFailure {
+        assertEquals(true, assertIs<DocumentBoolean>(node[0]).value)
+        assertFailsWith<UnsupportedOperationException> {
             @Suppress("UNCHECKED_CAST")
             (node.elements as MutableList<DocumentNode>).clear()
-        }.isInstanceOf<UnsupportedOperationException>()
+        }
     }
 
     private fun location(

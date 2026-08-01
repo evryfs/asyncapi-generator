@@ -1,11 +1,10 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import assertk.assertFailure
-import assertk.assertions.isInstanceOf
-import assertk.assertions.messageContains
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class DocumentReaderLimitsTest {
 
@@ -22,9 +21,9 @@ class DocumentReaderLimitsTest {
                 maxDocumentCharacters = 8,
             )
 
-        assertFailure {
+        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             limits.readContent(file)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
-            .messageContains(file.absolutePath)
+        }
+        assertTrue(failure.message.orEmpty().contains(file.absolutePath))
     }
 }

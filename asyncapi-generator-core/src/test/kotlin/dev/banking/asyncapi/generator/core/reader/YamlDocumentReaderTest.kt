@@ -1,13 +1,5 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import assertk.assertFailure
-import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
-import assertk.assertions.messageContains
-import assertk.assertions.prop
-import assertk.assertions.startsWith
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
@@ -18,6 +10,10 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class YamlDocumentReaderTest {
 
@@ -33,31 +29,22 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
         val document = reader.read(source)
-        val root = assertThat(document.root).isInstanceOf<DocumentObject>()
-        val info = root.prop("info") { it["info"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val components = root.prop("components") { it["components"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val schemas = components.prop("schemas") { it["schemas"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val example = schemas.prop("Example") { it["Example"] }.isNotNull().isInstanceOf<DocumentObject>()
+        val root = assertIs<DocumentObject>(document.root)
+        val info = assertIs<DocumentObject>(root["info"])
+        val components = assertIs<DocumentObject>(root["components"])
+        val schemas = assertIs<DocumentObject>(components["schemas"])
+        val example = assertIs<DocumentObject>(schemas["Example"])
 
-        root.prop("asyncapi") { it["asyncapi"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("3.0.0")
-        info.prop("title") { it["title"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("Demo API")
-        info.prop("summary") { it["summary"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).startsWith("folded text")
-        info.prop("description") { it["description"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).startsWith("literal\ntext")
-        example.prop("enabled") { it["enabled"] }.isNotNull().isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value).isEqualTo(true)
-        example.prop("quotedEnabled") { it["quotedEnabled"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("true")
-        example.prop("count") { it["count"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isEqualTo(12)
-        example.prop("quotedCount") { it["quotedCount"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("12")
-        example.prop("price") { it["price"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isEqualTo(12.5)
-        example.prop("nullable") { it["nullable"] }.isNotNull().isInstanceOf<DocumentNull>()
+        assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
+        assertEquals("Demo API", assertIs<DocumentString>(info["title"]).value)
+        assertTrue(assertIs<DocumentString>(info["summary"]).value.startsWith("folded text"))
+        assertTrue(assertIs<DocumentString>(info["description"]).value.startsWith("literal\ntext"))
+        assertEquals(true, assertIs<DocumentBoolean>(example["enabled"]).value)
+        assertEquals("true", assertIs<DocumentString>(example["quotedEnabled"]).value)
+        assertEquals(12, assertIs<DocumentNumber>(example["count"]).value)
+        assertEquals("12", assertIs<DocumentString>(example["quotedCount"]).value)
+        assertEquals(12.5, assertIs<DocumentNumber>(example["price"]).value)
+        assertIs<DocumentNull>(example["nullable"])
     }
 
     @Test
@@ -70,9 +57,9 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        assertFailsWith<DocumentReadException.MalformedDocument> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.MalformedDocument>()
+        }
     }
 
     @Test
@@ -85,9 +72,9 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        assertFailsWith<DocumentReadException.MalformedDocument> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.MalformedDocument>()
+        }
     }
 
     @Test
@@ -101,13 +88,11 @@ class YamlDocumentReaderTest {
         )
         val document = reader.read(source)
 
-        val root = assertThat(document.root).isInstanceOf<DocumentArray>()
-        root.prop("first element") { it[0] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("asyncapi")
-        root.prop("second element") { it[1] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("info")
-        root.prop("location path") { it.location.path }.isEqualTo("root")
-        root.prop("location line") { it.location.line }.isEqualTo(1)
+        val root = assertIs<DocumentArray>(document.root)
+        assertEquals("asyncapi", assertIs<DocumentString>(root[0]).value)
+        assertEquals("info", assertIs<DocumentString>(root[1]).value)
+        assertEquals("root", root.location.path)
+        assertEquals(1, root.location.line)
     }
 
     @Test
@@ -120,10 +105,10 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.InvalidMappingKey>()
-            .messageContains("expected string key")
+        }
+        assertTrue(failure.message.orEmpty().contains("expected string key"))
     }
 
     @Test
@@ -137,13 +122,13 @@ class YamlDocumentReaderTest {
                 format = DocumentFormat.YAML,
             )
 
-            val failure = assertFailure {
+            val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
                 reader.read(source)
-            }.isInstanceOf<DocumentReadException.InvalidMappingKey>()
+            }
 
-            failure.messageContains(source.file.absolutePath)
-            failure.messageContains("line 1, column 3")
-            failure.messageContains("expected string key")
+            assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
+            assertTrue(failure.message.orEmpty().contains("line 1, column 3"))
+            assertTrue(failure.message.orEmpty().contains("expected string key"))
         }
     }
 
@@ -162,13 +147,10 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        val root = assertThat(reader.read(source).root).isInstanceOf<DocumentObject>()
-        root.prop("true") { it["true"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("boolean-shaped")
-        root.prop("42") { it["42"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("number-shaped")
-        root.prop("null") { it["null"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("null-shaped")
+        val root = assertIs<DocumentObject>(reader.read(source).root)
+        assertEquals("boolean-shaped", assertIs<DocumentString>(root["true"]).value)
+        assertEquals("number-shaped", assertIs<DocumentString>(root["42"]).value)
+        assertEquals("null-shaped", assertIs<DocumentString>(root["null"]).value)
     }
 
     @Test
@@ -187,12 +169,12 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        val failure = assertFailure {
+        val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
             reader.read(source)
-        }.isInstanceOf<DocumentReadException.InvalidMappingKey>()
+        }
 
-        failure.messageContains("line 4, column 3")
-        failure.messageContains("expected string key")
+        assertTrue(failure.message.orEmpty().contains("line 4, column 3"))
+        assertTrue(failure.message.orEmpty().contains("expected string key"))
     }
 
     @Test
@@ -214,10 +196,10 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             constrainedReader.read(source)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
-            .messageContains(source.file.absolutePath)
+        }
+        assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
     }
 
     @Test
@@ -240,9 +222,9 @@ class YamlDocumentReaderTest {
             format = DocumentFormat.YAML,
         )
 
-        assertFailure {
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             constrainedReader.read(source)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
+        }
     }
 
     @Test
@@ -254,9 +236,8 @@ class YamlDocumentReaderTest {
             content = file.readText(),
             format = DocumentFormat.YAML,
         )
-        val root = assertThat(reader.read(source).root).isInstanceOf<DocumentObject>()
+        val root = assertIs<DocumentObject>(reader.read(source).root)
 
-        root.prop("member names") { it.members.keys.toList() }
-            .isEqualTo(listOf("asyncapi", "info", "channels"))
+        assertEquals(listOf("asyncapi", "info", "channels"), root.members.keys.toList())
     }
 }

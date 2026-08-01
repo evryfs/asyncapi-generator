@@ -1,11 +1,5 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import assertk.assertFailure
-import assertk.assertThat
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
-import assertk.assertions.prop
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
 import dev.banking.asyncapi.generator.core.document.DocumentSource
@@ -15,6 +9,10 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.reader.YamlDocumentReader
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 class ParserNodeFactoryTest {
 
@@ -33,10 +31,10 @@ class ParserNodeFactoryTest {
         val document = reader.read(source)
         val root = ParserNodeFactory.root(document, context)
 
-        assertThat(root.name).isEqualTo("source_map.root")
-        assertThat(root.path).isEqualTo("source_map.root")
-        assertThat(root.node).isEqualTo(document.root)
-        assertThat(root.context).isEqualTo(context)
+        assertEquals("source_map.root", root.name)
+        assertEquals("source_map.root", root.path)
+        assertEquals(document.root, root.node)
+        assertEquals(context, root.context)
     }
 
     @Test
@@ -52,12 +50,12 @@ class ParserNodeFactoryTest {
         val document = reader.read(source)
         ParserNodeFactory.root(document, context)
 
-        assertThat(context.sourceRepository.getLine("source_map.root")).isEqualTo(1)
-        assertThat(context.sourceRepository.getLine("source_map.root.info")).isEqualTo(2)
-        assertThat(context.sourceRepository.getLine("source_map.root.info.title")).isEqualTo(3)
-        assertThat(context.sourceRepository.getLine("source_map.root.info.tags[0]")).isEqualTo(5)
-        assertThat(context.sourceRepository.getLine("source_map.root.info.tags.0")).isEqualTo(5)
-        assertThat(context.findFileById("source_map")).isEqualTo(file)
+        assertEquals(1, context.sourceRepository.getLine("source_map.root"))
+        assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
+        assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
+        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
+        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags.0"))
+        assertEquals(file, context.findFileById("source_map"))
     }
 
     @Test
@@ -73,20 +71,20 @@ class ParserNodeFactoryTest {
         val document = reader.read(source)
         ParserNodeFactory.root(document, context)
 
-        val titleLocation = assertThat(
+        val titleLocation = assertNotNull(
             context.sourceRepository.getLocation("source_map.root.info.title"),
-        ).isNotNull()
-        titleLocation.prop("sourceId") { it.sourceId }.isEqualTo("source-map")
-        titleLocation.prop("file") { it.file }.isEqualTo(file)
-        titleLocation.prop("path") { it.path }.isEqualTo("source_map.root.info.title")
-        titleLocation.prop("line") { it.line }.isEqualTo(3)
-        titleLocation.prop("column") { it.column }.isEqualTo(3)
+        )
+        assertEquals("source-map", titleLocation.sourceId)
+        assertEquals(file, titleLocation.file)
+        assertEquals("source_map.root.info.title", titleLocation.path)
+        assertEquals(3, titleLocation.line)
+        assertEquals(3, titleLocation.column)
 
-        val normalizedArrayLocation = assertThat(
+        val normalizedArrayLocation = assertNotNull(
             context.sourceRepository.getLocation("source_map.root.info.tags.0"),
-        ).isNotNull()
-        normalizedArrayLocation.prop("path") { it.path }.isEqualTo("source_map.root.info.tags.0")
-        normalizedArrayLocation.prop("line") { it.line }.isEqualTo(5)
+        )
+        assertEquals("source_map.root.info.tags.0", normalizedArrayLocation.path)
+        assertEquals(5, normalizedArrayLocation.line)
     }
 
     @Test
@@ -104,16 +102,15 @@ class ParserNodeFactoryTest {
             .required("info")
             .required("title")
 
-        val diagnostic = assertFailure {
+        val failure = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             title.expect<Boolean>()
-        }.isInstanceOf<AsyncApiParseException.ParserDiagnosticFailure>()
-            .prop("diagnostic") { it.diagnostic }
-            .isInstanceOf<ParserDiagnostic.UnexpectedValueType>()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(failure.diagnostic)
 
-        diagnostic.prop("actualType") { it.actualType }.isEqualTo(ParserValueType.STRING)
-        diagnostic.prop("path") { it.path }.isEqualTo("source_map.root.info.title")
-        diagnostic.prop("source file") { it.sourceLocation.file }.isEqualTo(file)
-        diagnostic.prop("source line") { it.sourceLocation.line }.isEqualTo(3)
-        diagnostic.prop("source column") { it.sourceLocation.column }.isEqualTo(10)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("source_map.root.info.title", diagnostic.path)
+        assertEquals(file, diagnostic.sourceLocation.file)
+        assertEquals(3, diagnostic.sourceLocation.line)
+        assertEquals(10, diagnostic.sourceLocation.column)
     }
 }

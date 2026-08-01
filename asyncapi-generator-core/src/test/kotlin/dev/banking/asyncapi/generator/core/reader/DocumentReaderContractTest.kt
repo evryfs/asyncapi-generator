@@ -1,13 +1,5 @@
 package dev.banking.asyncapi.generator.core.reader
 
-import assertk.assertFailure
-import assertk.assertThat
-import assertk.assertions.contains
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
-import assertk.assertions.isNotNull
-import assertk.assertions.isTrue
-import assertk.assertions.prop
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
@@ -20,6 +12,10 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class DocumentReaderContractTest {
 
@@ -36,14 +32,15 @@ class DocumentReaderContractTest {
             format = DocumentFormat.YAML,
         )
         val document = reader.read(source)
-        val root = assertThat(document.root).isInstanceOf<DocumentObject>()
-        val components = root.prop("components") { it["components"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val schemas = components.prop("schemas") { it["schemas"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val userRef = schemas.prop("UserRef") { it["UserRef"] }.isNotNull().isInstanceOf<DocumentObject>()
+        val root = assertIs<DocumentObject>(document.root)
+        val components = assertIs<DocumentObject>(root["components"])
+        val schemas = assertIs<DocumentObject>(components["schemas"])
+        val userRef = assertIs<DocumentObject>(schemas["UserRef"])
 
-        userRef.prop("${'$'}ref") { it["${'$'}ref"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value)
-            .isEqualTo("#/components/schemas/User")
+        assertEquals(
+            "#/components/schemas/User",
+            assertIs<DocumentString>(userRef["${'$'}ref"]).value,
+        )
     }
 
     @Test
@@ -55,11 +52,10 @@ class DocumentReaderContractTest {
             content = file.readText(),
             format = DocumentFormat.YAML,
         )
-        val root = assertThat(reader.read(source).root).isInstanceOf<DocumentObject>()
+        val root = assertIs<DocumentObject>(reader.read(source).root)
 
-        val memberNames = root.prop("member names") { it.members.keys }
-        memberNames.contains("notAsyncApi")
-        memberNames.contains("stillReaderInput")
+        assertTrue(root.members.containsKey("notAsyncApi"))
+        assertTrue(root.members.containsKey("stillReaderInput"))
     }
 
     @Test
@@ -79,10 +75,8 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        assertThat(reader.read(yamlSource).root).isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value).isTrue()
-        assertThat(jsonReader.read(jsonSource).root).isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value).isTrue()
+        assertEquals(true, assertIs<DocumentBoolean>(reader.read(yamlSource).root).value)
+        assertEquals(true, assertIs<DocumentBoolean>(jsonReader.read(jsonSource).root).value)
     }
 
     @Test
@@ -102,8 +96,8 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        assertThat(reader.read(yamlSource).root).isInstanceOf<DocumentNull>()
-        assertThat(jsonReader.read(jsonSource).root).isInstanceOf<DocumentNull>()
+        assertIs<DocumentNull>(reader.read(yamlSource).root)
+        assertIs<DocumentNull>(jsonReader.read(jsonSource).root)
     }
 
     @Test
@@ -128,12 +122,12 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        assertFailure {
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             YamlDocumentReader(limits).read(yamlSource)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
-        assertFailure {
+        }
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             JsonDocumentReader(limits).read(jsonSource)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
+        }
     }
 
     @Test
@@ -171,41 +165,35 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        val yamlRoot = assertThat(reader.read(yamlSource).root).isInstanceOf<DocumentObject>()
-        val jsonRoot = assertThat(jsonReader.read(jsonSource).root).isInstanceOf<DocumentObject>()
+        val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
+        val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)
 
-        yamlRoot.prop("smallInteger") { it["smallInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Int>().isEqualTo(42)
-        jsonRoot.prop("smallInteger") { it["smallInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Int>().isEqualTo(42)
+        assertEquals(42, assertIs<Int>(assertIs<DocumentNumber>(yamlRoot["smallInteger"]).value))
+        assertEquals(42, assertIs<Int>(assertIs<DocumentNumber>(jsonRoot["smallInteger"]).value))
 
-        yamlRoot.prop("longInteger") { it["longInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Long>().isEqualTo(2147483648L)
-        jsonRoot.prop("longInteger") { it["longInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Long>().isEqualTo(2147483648L)
+        assertEquals(2147483648L, assertIs<Long>(assertIs<DocumentNumber>(yamlRoot["longInteger"]).value))
+        assertEquals(2147483648L, assertIs<Long>(assertIs<DocumentNumber>(jsonRoot["longInteger"]).value))
 
         val largeInteger = BigInteger("9223372036854775808")
-        yamlRoot.prop("largeInteger") { it["largeInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigInteger>().isEqualTo(largeInteger)
-        jsonRoot.prop("largeInteger") { it["largeInteger"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigInteger>().isEqualTo(largeInteger)
+        assertEquals(largeInteger, assertIs<BigInteger>(assertIs<DocumentNumber>(yamlRoot["largeInteger"]).value))
+        assertEquals(largeInteger, assertIs<BigInteger>(assertIs<DocumentNumber>(jsonRoot["largeInteger"]).value))
 
-        yamlRoot.prop("ordinaryDecimal") { it["ordinaryDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Double>().isEqualTo(12.5)
-        jsonRoot.prop("ordinaryDecimal") { it["ordinaryDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<Double>().isEqualTo(12.5)
+        assertEquals(12.5, assertIs<Double>(assertIs<DocumentNumber>(yamlRoot["ordinaryDecimal"]).value))
+        assertEquals(12.5, assertIs<Double>(assertIs<DocumentNumber>(jsonRoot["ordinaryDecimal"]).value))
 
         val preciseDecimal = BigDecimal("0.12345678901234567890123456789")
-        yamlRoot.prop("preciseDecimal") { it["preciseDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigDecimal>().isEqualTo(preciseDecimal)
-        jsonRoot.prop("preciseDecimal") { it["preciseDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigDecimal>().isEqualTo(preciseDecimal)
+        assertEquals(
+            preciseDecimal,
+            assertIs<BigDecimal>(assertIs<DocumentNumber>(yamlRoot["preciseDecimal"]).value),
+        )
+        assertEquals(
+            preciseDecimal,
+            assertIs<BigDecimal>(assertIs<DocumentNumber>(jsonRoot["preciseDecimal"]).value),
+        )
 
         val hugeDecimal = BigDecimal("1e400")
-        yamlRoot.prop("hugeDecimal") { it["hugeDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigDecimal>().isEqualTo(hugeDecimal)
-        jsonRoot.prop("hugeDecimal") { it["hugeDecimal"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isInstanceOf<BigDecimal>().isEqualTo(hugeDecimal)
+        assertEquals(hugeDecimal, assertIs<BigDecimal>(assertIs<DocumentNumber>(yamlRoot["hugeDecimal"]).value))
+        assertEquals(hugeDecimal, assertIs<BigDecimal>(assertIs<DocumentNumber>(jsonRoot["hugeDecimal"]).value))
     }
 
     @Test
@@ -226,12 +214,12 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        assertFailure {
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             YamlDocumentReader(limits).read(yamlSource)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
-        assertFailure {
+        }
+        assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             JsonDocumentReader(limits).read(jsonSource)
-        }.isInstanceOf<DocumentReadException.ResourceLimitExceeded>()
+        }
     }
 
     @Test
@@ -251,83 +239,53 @@ class DocumentReaderContractTest {
             format = DocumentFormat.JSON,
         )
 
-        val yamlRoot = assertThat(reader.read(yamlSource).root).isInstanceOf<DocumentObject>()
-        val jsonRoot = assertThat(jsonReader.read(jsonSource).root).isInstanceOf<DocumentObject>()
-        yamlRoot.prop("member names") { it.members.keys.toList() }
-            .isEqualTo(listOf("asyncapi", "info", "components"))
-        jsonRoot.prop("member names") { it.members.keys.toList() }
-            .isEqualTo(listOf("asyncapi", "info", "components"))
-        yamlRoot.prop("asyncapi") { it["asyncapi"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("3.0.0")
-        jsonRoot.prop("asyncapi") { it["asyncapi"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("3.0.0")
+        val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
+        val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)
+        assertEquals(listOf("asyncapi", "info", "components"), yamlRoot.members.keys.toList())
+        assertEquals(listOf("asyncapi", "info", "components"), jsonRoot.members.keys.toList())
+        assertEquals("3.0.0", assertIs<DocumentString>(yamlRoot["asyncapi"]).value)
+        assertEquals("3.0.0", assertIs<DocumentString>(jsonRoot["asyncapi"]).value)
 
-        val yamlInfo = yamlRoot.prop("info") { it["info"] }.isNotNull().isInstanceOf<DocumentObject>()
-        val jsonInfo = jsonRoot.prop("info") { it["info"] }.isNotNull().isInstanceOf<DocumentObject>()
-        yamlInfo.prop("member names") { it.members.keys.toList() }.isEqualTo(listOf("title"))
-        jsonInfo.prop("member names") { it.members.keys.toList() }.isEqualTo(listOf("title"))
-        yamlInfo.prop("title") { it["title"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("Demo API")
-        jsonInfo.prop("title") { it["title"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("Demo API")
+        val yamlInfo = assertIs<DocumentObject>(yamlRoot["info"])
+        val jsonInfo = assertIs<DocumentObject>(jsonRoot["info"])
+        assertEquals(listOf("title"), yamlInfo.members.keys.toList())
+        assertEquals(listOf("title"), jsonInfo.members.keys.toList())
+        assertEquals("Demo API", assertIs<DocumentString>(yamlInfo["title"]).value)
+        assertEquals("Demo API", assertIs<DocumentString>(jsonInfo["title"]).value)
 
-        val yamlComponents = yamlRoot.prop("components") { it["components"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        val jsonComponents = jsonRoot.prop("components") { it["components"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        val yamlSchemas = yamlComponents.prop("schemas") { it["schemas"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        val jsonSchemas = jsonComponents.prop("schemas") { it["schemas"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        yamlSchemas.prop("member names") { it.members.keys.toList() }
-            .isEqualTo(listOf("UserRef", "Example"))
-        jsonSchemas.prop("member names") { it.members.keys.toList() }
-            .isEqualTo(listOf("UserRef", "Example"))
+        val yamlComponents = assertIs<DocumentObject>(yamlRoot["components"])
+        val jsonComponents = assertIs<DocumentObject>(jsonRoot["components"])
+        val yamlSchemas = assertIs<DocumentObject>(yamlComponents["schemas"])
+        val jsonSchemas = assertIs<DocumentObject>(jsonComponents["schemas"])
+        assertEquals(listOf("UserRef", "Example"), yamlSchemas.members.keys.toList())
+        assertEquals(listOf("UserRef", "Example"), jsonSchemas.members.keys.toList())
 
-        val yamlUserRef = yamlSchemas.prop("UserRef") { it["UserRef"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        val jsonUserRef = jsonSchemas.prop("UserRef") { it["UserRef"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        yamlUserRef.prop("${'$'}ref") { it["${'$'}ref"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("#/components/schemas/User")
-        jsonUserRef.prop("${'$'}ref") { it["${'$'}ref"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("#/components/schemas/User")
+        val yamlUserRef = assertIs<DocumentObject>(yamlSchemas["UserRef"])
+        val jsonUserRef = assertIs<DocumentObject>(jsonSchemas["UserRef"])
+        assertEquals("#/components/schemas/User", assertIs<DocumentString>(yamlUserRef["${'$'}ref"]).value)
+        assertEquals("#/components/schemas/User", assertIs<DocumentString>(jsonUserRef["${'$'}ref"]).value)
 
-        val yamlExample = yamlSchemas.prop("Example") { it["Example"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
-        val jsonExample = jsonSchemas.prop("Example") { it["Example"] }
-            .isNotNull().isInstanceOf<DocumentObject>()
+        val yamlExample = assertIs<DocumentObject>(yamlSchemas["Example"])
+        val jsonExample = assertIs<DocumentObject>(jsonSchemas["Example"])
         val exampleMembers = listOf("enabled", "quotedEnabled", "count", "quotedCount", "tags")
-        yamlExample.prop("member names") { it.members.keys.toList() }.isEqualTo(exampleMembers)
-        jsonExample.prop("member names") { it.members.keys.toList() }.isEqualTo(exampleMembers)
-        yamlExample.prop("enabled") { it["enabled"] }.isNotNull().isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value).isTrue()
-        jsonExample.prop("enabled") { it["enabled"] }.isNotNull().isInstanceOf<DocumentBoolean>()
-            .prop(DocumentBoolean::value).isTrue()
-        yamlExample.prop("quotedEnabled") { it["quotedEnabled"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("true")
-        jsonExample.prop("quotedEnabled") { it["quotedEnabled"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("true")
-        yamlExample.prop("count") { it["count"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isEqualTo(12)
-        jsonExample.prop("count") { it["count"] }.isNotNull().isInstanceOf<DocumentNumber>()
-            .prop(DocumentNumber::value).isEqualTo(12)
-        yamlExample.prop("quotedCount") { it["quotedCount"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("12")
-        jsonExample.prop("quotedCount") { it["quotedCount"] }.isNotNull().isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("12")
+        assertEquals(exampleMembers, yamlExample.members.keys.toList())
+        assertEquals(exampleMembers, jsonExample.members.keys.toList())
+        assertEquals(true, assertIs<DocumentBoolean>(yamlExample["enabled"]).value)
+        assertEquals(true, assertIs<DocumentBoolean>(jsonExample["enabled"]).value)
+        assertEquals("true", assertIs<DocumentString>(yamlExample["quotedEnabled"]).value)
+        assertEquals("true", assertIs<DocumentString>(jsonExample["quotedEnabled"]).value)
+        assertEquals(12, assertIs<DocumentNumber>(yamlExample["count"]).value)
+        assertEquals(12, assertIs<DocumentNumber>(jsonExample["count"]).value)
+        assertEquals("12", assertIs<DocumentString>(yamlExample["quotedCount"]).value)
+        assertEquals("12", assertIs<DocumentString>(jsonExample["quotedCount"]).value)
 
-        val yamlTags = yamlExample.prop("tags") { it["tags"] }.isNotNull().isInstanceOf<DocumentArray>()
-        val jsonTags = jsonExample.prop("tags") { it["tags"] }.isNotNull().isInstanceOf<DocumentArray>()
-        yamlTags.prop("size") { it.elements.size }.isEqualTo(2)
-        jsonTags.prop("size") { it.elements.size }.isEqualTo(2)
-        yamlTags.prop("first element") { it[0] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("public")
-        jsonTags.prop("first element") { it[0] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("public")
-        yamlTags.prop("second element") { it[1] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("internal")
-        jsonTags.prop("second element") { it[1] }.isInstanceOf<DocumentString>()
-            .prop(DocumentString::value).isEqualTo("internal")
+        val yamlTags = assertIs<DocumentArray>(yamlExample["tags"])
+        val jsonTags = assertIs<DocumentArray>(jsonExample["tags"])
+        assertEquals(2, yamlTags.elements.size)
+        assertEquals(2, jsonTags.elements.size)
+        assertEquals("public", assertIs<DocumentString>(yamlTags[0]).value)
+        assertEquals("public", assertIs<DocumentString>(jsonTags[0]).value)
+        assertEquals("internal", assertIs<DocumentString>(yamlTags[1]).value)
+        assertEquals("internal", assertIs<DocumentString>(jsonTags[1]).value)
     }
 }
