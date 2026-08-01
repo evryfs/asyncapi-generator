@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
-import dev.banking.asyncapi.generator.core.reader.DocumentFormat
-import dev.banking.asyncapi.generator.core.reader.DocumentSource
+import dev.banking.asyncapi.generator.core.document.DocumentFormat
+import dev.banking.asyncapi.generator.core.document.DocumentSource
 import java.io.File
 
 /**

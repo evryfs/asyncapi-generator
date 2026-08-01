@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
-import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
-import dev.banking.asyncapi.generator.core.reader.DocumentNumber
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.DocumentString
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import kotlin.test.fail
 
 /**

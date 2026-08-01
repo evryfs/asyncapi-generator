@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateExce
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter.format
 import org.slf4j.LoggerFactory
 

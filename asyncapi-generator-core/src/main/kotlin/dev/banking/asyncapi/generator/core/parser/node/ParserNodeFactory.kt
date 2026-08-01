@@ -2,11 +2,11 @@ package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.InputDocument
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.InputDocument
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 
 /**
  * Creates parser nodes from reader-stage input documents.

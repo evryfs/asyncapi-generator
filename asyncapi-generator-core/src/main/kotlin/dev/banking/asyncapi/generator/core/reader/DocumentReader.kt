@@ -1,5 +1,8 @@
 package dev.banking.asyncapi.generator.core.reader
 
+import dev.banking.asyncapi.generator.core.document.DocumentSource
+import dev.banking.asyncapi.generator.core.document.InputDocument
+
 /**
  * Reads an input document into a format-independent `InputDocument`.
  *

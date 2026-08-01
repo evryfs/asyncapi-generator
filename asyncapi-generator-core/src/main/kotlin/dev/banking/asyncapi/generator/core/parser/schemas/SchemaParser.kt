@@ -9,11 +9,11 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.DocumentString
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import kotlin.String
 import kotlin.collections.Map
 

@@ -3,10 +3,10 @@ package dev.banking.asyncapi.generator.core.parser.node
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.toValue
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.toValue
 import kotlin.reflect.typeOf
 
 /**

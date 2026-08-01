@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.diagnostics
 
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 
 /** Stable categories for failures produced while mapping document nodes. */
 enum class ParserDiagnosticCategory(

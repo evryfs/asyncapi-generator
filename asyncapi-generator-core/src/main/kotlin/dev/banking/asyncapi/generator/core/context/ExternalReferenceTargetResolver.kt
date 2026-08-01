@@ -2,8 +2,8 @@ package dev.banking.asyncapi.generator.core.context
 
 import com.fasterxml.jackson.core.JsonPointer
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 
 internal object ExternalReferenceTargetResolver {
     data class Target(

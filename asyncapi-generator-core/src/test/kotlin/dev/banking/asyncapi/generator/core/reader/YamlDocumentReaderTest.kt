@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.reader
 
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
 import dev.banking.asyncapi.generator.core.fixtures.childObject
 import dev.banking.asyncapi.generator.core.fixtures.value

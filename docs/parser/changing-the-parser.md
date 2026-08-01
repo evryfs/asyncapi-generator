@@ -11,6 +11,7 @@ Start by classifying the behavior.
 | Change | Owner |
 | --- | --- |
 | YAML/JSON syntax, duplicate keys, scalar interpretation, source marks | `reader` |
+| Format-independent nodes, source identity, input format, source-location value types | `document` |
 | Cursor traversal, runtime type expectations, parser paths | `parser.node` |
 | AsyncAPI object members and domain-model construction | The matching domain parser package |
 | Schema Object keywords or `schemaFormat` dispatch | `parser.schemas` |

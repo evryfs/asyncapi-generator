@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
-import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.InputDocument
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.InputDocument
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue

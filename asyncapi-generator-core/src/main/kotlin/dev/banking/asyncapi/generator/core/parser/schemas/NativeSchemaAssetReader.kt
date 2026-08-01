@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.context.ExternalReferencePathResolver
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.NativeSchemaAssetReadFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.DocumentString
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import java.io.IOException
 
 /**

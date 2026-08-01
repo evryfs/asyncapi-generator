@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.repository
 
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.UUID

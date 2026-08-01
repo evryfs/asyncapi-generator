@@ -11,7 +11,8 @@ the file, line, column, and parser path that introduced a value.
 | Stage | Owns | Does not own |
 | --- | --- | --- |
 | Document loading facade | One isolated load context, reader selection, root parsing, external reference loading, semantic validation, and returned warnings | Bundling and generation |
-| Reader | File format detection, YAML or JSON syntax, duplicate keys, scalar interpretation, document shape, and source locations | AsyncAPI members or domain rules |
+| Reader | File format detection, YAML or JSON syntax, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules |
+| Document contract | Immutable format-independent nodes, document source identity, input format, and source locations shared between producers and consumers | YAML/Jackson/SnakeYAML implementation details or AsyncAPI domain rules |
 | Parser-node adapter | Parser paths and registration of reader-provided locations in the load context | Format-specific syntax |
 | Domain parser | Supported AsyncAPI object structure, required members, runtime value types, references, and domain-model construction | General schema validation, bundling, or output generation |
 | Schema parser | AsyncAPI Schema Object keywords, boolean schemas, references, Multi Format Schema dispatch, and native schema assets | Validation of all JSON Schema keyword combinations or generator support for every schema format |
@@ -37,12 +38,13 @@ parsers makes behavior depend on library-specific runtime values. It also loses
 the distinction between a missing member and a member whose value is explicitly
 `null`, and requires source locations to be reconstructed after parsing.
 
-The reader instead produces `InputDocument`, whose root is a `DocumentObject`.
-The sealed `DocumentNode` hierarchy represents objects, arrays, strings,
-numbers, booleans, and null. Every node has a `SourceLocation`; object members
-also retain the key location. Objects and arrays defensively copy their
-contents and expose unmodifiable collections, which makes the reader/parser
-handoff stable for the lifetime of a load.
+The reader instead produces the neutral `document` package contract.
+`InputDocument` has a `DocumentObject` root, and the sealed `DocumentNode`
+hierarchy represents objects, arrays, strings, numbers, booleans, and null.
+Every node has a `SourceLocation`; object members also retain the key location.
+Objects and arrays defensively copy their contents and expose unmodifiable
+collections, which makes the reader/parser handoff stable for the lifetime of a
+load.
 
 SnakeYAML and Jackson remain internal reader implementations. They already
 provide the syntax trees and token locations needed for YAML and JSON, while
@@ -99,12 +101,13 @@ and external validation must stay in the external-loading package.
 
 ## Package boundary rather than module boundary
 
-The reader, parser, context, loader, validator, bundler, and generator packages
-currently live in the core Maven module because they share the domain model and
-are used together by core consumers. Their dependency direction is clear enough
-to enforce with package APIs and tests. Splitting them into Maven modules would
-add publication and dependency-management costs without removing the necessary
-model and context collaboration.
+The document, reader, parser, context, loader, validator, bundler, and generator
+packages currently live in the core Maven module because they share the domain
+model and are used together by core consumers. The reader and parser depend on
+the neutral document contract rather than on each other. Their dependency
+direction is clear enough to enforce with package APIs and tests. Splitting
+them into Maven modules would add publication and dependency-management costs
+without removing the necessary model and context collaboration.
 
 A module split would become useful only if the reader or parser needed an
 independent release lifecycle, a meaningfully smaller dependency surface, or a

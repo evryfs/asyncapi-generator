@@ -2,15 +2,15 @@ package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentBoolean
-import dev.banking.asyncapi.generator.core.reader.DocumentMember
-import dev.banking.asyncapi.generator.core.reader.DocumentNode
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
-import dev.banking.asyncapi.generator.core.reader.DocumentNumber
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.DocumentString
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentMember
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 
 /**

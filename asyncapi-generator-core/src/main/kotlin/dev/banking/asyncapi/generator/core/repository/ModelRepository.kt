@@ -4,10 +4,10 @@ import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.DocumentArray
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
-import dev.banking.asyncapi.generator.core.reader.toValue
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.document.toValue
 import java.io.File
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0

@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.reader.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNull
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

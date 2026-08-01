@@ -36,8 +36,8 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
-import dev.banking.asyncapi.generator.core.reader.DocumentMember
-import dev.banking.asyncapi.generator.core.reader.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentMember
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator

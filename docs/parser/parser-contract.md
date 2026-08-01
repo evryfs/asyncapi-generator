@@ -30,6 +30,10 @@ declared `DocumentFormat`.
 Both readers return an `InputDocument` with a `DocumentObject` root and the same
 semantic node categories:
 
+These shared types live in the neutral `document` package. Reader
+implementations produce them, while the parser and other source-aware consumers
+depend on them without depending on a concrete YAML or JSON reader.
+
 | Node | Plain runtime value | Location |
 | --- | --- | --- |
 | `DocumentObject` | `Map<String, Any?>` | Object start; every member also has a key location |
