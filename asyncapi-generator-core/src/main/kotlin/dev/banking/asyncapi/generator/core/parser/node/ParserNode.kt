@@ -54,6 +54,28 @@ data class ParserNode(
             ParserNode(memberName, member.value, "$path.$memberName", context, profile)
         }
 
+    fun expectOnlyMembers(
+        objectType: String,
+        allowedMembers: Set<String>,
+        specificationExtensionsAllowed: Boolean = true,
+    ) {
+        val unexpectedMember = objectNode().members.entries.firstOrNull { (memberName, _) ->
+            memberName !in allowedMembers &&
+                !(specificationExtensionsAllowed && memberName.startsWith("x-"))
+        } ?: return
+        val (memberName, member) = unexpectedMember
+        throw AsyncApiParseException.ParserDiagnosticFailure(
+            diagnostic = ParserDiagnostic.UnexpectedObjectMember(
+                memberName = memberName,
+                objectType = objectType,
+                specificationExtensionsAllowed = specificationExtensionsAllowed,
+                path = "$path.$memberName",
+                sourceLocation = member.keyLocation,
+            ),
+            context = context,
+        )
+    }
+
     fun elements(): List<ParserNode> =
         arrayNode().elements.mapIndexed { index, element ->
             ParserNode("$name[$index]", element, "$path[$index]", context, profile)

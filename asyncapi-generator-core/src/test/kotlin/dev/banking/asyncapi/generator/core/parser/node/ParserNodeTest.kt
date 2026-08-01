@@ -128,6 +128,27 @@ class ParserNodeTest {
     }
 
     @Test
+    fun `expect only members rejects an unknown key and permits specification extensions`() {
+        val node = ParserNodeFixtures.node(
+            value = linkedMapOf("known" to true, "x-owner" to "team", "unknown" to false),
+            sourceLine = "unknown: false",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expectOnlyMembers("Test Object", setOf("known"))
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
+        assertEquals("unknown", diagnostic.memberName)
+        assertEquals("Test Object member or x- specification extension", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("unknown", diagnostic.actualValue)
+        assertEquals("test.root.unknown", diagnostic.path)
+        error.assertMessageContains("Unexpected member 'unknown'")
+    }
+
+    @Test
     fun `elements rejects an object with a structured type diagnostic`() {
         val node = ParserNodeFixtures.node(
             value = mapOf("value" to true),

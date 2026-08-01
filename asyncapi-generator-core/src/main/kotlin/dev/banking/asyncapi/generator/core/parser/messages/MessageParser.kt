@@ -32,34 +32,61 @@ class MessageParser(
 
     fun parseMap(parserNode: ParserNode): Map<String, MessageInterface> = buildMap {
         parserNode.members().forEach { node ->
-            val reference = node.optional($$"$ref")?.expect<String>()
-            val messageInterface = if (reference != null) {
-                MessageInterface.MessageReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = MESSAGE
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                MessageInterface.MessageInline(
-                    Message(
-                        name = node.optional("name")?.expect<String>(),
-                        title = node.optional("title")?.expect<String>(),
-                        summary = node.optional("summary")?.expect<String>(),
-                        description = node.optional("description")?.expect<String>(),
-                        contentType = node.optional("contentType")?.expect<String>(),
-                        headers = node.optional("headers")?.let(schemaParser::parseElement),
-                        payload = node.optional("payload")?.let(schemaParser::parseElement),
-                        correlationId = node.optional("correlationId")?.let(correlationIdParser::parseElement),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                        examples = node.optional("examples")?.let(messageExampleParser::parseList),
-                        traits = node.optional("traits")?.let(messageTraitParser::parseList)
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, messageInterface)
+            put(node.name, parseElement(node))
         }
+    }
+
+    fun parseElement(parserNode: ParserNode): MessageInterface {
+        parserNode.expectOnlyMembers(
+            objectType = "Message Object",
+            allowedMembers = MESSAGE_OBJECT_MEMBERS,
+        )
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            MessageInterface.MessageReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = MESSAGE,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            MessageInterface.MessageInline(
+                Message(
+                    name = parserNode.optional("name")?.expect<String>(),
+                    title = parserNode.optional("title")?.expect<String>(),
+                    summary = parserNode.optional("summary")?.expect<String>(),
+                    description = parserNode.optional("description")?.expect<String>(),
+                    contentType = parserNode.optional("contentType")?.expect<String>(),
+                    headers = parserNode.optional("headers")?.let(schemaParser::parseElement),
+                    payload = parserNode.optional("payload")?.let(schemaParser::parseElement),
+                    correlationId = parserNode.optional("correlationId")?.let(correlationIdParser::parseElement),
+                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
+                    examples = parserNode.optional("examples")?.let(messageExampleParser::parseList),
+                    traits = parserNode.optional("traits")?.let(messageTraitParser::parseList),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        }
+    }
+
+    private companion object {
+        val MESSAGE_OBJECT_MEMBERS =
+            setOf(
+                $$"$ref",
+                "headers",
+                "payload",
+                "correlationId",
+                "contentType",
+                "name",
+                "title",
+                "summary",
+                "description",
+                "tags",
+                "externalDocs",
+                "bindings",
+                "examples",
+                "traits",
+            )
     }
 }

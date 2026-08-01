@@ -34,14 +34,14 @@ These shared types live in the neutral `document` package. Reader
 implementations produce them, while the parser and other source-aware consumers
 depend on them without depending on a concrete YAML or JSON reader.
 
-| Node | Plain runtime value | Location |
-| --- | --- | --- |
-| `DocumentObject` | `Map<String, Any?>` | Object start; every member also has a key location |
-| `DocumentArray` | `List<Any?>` | Array start; every element has its own location |
-| `DocumentString` | `String` | Scalar token |
-| `DocumentNumber` | `Int`, `Long`, `BigInteger`, `Double`, or `BigDecimal` | Scalar token |
-| `DocumentBoolean` | `Boolean` | Scalar token |
-| `DocumentNull` | `null` | Null token |
+| Node              | Plain runtime value                                    | Location                                           |
+|-------------------|--------------------------------------------------------|----------------------------------------------------|
+| `DocumentObject`  | `Map<String, Any?>`                                    | Object start; every member also has a key location |
+| `DocumentArray`   | `List<Any?>`                                           | Array start; every element has its own location    |
+| `DocumentString`  | `String`                                               | Scalar token                                       |
+| `DocumentNumber`  | `Int`, `Long`, `BigInteger`, `Double`, or `BigDecimal` | Scalar token                                       |
+| `DocumentBoolean` | `Boolean`                                              | Scalar token                                       |
+| `DocumentNull`    | `null`                                                 | Null token                                         |
 
 Readers reject empty documents, malformed syntax, invalid mapping keys, and
 duplicate keys with `DocumentReadException`. A syntactically valid document may
@@ -107,15 +107,15 @@ while preventing format-dependent truncation.
 
 `ParserNode` is a source-aware cursor over one `DocumentNode`.
 
-| Operation | Contract |
-| --- | --- |
-| `required(name)` | Requires the current node to be an object and the named member to be present; returns its cursor |
-| `optional(name)` | Requires the current node to be an object; returns the member cursor or `null` when absent |
-| `members()` | Requires an object and returns one cursor per member, preserving names and paths |
-| `elements()` | Requires an array and returns one cursor per element with indexed paths |
-| `expect<T>()` | Checks the complete requested Kotlin runtime type, including nested list and map values |
-| `startsWith(prefix)` | Returns an object cursor containing matching members, or `null` when none match |
-| `toPlainValue()` | Recursively removes source metadata and returns maps, lists, scalars, or null |
+| Operation            | Contract                                                                                         |
+|----------------------|--------------------------------------------------------------------------------------------------|
+| `required(name)`     | Requires the current node to be an object and the named member to be present; returns its cursor |
+| `optional(name)`     | Requires the current node to be an object; returns the member cursor or `null` when absent       |
+| `members()`          | Requires an object and returns one cursor per member, preserving names and paths                 |
+| `elements()`         | Requires an array and returns one cursor per element with indexed paths                          |
+| `expect<T>()`        | Checks the complete requested Kotlin runtime type, including nested list and map values          |
+| `startsWith(prefix)` | Returns an object cursor containing matching members, or `null` when none match                  |
+| `toPlainValue()`     | Recursively removes source metadata and returns maps, lists, scalars, or null                    |
 
 `expect<T>()` performs type checking, not coercion. A string is not converted to
 a boolean or number, and a scalar is not wrapped in a collection. Map keys and
@@ -132,11 +132,11 @@ at a free-form boundary.
 
 Absence and explicit null are different parser states.
 
-| Input state | `optional("field")` | `required("field")` | `expect<String>()` | `expect<String?>()` |
-| --- | --- | --- | --- | --- |
-| Member absent | `null` | Missing-required-member diagnostic | Not applicable | Not applicable |
-| Member is `null` | Cursor over `DocumentNull` | Cursor over `DocumentNull` | Unexpected-value-type diagnostic | `null` |
-| Member is a string | Cursor over `DocumentString` | Cursor over `DocumentString` | String value | String value |
+| Input state        | `optional("field")`          | `required("field")`                | `expect<String>()`               | `expect<String?>()` |
+|--------------------|------------------------------|------------------------------------|----------------------------------|---------------------|
+| Member absent      | `null`                       | Missing-required-member diagnostic | Not applicable                   | Not applicable      |
+| Member is `null`   | Cursor over `DocumentNull`   | Cursor over `DocumentNull`         | Unexpected-value-type diagnostic | `null`              |
+| Member is a string | Cursor over `DocumentString` | Cursor over `DocumentString`       | String value                     | String value        |
 
 Callers must not use a nullable expectation merely to make malformed nulls
 disappear. Use it only when the corresponding domain contract permits explicit
@@ -160,15 +160,16 @@ Every `ParserDiagnostic` exposes:
 
 Current categories are:
 
-| Code | Meaning |
-| --- | --- |
-| `parser.missing-required-member` | An object does not contain a required member |
-| `parser.unexpected-value-type` | A value or nested value has the wrong runtime type |
-| `parser.invalid-specification-version` | The `asyncapi` value does not have the required version form |
-| `parser.unsupported-specification-version` | The declared version has no implemented parser profile |
-| `parser.invalid-reference` | A reference is not a supported URI reference with JSON Pointer semantics |
-| `parser.reference-document-not-found` | The external document does not exist or is unreadable |
-| `parser.reference-target-not-found` | The JSON Pointer target does not exist in the loaded document |
+| Code                                       | Meaning                                                                  |
+|--------------------------------------------|--------------------------------------------------------------------------|
+| `parser.missing-required-member`           | An object does not contain a required member                             |
+| `parser.unexpected-object-member`          | An object contains a member that its parser does not recognize           |
+| `parser.unexpected-value-type`             | A value or nested value has the wrong runtime type                       |
+| `parser.invalid-specification-version`     | The `asyncapi` value does not have the required version form             |
+| `parser.unsupported-specification-version` | The declared version has no implemented parser profile                   |
+| `parser.invalid-reference`                 | A reference is not a supported URI reference with JSON Pointer semantics |
+| `parser.reference-document-not-found`      | The external document does not exist or is unreadable                    |
+| `parser.reference-target-not-found`        | The JSON Pointer target does not exist in the loaded document            |
 
 Diagnostic messages may include targeted hints for common quoted scalar
 mistakes. The category and structured fields, rather than rendered prose, are
@@ -199,7 +200,11 @@ An external fragment container does not need to be an AsyncAPI document or have
 an object root. JSON Pointer selection can traverse object or array containers,
 and a root scalar can be selected directly when the reference category permits
 that value, such as a boolean Schema Object. The selected target must satisfy
-the structure required by its reference category.
+the structure required by its reference category. A whole-file Message
+reference therefore selects one Message Object at the document root. A raw map
+containing multiple named messages is a container rather than one Message
+Object and must select an individual message with an explicit JSON Pointer;
+the parser does not bulk import or splice container members.
 
 Loading is eager and deduplicated. It preserves each file's source locations and
 does not bundle or inline the model.

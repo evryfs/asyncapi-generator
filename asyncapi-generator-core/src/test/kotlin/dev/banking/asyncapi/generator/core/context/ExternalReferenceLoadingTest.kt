@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -86,6 +87,33 @@ class ExternalReferenceLoadingTest : ParserTestSupport() {
             asyncApiContext.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
         )
         assertEquals("messages.yaml", asyncApiContext.getSourceLocation(message)?.file?.name)
+    }
+
+    @Test
+    fun `loads a whole file containing one message object`() {
+        parseDocument("parser/references/external/message-root-main.yaml")
+
+        val reference = assertIs<Reference>(
+            asyncApiContext.modelRepository.getModelsByPath()[
+                "message_root_main.root.components.messages.RootEvent"
+            ],
+        )
+        val message = assertIs<Message>(asyncApiContext.findReference(reference))
+        assertEquals("RootEvent", message.name)
+        assertEquals("message-root.yaml", asyncApiContext.getSourceLocation(message)?.file?.name)
+    }
+
+    @Test
+    fun `rejects a whole file message container without an explicit pointer`() {
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parseDocument("parser/references/external/message-map-main.yaml")
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
+        assertEquals("ExternalEvent", diagnostic.memberName)
+        assertEquals("messages.root.ExternalEvent", diagnostic.path)
+        assertEquals("messages.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test

@@ -7,6 +7,7 @@ enum class ParserDiagnosticCategory(
     val code: String,
 ) {
     MISSING_REQUIRED_MEMBER("parser.missing-required-member"),
+    UNEXPECTED_OBJECT_MEMBER("parser.unexpected-object-member"),
     UNEXPECTED_VALUE_TYPE("parser.unexpected-value-type"),
     INVALID_SPECIFICATION_VERSION("parser.invalid-specification-version"),
     UNSUPPORTED_SPECIFICATION_VERSION("parser.unsupported-specification-version"),
@@ -57,6 +58,25 @@ sealed interface ParserDiagnostic {
     ) : ParserDiagnostic {
         override val category: ParserDiagnosticCategory =
             ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE
+    }
+
+    data class UnexpectedObjectMember(
+        val memberName: String,
+        val objectType: String,
+        val specificationExtensionsAllowed: Boolean,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER
+        override val expectedType: String =
+            if (specificationExtensionsAllowed) {
+                "$objectType member or x- specification extension"
+            } else {
+                "$objectType member"
+            }
+        override val actualType: ParserValueType = ParserValueType.STRING
+        override val actualValue: Any = memberName
     }
 
     data class InvalidSpecificationVersion(

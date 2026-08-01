@@ -24,6 +24,15 @@ internal object ParserDiagnosticFormatter {
                     context = context,
                 )
 
+            is ParserDiagnostic.UnexpectedObjectMember ->
+                buildMessage(
+                    header =
+                        "Unexpected member '${diagnostic.memberName}': " +
+                            "expected ${diagnostic.expectedType}.",
+                    diagnostic = diagnostic,
+                    context = context,
+                )
+
             is ParserDiagnostic.InvalidSpecificationVersion ->
                 buildMessage(
                     header =

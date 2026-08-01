@@ -76,7 +76,7 @@ class ExternalFragmentProcessor(
         when (category) {
             SCHEMA -> parseAndValidateSchemas(target, reference, results)
             CHANNEL -> parseAndValidateChannels(targetMap, results)
-            MESSAGE -> parseAndValidateMessages(targetMap, results)
+            MESSAGE -> parseAndValidateMessage(target.node, results)
             MESSAGE_TRAIT -> parseAndValidateMessageTraits(targetMap, results)
             OPERATION -> parseAndValidateOperations(targetMap, results)
             OPERATION_TRAIT -> parseAndValidateOperationTraits(targetMap, results)
@@ -124,16 +124,17 @@ class ExternalFragmentProcessor(
         }
     }
 
-    private fun parseAndValidateMessages(rootNode: ParserNode, results: ValidationResults) {
-        val parsed: Map<String, MessageInterface> = MessageParser(context).parseMap(rootNode)
+    private fun parseAndValidateMessage(targetNode: ParserNode, results: ValidationResults) {
+        val parsed: MessageInterface = MessageParser(context).parseElement(targetNode)
         val validator = MessageValidator(context)
         val resolver = ReferenceResolver(context)
-        parsed.forEach { (name, messageInterface) ->
-            val ctx = "External Message '$name'"
-            when (messageInterface) {
-                is MessageInterface.MessageInline -> validator.validate(messageInterface.message, ctx, results)
-                is MessageInterface.MessageReference -> resolver.resolve(messageInterface.reference, ctx, results)
-            }
+        val validationContext = "External Message '${targetNode.name}'"
+        when (parsed) {
+            is MessageInterface.MessageInline ->
+                validator.validate(parsed.message, validationContext, results)
+
+            is MessageInterface.MessageReference ->
+                resolver.resolve(parsed.reference, validationContext, results)
         }
     }
 

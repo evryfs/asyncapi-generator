@@ -1,11 +1,17 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
 class MessageParserTest : ParserTestSupport() {
 
@@ -149,5 +155,38 @@ class MessageParserTest : ParserTestSupport() {
         ) {
             parser.parseMap(messagesNode)
         }
+    }
+
+    @Test
+    fun `parse message rejects unknown members and permits specification extensions`() {
+        val invalidNode = readNode(
+            "parser/messages/asyncapi_parser_message_invalid_type.yaml",
+            "components",
+            "messageCases",
+            "UnknownMember",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(invalidNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
+        assertEquals("ImportedMessage", diagnostic.memberName)
+        assertEquals(
+            "asyncapi_parser_message_invalid_type.root.components.messageCases.UnknownMember.invalidMessage.ImportedMessage",
+            diagnostic.path,
+        )
+        assertEquals("asyncapi_parser_message_invalid_type.yaml", diagnostic.sourceLocation.file.name)
+
+        val extensionNode = readNode(
+            "parser/messages/asyncapi_parser_message_invalid_type.yaml",
+            "components",
+            "messageCases",
+            "SpecificationExtension",
+        )
+        val message = assertIs<MessageInterface.MessageInline>(
+            parser.parseMap(extensionNode).getValue("validMessage"),
+        ).message
+        assertEquals("valid", message.name)
     }
 }

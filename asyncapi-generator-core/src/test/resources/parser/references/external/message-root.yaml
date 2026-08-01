@@ -1,0 +1,7 @@
+name: RootEvent
+description: Whole-file message target
+payload:
+  type: object
+  properties:
+    id:
+      type: string

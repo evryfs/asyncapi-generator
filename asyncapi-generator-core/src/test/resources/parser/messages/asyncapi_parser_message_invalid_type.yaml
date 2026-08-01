@@ -13,3 +13,12 @@ components:
         $ref: null
     ArrayInsteadOfMap:
       - name: validMessage
+    UnknownMember:
+      invalidMessage:
+        ImportedMessage:
+          name: nested
+    SpecificationExtension:
+      validMessage:
+        name: valid
+        x-owner:
+          team: parser
