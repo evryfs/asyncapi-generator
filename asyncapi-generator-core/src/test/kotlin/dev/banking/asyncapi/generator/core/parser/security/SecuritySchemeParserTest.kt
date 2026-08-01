@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.security
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
@@ -110,36 +110,100 @@ class SecuritySchemeParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse security scheme missing type throws RequiredObject`() {
+    fun `parse security scheme missing type reports the required member and source`() {
         val schemeNode = readNode(
             "parser/security/asyncapi_parser_security_invalid.yaml",
             "components",
             "securitySchemes",
             "MissingType",
         )
-        assertParseFailure<AsyncApiParseException.Mandatory>(
-            "Missing mandatory 'type'",
-            "asyncapi_parser_security_invalid.yaml",
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
+        assertMissingRequiredMember(
+            memberName = "type",
+            path = "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
+            sourcePath = "root.components.securitySchemes.MissingType",
+            sourceFile = "asyncapi_parser_security_invalid.yaml",
         ) {
             parser.parseElement(schemeNode)
         }
     }
 
     @Test
-    fun `parse security scheme with invalid flows structure throws UnexpectedValue`() {
+    fun `parse security scheme with invalid flows structure reports its expected type and source`() {
         val schemeNode = readNode(
             "parser/security/asyncapi_parser_security_invalid.yaml",
             "components",
             "securitySchemes",
             "InvalidFlowsStructure",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_security_invalid.yaml",
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-an-object",
+            path = "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
+            sourcePath = "root.components.securitySchemes.InvalidFlowsStructure.flows",
+            sourceFile = "asyncapi_parser_security_invalid.yaml",
         ) {
             parser.parseElement(schemeNode)
+        }
+    }
+
+    @Test
+    fun `parse security scheme with null reference reports its expected type and source`() {
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "NullReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_security_invalid.root.components.securitySchemes.NullReference.\$ref",
+            sourcePath = "root.components.securitySchemes.NullReference.\$ref",
+            sourceFile = "asyncapi_parser_security_invalid.yaml",
+        ) {
+            parser.parseElement(schemeNode)
+        }
+    }
+
+    @Test
+    fun `parse OAuth flow with numeric scope description reports the nested value and source`() {
+        val schemeNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemes",
+            "InvalidAvailableScope",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 7,
+            path = "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
+            sourcePath = "root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
+            sourceFile = "asyncapi_parser_security_invalid.yaml",
+        ) {
+            parser.parseElement(schemeNode)
+        }
+    }
+
+    @Test
+    fun `parse security list from an object reports the container type and source`() {
+        val schemesNode = readNode(
+            "parser/security/asyncapi_parser_security_invalid.yaml",
+            "components",
+            "securitySchemeCases",
+            "ObjectInsteadOfList",
+        )
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("invalidScheme" to mapOf("type" to "userPassword")),
+            path = "asyncapi_parser_security_invalid.root.components.securitySchemeCases.ObjectInsteadOfList",
+            sourcePath = "root.components.securitySchemeCases.ObjectInsteadOfList",
+            sourceFile = "asyncapi_parser_security_invalid.yaml",
+        ) {
+            parser.parseList(schemesNode)
         }
     }
 }

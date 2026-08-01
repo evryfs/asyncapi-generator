@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
@@ -43,12 +43,70 @@ class ServerParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse server with invalid variables structure throws UnexpectedValue`() {
+    fun `parse server with invalid variables structure reports its expected type and source`() {
         val serversNode = readNode("parser/servers/asyncapi_parser_server_invalid.yaml", "servers")
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map/List",
-            "asyncapi_parser_server_invalid.yaml",
-            "asyncapi_parser_server_invalid.root.servers.InvalidVariables.variables",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_server_invalid.root.servers.InvalidVariables.variables",
+            sourcePath = "root.servers.InvalidVariables.variables",
+            sourceFile = "asyncapi_parser_server_invalid.yaml",
+        ) {
+            parser.parseMap(serversNode)
+        }
+    }
+
+    @Test
+    fun `parse server with null reference reports the reference type and source`() {
+        val serversNode = readNode(
+            "parser/servers/asyncapi_parser_server_invalid.yaml",
+            "serverCases",
+            "NullReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_server_invalid.root.serverCases.NullReference.invalidReference.\$ref",
+            sourcePath = "root.serverCases.NullReference.invalidReference.\$ref",
+            sourceFile = "asyncapi_parser_server_invalid.yaml",
+        ) {
+            parser.parseMap(serversNode)
+        }
+    }
+
+    @Test
+    fun `parse server missing host reports the required member and source`() {
+        val serversNode = readNode(
+            "parser/servers/asyncapi_parser_server_invalid.yaml",
+            "serverCases",
+            "MissingHost",
+        )
+        assertMissingRequiredMember(
+            memberName = "host",
+            path = "asyncapi_parser_server_invalid.root.serverCases.MissingHost.missingHost.host",
+            sourcePath = "root.serverCases.MissingHost.missingHost",
+            sourceFile = "asyncapi_parser_server_invalid.yaml",
+        ) {
+            parser.parseMap(serversNode)
+        }
+    }
+
+    @Test
+    fun `parse server map from an array reports the container type and source`() {
+        val serversNode = readNode(
+            "parser/servers/asyncapi_parser_server_invalid.yaml",
+            "serverCases",
+            "ArrayInsteadOfMap",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("host" to "localhost", "protocol" to "kafka")),
+            path = "asyncapi_parser_server_invalid.root.serverCases.ArrayInsteadOfMap",
+            sourcePath = "root.serverCases.ArrayInsteadOfMap",
+            sourceFile = "asyncapi_parser_server_invalid.yaml",
         ) {
             parser.parseMap(serversNode)
         }

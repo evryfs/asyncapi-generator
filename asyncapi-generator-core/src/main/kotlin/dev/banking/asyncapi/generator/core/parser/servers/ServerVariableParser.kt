@@ -19,10 +19,8 @@ class ServerVariableParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerVariableInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+        parserNode.members().forEach { node ->
+            val reference = node.optional($$"$ref")?.expect<String>()
             val serverVariable = if (reference != null) {
                 ServerVariableInterface.ServerVariableReference(
                     Reference(
@@ -33,10 +31,10 @@ class ServerVariableParser(
             } else {
                 ServerVariableInterface.ServerVariableInline(
                     ServerVariable(
-                        enum = node.optional("enum")?.coerce<List<String>>(),
-                        default = node.optional("default")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        examples = node.optional("examples")?.coerce<List<String>>(),
+                        enum = node.optional("enum")?.expect<List<String>>(),
+                        default = node.optional("default")?.expect<String>(),
+                        description = node.optional("description")?.expect<String>(),
+                        examples = node.optional("examples")?.expect<List<String>>(),
                     ).also { asyncApiContext.register(it, node) }
                 )
             }

@@ -28,10 +28,8 @@ class ServerParser(
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+        parserNode.members().forEach { node ->
+            val reference = node.optional($$"$ref")?.expect<String>()
             val serverInterface = if (reference != null) {
                 ServerInterface.ServerReference(
                     Reference(
@@ -42,12 +40,12 @@ class ServerParser(
             } else {
                 ServerInterface.ServerInline(
                     Server(
-                        host = node.mandatory("host").coerce<String>(),
-                        protocol = node.mandatory("protocol").coerce<String>(),
-                        protocolVersion = node.optional("protocolVersion")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
+                        host = node.required("host").expect<String>(),
+                        protocol = node.required("protocol").expect<String>(),
+                        protocolVersion = node.optional("protocolVersion")?.expect<String>(),
+                        description = node.optional("description")?.expect<String>(),
+                        title = node.optional("title")?.expect<String>(),
+                        summary = node.optional("summary")?.expect<String>(),
                         variables = node.optional("variables")?.let(serverVariableParser::parseMap),
                         security = node.optional("security")?.let(securitySchemeParser::parseList),
                         bindings = node.optional("bindings")?.let(bindingParser::parseMap),

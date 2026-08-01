@@ -9,3 +9,11 @@ components:
     BooleanDefault:
       badVariable:
         default: false
+    NumericReference:
+      badVariable:
+        $ref: 42
+    InvalidEnumElement:
+      badVariable:
+        enum:
+          - valid
+          - 7

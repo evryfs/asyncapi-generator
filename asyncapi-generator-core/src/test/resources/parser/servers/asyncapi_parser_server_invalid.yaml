@@ -9,3 +9,13 @@ servers:
     host: localhost
     protocol: kafka
     variables: "not-a-map"
+serverCases:
+  NullReference:
+    invalidReference:
+      $ref: null
+  MissingHost:
+    missingHost:
+      protocol: kafka
+  ArrayInsteadOfMap:
+    - host: localhost
+      protocol: kafka
