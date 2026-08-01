@@ -1,11 +1,12 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
-import dev.banking.asyncapi.generator.core.fixtures.childObject
-import dev.banking.asyncapi.generator.core.fixtures.semanticValue
-import dev.banking.asyncapi.generator.core.fixtures.value
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -20,20 +21,21 @@ class YamlDocumentReaderTest {
     fun `reads semantic scalar values without yaml style markers`() {
         val document = reader.read(ReaderFixtures.yamlSource("semantic-scalars.yaml"))
         val root = assertIs<DocumentObject>(document.root)
-        val info = root.childObject("info")
-        val example = root.childObject("components")
-            .childObject("schemas")
-            .childObject("Example")
-        assertEquals("3.0.0", root.value("asyncapi"))
-        assertEquals("Demo API", info.value("title"))
-        assertTrue((info.value("summary") as String).startsWith("folded text"))
-        assertTrue((info.value("description") as String).startsWith("literal\ntext"))
-        assertEquals(true, example.value("enabled"))
-        assertEquals("true", example.value("quotedEnabled"))
-        assertEquals(12, example.value("count"))
-        assertEquals("12", example.value("quotedCount"))
-        assertEquals(12.5, example.value("price"))
-        assertEquals(null, example.value("nullable"))
+        val info = assertIs<DocumentObject>(root["info"])
+        val components = assertIs<DocumentObject>(root["components"])
+        val schemas = assertIs<DocumentObject>(components["schemas"])
+        val example = assertIs<DocumentObject>(schemas["Example"])
+
+        assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
+        assertEquals("Demo API", assertIs<DocumentString>(info["title"]).value)
+        assertTrue(assertIs<DocumentString>(info["summary"]).value.startsWith("folded text"))
+        assertTrue(assertIs<DocumentString>(info["description"]).value.startsWith("literal\ntext"))
+        assertEquals(true, assertIs<DocumentBoolean>(example["enabled"]).value)
+        assertEquals("true", assertIs<DocumentString>(example["quotedEnabled"]).value)
+        assertEquals(12, assertIs<DocumentNumber>(example["count"]).value)
+        assertEquals("12", assertIs<DocumentString>(example["quotedCount"]).value)
+        assertEquals(12.5, assertIs<DocumentNumber>(example["price"]).value)
+        assertIs<DocumentNull>(example["nullable"])
     }
 
     @Test
@@ -62,7 +64,8 @@ class YamlDocumentReaderTest {
         val document = reader.read(source)
 
         val root = assertIs<DocumentArray>(document.root)
-        assertEquals(listOf("asyncapi", "info"), root.elements.map { it.semanticValue() })
+        assertEquals("asyncapi", assertIs<DocumentString>(root[0]).value)
+        assertEquals("info", assertIs<DocumentString>(root[1]).value)
         assertEquals("root", root.location.path)
         assertEquals(1, root.location.line)
     }
@@ -109,9 +112,9 @@ class YamlDocumentReaderTest {
 
         val root = assertIs<DocumentObject>(reader.read(source).root)
 
-        assertEquals("boolean-shaped", root.value("true"))
-        assertEquals("number-shaped", root.value("42"))
-        assertEquals("null-shaped", root.value("null"))
+        assertEquals("boolean-shaped", assertIs<DocumentString>(root["true"]).value)
+        assertEquals("number-shaped", assertIs<DocumentString>(root["42"]).value)
+        assertEquals("null-shaped", assertIs<DocumentString>(root["null"]).value)
     }
 
     @Test

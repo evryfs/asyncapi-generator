@@ -2,8 +2,8 @@ package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
-import dev.banking.asyncapi.generator.core.fixtures.value
 import dev.banking.asyncapi.generator.core.fixtures.writeTestFile
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -24,7 +24,7 @@ class DocumentReaderRegistryTest {
         val root = assertIs<DocumentObject>(document.root)
         assertEquals(DocumentFormat.YAML, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
-        assertEquals("3.0.0", root.value("asyncapi"))
+        assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
 
     @Test
@@ -42,7 +42,7 @@ class DocumentReaderRegistryTest {
         val root = assertIs<DocumentObject>(document.root)
         assertEquals(DocumentFormat.JSON, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
-        assertEquals("3.0.0", root.value("asyncapi"))
+        assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
 
     @Test

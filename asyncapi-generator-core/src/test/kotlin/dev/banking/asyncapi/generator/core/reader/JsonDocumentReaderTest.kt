@@ -1,17 +1,17 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.ReaderFixtures
-import dev.banking.asyncapi.generator.core.fixtures.assertMemberLocation
-import dev.banking.asyncapi.generator.core.fixtures.assertNodeLocation
-import dev.banking.asyncapi.generator.core.fixtures.childObject
-import dev.banking.asyncapi.generator.core.fixtures.semanticValue
-import dev.banking.asyncapi.generator.core.fixtures.value
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class JsonDocumentReaderTest {
@@ -22,20 +22,21 @@ class JsonDocumentReaderTest {
     fun `reads semantic scalar values`() {
         val document = reader.read(ReaderFixtures.jsonSource("semantic-scalars.json"))
         val root = assertIs<DocumentObject>(document.root)
-        val info = root.childObject("info")
-        val example = root.childObject("components")
-            .childObject("schemas")
-            .childObject("Example")
-        assertEquals("3.0.0", root.value("asyncapi"))
-        assertEquals("Demo API", info.value("title"))
-        assertEquals("folded text", info.value("summary"))
-        assertEquals("literal\ntext", info.value("description"))
-        assertEquals(true, example.value("enabled"))
-        assertEquals("true", example.value("quotedEnabled"))
-        assertEquals(12, example.value("count"))
-        assertEquals("12", example.value("quotedCount"))
-        assertEquals(12.5, example.value("price"))
-        assertEquals(null, example.value("nullable"))
+        val info = assertIs<DocumentObject>(root["info"])
+        val components = assertIs<DocumentObject>(root["components"])
+        val schemas = assertIs<DocumentObject>(components["schemas"])
+        val example = assertIs<DocumentObject>(schemas["Example"])
+
+        assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
+        assertEquals("Demo API", assertIs<DocumentString>(info["title"]).value)
+        assertEquals("folded text", assertIs<DocumentString>(info["summary"]).value)
+        assertEquals("literal\ntext", assertIs<DocumentString>(info["description"]).value)
+        assertEquals(true, assertIs<DocumentBoolean>(example["enabled"]).value)
+        assertEquals("true", assertIs<DocumentString>(example["quotedEnabled"]).value)
+        assertEquals(12, assertIs<DocumentNumber>(example["count"]).value)
+        assertEquals("12", assertIs<DocumentString>(example["quotedCount"]).value)
+        assertEquals(12.5, assertIs<DocumentNumber>(example["price"]).value)
+        assertIs<DocumentNull>(example["nullable"])
     }
 
     @Test
@@ -52,7 +53,8 @@ class JsonDocumentReaderTest {
         val document = reader.read(source)
 
         val root = assertIs<DocumentArray>(document.root)
-        assertEquals(listOf("asyncapi", "info"), root.elements.map { it.semanticValue() })
+        assertEquals("asyncapi", assertIs<DocumentString>(root[0]).value)
+        assertEquals("info", assertIs<DocumentString>(root[1]).value)
         assertEquals("root", root.location.path)
         assertEquals(1, root.location.line)
     }
@@ -95,15 +97,51 @@ class JsonDocumentReaderTest {
 
     @Test
     fun `records source locations for root object fields and array items`() {
-        val document = reader.read(ReaderFixtures.jsonSource("source-map.json"))
+        val source = ReaderFixtures.jsonSource("source-map.json")
+        val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
-        val info = root.childObject("info")
-        val tags = info["tags"] as DocumentArray
-        document.assertNodeLocation(root, "root", 1)
-        document.assertMemberLocation(root, "asyncapi", "root.asyncapi", 2)
-        document.assertMemberLocation(root, "info", "root.info", 3)
-        document.assertMemberLocation(info, "title", "root.info.title", 4)
-        document.assertMemberLocation(info, "tags", "root.info.tags", 5)
-        document.assertNodeLocation(tags[0], "root.info.tags[0]", 6)
+        val info = assertIs<DocumentObject>(root["info"])
+        val tags = assertIs<DocumentArray>(info["tags"])
+
+        assertEquals(source.id, root.location.sourceId)
+        assertEquals(source.file, root.location.file)
+        assertEquals("root", root.location.path)
+        assertEquals(1, root.location.line)
+        assertTrue(root.location.column >= 1)
+
+        val asyncapiMember = assertNotNull(root.member("asyncapi"))
+        assertEquals(source.id, asyncapiMember.keyLocation.sourceId)
+        assertEquals(source.file, asyncapiMember.keyLocation.file)
+        assertEquals("root.asyncapi", asyncapiMember.keyLocation.path)
+        assertEquals(2, asyncapiMember.keyLocation.line)
+        assertTrue(asyncapiMember.keyLocation.column >= 1)
+
+        val infoMember = assertNotNull(root.member("info"))
+        assertEquals(source.id, infoMember.keyLocation.sourceId)
+        assertEquals(source.file, infoMember.keyLocation.file)
+        assertEquals("root.info", infoMember.keyLocation.path)
+        assertEquals(3, infoMember.keyLocation.line)
+        assertTrue(infoMember.keyLocation.column >= 1)
+
+        val titleMember = assertNotNull(info.member("title"))
+        assertEquals(source.id, titleMember.keyLocation.sourceId)
+        assertEquals(source.file, titleMember.keyLocation.file)
+        assertEquals("root.info.title", titleMember.keyLocation.path)
+        assertEquals(4, titleMember.keyLocation.line)
+        assertTrue(titleMember.keyLocation.column >= 1)
+
+        val tagsMember = assertNotNull(info.member("tags"))
+        assertEquals(source.id, tagsMember.keyLocation.sourceId)
+        assertEquals(source.file, tagsMember.keyLocation.file)
+        assertEquals("root.info.tags", tagsMember.keyLocation.path)
+        assertEquals(5, tagsMember.keyLocation.line)
+        assertTrue(tagsMember.keyLocation.column >= 1)
+
+        val firstTag = tags[0]
+        assertEquals(source.id, firstTag.location.sourceId)
+        assertEquals(source.file, firstTag.location.file)
+        assertEquals("root.info.tags[0]", firstTag.location.path)
+        assertEquals(6, firstTag.location.line)
+        assertTrue(firstTag.location.column >= 1)
     }
 }
