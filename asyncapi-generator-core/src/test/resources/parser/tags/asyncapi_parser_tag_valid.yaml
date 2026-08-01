@@ -12,3 +12,11 @@ components:
         description: "User docs"
     refTag:
       $ref: '#/components/tags/inlineTag'
+  tagLists:
+    orderedTags:
+      - name: "user"
+        description: "User related operations"
+        externalDocs:
+          url: "https://example.com/docs/user"
+          description: "User docs"
+      - $ref: '#/components/tags/inlineTag'

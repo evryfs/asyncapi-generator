@@ -18,3 +18,22 @@ info:
     url: 'https://example.com/docs'
     description: Documentation
   x-custom-extension: value
+infoWithExtensions:
+  title: Extension Info Test
+  x-object:
+    items:
+      - alpha
+      - enabled: true
+        limit: 2
+  version: 2.0.0
+  X-ignored: case-sensitive
+  x-null: null
+  description: Extensions preserve source order
+  x-array:
+    - 1
+    - two
+    - false
+infoWithoutExtensions:
+  title: No Extensions Info Test
+  version: 3.0.0
+  X-ignored: case-sensitive

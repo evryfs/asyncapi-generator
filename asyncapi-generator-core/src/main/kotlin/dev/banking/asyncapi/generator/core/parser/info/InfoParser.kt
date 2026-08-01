@@ -22,32 +22,40 @@ class InfoParser(
     private val tagParser = TagParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Info {
-        parserNode.coerce<Map<*, *>>()
         return Info(
-            title = parserNode.mandatory("title").coerce<String>(),
-            version = parserNode.mandatory("version").coerce<String>(),
-            description = parserNode.optional("description")?.coerce<String>(),
-            termsOfService = parserNode.optional("termsOfService")?.coerce<String>(),
+            title = parserNode.required("title").expect<String>(),
+            version = parserNode.required("version").expect<String>(),
+            description = parserNode.optional("description")?.expect<String>(),
+            termsOfService = parserNode.optional("termsOfService")?.expect<String>(),
             contact = parserNode.optional("contact")?.let(::parseContact),
             license = parserNode.optional("license")?.let(::parseLicense),
             tags = parserNode.optional("tags")?.let(tagParser::parseList),
             externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-            extensions = parserNode.startsWith("x-")?.coerce<Map<String, Any?>>(),
+            extensions = parseExtensions(parserNode),
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseContact(parserNode: ParserNode): Contact {
         return Contact(
-            name = parserNode.optional("name")?.coerce<String>(),
-            url = parserNode.optional("url")?.coerce<String>(),
-            email = parserNode.optional("email")?.coerce<String>()
+            name = parserNode.optional("name")?.expect<String>(),
+            url = parserNode.optional("url")?.expect<String>(),
+            email = parserNode.optional("email")?.expect<String>()
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseLicense(parserNode: ParserNode): License {
         return License(
-            name = parserNode.mandatory("name").coerce<String>(),
-            url = parserNode.optional("url")?.coerce<String>()
+            name = parserNode.required("name").expect<String>(),
+            url = parserNode.optional("url")?.expect<String>()
         ).also { asyncApiContext.register(it, parserNode) }
+    }
+
+    private fun parseExtensions(parserNode: ParserNode): Map<String, Any?>? {
+        val extensions = parserNode.members()
+            .filter { member -> member.name.startsWith("x-") }
+            .associateTo(linkedMapOf()) { member ->
+                member.name to member.toPlainValue()
+            }
+        return extensions.takeIf { it.isNotEmpty() }
     }
 }
