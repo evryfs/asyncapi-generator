@@ -39,7 +39,7 @@ depend on them without depending on a concrete YAML or JSON reader.
 | `DocumentObject` | `Map<String, Any?>` | Object start; every member also has a key location |
 | `DocumentArray` | `List<Any?>` | Array start; every element has its own location |
 | `DocumentString` | `String` | Scalar token |
-| `DocumentNumber` | `Number` | Scalar token |
+| `DocumentNumber` | `Int`, `Long`, `BigInteger`, `Double`, or `BigDecimal` | Scalar token |
 | `DocumentBoolean` | `Boolean` | Scalar token |
 | `DocumentNull` | `null` | Null token |
 
@@ -57,7 +57,8 @@ File access failures are normalized as `UnreadableDocument`; Jackson and
 SnakeYAML exceptions do not escape as the top-level failure. Both readers apply
 the same default limits of 20 MiB for UTF-8 input and decoded document length,
 plus a nesting depth of 100. YAML additionally permits at most 50 expanded
-collection aliases. Size, depth, and alias violations are reported as
+collection aliases. Numeric tokens are limited to 1,000 characters in both
+formats. Size, depth, alias, and numeric-token violations are reported as
 `ResourceLimitExceeded`. These limits bound untrusted input while remaining
 well above ordinary AsyncAPI contract sizes.
 
@@ -68,6 +69,12 @@ YAML presentation details such as quoting and block style do not survive as
 semantic data. Quoted numbers and booleans remain strings. JSON-compatible YAML
 booleans `true` and `false` become booleans; YAML 1.1 words such as `yes`, `no`,
 `on`, and `off` remain strings.
+
+YAML and JSON use the same numeric representation. Integers use `Int` or `Long`
+when in range and `BigInteger` otherwise. Decimals remain `Double` when their
+lexical value survives the conversion exactly; values that would lose decimal
+precision or overflow use `BigDecimal`. This preserves ordinary runtime values
+while preventing format-dependent truncation.
 
 ## Parser cursor API
 

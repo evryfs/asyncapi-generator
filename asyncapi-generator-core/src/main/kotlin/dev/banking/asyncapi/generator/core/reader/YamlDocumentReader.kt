@@ -140,10 +140,8 @@ class YamlDocumentReader internal constructor(
         when (node.tag) {
             Tag.NULL -> DocumentNull(location)
             Tag.BOOL -> parseBoolean(node.value, location)
-            Tag.INT -> parseInteger(node.value)?.let { DocumentNumber(it, location) }
-                ?: DocumentString(node.value, location)
-            Tag.FLOAT -> parseFloat(node.value)?.let { DocumentNumber(it, location) }
-                ?: DocumentString(node.value, location)
+            Tag.INT -> parseNumber(node.value, location, DocumentNumberParser::parseInteger)
+            Tag.FLOAT -> parseNumber(node.value, location, DocumentNumberParser::parseDecimal)
             else -> DocumentString(node.value, location)
         }
 
@@ -157,15 +155,15 @@ class YamlDocumentReader internal constructor(
             else -> DocumentString(value, location)
         }
 
-    private fun parseInteger(value: String): Number? {
-        val normalized = value.replace("_", "")
-        return normalized.toLongOrNull()?.let {
-            if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it
-        }
+    private fun parseNumber(
+        value: String,
+        location: SourceLocation,
+        parse: (String) -> Number?,
+    ): DocumentNode {
+        limits.requireNumberLength(location.file, value)
+        return parse(value)?.let { DocumentNumber(it, location) }
+            ?: DocumentString(value, location)
     }
-
-    private fun parseFloat(value: String): Double? =
-        value.replace("_", "").toDoubleOrNull()
 
     private fun locationOf(
         source: DocumentSource,

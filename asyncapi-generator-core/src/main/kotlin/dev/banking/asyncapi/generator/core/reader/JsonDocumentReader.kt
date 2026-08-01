@@ -43,6 +43,7 @@ class JsonDocumentReader internal constructor(
                 StreamReadConstraints.builder()
                     .maxDocumentLength(limits.maxDocumentCharacters.toLong())
                     .maxNestingDepth(limits.maxNestingDepth)
+                    .maxNumberLength(limits.maxNumberCharacters)
                     .build(),
             ).build()
 
@@ -88,8 +89,18 @@ class JsonDocumentReader internal constructor(
             JsonToken.VALUE_STRING -> DocumentString(parser.valueAsString, location)
             JsonToken.VALUE_TRUE -> DocumentBoolean(true, location)
             JsonToken.VALUE_FALSE -> DocumentBoolean(false, location)
-            JsonToken.VALUE_NUMBER_INT -> DocumentNumber(parser.numberValue, location)
-            JsonToken.VALUE_NUMBER_FLOAT -> DocumentNumber(parser.doubleValue, location)
+            JsonToken.VALUE_NUMBER_INT ->
+                DocumentNumber(
+                    value = DocumentNumberParser.parseInteger(parser.text)
+                        ?: throw malformed(source, parser, "Invalid JSON integer"),
+                    location = location,
+                )
+            JsonToken.VALUE_NUMBER_FLOAT ->
+                DocumentNumber(
+                    value = DocumentNumberParser.parseDecimal(parser.text)
+                        ?: throw malformed(source, parser, "Invalid JSON decimal"),
+                    location = location,
+                )
             JsonToken.VALUE_NULL -> DocumentNull(location)
             else -> throw malformed(source, parser, "Unexpected JSON token: $token")
         }

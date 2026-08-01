@@ -13,6 +13,7 @@ internal data class DocumentReaderLimits(
     val maxDocumentCharacters: Int,
     val maxNestingDepth: Int,
     val maxAliasesForCollections: Int,
+    val maxNumberCharacters: Int,
 ) {
     fun readContent(file: File): String {
         val bytes = file.inputStream().use { input ->
@@ -41,6 +42,17 @@ internal data class DocumentReaderLimits(
         }
     }
 
+    fun requireNumberLength(file: File, value: String) {
+        if (value.length > maxNumberCharacters) {
+            throw DocumentReadException.ResourceLimitExceeded(
+                file = file,
+                cause = IllegalArgumentException(
+                    "Maximum numeric token length is $maxNumberCharacters characters",
+                ),
+            )
+        }
+    }
+
     private fun limitExceeded(file: File): DocumentReadException.ResourceLimitExceeded =
         DocumentReadException.ResourceLimitExceeded(
             file = file,
@@ -59,6 +71,7 @@ internal data class DocumentReaderLimits(
                 maxDocumentCharacters = 20 * MEBIBYTE,
                 maxNestingDepth = 100,
                 maxAliasesForCollections = 50,
+                maxNumberCharacters = 1000,
             )
     }
 }
