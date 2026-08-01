@@ -117,6 +117,26 @@ class ParserNodeTest {
     }
 
     @Test
+    fun `expect recursively validates combined collection types at their exact path`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf(
+                linkedMapOf("name" to "first"),
+                linkedMapOf("name" to true),
+            ),
+            sourceLine = "values: [{name: first}, {name: true}]",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<List<Map<String, String>>>()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<String>(), diagnostic.expectedType)
+        assertEquals(Boolean::class, diagnostic.actualType)
+        assertEquals(true, diagnostic.actualValue)
+        assertEquals("test.root.value[1].name", diagnostic.path)
+    }
+
+    @Test
     fun `expect supports nullable nested values`() {
         val node = ParserNodeFixtures.value(
             value = listOf("first", null),
@@ -214,5 +234,37 @@ class ParserNodeTest {
             listOf("test.root.value[0]", "test.root.value[1]"),
             arrayNode.elements().map(ParserNode::path),
         )
+    }
+
+    @Test
+    fun `members rejects a non-object node with an object expectation`() {
+        val node = ParserNodeFixtures.value(
+            value = listOf("first"),
+            sourceLine = "value: [first]",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.members()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<Map<String, Any?>>(), diagnostic.expectedType)
+        assertEquals(List::class, diagnostic.actualType)
+        assertEquals("test.root.value", diagnostic.path)
+    }
+
+    @Test
+    fun `elements rejects a non-array node with an array expectation`() {
+        val node = ParserNodeFixtures.value(
+            value = mapOf("first" to true),
+            sourceLine = "value: {first: true}",
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.elements()
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals(typeOf<List<Any?>>(), diagnostic.expectedType)
+        assertEquals(Map::class, diagnostic.actualType)
+        assertEquals("test.root.value", diagnostic.path)
     }
 }
