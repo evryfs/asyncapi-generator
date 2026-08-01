@@ -44,7 +44,7 @@ sealed class DocumentReadException(
         line: Int,
         column: Int,
     ) : DocumentReadException(
-        "Invalid mapping key in ${file.absolutePath} at line $line, column $column: expected scalar key",
+        "Invalid mapping key in ${file.absolutePath} at line $line, column $column: expected string key",
     )
 
     class DuplicateKey(

@@ -70,9 +70,69 @@ class YamlDocumentReaderTest {
     @Test
     fun `fails when mapping key is not scalar`() {
         val source = ReaderFixtures.yamlSource("non-scalar-key.yaml")
-        assertFailsWith<DocumentReadException.InvalidMappingKey> {
+        val error = assertFailsWith<DocumentReadException.InvalidMappingKey> {
             reader.read(source)
         }
+
+        assertTrue(error.message.orEmpty().contains("expected string key"))
+    }
+
+    @Test
+    fun `fails when mapping key is a non-string scalar`() {
+        listOf("true", "42", "null").forEach { key ->
+            val source =
+                ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                    content = "  $key: value",
+                )
+
+            val error = assertFailsWith<DocumentReadException.InvalidMappingKey> {
+                reader.read(source)
+            }
+
+            assertTrue(error.message.orEmpty().contains(source.file.absolutePath))
+            assertTrue(error.message.orEmpty().contains("line 1, column 3"))
+            assertTrue(error.message.orEmpty().contains("expected string key"))
+        }
+    }
+
+    @Test
+    fun `accepts quoted keys that resemble non-string scalars`() {
+        val source =
+            ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                content =
+                    """
+                    "true": boolean-shaped
+                    "42": number-shaped
+                    "null": null-shaped
+                    """.trimIndent(),
+            )
+
+        val root = assertIs<DocumentObject>(reader.read(source).root)
+
+        assertEquals("boolean-shaped", root.value("true"))
+        assertEquals("number-shaped", root.value("42"))
+        assertEquals("null-shaped", root.value("null"))
+    }
+
+    @Test
+    fun `fails instead of exposing a yaml merge key as a literal member`() {
+        val source =
+            ReaderFixtures.yamlSource("invalid-root.yaml").copy(
+                content =
+                    """
+                    base: &base
+                      enabled: true
+                    merged:
+                      <<: *base
+                    """.trimIndent(),
+            )
+
+        val error = assertFailsWith<DocumentReadException.InvalidMappingKey> {
+            reader.read(source)
+        }
+
+        assertTrue(error.message.orEmpty().contains("line 4, column 3"))
+        assertTrue(error.message.orEmpty().contains("expected string key"))
     }
 
     @Test

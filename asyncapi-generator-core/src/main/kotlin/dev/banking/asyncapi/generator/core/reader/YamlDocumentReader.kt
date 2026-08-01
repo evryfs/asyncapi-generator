@@ -119,6 +119,9 @@ class YamlDocumentReader internal constructor(
         node.value.forEach { tuple ->
             val keyNode = tuple.keyNode as? ScalarNode
                 ?: throw invalidMappingKey(source.file, tuple.keyNode.startMark)
+            if (keyNode.tag != Tag.STR) {
+                throw invalidMappingKey(source.file, keyNode.startMark)
+            }
             val key = keyNode.value
             val keyLocation = locationOf(source, "$path.$key", keyNode.startMark)
             if (result.containsKey(key)) {

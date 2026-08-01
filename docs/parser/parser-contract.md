@@ -48,6 +48,14 @@ duplicate keys with `DocumentReadException`. A syntactically valid document may
 have an object, array, scalar, or null root; readers do not apply the AsyncAPI
 requirement that the root be an object.
 
+Document objects always have string member names. JSON enforces this in its
+grammar; YAML mapping keys must resolve as strings and cannot be collections,
+numbers, booleans, or null. Quoted YAML keys such as `"true"` and `"42"` remain
+valid strings. This prevents YAML-only key coercion from producing a document
+tree that could not be represented by equivalent JSON. YAML merge keys are
+rejected rather than being exposed as literal `<<` members; shared members must
+be written explicitly.
+
 The AsyncAPI parser requires the root cursor to contain an object. Any other
 root produces an `unexpected-value-type` parser diagnostic at the root source
 location. This keeps format syntax errors separate from AsyncAPI structural
