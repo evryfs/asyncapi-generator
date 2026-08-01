@@ -1,29 +1,36 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
-class ServerVariableParserTest : ParserTestSupport() {
+class ServerVariableParserTest {
 
-    private val parser = ServerVariableParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = ServerVariableParser(context)
 
     @Test
     fun `parse server variables`() {
-        val variablesNode = readNode(
-            "parser/servers/asyncapi_parser_servers_valid.yaml",
-            "servers",
-            "scram-connections",
-            "variables",
-        )
+        val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val variablesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("servers")
+            .expectObject().required("scram-connections")
+            .expectObject().required("variables")
 
         val variables = parser.parseMap(variablesNode)
 
-        assertTrue(variables["port"] is ServerVariableInterface.ServerVariableInline)
-        val port = (variables["port"] as ServerVariableInterface.ServerVariableInline).serverVariable
+        val port = assertIs<ServerVariableInterface.ServerVariableInline>(variables["port"]).serverVariable
         assertEquals(listOf("18092", "28092"), port.enum)
         assertEquals("18092", port.default)
         assertEquals("The port used for Kafka connections", port.description)
@@ -31,81 +38,117 @@ class ServerVariableParserTest : ParserTestSupport() {
 
     @Test
     fun `parse server variable with invalid structure reports its expected type and source`() {
-        val variablesNode = readNode(
-            "parser/servers/asyncapi_parser_server_variable_invalid.yaml",
-            "components",
-            "serverVariableCases",
-            "InvalidVariableStructure",
-        )
-        assertUnexpectedValueType(
-            expectedType = "Map<String, Any?>",
-            actualType = ParserValueType.STRING,
-            actualValue = "not-a-map",
-            path = "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.InvalidVariableStructure.badVariable",
-            sourcePath = "root.components.serverVariableCases.InvalidVariableStructure.badVariable",
-            sourceFile = "asyncapi_parser_server_variable_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/servers/asyncapi_parser_server_variable_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val variablesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("serverVariableCases")
+            .expectObject().required("InvalidVariableStructure")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(variablesNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-map", diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.InvalidVariableStructure.badVariable",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.serverVariableCases.InvalidVariableStructure.badVariable",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_server_variable_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse server variable with boolean default reports its expected type and source`() {
-        val variablesNode = readNode(
-            "parser/servers/asyncapi_parser_server_variable_invalid.yaml",
-            "components",
-            "serverVariableCases",
-            "BooleanDefault",
-        )
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.BOOLEAN,
-            actualValue = false,
-            path = "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.BooleanDefault.badVariable.default",
-            sourcePath = "root.components.serverVariableCases.BooleanDefault.badVariable.default",
-            sourceFile = "asyncapi_parser_server_variable_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/servers/asyncapi_parser_server_variable_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val variablesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("serverVariableCases")
+            .expectObject().required("BooleanDefault")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(variablesNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
+        assertEquals(false, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.BooleanDefault.badVariable.default",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.serverVariableCases.BooleanDefault.badVariable.default",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_server_variable_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse server variable with numeric reference reports its expected type and source`() {
-        val variablesNode = readNode(
-            "parser/servers/asyncapi_parser_server_variable_invalid.yaml",
-            "components",
-            "serverVariableCases",
-            "NumericReference",
-        )
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.NUMBER,
-            actualValue = 42,
-            path = "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.NumericReference.badVariable.\$ref",
-            sourcePath = "root.components.serverVariableCases.NumericReference.badVariable.\$ref",
-            sourceFile = "asyncapi_parser_server_variable_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/servers/asyncapi_parser_server_variable_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val variablesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("serverVariableCases")
+            .expectObject().required("NumericReference")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(variablesNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(42, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.NumericReference.badVariable.\$ref",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.serverVariableCases.NumericReference.badVariable.\$ref",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_server_variable_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse server variable with numeric enum entry reports the nested value and source`() {
-        val variablesNode = readNode(
-            "parser/servers/asyncapi_parser_server_variable_invalid.yaml",
-            "components",
-            "serverVariableCases",
-            "InvalidEnumElement",
-        )
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.NUMBER,
-            actualValue = 7,
-            path = "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.InvalidEnumElement.badVariable.enum[1]",
-            sourcePath = "root.components.serverVariableCases.InvalidEnumElement.badVariable.enum[1]",
-            sourceFile = "asyncapi_parser_server_variable_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/servers/asyncapi_parser_server_variable_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val variablesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("serverVariableCases")
+            .expectObject().required("InvalidEnumElement")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(variablesNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(7, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_server_variable_invalid.root.components.serverVariableCases.InvalidEnumElement.badVariable.enum[1]",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.serverVariableCases.InvalidEnumElement.badVariable.enum[1]",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_server_variable_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }
