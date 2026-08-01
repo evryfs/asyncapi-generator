@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
@@ -32,55 +32,102 @@ class MessageTraitParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse message trait with invalid structure throws UnexpectedValue`() {
+    fun `parse message trait with invalid structure reports its expected type and source`() {
         val traitsNode = readNode(
             "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
             "components",
             "messageTraitCases",
             "InvalidTraitStructure",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_message_trait_invalid.yaml",
-            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidTraitStructure.badTrait",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidTraitStructure.badTrait",
+            sourcePath = "root.components.messageTraitCases.InvalidTraitStructure.badTrait",
+            sourceFile = "asyncapi_parser_message_trait_invalid.yaml",
         ) {
             parser.parseMap(traitsNode)
         }
     }
 
     @Test
-    fun `parse message trait with boolean content type throws UnexpectedValue`() {
+    fun `parse message trait with boolean content type reports its expected type and source`() {
         val traitsNode = readNode(
             "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
             "components",
             "messageTraitCases",
             "BooleanContentType",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "found Boolean true",
-            "quote the value",
-            "asyncapi_parser_message_trait_invalid.yaml",
-            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.BooleanContentType.badTrait.contentType",
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.BOOLEAN,
+            actualValue = true,
+            path = "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.BooleanContentType.badTrait.contentType",
+            sourcePath = "root.components.messageTraitCases.BooleanContentType.badTrait.contentType",
+            sourceFile = "asyncapi_parser_message_trait_invalid.yaml",
         ) {
             parser.parseMap(traitsNode)
         }
     }
 
     @Test
-    fun `parse message trait with invalid example structure throws UnexpectedValue`() {
+    fun `parse message trait with invalid example structure reports its expected type and source`() {
         val traitsNode = readNode(
             "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
             "components",
             "messageTraitCases",
             "InvalidExampleStructure",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_message_trait_invalid.yaml",
-            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.STRING,
+            actualValue = "not-a-map",
+            path = "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
+            sourcePath = "root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
+            sourceFile = "asyncapi_parser_message_trait_invalid.yaml",
         ) {
             parser.parseMap(traitsNode)
+        }
+    }
+
+    @Test
+    fun `parse message trait with numeric reference reports its expected type and source`() {
+        val traitsNode = readNode(
+            "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
+            "components",
+            "messageTraitCases",
+            "NumericReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 42,
+            path = "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.NumericReference.badTrait.\$ref",
+            sourcePath = "root.components.messageTraitCases.NumericReference.badTrait.\$ref",
+            sourceFile = "asyncapi_parser_message_trait_invalid.yaml",
+        ) {
+            parser.parseMap(traitsNode)
+        }
+    }
+
+    @Test
+    fun `parse message trait list from an object reports the container type and source`() {
+        val traitsNode = readNode(
+            "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
+            "components",
+            "messageTraitCases",
+            "ObjectInsteadOfList",
+        )
+        assertUnexpectedValueType(
+            expectedType = "List<Any?>",
+            actualType = ParserValueType.OBJECT,
+            actualValue = mapOf("badTrait" to mapOf("contentType" to "application/json")),
+            path = "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.ObjectInsteadOfList",
+            sourcePath = "root.components.messageTraitCases.ObjectInsteadOfList",
+            sourceFile = "asyncapi_parser_message_trait_invalid.yaml",
+        ) {
+            parser.parseList(traitsNode)
         }
     }
 }

@@ -13,3 +13,9 @@ components:
       badTrait:
         examples:
           - "not-a-map"
+    NumericReference:
+      badTrait:
+        $ref: 42
+    ObjectInsteadOfList:
+      badTrait:
+        contentType: application/json

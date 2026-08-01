@@ -10,3 +10,6 @@ components:
       - headers: "not-a-map"
     BooleanName:
       - name: true
+    ObjectInsteadOfList:
+      invalidExample:
+        name: example

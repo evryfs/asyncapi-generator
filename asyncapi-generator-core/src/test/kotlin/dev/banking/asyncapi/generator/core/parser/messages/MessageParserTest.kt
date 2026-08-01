@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
 import org.assertj.core.api.Assertions.assertThat
@@ -92,18 +92,60 @@ class MessageParserTest : ParserTestSupport() {
     }
 
     @Test
-    fun `parse message with invalid field type throws InvalidValue`() {
+    fun `parse message with invalid field type reports its expected type and source`() {
         val messagesNode = readNode(
             "parser/messages/asyncapi_parser_message_invalid_type.yaml",
             "components",
-            "messages",
+            "messageCases",
+            "InvalidName",
         )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "12345",
-            "quote the value",
-            "asyncapi_parser_message_invalid_type.yaml",
-            "asyncapi_parser_message_invalid_type.root.components.messages.InvalidNameMessage.name",
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NUMBER,
+            actualValue = 12345,
+            path = "asyncapi_parser_message_invalid_type.root.components.messageCases.InvalidName.invalidMessage.name",
+            sourcePath = "root.components.messageCases.InvalidName.invalidMessage.name",
+            sourceFile = "asyncapi_parser_message_invalid_type.yaml",
+        ) {
+            parser.parseMap(messagesNode)
+        }
+    }
+
+    @Test
+    fun `parse message with null reference reports its expected type and source`() {
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_invalid_type.yaml",
+            "components",
+            "messageCases",
+            "NullReference",
+        )
+        assertUnexpectedValueType(
+            expectedType = "String",
+            actualType = ParserValueType.NULL,
+            actualValue = null,
+            path = "asyncapi_parser_message_invalid_type.root.components.messageCases.NullReference.invalidMessage.\$ref",
+            sourcePath = "root.components.messageCases.NullReference.invalidMessage.\$ref",
+            sourceFile = "asyncapi_parser_message_invalid_type.yaml",
+        ) {
+            parser.parseMap(messagesNode)
+        }
+    }
+
+    @Test
+    fun `parse message map from an array reports the container type and source`() {
+        val messagesNode = readNode(
+            "parser/messages/asyncapi_parser_message_invalid_type.yaml",
+            "components",
+            "messageCases",
+            "ArrayInsteadOfMap",
+        )
+        assertUnexpectedValueType(
+            expectedType = "Map<String, Any?>",
+            actualType = ParserValueType.ARRAY,
+            actualValue = listOf(mapOf("name" to "validMessage")),
+            path = "asyncapi_parser_message_invalid_type.root.components.messageCases.ArrayInsteadOfMap",
+            sourcePath = "root.components.messageCases.ArrayInsteadOfMap",
+            sourceFile = "asyncapi_parser_message_invalid_type.yaml",
         ) {
             parser.parseMap(messagesNode)
         }

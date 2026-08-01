@@ -31,22 +31,19 @@ class MessageTraitParser(
     private val messageExampleParser = MessageExampleParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, MessageTraitInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<MessageTraitInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): MessageTraitInterface {
-        parserNode.coerce<Map<String, Any?>>()
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val reference = parserNode.optional($$"$ref")?.expect<String>()
         val messageTraitInterface = if (reference != null) {
             MessageTraitInterface.ReferenceMessageTrait(
                 Reference(
@@ -59,11 +56,11 @@ class MessageTraitParser(
                 MessageTrait(
                     headers = parserNode.optional("headers")?.let(schemaParser::parseElement),
                     correlationId = parserNode.optional("correlationId")?.let(correlationIdParser::parseElement),
-                    contentType = parserNode.optional("contentType")?.coerce<String>(),
-                    name = parserNode.optional("name")?.coerce<String>(),
-                    title = parserNode.optional("title")?.coerce<String>(),
-                    summary = parserNode.optional("summary")?.coerce<String>(),
-                    description = parserNode.optional("description")?.coerce<String>(),
+                    contentType = parserNode.optional("contentType")?.expect<String>(),
+                    name = parserNode.optional("name")?.expect<String>(),
+                    title = parserNode.optional("title")?.expect<String>(),
+                    summary = parserNode.optional("summary")?.expect<String>(),
+                    description = parserNode.optional("description")?.expect<String>(),
                     tags = parserNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),

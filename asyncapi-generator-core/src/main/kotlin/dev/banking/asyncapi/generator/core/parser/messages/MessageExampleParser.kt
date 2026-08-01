@@ -16,14 +16,12 @@ class MessageExampleParser(
 ) {
 
     fun parseList(parserNode: ParserNode): List<MessageExample> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.elements().forEach { node ->
             val messageExample = MessageExample(
-                headers = node.optional("headers")?.coerce<Map<String, Any?>>(),
+                headers = node.optional("headers")?.expect<Map<String, Any?>>(),
                 payload = node.optional("payload")?.toPlainValue(),
-                name = node.optional("name")?.coerce<String>(),
-                summary = node.optional("summary")?.coerce<String>()
+                name = node.optional("name")?.expect<String>(),
+                summary = node.optional("summary")?.expect<String>()
             ).also { asyncApiContext.register(it, node) }
             add(messageExample)
         }

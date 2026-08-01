@@ -31,10 +31,8 @@ class MessageParser(
     private val correlationIdParser = CorrelationIdParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, MessageInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
+        parserNode.members().forEach { node ->
+            val reference = node.optional($$"$ref")?.expect<String>()
             val messageInterface = if (reference != null) {
                 MessageInterface.MessageReference(
                     Reference(
@@ -45,11 +43,11 @@ class MessageParser(
             } else {
                 MessageInterface.MessageInline(
                     Message(
-                        name = node.optional("name")?.coerce<String>(),
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        contentType = node.optional("contentType")?.coerce<String>(),
+                        name = node.optional("name")?.expect<String>(),
+                        title = node.optional("title")?.expect<String>(),
+                        summary = node.optional("summary")?.expect<String>(),
+                        description = node.optional("description")?.expect<String>(),
+                        contentType = node.optional("contentType")?.expect<String>(),
                         headers = node.optional("headers")?.let(schemaParser::parseElement),
                         payload = node.optional("payload")?.let(schemaParser::parseElement),
                         correlationId = node.optional("correlationId")?.let(correlationIdParser::parseElement),
