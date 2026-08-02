@@ -225,6 +225,11 @@ shapes that ordinary AsyncAPI objects do not:
 - Recursive keywords such as `properties`, `items`, `allOf`, `anyOf`, `oneOf`,
   `not`, conditional schemas, and schema-valued dependencies recurse through
   `SchemaParser`.
+- The current domain model represents `items` as one schema. Tuple validation
+  expressed as an array of schemas is not represented in `Schema.items`; the
+  parser retains the original field value and location in the model repository
+  so `SchemaValidator` can report the unsupported form with a source-aware
+  diagnostic.
 - Property dependencies are lists of strings; schema dependencies are parsed as
   schemas.
 - `default`, `const`, `examples`, and enum values preserve JSON-compatible plain

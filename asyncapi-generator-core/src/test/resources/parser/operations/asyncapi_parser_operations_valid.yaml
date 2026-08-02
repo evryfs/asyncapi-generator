@@ -18,14 +18,42 @@ components:
   securitySchemes:
     saslScram: {}
   operationTraits:
-    kafka: {}
+    kafka:
+      title: Kafka operation defaults
+      summary: Shared Kafka operation settings
+      description: Applied to Kafka operations
+      security:
+        scram:
+          type: userPassword
+      tags:
+        - name: kafka
+      externalDocs:
+        url: https://example.com/docs/operation-trait
+      bindings:
+        kafka:
+          groupId: streetlights
     logging: {}
+  replies:
+    standardReply:
+      address:
+        location: $message.header#/replyTo
+    referencedReply:
+      $ref: '#/components/replies/standardReply'
+  replyAddresses:
+    standardReplyAddress:
+      location: $message.header#/replyTo
+    referencedReplyAddress:
+      $ref: '#/components/replyAddresses/standardReplyAddress'
 operations:
   receiveLightMeasurement:
+    title: Receive lighting measurement
     action: receive
     channel:
       $ref: '#/channels/lightingMeasured'
     summary: Inform about environmental lighting conditions of a particular streetlight.
+    description: Receives one measured light level
+    security:
+      - type: userPassword
     traits:
       - $ref: '#/components/operationTraits/kafka'
     messages:

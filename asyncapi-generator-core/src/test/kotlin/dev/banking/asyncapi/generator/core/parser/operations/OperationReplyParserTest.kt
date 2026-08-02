@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
@@ -22,7 +23,7 @@ class OperationReplyParserTest {
     private val parser = OperationReplyParser(context)
 
     @Test
-    fun `parse operation reply with address`() {
+    fun `parses an inline operation reply with address channel and messages`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val replyNode = ParserNodeFactory.root(document, context)
@@ -39,6 +40,22 @@ class OperationReplyParserTest {
         assertEquals("\$message.header#/replyTo", address.location)
         assertEquals("#/channels/lightingMeasured", reply.channel?.ref)
         assertEquals(listOf("#/components/messages/lightMeasured"), reply.messages?.map { it.ref })
+    }
+
+    @Test
+    fun `parses a referenced operation reply with its concrete category`() {
+        val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val replyNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("replies")
+            .expectObject().required("referencedReply")
+
+        val reference = assertIs<OperationReplyInterface.OperationReplyReference>(parser.parseElement(replyNode))
+            .reference
+
+        assertEquals("#/components/replies/standardReply", reference.ref)
+        assertEquals(OPERATION_REPLY, reference.referenceCategoryKey)
     }
 
     @Test

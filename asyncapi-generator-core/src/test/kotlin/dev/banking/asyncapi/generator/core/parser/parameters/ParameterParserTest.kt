@@ -21,7 +21,7 @@ class ParameterParserTest {
     private val parser = ParameterParser(context)
 
     @Test
-    fun `parse parameters`() {
+    fun `parses every parameter field`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val parametersNode = ParserNodeFactory.root(document, context)

@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCat
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class OperationReplyAddressParserTest {
     private val parser = OperationReplyAddressParser(context)
 
     @Test
-    fun `parse operation reply address`() {
+    fun `parses an inline operation reply address`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val addressNode = ParserNodeFactory.root(document, context)
@@ -35,6 +36,23 @@ class OperationReplyAddressParserTest {
         ).operationReplyAddress
 
         assertEquals("\$message.header#/replyTo", address.location)
+    }
+
+    @Test
+    fun `parses a referenced operation reply address with its concrete category`() {
+        val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val addressNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("replyAddresses")
+            .expectObject().required("referencedReplyAddress")
+
+        val reference = assertIs<OperationReplyAddressInterface.OperationReplyAddressReference>(
+            parser.parseElement(addressNode),
+        ).reference
+
+        assertEquals("#/components/replyAddresses/standardReplyAddress", reference.ref)
+        assertEquals(OPERATION_REPLY_ADDRESS, reference.referenceCategoryKey)
     }
 
     @Test

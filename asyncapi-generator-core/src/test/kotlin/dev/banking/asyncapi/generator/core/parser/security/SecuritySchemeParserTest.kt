@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
@@ -43,6 +44,11 @@ class SecuritySchemeParserTest {
         assertEquals("http", basicAuth.type)
         assertEquals("Basic HTTP authentication using username and password", basicAuth.description)
         assertEquals("basic", basicAuth.scheme)
+
+        val reference =
+            assertIs<SecuritySchemeInterface.SecuritySchemeReference>(result["referencedBasicAuth"]).reference
+        assertEquals("#/components/securitySchemes/basicAuth", reference.ref)
+        assertEquals(SECURITY_SCHEME, reference.referenceCategoryKey)
     }
 
     @Test

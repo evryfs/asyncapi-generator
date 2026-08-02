@@ -297,6 +297,31 @@ class ParserNodeTest {
     }
 
     @Test
+    fun `expect checks generic map key types at the key location`() {
+        val context = AsyncApiContext()
+        val source = DocumentSource(
+            id = "asyncapi",
+            file = File("asyncapi.yaml").canonicalFile,
+            content = "name: value",
+            format = DocumentFormat.YAML,
+        )
+        val document = DocumentReaderRegistry.read(source)
+        val node = ParserNodeFactory.root(document, context)
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            node.expect<Map<Int, String>>()
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+        assertEquals("Int", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("name", diagnostic.actualValue)
+        assertEquals("asyncapi.root.name", diagnostic.path)
+        assertEquals(1, diagnostic.sourceLocation.line)
+        assertEquals(1, diagnostic.sourceLocation.column)
+    }
+
+    @Test
     fun `expect permits nullable nested values`() {
         val context = AsyncApiContext()
         val source = DocumentSource(

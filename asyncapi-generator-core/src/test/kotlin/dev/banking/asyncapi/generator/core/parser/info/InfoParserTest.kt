@@ -23,7 +23,7 @@ class InfoParserTest {
     private val parser = InfoParser(context)
 
     @Test
-    fun `parse valid info object`() {
+    fun `parses every info field and extension`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val infoNode = ParserNodeFactory.root(document, context)

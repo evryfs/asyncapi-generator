@@ -6,7 +6,17 @@ servers:
   scram-connections:
     host: 'test.mykafkacluster.org:{port}/{environment}'
     protocol: kafka-secure
+    protocolVersion: '3.7'
+    title: SCRAM test broker
+    summary: Kafka broker secured with SCRAM
     description: Test broker secured with scramSha256
+    security:
+      - type: scramSha256
+    bindings:
+      kafka:
+        schemaRegistryUrl: https://registry.example.com
+    externalDocs:
+      url: https://example.com/docs/server
     tags:
       - name: "env:test-scram"
         description: >
@@ -24,6 +34,7 @@ servers:
         enum: [ "18092", "28092" ]
         default: "18092"
         description: The port used for Kafka connections
+        examples: [ "18092", "28092" ]
       environment:
         default: "test"
         enum: [ "test", "staging", "prod" ]
@@ -55,3 +66,8 @@ components:
       tags:
         - name: 'env:staging'
           description: Used for staging environment
+  serverVariables:
+    sharedPort:
+      default: '9092'
+    referencedPort:
+      $ref: '#/components/serverVariables/sharedPort'

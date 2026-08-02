@@ -63,6 +63,8 @@ class AsyncApiParserTest {
         val yaml = parser.parse(yamlRoot)
         val json = parser.parse(jsonRoot)
 
+        assertEquals("urn:com:example:format-independent", yaml.id)
+        assertEquals("application/json", yaml.defaultContentType)
         assertEquals(yaml, json)
     }
 

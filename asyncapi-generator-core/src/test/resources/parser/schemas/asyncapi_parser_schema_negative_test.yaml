@@ -39,6 +39,24 @@ components:
         invalid:
           type: string
 
+    QuotedBooleanSchema: "true"
+
+    TupleItemsSchema:
+      type: array
+      items:
+        - type: string
+        - type: number
+
+    InvalidDependencyScalar:
+      type: object
+      dependencies:
+        name: not-a-schema-or-property-list
+
+    InvalidDependencyNull:
+      type: object
+      dependencies:
+        name: null
+
   schemaCases:
     ArrayInsteadOfMap:
       - type: string

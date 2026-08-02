@@ -63,12 +63,6 @@ class ExternalFragmentProcessor(
     ) {
         val category = reference.referenceCategoryKey
             ?: throw IllegalArgumentException("Missing referenceCategoryKey for ref '${reference.ref}'")
-        if (category == REFERENCE) {
-            throw IllegalArgumentException(
-                "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
-                    "Assign a concrete ReferenceCategoryKey at parser creation site."
-            )
-        }
         val results = ValidationResults(context)
         val targetNode = target.node
         when (category) {
@@ -88,7 +82,10 @@ class ExternalFragmentProcessor(
             EXTERNAL_DOC -> parseAndValidateExternalDoc(targetNode, results)
             TAG -> parseAndValidateTag(targetNode, results)
             BINDING -> parseAndValidateBinding(targetNode, results)
-            else -> { /* Should not happen */ }
+            REFERENCE -> throw IllegalArgumentException(
+                "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
+                    "Assign a concrete ReferenceCategoryKey at parser creation site."
+            )
         }
         results.logWarnings()
         results.throwErrors()

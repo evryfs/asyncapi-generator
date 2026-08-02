@@ -19,7 +19,12 @@ components:
       name: lightMeasured
       title: Light measured
       summary: Inform about environmental lighting conditions of a particular streetlight.
+      description: A measured light level event
       contentType: application/json
+      correlationId:
+        location: $message.header#/correlationId
+      externalDocs:
+        url: https://example.com/docs/message
       tags:
         - name: telemetry
           description: Messages about environmental sensors
@@ -94,10 +99,31 @@ components:
   messageTraits:
     commonHeaders:
       headers:
-        myHeaders:
-          type: object
-          properties:
-            my-app-header:
-              type: integer
-              minimum: 0
-              maximum: 100
+        type: object
+        properties:
+          myHeaders:
+            type: object
+            properties:
+              my-app-header:
+                type: integer
+                minimum: 0
+                maximum: 100
+      correlationId:
+        location: $message.header#/correlationId
+      contentType: application/json
+      name: commonHeaders
+      title: Common message headers
+      summary: Shared message metadata
+      description: Applied to every streetlight message
+      tags:
+        - name: shared
+      externalDocs:
+        url: https://example.com/docs/message-trait
+      bindings:
+        kafka:
+          key:
+            type: string
+      examples:
+        - name: commonHeadersExample
+          headers:
+            correlationId: correlation-1

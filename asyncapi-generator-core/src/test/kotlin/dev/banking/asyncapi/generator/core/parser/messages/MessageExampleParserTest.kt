@@ -20,7 +20,7 @@ class MessageExampleParserTest {
     private val parser = MessageExampleParser(context)
 
     @Test
-    fun `parse message examples`() {
+    fun `parses every message example field`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val examplesNode = ParserNodeFactory.root(document, context)

@@ -169,7 +169,7 @@ class SchemaParser(
         val writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>()
 
         if (type == null) {
-            if (enumValues != null && !enumValues.isEmpty())
+            if (!enumValues.isNullOrEmpty())
                 type = "string"
         }
         return SchemaInterface.SchemaInline(

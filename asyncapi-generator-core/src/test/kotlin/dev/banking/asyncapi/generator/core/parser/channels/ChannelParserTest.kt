@@ -8,10 +8,13 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
@@ -26,7 +29,7 @@ class ChannelParserTest {
     private val parser = ChannelParser(context)
 
     @Test
-    fun `parse channels with referenced messages and parameters`() {
+    fun `parses channels with references and all optional metadata`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val channelsNode = ParserNodeFactory.root(document, context)
@@ -43,6 +46,16 @@ class ChannelParserTest {
             "The topic on which measured values may be produced and consumed.",
             lightingMeasured.description,
         )
+        assertEquals("Lighting measurements", lightingMeasured.title)
+        assertEquals("Reports measured lighting values", lightingMeasured.summary)
+        val server = lightingMeasured.servers?.single()
+        assertEquals("#/components/servers/production", server?.ref)
+        assertEquals(SERVER, server?.referenceCategoryKey)
+        val tag = assertIs<TagInterface.TagInline>(lightingMeasured.tags?.single()).tag
+        assertEquals("telemetry", tag.name)
+        val externalDocs =
+            assertIs<ExternalDocInterface.ExternalDocInline>(lightingMeasured.externalDocs).externalDoc
+        assertEquals("https://example.com/docs/channel", externalDocs.url)
         val lightMeasuredMessage =
             assertIs<MessageInterface.MessageReference>(lightingMeasured.messages?.get("lightMeasured")).reference
         assertEquals("#/components/messages/lightMeasured", lightMeasuredMessage.ref)

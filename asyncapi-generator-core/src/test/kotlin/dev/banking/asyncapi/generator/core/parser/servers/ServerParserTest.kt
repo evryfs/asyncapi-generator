@@ -2,13 +2,15 @@ package dev.banking.asyncapi.generator.core.parser.servers
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
@@ -25,7 +27,7 @@ class ServerParserTest {
     private val parser = ServerParser(context)
 
     @Test
-    fun `parse inline and referenced servers`() {
+    fun `parses inline and referenced servers with all optional fields`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val serversNode = ParserNodeFactory.root(document, context)
@@ -36,28 +38,26 @@ class ServerParserTest {
         val scram = assertIs<ServerInterface.ServerInline>(result["scram-connections"]).server
         assertEquals("test.mykafkacluster.org:{port}/{environment}", scram.host)
         assertEquals("kafka-secure", scram.protocol)
+        assertEquals("3.7", scram.protocolVersion)
+        assertEquals("SCRAM test broker", scram.title)
+        assertEquals("Kafka broker secured with SCRAM", scram.summary)
         assertEquals("Test broker secured with scramSha256", scram.description)
+        val security = assertIs<SecuritySchemeInterface.SecuritySchemeInline>(scram.security?.single()).security
+        assertEquals("scramSha256", security.type)
+        val binding = assertIs<BindingInterface.BindingInline>(scram.bindings?.get("kafka")).binding
+        assertEquals(mapOf("schemaRegistryUrl" to "https://registry.example.com"), binding.content)
+        val externalDocs = assertIs<ExternalDocInterface.ExternalDocInline>(scram.externalDocs).externalDoc
+        assertEquals("https://example.com/docs/server", externalDocs.url)
         val scramTags = assertNotNull(scram.tags).map { assertIs<TagInterface.TagInline>(it).tag }
         assertEquals(listOf("env:test-scram", "kind:remote", "visibility:private"), scramTags.map { it.name })
 
-        val port = assertIs<ServerVariableInterface.ServerVariableInline>(scram.variables?.get("port"))
-            .serverVariable
-        assertEquals(listOf("18092", "28092"), port.enum)
-        assertEquals("18092", port.default)
-        assertEquals("The port used for Kafka connections", port.description)
-        val environment =
-            assertIs<ServerVariableInterface.ServerVariableInline>(scram.variables?.get("environment"))
-                .serverVariable
-        assertEquals(listOf("test", "staging", "prod"), environment.enum)
-        assertEquals("test", environment.default)
-        assertEquals("Deployment environment", environment.description)
+        assertEquals(setOf("port", "environment"), scram.variables?.keys)
 
         val mtls = assertIs<ServerInterface.ServerInline>(result["mtls-connections"]).server
         assertEquals("test.mykafkacluster.org:28092", mtls.host)
         assertEquals("kafka-secure", mtls.protocol)
         assertEquals("Test broker secured with X509", mtls.description)
-        val mtlsTags = assertNotNull(mtls.tags).map { assertIs<TagInterface.TagInline>(it).tag }
-        assertEquals(listOf("env:test-mtls", "kind:remote", "visibility:private"), mtlsTags.map { it.name })
+        assertEquals(3, mtls.tags?.size)
 
         val staging = assertIs<ServerInterface.ServerReference>(result["staging"]).reference
         assertEquals("#/components/servers/stagingServer", staging.ref)

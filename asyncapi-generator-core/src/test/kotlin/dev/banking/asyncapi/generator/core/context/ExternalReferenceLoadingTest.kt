@@ -1,14 +1,27 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.channels.Channel
+import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.messages.Message
+import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
+import dev.banking.asyncapi.generator.core.model.operations.Operation
+import dev.banking.asyncapi.generator.core.model.operations.OperationReply
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
+import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
+import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.servers.Server
+import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
+import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
@@ -127,6 +140,34 @@ class ExternalReferenceLoadingTest {
             context.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
         )
         assertEquals("messages.yaml", context.getSourceLocation(message)?.file?.name)
+    }
+
+    @Test
+    fun `parses and validates every concrete external fragment category`() {
+        val file = TestResources.file("parser/references/external/category-main.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val root = ParserNodeFactory.root(document, context)
+
+        documentParser.parse(root)
+
+        val models = context.modelRepository.getModelsByPath()
+        assertIs<Schema>(models["category_fragments.root.schema"])
+        assertIs<Channel>(models["category_fragments.root.channel"])
+        assertIs<Message>(models["category_fragments.root.message"])
+        assertIs<MessageTrait>(models["category_fragments.root.messageTrait"])
+        assertIs<Operation>(models["category_fragments.root.operation"])
+        assertIs<OperationTrait>(models["category_fragments.root.operationTrait"])
+        assertIs<OperationReply>(models["category_fragments.root.operationReply"])
+        assertIs<OperationReplyAddress>(models["category_fragments.root.operationReplyAddress"])
+        assertIs<Server>(models["category_fragments.root.server"])
+        assertIs<ServerVariable>(models["category_fragments.root.serverVariable"])
+        assertIs<Parameter>(models["category_fragments.root.parameter"])
+        assertIs<SecurityScheme>(models["category_fragments.root.securityScheme"])
+        assertIs<CorrelationId>(models["category_fragments.root.correlationId"])
+        assertIs<ExternalDoc>(models["category_fragments.root.externalDoc"])
+        assertIs<Tag>(models["category_fragments.root.tag"])
+        val binding = assertIs<Binding>(models["category_fragments.root.binding"])
+        assertEquals("category-fragments.yaml", context.getSourceLocation(binding)?.file?.name)
     }
 
     @Test

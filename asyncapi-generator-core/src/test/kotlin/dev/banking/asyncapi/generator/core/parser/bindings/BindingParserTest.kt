@@ -99,6 +99,22 @@ class BindingParserTest {
     }
 
     @Test
+    fun `parses a direct Kafka binding key schema`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val kafkaBindingNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraits")
+            .expectObject().required("commonHeaders")
+            .expectObject().required("bindings")
+            .expectObject().required("kafka")
+
+        val binding = assertIs<BindingInterface.BindingInline>(parser.parseElement(kafkaBindingNode)).binding
+
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
+    }
+
+    @Test
     fun `parse server and operation bindings`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -122,7 +138,7 @@ class BindingParserTest {
     }
 
     @Test
-    fun `parse binding reports invalid inline structure`() {
+    fun `rejects a scalar binding with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val channelBindingsNode = ParserNodeFactory.root(document, context)

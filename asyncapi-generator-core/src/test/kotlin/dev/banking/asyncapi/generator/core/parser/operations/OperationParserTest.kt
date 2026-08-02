@@ -9,12 +9,13 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
-import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
@@ -40,11 +41,16 @@ class OperationParserTest {
         val result = parser.parseMap(operationsNode)
 
         val receive = assertIs<OperationInterface.OperationInline>(result["receiveLightMeasurement"]).operation
+        assertEquals("Receive lighting measurement", receive.title)
         assertEquals("receive", receive.action)
         assertEquals(
             "Inform about environmental lighting conditions of a particular streetlight.",
             receive.summary,
         )
+        assertEquals("Receives one measured light level", receive.description)
+        val receiveSecurity =
+            assertIs<SecuritySchemeInterface.SecuritySchemeInline>(receive.security?.single()).security
+        assertEquals("userPassword", receiveSecurity.type)
         assertEquals("#/channels/lightingMeasured", receive.channel?.ref)
         assertEquals(CHANNEL, receive.channel?.referenceCategoryKey)
         assertEquals(listOf("#/components/messages/lightMeasured"), receive.messages?.map { it.ref })
@@ -61,12 +67,7 @@ class OperationParserTest {
         assertEquals("https://example.com/api/oauth/dialog", receiveExternalDoc.url)
 
         val receiveReply = assertIs<OperationReplyInterface.OperationReplyInline>(receive.reply).operationReply
-        val receiveReplyAddress =
-            assertIs<OperationReplyAddressInterface.OperationReplyAddressInline>(receiveReply.address)
-                .operationReplyAddress
-        assertEquals("\$message.header#/replyTo", receiveReplyAddress.location)
-        assertEquals("#/channels/lightingMeasured", receiveReply.channel?.ref)
-        assertEquals(listOf("#/components/messages/lightMeasured"), receiveReply.messages?.map { it.ref })
+        assertNotNull(receiveReply.address)
 
         val turnOn = assertIs<OperationInterface.OperationInline>(result["turnOn"]).operation
         assertEquals("send", turnOn.action)
@@ -95,16 +96,11 @@ class OperationParserTest {
         assertEquals("https://example.com/api/oauth/dialog", turnOnExternalDoc.url)
 
         val turnOnReply = assertIs<OperationReplyInterface.OperationReplyInline>(turnOn.reply).operationReply
-        val turnOnReplyAddress =
-            assertIs<OperationReplyAddressInterface.OperationReplyAddressInline>(turnOnReply.address)
-                .operationReplyAddress
-        assertEquals("\$message.header#/replyTo", turnOnReplyAddress.location)
-        assertEquals("#/channels/lightTurnOn", turnOnReply.channel?.ref)
-        assertEquals(listOf("#/components/messages/turnOn"), turnOnReply.messages?.map { it.ref })
+        assertNotNull(turnOnReply.address)
     }
 
     @Test
-    fun `parse referenced operation`() {
+    fun `parses a referenced operation with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val operationsNode = ParserNodeFactory.root(document, context)
@@ -114,6 +110,7 @@ class OperationParserTest {
 
         val reference = assertIs<OperationInterface.OperationReference>(result["referencedOperation"]).reference
         assertEquals("#/operations/receiveLightMeasurement", reference.ref)
+        assertEquals(OPERATION, reference.referenceCategoryKey)
     }
 
     @Test

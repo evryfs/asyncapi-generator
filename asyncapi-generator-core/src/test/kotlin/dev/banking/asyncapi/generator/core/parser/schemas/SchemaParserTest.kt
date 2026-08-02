@@ -320,7 +320,113 @@ class SchemaParserTest {
     }
 
     @Test
-    fun `parse quoted numeric constraint reports its expected type and source`() {
+    fun `parses the remaining supported schema keywords`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("keywordCoverage")
+
+        val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
+
+        assertEquals("https://example.com/schemas/keyword-coverage", schema.id)
+        assertEquals("http://json-schema.org/draft-07/schema#", schema.schema)
+        assertEquals("base64", schema.contentEncoding)
+        assertEquals("application/json", schema.contentMediaType)
+        assertEquals(false, assertIs<SchemaInterface.BooleanSchema>(schema.additionalItems).value)
+        val identifier = assertIs<SchemaInterface.SchemaInline>(schema.definitions?.get("identifier")).schema
+        assertEquals("string", identifier.type)
+        assertEquals(4, schema.maxProperties)
+        assertEquals(1, schema.minProperties)
+        assertEquals(true, schema.readOnly)
+        assertEquals(false, schema.writeOnly)
+    }
+
+    @Test
+    fun `rejects a quoted boolean schema with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("QuotedBooleanSchema")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals("Boolean", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("true", diagnostic.actualValue)
+        assertEquals("root.components.schemas.QuotedBooleanSchema", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `retains unsupported tuple items for source-aware validation`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("TupleItemsSchema")
+
+        val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
+
+        assertNull(schema.items)
+        assertEquals(
+            listOf(mapOf("type" to "string"), mapOf("type" to "number")),
+            context.getFieldValue(schema, "items"),
+        )
+        assertEquals(
+            "asyncapi_parser_schema_negative_test.root.components.schemas.TupleItemsSchema.items",
+            context.getSourceLocation(schema, "items")?.path,
+        )
+    }
+
+    @Test
+    fun `rejects a scalar schema dependency with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("InvalidDependencyScalar")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-schema-or-property-list", diagnostic.actualValue)
+        assertEquals("root.components.schemas.InvalidDependencyScalar.dependencies.name", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `rejects a null schema dependency with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("InvalidDependencyNull")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.NULL, diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals("root.components.schemas.InvalidDependencyNull.dependencies.name", diagnostic.sourceLocation.path)
+    }
+
+    @Test
+    fun `rejects a quoted numeric constraint with a source-aware type diagnostic`() {
         val file = TestResources.file("schemas/asyncapi_schema_parser_assertion.yaml")
         val document = DocumentReaderRegistry.read(file)
         val schemaNode = ParserNodeFactory.root(document, context)

@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -21,7 +22,7 @@ class ReferenceParserTest {
     private val parser = ReferenceParser(context)
 
     @Test
-    fun `parse reference element`() {
+    fun `parses one generic reference`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val referenceNode = ParserNodeFactory.root(document, context)
@@ -36,7 +37,7 @@ class ReferenceParserTest {
     }
 
     @Test
-    fun `parse reference list`() {
+    fun `parses a list of generic references`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val referencesNode = ParserNodeFactory.root(document, context)
@@ -48,6 +49,23 @@ class ReferenceParserTest {
 
         assertEquals(listOf("#/components/messages/lightMeasured"), references.map { it.ref })
         assertEquals(listOf(REFERENCE), references.map { it.referenceCategoryKey })
+    }
+
+    @Test
+    fun `rejects a generic category when loading an external fragment`() {
+        val file = TestResources.file("parser/references/external/category-main.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val referenceNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("ExternalSchema")
+
+        val error = assertFailsWith<IllegalArgumentException> {
+            parser.parseElement(referenceNode)
+        }
+
+        assertContains(error.message.orEmpty(), "Generic reference category 'REFERENCE' is not supported")
+        assertContains(error.message.orEmpty(), "Assign a concrete ReferenceCategoryKey")
     }
 
     @Test

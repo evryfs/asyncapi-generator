@@ -22,7 +22,7 @@ class ExternalDocsParserTest {
     private val parser = ExternalDocsParser(context)
 
     @Test
-    fun `parse valid external docs`() {
+    fun `parses inline and referenced external documentation`() {
         val file = TestResources.file("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
         val externalDocsNode = ParserNodeFactory.root(document, context)

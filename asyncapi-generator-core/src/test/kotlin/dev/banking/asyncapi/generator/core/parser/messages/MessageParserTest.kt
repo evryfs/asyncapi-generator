@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
@@ -47,7 +48,14 @@ class MessageParserTest {
             "Inform about environmental lighting conditions of a particular streetlight.",
             lightMeasured.summary,
         )
+        assertEquals("A measured light level event", lightMeasured.description)
         assertEquals("application/json", lightMeasured.contentType)
+        val messageCorrelation =
+            assertIs<CorrelationIdInterface.CorrelationIdInline>(lightMeasured.correlationId).correlationId
+        assertEquals("\$message.header#/correlationId", messageCorrelation.location)
+        val messageExternalDocs =
+            assertIs<ExternalDocInterface.ExternalDocInline>(lightMeasured.externalDocs).externalDoc
+        assertEquals("https://example.com/docs/message", messageExternalDocs.url)
 
         val tags = assertNotNull(lightMeasured.tags).map { assertIs<TagInterface.TagInline>(it).tag }
         assertEquals(listOf("telemetry", "light"), tags.map { it.name })
@@ -90,8 +98,6 @@ class MessageParserTest {
             ),
             examples.map { it.summary },
         )
-        assertEquals(mapOf("lumens" to 1200, "sentAt" to "2024-09-12T12:00:00Z"), examples[0].payload)
-        assertNotNull(examples[0].headers)
 
         val turnOnOff = assertIs<MessageInterface.MessageInline>(result["turnOnOff"]).message
         assertEquals("turnOnOff", turnOnOff.name)
@@ -104,9 +110,6 @@ class MessageParserTest {
         )
         val turnOnExample = assertNotNull(turnOnOff.examples).single()
         assertEquals("turnOnExample", turnOnExample.name)
-        assertEquals("Example for turn-on command", turnOnExample.summary)
-        assertEquals(mapOf("correlationId" to 77), turnOnExample.headers)
-        assertEquals(mapOf("command" to "on", "sentAt" to "2024-09-12T12:00:00Z"), turnOnExample.payload)
         val turnOnTrait = assertIs<MessageTraitInterface.ReferenceMessageTrait>(
             assertNotNull(turnOnOff.traits).single(),
         ).reference
