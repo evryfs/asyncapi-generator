@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.bindings
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -50,11 +50,12 @@ class BindingValidatorTest : AbstractValidatorTest() {
     fun `invalid Kafka key schema fails validation`() {
         val results = validate("validator/bindings/asyncapi_validator_kafka_key_invalid.yaml")
 
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "'minimum' (10.0) cannot be greater than 'maximum' (1.0)",
+            rule = SCHEMA_NUMERIC_RANGE,
             sourceFile = "asyncapi_validator_kafka_key_invalid.yaml",
+            path = "asyncapi_validator_kafka_key_invalid.root.components.messageBindings.InvalidKafkaKey.kafka.key.minimum",
+            line = 11,
         )
     }
 }

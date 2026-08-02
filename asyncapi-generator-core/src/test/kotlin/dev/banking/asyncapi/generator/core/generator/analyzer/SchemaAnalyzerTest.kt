@@ -19,7 +19,7 @@ class SchemaAnalyzerTest {
         // 2. External has an inline enum property
         // 3. Root has a oneOf pointing to External
 
-        val inlineEnum = Schema(type = "string", enum = listOf("A", "B"))
+        val inlineEnum = Schema(enum = listOf("A", "B"))
         val externalSchema = Schema(
             type = "object",
             properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum))

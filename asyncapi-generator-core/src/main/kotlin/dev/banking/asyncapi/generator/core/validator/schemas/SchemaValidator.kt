@@ -14,7 +14,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ANNOTATION_IGNORED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_COMPOSITION_AMBIGUOUS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
@@ -29,20 +29,22 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REDUNDANT_BOUND
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_DEFAULT_NULL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_UNTYPED_ENUM
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeAny
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import java.math.BigDecimal
 import java.util.Collections
 import java.util.IdentityHashMap
 
@@ -106,12 +108,11 @@ class SchemaValidator(
         validateType(node, contextString, results)
         validateEnum(node, contextString, results)
         validateConst(node, contextString, results)
-        validateNumericRange(node, contextString, results)
+        validateNumericConstraints(node, contextString, results)
         validateStringLength(node, contextString, results)
         validatePattern(node, contextString, results)
         validateArray(node, contextString, results)
         validateObject(node, contextString, results)
-        validateComposition(node, contextString, results)
         validateDefaultValue(node, contextString, results)
         validateDiscriminator(node, contextString, results)
         validateExternalDocs(node, contextString, results)
@@ -263,12 +264,12 @@ class SchemaValidator(
     }
 
     private fun validateType(node: Schema, contextString: String, results: ValidationCollector) {
-        val type = node.type?.let(::sanitizeAny) ?: return
+        val type = node.type ?: return
         val allowedTypes = setOf("string", "number", "integer", "boolean", "array", "object", "null")
         val contextString = "$contextString Schema"
         when (type) {
             is String -> {
-                if (type.lowercase() !in allowedTypes) {
+                if (type !in allowedTypes) {
                     results.error(
                         SCHEMA_TYPE,
                         "$contextString type '$type' is not valid. Must be one of: ${allowedTypes.joinToString()}",
@@ -279,7 +280,15 @@ class SchemaValidator(
             }
 
             is List<*> -> {
-                val typeList = type.mapNotNull { item -> (item?.let(::sanitizeAny) as String).lowercase() }
+                if (type.isEmpty()) {
+                    results.error(
+                        SCHEMA_TYPE_ARRAY_NONEMPTY,
+                        "$contextString 'type' array must contain at least one type.",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        doc = "https://www.learnjsonschema.com/draft7/validation/type/",
+                    )
+                }
+                val typeList = type.filterIsInstance<String>()
                 if (typeList.size != type.size) {
                     results.error(
                         SCHEMA_TYPE,
@@ -294,6 +303,14 @@ class SchemaValidator(
                         SCHEMA_TYPE,
                         "$contextString types ${invalidTypes.joinToString()} are not valid. Must be one " +
                             "of: ${allowedTypes.joinToString()}",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        doc = "https://www.learnjsonschema.com/draft7/validation/type/",
+                    )
+                }
+                if (typeList.distinct().size != typeList.size) {
+                    results.error(
+                        SCHEMA_TYPE_ARRAY_UNIQUE,
+                        "$contextString 'type' array must contain unique values.",
                         sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
@@ -313,7 +330,7 @@ class SchemaValidator(
     }
 
     private fun validateEnum(node: Schema, contextString: String, results: ValidationCollector) {
-        val enum = node.enum?.map { enum -> enum?.let(::sanitizeAny) } ?: return
+        val enum = node.enum ?: return
         if (enum.isEmpty()) {
             results.error(
                 SCHEMA_ENUM_EMPTY,
@@ -322,20 +339,29 @@ class SchemaValidator(
                 doc = "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
-        if (enum.distinct().size != enum.size) {
-            results.warn(
+        if (SchemaValueSemantics.hasDuplicates(enum)) {
+            results.error(
                 SCHEMA_ENUM_UNIQUE,
                 "$contextString 'enum' contains duplicate values.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
                 doc = "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
+        if (node.type == null && enum.isNotEmpty() && enum.any { it !is String }) {
+            results.error(
+                SCHEMA_UNTYPED_ENUM,
+                "$contextString has an enum without 'type' that contains non-string values. The generator can " +
+                    "infer only an all-string enum safely; declare the intended type explicitly.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+            )
+        }
     }
 
     private fun validateConst(node: Schema, schemaName: String, results: ValidationCollector) {
-        val const = node.const?.let(::sanitizeAny) ?: return
-        val type = node.type?.let(::sanitizeAny) ?: return
-        if (!isDefaultCompatible(const, type)) {
+        if (!node.constSet && node.const == null) return
+        val const = node.const
+        val type = node.type ?: return
+        if (!SchemaValueSemantics.isCompatible(const, type)) {
             results.error(
                 SCHEMA_CONST_TYPE,
                 "$schemaName 'const' value '$const' does not match declared type '$type'.",
@@ -345,52 +371,29 @@ class SchemaValidator(
         }
     }
 
-    private fun validateNumericRange(node: Schema, contextString: String, results: ValidationCollector) {
-        val minimum = node.minimum?.toDouble()
-        val maximum = node.maximum?.toDouble()
-        val exclusiveMinimum = node.exclusiveMinimum?.toDouble()
-        val exclusiveMaximum = node.exclusiveMaximum?.toDouble()
-
-        if (minimum != null && maximum != null && minimum > maximum) {
-            results.error(
-                SCHEMA_NUMERIC_RANGE,
-                "$contextString 'minimum' ($minimum) cannot be greater than 'maximum' ($maximum).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minimum),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minimum/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/maximum/",
-            )
-        }
-        if (exclusiveMinimum != null && exclusiveMaximum != null && exclusiveMinimum > exclusiveMaximum) {
-            results.error(
-                SCHEMA_NUMERIC_RANGE,
-                "$contextString 'exclusiveMinimum' ($exclusiveMinimum) cannot be greater than " +
-                    "'exclusiveMaximum' ($exclusiveMaximum).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::exclusiveMinimum),
-                doc = "https://www.learnjsonschema.com/draft7/validation/exclusiveminimum/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/exclusivemaximum/",
-            )
-        }
-        // Warn when both inclusive and exclusive bounds are present.
-        if (minimum != null && node.exclusiveMinimum != null) {
-            results.warn(
-                SCHEMA_REDUNDANT_BOUND,
-                "$contextString defines both 'minimum' and 'exclusiveMinimum'. only 'minimum' will be used.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::exclusiveMinimum),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minimum/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/exclusiveminimum/",
-            )
-        }
-        if (maximum != null && node.exclusiveMaximum != null) {
-            results.warn(
-                SCHEMA_REDUNDANT_BOUND,
-                "$contextString defines both 'maximum' and 'exclusiveMaximum'. only 'maximum' will be used.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::exclusiveMaximum),
-                doc = "https://www.learnjsonschema.com/draft7/validation/maximum/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/exclusivemaximum/",
-            )
-        }
+    private fun validateNumericConstraints(node: Schema, contextString: String, results: ValidationCollector) {
+        validateOrderedRange(
+            node,
+            "minimum",
+            node.minimum,
+            "maximum",
+            node.maximum,
+            SCHEMA_NUMERIC_RANGE,
+            contextString,
+            results,
+        )
+        validateOrderedRange(
+            node,
+            "exclusiveMinimum",
+            node.exclusiveMinimum,
+            "exclusiveMaximum",
+            node.exclusiveMaximum,
+            SCHEMA_NUMERIC_RANGE,
+            contextString,
+            results,
+        )
         node.multipleOf?.let {
-            if (it.toDouble() <= 0.0) {
+            if (SchemaValueSemantics.decimal(it)?.signum() != 1) {
                 results.error(
                     SCHEMA_MULTIPLE_OF,
                     "$contextString 'multipleOf' must be greater than zero.",
@@ -402,38 +405,36 @@ class SchemaValidator(
     }
 
     private fun validateStringLength(node: Schema, contextString: String, results: ValidationCollector) {
-        val min = node.minLength?.toInt()
-        val max = node.maxLength?.toInt()
-        if (min == null || max == null) return
-        if (min < 0) {
-            results.error(
-                SCHEMA_STRING_LENGTH,
-                "$contextString 'minLength' ($min) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minLength),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minlength/",
-            )
-        }
-        if (max < 0) {
-            results.error(
-                SCHEMA_STRING_LENGTH,
-                "$contextString 'maxLength' ($max) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::maxLength),
-                doc = "https://www.learnjsonschema.com/draft7/validation/maxlength/",
-            )
-        }
-        if (min > max) {
-            results.error(
-                SCHEMA_STRING_LENGTH,
-                "$contextString 'minLength' ($min) cannot be greater than 'maxLength' ($max).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minLength),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minlength/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/maxlength/",
-            )
-        }
+        val minimum = validateNonNegativeInteger(
+            node,
+            "minLength",
+            node.minLength,
+            SCHEMA_STRING_LENGTH,
+            contextString,
+            results,
+        )
+        val maximum = validateNonNegativeInteger(
+            node,
+            "maxLength",
+            node.maxLength,
+            SCHEMA_STRING_LENGTH,
+            contextString,
+            results,
+        )
+        validateOrderedRange(
+            node,
+            "minLength",
+            minimum,
+            "maxLength",
+            maximum,
+            SCHEMA_STRING_LENGTH_RANGE,
+            contextString,
+            results,
+        )
     }
 
     private fun validatePattern(node: Schema, contextString: String, results: ValidationCollector) {
-        val pattern = node.pattern?.let(::sanitizeString) ?: return
+        val pattern = node.pattern ?: return
         try {
             Regex(pattern)
         } catch (ex: Exception) {
@@ -446,77 +447,50 @@ class SchemaValidator(
     }
 
     private fun validateArray(node: Schema, contextString: String, results: ValidationCollector) {
-        val minItems = node.minItems?.toInt()
-        val maxItems = node.maxItems?.toInt()
-        if (minItems == null || maxItems == null) return
-        if (minItems < 0) {
-            results.error(
-                SCHEMA_ARRAY_SIZE,
-                "$contextString 'minItems' ($minItems) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minItems),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minitems/",
-            )
-        }
-        if (maxItems < 0) {
-            results.error(
-                SCHEMA_ARRAY_SIZE,
-                "$contextString 'maxItems' ($maxItems) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::maxItems),
-                doc = "https://www.learnjsonschema.com/draft7/validation/maxitems/",
-            )
-        }
-        if (minItems > maxItems) {
-            results.error(
-                SCHEMA_ARRAY_SIZE,
-                "$contextString 'minItems' ($minItems) cannot be greater than 'maxItems' ($maxItems).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minItems),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minitems/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/maxitems/",
-            )
-        }
+        val minimum =
+            validateNonNegativeInteger(node, "minItems", node.minItems, SCHEMA_ARRAY_SIZE, contextString, results)
+        val maximum =
+            validateNonNegativeInteger(node, "maxItems", node.maxItems, SCHEMA_ARRAY_SIZE, contextString, results)
+        validateOrderedRange(
+            node,
+            "minItems",
+            minimum,
+            "maxItems",
+            maximum,
+            SCHEMA_ARRAY_SIZE_RANGE,
+            contextString,
+            results,
+        )
     }
 
     private fun validateObject(node: Schema, contextString: String, results: ValidationCollector) {
-        val minProps = node.minProperties?.toInt()
-        val maxProps = node.maxProperties?.toInt()
-        if (minProps != null && minProps < 0) {
-            results.error(
-                SCHEMA_OBJECT_SIZE,
-                "$contextString 'minProperties' ($minProps) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minProperties),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minproperties/",
-            )
-        }
-        if (maxProps != null && maxProps < 0) {
-            results.error(
-                SCHEMA_OBJECT_SIZE,
-                "$contextString 'maxProperties' ($maxProps) cannot be a negative value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::maxProperties),
-                doc = "https://www.learnjsonschema.com/draft7/validation/maxproperties/",
-            )
-        }
-        if (minProps != null && maxProps != null && minProps > maxProps) {
-            results.error(
-                SCHEMA_OBJECT_SIZE,
-                "$contextString 'minProperties' ($minProps) cannot be greater than 'maxProperties' ($maxProps).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::minProperties),
-                doc = "https://www.learnjsonschema.com/draft7/validation/minproperties/, " +
-                    "https://www.learnjsonschema.com/draft7/validation/maxproperties/",
-            )
-        }
-        val required = node.required?.map { item -> item.let(::sanitizeString) } ?: return
-        node.properties?.forEach { (propName, propSchema) ->
-            if (propName in required) {
-                val schema = (propSchema as? SchemaInterface.SchemaInline)?.schema
-                if (schema != null && schema.defaultSet && schema.default == null) {
-                    results.error(
-                        SCHEMA_REQUIRED_DEFAULT_NULL,
-                        "$contextString property '$propName' is required but has default: null.",
-                        sourceLocation = asyncApiContext.getSourceLocation(schema, schema::default),
-                    )
-                }
-            }
-        }
+        val minimum = validateNonNegativeInteger(
+            node,
+            "minProperties",
+            node.minProperties,
+            SCHEMA_OBJECT_SIZE,
+            contextString,
+            results,
+        )
+        val maximum = validateNonNegativeInteger(
+            node,
+            "maxProperties",
+            node.maxProperties,
+            SCHEMA_OBJECT_SIZE,
+            contextString,
+            results,
+        )
+        validateOrderedRange(
+            node,
+            "minProperties",
+            minimum,
+            "maxProperties",
+            maximum,
+            SCHEMA_OBJECT_SIZE_RANGE,
+            contextString,
+            results,
+        )
+        val required = node.required ?: return
         if (required.isEmpty()) {
             results.warn(
                 SCHEMA_REQUIRED_EMPTY,
@@ -548,22 +522,11 @@ class SchemaValidator(
         }
     }
 
-    private fun validateComposition(node: Schema, contextString: String, results: ValidationCollector) {
-        val compositionCount = listOfNotNull(node.allOf, node.anyOf, node.oneOf).count { it.isNotEmpty() }
-        if (compositionCount > 1) {
-            results.warn(
-                SCHEMA_COMPOSITION_AMBIGUOUS,
-                "$contextString uses multiple composition keywords ('allOf', 'anyOf', 'oneOf'). This can lead to " +
-                    "ambiguous validation behavior.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::allOf),
-            )
-        }
-    }
-
     private fun validateDefaultValue(node: Schema, contextString: String, results: ValidationCollector) {
-        val default = node.default?.let(::sanitizeAny) ?: return
-        val type = node.type?.let(::sanitizeAny) ?: return
-        if (!isDefaultCompatible(default, type)) {
+        if (!node.defaultSet && node.default == null) return
+        val default = node.default
+        val type = node.type ?: return
+        if (!SchemaValueSemantics.isCompatible(default, type)) {
             results.error(
                 SCHEMA_DEFAULT_TYPE,
                 "$contextString default value '$default' does not match declared type '$type'.",
@@ -573,9 +536,9 @@ class SchemaValidator(
     }
 
     private fun validateDiscriminator(node: Schema, contextString: String, results: ValidationCollector) {
-        val discriminator = node.discriminator?.let(::sanitizeString) ?: return
-        val required = node.required?.map { item -> item.let(::sanitizeString) }
-        val properties = node.properties?.keys?.map { key -> key.let(::sanitizeString) }
+        val discriminator = node.discriminator ?: return
+        val required = node.required
+        val properties = node.properties?.keys
         required?.contains(discriminator)?.let {
             if (!it) {
                 results.error(
@@ -625,20 +588,47 @@ class SchemaValidator(
         }
     }
 
-    private fun isDefaultCompatible(value: Any?, type: Any?): Boolean {
-        if (type == null) return true
-        if (type is List<*>) {
-            return type.any { isDefaultCompatible(value, it) }
+    private fun validateNonNegativeInteger(
+        node: Schema,
+        keyword: String,
+        value: Number?,
+        rule: ValidationRule,
+        contextString: String,
+        results: ValidationCollector,
+    ): BigDecimal? {
+        if (value == null) return null
+        val decimal = SchemaValueSemantics.decimal(value)
+        if (decimal == null || decimal.signum() < 0 || decimal.stripTrailingZeros().scale() > 0) {
+            results.error(
+                rule,
+                "$contextString '$keyword' must be a non-negative integer. Found: $value.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, keyword),
+                doc = "https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.6",
+            )
+            return null
         }
-        return when (type.toString().lowercase()) {
-            "string" -> value is String
-            "number" -> value is Number
-            "integer" -> value is Int || value is Long || (value is Number && value.toDouble() % 1.0 == 0.0)
-            "boolean" -> value is Boolean
-            "array" -> value is List<*>
-            "object" -> value is Map<*, *>
-            "null" -> value == null
-            else -> true
+        return decimal
+    }
+
+    private fun validateOrderedRange(
+        node: Schema,
+        lowerKeyword: String,
+        lower: Number?,
+        upperKeyword: String,
+        upper: Number?,
+        rule: ValidationRule,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
+        val lowerDecimal = lower?.let(SchemaValueSemantics::decimal) ?: return
+        val upperDecimal = upper?.let(SchemaValueSemantics::decimal) ?: return
+        if (lowerDecimal.compareTo(upperDecimal) > 0) {
+            results.error(
+                rule,
+                "$contextString '$lowerKeyword' ($lower) cannot be greater than '$upperKeyword' ($upper) " +
+                    "because the generator would emit contradictory constraints.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, lowerKeyword),
+            )
         }
     }
 

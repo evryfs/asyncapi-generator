@@ -1,0 +1,23 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Exact Schema Values
+  version: 1.0.0
+components:
+  schemas:
+    EmptyTypeArray:
+      type: []
+    DuplicateTypeArray:
+      type: [string, string]
+    UnnormalizedType:
+      type: " string "
+    DuplicateNumericEnum:
+      type: number
+      enum: [1, 1.0]
+    NullConstForString:
+      type: string
+      const: null
+    NullDefaultForString:
+      type: string
+      default: null
+    UntypedNonStringEnum:
+      enum: [one, 2]

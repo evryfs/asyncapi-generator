@@ -117,23 +117,26 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `JSONSCHEMA-EXCLUSIVE-BOUND-TYPE` | Exclusive bound is not numeric | JS7 numeric validation | specification / error | `exclusiveMinimum` or `exclusiveMaximum` | valid | `SchemaValidatorTest` |
 | `AAS3-SCHEMA-DISCRIMINATOR-TYPE` | Discriminator has an unsupported representation | A3 Schema | specification / error | `discriminator` | incomplete: AsyncAPI-specific behavior audit | `SchemaValidatorTest` |
 | `GEN-SCHEMA-DIALECT` | Schema dialect is not the supported dialect | A3 Schema / generator behavior | capability / error | `schemaFormat` | incomplete: native and multi-format policy pending | `SchemaValidatorTest` |
-| `JSONSCHEMA-TYPE` | Schema type value is unsupported | JS7 type | specification / error | `type` | incomplete: type arrays and uniqueness pending | `SchemaValidatorTest` |
+| `JSONSCHEMA-TYPE` | Schema type value is not an exact supported string, or a type-array member is not a string | JS7 type | specification / error | `type` | valid | `SchemaValidatorTest` |
+| `JSONSCHEMA-TYPE-ARRAY-NONEMPTY` | Type array is empty | JS7 type | specification / error | `type` | valid | `SchemaValidatorTest` |
+| `JSONSCHEMA-TYPE-ARRAY-UNIQUE` | Type array contains duplicate values | JS7 type | specification / error | `type` | valid | `SchemaValidatorTest` |
 | `JSONSCHEMA-ENUM-NONEMPTY` | Enum is empty | JS7 enum | specification / error | `enum` | valid | `SchemaValidatorTest` |
-| `JSONSCHEMA-ENUM-UNIQUE` | Enum contains duplicates | JS7 enum | specification / warning | `enum` | incomplete: JS7 requires uniqueness; severity audit | `SchemaValidatorTest` |
-| `GEN-SCHEMA-CONST-TYPE` | Const is rejected against inferred type | Generator behavior | capability / error | `const` | incorrect for explicit null and schemas without type | `SchemaValidatorTest` |
-| `JSONSCHEMA-NUMERIC-RANGE` | Minimum exceeds maximum | JS7 numeric validation | specification / error | numeric bounds | incomplete: exact precision pending | `SchemaValidatorTest` |
-| `ADV-SCHEMA-REDUNDANT-BOUND` | Inclusive and exclusive bounds coexist | none | advisory / warning | numeric bounds | incorrect: coexistence is valid | `SchemaValidatorTest` |
-| `JSONSCHEMA-MULTIPLE-OF` | `multipleOf` is not positive | JS7 numeric validation | specification / error | `multipleOf` | incomplete: exact precision pending | `SchemaValidatorTest` |
-| `JSONSCHEMA-STRING-LENGTH` | String length bounds are invalid | JS7 string validation | specification / error | `minLength`, `maxLength` | incomplete: nonnegative integer parsing pending | `SchemaValidatorTest` |
+| `JSONSCHEMA-ENUM-UNIQUE` | Enum contains JSON-equal duplicate values | JS7 enum | specification / error | `enum` | valid; numeric equality is precision-preserving | `SchemaValidatorTest` |
+| `GEN-SCHEMA-UNTYPED-ENUM` | Untyped enum contains values the generator cannot safely infer as strings | Generator behavior | capability / error | `enum` | valid; all-string enum inference is generator-local | `SchemaValidatorTest` |
+| `GEN-SCHEMA-CONST-TYPE` | Const cannot be represented by the generator's declared schema type | Generator behavior | capability / error | `const` | exact values and explicit null supported; absent type is not inferred | `SchemaValidatorTest` |
+| `GEN-SCHEMA-NUMERIC-RANGE` | Lower numeric bound exceeds its corresponding upper bound | Generator constraint mapping | capability / error | lower bound | valid generator safeguard; contradictory JSON Schema is otherwise legal | `SchemaValidatorTest`, `BindingValidatorTest` |
+| `JSONSCHEMA-MULTIPLE-OF` | `multipleOf` is not positive | JS7 numeric validation | specification / error | `multipleOf` | valid; arbitrary precision retained | `SchemaValidatorTest` |
+| `JSONSCHEMA-STRING-LENGTH` | String length bound is not a nonnegative integer | JS7 string validation | specification / error | `minLength`, `maxLength` | valid | `SchemaValidatorTest` |
+| `GEN-SCHEMA-STRING-LENGTH-RANGE` | Minimum string length exceeds maximum length | Generator constraint mapping | capability / error | `minLength` | valid generator safeguard | `SchemaValidatorTest` |
 | `JSONSCHEMA-PATTERN` | Pattern is not accepted | JS7 string validation | specification / error | `pattern` | incomplete: ECMA-262 compatibility pending | `SchemaValidatorTest` |
-| `JSONSCHEMA-ARRAY-SIZE` | Array size/uniqueness constraints are invalid | JS7 array validation | specification / error | array keywords | incomplete: nonnegative integer parsing pending | `SchemaValidatorTest` |
-| `JSONSCHEMA-OBJECT-SIZE` | Object size constraints are invalid | JS7 object validation | specification / error | `minProperties`, `maxProperties` | incomplete: nonnegative integer parsing pending | `SchemaValidatorTest` |
-| `GEN-SCHEMA-REQUIRED-DEFAULT-NULL` | Required property has null default | Generator behavior | capability / error | property `default` | incorrect: null default is valid | `SchemaValidatorTest` |
+| `JSONSCHEMA-ARRAY-SIZE` | Array size bound is not a nonnegative integer | JS7 array validation | specification / error | `minItems`, `maxItems` | valid | `SchemaValidatorTest` |
+| `GEN-SCHEMA-ARRAY-SIZE-RANGE` | Minimum array size exceeds maximum size | Generator behavior | capability / error | `minItems` | valid generator safeguard | `SchemaValidatorTest` |
+| `JSONSCHEMA-OBJECT-SIZE` | Object size bound is not a nonnegative integer | JS7 object validation | specification / error | `minProperties`, `maxProperties` | valid | `SchemaValidatorTest` |
+| `GEN-SCHEMA-OBJECT-SIZE-RANGE` | Minimum property count exceeds maximum count | Generator behavior | capability / error | `minProperties` | valid generator safeguard | `SchemaValidatorTest` |
 | `ADV-SCHEMA-REQUIRED-EMPTY` | Required list is empty | Project guidance | advisory / warning | `required` | advisory | `SchemaValidatorTest` |
 | `JSONSCHEMA-REQUIRED-UNIQUE` | Required list contains duplicates | JS7 required | specification / error | `required` | valid | `SchemaValidatorTest` |
 | `GEN-SCHEMA-REQUIRED-UNDECLARED` | Required property is not locally declared | Generator behavior | capability / warning | `required` | incomplete: composition/dependency awareness pending | `SchemaValidatorTest` |
-| `ADV-SCHEMA-COMPOSITION` | Multiple composition keywords coexist | none | advisory / warning | composition keywords | incorrect: coexistence is valid | `SchemaValidatorTest` |
-| `GEN-SCHEMA-DEFAULT-TYPE` | Default is rejected against inferred type | Generator behavior | capability / error | `default` | incorrect for explicit null and schemas without type | `SchemaValidatorTest` |
+| `GEN-SCHEMA-DEFAULT-TYPE` | Default cannot be represented by the generator's declared schema type | Generator behavior | capability / error | `default` | exact values and explicit null supported; absent type is not inferred | `SchemaValidatorTest` |
 | `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not required | A3 Schema | specification / error | `discriminator`, `required` | incomplete: conformance audit pending | `SchemaValidatorTest` |
 | `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not declared | A3 Schema | specification / error | `discriminator`, `properties` | incomplete: composition awareness pending | `SchemaValidatorTest` |
 

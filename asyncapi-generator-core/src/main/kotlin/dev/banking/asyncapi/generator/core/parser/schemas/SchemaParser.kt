@@ -101,7 +101,7 @@ class SchemaParser(
         val comment = objectNode.optional($$"$comment")?.expect<String>()
         val title = objectNode.optional("title")?.expect<String>()
         val description = objectNode.optional("description")?.expect<String>()
-        var type = objectNode.optional("type")?.let(::parseType)
+        val type = objectNode.optional("type")?.let(::parseType)
         val format = objectNode.optional("format")?.expect<String>()
 
         val defaultNode = objectNode.optional("default")
@@ -152,7 +152,9 @@ class SchemaParser(
         val elseSchema = objectNode.optional("else")?.let { parseElement(it) }
 
         val enumValues = objectNode.optional("enum")?.expect<List<Any?>>()
-        val constValue = objectNode.optional("const")?.toPlainValue()
+        val constNode = objectNode.optional("const")
+        val constValue = constNode?.toPlainValue()
+        val constSet = constNode != null
 
         val discriminator = objectNode.optional("discriminator")?.expect<String>()
         val externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
@@ -168,10 +170,6 @@ class SchemaParser(
         val readOnly = objectNode.optional("readOnly")?.expect<Boolean>()
         val writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>()
 
-        if (type == null) {
-            if (!enumValues.isNullOrEmpty())
-                type = "string"
-        }
         return SchemaInterface.SchemaInline(
             Schema(
                 id = id,
@@ -211,6 +209,7 @@ class SchemaParser(
                 minProperties = minProperties,
                 enum = enumValues,
                 const = constValue,
+                constSet = constSet,
                 allOf = allOf,
                 anyOf = anyOf,
                 oneOf = oneOf,

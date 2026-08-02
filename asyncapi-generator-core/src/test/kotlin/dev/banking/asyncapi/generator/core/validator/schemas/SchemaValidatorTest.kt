@@ -5,11 +5,31 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_UNTYPED_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -26,6 +46,42 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val results = asyncApiValidator.validate(document)
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `exact schema values and valid keyword combinations pass validation`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `type arrays enum equality and explicit null values use exact semantics`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_invalid.yaml")
+
+        assertEquals(7, results.errors.size)
+        assertRule(results, SCHEMA_TYPE_ARRAY_NONEMPTY, path = exactValuesPath("EmptyTypeArray.type"), line = 8)
+        assertRule(results, SCHEMA_TYPE_ARRAY_UNIQUE, path = exactValuesPath("DuplicateTypeArray.type"), line = 10)
+        assertRule(results, SCHEMA_TYPE, path = exactValuesPath("UnnormalizedType.type"), line = 12)
+        assertRule(results, SCHEMA_ENUM_UNIQUE, path = exactValuesPath("DuplicateNumericEnum.enum"), line = 15)
+        assertRule(results, SCHEMA_CONST_TYPE, path = exactValuesPath("NullConstForString.const"), line = 18)
+        assertRule(results, SCHEMA_DEFAULT_TYPE, path = exactValuesPath("NullDefaultForString.default"), line = 21)
+        assertRule(results, SCHEMA_UNTYPED_ENUM, path = exactValuesPath("UntypedNonStringEnum.enum"), line = 23)
+    }
+
+    @Test
+    fun `malformed programmatic type array produces a finding instead of throwing`() {
+        val collector = ValidationCollector(V3_0)
+
+        SchemaValidator(asyncApiContext).validate(
+            Schema(type = listOf("string", 42)),
+            "Programmatic Schema",
+            collector,
+        )
+
+        val results = collector.report()
+        assertEquals(1, results.errors.size)
+        assertRule(results, SCHEMA_TYPE)
     }
 
     @Test
@@ -216,46 +272,41 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `schema with invalid numeric and string constraints throws validation errors`() {
-        val document =
-            parse("validator/schemas/asyncapi_validator_schema_invalid_constraints.yaml")
-        val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(3, exception.errors.size, "Expected 3 validation errors for invalid constraints.")
-    }
-
-    @Test
-    fun `schema validation findings include source locations for nested schema errors`() {
+    fun `numeric and string constraints require exact positive or nonnegative integer values`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_invalid_constraints.yaml")
 
-        assertEquals(3, results.errors.size)
-        assertEquals(3, results.findings.size)
+        assertEquals(5, results.errors.size)
+        assertEquals(5, results.findings.size)
 
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "'minimum' (10.0) cannot be greater than 'maximum' (5.0)",
-            sourceFile = "asyncapi_validator_schema_invalid_constraints.yaml",
+            SCHEMA_NUMERIC_RANGE,
             path = "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidNumericRange.minimum",
             line = 9,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "'multipleOf' must be greater than zero",
-            sourceFile = "asyncapi_validator_schema_invalid_constraints.yaml",
+            SCHEMA_MULTIPLE_OF,
             path = "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidMultipleOf.multipleOf",
             line = 14,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "'minLength' (10) cannot be greater than 'maxLength' (5)",
-            sourceFile = "asyncapi_validator_schema_invalid_constraints.yaml",
+            SCHEMA_STRING_LENGTH,
             path = "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.minLength",
             line = 18,
+        )
+        assertRule(
+            results,
+            SCHEMA_STRING_LENGTH,
+            path = "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.maxLength",
+            line = 19,
+        )
+        assertRule(
+            results,
+            SCHEMA_STRING_LENGTH_RANGE,
+            path = "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringRange.minLength",
+            line = 23,
         )
     }
 
@@ -291,38 +342,20 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `schema with ambiguous composition or empty fields triggers warnings`() {
-        val document = parse("validator/schemas/asyncapi_validator_schema_warnings.yaml")
-        val results = asyncApiValidator.validate(document)
-        assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertTrue(results.hasErrors(), "Should have errors.")
-        assertTrue(results.hasWarnings(), "Should have warnings.")
-
-        val warnings = results.warnings
-        assertEquals(2, warnings.size, "Expected 2 warnings for incompatible composition values.")
-    }
-
-    @Test
-    fun `schema validation findings include source locations for nested schema warnings`() {
+    fun `combined composition is valid while empty enum and required remain findings`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_warnings.yaml")
 
-        assertEquals(2, results.warnings.size)
-
-        assertFinding(
+        assertEquals(1, results.errors.size)
+        assertEquals(1, results.warnings.size)
+        assertRule(
             results,
-            severity = WARNING,
-            messageContains = "uses multiple composition keywords",
-            sourceFile = "asyncapi_validator_schema_warnings.yaml",
-            path = "asyncapi_validator_schema_warnings.root.components.schemas.AmbiguousComposition.allOf",
-            line = 9,
+            SCHEMA_ENUM_EMPTY,
+            path = "asyncapi_validator_schema_warnings.root.components.schemas.EmptyEnumString.enum",
+            line = 22,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = WARNING,
-            messageContains = "defines an empty 'required' list",
-            sourceFile = "asyncapi_validator_schema_warnings.yaml",
+            SCHEMA_REQUIRED_EMPTY,
             path = "asyncapi_validator_schema_warnings.root.components.schemas.EmptyRequiredObject.required",
             line = 17,
         )
@@ -330,22 +363,25 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `schema with invalid array or object structure throws validation errors`() {
-        val document = parse("validator/schemas/asyncapi_validator_schema_invalid_structure.yaml")
-        val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(2, exception.errors.size)
+        val results = validate("validator/schemas/asyncapi_validator_schema_invalid_structure.yaml")
+
+        assertEquals(6, results.errors.size)
+        assertRule(results, SCHEMA_ARRAY_SIZE, path = structurePath("InvalidArray.minItems"), line = 9)
+        assertRule(results, SCHEMA_ARRAY_SIZE, path = structurePath("InvalidArray.maxItems"), line = 10)
+        assertRule(results, SCHEMA_ARRAY_SIZE_RANGE, path = structurePath("InvalidArrayRange.minItems"), line = 14)
+        assertRule(results, SCHEMA_OBJECT_SIZE, path = structurePath("InvalidObject.minProperties"), line = 19)
+        assertRule(results, SCHEMA_OBJECT_SIZE, path = structurePath("InvalidObject.maxProperties"), line = 20)
+        assertRule(
+            results,
+            SCHEMA_OBJECT_SIZE_RANGE,
+            path = structurePath("InvalidObjectRange.minProperties"),
+            line = 24,
+        )
     }
 
-    @Test
-    fun `schema with required property default null throws validation error`() {
-        val document =
-            parse("validator/schemas/asyncapi_validator_schema_default_null_required.yaml")
-        val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(1, exception.errors.size)
-    }
+    private fun exactValuesPath(path: String): String =
+        "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.$path"
+
+    private fun structurePath(path: String): String =
+        "asyncapi_validator_schema_invalid_structure.root.components.schemas.$path"
 }

@@ -200,6 +200,13 @@ components:
       type: string
       default: null
 
+    explicitNullConst:
+      type: [string, "null"]
+      const: null
+
+    untypedEnum:
+      enum: [one, 2, null]
+
     keywordCoverage:
       $id: https://example.com/schemas/keyword-coverage
       $schema: http://json-schema.org/draft-07/schema#

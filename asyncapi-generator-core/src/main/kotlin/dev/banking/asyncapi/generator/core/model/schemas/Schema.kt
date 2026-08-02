@@ -63,6 +63,10 @@ data class Schema(
 
     val enum: List<Any?>? = null,
     val const: Any? = null,
+
+    @get:JsonIgnore
+    val constSet: Boolean = false, // to distinguish between explicit 'const: null' and const not set
+
     val readOnly: Boolean? = null,
     val writeOnly: Boolean? = null,
 

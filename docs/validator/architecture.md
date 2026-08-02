@@ -28,6 +28,10 @@ Root operation validation receives the root channel registry explicitly. Compone
 
 Semantic format checks operate on the exact strings stored in the domain model. Validators do not trim, unquote, or otherwise normalize values. URI syntax uses `java.net.URI`, media types use Jakarta Activation, email addresses use Jakarta Mail, and runtime-expression fragments use Jackson's JSON Pointer parser.
 
+Schema Object validation likewise operates on the parsed, source-located model. Numeric constraints use `BigInteger` and `BigDecimal` semantics rather than narrowing through `Double` or `Int`. The [schema validation library evaluation](schema_validation_library_evaluation.md) explains why Draft 7 meta-validation is not currently delegated to a separate Jackson-tree validator.
+
+An enum without `type` remains untyped in the parsed domain model. Generation analysis may derive `string` only for an all-string enum because the Java and Kotlin generators require a concrete model type. Untyped enums containing other values produce a generator-capability finding instead of being silently coerced. Contradictory lower and upper constraints are also reported as generator-capability errors: JSON Schema permits an unsatisfiable schema, but emitted validation annotations cannot represent that intent safely for generated contracts.
+
 ## Finding contract
 
 Every finding contains:
