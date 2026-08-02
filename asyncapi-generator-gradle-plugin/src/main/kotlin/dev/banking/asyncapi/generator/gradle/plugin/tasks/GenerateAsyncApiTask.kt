@@ -1,12 +1,8 @@
 package dev.banking.asyncapi.generator.gradle.plugin.tasks
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationMapper
@@ -122,15 +118,12 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     clientConfig = clientConfiguration(),
                 ),
             )
-        val context = AsyncApiContext()
-        val root = AsyncApiRegistry.read(inputSpec.get().asFile, context)
-        val asyncApiDocument = AsyncApiParser(context).parse(root)
-        val validationErrors = AsyncApiValidator(context).validate(asyncApiDocument)
+        val loaded = AsyncApiDocumentLoader().load(inputSpec.get().asFile)
+        if (loaded.warnings.isNotEmpty()) {
+            logger.warn(loaded.formatWarnings().trimEnd())
+        }
 
-        ValidationReporter(context).logWarnings(validationErrors)
-        ValidationReporter(context).throwErrors(validationErrors)
-
-        val bundled = AsyncApiBundler().bundle(asyncApiDocument)
+        val bundled = AsyncApiBundler().bundle(loaded.document)
         AsyncApiGenerator().generate(bundled, generatorConfiguration)
 
         logger.lifecycle("AsyncAPI generation '${name}' completed")
