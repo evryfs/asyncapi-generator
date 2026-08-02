@@ -1,0 +1,5 @@
+asyncapi: 3.0.0
+id: https://example.com/events
+info:
+  title: Document Advisory
+  version: 1.0.0

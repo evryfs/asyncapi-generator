@@ -1,0 +1,13 @@
+asyncapi: 3.0.0
+info:
+  title: Duplicate server variable enum
+  version: 1.0.0
+servers:
+  production:
+    host: '{environment}.api.example.com'
+    protocol: https
+    variables:
+      environment:
+        enum:
+          - production
+          - production

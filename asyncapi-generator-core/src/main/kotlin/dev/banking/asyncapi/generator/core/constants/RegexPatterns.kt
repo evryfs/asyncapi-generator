@@ -3,16 +3,6 @@ package dev.banking.asyncapi.generator.core.constants
 object RegexPatterns {
 
     /**
-     * Matches standard email addresses using a simplified pattern.
-     *
-     * While not a full implementation of RFC 5322, this pattern provides sufficient structural
-     * validation for contact information by ensuring the `local-part@domain.tld` format.
-     *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc5322">RFC 5322: Internet Message Format</a>
-     */
-    val EMAIL = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
-
-    /**
      * Matches absolute URIs with support for both web and socket protocols.
      *
      * Supported schemes: `http`, `https`, `ws`, `wss`.
@@ -66,16 +56,6 @@ object RegexPatterns {
     val URI = Regex("""^[a-zA-Z][a-zA-Z0-9+.-]*:.+$""")
 
     /**
-     * Matches MIME (Multipurpose Internet Mail Extensions) Media Types.
-     *
-     * Validates the `type/subtype` structure used in `contentType` fields.
-     *
-     * **Example:** `application/json`, `application/vnd.apache.avro+json`
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc2045">RFC 2045: Media Types</a>
-     */
-    val MIME_TYPE = Regex("""^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$""")
-
-    /**
      * Identifies and extracts parameter placeholders from strings.
      *
      * This pattern identifies variables enclosed in curly braces, such as those found in
@@ -97,16 +77,6 @@ object RegexPatterns {
      * @see <a href="https://datatracker.ietf.org/doc/html/rfc1123">RFC 1123: Requirements for Internet Hosts</a>
      */
     val HOSTNAME = Regex("""^[\w\-.:/{}\[\]%~@*!$'()+,;=?#]+(:\d+)?$""")
-
-    /**
-     * Matches general AsyncAPI Runtime Expressions.
-     *
-     * Validates the expression format starting with a `$` followed by the source and path.
-     *
-     * **Example:** `$message.header#/correlationId`
-     * @see <a href="https://www.asyncapi.com/docs/reference/specification/v3.0.0#runtimeExpression">AsyncAPI Runtime Expression</a>
-     */
-    val RUNTIME_EXPRESSION_GENERAL = Regex("""^\$[a-zA-Z]+\.[a-zA-Z0-9_/#]+$""")
 
     /**
      * Matches AsyncAPI Runtime Expressions restricted to `message` or `context` sources.

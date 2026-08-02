@@ -8,17 +8,17 @@ the file, line, column, and parser path that introduced a value.
 
 ## Responsibilities by stage
 
-| Stage | Owns | Does not own |
-| --- | --- | --- |
-| Document loading facade | One isolated load context, reader selection, root parsing, external reference loading, semantic validation, and returned warnings | Bundling and generation |
-| Reader | File format detection, bounded file access, YAML or JSON syntax and safety limits, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules |
-| Document contract | Immutable format-independent nodes, document source identity, input format, and source locations shared between producers and consumers | YAML/Jackson/SnakeYAML implementation details or AsyncAPI domain rules |
-| Parser-node adapter | Parser paths and registration of reader-provided locations in the load context | Format-specific syntax |
-| Domain parser | AsyncAPI version-profile selection, supported object structure, required members, runtime value types, references, and domain-model construction | General schema validation, bundling, or output generation |
-| Schema parser | AsyncAPI Schema Object keywords, boolean schemas, references, Multi Format Schema dispatch, and native schema assets | Validation of all JSON Schema keyword combinations or generator support for every schema format |
-| External reference loader | URI/path resolution, document identity, JSON Pointer selection, cycle/deduplication guards, category-directed fragment parsing, and loading referenced files | Ordinary inline object traversal or bundling references into one document |
-| Validator | Semantic constraints on the parsed model and reference resolution findings | YAML/JSON syntax and parser value typing |
-| Bundler and generators | Downstream transformations and generated output | Deciding how input text is read or structurally parsed |
+| Stage                     | Owns                                                                                                                                                                        | Does not own                                                                                    |
+|---------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| Document loading facade   | One isolated load context, reader selection, root parsing, external reference loading, semantic validation, and returned warnings                                           | Bundling and generation                                                                         |
+| Reader                    | File format detection, bounded file access, YAML or JSON syntax and safety limits, duplicate keys, scalar interpretation, and construction of the neutral document contract | AsyncAPI members or domain rules                                                                |
+| Document contract         | Immutable format-independent nodes, document source identity, input format, and source locations shared between producers and consumers                                     | YAML/Jackson/SnakeYAML implementation details or AsyncAPI domain rules                          |
+| Parser-node adapter       | Parser paths and registration of reader-provided locations in the load context                                                                                              | Format-specific syntax                                                                          |
+| Domain parser             | AsyncAPI version-profile selection, supported object structure, required members, runtime value types, references, and domain-model construction                            | General schema validation, bundling, or output generation                                       |
+| Schema parser             | AsyncAPI Schema Object keywords, boolean schemas, references, Multi Format Schema dispatch, and native schema assets                                                        | Validation of all JSON Schema keyword combinations or generator support for every schema format |
+| External reference loader | URI/path resolution, document identity, JSON Pointer selection, cycle/deduplication guards, category-directed fragment parsing, and loading referenced files                | Ordinary inline object traversal or bundling references into one document                       |
+| Validator                 | Semantic constraints on the parsed model and reference resolution findings                                                                                                  | YAML/JSON syntax and parser value typing                                                        |
+| Bundler and generators    | Downstream transformations and generated output                                                                                                                             | Deciding how input text is read or structurally parsed                                          |
 
 `AsyncApiDocumentLoader` is the file-based core facade. It creates a fresh
 `AsyncApiContext`, reads the root document, builds the parser cursor, parses the

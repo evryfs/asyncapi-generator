@@ -3,6 +3,10 @@ info:
   title: Invalid Server Test
   version: 1.0.0
 servers:
+  emptyHostServer:
+    host: ""
+    protocol: kafka
+
   # Case 1: Empty Protocol (Error) - Changed from missing
   emptyProtocolServer:
     host: "my.host.com"
@@ -21,6 +25,7 @@ servers:
       env:
         enum: ["dev", "prod"]
         default: "staging" # 'staging' is not in enum
+        examples: ["staging"]
 
   # Case 4: Variable missing Default (Error)
   missingDefaultVariableServer:
@@ -29,4 +34,5 @@ servers:
     variables:
       port:
         enum: ["9092", "9093"]
+        examples: []
         # missing default

@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Optional channel fields
+  version: 1.0.0
+channels:
+  absentAddressAndMessages: {}
+  emptyMessages:
+    messages: {}
+  parameterized:
+    address: users.{userId}
+    parameters:
+      userId: {}

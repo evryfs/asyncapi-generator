@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
 /**
@@ -23,7 +24,7 @@ class AsyncApiDocumentLoader {
         val document = AsyncApiParser(context).parse(root)
         val validationResults = AsyncApiValidator(context).validate(document)
 
-        validationResults.throwErrors()
+        ValidationReporter(context).throwErrors(validationResults)
 
         return AsyncApiDocumentLoadResult(
             document = document,

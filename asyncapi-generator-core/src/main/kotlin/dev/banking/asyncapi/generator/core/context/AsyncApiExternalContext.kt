@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
@@ -66,8 +67,8 @@ class AsyncApiExternalContext(
             val parser = AsyncApiParser(context)
             val parsed = parser.parse(rootNode)
             val result = AsyncApiValidator(context).validate(parsed)
-            result.logWarnings()
-            result.throwErrors()
+            ValidationReporter(context).logWarnings(result)
+            ValidationReporter(context).throwErrors(result)
         } else {
             val parserProfile = referenceOrigin?.parserProfile
             val profiledRoot = parserProfile?.let(rootNode::withProfile) ?: rootNode

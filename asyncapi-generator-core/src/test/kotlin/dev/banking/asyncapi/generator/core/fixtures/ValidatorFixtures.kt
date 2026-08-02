@@ -2,8 +2,9 @@ package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
 /**
@@ -13,7 +14,7 @@ import java.io.File
  * helpers that keep validator tests focused on expected validation results.
  */
 internal class ValidatorFixtures(
-    context: AsyncApiContext = AsyncApiContext(),
+    private val context: AsyncApiContext = AsyncApiContext(),
 ) {
     private val parserFixtures = ParserFixtures(context)
     private val validator = AsyncApiValidator(context)
@@ -24,13 +25,13 @@ internal class ValidatorFixtures(
     fun document(file: File): AsyncApiDocument =
         parserFixtures.document(file)
 
-    fun validate(document: AsyncApiDocument): ValidationResults =
+    fun validate(document: AsyncApiDocument): ValidationReport =
         validator.validate(document)
 
-    fun validate(path: String): ValidationResults =
+    fun validate(path: String): ValidationReport =
         validate(document(path))
 
-    fun validate(file: File): ValidationResults =
+    fun validate(file: File): ValidationReport =
         validate(document(file))
 
     fun validatedDocument(path: String): AsyncApiDocument =
@@ -38,10 +39,9 @@ internal class ValidatorFixtures(
 
     fun validatedDocument(file: File): AsyncApiDocument {
         val document = document(file)
-        validate(document).apply {
-            logWarnings()
-            throwErrors()
-        }
+        val report = validate(document)
+        ValidationReporter(context).logWarnings(report)
+        ValidationReporter(context).throwErrors(report)
         return document
     }
 }

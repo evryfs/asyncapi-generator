@@ -1,16 +1,21 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.SEMANTIC_VERSION
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_OF_SERVICE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TITLE_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class InfoValidator(
     val asyncApiContext: AsyncApiContext,
@@ -22,7 +27,8 @@ class InfoValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validate(node: Info, contextString: String, results: ValidationResults) {
+    fun validate(node: Info, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateTitle(node, contextString, results)
         validateVersion(node, contextString, results)
         validateTermsOfService(node, contextString, results)
@@ -33,10 +39,11 @@ class InfoValidator(
         node.license?.let { licenseValidator.validate(it, contextString, results) }
     }
 
-    private fun validateTitle(node: Info, contextString: String, results: ValidationResults) {
-        val title = node.title.let(::sanitizeString)
+    private fun validateTitle(node: Info, contextString: String, results: ValidationCollector) {
+        val title = node.title
         if (title.isBlank()) {
             results.error(
+                INFO_TITLE_REQUIRED,
                 "$contextString 'title' field is required and cannot be empty.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::title),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
@@ -44,10 +51,11 @@ class InfoValidator(
         }
     }
 
-    private fun validateVersion(node: Info, contextString: String, results: ValidationResults) {
-        val version = node.version.let(::sanitizeString)
+    private fun validateVersion(node: Info, contextString: String, results: ValidationCollector) {
+        val version = node.version
         if (version.isBlank()) {
             results.error(
+                INFO_VERSION_REQUIRED,
                 "$contextString 'version' field is required and cannot be empty.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
@@ -56,16 +64,18 @@ class InfoValidator(
         }
         if (!SEMANTIC_VERSION.matches(version)) {
             results.warn(
+                INFO_VERSION_FORMAT,
                 "$contextString 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
             )
         }
     }
 
-    private fun validateTermsOfService(node: Info, contextString: String, results: ValidationResults) {
-        val termsOfService = node.termsOfService?.let(::sanitizeString) ?: return
-        if (!URL.matches(termsOfService)) {
+    private fun validateTermsOfService(node: Info, contextString: String, results: ValidationCollector) {
+        val termsOfService = node.termsOfService ?: return
+        if (ValidationFormats.absoluteUri(termsOfService) == null) {
             results.error(
+                INFO_TERMS_OF_SERVICE_FORMAT,
                 "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::termsOfService),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
@@ -73,7 +83,7 @@ class InfoValidator(
         }
     }
 
-    private fun validateTags(node: Info, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: Info, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -82,13 +92,13 @@ class InfoValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference -> {
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
                 }
             }
         }
     }
 
-    private fun validateExternalDocs(node: Info, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Info, contextString: String, results: ValidationCollector) {
         val externalDocs = node.externalDocs ?: return
         val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
@@ -96,7 +106,7 @@ class InfoValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, contextString, results)
+                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
         }
     }
 }

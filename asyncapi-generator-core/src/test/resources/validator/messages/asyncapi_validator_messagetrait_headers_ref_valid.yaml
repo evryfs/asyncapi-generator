@@ -5,8 +5,13 @@ info:
 components:
   messageTraits:
     DefaultKafkaHeaders:
+      contentType: application/json; charset=utf-8
       headers:
         $ref: "#/components/schemas/DefaultHeaders"
+      examples:
+        - payload: null
+    DocumentedTrait:
+      description: Documentation is meaningful trait content
   schemas:
     DefaultHeaders:
       type: object

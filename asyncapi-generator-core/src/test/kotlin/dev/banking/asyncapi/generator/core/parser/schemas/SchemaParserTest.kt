@@ -320,6 +320,36 @@ class SchemaParserTest {
     }
 
     @Test
+    fun `parse schema preserves an explicit null const`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("explicitNullConst")
+
+        val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
+
+        assertNull(schema.const)
+        assertEquals(true, schema.constSet)
+    }
+
+    @Test
+    fun `parse enum without type does not infer a string schema`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("untypedEnum")
+
+        val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
+
+        assertNull(schema.type)
+        assertEquals(listOf("one", 2, null), schema.enum)
+    }
+
+    @Test
     fun `parses the remaining supported schema keywords`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -375,6 +405,10 @@ class SchemaParserTest {
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
         assertNull(schema.items)
+        val tupleItems = assertNotNull(schema.tupleItems)
+        assertEquals(2, tupleItems.size)
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(tupleItems[0]).schema.type)
+        assertEquals("number", assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
         assertEquals(
             listOf(mapOf("type" to "string"), mapOf("type" to "number")),
             context.getFieldValue(schema, "items"),

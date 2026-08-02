@@ -1,0 +1,40 @@
+asyncapi: 3.0.0
+info:
+  title: Exact Schema Values
+  version: 1.0.0
+components:
+  schemas:
+    UntypedStringEnum:
+      enum: [one, two]
+    DistinctStrings:
+      enum: [value, " value ", '"value"']
+    NullableValues:
+      type: [string, "null"]
+      const: null
+      default: null
+    ExactNumbers:
+      type: number
+      multipleOf: 1e-400
+      minimum: -100000000000000000000000000000000000000000000000001
+      maximum: 100000000000000000000000000000000000000000000000001
+      exclusiveMinimum: -100000000000000000000000000000000000000000000000002
+      exclusiveMaximum: 100000000000000000000000000000000000000000000000002
+    ExactIntegerDefault:
+      type: integer
+      default: 100000000000000000000000000000000000000000000000001
+    LargeLengths:
+      type: string
+      minLength: 1
+      maxLength: 100000000000000000000000000000000000000000000000000
+    CombinedComposition:
+      allOf:
+        - type: string
+      oneOf:
+        - type: number
+    RequiredNullableDefault:
+      type: object
+      properties:
+        userId:
+          type: [string, "null"]
+          default: null
+      required: [userId]

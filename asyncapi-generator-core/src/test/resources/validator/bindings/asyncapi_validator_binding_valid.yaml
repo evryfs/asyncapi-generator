@@ -3,16 +3,51 @@ info:
   title: Valid Binding Test
   version: 1.0.0
 components:
+  serverBindings:
+    KafkaRegistry:
+      kafka:
+        schemaRegistryUrl: https://registry.example.com
+        schemaRegistryVendor: confluent
+        bindingVersion: '0.4.0'
   channelBindings:
-    ValidKafkaBinding:
+    KafkaTopicV04:
       kafka:
         topic: my.topic
         partitions: 3
         replicas: 1
+        topicConfiguration:
+          cleanup.policy: [delete, compact]
+          retention.ms: 604800000
+          retention.bytes: 1000000000
+          delete.retention.ms: 86400000
+          max.message.bytes: 1048588
+        bindingVersion: '0.4.0'
+    KafkaTopicV05:
+      kafka:
+        topicConfiguration:
+          confluent.key.schema.validation: true
+          confluent.key.subject.name.strategy: TopicNameStrategy
+          custom.kafka.configuration: supported
+        bindingVersion: '0.5.0'
+    UnknownProtocol:
+      custom:
+        values: [primary, 7, false, null]
+        nullable:
+  operationBindings:
+    KafkaConsumer:
+      kafka:
+        groupId:
+          type: string
+        clientId:
+          type: string
+        bindingVersion: '0.4.0'
   messageBindings:
-    ValidKafkaMessageBinding:
+    KafkaMessage:
       kafka:
         key:
           type: string
           pattern: '^[A-Z0-9]+$'
+        schemaIdLocation: header
+        schemaIdPayloadEncoding: apache-avro
+        schemaLookupStrategy: TopicIdStrategy
         bindingVersion: '0.5.0'

@@ -3,6 +3,10 @@ package dev.banking.asyncapi.generator.core.parser.bindings
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
@@ -30,9 +34,12 @@ class BindingParserTest {
             .expectObject().required("components")
             .expectObject().required("channelBindings")
 
-        val bindings = parser.parseMap(channelBindingsNode)
+        val bindings = parser.parseComponentMap(channelBindingsNode, CHANNEL)
 
         val kafka = assertIs<BindingInterface.BindingInline>(bindings["userSignedUpChannel"]).binding
+        assertEquals("kafka", kafka.protocolBindings.single().protocol)
+        assertEquals(CHANNEL, kafka.protocolBindings.single().location)
+        assertEquals("0.5.0", kafka.protocolBindings.single().bindingVersion)
         assertEquals(
             mapOf(
                 "kafka" to mapOf(
@@ -78,7 +85,7 @@ class BindingParserTest {
             .expectObject().required("components")
             .expectObject().required("messageBindings")
 
-        val bindings = parser.parseMap(messageBindingsNode)
+        val bindings = parser.parseComponentMap(messageBindingsNode, MESSAGE)
 
         val amqp = assertIs<BindingInterface.BindingInline>(bindings["userSignedUpMessage"]).binding
         assertEquals(
@@ -92,6 +99,8 @@ class BindingParserTest {
         )
 
         val kafka = assertIs<BindingInterface.BindingInline>(bindings["accountUpdatedMessage"]).binding
+        assertEquals(MESSAGE, kafka.protocolBindings.single().location)
+        assertEquals(setOf("key"), kafka.protocolBindings.single().schemaFields.keys)
         val keySchema = assertIs<SchemaInterface.SchemaInline>(kafka.kafkaKeySchema).schema
         assertEquals("integer", keySchema.type)
         assertEquals("int64", keySchema.format)
@@ -109,7 +118,7 @@ class BindingParserTest {
             .expectObject().required("bindings")
             .expectObject().required("kafka")
 
-        val binding = assertIs<BindingInterface.BindingInline>(parser.parseElement(kafkaBindingNode)).binding
+        val binding = assertIs<BindingInterface.BindingInline>(parser.parseProtocol(kafkaBindingNode, MESSAGE)).binding
 
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
     }
@@ -122,14 +131,14 @@ class BindingParserTest {
             .expectObject().required("components")
             .expectObject()
 
-        val serverBindings = parser.parseMap(components.required("serverBindings"))
+        val serverBindings = parser.parseComponentMap(components.required("serverBindings"), SERVER)
         val mqtt = assertIs<BindingInterface.BindingInline>(serverBindings["myServerBinding"]).binding
         assertEquals(
             mapOf("mqtt" to mapOf("clientId" to "guest", "cleanSession" to true)),
             mqtt.content,
         )
 
-        val operationBindings = parser.parseMap(components.required("operationBindings"))
+        val operationBindings = parser.parseComponentMap(components.required("operationBindings"), OPERATION)
         val http = assertIs<BindingInterface.BindingInline>(operationBindings["myOperationBinding"]).binding
         assertEquals(
             mapOf("http" to mapOf("method" to "POST", "query" to mapOf("type" to "object"))),
@@ -146,7 +155,7 @@ class BindingParserTest {
             .expectObject().required("channelBindings")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelBindingsNode)
+            parser.parseComponentMap(channelBindingsNode, CHANNEL)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
@@ -172,7 +181,7 @@ class BindingParserTest {
             .expectObject().required("NullReference")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(bindingNode)
+            parser.parseComponentMap(bindingNode, CHANNEL)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
@@ -198,7 +207,7 @@ class BindingParserTest {
             .expectObject().required("InvalidBindingsContainer")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(bindingNode)
+            parser.parseComponentMap(bindingNode, CHANNEL)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 

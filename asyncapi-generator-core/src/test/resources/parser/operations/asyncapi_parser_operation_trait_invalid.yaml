@@ -15,3 +15,8 @@ components:
     ObjectInsteadOfList:
       badTrait:
         title: valid title
+    SecurityObjectInsteadOfList:
+      badTrait:
+        security:
+          named:
+            type: userPassword

@@ -1,0 +1,37 @@
+asyncapi: 3.0.0
+info:
+  title: Nested validator traversal
+  version: 1.0.0
+channels:
+  events:
+    address: events
+    messages:
+      event:
+        $ref: '#/components/messages/event'
+operations:
+  publishEvent:
+    action: send
+    channel:
+      $ref: '#/channels/events'
+    messages:
+      - $ref: '#/channels/events/messages/event'
+    traits:
+      - $ref: '#/components/operationTraits/shared'
+    reply:
+      $ref: '#/components/replies/shared'
+components:
+  messages:
+    event:
+      correlationId:
+        location: invalid
+  operationTraits:
+    shared:
+      tags:
+        - name: ''
+  replies:
+    shared:
+      address:
+        $ref: '#/components/replyAddresses/shared'
+  replyAddresses:
+    shared:
+      location: invalid

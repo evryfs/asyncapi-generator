@@ -1,0 +1,7 @@
+asyncapi: 3.0.0
+info:
+  title: Parameters without address expressions
+  version: 1.0.0
+channels:
+  dynamic:
+    parameters: {}

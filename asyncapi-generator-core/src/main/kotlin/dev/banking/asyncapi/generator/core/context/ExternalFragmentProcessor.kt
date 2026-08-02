@@ -19,6 +19,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.UNKNOWN
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
@@ -36,6 +37,8 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
+import dev.banking.asyncapi.generator.core.validator.ReferenceTargetTraversal
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -52,7 +55,8 @@ import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeVali
 import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerVariableValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
 class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
@@ -80,7 +84,7 @@ class ExternalFragmentProcessor(
             CORRELATION_ID -> parseCorrelationId(targetNode)
             EXTERNAL_DOC -> parseExternalDoc(targetNode)
             TAG -> parseTag(targetNode)
-            BINDING -> parseBinding(targetNode)
+            BINDING -> parseBinding(targetNode, reference)
             REFERENCE -> throw IllegalArgumentException(
                 "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
                     "Assign a concrete ReferenceCategoryKey at parser creation site."
@@ -119,7 +123,7 @@ class ExternalFragmentProcessor(
                     MessageValidator(context).validate(parsed.message, validationContext, results)
 
                 is MessageInterface.MessageReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(parsed.reference, MESSAGE, validationContext, results)
             }
         }
     }
@@ -199,7 +203,12 @@ class ExternalFragmentProcessor(
                     ServerVariableValidator(context).validate(parsed.serverVariable, validationContext, results)
 
                 is ServerVariableInterface.ServerVariableReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(
+                        parsed.reference,
+                        SERVER_VARIABLE,
+                        validationContext,
+                        results,
+                    )
             }
         }
     }
@@ -224,7 +233,12 @@ class ExternalFragmentProcessor(
                     SecuritySchemeValidator(context).validate(parsed.security, validationContext, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(
+                        parsed.reference,
+                        SECURITY_SCHEME,
+                        validationContext,
+                        results,
+                    )
             }
         }
     }
@@ -262,8 +276,13 @@ class ExternalFragmentProcessor(
         }
     }
 
-    private fun parseBinding(targetNode: ParserNode): () -> Unit {
-        val parsed: BindingInterface = BindingParser(context).parseElement(targetNode)
+    private fun parseBinding(targetNode: ParserNode, reference: Reference): () -> Unit {
+        val origin = context.getBindingReferenceOrigin(reference)
+        val parsed: BindingInterface = if (origin?.protocol != null) {
+            BindingParser(context).parseProtocol(targetNode, origin.location, origin.protocol)
+        } else {
+            BindingParser(context).parseComponent(targetNode, origin?.location ?: UNKNOWN)
+        }
         return deferredValidation { results ->
             val validationContext = "External Binding '${targetNode.name}'"
             when (parsed) {
@@ -271,15 +290,17 @@ class ExternalFragmentProcessor(
                     BindingValidator(context).validate(parsed.binding, validationContext, results)
 
                 is BindingInterface.BindingReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(parsed.reference, BINDING, validationContext, results)
             }
         }
     }
 
-    private fun deferredValidation(validate: (ValidationResults) -> Unit): () -> Unit = {
-        val results = ValidationResults(context)
+    private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit = {
+        val results = ValidationCollector(AsyncApiValidationProfile.V3_0)
         validate(results)
-        results.logWarnings()
-        results.throwErrors()
+        ReferenceTargetTraversal(context).drain(results)
+        val report = results.report()
+        ValidationReporter(context).logWarnings(report)
+        ValidationReporter(context).throwErrors(report)
     }
 }

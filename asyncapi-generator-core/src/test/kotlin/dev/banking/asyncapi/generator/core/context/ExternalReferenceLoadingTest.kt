@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
@@ -170,6 +171,24 @@ class ExternalReferenceLoadingTest {
         assertIs<Tag>(models["category_fragments.root.tag"])
         val binding = assertIs<Binding>(models["category_fragments.root.binding"])
         assertEquals("category-fragments.yaml", context.getSourceLocation(binding)?.file?.name)
+    }
+
+    @Test
+    fun `retains protocol and location when loading an external binding fragment`() {
+        val file = TestResources.file("parser/references/external/binding-main.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val root = ParserNodeFactory.root(document, context)
+
+        documentParser.parse(root)
+
+        val binding = assertIs<Binding>(
+            context.modelRepository.getModelsByPath()["binding_fragments.root.channelKafka"],
+        )
+        val protocolBinding = binding.protocolBindings.single()
+        assertEquals("kafka", protocolBinding.protocol)
+        assertEquals(CHANNEL, protocolBinding.location)
+        assertEquals("0.4.0", protocolBinding.bindingVersion)
+        assertEquals("binding-fragments.yaml", context.getSourceLocation(protocolBinding)?.file?.name)
     }
 
     @Test

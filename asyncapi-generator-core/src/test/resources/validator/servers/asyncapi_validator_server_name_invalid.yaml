@@ -1,0 +1,8 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid server name
+  version: 1.0.0
+servers:
+  invalid.name:
+    host: api.example.com
+    protocol: https

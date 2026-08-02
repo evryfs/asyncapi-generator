@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION as OPERATION_BINDING
 import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
@@ -57,7 +58,7 @@ class OperationParser(
                     action = objectNode.required("action").expect<String>(),
                     channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
                     messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
-                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION_BINDING) },
                     traits = objectNode.optional("traits")?.let(operationTraitParser::parseList),
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),

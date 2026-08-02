@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: Reference cycle
+  version: 1.0.0
+components:
+  messages:
+    first:
+      $ref: '#/components/messages/second'
+    second:
+      $ref: '#/components/messages/first'

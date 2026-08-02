@@ -10,8 +10,10 @@ components:
       location: "not_a_runtime_expression" # Will trigger a warning
       description: "Valid description"
 
+    MissingLocation:
+      location: ""
+
     # Case 2: Short Description (Warning)
     ShortDescription:
       location: "$message.header#/id"
       description: "hi" # Will trigger a warning
-

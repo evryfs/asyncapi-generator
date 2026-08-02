@@ -20,6 +20,10 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
 
 /**
  * Parses AsyncAPI component objects from parser nodes.
@@ -66,10 +70,12 @@ class ComponentParser(
                 tags = optional("tags")?.let(tagParser::parseMap),
                 operationTraits = optional("operationTraits")?.let(operationTraitParser::parseMap),
                 messageTraits = optional("messageTraits")?.let(messageTraitParser::parseMap),
-                serverBindings = optional("serverBindings")?.let(bindingParser::parseMap),
-                channelBindings = optional("channelBindings")?.let(bindingParser::parseMap),
-                operationBindings = optional("operationBindings")?.let(bindingParser::parseMap),
-                messageBindings = optional("messageBindings")?.let(bindingParser::parseMap),
+                serverBindings = optional("serverBindings")?.let { bindingParser.parseComponentMap(it, SERVER) },
+                channelBindings = optional("channelBindings")?.let { bindingParser.parseComponentMap(it, CHANNEL) },
+                operationBindings = optional("operationBindings")?.let {
+                    bindingParser.parseComponentMap(it, OPERATION)
+                },
+                messageBindings = optional("messageBindings")?.let { bindingParser.parseComponentMap(it, MESSAGE) },
             ).also { asyncApiContext.register(it, node) }
         )
     }

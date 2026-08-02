@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Multi Format Message Example
+  version: 1.0.0
+components:
+  messages:
+    AvroPayload:
+      payload:
+        schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+        schema:
+          type: record
+          name: Event
+          fields:
+            - name: id
+              type: string
+      examples:
+        - payload:
+            id: event-1

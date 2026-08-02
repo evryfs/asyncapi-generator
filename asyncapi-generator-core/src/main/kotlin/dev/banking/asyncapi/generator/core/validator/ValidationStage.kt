@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator
 
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 
 /**
  * Contract for validator-stage implementations.
@@ -14,5 +14,5 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
  * - `AsyncApiValidatorTest`
  */
 interface ValidationStage {
-    fun validate(asyncApiDocument: AsyncApiDocument): ValidationResults
+    fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport
 }

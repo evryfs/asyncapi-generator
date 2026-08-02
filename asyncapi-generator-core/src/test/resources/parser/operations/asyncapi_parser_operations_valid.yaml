@@ -23,8 +23,7 @@ components:
       summary: Shared Kafka operation settings
       description: Applied to Kafka operations
       security:
-        scram:
-          type: userPassword
+        - type: userPassword
       tags:
         - name: kafka
       externalDocs:

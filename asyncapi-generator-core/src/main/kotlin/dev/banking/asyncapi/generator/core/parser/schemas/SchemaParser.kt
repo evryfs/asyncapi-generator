@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA as SCHEMA_BINDING
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
@@ -101,7 +102,7 @@ class SchemaParser(
         val comment = objectNode.optional($$"$comment")?.expect<String>()
         val title = objectNode.optional("title")?.expect<String>()
         val description = objectNode.optional("description")?.expect<String>()
-        var type = objectNode.optional("type")?.let(::parseType)
+        val type = objectNode.optional("type")?.let(::parseType)
         val format = objectNode.optional("format")?.expect<String>()
 
         val defaultNode = objectNode.optional("default")
@@ -122,7 +123,9 @@ class SchemaParser(
         val contentEncoding = objectNode.optional("contentEncoding")?.expect<String>()
         val contentMediaType = objectNode.optional("contentMediaType")?.expect<String>()
 
-        val items = objectNode.optional("items")?.takeUnless { it.node is DocumentArray }?.let { parseElement(it) }
+        val itemsNode = objectNode.optional("items")
+        val items = itemsNode?.takeUnless { it.node is DocumentArray }?.let(::parseElement)
+        val tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.let(::parseList)
         val additionalItems = objectNode.optional("additionalItems")?.let { parseElement(it) }
         val maxItems = objectNode.optional("maxItems")?.expect<Number>()
         val minItems = objectNode.optional("minItems")?.expect<Number>()
@@ -152,12 +155,14 @@ class SchemaParser(
         val elseSchema = objectNode.optional("else")?.let { parseElement(it) }
 
         val enumValues = objectNode.optional("enum")?.expect<List<Any?>>()
-        val constValue = objectNode.optional("const")?.toPlainValue()
+        val constNode = objectNode.optional("const")
+        val constValue = constNode?.toPlainValue()
+        val constSet = constNode != null
 
         val discriminator = objectNode.optional("discriminator")?.expect<String>()
         val externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
         val deprecated = objectNode.optional("deprecated")?.expect<Boolean>()
-        val bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap)
+        val bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SCHEMA_BINDING) }
         val extensions = objectNode
             .membersStartingWith("x-")
             .associateTo(linkedMapOf()) { extension ->
@@ -168,10 +173,6 @@ class SchemaParser(
         val readOnly = objectNode.optional("readOnly")?.expect<Boolean>()
         val writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>()
 
-        if (type == null) {
-            if (!enumValues.isNullOrEmpty())
-                type = "string"
-        }
         return SchemaInterface.SchemaInline(
             Schema(
                 id = id,
@@ -195,6 +196,7 @@ class SchemaParser(
                 contentEncoding = contentEncoding,
                 contentMediaType = contentMediaType,
                 items = items,
+                tupleItems = tupleItems,
                 additionalItems = additionalItems,
                 maxItems = maxItems,
                 minItems = minItems,
@@ -211,6 +213,7 @@ class SchemaParser(
                 minProperties = minProperties,
                 enum = enumValues,
                 const = constValue,
+                constSet = constSet,
                 allOf = allOf,
                 anyOf = anyOf,
                 oneOf = oneOf,
@@ -250,7 +253,7 @@ class SchemaParser(
         return objectNode.members().associate { dependency ->
             val dependencyValue = dependency.node
             val parsedValue: Any = when (dependencyValue) {
-                is DocumentArray -> dependency.expect<List<String>>()
+                is DocumentArray -> dependency.expect<List<String>>().also { asyncApiContext.register(it, dependency) }
                 is DocumentObject, is DocumentBoolean -> parseElement(dependency)
                 else -> dependency.expect<Map<String, Any?>>()
             }

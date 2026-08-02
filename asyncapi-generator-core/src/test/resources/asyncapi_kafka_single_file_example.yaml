@@ -205,10 +205,6 @@ operations:
     reply:
       address:
         location: '$message.header#/replyTo'
-      channel:
-        $ref: '#/channels/lightingMeasured'
-      messages:
-        - $ref: '#/channels/lightingMeasured/messages/lightMeasured'
   turnOn:
     action: send
     channel:
@@ -230,10 +226,6 @@ operations:
     reply:
       address:
         location: "$message.header#/replyTo"
-      channel:
-        $ref: "#/channels/lightTurnOn"
-      messages:
-        - $ref: "#/channels/lightTurnOn/messages/turnOn"
     externalDocs:
       url: 'https://example.com/api/oauth/dialog'
   turnOff:
@@ -312,12 +304,8 @@ components:
           summary: Example of light measurement payload
           headers:
             my-app-header:
-              type: object
-              properties:
-                applicationInstanceId:
-                  type: string
-                correlationId:
-                  type: string
+              applicationInstanceId: lighting-service-1
+              correlationId: measurement-1
           payload:
             lumens: 1200
             sentAt: '2024-09-12T12:00:00Z'
@@ -325,12 +313,8 @@ components:
           summary: Example of light measurement payload 2
           headers:
             my-app-header:
-              type: object
-              properties:
-                applicationInstanceId:
-                  type: string
-                correlationId:
-                  type: string
+              applicationInstanceId: lighting-service-2
+              correlationId: measurement-2
           payload:
             lumens: 1200
             sentAt: '2024-09-12T12:00:00Z'
@@ -353,6 +337,7 @@ components:
             correlationId: 77
           payload:
             command: 'on'
+            myDescription: Turn the streetlight on
             sentAt: '2024-09-12T12:00:00Z'
     dimLight:
       name: dimLight

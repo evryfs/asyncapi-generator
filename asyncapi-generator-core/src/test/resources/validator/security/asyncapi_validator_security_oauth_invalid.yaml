@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid OAuth Security Schemes
+  version: 1.0.0
+components:
+  securitySchemes:
+    MissingApiKeyLocation:
+      type: apiKey
+    InvalidOAuthFlows:
+      type: oauth2
+      flows:
+        implicit:
+          availableScopes: {}
+        password:
+          tokenUrl: relative/token
+          refreshUrl: relative/refresh
+          availableScopes: {}
+        clientCredentials:
+          availableScopes: {}
+        authorizationCode:
+          authorizationUrl: relative/authorize
+          tokenUrl: https://example.com/token
+      scopes:
+        - missing:scope
+    InvalidOpenIdUrl:
+      type: openIdConnect
+      openIdConnectUrl: relative/discovery

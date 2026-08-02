@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: External channels
+  version: 1.0.0
+channels:
+  externalChannel:
+    address: external
+    messages:
+      event:
+        name: event

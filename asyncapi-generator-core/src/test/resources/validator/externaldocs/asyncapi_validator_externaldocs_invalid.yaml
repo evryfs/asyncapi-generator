@@ -9,3 +9,7 @@ components:
       externalDocs:
         url: "not-a-url" # Invalid URL
         description: "" # Empty description (Warning)
+    MissingExternalDocUrl:
+      type: object
+      externalDocs:
+        url: ""

@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Message Validation
+  version: 1.0.0
+components:
+  messages:
+    MessageWithExplicitNullPayloadExample:
+      contentType: application/json; charset=utf-8
+      payload: true
+      examples:
+        - payload: null
+    MessageWithHeadersExample:
+      headers:
+        type: object
+        properties:
+          traceId:
+            type: string
+      examples:
+        - headers:
+            traceId: trace-123
+    MessageWithConformingPayloadExample:
+      payload:
+        type: object
+        required: [id, status, tags]
+        properties:
+          id:
+            type: integer
+            minimum: 1
+          status:
+            type: string
+            enum: [created, updated]
+          tags:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+      examples:
+        - payload:
+            id: 7
+            status: created
+            tags: [primary, audited]

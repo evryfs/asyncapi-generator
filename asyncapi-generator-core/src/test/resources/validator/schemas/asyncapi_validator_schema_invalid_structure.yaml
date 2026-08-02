@@ -6,10 +6,20 @@ components:
   schemas:
     InvalidArray:
       type: array
+      minItems: -1
+      maxItems: 1.5
+
+    InvalidArrayRange:
+      type: array
       minItems: 10
       maxItems: 5
 
     InvalidObject:
+      type: object
+      minProperties: -1
+      maxProperties: 1.5
+
+    InvalidObjectRange:
       type: object
       minProperties: 10
       maxProperties: 5

@@ -1,0 +1,60 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Kafka Schema Registry Relationship
+  version: 1.0.0
+servers:
+  registered:
+    host: registered.example.com
+    protocol: kafka
+    bindings:
+      kafka:
+        schemaRegistryUrl: https://registry.example.com
+        bindingVersion: '0.5.0'
+  withoutRegistry:
+    host: unregistered.example.com
+    protocol: kafka-secure
+channels:
+  selectedWithoutRegistry:
+    address: selected
+    servers:
+      - $ref: '#/servers/withoutRegistry'
+    messages:
+      inline:
+        bindings:
+          kafka:
+            schemaIdLocation: payload
+            schemaIdPayloadEncoding: confluent
+            bindingVersion: '0.5.0'
+      referenced:
+        $ref: '#/components/messages/ReusableEvent'
+      trait:
+        traits:
+          - $ref: '#/components/messageTraits/RegistryTrait'
+  allRootServers:
+    address: all
+    messages:
+      inline:
+        bindings:
+          kafka:
+            schemaLookupStrategy: TopicNameStrategy
+            bindingVersion: '0.5.0'
+  selectedWithRegistry:
+    address: valid
+    servers:
+      - $ref: '#/servers/registered'
+    messages:
+      referenced:
+        $ref: '#/components/messages/ReusableEvent'
+components:
+  messages:
+    ReusableEvent:
+      bindings:
+        kafka:
+          schemaIdLocation: header
+          bindingVersion: '0.5.0'
+  messageTraits:
+    RegistryTrait:
+      bindings:
+        kafka:
+          schemaLookupStrategy: RecordNameStrategy
+          bindingVersion: '0.5.0'
