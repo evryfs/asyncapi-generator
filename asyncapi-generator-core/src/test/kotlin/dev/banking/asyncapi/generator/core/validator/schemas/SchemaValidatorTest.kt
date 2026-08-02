@@ -144,6 +144,13 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `supported AsyncAPI Draft 7 and native schema formats pass ordinary validation`() {
+        val results = validate("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
     fun `recursive schema structures and boolean schemas pass validation`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_recursive_valid.yaml")
 
