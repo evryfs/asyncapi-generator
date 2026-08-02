@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRESSION_GENERAL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
@@ -9,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class OperationReplyAddressValidator(
     val asyncApiContext: AsyncApiContext,
@@ -33,8 +32,8 @@ class OperationReplyAddressValidator(
     }
 
     private fun validateLocation(node: OperationReplyAddress, contextString: String, results: ValidationCollector) {
-        val location = node.location.let(::sanitizeString)
-        if (location.isBlank()) {
+        val location = node.location
+        if (location.isEmpty()) {
             results.error(
                 OPERATION_REPLY_ADDRESS_REQUIRED,
                 "$contextString 'location' is required and cannot be empty.",
@@ -43,10 +42,10 @@ class OperationReplyAddressValidator(
             )
             return
         }
-        if (!RUNTIME_EXPRESSION_GENERAL.matches(location)) {
-            results.warn(
+        if (!ValidationFormats.isRuntimeExpression(location)) {
+            results.error(
                 OPERATION_REPLY_ADDRESS_FORMAT,
-                "$contextString 'location' ('$location') does not appear to follow a valid runtime expression format.",
+                "$contextString 'location' ('$location') must be a valid runtime expression.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
             )
         }

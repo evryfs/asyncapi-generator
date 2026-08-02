@@ -1,0 +1,79 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Operation Boundaries
+  version: 1.0.0
+channels:
+  requests:
+    messages:
+      shared:
+        $ref: '#/components/messages/shared'
+  knownReplies:
+    address: known.replies
+    messages:
+      reply:
+        $ref: '#/components/messages/reply'
+  dynamicReplies:
+    messages:
+      reply:
+        $ref: '#/components/messages/reply'
+components:
+  channels:
+    componentChannel:
+      messages:
+        shared:
+          $ref: '#/components/messages/shared'
+  messages:
+    shared:
+      payload: true
+    reply:
+      payload: true
+operations:
+  InvalidRootChannelScope:
+    action: send
+    channel:
+      $ref: '#/components/channels/componentChannel'
+  InvalidMessageSubset:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    messages:
+      - $ref: '#/components/messages/shared'
+  InvalidReplyChannelScope:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      channel:
+        $ref: '#/components/channels/componentChannel'
+  InvalidReplyMessageSubset:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      channel:
+        $ref: '#/channels/dynamicReplies'
+      messages:
+        - $ref: '#/components/messages/reply'
+  InvalidReplyChannelAddress:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      address:
+        location: '$message.header#/replyTo'
+      channel:
+        $ref: '#/channels/knownReplies'
+  MissingReplyChannel:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      messages:
+        - $ref: '#/components/messages/reply'
+  InvalidReplyAddress:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      address:
+        location: '$message.unknown#/replyTo'

@@ -65,20 +65,32 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `AAS3-OPERATION-ACTION-VALUE` | Action is not send or receive | A3 Operation Object | specification / error | `operation.action` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-CHANNEL-REQUIRED` | Operation channel reference is absent | A3 Operation Object | specification / error | `operation.channel` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-CHANNEL-TARGET` | Operation channel reference resolves to another category | A3 Operation Object | specification / error | `operation.channel.$ref` | valid | `OperationValidatorTest` |
-| `AAS3-OPERATION-MESSAGE-REFERENCE` | Operation message is not in its channel | A3 Operation Object | specification / error | `operation.messages` | incomplete: complete reference traversal pending | `OperationValidatorTest` |
-| `ADV-OPERATION-TRAIT-EMPTY` | Operation trait has no effective fields | Project guidance | advisory / warning | operation trait | advisory | gap: focused trait test |
+| `AAS3-OPERATION-CHANNEL-SCOPE` | Root operation channel is not owned by root `channels` | A3 Operation Object | specification / error | `operation.channel.$ref` | valid | `OperationValidatorTest` |
+| `AAS3-OPERATION-MESSAGE-REFERENCE` | Operation message does not reference an entry in its channel | A3 Operation Object | specification / error | `operation.messages` | valid | `OperationValidatorTest` |
+| `ADV-OPERATION-TRAIT-EMPTY` | Operation trait defines no fields | Project guidance | advisory / warning | operation trait | advisory | `OperationValidatorTest` |
 | `ADV-OPERATION-REPLY-MESSAGES-EMPTY` | Reply explicitly has no messages | Project guidance | advisory / warning | `reply.messages` | advisory | gap: focused reply test |
+| `AAS3-REPLY-CHANNEL-REQUIRED` | Reply defines messages without a channel | A3 Operation Reply Object | specification / error | `reply.messages` | valid | `OperationValidatorTest` |
+| `AAS3-REPLY-CHANNEL-SCOPE` | Inline root-operation reply channel is not owned by root `channels` | A3 Operation Reply Object | specification / error | `reply.channel.$ref` | valid | `OperationValidatorTest` |
+| `AAS3-REPLY-CHANNEL-ADDRESS` | Reply defines an address while its channel has a known address | A3 Operation Reply Object | specification / error | `reply.channel` | valid | `OperationValidatorTest` |
+| `AAS3-REPLY-MESSAGE-REFERENCE` | Reply message does not reference an entry in its reply channel | A3 Operation Reply Object | specification / error | `reply.messages` | valid | `OperationValidatorTest` |
 | `AAS3-REPLY-ADDRESS-REQUIRED` | Reply address location is absent | A3 Operation Reply Address | specification / error | `reply.address.location` | valid | gap: focused address error test |
-| `AAS3-REPLY-ADDRESS-FORMAT` | Reply address expression is malformed | A3 Runtime Expressions | specification / warning | `reply.address.location` | incomplete: severity and grammar need audit | gap: focused address warning test |
+| `AAS3-REPLY-ADDRESS-FORMAT` | Reply address expression is malformed | A3 Runtime Expressions | specification / error | `reply.address.location` | valid | `OperationValidatorTest`, `ReferenceIntegrityValidatorTest` |
 | `AAS3-SECURITY-TYPE-REQUIRED` | Security-scheme type is absent | A3 Security Scheme Object | specification / error | `security.type` | valid | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-TYPE-VALUE` | Security-scheme type is unsupported | A3 Security Scheme Object | specification / error | `security.type` | incomplete: condition matrix pending | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-NAME-REQUIRED` | API-key scheme lacks name | A3 Security Scheme Object | specification / error | `security.name` | incomplete: conditional matrix pending | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-IN-VALUE` | API-key location is invalid | A3 Security Scheme Object | specification / error | `security.in` | incomplete: conditional matrix pending | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-SCHEME-REQUIRED` | HTTP scheme lacks scheme | A3 Security Scheme Object | specification / error | `security.scheme` | incomplete: conditional matrix pending | `SecuritySchemeValidatorTest` |
-| `ADV-SECURITY-BEARER-FORMAT` | Bearer format is empty | Project guidance | advisory / warning | `security.bearerFormat` | advisory | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-OAUTH-FLOWS` | OAuth scheme lacks flows | A3 Security Scheme Object | specification / error | `security.flows` | incomplete: flow URLs/scopes pending | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-OPENID-URL-REQUIRED` | OpenID Connect URL is absent | A3 Security Scheme Object | specification / error | `security.openIdConnectUrl` | incomplete: conditional matrix pending | `SecuritySchemeValidatorTest` |
-| `AAS3-SECURITY-OPENID-URL-FORMAT` | OpenID Connect URL is malformed | A3 Security Scheme Object | specification / error | `security.openIdConnectUrl` | incomplete: URI parser needed | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-TYPE-VALUE` | Security-scheme type is unsupported | A3 Security Scheme Object | specification / error | `security.type` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-NAME-REQUIRED` | HTTP API-key scheme lacks name | A3 Security Scheme Object | specification / error | `security.name` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-IN-REQUIRED` | API-key scheme lacks its location | A3 Security Scheme Object | specification / error | security scheme | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-IN-VALUE` | API-key location is invalid | A3 Security Scheme Object | specification / error | `security.in` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-SCHEME-REQUIRED` | HTTP scheme lacks scheme | A3 Security Scheme Object | specification / error | `security.scheme` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-OAUTH-FLOWS` | OAuth scheme lacks flows | A3 Security Scheme Object | specification / error | `security.flows` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-AUTHORIZATION-URL-REQUIRED` | OAuth flow lacks its required authorization URL | A3 OAuth Flow Object | specification / error | OAuth flow | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-AUTHORIZATION-URL-FORMAT` | OAuth authorization URL is not absolute | A3 OAuth Flow Object | specification / error | `authorizationUrl` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-TOKEN-URL-REQUIRED` | OAuth flow lacks its required token URL | A3 OAuth Flow Object | specification / error | OAuth flow | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-TOKEN-URL-FORMAT` | OAuth token URL is not absolute | A3 OAuth Flow Object | specification / error | `tokenUrl` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-REFRESH-URL-FORMAT` | OAuth refresh URL is not absolute | A3 OAuth Flow Object | specification / error | `refreshUrl` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-AVAILABLE-SCOPES-REQUIRED` | OAuth flow lacks `availableScopes` | A3 OAuth Flow Object | specification / error | OAuth flow | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-OAUTH-SCOPE-AVAILABLE` | Requested OAuth scope is not declared by any configured flow | A3 Security Scheme and OAuth Flow Objects | specification / error | `security.scopes` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-OPENID-URL-REQUIRED` | OpenID Connect URL is absent | A3 Security Scheme Object | specification / error | `security.openIdConnectUrl` | valid | `SecuritySchemeValidatorTest` |
+| `AAS3-SECURITY-OPENID-URL-FORMAT` | OpenID Connect URL is not absolute | A3 Security Scheme Object | specification / error | `security.openIdConnectUrl` | valid | `SecuritySchemeValidatorTest` |
 
 ## Bindings and references
 
@@ -127,4 +139,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, root-versus-component reference restrictions, OAuth flow-specific URLs and scopes, recursive boolean/dependency/tuple schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, recursive boolean/dependency/tuple schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.

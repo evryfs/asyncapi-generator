@@ -79,16 +79,6 @@ object RegexPatterns {
     val HOSTNAME = Regex("""^[\w\-.:/{}\[\]%~@*!$'()+,;=?#]+(:\d+)?$""")
 
     /**
-     * Matches general AsyncAPI Runtime Expressions.
-     *
-     * Validates the expression format starting with a `$` followed by the source and path.
-     *
-     * **Example:** `$message.header#/correlationId`
-     * @see <a href="https://www.asyncapi.com/docs/reference/specification/v3.0.0#runtimeExpression">AsyncAPI Runtime Expression</a>
-     */
-    val RUNTIME_EXPRESSION_GENERAL = Regex("""^\$[a-zA-Z]+\.[a-zA-Z0-9_/#]+$""")
-
-    /**
      * Matches AsyncAPI Runtime Expressions restricted to `message` or `context` sources.
      *
      * Used primarily for Parameter locations where only specific sources are permissible.

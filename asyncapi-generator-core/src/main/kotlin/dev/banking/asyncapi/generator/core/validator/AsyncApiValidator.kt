@@ -45,7 +45,12 @@ class AsyncApiValidator(
             serverValidator.validateInterface(server, "Server '$name'", results, name)
         }
         asyncApiDocument.operations?.forEach { (name, operation) ->
-            operationValidator.validateInterface(operation, "Operation '$name'", results)
+            operationValidator.validateInterface(
+                operation,
+                "Operation '$name'",
+                results,
+                rootChannels = asyncApiDocument.channels.orEmpty(),
+            )
         }
         asyncApiDocument.components?.let { components ->
             componentValidator.validateInterface(components, "Component", results)

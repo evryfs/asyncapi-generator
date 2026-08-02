@@ -42,12 +42,19 @@ class OperationTraitValidator(
 
     fun validate(node: OperationTrait, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
-        if (node.bindings == null && node.security == null && node.tags == null) {
+        if (
+            node.title == null &&
+            node.summary == null &&
+            node.description == null &&
+            node.security == null &&
+            node.tags == null &&
+            node.externalDocs == null &&
+            node.bindings == null
+        ) {
             results.warn(
                 OPERATION_TRAIT_EMPTY,
-                "$contextString defines no 'bindings', 'security', or 'tags' — may have no effect.",
+                "$contextString does not define any fields and has no effect.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
         validateSecurity(node, contextString, results)

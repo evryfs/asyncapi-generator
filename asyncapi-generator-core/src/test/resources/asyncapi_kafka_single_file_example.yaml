@@ -205,10 +205,6 @@ operations:
     reply:
       address:
         location: '$message.header#/replyTo'
-      channel:
-        $ref: '#/channels/lightingMeasured'
-      messages:
-        - $ref: '#/channels/lightingMeasured/messages/lightMeasured'
   turnOn:
     action: send
     channel:
@@ -230,10 +226,6 @@ operations:
     reply:
       address:
         location: "$message.header#/replyTo"
-      channel:
-        $ref: "#/channels/lightTurnOn"
-      messages:
-        - $ref: "#/channels/lightTurnOn/messages/turnOn"
     externalDocs:
       url: 'https://example.com/api/oauth/dialog'
   turnOff:

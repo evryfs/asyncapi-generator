@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.channels.Channel
+import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
@@ -21,6 +23,7 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -29,7 +32,6 @@ import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsVa
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class OperationValidator(
     val asyncApiContext: AsyncApiContext,
@@ -43,22 +45,32 @@ class OperationValidator(
     private val operationTraitValidator = OperationTraitValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: OperationInterface,
+        contextString: String,
+        results: ValidationCollector,
+        rootChannels: Map<String, ChannelInterface>? = null,
+    ) {
         when (node) {
             is OperationInterface.OperationInline ->
-                validate(node.operation, contextString, results)
+                validate(node.operation, contextString, results, rootChannels)
 
             is OperationInterface.OperationReference ->
                 referenceResolver.resolve(node.reference, OPERATION, contextString, results)
         }
     }
 
-    private fun validate(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validate(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+        rootChannels: Map<String, ChannelInterface>?,
+    ) {
         if (!results.visit(node)) return
         validateAction(node, contextString, results)
-        validateChannel(node, contextString, results)
-        validateMessages(node, contextString, results)
-        validateReply(node, contextString, results)
+        val channel = validateChannel(node, contextString, results, rootChannels)
+        validateMessages(node, contextString, results, channel)
+        validateReply(node, contextString, results, rootChannels)
         validateTraits(node, contextString, results)
         validateBindings(node, contextString, results)
         validateSecurity(node, contextString, results)
@@ -67,8 +79,8 @@ class OperationValidator(
     }
 
     private fun validateAction(node: Operation, contextString: String, results: ValidationCollector) {
-        val action = node.action.let(::sanitizeString)
-        if (action.isBlank()) {
+        val action = node.action
+        if (action.isEmpty()) {
             results.error(
                 OPERATION_ACTION_REQUIRED,
                 "$contextString must define an 'action' field ('send' or 'receive').",
@@ -85,7 +97,12 @@ class OperationValidator(
         }
     }
 
-    private fun validateChannel(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateChannel(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+        rootChannels: Map<String, ChannelInterface>?,
+    ): Channel? {
         val channelRef = node.channel
         if (channelRef == null) {
             results.error(
@@ -94,41 +111,65 @@ class OperationValidator(
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::channel),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
-            return
+            return null
         }
-        referenceResolver.resolve(
+        val channel = referenceResolver.resolve(
             channelRef,
             CHANNEL,
             "$contextString Channel",
             results,
             targetCategoryRule = OPERATION_CHANNEL_TARGET,
-        )
+        ) as? Channel
+        if (
+            channel != null &&
+            rootChannels != null &&
+            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.findReference(channelRef))
+        ) {
+            results.error(
+                OPERATION_CHANNEL_REFERENCE_SCOPE,
+                "$contextString must reference a channel from the root 'channels' object.",
+                sourceLocation = asyncApiContext.getSourceLocation(channelRef, channelRef::ref),
+            )
+            return null
+        }
+        return channel
     }
 
-    private fun validateMessages(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateMessages(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+        channel: Channel?,
+    ) {
         val messages = node.messages ?: return
         messages.forEachIndexed { index, messageReference ->
             val contextString = "$contextString Message[$index]"
-            val referenceString = messageReference.ref.let(::sanitizeString)
-            if (referenceString.isBlank()) {
+            val target = referenceResolver.resolve(messageReference, MESSAGE, contextString, results)
+            if (
+                target != null &&
+                channel != null &&
+                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.findReference(messageReference))
+            ) {
                 results.error(
                     OPERATION_MESSAGE_REFERENCE,
-                    "$contextString 'messages' property value MUST be a list of Reference Objects.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+                    "$contextString must reference a message from the operation channel's 'messages' object.",
+                    sourceLocation = asyncApiContext.getSourceLocation(messageReference, messageReference::ref),
                 )
-            } else {
-                referenceResolver.resolve(messageReference, MESSAGE, contextString, results)
             }
         }
     }
 
-    private fun validateReply(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateReply(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+        rootChannels: Map<String, ChannelInterface>?,
+    ) {
         val reply = node.reply ?: return
         val contextString = "$contextString Reply"
         when (reply) {
             is OperationReplyInterface.OperationReplyInline ->
-                operationReplyValidator.validate(reply.operationReply, contextString, results)
+                operationReplyValidator.validate(reply.operationReply, contextString, results, rootChannels)
 
             is OperationReplyInterface.OperationReplyReference ->
                 referenceResolver.resolve(reply.reference, OPERATION_REPLY, contextString, results)
