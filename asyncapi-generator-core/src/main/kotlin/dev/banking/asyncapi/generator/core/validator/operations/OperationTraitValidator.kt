@@ -65,8 +65,8 @@ class OperationTraitValidator(
 
     private fun validateSecurity(node: OperationTrait, contextString: String, results: ValidationCollector) {
         val securitySchemes = node.security ?: return
-        securitySchemes.forEach { (securitySchemeName, securitySchemeInterface) ->
-            val contextString = "$contextString Security Scheme '$securitySchemeName'"
+        securitySchemes.forEachIndexed { index, securitySchemeInterface ->
+            val contextString = "$contextString Security Scheme [index=$index]"
             when (securitySchemeInterface) {
                 is SecuritySchemeInterface.SecuritySchemeInline ->
                     securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)

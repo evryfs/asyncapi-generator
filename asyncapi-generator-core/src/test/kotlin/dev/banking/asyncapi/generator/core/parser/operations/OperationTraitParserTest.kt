@@ -37,7 +37,7 @@ class OperationTraitParserTest {
         assertEquals("Kafka operation defaults", kafka.title)
         assertEquals("Shared Kafka operation settings", kafka.summary)
         assertEquals("Applied to Kafka operations", kafka.description)
-        val security = assertIs<SecuritySchemeInterface.SecuritySchemeInline>(kafka.security?.get("scram")).security
+        val security = assertIs<SecuritySchemeInterface.SecuritySchemeInline>(kafka.security?.single()).security
         assertEquals("userPassword", security.type)
         val tag = assertIs<TagInterface.TagInline>(kafka.tags?.single()).tag
         assertEquals("kafka", tag.name)
@@ -158,6 +158,37 @@ class OperationTraitParserTest {
             diagnostic.path,
         )
         assertEquals("root.components.operationTraitCases.ObjectInsteadOfList", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_operation_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse operation trait security from an object reports the required list and source`() {
+        val file = TestResources.file("parser/operations/asyncapi_parser_operation_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("operationTraitCases")
+            .expectObject().required("SecurityObjectInsteadOfList")
+            .expectObject().required("badTrait")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(traitNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("List<Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.OBJECT, diagnostic.actualType)
+        assertEquals(mapOf("named" to mapOf("type" to "userPassword")), diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_operation_trait_invalid.root.components.operationTraitCases." +
+                "SecurityObjectInsteadOfList.badTrait.security",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.operationTraitCases.SecurityObjectInsteadOfList.badTrait.security",
+            diagnostic.sourceLocation.path,
+        )
         assertEquals("asyncapi_parser_operation_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }

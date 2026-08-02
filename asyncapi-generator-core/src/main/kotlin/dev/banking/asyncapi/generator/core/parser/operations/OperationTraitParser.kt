@@ -58,7 +58,7 @@ class OperationTraitParser(
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
-                    security = objectNode.optional("security")?.let(securitySchemeParser::parseMap),
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
