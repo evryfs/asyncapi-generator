@@ -1,236 +1,315 @@
 package dev.banking.asyncapi.generator.core.parser.channels
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNull
 
-class ChannelParserTest : ParserTestSupport() {
+class ChannelParserTest {
 
-    private val parser = ChannelParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = ChannelParser(context)
 
     @Test
-    fun `parse lightingMeasured channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
+    fun `parse channels with referenced messages and parameters`() {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channels")
+
         val result = parser.parseMap(channelsNode)
-        assertTrue("lightingMeasured" in result)
-        val lightingMeasured = (result["lightingMeasured"] as ChannelInterface.ChannelInline).channel
-        val expectedLightingMeasured = lightingMeasured()
-        assertThat(lightingMeasured)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedLightingMeasured)
+
+        val lightingMeasured = assertIs<ChannelInterface.ChannelInline>(result["lightingMeasured"]).channel
+        assertEquals(
+            "smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured",
+            lightingMeasured.address,
+        )
+        assertEquals(
+            "The topic on which measured values may be produced and consumed.",
+            lightingMeasured.description,
+        )
+        val lightMeasuredMessage =
+            assertIs<MessageInterface.MessageReference>(lightingMeasured.messages?.get("lightMeasured")).reference
+        assertEquals("#/components/messages/lightMeasured", lightMeasuredMessage.ref)
+        assertEquals(MESSAGE, lightMeasuredMessage.referenceCategoryKey)
+        val lightingStreetlight =
+            assertIs<ParameterInterface.ParameterReference>(lightingMeasured.parameters?.get("streetlightId"))
+                .reference
+        assertEquals("#/components/parameters/streetlightId", lightingStreetlight.ref)
+        assertEquals(PARAMETER, lightingStreetlight.referenceCategoryKey)
+        val kafkaBinding =
+            assertIs<BindingInterface.BindingInline>(lightingMeasured.bindings?.get("kafka")).binding
+        assertEquals(
+            mapOf(
+                "topic" to "smartylighting.streetlights.1.0.event",
+                "partitions" to 3,
+                "replicas" to 1,
+            ),
+            kafkaBinding.content,
+        )
+
+        val lightTurnOn = assertIs<ChannelInterface.ChannelInline>(result["lightTurnOn"]).channel
+        assertEquals("smartylighting.streetlights.1.0.action.{streetlightId}.turn.on", lightTurnOn.address)
+        val turnOnMessage =
+            assertIs<MessageInterface.MessageReference>(lightTurnOn.messages?.get("turnOn")).reference
+        assertEquals("#/components/messages/turnOnOff", turnOnMessage.ref)
+        assertEquals(MESSAGE, turnOnMessage.referenceCategoryKey)
+        val turnOnStreetlight =
+            assertIs<ParameterInterface.ParameterReference>(lightTurnOn.parameters?.get("streetlightId"))
+                .reference
+        assertEquals("#/components/parameters/streetlightId", turnOnStreetlight.ref)
+        assertEquals(PARAMETER, turnOnStreetlight.referenceCategoryKey)
+
+        val lightTurnOff = assertIs<ChannelInterface.ChannelInline>(result["lightTurnOff"]).channel
+        assertEquals("smartylighting.streetlights.1.0.action.{streetlightId}.turn.off", lightTurnOff.address)
+        val turnOffMessage =
+            assertIs<MessageInterface.MessageReference>(lightTurnOff.messages?.get("turnOff")).reference
+        assertEquals("#/components/messages/turnOnOff", turnOffMessage.ref)
+        assertEquals(MESSAGE, turnOffMessage.referenceCategoryKey)
+        val turnOffStreetlight =
+            assertIs<ParameterInterface.ParameterReference>(lightTurnOff.parameters?.get("streetlightId"))
+                .reference
+        assertEquals("#/components/parameters/streetlightId", turnOffStreetlight.ref)
+        assertEquals(PARAMETER, turnOffStreetlight.referenceCategoryKey)
+
+        val lightsDim = assertIs<ChannelInterface.ChannelInline>(result["lightsDim"]).channel
+        assertEquals("smartylighting.streetlights.1.0.action.{streetlightId}.dim", lightsDim.address)
+        val dimMessage = assertIs<MessageInterface.MessageReference>(lightsDim.messages?.get("dimLight")).reference
+        assertEquals("#/components/messages/dimLight", dimMessage.ref)
+        assertEquals(MESSAGE, dimMessage.referenceCategoryKey)
+        val dimStreetlight =
+            assertIs<ParameterInterface.ParameterReference>(lightsDim.parameters?.get("streetlightId"))
+                .reference
+        assertEquals("#/components/parameters/streetlightId", dimStreetlight.ref)
+        assertEquals(PARAMETER, dimStreetlight.referenceCategoryKey)
     }
 
     @Test
-    fun `parse lightTurnOn channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("lightTurnOn" in result)
-        val lightTurnOn = (result["lightTurnOn"] as ChannelInterface.ChannelInline).channel
-        val expectedLightTurnOn = lightTurnOn()
-        assertThat(lightTurnOn)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedLightTurnOn)
-    }
+    fun `parse channels with inline parameters`() {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channels")
 
-    @Test
-    fun `parse lightTurnOff channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
         val result = parser.parseMap(channelsNode)
-        assertTrue("lightTurnOff" in result)
-        val lightTurnOff = (result["lightTurnOff"] as ChannelInterface.ChannelInline).channel
-        val expectedLightTurnOff = lightTurnOff()
-        assertThat(lightTurnOff)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedLightTurnOff)
-    }
 
-    @Test
-    fun `parse lightsDim channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("lightsDim" in result)
-        val lightsDim = (result["lightsDim"] as ChannelInterface.ChannelInline).channel
-        val expectedLightsDim = lightsDim()
-        assertThat(lightsDim)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedLightsDim)
-    }
+        val lightStatus = assertIs<ChannelInterface.ChannelInline>(result["lightStatus"]).channel
+        assertEquals("smartylighting.streetlights.1.0.event.{city}.status", lightStatus.address)
+        assertEquals("The topic reporting light status by city.", lightStatus.description)
+        val lightStatusMessage =
+            assertIs<MessageInterface.MessageReference>(lightStatus.messages?.get("lightStatusMessage")).reference
+        assertEquals("#/components/messages/lightMeasured", lightStatusMessage.ref)
+        val city = assertIs<ParameterInterface.ParameterInline>(lightStatus.parameters?.get("city")).parameter
+        assertEquals("The city where the streetlights are located.", city.description)
+        assertEquals("\$message.payload#/city", city.location)
+        assertEquals(listOf("helsinki", "oslo", "stockholm"), city.enum)
+        assertEquals("helsinki", city.default)
+        assertEquals(listOf("helsinki", "oslo"), city.examples)
 
-    @Test
-    fun `parse lightStatus channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("lightStatus" in result)
-        val lightStatus = (result["lightStatus"] as ChannelInterface.ChannelInline).channel
-        val expectedLightStatus = lightStatus()
-        assertThat(lightStatus)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedLightStatus)
-    }
+        val maintenance = assertIs<ChannelInterface.ChannelInline>(result["maintenanceRequest"]).channel
+        assertEquals(
+            "smartylighting.streetlights.1.0.action.{requestId}.maintenance",
+            maintenance.address,
+        )
+        assertEquals("Command topic for maintenance requests.", maintenance.description)
+        val maintenanceMessage =
+            assertIs<MessageInterface.MessageReference>(maintenance.messages?.get("maintenanceMessage")).reference
+        assertEquals("#/components/messages/turnOnOff", maintenanceMessage.ref)
+        val requestId =
+            assertIs<ParameterInterface.ParameterInline>(maintenance.parameters?.get("requestId")).parameter
+        assertEquals("Identifier for maintenance request.", requestId.description)
+        assertEquals("req-001", requestId.default)
+        assertEquals("\$message.header#/requestId", requestId.location)
 
-    @Test
-    fun `parse maintenanceRequest channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("maintenanceRequest" in result)
-        val maintenanceRequest = (result["maintenanceRequest"] as ChannelInterface.ChannelInline).channel
-        val expectedMaintenanceRequest = maintenanceRequest()
-        assertThat(maintenanceRequest)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedMaintenanceRequest)
-    }
+        val cityLights = assertIs<ChannelInterface.ChannelInline>(result["cityLights"]).channel
+        assertEquals("smartylighting.streetlights.1.0.{cityId}.light.{lightId}", cityLights.address)
+        assertEquals("Channel for controlling individual lights in a city.", cityLights.description)
+        val cityId = assertIs<ParameterInterface.ParameterReference>(cityLights.parameters?.get("cityId")).reference
+        assertEquals("#/components/parameters/cityId", cityId.ref)
+        assertEquals(PARAMETER, cityId.referenceCategoryKey)
+        val lightId = assertIs<ParameterInterface.ParameterInline>(cityLights.parameters?.get("lightId")).parameter
+        assertEquals("Identifier of the specific light.", lightId.description)
+        assertEquals(listOf("lamp-001", "lamp-002", "lamp-003"), lightId.enum)
+        assertEquals(listOf("lamp-001", "lamp-002"), lightId.examples)
+        assertEquals("\$message.header#/lightId", lightId.location)
 
-    @Test
-    fun `parse cityLights channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("cityLights" in result)
-        val cityLights = (result["cityLights"] as ChannelInterface.ChannelInline).channel
-        val expectedCityLights = cityLights()
-        assertThat(cityLights)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedCityLights)
-    }
-
-    @Test
-    fun `parse powerStatus channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
-        val result = parser.parseMap(channelsNode)
-        assertTrue("powerStatus" in result)
-        val powerStatus = (result["powerStatus"] as ChannelInterface.ChannelInline).channel
-        val expectedPowerStatus = powerStatus()
-        assertThat(powerStatus)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expectedPowerStatus)
+        val powerStatus = assertIs<ChannelInterface.ChannelInline>(result["powerStatus"]).channel
+        assertEquals("smartylighting.streetlights.1.0.power.{streetlightId}.status", powerStatus.address)
+        assertEquals("Channel for power status updates.", powerStatus.description)
+        val streetlightId =
+            assertIs<ParameterInterface.ParameterInline>(powerStatus.parameters?.get("streetlightId")).parameter
+        assertEquals("Identifier for the streetlight.", streetlightId.description)
+        assertEquals("\$message.header#/streetlightId", streetlightId.location)
     }
 
     @Test
     fun `parse referenced channel`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_valid.yaml", "channels")
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channels")
+
         val result = parser.parseMap(channelsNode)
 
-        val reference = (result["referencedChannel"] as ChannelInterface.ChannelReference).reference
-        assertThat(reference.ref).isEqualTo("#/channels/lightingMeasured")
+        val reference = assertIs<ChannelInterface.ChannelReference>(result["referencedChannel"]).reference
+        assertEquals("#/channels/lightingMeasured", reference.ref)
     }
 
     @Test
     fun `parse channel with invalid messages structure reports its expected type and source`() {
-        val channelsNode = readNode("parser/channels/asyncapi_parser_channel_invalid.yaml", "channels")
-        assertUnexpectedValueType(
-            expectedType = "Map<String, Any?>",
-            actualType = ParserValueType.STRING,
-            actualValue = "not-a-map",
-            path = "asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages",
-            sourcePath = "root.channels.InvalidMessages.messages",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channels")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-map", diagnostic.actualValue)
+        assertEquals("asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages", diagnostic.path)
+        assertEquals("root.channels.InvalidMessages.messages", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse channel with list shaped messages reports its expected type and source`() {
-        val channelNode = readNode(
-            "parser/channels/asyncapi_parser_channel_invalid.yaml",
-            "channelCases",
-            "ListMessages",
-        )
-        assertUnexpectedValueType(
-            expectedType = "Map<String, Any?>",
-            actualType = ParserValueType.ARRAY,
-            actualValue = listOf(mapOf("\$ref" to "#/components/messages/Message")),
-            path = "asyncapi_parser_channel_invalid.root.channelCases.ListMessages.invalidChannel.messages",
-            sourcePath = "root.channelCases.ListMessages.invalidChannel.messages",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channelCases")
+            .expectObject().required("ListMessages")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
+        assertEquals(listOf(mapOf("\$ref" to "#/components/messages/Message")), diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_channel_invalid.root.channelCases.ListMessages.invalidChannel.messages",
+            diagnostic.path,
+        )
+        assertEquals("root.channelCases.ListMessages.invalidChannel.messages", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse channel with boolean address reports its expected type and source`() {
-        val channelsNode = readNode(
-            "parser/channels/asyncapi_parser_channel_invalid.yaml",
-            "channelCases",
-            "InvalidAddress",
-        )
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.BOOLEAN,
-            actualValue = false,
-            path = "asyncapi_parser_channel_invalid.root.channelCases.InvalidAddress.invalidChannel.address",
-            sourcePath = "root.channelCases.InvalidAddress.invalidChannel.address",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channelCases")
+            .expectObject().required("InvalidAddress")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
+        assertEquals(false, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_channel_invalid.root.channelCases.InvalidAddress.invalidChannel.address",
+            diagnostic.path,
+        )
+        assertEquals("root.channelCases.InvalidAddress.invalidChannel.address", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse channel with null reference reports its expected type and source`() {
-        val channelsNode = readNode(
-            "parser/channels/asyncapi_parser_channel_invalid.yaml",
-            "channelCases",
-            "NullReference",
-        )
-        assertUnexpectedValueType(
-            expectedType = "String",
-            actualType = ParserValueType.NULL,
-            actualValue = null,
-            path = "asyncapi_parser_channel_invalid.root.channelCases.NullReference.invalidChannel.\$ref",
-            sourcePath = "root.channelCases.NullReference.invalidChannel.\$ref",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channelCases")
+            .expectObject().required("NullReference")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NULL, diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_channel_invalid.root.channelCases.NullReference.invalidChannel.\$ref",
+            diagnostic.path,
+        )
+        assertEquals("root.channelCases.NullReference.invalidChannel.\$ref", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse scalar channel reports the entry type and source`() {
-        val channelsNode = readNode(
-            "parser/channels/asyncapi_parser_channel_invalid.yaml",
-            "channelCases",
-            "InvalidChannelStructure",
-        )
-        assertUnexpectedValueType(
-            expectedType = "Map<String, Any?>",
-            actualType = ParserValueType.STRING,
-            actualValue = "not-a-map",
-            path = "asyncapi_parser_channel_invalid.root.channelCases.InvalidChannelStructure.invalidChannel",
-            sourcePath = "root.channelCases.InvalidChannelStructure.invalidChannel",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channelCases")
+            .expectObject().required("InvalidChannelStructure")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-map", diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_channel_invalid.root.channelCases.InvalidChannelStructure.invalidChannel",
+            diagnostic.path,
+        )
+        assertEquals("root.channelCases.InvalidChannelStructure.invalidChannel", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
     fun `parse channel map from an array reports the container type and source`() {
-        val channelsNode = readNode(
-            "parser/channels/asyncapi_parser_channel_invalid.yaml",
-            "channelCases",
-            "ArrayInsteadOfMap",
-        )
-        assertUnexpectedValueType(
-            expectedType = "Map<String, Any?>",
-            actualType = ParserValueType.ARRAY,
-            actualValue = listOf(mapOf("address" to "valid-address")),
-            path = "asyncapi_parser_channel_invalid.root.channelCases.ArrayInsteadOfMap",
-            sourcePath = "root.channelCases.ArrayInsteadOfMap",
-            sourceFile = "asyncapi_parser_channel_invalid.yaml",
-        ) {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channelCases")
+            .expectObject().required("ArrayInsteadOfMap")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(channelsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
+        assertEquals(listOf(mapOf("address" to "valid-address")), diagnostic.actualValue)
+        assertEquals("asyncapi_parser_channel_invalid.root.channelCases.ArrayInsteadOfMap", diagnostic.path)
+        assertEquals("root.channelCases.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }
