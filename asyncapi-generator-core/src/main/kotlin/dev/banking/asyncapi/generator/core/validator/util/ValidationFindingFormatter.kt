@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
  * Formats validation findings for exceptions and logs.
  *
  * Expected behavior is covered by:
- * - `ValidationResultsTest`
+ * - `ValidationReportTest`
  * - validator package tests
  */
 object ValidationFindingFormatter {
@@ -24,7 +24,7 @@ object ValidationFindingFormatter {
             appendLine()
             appendLine(snippet(finding, asyncApiContext))
             appendLine()
-            if (finding.doc != null) appendLine("See documentation: ${finding.doc}")
+            appendLine("See documentation: ${finding.documentation}")
             appendLine("---------------------------------------------------------------------------------------------------------------------")
             appendLine()
         }

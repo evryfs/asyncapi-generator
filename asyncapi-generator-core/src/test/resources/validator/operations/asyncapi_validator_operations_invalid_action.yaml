@@ -15,8 +15,14 @@ components:
         type: object
 operations:
   testOperation:
-    action: invalidAction # Should be 'send' or 'receive'
+    action: " send " # Exact value is not normalized to 'send'
     channel:
       $ref: '#/channels/myChannel'
     messages:
-      - $ref: '#/components/messages/UserSignedUp' # Correctly references a message
+      - $ref: '#/channels/myChannel/messages/myMessage'
+  emptyAction:
+    action: ""
+    channel:
+      $ref: '#/channels/myChannel'
+  missingChannel:
+    action: send

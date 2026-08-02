@@ -1,111 +1,225 @@
 package dev.banking.asyncapi.generator.core.parser.bindings
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
-import org.assertj.core.api.Assertions.assertThat
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
+import kotlin.test.assertNull
 
-class BindingParserTest : ParserTestSupport() {
+class BindingParserTest {
 
-    private val parser = BindingParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = BindingParser(context)
 
     @Test
-    fun `parse valid channel bindings`() {
-        val channelBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
-            "components",
-            "channelBindings",
+    fun `parse channel bindings with nested values and references`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelBindingsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("channelBindings")
+
+        val bindings = parser.parseComponentMap(channelBindingsNode, CHANNEL)
+
+        val kafka = assertIs<BindingInterface.BindingInline>(bindings["userSignedUpChannel"]).binding
+        assertEquals("kafka", kafka.protocolBindings.single().protocol)
+        assertEquals(CHANNEL, kafka.protocolBindings.single().location)
+        assertEquals("0.5.0", kafka.protocolBindings.single().bindingVersion)
+        assertEquals(
+            mapOf(
+                "kafka" to mapOf(
+                    "topic" to "my-specific-topic-name",
+                    "partitions" to 20,
+                    "replicas" to 3,
+                    "topicConfiguration" to mapOf(
+                        "cleanup.policy" to listOf("delete", "compact"),
+                        "retention.ms" to 604800000,
+                        "retention.bytes" to 1000000000,
+                        "delete.retention.ms" to 86400000,
+                        "max.message.bytes" to 1048588,
+                    ),
+                    "bindingVersion" to "0.5.0",
+                ),
+            ),
+            kafka.content,
         )
-        val bindings = parser.parseMap(channelBindingsNode)
-        assertTrue("userSignedUpChannel" in bindings)
-        val binding = (bindings["userSignedUpChannel"] as BindingInterface.BindingInline).binding
-        assertThat(binding)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(userSignedUpChannelBinding())
+
+        val plain = assertIs<BindingInterface.BindingInline>(bindings["plainChannel"]).binding
+        assertEquals(
+            mapOf(
+                "custom" to mapOf(
+                    "enabled" to true,
+                    "attempts" to 3,
+                    "values" to listOf("primary", 7, false, null),
+                    "metadata" to mapOf("nullable" to null),
+                ),
+            ),
+            plain.content,
+        )
+
+        val reference = assertIs<BindingInterface.BindingReference>(bindings["referencedChannel"]).reference
+        assertEquals("#/components/channelBindings/userSignedUpChannel", reference.ref)
+        assertEquals(BINDING, reference.referenceCategoryKey)
     }
 
     @Test
-    fun `parse valid message bindings`() {
-        val messageBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
-            "components",
-            "messageBindings",
+    fun `parse message bindings including Kafka key schema`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val messageBindingsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageBindings")
+
+        val bindings = parser.parseComponentMap(messageBindingsNode, MESSAGE)
+
+        val amqp = assertIs<BindingInterface.BindingInline>(bindings["userSignedUpMessage"]).binding
+        assertEquals(
+            mapOf(
+                "amqp" to mapOf(
+                    "contentEncoding" to "gzip",
+                    "messageType" to "user.signup",
+                ),
+            ),
+            amqp.content,
         )
-        val bindings = parser.parseMap(messageBindingsNode)
-        assertTrue("userSignedUpMessage" in bindings)
-        val binding = (bindings["userSignedUpMessage"] as BindingInterface.BindingInline).binding
-        assertThat(binding)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(userSignedUpMessageBinding())
+
+        val kafka = assertIs<BindingInterface.BindingInline>(bindings["accountUpdatedMessage"]).binding
+        assertEquals(MESSAGE, kafka.protocolBindings.single().location)
+        assertEquals(setOf("key"), kafka.protocolBindings.single().schemaFields.keys)
+        val keySchema = assertIs<SchemaInterface.SchemaInline>(kafka.kafkaKeySchema).schema
+        assertEquals("integer", keySchema.type)
+        assertEquals("int64", keySchema.format)
+        assertEquals("Account identifier used as the Kafka record key.", keySchema.description)
     }
 
     @Test
-    fun `parse Kafka key schema from message binding`() {
-        val messageBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
-            "components",
-            "messageBindings",
-        )
+    fun `parses a direct Kafka binding key schema`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val kafkaBindingNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraits")
+            .expectObject().required("commonHeaders")
+            .expectObject().required("bindings")
+            .expectObject().required("kafka")
 
-        val bindings = parser.parseMap(messageBindingsNode)
-        val binding = (bindings.getValue("accountUpdatedMessage") as BindingInterface.BindingInline).binding
-        val keySchema = (binding.kafkaKeySchema as SchemaInterface.SchemaInline).schema
+        val binding = assertIs<BindingInterface.BindingInline>(parser.parseProtocol(kafkaBindingNode, MESSAGE)).binding
 
-        assertThat(keySchema.type).isEqualTo("integer")
-        assertThat(keySchema.format).isEqualTo("int64")
-        assertThat(keySchema.description).isEqualTo("Account identifier used as the Kafka record key.")
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
     }
 
     @Test
-    fun `parse valid server bindings`() {
-        val serverBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
-            "components",
-            "serverBindings",
+    fun `parse server and operation bindings`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val components = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject()
+
+        val serverBindings = parser.parseComponentMap(components.required("serverBindings"), SERVER)
+        val mqtt = assertIs<BindingInterface.BindingInline>(serverBindings["myServerBinding"]).binding
+        assertEquals(
+            mapOf("mqtt" to mapOf("clientId" to "guest", "cleanSession" to true)),
+            mqtt.content,
         )
-        val bindings = parser.parseMap(serverBindingsNode)
-        assertTrue("myServerBinding" in bindings)
-        val binding = (bindings["myServerBinding"] as BindingInterface.BindingInline).binding
-        assertThat(binding)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(myServerBinding())
+
+        val operationBindings = parser.parseComponentMap(components.required("operationBindings"), OPERATION)
+        val http = assertIs<BindingInterface.BindingInline>(operationBindings["myOperationBinding"]).binding
+        assertEquals(
+            mapOf("http" to mapOf("method" to "POST", "query" to mapOf("type" to "object"))),
+            http.content,
+        )
     }
 
     @Test
-    fun `parse valid operation bindings`() {
-        val operationBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_bindings_valid.yaml",
-            "components",
-            "operationBindings",
-        )
-        val bindings = parser.parseMap(operationBindingsNode)
-        assertTrue("myOperationBinding" in bindings)
-        val binding = (bindings["myOperationBinding"] as BindingInterface.BindingInline).binding
-        assertThat(binding)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(myOperationBinding())
-    }
+    fun `rejects a scalar binding with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelBindingsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("channelBindings")
 
-    @Test
-    fun `parse binding with invalid structure throws UnexpectedValue`() {
-        val channelBindingsNode = readNode(
-            "parser/bindings/asyncapi_parser_binding_invalid.yaml",
-            "components",
-            "channelBindings",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_binding_invalid.yaml",
-            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
-        ) {
-            parser.parseMap(channelBindingsNode)
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseComponentMap(channelBindingsNode, CHANNEL)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("this-should-be-a-map", diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
+            diagnostic.path,
+        )
+        assertEquals("root.components.channelBindings.InvalidBindingStructure", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse binding reports explicit null ref before inline parsing`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val bindingNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("bindingCases")
+            .expectObject().required("NullReference")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseComponentMap(bindingNode, CHANNEL)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NULL, diagnostic.actualType)
+        assertNull(diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_binding_invalid.root.components.bindingCases.NullReference.badBinding.\$ref",
+            diagnostic.path,
+        )
+        assertEquals("root.components.bindingCases.NullReference.badBinding.\$ref", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse binding map reports list container`() {
+        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val bindingNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("bindingCases")
+            .expectObject().required("InvalidBindingsContainer")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseComponentMap(bindingNode, CHANNEL)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
+        assertEquals(listOf(mapOf("kafka" to mapOf("topic" to "invalid"))), diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_binding_invalid.root.components.bindingCases.InvalidBindingsContainer",
+            diagnostic.path,
+        )
+        assertEquals("root.components.bindingCases.InvalidBindingsContainer", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }

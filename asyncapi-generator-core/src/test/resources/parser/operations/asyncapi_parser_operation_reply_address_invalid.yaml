@@ -8,3 +8,7 @@ components:
       description: "Missing reply address location"
     BooleanLocation:
       location: true
+    NullReference:
+      $ref: null
+    ArrayInsteadOfMap:
+      - location: '$message.header#/replyTo'

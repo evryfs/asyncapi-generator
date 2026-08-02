@@ -16,6 +16,19 @@ components:
           delete.retention.ms: 86400000
           max.message.bytes: 1048588
         bindingVersion: '0.5.0'
+    plainChannel:
+      custom:
+        enabled: true
+        attempts: 3
+        values:
+          - primary
+          - 7
+          - false
+          - null
+        metadata:
+          nullable: null
+    referencedChannel:
+      $ref: '#/components/channelBindings/userSignedUpChannel'
 
   messageBindings:
     userSignedUpMessage:

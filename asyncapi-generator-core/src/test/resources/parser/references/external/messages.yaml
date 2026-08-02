@@ -1,0 +1,4 @@
+ExternalEvent:
+  name: ExternalEvent
+  payload:
+    type: string

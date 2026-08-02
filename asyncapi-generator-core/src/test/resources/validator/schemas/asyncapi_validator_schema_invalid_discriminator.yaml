@@ -21,3 +21,8 @@ components:
           type: string
       discriminator: "type"
       required: ["type"]
+
+    # Case 3: Discriminator has neither a local property nor a required list
+    MissingCollections:
+      type: object
+      discriminator: "type"

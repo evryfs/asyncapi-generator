@@ -1,0 +1,4 @@
+bindings:
+  kafka:
+    schemaIdLocation: payload
+    bindingVersion: '0.5.0'

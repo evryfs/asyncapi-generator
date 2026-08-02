@@ -1,179 +1,228 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
-class MultiFormatSchemaParserTest : ParserTestSupport() {
+class MultiFormatSchemaParserTest {
 
-    private val parser = SchemaParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = SchemaParser(context)
 
     @Test
-    fun `parse supported asyncapi schema format`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
-            "components",
-            "schemas",
-            "AsyncApiYamlSchemaFormat",
-        )
+    fun `parse supported AsyncAPI schema format`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("AsyncApiYamlSchemaFormat")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
-        assertTrue(schema is SchemaInterface.SchemaInline)
-        assertEquals("Supported schema format", schema.schema.title)
-        assertEquals("object", schema.schema.type)
+        assertEquals("Supported schema format", schema.title)
+        assertEquals("object", schema.type)
     }
 
     @Test
-    fun `parse json schema format as multi format schema`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
-            "components",
-            "schemas",
-            "JsonSchemaDraftSchemaFormat",
-        )
+    fun `parse JSON Schema format as multi-format schema`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("JsonSchemaDraftSchemaFormat")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
+            parser.parseElement(schemaNode),
+        ).multiFormatSchema
+        val rawSchema = assertIs<Map<*, *>>(schema.schema)
 
-        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
-        val rawSchema = schema.multiFormatSchema.schema as Map<*, *>
-        assertEquals("application/schema+json;version=draft-07", schema.multiFormatSchema.schemaFormat)
-        assertEquals(SchemaFormat.JSON_SCHEMA_DRAFT_07_JSON, schema.multiFormatSchema.format)
+        assertEquals("application/schema+json;version=draft-07", schema.schemaFormat)
+        assertEquals(SchemaFormat.JSON_SCHEMA_DRAFT_07_JSON, schema.format)
         assertEquals("object", rawSchema["type"])
     }
 
     @Test
-    fun `parse native avro schema format as multi format schema`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
-            "components",
-            "schemas",
-            "NativeAvroSchemaFormat",
-        )
+    fun `parse native Avro schema format as multi-format schema`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("NativeAvroSchemaFormat")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
+            parser.parseElement(schemaNode),
+        ).multiFormatSchema
+        val rawSchema = assertIs<Map<*, *>>(schema.schema)
 
-        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
-        val rawSchema = schema.multiFormatSchema.schema as Map<*, *>
-        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.multiFormatSchema.schemaFormat)
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.multiFormatSchema.format)
-        assertTrue(schema.multiFormatSchema.format.isNativeAvro)
+        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.schemaFormat)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.format)
+        assertEquals(true, schema.format.isNativeAvro)
         assertEquals("record", rawSchema["type"])
         assertEquals("UserCreated", rawSchema["name"])
     }
 
     @Test
-    fun `parse native protobuf schema format as multi format schema`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_valid.yaml",
-            "components",
-            "schemas",
-            "NativeProtobufSchemaFormat",
-        )
+    fun `parse native Protobuf schema format as multi-format schema`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("NativeProtobufSchemaFormat")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
+            parser.parseElement(schemaNode),
+        ).multiFormatSchema
+        val rawSchema = assertIs<String>(schema.schema)
 
-        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
-        assertEquals("application/vnd.google.protobuf;version=3", schema.multiFormatSchema.schemaFormat)
-        assertEquals(SchemaFormat.PROTOBUF_3, schema.multiFormatSchema.format)
-        assertTrue(schema.multiFormatSchema.format.isNativeProtobuf)
-        val rawSchema = schema.multiFormatSchema.schema as String
-        assertTrue(rawSchema.contains("message UserCreated"))
+        assertEquals("application/vnd.google.protobuf;version=3", schema.schemaFormat)
+        assertEquals(SchemaFormat.PROTOBUF_3, schema.format)
+        assertEquals(true, schema.format.isNativeProtobuf)
+        assertContains(rawSchema, "message UserCreated")
     }
 
     @Test
-    fun `parse external native avro schema asset as schema text`() {
-        val schemaNode = readNode(
-            "parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml",
-            "components",
-            "schemas",
-            "ExternalNativeAvroSchema",
-        )
+    fun `parse external native Avro schema asset as schema text`() {
+        val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("ExternalNativeAvroSchema")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
+            parser.parseElement(schemaNode),
+        ).multiFormatSchema
+        val schemaText = assertIs<String>(schema.schema)
 
-        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
-        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.multiFormatSchema.schemaFormat)
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.multiFormatSchema.format)
-        val schemaText = schema.multiFormatSchema.schema as String
-        assertTrue(schemaText.contains("\"type\": \"record\""))
-        assertTrue(schemaText.contains("\"name\": \"UserCreated\""))
+        assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.schemaFormat)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, schema.format)
+        assertContains(schemaText, "\"type\": \"record\"")
+        assertContains(schemaText, "\"name\": \"UserCreated\"")
     }
 
     @Test
-    fun `parse external native protobuf schema asset as schema text`() {
-        val schemaNode = readNode(
-            "parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml",
-            "components",
-            "schemas",
-            "ExternalNativeProtobufSchema",
-        )
+    fun `parse external native Protobuf schema asset as schema text`() {
+        val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("ExternalNativeProtobufSchema")
 
-        val schema = parser.parseElement(schemaNode)
+        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
+            parser.parseElement(schemaNode),
+        ).multiFormatSchema
+        val schemaText = assertIs<String>(schema.schema)
 
-        assertTrue(schema is SchemaInterface.MultiFormatSchemaInline)
-        assertEquals("application/vnd.google.protobuf;version=3", schema.multiFormatSchema.schemaFormat)
-        assertEquals(SchemaFormat.PROTOBUF_3, schema.multiFormatSchema.format)
-        val schemaText = schema.multiFormatSchema.schema as String
-        assertTrue(schemaText.contains("option java_multiple_files = true;"))
-        assertTrue(schemaText.contains("message UserCreated"))
+        assertEquals("application/vnd.google.protobuf;version=3", schema.schemaFormat)
+        assertEquals(SchemaFormat.PROTOBUF_3, schema.format)
+        assertContains(schemaText, "option java_multiple_files = true;")
+        assertContains(schemaText, "message UserCreated")
     }
 
     @Test
-    fun `parse external native schema asset reference fails when file cannot be read`() {
-        val schemaNode = readNode(
-            "parser/schemas/native-assets/asyncapi_missing_native_schema_asset.yaml",
-            "components",
-            "schemas",
-            "MissingNativeAvroSchema",
-        )
+    fun `parse external native schema asset reports unreadable file`() {
+        val file = TestResources.file("parser/schemas/native-assets/asyncapi_missing_native_schema_asset.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("MissingNativeAvroSchema")
 
-        assertParseFailure<AsyncApiParseException.NativeSchemaAssetReadFailure>(
-            "Native schema asset 'missing-user-created.avsc' could not be read.",
-            "asyncapi_missing_native_schema_asset.yaml",
+        val error = assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+            parser.parseElement(schemaNode)
+        }
+
+        assertContains(error.message.orEmpty(), "Native schema asset 'missing-user-created.avsc' could not be read.")
+        assertContains(error.message.orEmpty(), "asyncapi_missing_native_schema_asset.yaml")
+        assertContains(
+            error.message.orEmpty(),
             "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema",
-        ) {
-            parser.parseElement(schemaNode)
-        }
+        )
     }
 
     @Test
-    fun `parse unknown schema format throws UnexpectedSchemaFormat`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
-            "components",
-            "schemas",
-            "UnknownSchemaFormat",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedSchemaFormat>(
-            "SchemaFormat: application/unknown is not valid.",
-            "asyncapi_parser_schema_format_invalid.yaml",
+    fun `parse unknown schema format reports the format and source`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("UnknownSchemaFormat")
+
+        val error = assertFailsWith<AsyncApiParseException.UnexpectedSchemaFormat> {
+            parser.parseElement(schemaNode)
+        }
+
+        assertContains(error.message.orEmpty(), "SchemaFormat: application/unknown is not valid.")
+        assertContains(error.message.orEmpty(), "asyncapi_parser_schema_format_invalid.yaml")
+        assertContains(
+            error.message.orEmpty(),
             "asyncapi_parser_schema_format_invalid.root.components.schemas.UnknownSchemaFormat",
-        ) {
-            parser.parseElement(schemaNode)
-        }
+        )
     }
 
     @Test
-    fun `parse non-string schema format throws UnexpectedValue`() {
-        val schemaNode = readNode(
-            "parser/schemas/asyncapi_parser_schema_format_invalid.yaml",
-            "components",
-            "schemas",
-            "NonStringSchemaFormat",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "found Boolean true",
-            "quote the value",
-            "asyncapi_parser_schema_format_invalid.yaml",
-            "asyncapi_parser_schema_format_invalid.root.components.schemas.NonStringSchemaFormat.schemaFormat",
-        ) {
+    fun `parse non-string schema format reports its expected type and source`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("NonStringSchemaFormat")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseElement(schemaNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
+        assertEquals(true, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_schema_format_invalid.root.components.schemas.NonStringSchemaFormat.schemaFormat",
+            diagnostic.path,
+        )
+        assertEquals("root.components.schemas.NonStringSchemaFormat.schemaFormat", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_schema_format_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse multi-format schema missing schema content reports the required member and source`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("MissingSchema")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("schema", diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals("asyncapi_parser_schema_format_invalid.root.components.schemas.MissingSchema.schema", diagnostic.path)
+        assertEquals("root.components.schemas.MissingSchema", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_schema_format_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }

@@ -195,3 +195,29 @@ components:
       oneOf:
         - $ref: '#/components/schemas/turnOnOffPayload'
         - $ref: '#/components/schemas/dimLightPayload'
+
+    explicitNullDefault:
+      type: string
+      default: null
+
+    explicitNullConst:
+      type: [string, "null"]
+      const: null
+
+    untypedEnum:
+      enum: [one, 2, null]
+
+    keywordCoverage:
+      $id: https://example.com/schemas/keyword-coverage
+      $schema: http://json-schema.org/draft-07/schema#
+      type: object
+      contentEncoding: base64
+      contentMediaType: application/json
+      additionalItems: false
+      definitions:
+        identifier:
+          type: string
+      maxProperties: 4
+      minProperties: 1
+      readOnly: true
+      writeOnly: false

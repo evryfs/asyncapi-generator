@@ -1,0 +1,8 @@
+asyncapi: 3.0.0
+info:
+  title: Whole-file message fragment
+  version: 1.0.0
+components:
+  messages:
+    RootEvent:
+      $ref: './message-root.yaml'

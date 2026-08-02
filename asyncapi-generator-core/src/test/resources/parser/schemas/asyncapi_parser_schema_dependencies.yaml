@@ -26,3 +26,4 @@ components:
         name:
           type: object
           required: ["category"]
+        unrestricted: true

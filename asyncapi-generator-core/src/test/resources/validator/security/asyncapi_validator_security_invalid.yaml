@@ -5,6 +5,9 @@ info:
 channels: {}
 components:
   securitySchemes:
+    EmptyType:
+      type: ""
+
     # Case 1: HTTP missing scheme
     InvalidHttp:
       type: http

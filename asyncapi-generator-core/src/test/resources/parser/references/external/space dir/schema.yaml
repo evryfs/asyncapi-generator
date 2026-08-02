@@ -1,0 +1,5 @@
+components:
+  schemas:
+    "Encoded Name":
+      type: string
+      description: percent encoded URI and pointer

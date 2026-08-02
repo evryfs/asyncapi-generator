@@ -37,6 +37,14 @@ data class Schema(
     val contentMediaType: String? = null,
 
     val items: SchemaInterface? = null,
+
+    /**
+     * Draft 7 tuple-form `items`, kept separate to preserve the established
+     * single-schema [items] API while retaining every parsed tuple member.
+     */
+    @get:JsonIgnore
+    val tupleItems: List<SchemaInterface>? = null,
+
     val additionalItems: SchemaInterface? = null,
     val maxItems: Number? = null,
     val minItems: Number? = null,
@@ -63,6 +71,10 @@ data class Schema(
 
     val enum: List<Any?>? = null,
     val const: Any? = null,
+
+    @get:JsonIgnore
+    val constSet: Boolean = false, // to distinguish between explicit 'const: null' and const not set
+
     val readOnly: Boolean? = null,
     val writeOnly: Boolean? = null,
 

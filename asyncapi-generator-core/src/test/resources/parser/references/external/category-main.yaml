@@ -1,0 +1,53 @@
+asyncapi: 3.0.0
+info:
+  title: External category dispatch
+  version: 1.0.0
+components:
+  schemas:
+    ExternalSchema:
+      $ref: './category-fragments.yaml#/schema'
+  channels:
+    ExternalChannel:
+      $ref: './category-fragments.yaml#/channel'
+  messages:
+    ExternalMessage:
+      $ref: './category-fragments.yaml#/message'
+  messageTraits:
+    ExternalMessageTrait:
+      $ref: './category-fragments.yaml#/messageTrait'
+  operations:
+    ExternalOperation:
+      $ref: './category-fragments.yaml#/operation'
+  operationTraits:
+    ExternalOperationTrait:
+      $ref: './category-fragments.yaml#/operationTrait'
+  replies:
+    ExternalReply:
+      $ref: './category-fragments.yaml#/operationReply'
+  replyAddresses:
+    ExternalReplyAddress:
+      $ref: './category-fragments.yaml#/operationReplyAddress'
+  servers:
+    ExternalServer:
+      $ref: './category-fragments.yaml#/server'
+  serverVariables:
+    ExternalServerVariable:
+      $ref: './category-fragments.yaml#/serverVariable'
+  parameters:
+    ExternalParameter:
+      $ref: './category-fragments.yaml#/parameter'
+  securitySchemes:
+    ExternalSecurityScheme:
+      $ref: './category-fragments.yaml#/securityScheme'
+  correlationIds:
+    ExternalCorrelationId:
+      $ref: './category-fragments.yaml#/correlationId'
+  externalDocs:
+    ExternalDocs:
+      $ref: './category-fragments.yaml#/externalDoc'
+  tags:
+    ExternalTag:
+      $ref: './category-fragments.yaml#/tag'
+  serverBindings:
+    ExternalBinding:
+      $ref: './category-fragments.yaml#/binding'

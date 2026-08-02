@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.mapper
 
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 class ConstraintMapper {
@@ -22,8 +23,7 @@ class ConstraintMapper {
                 annotations += "@field:Size(${args.joinToString(", ")})"
             }
             schema.pattern
-                ?.trim()
-                ?.removePrefix("\"")
+                ?.let(SourceLiteralEscaper::forKotlin)
                 ?.let { annotations += "@field:Pattern(regexp = \"$it\")" }
 
             if (format == "email") {

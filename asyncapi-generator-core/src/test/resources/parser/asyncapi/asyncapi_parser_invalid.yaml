@@ -1,0 +1,48 @@
+cases:
+  MissingVersion:
+    info:
+      title: Missing version
+      version: 1.0.0
+  BooleanVersion:
+    asyncapi: false
+    info:
+      title: Boolean version
+      version: 1.0.0
+  MalformedVersion:
+    asyncapi: '3.0'
+    info:
+      title: Malformed version
+      version: 1.0.0
+  KnownUnimplementedVersion:
+    asyncapi: 3.1.0
+    info:
+      title: Known version
+      version: 1.0.0
+  UnknownVersion:
+    asyncapi: 3.5.0
+    info:
+      title: Unknown version
+      version: 1.0.0
+  OldMajorVersion:
+    asyncapi: 2.6.0
+    info:
+      title: Old major version
+      version: 1.0.0
+  SupportedPatchVersion:
+    asyncapi: 3.0.7
+    info:
+      title: Supported patch version
+      version: 1.0.0
+  SupportedSuffixedVersion:
+    asyncapi: 3.0.0-rc1
+    info:
+      title: Supported suffixed version
+      version: 1.0.0
+  MissingInfo:
+    asyncapi: 3.0.0
+  NullDefaultContentType:
+    asyncapi: 3.0.0
+    info:
+      title: Null content type
+      version: 1.0.0
+    defaultContentType: null

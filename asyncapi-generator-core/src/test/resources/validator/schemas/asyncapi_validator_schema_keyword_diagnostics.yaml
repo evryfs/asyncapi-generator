@@ -39,18 +39,3 @@ components:
       items:
         - type: string
         - type: integer
-
-    InvalidExclusiveMinimum:
-      type: number
-      minimum: 0
-      exclusiveMinimum: not-a-number
-
-    InvalidDiscriminator:
-      type: object
-      discriminator:
-        propertyName: eventType
-      required:
-        - eventType
-      properties:
-        eventType:
-          type: string

@@ -1,0 +1,6 @@
+asyncapi: 3.0.0
+info:
+  title: Info Diagnostics
+  version: release candidate
+  termsOfService: relative/terms
+  contact: {}

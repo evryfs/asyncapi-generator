@@ -15,5 +15,10 @@ components:
 
     InvalidStringLength:
       type: string
+      minLength: -1
+      maxLength: 1.5
+
+    InvalidStringRange:
+      type: string
       minLength: 10
       maxLength: 5

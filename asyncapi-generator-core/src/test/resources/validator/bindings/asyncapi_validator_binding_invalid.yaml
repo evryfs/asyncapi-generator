@@ -1,21 +1,48 @@
 asyncapi: 3.0.0
 info:
-  title: Binding Validation
+  title: Invalid Binding Test
   version: 1.0.0
 components:
+  serverBindings:
+    InvalidServer:
+      kafka:
+        schemaRegistryUrl: relative/path
+        schemaRegistryVendor: 12
+        unexpected: true
+        bindingVersion: '0.4.0'
+    MissingRegistryUrl:
+      kafka:
+        schemaRegistryVendor: confluent
+        bindingVersion: '0.5.0'
   channelBindings:
-    # Case 1: Empty Binding Object (Warning)
     EmptyBinding: {}
-
-    # Case 2: Binding with null property (Warning)
-    BindingWithNullProperty:
+    InvalidChannel:
       kafka:
-        version: 1.0.0
-        # property 'protocol' is null
-        protocol:
-
-    # Case 3: Binding with unsupported type in content (Warning)
-    BindingWithUnsupportedType:
+        topic: 42
+        partitions: 0
+        replicas: 1.5
+        topicConfiguration:
+          cleanup.policy: [delete, archive]
+          retention.ms: 1.5
+          unexpected: true
+        bindingVersion: '0.4.0'
+    InvalidVersionType:
       kafka:
-        topic: my.topic
-        unsupported: ["list", "of", "strings"] # Should be map, string, number, or boolean
+        bindingVersion: 4
+    NullVersion:
+      kafka:
+        bindingVersion:
+  operationBindings:
+    InvalidOperation:
+      kafka:
+        groupId: streetlights
+        unexpected: true
+        bindingVersion: '0.4.0'
+  messageBindings:
+    InvalidMessage:
+      kafka:
+        key:
+          type: string
+        schemaIdLocation: 3
+        unexpected: true
+        bindingVersion: '0.6.0'

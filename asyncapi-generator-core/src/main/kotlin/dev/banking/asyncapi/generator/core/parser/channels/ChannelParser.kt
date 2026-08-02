@@ -7,10 +7,12 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
 import dev.banking.asyncapi.generator.core.parser.parameters.ParameterParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL as CHANNEL_BINDING
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 /**
@@ -31,34 +33,36 @@ class ChannelParser(
     private val externalDocsParser: ExternalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
-            val channel = if (reference != null) {
-                ChannelInterface.ChannelReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = CHANNEL
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ChannelInterface.ChannelInline(
-                    Channel(
-                        address = node.optional("address")?.coerce<String>(),
-                        messages = node.optional("messages")?.let(messageParser::parseMap),
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        servers = node.optional("servers")?.let(referenceParser::parseList),
-                        parameters = node.optional("parameters")?.let(parameterParser::parseMap),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, channel)
+        parserNode.expectObject().members().forEach { node ->
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ChannelInterface {
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ChannelInterface.ChannelReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = CHANNEL,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ChannelInterface.ChannelInline(
+                Channel(
+                    address = objectNode.optional("address")?.expect<String>(),
+                    messages = objectNode.optional("messages")?.let(messageParser::parseMap),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    servers = objectNode.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
+                    parameters = objectNode.optional("parameters")?.let(parameterParser::parseMap),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, CHANNEL_BINDING) },
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }

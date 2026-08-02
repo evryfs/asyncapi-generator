@@ -13,3 +13,19 @@ components:
     InvalidFlowsStructure:
       type: oauth2
       flows: "not-an-object"
+
+    NullReference:
+      $ref: null
+
+    InvalidAvailableScope:
+      type: oauth2
+      flows:
+        implicit:
+          availableScopes:
+            valid: "A valid scope"
+            invalid: 7
+
+  securitySchemeCases:
+    ObjectInsteadOfList:
+      invalidScheme:
+        type: userPassword

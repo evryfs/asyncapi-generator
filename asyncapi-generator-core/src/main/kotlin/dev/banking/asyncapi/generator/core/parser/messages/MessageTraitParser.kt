@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdPars
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
@@ -31,22 +32,20 @@ class MessageTraitParser(
     private val messageExampleParser = MessageExampleParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, MessageTraitInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<MessageTraitInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.expectArray().elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): MessageTraitInterface {
-        parserNode.coerce<Map<String, Any?>>()
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val messageTraitInterface = if (reference != null) {
             MessageTraitInterface.ReferenceMessageTrait(
                 Reference(
@@ -57,17 +56,17 @@ class MessageTraitParser(
         } else {
             MessageTraitInterface.InlineMessageTrait(
                 MessageTrait(
-                    headers = parserNode.optional("headers")?.let(schemaParser::parseElement),
-                    correlationId = parserNode.optional("correlationId")?.let(correlationIdParser::parseElement),
-                    contentType = parserNode.optional("contentType")?.coerce<String>(),
-                    name = parserNode.optional("name")?.coerce<String>(),
-                    title = parserNode.optional("title")?.coerce<String>(),
-                    summary = parserNode.optional("summary")?.coerce<String>(),
-                    description = parserNode.optional("description")?.coerce<String>(),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    examples = parserNode.optional("examples")?.let(messageExampleParser::parseList),
+                    headers = objectNode.optional("headers")?.let(schemaParser::parseElement),
+                    correlationId = objectNode.optional("correlationId")?.let(correlationIdParser::parseElement),
+                    contentType = objectNode.optional("contentType")?.expect<String>(),
+                    name = objectNode.optional("name")?.expect<String>(),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, MESSAGE) },
+                    examples = objectNode.optional("examples")?.let(messageExampleParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

@@ -6,3 +6,10 @@ channels: {}
 components:
   channelBindings:
     InvalidBindingStructure: "this-should-be-a-map"
+  bindingCases:
+    NullReference:
+      badBinding:
+        $ref: null
+    InvalidBindingsContainer:
+      - kafka:
+          topic: invalid

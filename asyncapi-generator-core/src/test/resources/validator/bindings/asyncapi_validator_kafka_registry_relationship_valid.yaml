@@ -1,0 +1,47 @@
+asyncapi: 3.0.0
+info:
+  title: Valid Kafka Schema Registry Relationship
+  version: 1.0.0
+servers:
+  registered:
+    host: kafka.example.com
+    protocol: kafka-secure
+    bindings:
+      kafka:
+        schemaRegistryUrl: https://registry.example.com
+        bindingVersion: '0.5.0'
+  unselectedWithoutRegistry:
+    host: unused.example.com
+    protocol: kafka
+channels:
+  events:
+    address: events
+    servers:
+      - $ref: '#/servers/registered'
+    messages:
+      event:
+        bindings:
+          kafka:
+            schemaIdLocation: payload
+            schemaIdPayloadEncoding: confluent
+            schemaLookupStrategy: TopicNameStrategy
+            bindingVersion: '0.5.0'
+  registeredReference:
+    address: referenced
+    servers:
+      - $ref: '#/servers/registered'
+    messages:
+      event:
+        $ref: '#/components/messages/ReusableEvent'
+components:
+  messages:
+    ReusableEvent:
+      bindings:
+        kafka:
+          schemaIdLocation: header
+          bindingVersion: '0.5.0'
+    UnusedEvent:
+      bindings:
+        kafka:
+          schemaLookupStrategy: TopicIdStrategy
+          bindingVersion: '0.5.0'

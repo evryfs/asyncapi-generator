@@ -1,10 +1,25 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonFactoryBuilder
 import com.fasterxml.jackson.core.JsonLocation
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.JsonToken
+import com.fasterxml.jackson.core.StreamReadConstraints
+import com.fasterxml.jackson.core.exc.StreamConstraintsException
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentMember
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentSource
+import dev.banking.asyncapi.generator.core.document.DocumentString
+import dev.banking.asyncapi.generator.core.document.InputDocument
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 
 /**
  * Reads JSON input into an [InputDocument].
@@ -15,25 +30,33 @@ import com.fasterxml.jackson.core.JsonToken
  * Expected behavior is covered by:
  * - `JsonDocumentReaderTest`
  * - `DocumentReaderContractTest`
- * - `SourceMapTest`
+ * - `DocumentLocationTest`
  */
-class JsonDocumentReader : DocumentReader {
-    private val jsonFactory = JsonFactory()
+class JsonDocumentReader internal constructor(
+    private val limits: DocumentReaderLimits,
+) : DocumentReader {
+    constructor() : this(DocumentReaderLimits.DEFAULT)
+
+    private val jsonFactory: JsonFactory =
+        JsonFactoryBuilder().streamReadConstraints(
+            StreamReadConstraints.builder()
+                .maxDocumentLength(limits.maxDocumentCharacters.toLong())
+                .maxNestingDepth(limits.maxNestingDepth)
+                .maxNumberLength(limits.maxNumberCharacters)
+                .build(),
+        ).build()
 
     override fun read(source: DocumentSource): InputDocument {
+        limits.requireDocumentSize(source)
         if (source.content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
 
         return try {
             jsonFactory.createParser(source.content).use { parser ->
-                val locations = linkedMapOf<String, SourceLocation>()
                 val rootToken = parser.nextToken()
                     ?: throw DocumentReadException.EmptyDocument(source.file)
-                val rootValue = parseNode(parser, rootToken, ROOT_PATH, source, locations)
-                @Suppress("UNCHECKED_CAST")
-                val root = rootValue as? Map<String, Any?>
-                    ?: throw DocumentReadException.InvalidRoot(source.file, typeName(rootValue))
+                val root = parseNode(parser, rootToken, ROOT_PATH, source)
                 val trailingToken = parser.nextToken()
                 if (trailingToken != null) {
                     throw malformed(source, parser, "Unexpected content after JSON root")
@@ -41,12 +64,13 @@ class JsonDocumentReader : DocumentReader {
                 InputDocument(
                     source = source,
                     root = root,
-                    sourceMap = SourceMap(locations),
                 )
             }
         } catch (ex: DocumentReadException) {
             throw ex
-        } catch (ex: JsonParseException) {
+        } catch (ex: StreamConstraintsException) {
+            throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
+        } catch (ex: JsonProcessingException) {
             throw DocumentReadException.MalformedDocument(source.file, ex)
         }
     }
@@ -56,18 +80,27 @@ class JsonDocumentReader : DocumentReader {
         token: JsonToken,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Any? {
-        locations.putIfAbsent(path, locationOf(source, path, parser.currentTokenLocation()))
+    ): DocumentNode {
+        val location = locationOf(source, path, parser.currentTokenLocation())
         return when (token) {
-            JsonToken.START_OBJECT -> parseObject(parser, path, source, locations)
-            JsonToken.START_ARRAY -> parseArray(parser, path, source, locations)
-            JsonToken.VALUE_STRING -> parser.valueAsString
-            JsonToken.VALUE_TRUE -> true
-            JsonToken.VALUE_FALSE -> false
-            JsonToken.VALUE_NUMBER_INT -> parser.numberValue
-            JsonToken.VALUE_NUMBER_FLOAT -> parser.doubleValue
-            JsonToken.VALUE_NULL -> null
+            JsonToken.START_OBJECT -> parseObject(parser, path, source, location)
+            JsonToken.START_ARRAY -> parseArray(parser, path, source, location)
+            JsonToken.VALUE_STRING -> DocumentString(parser.valueAsString, location)
+            JsonToken.VALUE_TRUE -> DocumentBoolean(true, location)
+            JsonToken.VALUE_FALSE -> DocumentBoolean(false, location)
+            JsonToken.VALUE_NUMBER_INT ->
+                DocumentNumber(
+                    value = DocumentNumberParser.parseInteger(parser.text)
+                        ?: throw malformed(source, parser, "Invalid JSON integer"),
+                    location = location,
+                )
+            JsonToken.VALUE_NUMBER_FLOAT ->
+                DocumentNumber(
+                    value = DocumentNumberParser.parseDecimal(parser.text)
+                        ?: throw malformed(source, parser, "Invalid JSON decimal"),
+                    location = location,
+                )
+            JsonToken.VALUE_NULL -> DocumentNull(location)
             else -> throw malformed(source, parser, "Unexpected JSON token: $token")
         }
     }
@@ -76,14 +109,14 @@ class JsonDocumentReader : DocumentReader {
         parser: JsonParser,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Map<String, Any?> {
-        val result = linkedMapOf<String, Any?>()
+        location: SourceLocation,
+    ): DocumentObject {
+        val result = linkedMapOf<String, DocumentMember>()
         while (true) {
             val token = parser.nextToken()
                 ?: throw malformed(source, parser, "Unexpected end of JSON object")
             if (token == JsonToken.END_OBJECT) {
-                return result
+                return DocumentObject(result, location)
             }
             if (token != JsonToken.FIELD_NAME) {
                 throw malformed(source, parser, "Expected JSON field name, found $token")
@@ -103,8 +136,10 @@ class JsonDocumentReader : DocumentReader {
 
             val valueToken = parser.nextToken()
                 ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
-            locations[keyPath] = keyLocation
-            result[key] = parseNode(parser, valueToken, keyPath, source, locations)
+            result[key] = DocumentMember(
+                keyLocation = keyLocation,
+                value = parseNode(parser, valueToken, keyPath, source),
+            )
         }
     }
 
@@ -112,16 +147,16 @@ class JsonDocumentReader : DocumentReader {
         parser: JsonParser,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): List<Any?> {
-        val result = mutableListOf<Any?>()
+        location: SourceLocation,
+    ): DocumentArray {
+        val result = mutableListOf<DocumentNode>()
         while (true) {
             val token = parser.nextToken()
                 ?: throw malformed(source, parser, "Unexpected end of JSON array")
             if (token == JsonToken.END_ARRAY) {
-                return result
+                return DocumentArray(result, location)
             }
-            result += parseNode(parser, token, "$path[${result.size}]", source, locations)
+            result += parseNode(parser, token, "$path[${result.size}]", source)
         }
     }
 
@@ -143,14 +178,6 @@ class JsonDocumentReader : DocumentReader {
         message: String,
     ): DocumentReadException.MalformedDocument =
         DocumentReadException.MalformedDocument(source.file, JsonParseException(parser, message))
-
-    private fun typeName(value: Any?): String =
-        when (value) {
-            null -> "null"
-            is Map<*, *> -> "object"
-            is List<*> -> "array"
-            else -> value::class.simpleName ?: value.javaClass.simpleName
-        }
 
     private companion object {
         const val ROOT_PATH = "root"

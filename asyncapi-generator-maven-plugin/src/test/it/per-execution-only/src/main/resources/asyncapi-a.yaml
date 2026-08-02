@@ -6,7 +6,8 @@ channels:
   somethingUpdated:
     address: test.topic.a.v1
     messages:
-      - $ref: '#/components/messages/SomethingUpdated'
+      SomethingUpdated:
+        $ref: '#/components/messages/SomethingUpdated'
 components:
   messages:
     SomethingUpdated:

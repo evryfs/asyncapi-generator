@@ -2,8 +2,14 @@ package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import java.io.File
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
@@ -29,8 +35,17 @@ class ModelRepository(
         val nodePath: String?,
     )
 
+    internal data class ReferenceOrigin(
+        val file: File,
+        val sourcePathId: String,
+        val parserPath: String,
+        val sourceLocation: SourceLocation?,
+        val parserProfile: AsyncApiParserProfile?,
+    )
+
     private val modelsByInstance = IdentityHashMap<Any, Model>()
     private val modelsByPath = LinkedHashMap<String, Any>()
+    private val referenceOrigins = IdentityHashMap<Reference, ReferenceOrigin>()
 
     fun register(model: Any, node: ParserNode) {
         val fieldNames = collectFieldNames(node)
@@ -48,7 +63,17 @@ class ModelRepository(
             ?: sourceRepository.findNearestLocation(path)
 
         if (model is Reference) {
-            model.sourceId = path.substringBefore(".root", path)
+            val sourcePathId = path.substringBefore(".root", path)
+            model.sourceId = sourceRepository.findStableIdByPathId(sourcePathId) ?: sourcePathId
+            sourceRepository.findFileById(sourcePathId)?.let { sourceFile ->
+                referenceOrigins[model] = ReferenceOrigin(
+                    file = sourceFile,
+                    sourcePathId = sourcePathId,
+                    parserPath = path,
+                    sourceLocation = sourceLocation,
+                    parserProfile = node.profile,
+                )
+            }
         }
 
         modelsByInstance[model] =
@@ -64,6 +89,10 @@ class ModelRepository(
                 path,
             )
         modelsByPath[path] = model
+        val normalizedArrayPath = path.replace(Regex("""\[(\d+)]"""), ".$1")
+        if (normalizedArrayPath != path) {
+            modelsByPath[normalizedArrayPath] = model
+        }
     }
 
     fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
@@ -103,6 +132,9 @@ class ModelRepository(
     fun getModelsByInstance(): Map<Any, Model> = IdentityHashMap(modelsByInstance)
     fun getModelsByPath() = modelsByPath.toMap()
 
+    internal fun getReferenceOrigin(reference: Reference): ReferenceOrigin? =
+        referenceOrigins[reference]
+
     fun findByReference(reference: Reference): Any? {
         val normalized = normalize(reference) ?: return null
         return modelsByPath[normalized]
@@ -113,19 +145,21 @@ class ModelRepository(
         val basePath = node.path
         val normalizedPath = basePath.replace("[", ".").replace("]", "")
         when (val raw = node.node) {
-            is Map<*, *> -> {
-                for (key in raw.keys.filterIsInstance<String>()) {
+            is DocumentObject -> {
+                for ((key, member) in raw.members) {
                     val possiblePaths = sequenceOf("$basePath.$key", "$normalizedPath.$key")
                     val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
-                    if (location != null) result[key] = location
+                        ?: member.keyLocation
+                    result[key] = location
                 }
             }
 
-            is List<*> -> {
-                raw.forEachIndexed { index, _ ->
+            is DocumentArray -> {
+                raw.elements.forEachIndexed { index, element ->
                     val possiblePaths = sequenceOf("$basePath[$index]", "$normalizedPath.$index")
                     val location = possiblePaths.mapNotNull(sourceRepository::getLocation).firstOrNull()
-                    if (location != null) result["[$index]"] = location
+                        ?: element.location
+                    result["[$index]"] = location
                 }
             }
 
@@ -140,20 +174,18 @@ class ModelRepository(
 
     private fun collectFieldNames(node: ParserNode): Set<String> =
         when (val raw = node.node) {
-            is Map<*, *> -> raw.keys.filterIsInstance<String>().toCollection(linkedSetOf())
-            is List<*> -> raw.indices.mapTo(linkedSetOf()) { index -> "[$index]" }
+            is DocumentObject -> raw.members.keys.toCollection(linkedSetOf())
+            is DocumentArray -> raw.elements.indices.mapTo(linkedSetOf()) { index -> "[$index]" }
             else -> setOf("<value>")
         }
 
     private fun collectFieldValues(node: ParserNode): Map<String, Any?> =
         when (val raw = node.node) {
-            is Map<*, *> ->
-                raw.entries
-                    .filter { (key, _) -> key is String }
-                    .associate { (key, value) -> key as String to value }
+            is DocumentObject ->
+                raw.members.mapValues { (_, member) -> member.value.toValue() }
 
-            is List<*> -> raw.mapIndexed { index, value -> "[$index]" to value }.toMap()
-            else -> mapOf("<value>" to raw)
+            is DocumentArray -> raw.elements.mapIndexed { index, value -> "[$index]" to value.toValue() }.toMap()
+            else -> mapOf("<value>" to raw.toValue())
         }
 
     private fun collectFieldLines(node: ParserNode): Map<String, Int> {
@@ -161,16 +193,16 @@ class ModelRepository(
         val basePath = node.path
         val normalizedPath = basePath.replace("[", ".").replace("]", "")
         when (val raw = node.node) {
-            is Map<*, *> -> {
-                for (key in raw.keys.filterIsInstance<String>()) {
+            is DocumentObject -> {
+                for (key in raw.members.keys) {
                     val possiblePaths = sequenceOf("$basePath.$key", "$normalizedPath.$key")
                     val line = possiblePaths.mapNotNull(sourceRepository::getLine).firstOrNull()
                     if (line != null) result[key] = line
                 }
             }
 
-            is List<*> -> {
-                raw.forEachIndexed { index, _ ->
+            is DocumentArray -> {
+                raw.elements.forEachIndexed { index, _ ->
                     val possiblePaths = sequenceOf("$basePath.$index", "$normalizedPath.$index")
                     val line = possiblePaths.mapNotNull(sourceRepository::getLine).firstOrNull()
                     if (line != null) result["[$index]"] = line
@@ -187,24 +219,19 @@ class ModelRepository(
     }
 
     private fun normalize(reference: Reference): String? {
-        val rawRef = reference.ref
-        val clean = rawRef.trim().trimStart('\'', '"', '|', '>')
-        if (clean.isEmpty()) return null
-        if (clean.startsWith("#/")) {
-            val fileId = reference.sourceId
-                ?: throw IllegalArgumentException("Reference requires a ID")
-            val suffix = clean
-                .removePrefix("#/")
-                .replace("/", ".")
-            return "$fileId.$ROOT.$suffix"
-        }
-
-        val docPart = clean.substringBefore('#').trim()
-        val pointer = clean.substringAfter('#', missingDelimiterValue = "").ifEmpty { return null }
-        val fileId = sourceRepository.fileIdForName(docPart) ?: return null
-        val suffix = pointer
-            .removePrefix("/")
-            .replace("/", ".")
-        return "$fileId.$ROOT.$suffix"
+        val origin = referenceOrigins[reference]
+        val sourcePathId = origin?.sourcePathId ?: reference.sourceId ?: return null
+        val sourceFile = origin?.file ?: sourceRepository.findFileById(sourcePathId) ?: return null
+        val parsed = runCatching { reference.ref.parseReference() }.getOrNull() ?: return null
+        val targetFile = parsed.resolveDocumentAgainst(sourceFile)
+        val fileId =
+            if (targetFile == null) {
+                sourcePathId
+            } else {
+                sourceRepository.findIdByFile(targetFile) ?: return null
+            }
+        val segments = parsed.pointerSegments()
+        if (segments.isEmpty()) return "$fileId.$ROOT"
+        return "$fileId.$ROOT.${segments.joinToString(".")}"
     }
 }

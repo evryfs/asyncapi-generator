@@ -20,21 +20,20 @@ class SecuritySchemeParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, SecuritySchemeInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<SecuritySchemeInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
+        parserNode.expectArray().elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): SecuritySchemeInterface {
-        parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
+        val objectNode = parserNode.expectObject()
+        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return SecuritySchemeInterface.SecuritySchemeReference(
                 Reference(
                     ref = reference,
@@ -42,15 +41,15 @@ class SecuritySchemeParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
-        val type = parserNode.mandatory("type").coerce<String>()
-        val description = parserNode.optional("description")?.coerce<String>()
-        val nameField = parserNode.optional("name")?.coerce<String>()
-        val inField = parserNode.optional("in")?.coerce<String>()
-        val scheme = parserNode.optional("scheme")?.coerce<String>()
-        val bearerFormat = parserNode.optional("bearerFormat")?.coerce<String>()
-        val openIdConnectUrl = parserNode.optional("openIdConnectUrl")?.coerce<String>()
-        val flows = parserNode.optional("flows")?.let(::parseFlows)
-        val scopes = parserNode.optional("scopes")?.coerce<List<String>>()
+        val type = objectNode.required("type").expect<String>()
+        val description = objectNode.optional("description")?.expect<String>()
+        val nameField = objectNode.optional("name")?.expect<String>()
+        val inField = objectNode.optional("in")?.expect<String>()
+        val scheme = objectNode.optional("scheme")?.expect<String>()
+        val bearerFormat = objectNode.optional("bearerFormat")?.expect<String>()
+        val openIdConnectUrl = objectNode.optional("openIdConnectUrl")?.expect<String>()
+        val flows = objectNode.optional("flows")?.let(::parseFlows)
+        val scopes = objectNode.optional("scopes")?.expect<List<String>>()
         return SecuritySchemeInterface.SecuritySchemeInline(
             SecurityScheme(
                 type = type,
@@ -67,20 +66,21 @@ class SecuritySchemeParser(
     }
 
     private fun parseFlows(parserNode: ParserNode): OAuthFlows {
-        parserNode.coerce<Map<*, *>>()
+        val objectNode = parserNode.expectObject()
         return OAuthFlows(
-            implicit = parserNode.optional("implicit")?.let(::parseFlow),
-            password = parserNode.optional("password")?.let(::parseFlow),
-            clientCredentials = parserNode.optional("clientCredentials")?.let(::parseFlow),
-            authorizationCode = parserNode.optional("authorizationCode")?.let(::parseFlow),
+            implicit = objectNode.optional("implicit")?.let(::parseFlow),
+            password = objectNode.optional("password")?.let(::parseFlow),
+            clientCredentials = objectNode.optional("clientCredentials")?.let(::parseFlow),
+            authorizationCode = objectNode.optional("authorizationCode")?.let(::parseFlow),
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
     private fun parseFlow(parserNode: ParserNode): OAuthFlow {
-        val authorizationUrl = parserNode.optional("authorizationUrl")?.coerce<String>()
-        val tokenUrl = parserNode.optional("tokenUrl")?.coerce<String>()
-        val refreshUrl = parserNode.optional("refreshUrl")?.coerce<String>()
-        val availableScopes = parserNode.optional("availableScopes")?.coerce<Map<String, String>>()
+        val objectNode = parserNode.expectObject()
+        val authorizationUrl = objectNode.optional("authorizationUrl")?.expect<String>()
+        val tokenUrl = objectNode.optional("tokenUrl")?.expect<String>()
+        val refreshUrl = objectNode.optional("refreshUrl")?.expect<String>()
+        val availableScopes = objectNode.optional("availableScopes")?.expect<Map<String, String>>()
         return OAuthFlow(
             authorizationUrl = authorizationUrl,
             tokenUrl = tokenUrl,

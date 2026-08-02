@@ -21,23 +21,20 @@ class TagParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, TagInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<TagInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectArray().elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): TagInterface {
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val tagInterface = if (reference != null) {
             TagInterface.TagReference(
                 Reference(
@@ -48,9 +45,9 @@ class TagParser(
         } else {
             TagInterface.TagInline(
                 Tag(
-                    name = parserNode.mandatory("name").coerce<String>(),
-                    description = parserNode.optional("description")?.coerce<String>(),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    name = objectNode.required("name").expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

@@ -1,6 +1,6 @@
-asyncapi: 2.6.0
-id: not-a-uri
-defaultContentType: not-a-mime-type
+asyncapi: 3.0.0
+id: ' https://example.com'
+defaultContentType: application/*
 info:
   title: Invalid AsyncAPI Document
   version: 1.0.0

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java.mapper
 
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ConstraintMapperTest {
@@ -22,6 +23,15 @@ class ConstraintMapperTest {
         val anns = mapper.buildAnnotations(schema)
 
         assertTrue(anns.contains("@Pattern(regexp = \"^[A-Z]+$\")"))
+    }
+
+    @Test
+    fun `pattern constraint preserves whitespace and escapes Java string content`() {
+        val schema = Schema(type = "string", pattern = " ^\\d+\"quoted\"$ ")
+
+        val annotations = mapper.buildAnnotations(schema)
+
+        assertEquals(listOf("@Pattern(regexp = \" ^\\\\d+\\\"quoted\\\"$ \")"), annotations)
     }
 
     @Test

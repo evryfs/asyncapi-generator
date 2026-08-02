@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: External fragment isolation
+  version: 1.0.0
+components:
+  schemas:
+    Isolated:
+      $ref: './heterogeneous-fragments.yaml#/selectedSchema'
+    Chained:
+      $ref: './heterogeneous-fragments.yaml#/firstSchema'
+    Cyclic:
+      $ref: './heterogeneous-fragments.yaml#/cycleA'

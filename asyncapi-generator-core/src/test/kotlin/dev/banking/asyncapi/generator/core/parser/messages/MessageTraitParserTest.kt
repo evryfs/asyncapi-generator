@@ -1,86 +1,200 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
+import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 
-class MessageTraitParserTest : ParserTestSupport() {
+class MessageTraitParserTest {
 
-    private val parser = MessageTraitParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = MessageTraitParser(context)
 
     @Test
-    fun `parse message trait list`() {
-        val traitsNode = readNode(
-            "parser/messages/asyncapi_parser_message_edge_cases.yaml",
-            "components",
-            "messages",
-            "InlineTraitMessage",
-            "traits",
-        )
+    fun `parses all message trait fields`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraits")
 
-        val traits = parser.parseList(traitsNode)
+        val traits = parser.parseMap(traitsNode)
 
-        assertEquals(1, traits.size)
-        assertTrue(traits.first() is MessageTraitInterface.InlineMessageTrait)
-        val trait = (traits.first() as MessageTraitInterface.InlineMessageTrait).trait
-        assertTrue(trait.headers is SchemaInterface.SchemaInline)
-        assertEquals("string", (trait.headers as SchemaInterface.SchemaInline).schema.type)
+        val trait = assertIs<MessageTraitInterface.InlineMessageTrait>(traits["commonHeaders"]).trait
+        val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema
+        assertIs<SchemaInterface.SchemaInline>(headers.properties?.get("myHeaders"))
+        val correlationId = assertIs<CorrelationIdInterface.CorrelationIdInline>(trait.correlationId).correlationId
+        assertEquals("\$message.header#/correlationId", correlationId.location)
+        assertEquals("application/json", trait.contentType)
+        assertEquals("commonHeaders", trait.name)
+        assertEquals("Common message headers", trait.title)
+        assertEquals("Shared message metadata", trait.summary)
+        assertEquals("Applied to every streetlight message", trait.description)
+        val tag = assertIs<TagInterface.TagInline>(trait.tags?.single()).tag
+        assertEquals("shared", tag.name)
+        val externalDocs = assertIs<ExternalDocInterface.ExternalDocInline>(trait.externalDocs).externalDoc
+        assertEquals("https://example.com/docs/message-trait", externalDocs.url)
+        val binding = assertIs<BindingInterface.BindingInline>(trait.bindings?.get("kafka")).binding
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
+        assertEquals("commonHeadersExample", trait.examples?.single()?.name)
     }
 
     @Test
-    fun `parse message trait with invalid structure throws UnexpectedValue`() {
-        val traitsNode = readNode(
-            "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
-            "components",
-            "messageTraitCases",
-            "InvalidTraitStructure",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_message_trait_invalid.yaml",
+    fun `parse message trait with invalid structure reports its expected type and source`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraitCases")
+            .expectObject().required("InvalidTraitStructure")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(traitsNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-map", diagnostic.actualValue)
+        assertEquals(
             "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidTraitStructure.badTrait",
-        ) {
-            parser.parseMap(traitsNode)
-        }
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.messageTraitCases.InvalidTraitStructure.badTrait",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_message_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
-    fun `parse message trait with boolean content type throws UnexpectedValue`() {
-        val traitsNode = readNode(
-            "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
-            "components",
-            "messageTraitCases",
-            "BooleanContentType",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected String",
-            "found Boolean true",
-            "quote the value",
-            "asyncapi_parser_message_trait_invalid.yaml",
+    fun `parse message trait with boolean content type reports its expected type and source`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraitCases")
+            .expectObject().required("BooleanContentType")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(traitsNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
+        assertEquals(true, diagnostic.actualValue)
+        assertEquals(
             "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.BooleanContentType.badTrait.contentType",
-        ) {
-            parser.parseMap(traitsNode)
-        }
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.messageTraitCases.BooleanContentType.badTrait.contentType",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_message_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test
-    fun `parse message trait with invalid example structure throws UnexpectedValue`() {
-        val traitsNode = readNode(
-            "parser/messages/asyncapi_parser_message_trait_invalid.yaml",
-            "components",
-            "messageTraitCases",
-            "InvalidExampleStructure",
-        )
-        assertParseFailure<AsyncApiParseException.UnexpectedValue>(
-            "Unexpected value: expected Map",
-            "asyncapi_parser_message_trait_invalid.yaml",
-            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
-        ) {
+    fun `parse message trait with invalid example structure reports its expected type and source`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraitCases")
+            .expectObject().required("InvalidExampleStructure")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
             parser.parseMap(traitsNode)
         }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.STRING, diagnostic.actualType)
+        assertEquals("not-a-map", diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.messageTraitCases.InvalidExampleStructure.badTrait.examples[0]",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_message_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse message trait with numeric reference reports its expected type and source`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraitCases")
+            .expectObject().required("NumericReference")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(traitsNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("String", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(42, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.NumericReference.badTrait.\$ref",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.messageTraitCases.NumericReference.badTrait.\$ref",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_message_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `parse message trait list from an object reports the container type and source`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_trait_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val traitsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messageTraitCases")
+            .expectObject().required("ObjectInsteadOfList")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseList(traitsNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("List<Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.OBJECT, diagnostic.actualType)
+        assertEquals(
+            mapOf("badTrait" to mapOf("contentType" to "application/json")),
+            diagnostic.actualValue,
+        )
+        assertEquals(
+            "asyncapi_parser_message_trait_invalid.root.components.messageTraitCases.ObjectInsteadOfList",
+            diagnostic.path,
+        )
+        assertEquals("root.components.messageTraitCases.ObjectInsteadOfList", diagnostic.sourceLocation.path)
+        assertEquals("asyncapi_parser_message_trait_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }

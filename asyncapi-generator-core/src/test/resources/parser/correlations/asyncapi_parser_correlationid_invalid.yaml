@@ -7,3 +7,5 @@ components:
     # Case 1: Missing Location (Parser Error)
     MissingLocationId:
       description: "This ID is missing its location"
+    NumericReference:
+      $ref: 42

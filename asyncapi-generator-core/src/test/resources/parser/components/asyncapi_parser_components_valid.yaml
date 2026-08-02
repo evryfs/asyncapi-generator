@@ -10,6 +10,9 @@ components:
     MyServer:
       host: localhost
       protocol: kafka
+  serverVariables:
+    MyServerVariable:
+      default: production
   channels:
     MyChannel:
       address: my/channel
@@ -31,6 +34,13 @@ components:
   correlationIds:
     MyCorrelation:
       location: $message.header#/id
+  replies:
+    MyReply:
+      address:
+        location: $message.header#/replyTo
+  replyAddresses:
+    MyReplyAddress:
+      location: $message.header#/replyTo
   tags:
     MyTag:
       name: tag

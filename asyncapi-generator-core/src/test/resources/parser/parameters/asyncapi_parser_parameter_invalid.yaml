@@ -9,3 +9,16 @@ components:
     BooleanLocation:
       badParameter:
         location: true
+    NumericReference:
+      badParameter:
+        $ref: 42
+    InvalidEnumElement:
+      badParameter:
+        enum:
+          - valid
+          - 7
+    InvalidExamplesElement:
+      badParameter:
+        examples:
+          - valid
+          - null

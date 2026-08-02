@@ -1,28 +1,37 @@
 package dev.banking.asyncapi.generator.core.parser.components
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
-import dev.banking.asyncapi.generator.core.parser.ParserTestSupport
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ComponentParserTest : ParserTestSupport() {
+class ComponentParserTest {
 
-    private val parser = ComponentParser(asyncApiContext)
+    private val context = AsyncApiContext()
+    private val parser = ComponentParser(context)
 
     @Test
-    fun `parse components object delegates to all sub-parsers`() {
-        val componentsNode = readNode("parser/components/asyncapi_parser_components_valid.yaml", "components")
-        val result = parser.parseElement(componentsNode)
+    fun `parses every supported component category`() {
+        val file = TestResources.file("parser/components/asyncapi_parser_components_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val componentsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
 
-        assertTrue(result is ComponentInterface.ComponentInline)
-        val component = result.component
+        val component = assertIs<ComponentInterface.ComponentInline>(parser.parseElement(componentsNode)).component
 
         assertNotNull(component.schemas, "Schemas should be parsed")
         assertTrue(component.schemas.containsKey("MySchema"))
 
         assertNotNull(component.servers, "Servers should be parsed")
         assertTrue(component.servers.containsKey("MyServer"))
+
+        assertNotNull(component.serverVariables, "Server Variables should be parsed")
+        assertTrue(component.serverVariables.containsKey("MyServerVariable"))
 
         assertNotNull(component.channels, "Channels should be parsed")
         assertTrue(component.channels.containsKey("MyChannel"))
@@ -41,6 +50,12 @@ class ComponentParserTest : ParserTestSupport() {
 
         assertNotNull(component.correlationIds, "Correlation IDs should be parsed")
         assertTrue(component.correlationIds.containsKey("MyCorrelation"))
+
+        assertNotNull(component.replies, "Operation Replies should be parsed")
+        assertTrue(component.replies.containsKey("MyReply"))
+
+        assertNotNull(component.replyAddresses, "Operation Reply Addresses should be parsed")
+        assertTrue(component.replyAddresses.containsKey("MyReplyAddress"))
 
         assertNotNull(component.tags, "Tags should be parsed")
         assertTrue(component.tags.containsKey("MyTag"))

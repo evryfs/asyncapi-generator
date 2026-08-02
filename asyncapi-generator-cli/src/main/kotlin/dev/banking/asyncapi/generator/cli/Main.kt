@@ -9,13 +9,9 @@ import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 
 fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
@@ -79,18 +75,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
 
         try {
-            val context = AsyncApiContext()
-            val root = AsyncApiRegistry.read(generationOptions.inputSpec, context)
-            val parser = AsyncApiParser(context)
-            val document = parser.parse(root)
-
-            val validator = AsyncApiValidator(context)
-            val results = validator.validate(document)
-            reportWarnings(results)
-            results.throwErrors()
+            val loaded = AsyncApiDocumentLoader().load(generationOptions.inputSpec)
+            reportWarnings(loaded)
 
             val bundler = AsyncApiBundler()
-            val bundledDoc = bundler.bundle(document)
+            val bundledDoc = bundler.bundle(loaded.document)
             AsyncApiGenerator().generate(bundledDoc, generatorConfiguration)
         } catch (exception: Exception) {
             throw CliktError(
@@ -102,20 +91,10 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         echo("Generation complete.")
     }
 
-    private fun reportWarnings(results: ValidationResults) {
-        if (!results.hasWarnings()) {
-            return
+    private fun reportWarnings(result: AsyncApiDocumentLoadResult) {
+        if (result.warnings.isNotEmpty()) {
+            echo(message = result.formatWarnings().trimEnd(), err = true)
         }
-
-        echo(
-            message =
-                ValidationFindingFormatter.format(
-                    title = "Validation found ${results.warnings.size} warning(s):",
-                    findings = results.warnings,
-                    asyncApiContext = results.asyncApiContext,
-                ).trimEnd(),
-            err = true,
-        )
     }
 
     private fun generatorConfiguration() =

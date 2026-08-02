@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Pattern Invalid
+  version: 1.0.0
+components:
+  schemas:
+    InvalidPattern:
+      type: string
+      pattern: '['

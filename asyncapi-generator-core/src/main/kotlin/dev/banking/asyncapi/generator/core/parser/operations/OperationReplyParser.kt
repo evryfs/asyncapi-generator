@@ -6,6 +6,8 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
 
 /**
@@ -22,15 +24,14 @@ class OperationReplyParser(
     private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationReplyInterface {
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val operationReplyInterface = if (reference != null) {
             OperationReplyInterface.OperationReplyReference(
                 Reference(
@@ -41,9 +42,9 @@ class OperationReplyParser(
         } else {
             OperationReplyInterface.OperationReplyInline(
                 OperationReply(
-                    address = parserNode.optional("address")?.let(operationReplyAddressParser::parseElement),
-                    channel = parserNode.optional("channel")?.let(referenceParser::parseElement),
-                    messages = parserNode.optional("messages")?.let(referenceParser::parseList)
+                    address = objectNode.optional("address")?.let(operationReplyAddressParser::parseElement),
+                    channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) }
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

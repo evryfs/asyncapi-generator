@@ -29,17 +29,22 @@ sealed class DocumentReadException(
         cause: Throwable,
     ) : DocumentReadException("Malformed input document: ${file.absolutePath}", cause)
 
-    class InvalidRoot(
+    class UnreadableDocument(
         file: File,
-        actualType: String,
-    ) : DocumentReadException("Invalid input document root in ${file.absolutePath}: expected object, found $actualType")
+        cause: Throwable,
+    ) : DocumentReadException("Unable to read input document: ${file.absolutePath}", cause)
+
+    class ResourceLimitExceeded(
+        file: File,
+        cause: Throwable,
+    ) : DocumentReadException("Input document exceeds reader resource limits: ${file.absolutePath}", cause)
 
     class InvalidMappingKey(
         file: File,
         line: Int,
         column: Int,
     ) : DocumentReadException(
-        "Invalid mapping key in ${file.absolutePath} at line $line, column $column: expected scalar key",
+        "Invalid mapping key in ${file.absolutePath} at line $line, column $column: expected string key",
     )
 
     class DuplicateKey(

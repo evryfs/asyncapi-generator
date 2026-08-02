@@ -1,39 +1,60 @@
 package dev.banking.asyncapi.generator.core.reader
 
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentMember
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentNull
+import dev.banking.asyncapi.generator.core.document.DocumentNumber
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentSource
+import dev.banking.asyncapi.generator.core.document.DocumentString
+import dev.banking.asyncapi.generator.core.document.InputDocument
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.Mark
 import org.yaml.snakeyaml.error.MarkedYAMLException
+import org.yaml.snakeyaml.error.YAMLException
 import org.yaml.snakeyaml.nodes.MappingNode
 import org.yaml.snakeyaml.nodes.Node
 import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
+import org.yaml.snakeyaml.reader.ReaderException
 import java.io.File
 
 /**
  * Reads YAML input into an [InputDocument].
  *
  * YAML presentation details such as quote style and block-scalar style must not
- * leak into semantic values. Source locations are recorded for document paths
- * that can be mapped from the YAML node tree.
+ * leak into semantic values. Source locations remain attached to the immutable
+ * document nodes produced from the YAML representation graph.
  *
  * Expected behavior is covered by:
  * - `YamlDocumentReaderTest`
  * - `DocumentReaderContractTest`
- * - `SourceMapTest`
+ * - `DocumentLocationTest`
  */
-class YamlDocumentReader : DocumentReader {
+class YamlDocumentReader internal constructor(
+    private val limits: DocumentReaderLimits,
+) : DocumentReader {
+    constructor() : this(DocumentReaderLimits.DEFAULT)
+
     private val yaml =
         Yaml(
             LoaderOptions().apply {
                 isProcessComments = true
                 isAllowDuplicateKeys = false
+                maxAliasesForCollections = limits.maxAliasesForCollections
+                nestingDepthLimit = limits.maxNestingDepth
+                codePointLimit = limits.maxDocumentCharacters
             },
         )
 
     override fun read(source: DocumentSource): InputDocument {
+        limits.requireDocumentSize(source)
         if (source.content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
@@ -43,23 +64,21 @@ class YamlDocumentReader : DocumentReader {
                 yaml.compose(source.content.reader())
             } catch (ex: MarkedYAMLException) {
                 throw DocumentReadException.MalformedDocument(source.file, ex)
+            } catch (ex: ReaderException) {
+                throw DocumentReadException.MalformedDocument(source.file, ex)
+            } catch (ex: YAMLException) {
+                throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
-        val locations = linkedMapOf<String, SourceLocation>()
-        val rootValue = parseNode(
+        val root = parseNode(
             node = rootNode,
             path = ROOT_PATH,
             source = source,
-            locations = locations,
         )
-        @Suppress("UNCHECKED_CAST")
-        val root = rootValue as? Map<String, Any?>
-            ?: throw DocumentReadException.InvalidRoot(source.file, typeName(rootValue))
 
         return InputDocument(
             source = source,
             root = root,
-            sourceMap = SourceMap(locations),
         )
     }
 
@@ -67,14 +86,13 @@ class YamlDocumentReader : DocumentReader {
         node: Node,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Any? {
-        locations.putIfAbsent(path, locationOf(source, path, node.startMark))
+    ): DocumentNode {
+        val location = locationOf(source, path, node.startMark)
         return when (node.nodeId) {
-            NodeId.scalar -> parseScalar(node as ScalarNode)
-            NodeId.sequence -> parseSequence(node as SequenceNode, path, source, locations)
-            NodeId.mapping -> parseMapping(node as MappingNode, path, source, locations)
-            else -> null
+            NodeId.scalar -> parseScalar(node as ScalarNode, location)
+            NodeId.sequence -> parseSequence(node as SequenceNode, path, source, location)
+            NodeId.mapping -> parseMapping(node as MappingNode, path, source, location)
+            else -> DocumentNull(location)
         }
     }
 
@@ -82,59 +100,73 @@ class YamlDocumentReader : DocumentReader {
         node: SequenceNode,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): List<Any?> =
-        node.value.mapIndexed { index, child ->
-            parseNode(child, "$path[$index]", source, locations)
-        }
+        location: SourceLocation,
+    ): DocumentArray =
+        DocumentArray(
+            elements = node.value.mapIndexed { index, child ->
+                parseNode(child, "$path[$index]", source)
+            },
+            location = location,
+        )
 
     private fun parseMapping(
         node: MappingNode,
         path: String,
         source: DocumentSource,
-        locations: MutableMap<String, SourceLocation>,
-    ): Map<String, Any?> {
-        val result = linkedMapOf<String, Any?>()
+        location: SourceLocation,
+    ): DocumentObject {
+        val result = linkedMapOf<String, DocumentMember>()
         node.value.forEach { tuple ->
             val keyNode = tuple.keyNode as? ScalarNode
                 ?: throw invalidMappingKey(source.file, tuple.keyNode.startMark)
+            if (keyNode.tag != Tag.STR) {
+                throw invalidMappingKey(source.file, keyNode.startMark)
+            }
             val key = keyNode.value
             val keyLocation = locationOf(source, "$path.$key", keyNode.startMark)
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(source.file, key, keyLocation.line, keyLocation.column)
             }
             val keyPath = "$path.$key"
-            locations[keyPath] = keyLocation
-            result[key] = parseNode(tuple.valueNode, keyPath, source, locations)
+            result[key] = DocumentMember(
+                keyLocation = keyLocation,
+                value = parseNode(tuple.valueNode, keyPath, source),
+            )
         }
-        return result
+        return DocumentObject(result, location)
     }
 
-    private fun parseScalar(node: ScalarNode): Any? =
+    private fun parseScalar(
+        node: ScalarNode,
+        location: SourceLocation,
+    ): DocumentNode =
         when (node.tag) {
-            Tag.NULL -> null
-            Tag.BOOL -> parseBoolean(node.value)
-            Tag.INT -> parseInteger(node.value) ?: node.value
-            Tag.FLOAT -> parseFloat(node.value) ?: node.value
-            else -> node.value
+            Tag.NULL -> DocumentNull(location)
+            Tag.BOOL -> parseBoolean(node.value, location)
+            Tag.INT -> parseNumber(node.value, location, DocumentNumberParser::parseInteger)
+            Tag.FLOAT -> parseNumber(node.value, location, DocumentNumberParser::parseDecimal)
+            else -> DocumentString(node.value, location)
         }
 
-    private fun parseBoolean(value: String): Any =
+    private fun parseBoolean(
+        value: String,
+        location: SourceLocation,
+    ): DocumentNode =
         when (value.lowercase()) {
-            "true" -> true
-            "false" -> false
-            else -> value
+            "true" -> DocumentBoolean(true, location)
+            "false" -> DocumentBoolean(false, location)
+            else -> DocumentString(value, location)
         }
 
-    private fun parseInteger(value: String): Number? {
-        val normalized = value.replace("_", "")
-        return normalized.toLongOrNull()?.let {
-            if (it in Int.MIN_VALUE..Int.MAX_VALUE) it.toInt() else it
-        }
+    private fun parseNumber(
+        value: String,
+        location: SourceLocation,
+        parse: (String) -> Number?,
+    ): DocumentNode {
+        limits.requireNumberLength(location.file, value)
+        return parse(value)?.let { DocumentNumber(it, location) }
+            ?: DocumentString(value, location)
     }
-
-    private fun parseFloat(value: String): Double? =
-        value.replace("_", "").toDoubleOrNull()
 
     private fun locationOf(
         source: DocumentSource,
@@ -157,14 +189,6 @@ class YamlDocumentReader : DocumentReader {
             line = mark.line + 1,
             column = mark.column + 1,
         )
-
-    private fun typeName(value: Any?): String =
-        when (value) {
-            null -> "null"
-            is Map<*, *> -> "object"
-            is List<*> -> "array"
-            else -> value::class.simpleName ?: value.javaClass.simpleName
-        }
 
     private companion object {
         const val ROOT_PATH = "root"

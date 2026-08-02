@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER as SERVER_BINDING
 
 /**
  * Parses AsyncAPI server objects from parser nodes.
@@ -28,35 +29,37 @@ class ServerParser(
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
-            val serverInterface = if (reference != null) {
-                ServerInterface.ServerReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = SERVER,
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ServerInterface.ServerInline(
-                    Server(
-                        host = node.mandatory("host").coerce<String>(),
-                        protocol = node.mandatory("protocol").coerce<String>(),
-                        protocolVersion = node.optional("protocolVersion")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        title = node.optional("title")?.coerce<String>(),
-                        summary = node.optional("summary")?.coerce<String>(),
-                        variables = node.optional("variables")?.let(serverVariableParser::parseMap),
-                        security = node.optional("security")?.let(securitySchemeParser::parseList),
-                        bindings = node.optional("bindings")?.let(bindingParser::parseMap),
-                        tags = node.optional("tags")?.let(tagParser::parseList),
-                        externalDocs = node.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, serverInterface)
+        parserNode.expectObject().members().forEach { node ->
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ServerInterface {
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ServerInterface.ServerReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = SERVER,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ServerInterface.ServerInline(
+                Server(
+                    host = objectNode.required("host").expect<String>(),
+                    protocol = objectNode.required("protocol").expect<String>(),
+                    protocolVersion = objectNode.optional("protocolVersion")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    variables = objectNode.optional("variables")?.let(serverVariableParser::parseMap),
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SERVER_BINDING) },
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }

@@ -1,0 +1,25 @@
+selectedSchema:
+  type: string
+  description: Only this selected schema should be parsed
+
+notASchema:
+  - this sibling must not be parsed as a schema
+
+firstSchema:
+  $ref: '#/secondSchema'
+
+secondSchema:
+  $ref: '#/thirdSchema'
+
+thirdSchema:
+  type: integer
+  description: End of the same-file reference chain
+
+cycleA:
+  $ref: '#/cycleB'
+
+cycleB:
+  $ref: '#/cycleA'
+
+missingReference:
+  $ref: '#/doesNotExist'

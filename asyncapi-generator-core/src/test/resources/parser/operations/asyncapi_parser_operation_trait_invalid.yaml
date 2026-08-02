@@ -9,3 +9,14 @@ components:
     BooleanTitle:
       badTrait:
         title: true
+    NumericReference:
+      badTrait:
+        $ref: 42
+    ObjectInsteadOfList:
+      badTrait:
+        title: valid title
+    SecurityObjectInsteadOfList:
+      badTrait:
+        security:
+          named:
+            type: userPassword

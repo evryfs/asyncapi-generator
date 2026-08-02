@@ -15,3 +15,8 @@ components:
     MissingAddressLocation:
       address:
         description: "Missing reply address location"
+    NullReference:
+      $ref: null
+    ArrayInsteadOfMap:
+      - channel:
+          $ref: '#/channels/myChannel'

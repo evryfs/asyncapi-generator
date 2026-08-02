@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
 import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
@@ -28,23 +29,20 @@ class OperationTraitParser(
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationTraitInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseList(parserNode: ParserNode): List<OperationTraitInterface> = buildList {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectArray().elements().forEach { node ->
             add(parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationTraitInterface {
-        val reference = parserNode.optional($$"$ref")?.coerce<String>()
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
         val operationTraitInterface = if (reference != null) {
             OperationTraitInterface.OperationTraitReference(
                 Reference(
@@ -55,13 +53,13 @@ class OperationTraitParser(
         } else {
             OperationTraitInterface.OperationTraitInline(
                 OperationTrait(
-                    title = parserNode.optional("title")?.coerce<String>(),
-                    summary = parserNode.optional("summary")?.coerce<String>(),
-                    description = parserNode.optional("description")?.coerce<String>(),
-                    tags = parserNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = parserNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = parserNode.optional("bindings")?.let(bindingParser::parseMap),
-                    security = parserNode.optional("security")?.let(securitySchemeParser::parseMap),
+                    title = objectNode.optional("title")?.expect<String>(),
+                    summary = objectNode.optional("summary")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION) },
+                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

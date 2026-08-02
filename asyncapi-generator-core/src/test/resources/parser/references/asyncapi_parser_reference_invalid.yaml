@@ -8,6 +8,8 @@ components:
       summary: "Reference object missing its reference value"
     NumericReference:
       $ref: 12345
+    NullReference:
+      $ref: null
     ReferenceList:
       - payload:
           type: string

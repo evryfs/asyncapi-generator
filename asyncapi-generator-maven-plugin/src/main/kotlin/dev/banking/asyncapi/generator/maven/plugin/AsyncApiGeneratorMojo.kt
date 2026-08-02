@@ -1,11 +1,8 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -53,9 +50,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter
     private var clientConfig: MavenClientConfiguration? = null
 
-    private val context = AsyncApiContext()
-    private val parser = AsyncApiParser(context)
-    private val validator = AsyncApiValidator(context)
+    private val loader = AsyncApiDocumentLoader()
     private val bundler = AsyncApiBundler()
     private val generator = AsyncApiGenerator()
 
@@ -64,12 +59,11 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             log.info("asyncapi-generator-maven-plugin started")
             val generatorConfiguration = generatorConfiguration()
             validateInputSpecification()
-            val root = AsyncApiRegistry.read(inputSpec, context)
-            val asyncApiParsed = parser.parse(root)
-            val validationErrors = validator.validate(asyncApiParsed)
-            validationErrors.logWarnings()
-            validationErrors.throwErrors()
-            val bundled = bundler.bundle(asyncApiParsed)
+            val loaded = loader.load(inputSpec)
+            if (loaded.warnings.isNotEmpty()) {
+                log.warn(loaded.formatWarnings().trimEnd())
+            }
+            val bundled = bundler.bundle(loaded.document)
             generator.generate(bundled, generatorConfiguration)
             MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
             log.info("asyncapi-generator-maven-plugin completed successfully")

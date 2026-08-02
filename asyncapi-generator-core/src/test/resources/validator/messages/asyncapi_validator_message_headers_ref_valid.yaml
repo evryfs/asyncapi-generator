@@ -13,6 +13,19 @@ components:
         properties:
           userId:
             type: string
+      examples:
+        - headers:
+            traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736
+          payload:
+            userId: user-1
+    RecursiveMessage:
+      payload:
+        $ref: "#/components/schemas/RecursivePayload"
+      examples:
+        - payload:
+            name: root
+            child:
+              name: nested
   schemas:
     DefaultHeaders:
       type: object
@@ -22,3 +35,11 @@ components:
         traceparent:
           type: string
           description: Trace context identifier
+    RecursivePayload:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        child:
+          $ref: "#/components/schemas/RecursivePayload"

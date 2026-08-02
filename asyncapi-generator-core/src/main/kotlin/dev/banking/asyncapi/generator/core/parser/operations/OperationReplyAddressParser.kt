@@ -19,15 +19,14 @@ class OperationReplyAddressParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyAddressInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
+        parserNode.expectObject().members().forEach { node ->
             put(node.name, parseElement(node))
         }
     }
 
     fun parseElement(parserNode: ParserNode): OperationReplyAddressInterface {
-        parserNode.optional($$"$ref")?.coerce<String>()?.let { reference ->
+        val objectNode = parserNode.expectObject()
+        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return OperationReplyAddressInterface.OperationReplyAddressReference(
                 Reference(
                     ref = reference,
@@ -37,8 +36,8 @@ class OperationReplyAddressParser(
         }
         return OperationReplyAddressInterface.OperationReplyAddressInline(
             OperationReplyAddress(
-                location = parserNode.mandatory("location").coerce<String>(),
-                description = parserNode.optional("description")?.coerce<String>()
+                location = objectNode.required("location").expect<String>(),
+                description = objectNode.optional("description")?.expect<String>()
             ).also { asyncApiContext.register(it, parserNode) }
         )
     }

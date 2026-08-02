@@ -4,6 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.context.ExternalReferencePathResolver
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.NativeSchemaAssetReadFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.DocumentString
 import java.io.IOException
 
 /**
@@ -19,16 +21,20 @@ import java.io.IOException
 class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    private val pathResolver = ExternalReferencePathResolver(asyncApiContext)
+    private val pathResolver = ExternalReferencePathResolver()
 
     fun readIfExternalReference(schemaNode: ParserNode): String? {
         val reference = schemaNode.externalReferenceValue() ?: return null
         val sourceId = schemaNode.path.substringBefore(".root", missingDelimiterValue = "")
+        val sourceFile =
+            sourceId.takeIf(String::isNotBlank)
+                ?.let(asyncApiContext::findFileById)
+                ?: asyncApiContext.getCurrentFile()
         val file =
-            pathResolver.resolveFile(
+            pathResolver.resolve(
                 reference = reference,
-                sourceId = sourceId.ifBlank { null },
-            ) ?: return null
+                sourceFile = sourceFile,
+            )?.file ?: return null
 
         return try {
             file.readText()
@@ -43,8 +49,8 @@ class NativeSchemaAssetReader(
     }
 
     private fun ParserNode.externalReferenceValue(): String? {
-        val map = node as? Map<*, *> ?: return null
-        val reference = map["\$ref"] as? String ?: return null
+        val map = node as? DocumentObject ?: return null
+        val reference = (map["\$ref"] as? DocumentString)?.value ?: return null
         return reference.takeIf { it.isNotBlank() }
     }
 }

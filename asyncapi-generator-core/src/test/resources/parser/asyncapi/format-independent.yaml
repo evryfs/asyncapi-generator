@@ -1,4 +1,6 @@
 asyncapi: 3.0.0
+id: urn:com:example:format-independent
+defaultContentType: application/json
 info:
   title: Format Independent Parser
   version: 1.0.0

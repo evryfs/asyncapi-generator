@@ -5,7 +5,15 @@ info:
 channels:
   lightingMeasured:
     address: 'smartylighting.streetlights.1.0.event.{streetlightId}.lighting.measured'
+    title: Lighting measurements
+    summary: Reports measured lighting values
     description: The topic on which measured values may be produced and consumed.
+    servers:
+      - $ref: '#/components/servers/production'
+    tags:
+      - name: telemetry
+    externalDocs:
+      url: https://example.com/docs/channel
     messages:
       lightMeasured:
         $ref: '#/components/messages/lightMeasured'
@@ -107,7 +115,14 @@ channels:
       powerMessage:
         $ref: '#/components/messages/lightMeasured'
 
+  referencedChannel:
+    $ref: '#/channels/lightingMeasured'
+
 components:
+  servers:
+    production:
+      host: events.example.com
+      protocol: kafka
   messages:
     lightMeasured: { name: lightMeasured }
     turnOnOff: { name: turnOnOff }

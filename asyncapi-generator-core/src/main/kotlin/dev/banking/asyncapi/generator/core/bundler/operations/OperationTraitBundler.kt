@@ -69,7 +69,7 @@ class OperationTraitBundler {
     private fun bundleTrait(trait: OperationTrait, context: BundlingContext): OperationTrait {
         val bundledTags = tagBundler.bundleList(trait.tags, context)
         val bundledExternalDocs = trait.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledSecurity = securitySchemeBundler.bundleMap(trait.security, context)
+        val bundledSecurity = securitySchemeBundler.bundleList(trait.security, context)
         val bundledBindings = bindingBundler.bundleMap(trait.bindings, context)
         return trait.copy(
             tags = bundledTags,

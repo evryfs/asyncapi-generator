@@ -1,18 +1,37 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
 import dev.banking.asyncapi.generator.core.repository.SourceRepository
 import java.io.File
+import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
 class AsyncApiContext {
+    internal data class BindingReferenceOrigin(
+        val location: BindingLocation,
+        val protocol: String?,
+    )
+
     val sourceRepository = SourceRepository()
     val modelRepository = ModelRepository(sourceRepository)
 
     val externalLoader = AsyncApiExternalContext(this)
+    private val bindingReferenceOrigins = IdentityHashMap<Reference, BindingReferenceOrigin>()
+
+    internal fun registerBindingReferenceOrigin(
+        reference: Reference,
+        location: BindingLocation,
+        protocol: String?,
+    ) {
+        bindingReferenceOrigins[reference] = BindingReferenceOrigin(location, protocol)
+    }
+
+    internal fun getBindingReferenceOrigin(reference: Reference): BindingReferenceOrigin? =
+        bindingReferenceOrigins[reference]
 
     fun register(
         model: Any,
@@ -31,6 +50,11 @@ class AsyncApiContext {
     ) {
         sourceRepository.registerSource(file, content)
     }
+
+    internal fun registerDocumentSource(
+        file: File,
+        content: String,
+    ): String = sourceRepository.registerSourceAndGetPathId(file, content)
 
     fun registerLine(
         path: String,

@@ -1,0 +1,56 @@
+schema:
+  type: string
+
+channel:
+  address: external/channel
+  messages:
+    ExternalMessage:
+      name: ExternalMessage
+
+message:
+  name: ExternalMessage
+  payload:
+    type: string
+
+messageTrait:
+  contentType: application/json
+
+operation:
+  action: send
+  channel:
+    $ref: '#/channel'
+
+operationTrait:
+  tags:
+    - name: external
+
+operationReply: {}
+
+operationReplyAddress:
+  location: $message.header#/replyTo
+
+server:
+  host: events.example.com
+  protocol: kafka
+
+serverVariable:
+  default: production
+
+parameter:
+  description: External parameter
+
+securityScheme:
+  type: userPassword
+
+correlationId:
+  location: $message.header#/correlationId
+
+externalDoc:
+  url: https://example.com/docs
+
+tag:
+  name: external
+
+binding:
+  custom:
+    enabled: true

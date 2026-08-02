@@ -1,0 +1,5 @@
+- type: object
+  description: array root target
+  properties:
+    id:
+      type: string

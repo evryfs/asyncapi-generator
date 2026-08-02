@@ -18,7 +18,7 @@ class CorrelationIdParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, CorrelationIdInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
+        val nodes = parserNode.expectObject().members()
         nodes.forEach { node ->
             val correlationId = parseElement(node)
             put(node.name, correlationId)
@@ -26,7 +26,8 @@ class CorrelationIdParser(
     }
 
     fun parseElement(node: ParserNode): CorrelationIdInterface {
-        node.optional($$"$ref")?.coerce<String>()?.let { reference ->
+        val objectNode = node.expectObject()
+        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return CorrelationIdInterface.CorrelationIdReference(
                 Reference(
                     ref = reference,
@@ -36,8 +37,8 @@ class CorrelationIdParser(
         }
         return CorrelationIdInterface.CorrelationIdInline(
             CorrelationId(
-                location = node.mandatory("location").coerce<String>(),
-                description = node.optional("description")?.coerce<String>(),
+                location = objectNode.required("location").expect<String>(),
+                description = objectNode.optional("description")?.expect<String>(),
             ).also { asyncApiContext.register(it, node) }
         )
     }

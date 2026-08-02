@@ -1,18 +1,21 @@
 package dev.banking.asyncapi.generator.core.model.validator
 
-import dev.banking.asyncapi.generator.core.reader.SourceLocation
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 
 /**
  * Structured validation diagnostic produced by the validator stage.
  *
  * Expected behavior is covered by:
- * - `ValidationResultsTest`
+ * - `ValidationReportTest`
  */
 data class ValidationFinding(
+    val code: String,
+    val concern: ValidationConcern,
     val severity: ValidationSeverity,
     val message: String,
     val sourceLocation: SourceLocation? = null,
-    val path: String? = sourceLocation?.path,
-    val line: Int? = sourceLocation?.line,
-    val doc: String? = null,
-)
+    val documentation: String,
+) {
+    val path: String? get() = sourceLocation?.path
+    val line: Int? get() = sourceLocation?.line
+}

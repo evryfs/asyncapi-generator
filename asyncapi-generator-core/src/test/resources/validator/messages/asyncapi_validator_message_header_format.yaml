@@ -1,0 +1,14 @@
+asyncapi: 3.0.0
+info:
+  title: Message Header Format
+  version: 1.0.0
+components:
+  messages:
+    AvroHeader:
+      headers:
+        type: object
+        properties:
+          trace:
+            schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+            schema:
+              type: string

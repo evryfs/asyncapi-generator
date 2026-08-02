@@ -1,0 +1,16 @@
+asyncapi: 3.0.0
+info:
+  title: External Kafka Schema Registry Relationship
+  version: 1.0.0
+servers:
+  withoutRegistry:
+    host: unregistered.example.com
+    protocol: kafka
+channels:
+  external:
+    address: external
+    servers:
+      - $ref: '#/servers/withoutRegistry'
+    messages:
+      external:
+        $ref: './kafka_registry_external_message.yaml'

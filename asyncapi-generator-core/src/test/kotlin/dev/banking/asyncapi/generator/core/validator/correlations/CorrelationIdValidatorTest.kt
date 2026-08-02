@@ -1,31 +1,34 @@
 package dev.banking.asyncapi.generator.core.validator.correlations
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 class CorrelationIdValidatorTest : AbstractValidatorTest() {
 
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
-    fun `invalid correlation IDs trigger warnings`() {
+    fun `invalid correlation ID runtime expression triggers an error`() {
         val document = parse("validator/correlations/asyncapi_validator_correlation_invalid.yaml")
         val results = asyncApiValidator.validate(document)
-        assertFalse(results.hasErrors(), "Expected no errors, but found: ${results.errors}")
-
-        val warnings = results.warnings
-        assertEquals(1, warnings.size, "Expected 1 warning.")
-        assertFinding(
+        assertEquals(2, results.errors.size)
+        assertRule(
             results,
-            severity = WARNING,
-            messageContains = "does not follow valid runtime expression",
+            rule = CORRELATION_LOCATION_FORMAT,
             sourceFile = "asyncapi_validator_correlation_invalid.yaml",
             path = "asyncapi_validator_correlation_invalid.root.components.correlationIds.InvalidLocationRegex.location",
             line = 10,
+        )
+        assertRule(
+            results,
+            rule = CORRELATION_LOCATION_REQUIRED,
+            sourceFile = "asyncapi_validator_correlation_invalid.yaml",
+            path = "asyncapi_validator_correlation_invalid.root.components.correlationIds.MissingLocation.location",
+            line = 14,
         )
     }
 

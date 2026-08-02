@@ -1,11 +1,12 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedValue
-import kotlin.collections.get
+import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.document.DocumentNode
+import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import kotlin.reflect.typeOf
 
 /**
  * Represents one parser input node together with its source path and context.
@@ -16,100 +17,57 @@ import kotlin.collections.get
  */
 data class ParserNode(
     val name: String,
-    val node: Any?,
+    val node: DocumentNode,
     val path: String,
     val context: AsyncApiContext,
+    val profile: AsyncApiParserProfile? = null,
 ) {
 
-    fun mandatory(nodeKey: String): ParserNode {
-        val currentNodeMap = node as? Map<*, *>
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, path, context)
-        val childNode = currentNodeMap[nodeKey]
-            ?: throw AsyncApiParseException.Mandatory(nodeKey, "$path.$nodeKey", context)
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
-    }
+    internal fun child(
+        name: String,
+        node: DocumentNode,
+        path: String,
+    ): ParserNode = ParserNode(name, node, path, context, profile)
 
-    fun optional(nodeKey: String): ParserNode? {
-        val currentNodeMap = node as? Map<*, *>
-            ?: return null
-        val childNode = currentNodeMap[nodeKey]
-            ?: return null
-        return ParserNode(nodeKey, childNode, "$path.$nodeKey", context)
-    }
+    fun withProfile(profile: AsyncApiParserProfile): ParserNode =
+        copy(profile = profile)
 
-    fun startsWith(prefix: String): ParserNode? {
-        val currentMap = node as? Map<*, *>
-            ?: return null
-        val matchingEntries = currentMap.filter { (key, _) ->
-            key is String && key.startsWith(prefix)
-        }
-        if (matchingEntries.isEmpty()) {
-            return null
-        }
-        val normalizedNodeEntries = matchingEntries.entries.associate { (key, value) ->
-            val keyString = key as String
-            keyString to normalize(value)
-        }
-        return ParserNode("$name(prefix:$prefix)", normalizedNodeEntries, "$path.(prefix:$prefix)", context)
-    }
+    /** Requires this value to be an object and exposes object navigation. */
+    fun expectObject(): ParserObjectNode =
+        ParserObjectNode(
+            parserNode = this,
+            documentObject = node as? DocumentObject
+                ?: ParserValueExpectation.unexpectedType(
+                    node = node,
+                    expectedType = typeOf<Map<String, Any?>>(),
+                    path = path,
+                    context = context,
+                ),
+        )
 
-    fun extractNodes(): List<ParserNode> = when (val currentNodeValue = node) {
-        is Map<*, *> -> {
-            currentNodeValue.entries
-                .filter { (key, _) -> key is String }
-                .map { (key, value) ->
-                    val keyString = key as String
-                    ParserNode(keyString, value, "$path.$keyString", context)
-                }
-        }
-        is List<*> -> {
-            currentNodeValue.mapIndexed { index, value ->
-                ParserNode("$name[$index]", value, "$path[$index]", context)
-            }
-        }
-        else -> {
-            val foundType = currentNodeValue?.javaClass?.simpleName ?: "null"
-            throw UnexpectedValue(foundType, "Map/List", path, context)
-        }
-    }
+    /** Requires this value to be an array and exposes array navigation. */
+    fun expectArray(): ParserArrayNode =
+        ParserArrayNode(
+            parserNode = this,
+            documentArray = node as? DocumentArray
+                ?: ParserValueExpectation.unexpectedType(
+                    node = node,
+                    expectedType = typeOf<List<Any?>>(),
+                    path = path,
+                    context = context,
+                ),
+        )
 
-    inline fun <reified T> coerce(): T {
-        val normalized = normalize(node)
-        val received = normalized?.javaClass?.simpleName ?: "null"
-        val expected = T::class.simpleName ?: "null"
-        return when (T::class) {
-            String::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Boolean::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Number::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            List::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Map::class -> normalized as? T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            Any::class -> normalized as T
-                ?: throw UnexpectedValue(received, expected, path, context, normalized)
-            else -> throw UnexpectedValue(received, expected, path, context, normalized)
-        }
-    }
+    inline fun <reified T> expect(): T =
+        ParserValueExpectation.cast(
+            ParserValueExpectation.expect(
+                node = node,
+                expectedType = typeOf<T>(),
+                path = path,
+                context = context,
+            ),
+        )
 
-    fun normalize(value: Any?): Any? {
-        val dataToNormalize = if (value is ParserNode) {
-            value.node
-        } else {
-            value
-        }
-        return when (dataToNormalize) {
-            is Map<*, *> -> dataToNormalize.entries
-                .filter { (key, _) -> key is String }
-                .associate { (key, value) ->
-                    val keyString = key as String
-                    keyString to normalize(value)
-                }
-            is List<*> -> dataToNormalize.map { normalize(it) }
-            is String -> dataToNormalize
-            else -> dataToNormalize
-        }
-    }
+    /** Converts this source-located node to plain maps, lists, scalars, or null. */
+    fun toPlainValue(): Any? = node.toValue()
 }

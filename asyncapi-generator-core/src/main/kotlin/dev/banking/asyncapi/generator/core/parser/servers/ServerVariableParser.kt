@@ -19,28 +19,30 @@ class ServerVariableParser(
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerVariableInterface> = buildMap {
-        val nodes = parserNode.extractNodes()
-        nodes.forEach { node ->
-            node.coerce<Map<*, *>>()
-            val reference = node.optional($$"$ref")?.coerce<String>()
-            val serverVariable = if (reference != null) {
-                ServerVariableInterface.ServerVariableReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = SERVER_VARIABLE
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            } else {
-                ServerVariableInterface.ServerVariableInline(
-                    ServerVariable(
-                        enum = node.optional("enum")?.coerce<List<String>>(),
-                        default = node.optional("default")?.coerce<String>(),
-                        description = node.optional("description")?.coerce<String>(),
-                        examples = node.optional("examples")?.coerce<List<String>>(),
-                    ).also { asyncApiContext.register(it, node) }
-                )
-            }
-            put(node.name, serverVariable)
+        parserNode.expectObject().members().forEach { node ->
+            put(node.name, parseElement(node))
+        }
+    }
+
+    fun parseElement(parserNode: ParserNode): ServerVariableInterface {
+        val objectNode = parserNode.expectObject()
+        val reference = objectNode.optional($$"$ref")?.expect<String>()
+        return if (reference != null) {
+            ServerVariableInterface.ServerVariableReference(
+                Reference(
+                    ref = reference,
+                    referenceCategoryKey = SERVER_VARIABLE,
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
+        } else {
+            ServerVariableInterface.ServerVariableInline(
+                ServerVariable(
+                    enum = objectNode.optional("enum")?.expect<List<String>>(),
+                    default = objectNode.optional("default")?.expect<String>(),
+                    description = objectNode.optional("description")?.expect<String>(),
+                    examples = objectNode.optional("examples")?.expect<List<String>>(),
+                ).also { asyncApiContext.register(it, parserNode) },
+            )
         }
     }
 }
