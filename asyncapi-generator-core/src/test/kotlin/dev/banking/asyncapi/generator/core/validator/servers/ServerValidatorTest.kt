@@ -2,10 +2,13 @@ package dev.banking.asyncapi.generator.core.validator.servers
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_PROTOCOL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_ENUM_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
@@ -31,31 +34,52 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             throwErrors(results)
         }
-        assertEquals(1, exception.errors.size, "Expected 1 validation error.")
+        assertEquals(2, exception.errors.size, "Expected 2 validation errors.")
 
         assertTrue(results.hasWarnings(), "Should have warnings.")
         val warnings = results.warnings
-        assertEquals(2, warnings.size, "Expected 2 validation warnings.")
+        assertEquals(4, warnings.size, "Expected 4 validation warnings.")
+        assertRule(
+            results,
+            rule = SERVER_HOST_REQUIRED,
+            sourceFile = "asyncapi_validator_server_invalid.yaml",
+            path = "asyncapi_validator_server_invalid.root.servers.emptyHostServer.host",
+            line = 7,
+        )
         assertRule(
             results,
             rule = SERVER_PROTOCOL_REQUIRED,
             sourceFile = "asyncapi_validator_server_invalid.yaml",
             path = "asyncapi_validator_server_invalid.root.servers.emptyProtocolServer.protocol",
-            line = 9,
+            line = 13,
         )
         assertRule(
             results,
             rule = SERVER_VARIABLE_DEFAULT_ENUM,
             sourceFile = "asyncapi_validator_server_invalid.yaml",
             path = "asyncapi_validator_server_invalid.root.servers.invalidVariableServer.variables.env.default",
-            line = 23,
+            line = 27,
         )
         assertRule(
             results,
             rule = SERVER_HOST_CONTAINS_PROTOCOL,
             sourceFile = "asyncapi_validator_server_invalid.yaml",
             path = "asyncapi_validator_server_invalid.root.servers.invalidHostServer.host",
-            line = 13,
+            line = 17,
+        )
+        assertRule(
+            results,
+            rule = SERVER_VARIABLE_EXAMPLES_ENUM,
+            sourceFile = "asyncapi_validator_server_invalid.yaml",
+            path = "asyncapi_validator_server_invalid.root.servers.invalidVariableServer.variables.env.examples",
+            line = 28,
+        )
+        assertRule(
+            results,
+            rule = SERVER_VARIABLE_EXAMPLES_EMPTY,
+            sourceFile = "asyncapi_validator_server_invalid.yaml",
+            path = "asyncapi_validator_server_invalid.root.servers.missingDefaultVariableServer.variables.port.examples",
+            line = 37,
         )
     }
 

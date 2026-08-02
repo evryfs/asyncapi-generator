@@ -9,16 +9,19 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ANNOTATION_IGNORED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_ITEMS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_KEYWORD_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
@@ -26,6 +29,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
@@ -33,7 +37,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_UNTYPED_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
@@ -193,71 +196,61 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(7, results.errors.size)
         assertEquals(1, results.warnings.size)
 
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            SCHEMA_KEYWORD_UNSUPPORTED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path =
                 "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedNullable.nullable",
             line = 9,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "keyword '\$defs' is not supported under the generator's JSON Schema Draft 7 semantics",
+            SCHEMA_KEYWORD_UNSUPPORTED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDefinitionKeyword.\$defs",
             line = 13,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains =
-                "keyword 'unevaluatedProperties' is not supported under the generator's " +
-                    "JSON Schema Draft 7 semantics",
+            SCHEMA_KEYWORD_UNSUPPORTED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path =
                 "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas." +
                     "UnsupportedStructuralKeyword.unevaluatedProperties",
             line = 19,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "keyword 'minLenght' is not supported by the generator",
+            SCHEMA_KEYWORD_UNSUPPORTED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnknownKeyword.minLenght",
             line = 23,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "declares schema dialect 'https://json-schema.org/draft/2020-12/schema'",
+            SCHEMA_DIALECT,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDialect.\$schema",
             line = 26,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = WARNING,
-            messageContains = "keyword 'example' is an unsupported annotation",
+            SCHEMA_ANNOTATION_IGNORED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.IgnoredAnnotation.example",
             line = 31,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "keyword 'nullable' is not supported by the AsyncAPI 3.0 Schema Object semantics",
+            SCHEMA_KEYWORD_UNSUPPORTED,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NullableReference.nullable",
             line = 35,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "uses tuple-form 'items'",
+            SCHEMA_ITEMS_REPRESENTATION,
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.TupleItems.items",
             line = 39,
@@ -452,7 +445,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     fun `combined composition is valid while empty enum and required remain findings`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_warnings.yaml")
 
-        assertEquals(1, results.errors.size)
+        assertEquals(2, results.errors.size)
         assertEquals(1, results.warnings.size)
         assertRule(
             results,
@@ -465,6 +458,12 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             SCHEMA_REQUIRED_EMPTY,
             path = "asyncapi_validator_schema_warnings.root.components.schemas.EmptyRequiredObject.required",
             line = 17,
+        )
+        assertRule(
+            results,
+            SCHEMA_REQUIRED_UNIQUE,
+            path = "asyncapi_validator_schema_warnings.root.components.schemas.DuplicateRequiredObject.required",
+            line = 28,
         )
     }
 

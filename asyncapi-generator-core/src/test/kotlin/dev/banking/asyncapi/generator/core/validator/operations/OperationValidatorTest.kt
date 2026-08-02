@@ -1,6 +1,9 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
@@ -11,7 +14,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGES_EMPTY
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -99,14 +102,27 @@ class OperationValidatorTest : AbstractValidatorTest() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             throwErrors(validationResults)
         }
-        assertEquals(1, exception.errors.size, "Expected 1 error for invalid action.")
-        assertFinding(
+        assertEquals(3, exception.errors.size, "Expected invalid action, empty action, and missing channel errors.")
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "has invalid action ' send '",
+            OPERATION_ACTION_VALUE,
             sourceFile = "asyncapi_validator_operations_invalid_action.yaml",
             path = "asyncapi_validator_operations_invalid_action.root.operations.testOperation.action",
             line = 18,
+        )
+        assertRule(
+            validationResults,
+            OPERATION_ACTION_REQUIRED,
+            sourceFile = "asyncapi_validator_operations_invalid_action.yaml",
+            path = "asyncapi_validator_operations_invalid_action.root.operations.emptyAction.action",
+            line = 24,
+        )
+        assertRule(
+            validationResults,
+            OPERATION_CHANNEL_REQUIRED,
+            sourceFile = "asyncapi_validator_operations_invalid_action.yaml",
+            path = "asyncapi_validator_operations_invalid_action.root.operations.missingChannel",
+            line = 27,
         )
     }
 
@@ -118,10 +134,9 @@ class OperationValidatorTest : AbstractValidatorTest() {
             throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for broken channel reference.")
-        assertFinding(
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "reference '#/channels/nonExistentChannel' could not be resolved",
+            REFERENCE_UNRESOLVED,
             sourceFile = "asyncapi_validator_operations_broken_channel_ref.yaml",
             path = "asyncapi_validator_operations_broken_channel_ref.root.operations.testOperation.channel",
             line = 9,

@@ -1,16 +1,22 @@
 package dev.banking.asyncapi.generator.core.validator.security
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_VALUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_NAME_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AVAILABLE_SCOPES_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_REFRESH_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_SCOPE_AVAILABLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPEN_ID_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPEN_ID_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_SCHEME_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -26,30 +32,55 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/security/asyncapi_validator_security_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> { throwErrors(results) }
-        assertEquals(6, exception.errors.size, "Expected 6 validation errors.")
-        assertFinding(
+        assertEquals(7, exception.errors.size, "Expected 7 validation errors.")
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "of type 'http' requires non-empty 'scheme'",
+            SECURITY_TYPE_REQUIRED,
             sourceFile = "asyncapi_validator_security_invalid.yaml",
-            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidHttp",
+            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.EmptyType.type",
             line = 9,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "invalid 'in' value 'header'",
+            SECURITY_SCHEME_REQUIRED,
+            sourceFile = "asyncapi_validator_security_invalid.yaml",
+            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidHttp",
+            line = 12,
+        )
+        assertRule(
+            results,
+            SECURITY_OAUTH_FLOWS_REQUIRED,
+            sourceFile = "asyncapi_validator_security_invalid.yaml",
+            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidOAuth2",
+            line = 17,
+        )
+        assertRule(
+            results,
+            SECURITY_OPEN_ID_URL_REQUIRED,
+            sourceFile = "asyncapi_validator_security_invalid.yaml",
+            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidOpenID",
+            line = 22,
+        )
+        assertRule(
+            results,
+            SECURITY_IN_VALUE,
             sourceFile = "asyncapi_validator_security_invalid.yaml",
             path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidApiKey",
-            line = 24,
+            line = 27,
         )
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "invalid type 'alien_technology'",
+            SECURITY_IN_VALUE,
+            sourceFile = "asyncapi_validator_security_invalid.yaml",
+            path = "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidHttpApiKey",
+            line = 32,
+        )
+        assertRule(
+            results,
+            SECURITY_TYPE_VALUE,
             sourceFile = "asyncapi_validator_security_invalid.yaml",
             path = "asyncapi_validator_security_invalid.root.components.securitySchemes.UnknownType.type",
-            line = 36,
+            line = 39,
         )
     }
 
@@ -62,10 +93,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (missing name).")
         assertEquals(0, results.warnings.size)
-        assertFinding(
+        assertRule(
             results,
-            severity = ERROR,
-            messageContains = "requires non-empty 'name'",
+            SECURITY_NAME_REQUIRED,
             sourceFile = "asyncapi_validator_security_warnings.yaml",
             path = "asyncapi_validator_security_warnings.root.components.securitySchemes.MissingNameHttpApiKey",
             line = 24,

@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_AMBIGUOUS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_SERVERS_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_BINDINGS_EMPTY
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -80,6 +82,15 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/channels/asyncapi_validator_channel_optional_fields_valid.yaml")
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `empty channel servers and bindings produce distinct advisories`() {
+        val results = validate("validator/channels/asyncapi_validator_channel_advisories.yaml")
+
+        assertEquals(2, results.warnings.size)
+        assertRule(results, CHANNEL_SERVERS_EMPTY, path = "asyncapi_validator_channel_advisories.root.channels.events.servers", line = 8)
+        assertRule(results, CHANNEL_BINDINGS_EMPTY, path = "asyncapi_validator_channel_advisories.root.channels.events.bindings", line = 9)
     }
 
     @Test

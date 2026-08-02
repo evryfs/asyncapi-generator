@@ -20,3 +20,9 @@ operations:
       $ref: '#/channels/myChannel'
     messages:
       - $ref: '#/channels/myChannel/messages/myMessage'
+  emptyAction:
+    action: ""
+    channel:
+      $ref: '#/channels/myChannel'
+  missingChannel:
+    action: send

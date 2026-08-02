@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAG
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_FORMAT_UNVALIDATED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA_MISMATCH
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -89,6 +91,19 @@ class MessageValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `reports Multi Format Schema message headers as an explicit validation limitation`() {
+        val results = validate("validator/messages/asyncapi_validator_message_header_format.yaml")
+
+        assertEquals(1, results.warnings.size)
+        assertRule(
+            results,
+            MESSAGE_HEADER_FORMAT_UNSUPPORTED,
+            path = "asyncapi_validator_message_header_format.root.components.messages.AvroHeader.headers",
+            line = 8,
+        )
+    }
+
+    @Test
     fun `message headers ref to component schema passes validation`() {
         val document = parse("validator/messages/asyncapi_validator_message_headers_ref_valid.yaml")
         val results = asyncApiValidator.validate(document)
@@ -104,5 +119,6 @@ class MessageValidatorTest : AbstractValidatorTest() {
             throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for unresolved message headers ref.")
+        assertRule(results, REFERENCE_UNRESOLVED)
     }
 }

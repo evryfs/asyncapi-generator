@@ -23,10 +23,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_EXCLUSIVE_BOUND_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_KEYWORD_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
@@ -256,30 +254,6 @@ class SchemaValidator(
             }
         }
 
-        listOf("exclusiveMinimum", "exclusiveMaximum").forEach { keyword ->
-            if (keyword in asyncApiContext.getFieldNames(node) &&
-                asyncApiContext.getFieldValue(node, keyword) !is Number
-            ) {
-                results.error(
-                    SCHEMA_EXCLUSIVE_BOUND_TYPE,
-                    "$contextString Schema Object keyword '$keyword' must contain a numeric boundary.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, keyword),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
-                )
-            }
-        }
-
-        if ("discriminator" in asyncApiContext.getFieldNames(node) &&
-            asyncApiContext.getFieldValue(node, "discriminator") !is String
-        ) {
-            results.error(
-                SCHEMA_DISCRIMINATOR_TYPE,
-                "$contextString Schema Object keyword 'discriminator' must contain the name of a required " +
-                    "string property.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, "discriminator"),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
-            )
-        }
     }
 
     private fun validateDialect(node: Schema, contextString: String, results: ValidationCollector) {

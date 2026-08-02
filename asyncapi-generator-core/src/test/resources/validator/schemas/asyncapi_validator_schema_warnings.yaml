@@ -20,6 +20,12 @@ components:
     EmptyEnumString:
       type: string
       enum: []
+    DuplicateRequiredObject:
+      type: object
+      properties:
+        id:
+          type: string
+      required: [id, id]
 
     # Case 4: Empty Bindings
     EmptyBindingsSchema:
