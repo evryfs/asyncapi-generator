@@ -32,6 +32,8 @@ Schema Object validation likewise operates on the parsed, source-located model. 
 
 An enum without `type` remains untyped in the parsed domain model. Generation analysis may derive `string` only for an all-string enum because the Java and Kotlin generators require a concrete model type. Untyped enums containing other values produce a generator-capability finding instead of being silently coerced. Contradictory lower and upper constraints are also reported as generator-capability errors: JSON Schema permits an unsatisfiable schema, but emitted validation annotations cannot represent that intent safely for generated contracts.
 
+Recursive Schema Object traversal covers properties, pattern properties, definitions, dependency schemas, array applicators, composition, conditionals, and tuple members. Boolean schemas terminate traversal normally. Draft 7 tuple-form `items` remains present in the parsed model so its members receive source-aware validation, but generation reports a capability error because Java and Kotlin collection types cannot retain position-specific tuple constraints. The established single-schema `items` API remains unchanged.
+
 ## Finding contract
 
 Every finding contains:

@@ -122,7 +122,9 @@ class SchemaParser(
         val contentEncoding = objectNode.optional("contentEncoding")?.expect<String>()
         val contentMediaType = objectNode.optional("contentMediaType")?.expect<String>()
 
-        val items = objectNode.optional("items")?.takeUnless { it.node is DocumentArray }?.let { parseElement(it) }
+        val itemsNode = objectNode.optional("items")
+        val items = itemsNode?.takeUnless { it.node is DocumentArray }?.let(::parseElement)
+        val tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.let(::parseList)
         val additionalItems = objectNode.optional("additionalItems")?.let { parseElement(it) }
         val maxItems = objectNode.optional("maxItems")?.expect<Number>()
         val minItems = objectNode.optional("minItems")?.expect<Number>()
@@ -193,6 +195,7 @@ class SchemaParser(
                 contentEncoding = contentEncoding,
                 contentMediaType = contentMediaType,
                 items = items,
+                tupleItems = tupleItems,
                 additionalItems = additionalItems,
                 maxItems = maxItems,
                 minItems = minItems,
@@ -249,7 +252,7 @@ class SchemaParser(
         return objectNode.members().associate { dependency ->
             val dependencyValue = dependency.node
             val parsedValue: Any = when (dependencyValue) {
-                is DocumentArray -> dependency.expect<List<String>>()
+                is DocumentArray -> dependency.expect<List<String>>().also { asyncApiContext.register(it, dependency) }
                 is DocumentObject, is DocumentBoolean -> parseElement(dependency)
                 else -> dependency.expect<Map<String, Any?>>()
             }

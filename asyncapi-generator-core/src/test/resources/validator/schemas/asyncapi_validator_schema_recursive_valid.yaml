@@ -1,0 +1,22 @@
+asyncapi: 3.0.0
+info:
+  title: Recursive Schema Valid
+  version: 1.0.0
+components:
+  schemas:
+    Recursive:
+      type: object
+      patternProperties:
+        "^x-":
+          type: string
+      dependencies:
+        enabled: [name]
+        name:
+          properties:
+            alias:
+              type: string
+        unrestricted: true
+    AnyItems:
+      type: array
+      items: true
+    AllowNothing: false

@@ -37,6 +37,14 @@ data class Schema(
     val contentMediaType: String? = null,
 
     val items: SchemaInterface? = null,
+
+    /**
+     * Draft 7 tuple-form `items`, kept separate to preserve the established
+     * single-schema [items] API while retaining every parsed tuple member.
+     */
+    @get:JsonIgnore
+    val tupleItems: List<SchemaInterface>? = null,
+
     val additionalItems: SchemaInterface? = null,
     val maxItems: Number? = null,
     val minItems: Number? = null,

@@ -11,8 +11,12 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_ITEMS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_NONEMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
@@ -85,6 +89,21 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `malformed programmatic property dependency produces a finding instead of throwing`() {
+        val collector = ValidationCollector(V3_0)
+
+        SchemaValidator(asyncApiContext).validate(
+            Schema(dependencies = mapOf("property" to listOf(42))),
+            "Programmatic Schema",
+            collector,
+        )
+
+        val results = collector.report()
+        assertEquals(1, results.errors.size)
+        assertRule(results, SCHEMA_DEPENDENCY_ARRAY_ITEMS)
+    }
+
+    @Test
     fun `supported keywords and extension properties pass validation`() {
         val document = parse("validator/schemas/asyncapi_validator_schema_keyword_compatible.yaml")
         val results = asyncApiValidator.validate(document)
@@ -98,6 +117,42 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             "Preserved extension metadata",
             optionalName.schema.extensions?.get("x-generator-note"),
         )
+    }
+
+    @Test
+    fun `recursive schema structures and boolean schemas pass validation`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_recursive_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `recursive schemas and property dependencies produce source-aware findings`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_recursive_invalid.yaml")
+
+        assertEquals(7, results.errors.size)
+        assertRule(results, SCHEMA_TYPE, path = recursivePath("Recursive.patternProperties.^x-.type"), line = 11)
+        assertRule(
+            results,
+            SCHEMA_DEPENDENCY_ARRAY_NONEMPTY,
+            path = recursivePath("Recursive.dependencies.empty"),
+            line = 13,
+        )
+        assertRule(
+            results,
+            SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
+            path = recursivePath("Recursive.dependencies.duplicate[1]"),
+            line = 16,
+        )
+        assertRule(
+            results,
+            SCHEMA_TYPE,
+            path = recursivePath("Recursive.dependencies.nested.properties.value.type"),
+            line = 21,
+        )
+        assertRule(results, SCHEMA_ITEMS_REPRESENTATION, path = recursivePath("TupleItems.items"), line = 24)
+        assertRule(results, SCHEMA_TYPE, path = recursivePath("TupleItems.items[1].type"), line = 26)
+        assertRule(results, SCHEMA_ITEMS_REPRESENTATION, path = recursivePath("FalseItems.items"), line = 29)
     }
 
     @Test
@@ -171,7 +226,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertFinding(
             results,
             severity = ERROR,
-            messageContains = "keyword 'items' does not support tuple validation",
+            messageContains = "uses tuple-form 'items'",
             sourceFile = "asyncapi_validator_schema_keyword_diagnostics.yaml",
             path = "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.TupleItems.items",
             line = 39,
@@ -384,4 +439,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     private fun structurePath(path: String): String =
         "asyncapi_validator_schema_invalid_structure.root.components.schemas.$path"
+
+    private fun recursivePath(path: String): String =
+        "asyncapi_validator_schema_recursive_invalid.root.components.schemas.$path"
 }

@@ -113,7 +113,10 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 |---|---|---|---|---|---|---|
 | `GEN-SCHEMA-KEYWORD-UNSUPPORTED` | Generator cannot process a schema keyword | Generator behavior | capability / error | keyword | generator-specific; policy audit pending | `SchemaValidatorTest` |
 | `GEN-SCHEMA-ANNOTATION-IGNORED` | Generator ignores an annotation keyword | Generator behavior | capability / warning | keyword | generator-specific; policy audit pending | `SchemaValidatorTest` |
-| `GEN-SCHEMA-ITEMS-REPRESENTATION` | Tuple/boolean items form is unsupported | Generator behavior | capability / error | `items` | generator-specific; support pending | `SchemaValidatorTest` |
+| `GEN-SCHEMA-ITEMS-REPRESENTATION` | Tuple-form or `false` boolean items cannot be represented by generated collection types | Generator behavior | capability / error | `items` | valid generator safeguard; tuple members remain parsed and validated | `SchemaValidatorTest` |
+| `JSONSCHEMA-DEPENDENCY-ARRAY-ITEMS` | Property dependency contains a non-string member | JS7 dependencies | specification / error | dependency member | valid; parser also enforces this for source input | `SchemaValidatorTest` |
+| `JSONSCHEMA-DEPENDENCY-ARRAY-NONEMPTY` | Property dependency array is empty | JS7 dependencies | specification / error | dependency array | valid | `SchemaValidatorTest` |
+| `JSONSCHEMA-DEPENDENCY-ARRAY-UNIQUE` | Property dependency repeats a property name | JS7 dependencies | specification / error | duplicate member | valid | `SchemaValidatorTest` |
 | `JSONSCHEMA-EXCLUSIVE-BOUND-TYPE` | Exclusive bound is not numeric | JS7 numeric validation | specification / error | `exclusiveMinimum` or `exclusiveMaximum` | valid | `SchemaValidatorTest` |
 | `AAS3-SCHEMA-DISCRIMINATOR-TYPE` | Discriminator has an unsupported representation | A3 Schema | specification / error | `discriminator` | incomplete: AsyncAPI-specific behavior audit | `SchemaValidatorTest` |
 | `GEN-SCHEMA-DIALECT` | Schema dialect is not the supported dialect | A3 Schema / generator behavior | capability / error | `schemaFormat` | incomplete: native and multi-format policy pending | `SchemaValidatorTest` |
@@ -142,4 +145,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, recursive boolean/dependency/tuple schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, ECMA-262-compatible pattern handling, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.

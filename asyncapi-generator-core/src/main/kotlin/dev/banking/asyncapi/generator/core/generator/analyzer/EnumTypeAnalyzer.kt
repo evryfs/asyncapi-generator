@@ -18,6 +18,7 @@ class EnumTypeAnalyzer : AnalysisStage<Map<String, Schema>> {
         schema.copy(
             type = schema.type ?: inferredStringType(schema),
             items = schema.items?.let(::analyzeInterface),
+            tupleItems = schema.tupleItems?.map(::analyzeInterface),
             additionalItems = schema.additionalItems?.let(::analyzeInterface),
             contains = schema.contains?.let(::analyzeInterface),
             properties = schema.properties?.mapValues { (_, value) -> analyzeInterface(value) },

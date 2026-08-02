@@ -17,6 +17,9 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_ITEMS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_NONEMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
@@ -113,6 +116,7 @@ class SchemaValidator(
         validatePattern(node, contextString, results)
         validateArray(node, contextString, results)
         validateObject(node, contextString, results)
+        validateDependencies(node, contextString, results)
         validateDefaultValue(node, contextString, results)
         validateDiscriminator(node, contextString, results)
         validateExternalDocs(node, contextString, results)
@@ -122,14 +126,25 @@ class SchemaValidator(
         node.properties?.forEach { (name, subSchema) ->
             validateInterface(subSchema, name, results, visited)
         }
+        node.patternProperties?.forEach { (pattern, subSchema) ->
+            validateInterface(subSchema, "Pattern property '$pattern'", results, visited)
+        }
         node.definitions?.forEach { (name, subSchema) ->
             validateInterface(subSchema, name, results, visited)
         }
         node.items?.let { validateInterface(it, contextString, results, visited) }
+        node.tupleItems?.forEachIndexed { index, subSchema ->
+            validateInterface(subSchema, "$contextString tuple item $index", results, visited)
+        }
         node.additionalItems?.let { validateInterface(it, contextString, results, visited) }
         node.additionalProperties?.let { validateInterface(it, contextString, results, visited) }
         node.contains?.let { validateInterface(it, contextString, results, visited) }
         node.propertyNames?.let { validateInterface(it, contextString, results, visited) }
+        node.dependencies?.forEach { (name, dependency) ->
+            if (dependency is SchemaInterface) {
+                validateInterface(dependency, "$contextString dependency '$name'", results, visited)
+            }
+        }
 
         node.allOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
         node.anyOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
@@ -195,11 +210,20 @@ class SchemaValidator(
         if ("items" in asyncApiContext.getFieldNames(node)) {
             val items = asyncApiContext.getFieldValue(node, "items")
             when {
-                items is List<*> ->
+                node.tupleItems != null ->
                     results.error(
                         SCHEMA_ITEMS_REPRESENTATION,
-                        "$contextString Schema Object keyword 'items' does not support tuple validation. Use a " +
-                            "single Schema Object in 'items'.",
+                        "$contextString uses tuple-form 'items', which is valid Draft 7 but cannot be represented " +
+                            "safely by the Java and Kotlin generators. Use a single Schema Object in 'items'.",
+                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
+                    )
+
+                node.items is SchemaInterface.BooleanSchema && !node.items.value ->
+                    results.error(
+                        SCHEMA_ITEMS_REPRESENTATION,
+                        "$contextString uses 'items: false', which cannot be represented safely by the Java and " +
+                            "Kotlin collection types.",
                         sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
                         doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
                     )
@@ -522,6 +546,43 @@ class SchemaValidator(
         }
     }
 
+    private fun validateDependencies(node: Schema, contextString: String, results: ValidationCollector) {
+        node.dependencies?.forEach { (propertyName, dependency) ->
+            val propertyNames = dependency as? List<*> ?: return@forEach
+            val location = asyncApiContext.getSourceLocation(dependency)
+            if (propertyNames.isEmpty()) {
+                results.error(
+                    SCHEMA_DEPENDENCY_ARRAY_NONEMPTY,
+                    "$contextString dependency '$propertyName' must contain at least one property name.",
+                    sourceLocation = location,
+                    doc = JSON_SCHEMA_DEPENDENCIES_DOC,
+                )
+            }
+
+            val nonStringIndex = propertyNames.indexOfFirst { it !is String }
+            if (nonStringIndex >= 0) {
+                results.error(
+                    SCHEMA_DEPENDENCY_ARRAY_ITEMS,
+                    "$contextString dependency '$propertyName' must contain only property names.",
+                    sourceLocation = asyncApiContext.getSourceLocation(dependency, "[$nonStringIndex]") ?: location,
+                    doc = JSON_SCHEMA_DEPENDENCIES_DOC,
+                )
+            }
+
+            val duplicateIndex = propertyNames.indices.firstOrNull { index ->
+                propertyNames.subList(0, index).contains(propertyNames[index])
+            }
+            if (duplicateIndex != null) {
+                results.error(
+                    SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
+                    "$contextString dependency '$propertyName' contains duplicate property names.",
+                    sourceLocation = asyncApiContext.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
+                    doc = JSON_SCHEMA_DEPENDENCIES_DOC,
+                )
+            }
+        }
+    }
+
     private fun validateDefaultValue(node: Schema, contextString: String, results: ValidationCollector) {
         if (!node.defaultSet && node.default == null) return
         val default = node.default
@@ -633,6 +694,9 @@ class SchemaValidator(
     }
 
     private companion object {
+        const val JSON_SCHEMA_DEPENDENCIES_DOC =
+            "https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.6.5.7"
+
         val SUPPORTED_DRAFT_7_DIALECTS =
             setOf(
                 "http://json-schema.org/draft-07/schema",

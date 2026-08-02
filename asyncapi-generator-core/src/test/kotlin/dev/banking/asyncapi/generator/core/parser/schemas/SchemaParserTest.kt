@@ -405,6 +405,10 @@ class SchemaParserTest {
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
         assertNull(schema.items)
+        val tupleItems = assertNotNull(schema.tupleItems)
+        assertEquals(2, tupleItems.size)
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(tupleItems[0]).schema.type)
+        assertEquals("number", assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
         assertEquals(
             listOf(mapOf("type" to "string"), mapOf("type" to "number")),
             context.getFieldValue(schema, "items"),
