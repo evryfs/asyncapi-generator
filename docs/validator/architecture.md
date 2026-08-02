@@ -67,10 +67,10 @@ Messages remain useful to people but are not stable machine identifiers. Tests s
 
 `SPECIFICATION` findings enforce AsyncAPI 3.0, the supported JSON Schema dialect, or an official protocol binding. `GENERATOR_CAPABILITY` findings describe otherwise valid input that this generator cannot safely consume. `ADVISORY` findings are optional guidance and must not be presented as specification conformance.
 
-The [rule inventory](rules.md) records the present implementation, including legacy rules that require correction in later hardening slices. Assigning a stable code in this first slice does not endorse a legacy rule as correct.
+The [rule inventory](rules.md) records the implemented rule catalog, its authorities, source ownership, and focused test owners. Stable codes are the machine-facing contract; adding a code requires a defensible rule classification and matching tests and documentation.
 
 ## External fragments
 
 An external AsyncAPI document is parsed and validated as a document. A fragment selected from a non-AsyncAPI document is parsed and validated only as the requested AsyncAPI object category. Unrelated surrounding OpenAPI, JSON Schema, or plain YAML content is outside the validator boundary.
 
-External fragment validation currently uses the AsyncAPI 3.0 profile because that is the only parser/validator profile implemented. Later traversal work will centralize validation of the complete reachable graph without changing this fragment boundary.
+External fragment validation uses the AsyncAPI 3.0 profile because that is the only parser and validator profile implemented. Reachable fragment targets enter the same category-specific traversal as inline objects, while unrelated content in the surrounding foreign document remains outside the validation boundary.

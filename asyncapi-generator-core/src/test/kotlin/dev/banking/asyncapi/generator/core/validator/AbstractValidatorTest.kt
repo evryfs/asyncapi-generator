@@ -18,7 +18,7 @@ abstract class AbstractValidatorTest {
     private val validatorFixtures = ValidatorFixtures(asyncApiContext)
 
     /**
-     * Reads and parses any YAML fixture path.
+     * Reads and parses any YAML or JSON fixture path.
      *
      * Paths can be relative to test resources, or use the legacy
      * `src/test/resources/...` prefix.

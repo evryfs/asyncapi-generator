@@ -72,4 +72,29 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
             line = 3,
         )
     }
+
+    @Test
+    fun `equivalent YAML and JSON values produce the same semantic findings`() {
+        val yaml = validate("validator/asyncapi/asyncapi_validator_document_invalid.yaml")
+        val json = validate("validator/asyncapi/asyncapi_validator_document_invalid_json.json")
+
+        assertEquals(
+            yaml.findings.map { Triple(it.code, it.concern, it.severity) },
+            json.findings.map { Triple(it.code, it.concern, it.severity) },
+        )
+        assertRule(
+            json,
+            DOCUMENT_ID_FORMAT,
+            sourceFile = "asyncapi_validator_document_invalid_json.json",
+            path = "asyncapi_validator_document_invalid_json.root.id",
+            line = 3,
+        )
+        assertRule(
+            json,
+            DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
+            sourceFile = "asyncapi_validator_document_invalid_json.json",
+            path = "asyncapi_validator_document_invalid_json.root.defaultContentType",
+            line = 4,
+        )
+    }
 }
