@@ -56,16 +56,6 @@ object RegexPatterns {
     val URI = Regex("""^[a-zA-Z][a-zA-Z0-9+.-]*:.+$""")
 
     /**
-     * Matches MIME (Multipurpose Internet Mail Extensions) Media Types.
-     *
-     * Validates the `type/subtype` structure used in `contentType` fields.
-     *
-     * **Example:** `application/json`, `application/vnd.apache.avro+json`
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc2045">RFC 2045: Media Types</a>
-     */
-    val MIME_TYPE = Regex("""^[a-zA-Z0-9!#$&^_.+-]+/[a-zA-Z0-9!#$&^_.+-]+$""")
-
-    /**
      * Identifies and extracts parameter placeholders from strings.
      *
      * This pattern identifies variables enclosed in curly braces, such as those found in

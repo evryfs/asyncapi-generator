@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
@@ -19,6 +20,7 @@ import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsVa
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class MessageValidator(
     val asyncApiContext: AsyncApiContext,
@@ -29,17 +31,37 @@ class MessageValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
     private val correlationIdValidator = CorrelationIdValidator(asyncApiContext)
+    private val messageExampleValidator = MessageExampleValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validate(message: Message, contextString: String, results: ValidationCollector) {
         if (!results.visit(message)) return
         validatePayload(message, contextString, results)
         validateHeaders(message, contextString, results)
+        validateContentType(message, contextString, results)
+        validateExamples(message, contextString, results)
         validateCorrelationId(message, contextString, results)
         validateTraits(message, contextString, results)
         validateTags(message, contextString, results)
         validateExternalDocs(message, contextString, results)
         validateBindings(message, contextString, results)
+    }
+
+    private fun validateContentType(node: Message, contextString: String, results: ValidationCollector) {
+        val contentType = node.contentType ?: return
+        if (!ValidationFormats.isSpecificMediaType(contentType)) {
+            results.error(
+                MESSAGE_CONTENT_TYPE_FORMAT,
+                "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
+            )
+        }
+    }
+
+    private fun validateExamples(node: Message, contextString: String, results: ValidationCollector) {
+        node.examples?.let { examples ->
+            messageExampleValidator.validate(examples, contextString, results)
+        }
     }
 
     private fun validatePayload(node: Message, contextString: String, results: ValidationCollector) {

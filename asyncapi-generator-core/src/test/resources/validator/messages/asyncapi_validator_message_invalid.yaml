@@ -1,0 +1,12 @@
+asyncapi: 3.0.0
+info:
+  title: Message Validation
+  version: 1.0.0
+components:
+  messages:
+    InvalidContentType:
+      contentType: application/*
+    InvalidExample:
+      examples:
+        - name: metadataOnly
+          summary: Does not contain message data

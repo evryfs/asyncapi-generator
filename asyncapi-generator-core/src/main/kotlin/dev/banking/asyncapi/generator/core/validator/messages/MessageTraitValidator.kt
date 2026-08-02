@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.MIME_TYPE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -20,7 +19,7 @@ import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsVa
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class MessageTraitValidator(
     val asyncApiContext: AsyncApiContext,
@@ -31,6 +30,7 @@ class MessageTraitValidator(
     private val tagValidator = TagValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val bindingValidator = BindingValidator(asyncApiContext)
+    private val messageExampleValidator = MessageExampleValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validateInterface(node: MessageTraitInterface, contextString: String, results: ValidationCollector) {
@@ -48,6 +48,7 @@ class MessageTraitValidator(
         validateMeaningfulContent(node, contextString, results)
         validateHeaders(node, contextString, results)
         validateContentType(node, contextString, results)
+        validateExamples(node, contextString, results)
         validateTags(node, contextString, results)
         validateExternalDocs(node, contextString, results)
         validateBindings(node, contextString, results)
@@ -56,11 +57,22 @@ class MessageTraitValidator(
     }
 
     private fun validateMeaningfulContent(node: MessageTrait, contextString: String, results: ValidationCollector) {
-        if (node.headers == null && node.bindings == null && node.correlationId == null && node.contentType == null) {
+        if (
+            node.headers == null &&
+            node.correlationId == null &&
+            node.contentType == null &&
+            node.name == null &&
+            node.title == null &&
+            node.summary == null &&
+            node.description == null &&
+            node.tags == null &&
+            node.externalDocs == null &&
+            node.bindings == null &&
+            node.examples == null
+        ) {
             results.warn(
                 MESSAGE_TRAIT_EMPTY,
-                "$contextString provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'" +
-                    " — it might not have any effect.",
+                "$contextString does not define any fields and has no effect.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
             )
         }
@@ -72,14 +84,19 @@ class MessageTraitValidator(
     }
 
     private fun validateContentType(node: MessageTrait, contextString: String, results: ValidationCollector) {
-        val contentType = node.contentType?.let(::sanitizeString) ?: return
-        if (!MIME_TYPE.matches(contentType)) {
+        val contentType = node.contentType ?: return
+        if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
                 MESSAGE_CONTENT_TYPE_FORMAT,
-                "$contextString invalid 'contentType' value '$contentType'. Expected a valid MIME type, e.g., 'application/json'.",
+                "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject",
             )
+        }
+    }
+
+    private fun validateExamples(node: MessageTrait, contextString: String, results: ValidationCollector) {
+        node.examples?.let { examples ->
+            messageExampleValidator.validate(examples, contextString, results)
         }
     }
 
