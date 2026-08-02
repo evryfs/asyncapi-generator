@@ -17,7 +17,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/operations/asyncapi_validator_operations_invalid_action.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+            throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for invalid action.")
         assertFinding(
@@ -35,7 +35,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/operations/asyncapi_validator_operations_broken_channel_ref.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+            throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for broken channel reference.")
         assertFinding(
@@ -53,7 +53,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/operations/asyncapi_validator_operations_channel_ref_type_mismatch.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+            throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error: channel type mismatch.")
         assertFinding(

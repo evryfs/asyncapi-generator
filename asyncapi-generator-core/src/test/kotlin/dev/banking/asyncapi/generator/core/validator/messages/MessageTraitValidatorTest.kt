@@ -20,7 +20,7 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (content type).")
         assertTrue(results.hasWarnings(), "Should have warnings.")
@@ -55,7 +55,7 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_headers_ref_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for unresolved message trait headers ref.")
     }

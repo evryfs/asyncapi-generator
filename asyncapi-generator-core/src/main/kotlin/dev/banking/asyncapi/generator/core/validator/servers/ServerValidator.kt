@@ -10,12 +10,18 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_PROTOCOL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_UNDEFINED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_UNUSED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class ServerValidator(
@@ -29,7 +35,7 @@ class ServerValidator(
     private val serverVariableValidator = ServerVariableValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: ServerInterface, contextString: String, results: ValidationResults) {
+    fun validateInterface(node: ServerInterface, contextString: String, results: ValidationCollector) {
         when (node) {
             is ServerInterface.ServerInline ->
                 validate(node.server, contextString, results)
@@ -39,7 +45,7 @@ class ServerValidator(
         }
     }
 
-    private fun validate(node: Server, contextString: String, results: ValidationResults) {
+    private fun validate(node: Server, contextString: String, results: ValidationCollector) {
         validateHost(node, contextString, results)
         validateProtocol(node, contextString, results)
         validateVariables(node, contextString, results)
@@ -49,10 +55,11 @@ class ServerValidator(
         validateBindings(node, contextString, results)
     }
 
-    private fun validateHost(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateHost(node: Server, contextString: String, results: ValidationCollector) {
         val host = node.host.let(::sanitizeString)
         if (host.isBlank()) {
             results.error(
+                SERVER_HOST_REQUIRED,
                 "$contextString must define a non-empty 'host'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
@@ -60,6 +67,7 @@ class ServerValidator(
         } else {
             if (host.startsWith("http://") || host.startsWith("https://")) {
                 results.warn(
+                    SERVER_HOST_CONTAINS_PROTOCOL,
                     "$contextString host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
                         "(e.g. api.example.com) as protocol is defined separately.",
                     sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
@@ -67,6 +75,7 @@ class ServerValidator(
             }
             if (!HOSTNAME.matches(host)) {
                 results.warn(
+                    SERVER_HOST_FORMAT,
                     "$contextString host '$host' looks unusual. Expected format 'hostname[:port]' or URL with " +
                         "variables/path. Found invalid characters.",
                     sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
@@ -82,6 +91,7 @@ class ServerValidator(
         val missing = hostVars - definedVars
         if (missing.isNotEmpty()) {
             results.error(
+                SERVER_VARIABLE_UNDEFINED,
                 "$contextString host uses variables $missing which are not defined in 'variables'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
@@ -91,16 +101,18 @@ class ServerValidator(
         val unused = definedVars - hostVars
         if (unused.isNotEmpty()) {
             results.warn(
+                SERVER_VARIABLE_UNUSED,
                 "$contextString defines variables $unused which are not used in the host '$host'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::variables),
             )
         }
     }
 
-    private fun validateProtocol(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateProtocol(node: Server, contextString: String, results: ValidationCollector) {
         val protocol = node.protocol.let(::sanitizeString)
         if (protocol.isBlank()) {
             results.error(
+                SERVER_PROTOCOL_REQUIRED,
                 "$contextString must define the 'protocol' it supports.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::protocol),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
@@ -108,7 +120,7 @@ class ServerValidator(
         }
     }
 
-    private fun validateVariables(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateVariables(node: Server, contextString: String, results: ValidationCollector) {
         val variables = node.variables ?: return
         variables.forEach { (serverVariableName, serverVariableInterface) ->
             val contextString = "$contextString Server Variable '$serverVariableName'"
@@ -122,7 +134,7 @@ class ServerValidator(
         }
     }
 
-    private fun validateSecurity(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateSecurity(node: Server, contextString: String, results: ValidationCollector) {
         val security = node.security ?: return
         security.forEachIndexed { index, securitySchemeInterface ->
             val contextString = "$contextString Security Scheme[$index]"
@@ -136,7 +148,7 @@ class ServerValidator(
         }
     }
 
-    private fun validateTags(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: Server, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -150,7 +162,7 @@ class ServerValidator(
         }
     }
 
-    private fun validateExternalDocs(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Server, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
@@ -163,7 +175,7 @@ class ServerValidator(
         }
     }
 
-    private fun validateBindings(node: Server, contextString: String, results: ValidationResults) {
+    private fun validateBindings(node: Server, contextString: String, results: ValidationCollector) {
         val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
             val contextString = "$contextString Binding '$bindingName'"

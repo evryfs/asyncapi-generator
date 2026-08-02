@@ -17,7 +17,7 @@ class ExternalDocsValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/externaldocs/asyncapi_validator_externaldocs_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (invalid URL).")
         assertFinding(

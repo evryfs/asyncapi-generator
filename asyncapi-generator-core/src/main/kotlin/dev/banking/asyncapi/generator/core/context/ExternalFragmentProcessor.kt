@@ -36,6 +36,7 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -52,7 +53,8 @@ import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeVali
 import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerVariableValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
 class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
@@ -276,10 +278,11 @@ class ExternalFragmentProcessor(
         }
     }
 
-    private fun deferredValidation(validate: (ValidationResults) -> Unit): () -> Unit = {
-        val results = ValidationResults(context)
+    private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit = {
+        val results = ValidationCollector(AsyncApiValidationProfile.V3_0)
         validate(results)
-        results.logWarnings()
-        results.throwErrors()
+        val report = results.report()
+        ValidationReporter(context).logWarnings(report)
+        ValidationReporter(context).throwErrors(report)
     }
 }

@@ -11,12 +11,18 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_TRAIT_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class OperationValidator(
@@ -30,7 +36,7 @@ class OperationValidator(
     private val operationReplyValidator = OperationReplyValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationInterface, contextString: String, results: ValidationResults) {
+    fun validateInterface(node: OperationInterface, contextString: String, results: ValidationCollector) {
         when (node) {
             is OperationInterface.OperationInline ->
                 validate(node.operation, contextString, results)
@@ -40,7 +46,7 @@ class OperationValidator(
         }
     }
 
-    private fun validate(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validate(node: Operation, contextString: String, results: ValidationCollector) {
         validateAction(node, contextString, results)
         validateChannel(node, contextString, results)
         validateMessages(node, contextString, results)
@@ -52,16 +58,18 @@ class OperationValidator(
         validateExternalDocs(node, contextString, results)
     }
 
-    private fun validateAction(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateAction(node: Operation, contextString: String, results: ValidationCollector) {
         val action = node.action.let(::sanitizeString)
         if (action.isBlank()) {
             results.error(
+                OPERATION_ACTION_REQUIRED,
                 "$contextString must define an 'action' field ('send' or 'receive').",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         } else if (action != "send" && action != "receive") {
             results.error(
+                OPERATION_ACTION_VALUE,
                 "$contextString has invalid action '$action'. Allowed values are 'send' or 'receive'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
@@ -69,10 +77,11 @@ class OperationValidator(
         }
     }
 
-    private fun validateChannel(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateChannel(node: Operation, contextString: String, results: ValidationCollector) {
         val channelRef = node.channel
         if (channelRef == null) {
             results.error(
+                OPERATION_CHANNEL_REQUIRED,
                 "$contextString must define a 'channel' reference.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::channel),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
@@ -84,6 +93,7 @@ class OperationValidator(
         if (channelRef.model != null && channelRef.model !is Channel) {
             val invalidObject = channelRef.model?.javaClass?.simpleName
             results.error(
+                OPERATION_CHANNEL_TARGET,
                 "$contextString channel reference must point to a Channel Object. Found: $invalidObject.",
                 sourceLocation = channelRefSourceLocation,
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
@@ -91,13 +101,14 @@ class OperationValidator(
         }
     }
 
-    private fun validateMessages(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateMessages(node: Operation, contextString: String, results: ValidationCollector) {
         val messages = node.messages ?: return
         messages.forEachIndexed { index, messageReference ->
             val contextString = "$contextString Message[$index]"
             val referenceString = messageReference.ref.let(::sanitizeString)
             if (referenceString.isBlank()) {
                 results.error(
+                    OPERATION_MESSAGE_REFERENCE,
                     "$contextString 'messages' property value MUST be a list of Reference Objects.",
                     sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
@@ -108,7 +119,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateReply(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateReply(node: Operation, contextString: String, results: ValidationCollector) {
         val reply = node.reply ?: return
         val contextString = "$contextString Reply"
         when (reply) {
@@ -120,7 +131,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateTraits(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateTraits(node: Operation, contextString: String, results: ValidationCollector) {
         val traits = node.traits ?: return
         traits.forEachIndexed { index, trait ->
             val contextString = "$contextString Trait[$index]"
@@ -134,9 +145,10 @@ class OperationValidator(
         }
     }
 
-    private fun validateOperationTrait(node: OperationTrait, contextString: String, results: ValidationResults) {
+    private fun validateOperationTrait(node: OperationTrait, contextString: String, results: ValidationCollector) {
         if (node.bindings == null && node.security == null && node.tags == null) {
             results.warn(
+                OPERATION_TRAIT_EMPTY,
                 "$contextString defines no 'bindings', 'security', or 'tags' — may have no effect.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
@@ -144,7 +156,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateBindings(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateBindings(node: Operation, contextString: String, results: ValidationCollector) {
         val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
             val contextString = "$contextString Binding '$bindingName' "
@@ -158,7 +170,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateSecurity(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateSecurity(node: Operation, contextString: String, results: ValidationCollector) {
         val security = node.security ?: return
         security.forEachIndexed { index, securitySchemeInterface ->
             val contextString = "$contextString Security Scheme [index=$index]"
@@ -172,7 +184,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateTags(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: Operation, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -186,7 +198,7 @@ class OperationValidator(
         }
     }
 
-    private fun validateExternalDocs(node: Operation, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Operation, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->

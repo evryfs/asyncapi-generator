@@ -19,7 +19,7 @@ class ParameterValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/parameters/asyncapi_validator_parameter_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val errorException = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         val errors = errorException.errors.map { it.message }
         assertEquals(2, errors.size, "Expected 2 validation errors.")

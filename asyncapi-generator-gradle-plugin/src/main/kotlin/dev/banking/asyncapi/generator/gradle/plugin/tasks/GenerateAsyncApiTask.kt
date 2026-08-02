@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationMapper
@@ -126,8 +127,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         val asyncApiDocument = AsyncApiParser(context).parse(root)
         val validationErrors = AsyncApiValidator(context).validate(asyncApiDocument)
 
-        validationErrors.logWarnings()
-        validationErrors.throwErrors()
+        ValidationReporter(context).logWarnings(validationErrors)
+        ValidationReporter(context).throwErrors(validationErrors)
 
         val bundled = AsyncApiBundler().bundle(asyncApiDocument)
         AsyncApiGenerator().generate(bundled, generatorConfiguration)

@@ -221,7 +221,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             parse("validator/schemas/asyncapi_validator_schema_invalid_constraints.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(3, exception.errors.size, "Expected 3 validation errors for invalid constraints.")
     }
@@ -265,7 +265,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             parse("validator/schemas/asyncapi_validator_schema_invalid_discriminator.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(2, exception.errors.size, "Expected 2 errors for invalid discriminator definitions.")
     }
@@ -275,7 +275,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/schemas/asyncapi_validator_schema_invalid_default.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(3, exception.errors.size, "Expected 3 validation errors for incompatible default values.")
     }
@@ -285,7 +285,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/schemas/asyncapi_validator_schema_invalid_const.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(3, exception.errors.size, "Expected 3 validation errors for incompatible const values.")
     }
@@ -295,7 +295,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/schemas/asyncapi_validator_schema_warnings.yaml")
         val results = asyncApiValidator.validate(document)
         assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertTrue(results.hasErrors(), "Should have errors.")
         assertTrue(results.hasWarnings(), "Should have warnings.")
@@ -333,7 +333,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/schemas/asyncapi_validator_schema_invalid_structure.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(2, exception.errors.size)
     }
@@ -344,7 +344,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             parse("validator/schemas/asyncapi_validator_schema_default_null_required.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size)
     }

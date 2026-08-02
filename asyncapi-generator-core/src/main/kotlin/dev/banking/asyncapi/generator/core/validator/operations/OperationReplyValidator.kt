@@ -4,8 +4,9 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGES_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 class OperationReplyValidator(
     val asyncApiContext: AsyncApiContext,
@@ -14,7 +15,7 @@ class OperationReplyValidator(
     private val operationReplyAddressValidator = OperationReplyAddressValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationReplyInterface, contextString: String, results: ValidationResults) {
+    fun validateInterface(node: OperationReplyInterface, contextString: String, results: ValidationCollector) {
         when (node) {
             is OperationReplyInterface.OperationReplyInline ->
                 validate(node.operationReply, contextString, results)
@@ -24,13 +25,13 @@ class OperationReplyValidator(
         }
     }
 
-    fun validate(node: OperationReply, contextString: String, results: ValidationResults) {
+    fun validate(node: OperationReply, contextString: String, results: ValidationCollector) {
         validateAddress(node, contextString, results)
         validateChannel(node, contextString, results)
         validateMessages(node, contextString, results)
     }
 
-    private fun validateAddress(node: OperationReply, contextString: String, results: ValidationResults) {
+    private fun validateAddress(node: OperationReply, contextString: String, results: ValidationCollector) {
         val address = node.address ?: return
         val contextString = "$contextString Operation Reply Address"
         when (address) {
@@ -42,16 +43,17 @@ class OperationReplyValidator(
         }
     }
 
-    private fun validateChannel(node: OperationReply, contextString: String, results: ValidationResults) {
+    private fun validateChannel(node: OperationReply, contextString: String, results: ValidationCollector) {
         val channelRef = node.channel ?: return
         val contextString = "$contextString Channel"
         referenceResolver.resolve(channelRef, contextString, results)
     }
 
-    private fun validateMessages(node: OperationReply, operationReplyName: String, results: ValidationResults) {
+    private fun validateMessages(node: OperationReply, operationReplyName: String, results: ValidationCollector) {
         val messages = node.messages ?: return
         if (messages.isEmpty()) {
             results.warn(
+                OPERATION_REPLY_MESSAGES_EMPTY,
                 "$operationReplyName 'messages' is an empty list — omit it if unused.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
             )

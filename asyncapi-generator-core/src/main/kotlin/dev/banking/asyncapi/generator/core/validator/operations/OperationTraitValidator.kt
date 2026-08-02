@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 class OperationTraitValidator(
     val asyncApiContext: AsyncApiContext,
@@ -24,7 +24,7 @@ class OperationTraitValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationTraitInterface, contextString: String, results: ValidationResults) {
+    fun validateInterface(node: OperationTraitInterface, contextString: String, results: ValidationCollector) {
         when (node) {
             is OperationTraitInterface.OperationTraitInline ->
                 validate(node.operationTrait, contextString, results)
@@ -34,14 +34,14 @@ class OperationTraitValidator(
         }
     }
 
-    fun validate(node: OperationTrait, contextString: String, results: ValidationResults) {
+    fun validate(node: OperationTrait, contextString: String, results: ValidationCollector) {
         validateSecurity(node, contextString, results)
         validateTags(node, contextString, results)
         validateExternalDocs(node, contextString, results)
         validateBindings(node, contextString, results)
     }
 
-    private fun validateSecurity(node: OperationTrait, contextString: String, results: ValidationResults) {
+    private fun validateSecurity(node: OperationTrait, contextString: String, results: ValidationCollector) {
         val securitySchemes = node.security ?: return
         securitySchemes.forEach { (securitySchemeName, securitySchemeInterface) ->
             val contextString = "$contextString Security Scheme '$securitySchemeName'"
@@ -55,7 +55,7 @@ class OperationTraitValidator(
         }
     }
 
-    private fun validateTags(node: OperationTrait, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: OperationTrait, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -69,7 +69,7 @@ class OperationTraitValidator(
         }
     }
 
-    private fun validateExternalDocs(node: OperationTrait, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: OperationTrait, contextString: String, results: ValidationCollector) {
         val externalDocs = node.externalDocs ?: return
         val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
@@ -81,7 +81,7 @@ class OperationTraitValidator(
         }
     }
 
-    private fun validateBindings(node: OperationTrait, contextString: String, results: ValidationResults) {
+    private fun validateBindings(node: OperationTrait, contextString: String, results: ValidationCollector) {
         val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
             val contextString = "$contextString Binding '$bindingName'"

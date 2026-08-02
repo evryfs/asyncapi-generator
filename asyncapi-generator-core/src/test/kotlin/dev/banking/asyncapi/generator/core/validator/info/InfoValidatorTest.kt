@@ -26,7 +26,7 @@ class InfoValidatorTest : AbstractValidatorTest() {
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
 
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+            throwErrors(validationResults)
         }
         assertEquals(2, exception.errors.size, "Expected exactly 2 validation errors (title and version).")
     }
@@ -36,7 +36,7 @@ class InfoValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/info/asyncapi_validator_info_components_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
 
         assertEquals(4, exception.errors.size, "Expected 4 validation errors.")

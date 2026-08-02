@@ -17,7 +17,7 @@ class TagValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/tags/asyncapi_validator_tag_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error (empty name).")
         assertFinding(

@@ -7,13 +7,15 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_TRAIT_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class MessageTraitValidator(
@@ -27,7 +29,7 @@ class MessageTraitValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: MessageTraitInterface, contextString: String, results: ValidationResults) {
+    fun validateInterface(node: MessageTraitInterface, contextString: String, results: ValidationCollector) {
         when (node) {
             is MessageTraitInterface.InlineMessageTrait ->
                 validate(node.trait, contextString, results)
@@ -37,7 +39,7 @@ class MessageTraitValidator(
         }
     }
 
-    fun validate(node: MessageTrait, contextString: String, results: ValidationResults) {
+    fun validate(node: MessageTrait, contextString: String, results: ValidationCollector) {
         validateMeaningfulContent(node, contextString, results)
         validateHeaders(node, contextString, results)
         validateContentType(node, contextString, results)
@@ -48,9 +50,10 @@ class MessageTraitValidator(
         node.correlationId?.let { correlationIdValidator.validateInterface(it, contextString, results) }
     }
 
-    private fun validateMeaningfulContent(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateMeaningfulContent(node: MessageTrait, contextString: String, results: ValidationCollector) {
         if (node.headers == null && node.bindings == null && node.correlationId == null && node.contentType == null) {
             results.warn(
+                MESSAGE_TRAIT_EMPTY,
                 "$contextString provides neither 'headers', 'bindings', 'correlationId', nor 'contentType'" +
                     " — it might not have any effect.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
@@ -58,15 +61,16 @@ class MessageTraitValidator(
         }
     }
 
-    private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationCollector) {
         val headersSchema = node.headers ?: return
         schemaValidator.validateInterface(headersSchema, "$contextString Headers", results)
     }
 
-    private fun validateContentType(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateContentType(node: MessageTrait, contextString: String, results: ValidationCollector) {
         val contentType = node.contentType?.let(::sanitizeString) ?: return
         if (!MIME_TYPE.matches(contentType)) {
             results.error(
+                MESSAGE_CONTENT_TYPE_FORMAT,
                 "$contextString invalid 'contentType' value '$contentType'. Expected a valid MIME type, e.g., 'application/json'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#messageTraitObject",
@@ -74,7 +78,7 @@ class MessageTraitValidator(
         }
     }
 
-    private fun validateTags(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: MessageTrait, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -88,7 +92,7 @@ class MessageTraitValidator(
         }
     }
 
-    private fun validateExternalDocs(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: MessageTrait, contextString: String, results: ValidationCollector) {
         val externalDocs = node.externalDocs ?: return
         val contextString = "$contextString ExternalDocs"
         when (externalDocs) {
@@ -100,7 +104,7 @@ class MessageTraitValidator(
         }
     }
 
-    private fun validateBindings(node: MessageTrait, contextString: String, results: ValidationResults) {
+    private fun validateBindings(node: MessageTrait, contextString: String, results: ValidationCollector) {
         val bindings = node.bindings ?: return
         bindings.forEach { (bindingName, bindingInterface) ->
             val contextString = "$contextString Binding '$bindingName'"

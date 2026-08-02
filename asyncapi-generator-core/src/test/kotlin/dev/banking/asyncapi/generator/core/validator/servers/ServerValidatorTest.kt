@@ -19,7 +19,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/servers/asyncapi_validator_server_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(3, exception.errors.size, "Expected 3 validation errors.")
 
@@ -57,7 +57,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/servers/asyncapi_validator_server_variable_mismatch.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for missing variable definition.")
 

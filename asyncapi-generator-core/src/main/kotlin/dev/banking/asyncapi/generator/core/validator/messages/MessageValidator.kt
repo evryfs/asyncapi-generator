@@ -7,12 +7,13 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 class MessageValidator(
     val asyncApiContext: AsyncApiContext,
@@ -24,7 +25,7 @@ class MessageValidator(
     private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validate(message: Message, contextString: String, results: ValidationResults) {
+    fun validate(message: Message, contextString: String, results: ValidationCollector) {
         validatePayload(message, contextString, results)
         validateHeaders(message, contextString, results)
         validateTraits(message, contextString, results)
@@ -33,12 +34,12 @@ class MessageValidator(
         validateBindings(message, contextString, results)
     }
 
-    private fun validatePayload(node: Message, contextString: String, results: ValidationResults) {
+    private fun validatePayload(node: Message, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString Payload"
         node.payload?.let { payload -> schemaValidator.validateInterface(payload, contextString, results) }
     }
 
-    private fun validateHeaders(node: Message, contextString: String, results: ValidationResults) {
+    private fun validateHeaders(node: Message, contextString: String, results: ValidationCollector) {
         val headersSchema = node.headers ?: return
         schemaValidator.validateInterface(headersSchema, "$contextString Headers", results)
 
@@ -47,6 +48,7 @@ class MessageValidator(
                 ?.filterValues { schema -> schema is SchemaInterface.MultiFormatSchemaInline }
                 ?.forEach { (headerName, _) ->
                     results.warn(
+                        MESSAGE_HEADER_FORMAT_UNSUPPORTED,
                         "$contextString Header '$headerName' uses a Multi Format Schema, which is not validated " +
                             "in message headers.",
                         sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
@@ -55,7 +57,7 @@ class MessageValidator(
         }
     }
 
-    private fun validateTraits(node: Message, contextString: String, results: ValidationResults) {
+    private fun validateTraits(node: Message, contextString: String, results: ValidationCollector) {
         val traits = node.traits ?: return
         if (traits.isEmpty()) return
         traits.forEachIndexed { index, trait ->
@@ -70,7 +72,7 @@ class MessageValidator(
         }
     }
 
-    private fun validateTags(node: Message, contextString: String, results: ValidationResults) {
+    private fun validateTags(node: Message, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
             val contextString = "$contextString Tag[$index]"
@@ -84,7 +86,7 @@ class MessageValidator(
         }
     }
 
-    private fun validateExternalDocs(node: Message, contextString: String, results: ValidationResults) {
+    private fun validateExternalDocs(node: Message, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString ExternalDocs"
         when (val docs = node.externalDocs) {
             is ExternalDocInterface.ExternalDocInline ->
@@ -97,7 +99,7 @@ class MessageValidator(
         }
     }
 
-    private fun validateBindings(node: Message, contextString: String, results: ValidationResults) {
+    private fun validateBindings(node: Message, contextString: String, results: ValidationCollector) {
         val bindings = node.bindings ?: return
         if (bindings.isEmpty()) return
         bindings.forEach { (bindingName, bindingInterface) ->

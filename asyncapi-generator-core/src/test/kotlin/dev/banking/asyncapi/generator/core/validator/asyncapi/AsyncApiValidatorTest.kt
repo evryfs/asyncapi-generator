@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.asyncapi
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.ValidationStage
@@ -15,8 +16,8 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
     fun validateAsyncApiDocument() {
         val asyncApiDocument = parse("asyncapi_kafka_single_file_example.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
-        validationResults.logWarnings()
-        validationResults.throwErrors()
+        logWarnings(validationResults)
+        throwErrors(validationResults)
     }
 
     @Test
@@ -35,18 +36,16 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
 
         assertEquals(2, validationResults.errors.size)
         assertEquals(2, validationResults.findings.size)
-        assertFinding(
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "The 'id' field must conform to the URI format",
+            rule = DOCUMENT_ID_FORMAT,
             sourceFile = "asyncapi_validator_document_invalid.yaml",
             path = "asyncapi_validator_document_invalid.root.id",
             line = 2,
         )
-        assertFinding(
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "Invalid 'defaultContentType' format",
+            rule = DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
             sourceFile = "asyncapi_validator_document_invalid.yaml",
             path = "asyncapi_validator_document_invalid.root.defaultContentType",
             line = 3,

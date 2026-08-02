@@ -4,8 +4,15 @@ package dev.banking.asyncapi.generator.core.validator.bindings
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROPERTY_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROPERTY_LIST
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROPERTY_NULL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROPERTY_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_NULL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_TYPE
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeAny
 
 class BindingValidator(
@@ -18,13 +25,14 @@ class BindingValidator(
         // Add "http", "amqp", "mqtt" here
     )
 
-    fun validate(binding: Binding, bindingName: String, results: ValidationResults) {
+    fun validate(binding: Binding, bindingName: String, results: ValidationCollector) {
         binding.kafkaKeySchema?.let { keySchema ->
             schemaValidator.validateInterface(keySchema, "$bindingName Kafka key", results)
         }
 
         if (binding.content.isEmpty()) {
             results.warn(
+                BINDING_EMPTY,
                 "$bindingName is empty — no protocol-specific binding properties are defined.",
                 sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
@@ -45,9 +53,10 @@ class BindingValidator(
         }
     }
 
-    private fun validateProtocol(protocol: String, bindingData: Any?, binding: Binding, results: ValidationResults) {
+    private fun validateProtocol(protocol: String, bindingData: Any?, binding: Binding, results: ValidationCollector) {
         if (bindingData == null) {
             results.warn(
+                BINDING_PROTOCOL_NULL,
                 "Binding for protocol '$protocol' is null — consider removing or defining a value.",
                 sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
@@ -56,6 +65,7 @@ class BindingValidator(
 
         if (bindingData !is Map<*, *>) {
             results.error(
+                BINDING_PROTOCOL_TYPE,
                 "Binding for protocol '$protocol' must be an object (Map), but found ${bindingData::class.simpleName}.",
                 sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
             )
@@ -77,7 +87,7 @@ class BindingValidator(
         protocol: String,
         properties: Map<String, Any?>,
         binding: Binding,
-        results: ValidationResults,
+        results: ValidationCollector,
     ) {
         properties.forEach { (key, value) ->
             validateGenericProperty(asyncApiContext, protocol, key, value, binding, results)
@@ -92,10 +102,11 @@ class BindingValidator(
             key: String,
             value: Any?,
             binding: Binding,
-            results: ValidationResults,
+            results: ValidationCollector,
         ) {
             when (val mapValue = value?.let(::sanitizeAny)) {
                 null -> results.warn(
+                    BINDING_PROPERTY_NULL,
                     "Property '$key' in '$protocol' binding is null — consider removing.",
                     sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                 )
@@ -103,6 +114,7 @@ class BindingValidator(
                 is Map<*, *> -> {}
                 is List<*> -> {
                     results.warn(
+                        BINDING_PROPERTY_LIST,
                         "Property '$key' in '$protocol' binding has type List, which might be unsupported by this generator.",
                         sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                     )
@@ -111,6 +123,7 @@ class BindingValidator(
                 is String -> {
                     if (mapValue.isBlank()) {
                         results.warn(
+                            BINDING_PROPERTY_EMPTY,
                             "Property '$key' in '$protocol' binding is empty — consider removing or defining a value.",
                             sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                         )
@@ -120,6 +133,7 @@ class BindingValidator(
                 is Number, is Boolean -> {}
                 else -> {
                     results.warn(
+                        BINDING_PROPERTY_TYPE,
                         "Property '$key' in '$protocol' binding has unsupported type: ${value::class.simpleName}",
                         sourceLocation = asyncApiContext.getSourceLocation(binding, binding::content),
                     )

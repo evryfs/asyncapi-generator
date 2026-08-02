@@ -25,7 +25,7 @@ class MessageValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/messages/asyncapi_validator_message_headers_ref_invalid.yaml")
         val results = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            results.throwErrors()
+            throwErrors(results)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for unresolved message headers ref.")
     }

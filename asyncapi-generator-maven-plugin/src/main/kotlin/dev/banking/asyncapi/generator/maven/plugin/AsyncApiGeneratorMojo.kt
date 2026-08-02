@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugins.annotations.LifecyclePhase
@@ -67,8 +68,8 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             val root = AsyncApiRegistry.read(inputSpec, context)
             val asyncApiParsed = parser.parse(root)
             val validationErrors = validator.validate(asyncApiParsed)
-            validationErrors.logWarnings()
-            validationErrors.throwErrors()
+            ValidationReporter(context).logWarnings(validationErrors)
+            ValidationReporter(context).throwErrors(validationErrors)
             val bundled = bundler.bundle(asyncApiParsed)
             generator.generate(bundled, generatorConfiguration)
             MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)

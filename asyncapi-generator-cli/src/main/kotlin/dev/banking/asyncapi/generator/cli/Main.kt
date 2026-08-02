@@ -11,11 +11,12 @@ import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
-import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
+import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
 fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
@@ -86,8 +87,8 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
             val validator = AsyncApiValidator(context)
             val results = validator.validate(document)
-            reportWarnings(results)
-            results.throwErrors()
+            reportWarnings(results, context)
+            ValidationReporter(context).throwErrors(results)
 
             val bundler = AsyncApiBundler()
             val bundledDoc = bundler.bundle(document)
@@ -102,7 +103,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         echo("Generation complete.")
     }
 
-    private fun reportWarnings(results: ValidationResults) {
+    private fun reportWarnings(results: ValidationReport, context: AsyncApiContext) {
         if (!results.hasWarnings()) {
             return
         }
@@ -112,7 +113,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                 ValidationFindingFormatter.format(
                     title = "Validation found ${results.warnings.size} warning(s):",
                     findings = results.warnings,
-                    asyncApiContext = results.asyncApiContext,
+                    asyncApiContext = context,
                 ).trimEnd(),
             err = true,
         )

@@ -20,7 +20,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val document = parse("validator/channels/asyncapi_validator_channel_parameter_mismatch.yaml")
         val validationResults = asyncApiValidator.validate(document)
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            validationResults.throwErrors()
+            throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error for missing parameter definition.")
         assertFinding(
