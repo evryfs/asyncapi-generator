@@ -29,10 +29,12 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 
 class ExternalReferenceLoadingTest {
     private val context = AsyncApiContext()
@@ -168,6 +170,50 @@ class ExternalReferenceLoadingTest {
         assertIs<Tag>(models["category_fragments.root.tag"])
         val binding = assertIs<Binding>(models["category_fragments.root.binding"])
         assertEquals("category-fragments.yaml", context.getSourceLocation(binding)?.file?.name)
+    }
+
+    @Test
+    fun `isolates selected fragments and resolves same-file reference chains and cycles`() {
+        val file = TestResources.file("parser/references/external/external-fragment-isolation-main.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val root = ParserNodeFactory.root(document, context)
+
+        documentParser.parse(root)
+
+        val models = context.modelRepository.getModelsByPath()
+        val selected = assertIs<Schema>(models["heterogeneous_fragments.root.selectedSchema"])
+        assertEquals("Only this selected schema should be parsed", selected.description)
+        assertFalse(models.containsKey("heterogeneous_fragments.root.notASchema"))
+
+        val first = assertIs<Reference>(models["heterogeneous_fragments.root.firstSchema"])
+        val second = assertIs<Reference>(context.findReference(first))
+        val third = assertIs<Schema>(context.findReference(second))
+        assertEquals("End of the same-file reference chain", third.description)
+        assertEquals("heterogeneous-fragments.yaml", context.getSourceLocation(third)?.file?.name)
+        assertEquals("heterogeneous_fragments.root.thirdSchema", context.getSourceLocation(third)?.path)
+
+        val cycleA = assertIs<Reference>(models["heterogeneous_fragments.root.cycleA"])
+        val cycleB = assertIs<Reference>(context.findReference(cycleA))
+        assertSame(cycleA, context.findReference(cycleB))
+        assertSame(cycleB, cycleA.model)
+        assertSame(cycleA, cycleB.model)
+    }
+
+    @Test
+    fun `reports a missing same-file fragment target at the nested reference`() {
+        val file = TestResources.file("parser/references/external/external-fragment-internal-missing-main.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val root = ParserNodeFactory.root(document, context)
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            documentParser.parse(root)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.ReferenceTargetNotFound>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.REFERENCE_TARGET_NOT_FOUND, diagnostic.category)
+        assertEquals("#/doesNotExist", diagnostic.reference)
+        assertEquals("heterogeneous_fragments.root.missingReference.\$ref", diagnostic.path)
+        assertEquals("heterogeneous-fragments.yaml", diagnostic.sourceLocation.file.name)
     }
 
     @Test

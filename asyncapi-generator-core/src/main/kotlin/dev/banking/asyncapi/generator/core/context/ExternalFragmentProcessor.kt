@@ -57,212 +57,229 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationResults
 class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
 ) {
-    internal fun parseAndValidate(
+    internal fun parseAndDeferValidation(
         target: ExternalReferenceTargetResolver.Target,
         reference: Reference,
-    ) {
+    ): () -> Unit {
         val category = reference.referenceCategoryKey
             ?: throw IllegalArgumentException("Missing referenceCategoryKey for ref '${reference.ref}'")
-        val results = ValidationResults(context)
         val targetNode = target.node
-        when (category) {
-            SCHEMA -> parseAndValidateSchema(target, reference, results)
-            CHANNEL -> parseAndValidateChannel(targetNode, results)
-            MESSAGE -> parseAndValidateMessage(targetNode, results)
-            MESSAGE_TRAIT -> parseAndValidateMessageTrait(targetNode, results)
-            OPERATION -> parseAndValidateOperation(targetNode, results)
-            OPERATION_TRAIT -> parseAndValidateOperationTrait(targetNode, results)
-            OPERATION_REPLY -> parseAndValidateOperationReply(targetNode, results)
-            OPERATION_REPLY_ADDRESS -> parseAndValidateOperationReplyAddress(targetNode, results)
-            SERVER -> parseAndValidateServer(targetNode, results)
-            SERVER_VARIABLE -> parseAndValidateServerVariable(targetNode, results)
-            PARAMETER -> parseAndValidateParameter(targetNode, results)
-            SECURITY_SCHEME -> parseAndValidateSecurityScheme(targetNode, results)
-            CORRELATION_ID -> parseAndValidateCorrelationId(targetNode, results)
-            EXTERNAL_DOC -> parseAndValidateExternalDoc(targetNode, results)
-            TAG -> parseAndValidateTag(targetNode, results)
-            BINDING -> parseAndValidateBinding(targetNode, results)
+        return when (category) {
+            SCHEMA -> parseSchema(targetNode)
+            CHANNEL -> parseChannel(targetNode)
+            MESSAGE -> parseMessage(targetNode)
+            MESSAGE_TRAIT -> parseMessageTrait(targetNode)
+            OPERATION -> parseOperation(targetNode)
+            OPERATION_TRAIT -> parseOperationTrait(targetNode)
+            OPERATION_REPLY -> parseOperationReply(targetNode)
+            OPERATION_REPLY_ADDRESS -> parseOperationReplyAddress(targetNode)
+            SERVER -> parseServer(targetNode)
+            SERVER_VARIABLE -> parseServerVariable(targetNode)
+            PARAMETER -> parseParameter(targetNode)
+            SECURITY_SCHEME -> parseSecurityScheme(targetNode)
+            CORRELATION_ID -> parseCorrelationId(targetNode)
+            EXTERNAL_DOC -> parseExternalDoc(targetNode)
+            TAG -> parseTag(targetNode)
+            BINDING -> parseBinding(targetNode)
             REFERENCE -> throw IllegalArgumentException(
                 "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
                     "Assign a concrete ReferenceCategoryKey at parser creation site."
             )
         }
+    }
+
+    private fun parseSchema(targetNode: ParserNode): () -> Unit {
+        val selectedSchema = SchemaParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            SchemaValidator(context).validateInterface(
+                selectedSchema,
+                "External Schema '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseChannel(targetNode: ParserNode): () -> Unit {
+        val parsed: ChannelInterface = ChannelParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            ChannelValidator(context).validateInterface(
+                parsed,
+                "External Channel '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseMessage(targetNode: ParserNode): () -> Unit {
+        val parsed: MessageInterface = MessageParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            val validationContext = "External Message '${targetNode.name}'"
+            when (parsed) {
+                is MessageInterface.MessageInline ->
+                    MessageValidator(context).validate(parsed.message, validationContext, results)
+
+                is MessageInterface.MessageReference ->
+                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+            }
+        }
+    }
+
+    private fun parseMessageTrait(targetNode: ParserNode): () -> Unit {
+        val parsed: MessageTraitInterface = MessageTraitParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            MessageTraitValidator(context).validateInterface(
+                parsed,
+                "External MessageTrait '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseOperation(targetNode: ParserNode): () -> Unit {
+        val parsed: OperationInterface = OperationParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            OperationValidator(context).validateInterface(
+                parsed,
+                "External Operation '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseOperationTrait(targetNode: ParserNode): () -> Unit {
+        val parsed: OperationTraitInterface = OperationTraitParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            OperationTraitValidator(context).validateInterface(
+                parsed,
+                "External OperationTrait '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseOperationReply(targetNode: ParserNode): () -> Unit {
+        val parsed: OperationReplyInterface = OperationReplyParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            OperationReplyValidator(context).validateInterface(
+                parsed,
+                "External OperationReply '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseOperationReplyAddress(targetNode: ParserNode): () -> Unit {
+        val parsed: OperationReplyAddressInterface = OperationReplyAddressParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            OperationReplyAddressValidator(context).validateInterface(
+                parsed,
+                "External OperationReplyAddress '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseServer(targetNode: ParserNode): () -> Unit {
+        val parsed: ServerInterface = ServerParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            ServerValidator(context).validateInterface(
+                parsed,
+                "External Server '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseServerVariable(targetNode: ParserNode): () -> Unit {
+        val parsed: ServerVariableInterface = ServerVariableParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            val validationContext = "External ServerVariable '${targetNode.name}'"
+            when (parsed) {
+                is ServerVariableInterface.ServerVariableInline ->
+                    ServerVariableValidator(context).validate(parsed.serverVariable, validationContext, results)
+
+                is ServerVariableInterface.ServerVariableReference ->
+                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+            }
+        }
+    }
+
+    private fun parseParameter(targetNode: ParserNode): () -> Unit {
+        val parsed: ParameterInterface = ParameterParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            ParameterValidator(context).validateInterface(
+                parsed,
+                "External Parameter '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseSecurityScheme(targetNode: ParserNode): () -> Unit {
+        val parsed: SecuritySchemeInterface = SecuritySchemeParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            val validationContext = "External SecurityScheme '${targetNode.name}'"
+            when (parsed) {
+                is SecuritySchemeInterface.SecuritySchemeInline ->
+                    SecuritySchemeValidator(context).validate(parsed.security, validationContext, results)
+
+                is SecuritySchemeInterface.SecuritySchemeReference ->
+                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+            }
+        }
+    }
+
+    private fun parseCorrelationId(targetNode: ParserNode): () -> Unit {
+        val parsed: CorrelationIdInterface = CorrelationIdParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            CorrelationIdValidator(context).validateInterface(
+                parsed,
+                "External CorrelationId '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseExternalDoc(targetNode: ParserNode): () -> Unit {
+        val parsed: ExternalDocInterface = ExternalDocsParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            ExternalDocsValidator(context).validateInterface(
+                parsed,
+                "External ExternalDoc '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseTag(targetNode: ParserNode): () -> Unit {
+        val parsed: TagInterface = TagParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            TagValidator(context).validateInterface(
+                parsed,
+                "External Tag '${targetNode.name}'",
+                results,
+            )
+        }
+    }
+
+    private fun parseBinding(targetNode: ParserNode): () -> Unit {
+        val parsed: BindingInterface = BindingParser(context).parseElement(targetNode)
+        return deferredValidation { results ->
+            val validationContext = "External Binding '${targetNode.name}'"
+            when (parsed) {
+                is BindingInterface.BindingInline ->
+                    BindingValidator(context).validate(parsed.binding, validationContext, results)
+
+                is BindingInterface.BindingReference ->
+                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+            }
+        }
+    }
+
+    private fun deferredValidation(validate: (ValidationResults) -> Unit): () -> Unit = {
+        val results = ValidationResults(context)
+        validate(results)
         results.logWarnings()
         results.throwErrors()
-    }
-
-    private fun parseAndValidateSchema(
-        target: ExternalReferenceTargetResolver.Target,
-        reference: Reference,
-        results: ValidationResults,
-    ) {
-        val selectedSchema =
-            target.objectContainer?.let { container ->
-                SchemaParser(context).parseMap(container)[target.node.name]
-            } ?: SchemaParser(context).parseElement(target.node)
-        requireNotNull(selectedSchema) {
-            "Resolved schema target '${reference.ref}' was not produced by SchemaParser"
-        }
-        val validator = SchemaValidator(context)
-        validator.validateInterface(
-            selectedSchema,
-            "External Schema '${target.node.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateChannel(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: ChannelInterface = ChannelParser(context).parseElement(targetNode)
-        ChannelValidator(context).validateInterface(
-            parsed,
-            "External Channel '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateMessage(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: MessageInterface = MessageParser(context).parseElement(targetNode)
-        val validator = MessageValidator(context)
-        val resolver = ReferenceResolver(context)
-        val validationContext = "External Message '${targetNode.name}'"
-        when (parsed) {
-            is MessageInterface.MessageInline ->
-                validator.validate(parsed.message, validationContext, results)
-
-            is MessageInterface.MessageReference ->
-                resolver.resolve(parsed.reference, validationContext, results)
-        }
-    }
-
-    private fun parseAndValidateMessageTrait(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: MessageTraitInterface = MessageTraitParser(context).parseElement(targetNode)
-        MessageTraitValidator(context).validateInterface(
-            parsed,
-            "External MessageTrait '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateOperation(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: OperationInterface = OperationParser(context).parseElement(targetNode)
-        OperationValidator(context).validateInterface(
-            parsed,
-            "External Operation '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateOperationTrait(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: OperationTraitInterface = OperationTraitParser(context).parseElement(targetNode)
-        OperationTraitValidator(context).validateInterface(
-            parsed,
-            "External OperationTrait '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateOperationReply(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: OperationReplyInterface = OperationReplyParser(context).parseElement(targetNode)
-        OperationReplyValidator(context).validateInterface(
-            parsed,
-            "External OperationReply '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateOperationReplyAddress(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: OperationReplyAddressInterface = OperationReplyAddressParser(context).parseElement(targetNode)
-        OperationReplyAddressValidator(context).validateInterface(
-            parsed,
-            "External OperationReplyAddress '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateServer(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: ServerInterface = ServerParser(context).parseElement(targetNode)
-        ServerValidator(context).validateInterface(
-            parsed,
-            "External Server '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateServerVariable(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: ServerVariableInterface = ServerVariableParser(context).parseElement(targetNode)
-        val validator = ServerVariableValidator(context)
-        val resolver = ReferenceResolver(context)
-        val validationContext = "External ServerVariable '${targetNode.name}'"
-        when (parsed) {
-            is ServerVariableInterface.ServerVariableInline ->
-                validator.validate(parsed.serverVariable, validationContext, results)
-
-            is ServerVariableInterface.ServerVariableReference ->
-                resolver.resolve(parsed.reference, validationContext, results)
-        }
-    }
-
-    private fun parseAndValidateParameter(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: ParameterInterface = ParameterParser(context).parseElement(targetNode)
-        ParameterValidator(context).validateInterface(
-            parsed,
-            "External Parameter '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateSecurityScheme(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: SecuritySchemeInterface = SecuritySchemeParser(context).parseElement(targetNode)
-        val validator = SecuritySchemeValidator(context)
-        val resolver = ReferenceResolver(context)
-        val validationContext = "External SecurityScheme '${targetNode.name}'"
-        when (parsed) {
-            is SecuritySchemeInterface.SecuritySchemeInline ->
-                validator.validate(parsed.security, validationContext, results)
-
-            is SecuritySchemeInterface.SecuritySchemeReference ->
-                resolver.resolve(parsed.reference, validationContext, results)
-        }
-    }
-
-    private fun parseAndValidateCorrelationId(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: CorrelationIdInterface = CorrelationIdParser(context).parseElement(targetNode)
-        CorrelationIdValidator(context).validateInterface(
-            parsed,
-            "External CorrelationId '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateExternalDoc(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: ExternalDocInterface = ExternalDocsParser(context).parseElement(targetNode)
-        ExternalDocsValidator(context).validateInterface(
-            parsed,
-            "External ExternalDoc '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateTag(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: TagInterface = TagParser(context).parseElement(targetNode)
-        TagValidator(context).validateInterface(
-            parsed,
-            "External Tag '${targetNode.name}'",
-            results,
-        )
-    }
-
-    private fun parseAndValidateBinding(targetNode: ParserNode, results: ValidationResults) {
-        val parsed: BindingInterface = BindingParser(context).parseElement(targetNode)
-        val validator = BindingValidator(context)
-        val resolver = ReferenceResolver(context)
-        val validationContext = "External Binding '${targetNode.name}'"
-        when (parsed) {
-            is BindingInterface.BindingInline ->
-                validator.validate(parsed.binding, validationContext, results)
-
-            is BindingInterface.BindingReference ->
-                resolver.resolve(parsed.reference, validationContext, results)
-        }
     }
 }

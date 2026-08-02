@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -25,19 +26,18 @@ class AsyncApiExternalContext(
     private val documents = mutableMapOf<String, ParserNode>()
     private val loadedDocuments = mutableSetOf<String>()
     private val loadedFragments = mutableSetOf<FragmentIdentity>()
+    private val pendingFragmentValidations = mutableListOf<() -> Unit>()
     private val pathResolver = ExternalReferencePathResolver()
+    private var fragmentLoadDepth = 0
 
     fun loadExternal(reference: Reference) {
         val referenceOrigin = context.modelRepository.getReferenceOrigin(reference)
+        val sourceFile =
+            referenceOrigin?.file
+                ?: reference.sourceId?.let(context::findFileById)
+                ?: context.getCurrentFile()
         val resolved = try {
-            val sourceFile =
-                referenceOrigin?.file
-                    ?: reference.sourceId?.let(context::findFileById)
-                    ?: context.getCurrentFile()
-            pathResolver.resolve(
-                reference.ref,
-                sourceFile,
-            )
+            resolveReference(reference, sourceFile)
         } catch (exception: URISyntaxException) {
             throw invalidReference(reference, exception.reason)
         } catch (exception: IllegalArgumentException) {
@@ -80,11 +80,51 @@ class AsyncApiExternalContext(
                 parserProfile = parserProfile?.name.orEmpty(),
             )
             if (!loadedFragments.add(fragmentIdentity)) return
-            ExternalFragmentProcessor(context).parseAndValidate(
+            parseFragment(target, reference)
+        }
+    }
+
+    private fun parseFragment(
+        target: ExternalReferenceTargetResolver.Target,
+        reference: Reference,
+    ) {
+        var parsed = false
+        fragmentLoadDepth++
+        try {
+            pendingFragmentValidations += ExternalFragmentProcessor(context).parseAndDeferValidation(
                 target = target,
                 reference = reference,
             )
+            parsed = true
+        } finally {
+            fragmentLoadDepth--
+            if (fragmentLoadDepth == 0) {
+                val validations = pendingFragmentValidations.toList()
+                pendingFragmentValidations.clear()
+                if (parsed) validations.forEach { it() }
+            }
         }
+    }
+
+    private fun resolveReference(
+        reference: Reference,
+        sourceFile: File,
+    ): ExternalReferencePathResolver.ResolvedReference? {
+        val parsed = reference.ref.parseReference()
+        if (parsed.isExternal) {
+            return pathResolver.resolve(reference.ref, sourceFile)
+        }
+
+        val canonicalSource = sourceFile.canonicalFile
+        val sourceRoot = documents[canonicalSource.absolutePath] ?: return null
+        val sourceIsAsyncApiDocument =
+            (sourceRoot.node as? DocumentObject)?.member("asyncapi") != null
+        if (sourceIsAsyncApiDocument) return null
+
+        return ExternalReferencePathResolver.ResolvedReference(
+            file = canonicalSource,
+            pointer = parsed.pointer,
+        )
     }
 
     private fun invalidReference(reference: Reference, reason: String): AsyncApiParseException =

@@ -204,11 +204,19 @@ An external fragment container does not need to be an AsyncAPI document or have
 an object root. JSON Pointer selection can traverse object or array containers,
 and a root scalar can be selected directly when the reference category permits
 that value, such as a boolean Schema Object. The selected target must satisfy
-the structure required by its reference category. A whole-file Message
-reference therefore selects one Message Object at the document root. A raw map
-containing multiple named messages is a container rather than one Message
-Object and must select an individual message with an explicit JSON Pointer;
-the parser does not bulk import or splice container members.
+the structure required by its reference category. Only the selected target is
+parsed; unrelated siblings in a heterogeneous raw file are not interpreted as
+members of the same category. A whole-file Message reference therefore selects
+one Message Object at the document root. A raw map containing multiple named
+messages is a container rather than one Message Object and must select an
+individual message with an explicit JSON Pointer; the parser does not bulk
+import or splice container members.
+
+References discovered inside a selected raw fragment retain their concrete
+category and resolve same-file JSON Pointers on demand. Reference chains and
+cycles are deduplicated by file, pointer, category, and parser profile. A
+missing same-file target is reported at the nested reference in the raw
+fragment that owns it.
 
 Loading is eager and deduplicated. It preserves each file's source locations and
 does not bundle or inline the model.
