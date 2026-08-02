@@ -21,6 +21,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
@@ -57,6 +58,26 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_valid.yaml")
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `exact Java-compatible pattern passes validation`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_pattern_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `pattern incompatible with generated validation constraint has a source-aware finding`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_pattern_invalid.yaml")
+
+        assertEquals(1, results.errors.size)
+        assertRule(
+            results,
+            SCHEMA_PATTERN,
+            path = "asyncapi_validator_schema_pattern_invalid.root.components.schemas.InvalidPattern.pattern",
+            line = 9,
+        )
     }
 
     @Test

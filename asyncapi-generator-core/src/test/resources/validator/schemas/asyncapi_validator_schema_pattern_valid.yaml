@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Pattern Valid
+  version: 1.0.0
+components:
+  schemas:
+    ExactPattern:
+      type: string
+      pattern: ' ^\d+"quoted"$ '

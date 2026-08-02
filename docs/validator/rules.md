@@ -131,7 +131,7 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `JSONSCHEMA-MULTIPLE-OF` | `multipleOf` is not positive | JS7 numeric validation | specification / error | `multipleOf` | valid; arbitrary precision retained | `SchemaValidatorTest` |
 | `JSONSCHEMA-STRING-LENGTH` | String length bound is not a nonnegative integer | JS7 string validation | specification / error | `minLength`, `maxLength` | valid | `SchemaValidatorTest` |
 | `GEN-SCHEMA-STRING-LENGTH-RANGE` | Minimum string length exceeds maximum length | Generator constraint mapping | capability / error | `minLength` | valid generator safeguard | `SchemaValidatorTest` |
-| `JSONSCHEMA-PATTERN` | Pattern is not accepted | JS7 string validation | specification / error | `pattern` | incomplete: ECMA-262 compatibility pending | `SchemaValidatorTest` |
+| `GEN-SCHEMA-PATTERN` | Pattern cannot compile under the Java regex engine used by generated Jakarta Validation constraints | Generator behavior | capability / error | `pattern` | valid generator safeguard; exact value is preserved and source-literal escaped | `SchemaValidatorTest`, `ConstraintMapperTest` |
 | `JSONSCHEMA-ARRAY-SIZE` | Array size bound is not a nonnegative integer | JS7 array validation | specification / error | `minItems`, `maxItems` | valid | `SchemaValidatorTest` |
 | `GEN-SCHEMA-ARRAY-SIZE-RANGE` | Minimum array size exceeds maximum size | Generator behavior | capability / error | `minItems` | valid generator safeguard | `SchemaValidatorTest` |
 | `JSONSCHEMA-OBJECT-SIZE` | Object size bound is not a nonnegative integer | JS7 object validation | specification / error | `minProperties`, `maxProperties` | valid | `SchemaValidatorTest` |
@@ -145,4 +145,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, ECMA-262-compatible pattern handling, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.

@@ -14,6 +14,8 @@ AsyncAPI Schema Objects also extend Draft 7 with fields such as `discriminator`,
 
 The library's default regular-expression implementation uses Java regular expressions rather than ECMA-262. Its own documentation recommends optional Joni or GraalJS integrations for closer compatibility. Adopting it would therefore not remove the separate pattern-engine decision.
 
+The generator emits Schema Object patterns through Jakarta Validation's `@Pattern`, whose contract uses `java.util.regex.Pattern`. The validator consequently checks that runtime as a generator-capability boundary and preserves the exact value when escaping generated Java and Kotlin source. AsyncAPI says a pattern SHOULD use ECMA-262 rather than making that dialect a conformance requirement, so adding a JavaScript runtime solely for schema-authoring diagnostics would impose a disproportionate dependency and execution surface.
+
 ## Consequence
 
 The current implementation uses the source-located domain graph for traversal and diagnostics, `BigInteger` and `BigDecimal` for exact numeric decisions, and explicit presence flags where Kotlin `null` must remain distinguishable from an absent keyword. It implements only rules that can be mapped to an AsyncAPI or Draft 7 requirement, or to a documented generator capability. Generator-only inference, such as deriving `string` for an untyped all-string enum, occurs after validation in generation analysis and does not mutate parser output.

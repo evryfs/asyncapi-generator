@@ -50,6 +50,8 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.math.BigDecimal
 import java.util.Collections
 import java.util.IdentityHashMap
+import java.util.regex.Pattern
+import java.util.regex.PatternSyntaxException
 
 class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
@@ -460,11 +462,12 @@ class SchemaValidator(
     private fun validatePattern(node: Schema, contextString: String, results: ValidationCollector) {
         val pattern = node.pattern ?: return
         try {
-            Regex(pattern)
-        } catch (ex: Exception) {
+            Pattern.compile(pattern)
+        } catch (ex: PatternSyntaxException) {
             results.error(
                 SCHEMA_PATTERN,
-                "$contextString invalid regex pattern in 'pattern': $pattern (${ex.message})",
+                "$contextString 'pattern' cannot be compiled by the Java regular-expression engine used by " +
+                    "generated Jakarta Validation constraints: ${ex.description}.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::pattern),
             )
         }

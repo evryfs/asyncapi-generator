@@ -34,6 +34,8 @@ An enum without `type` remains untyped in the parsed domain model. Generation an
 
 Recursive Schema Object traversal covers properties, pattern properties, definitions, dependency schemas, array applicators, composition, conditionals, and tuple members. Boolean schemas terminate traversal normally. Draft 7 tuple-form `items` remains present in the parsed model so its members receive source-aware validation, but generation reports a capability error because Java and Kotlin collection types cannot retain position-specific tuple constraints. The established single-schema `items` API remains unchanged.
 
+String patterns remain exact parsed values. AsyncAPI recommends ECMA-262 syntax, but generated Jakarta Validation annotations execute patterns through `java.util.regex`. The validator therefore reports Java-incompatible patterns as generator-capability errors instead of misclassifying them as JSON Schema conformance errors. Generation escapes the exact pattern for its Java or Kotlin source literal without trimming or removing characters. A JavaScript runtime is not added solely to enforce the specification's non-mandatory regex recommendation.
+
 ## Finding contract
 
 Every finding contains:
