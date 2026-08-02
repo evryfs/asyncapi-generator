@@ -3,12 +3,12 @@ package dev.banking.asyncapi.generator.core.parser.node
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.document.DocumentFormat
 import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.reader.YamlDocumentReader
+import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -16,19 +16,25 @@ import kotlin.test.assertNotNull
 
 class ParserNodeFactoryTest {
 
-    private val reader = YamlDocumentReader()
-
     @Test
     fun `creates parser root node from input document`() {
         val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
+        val file = File("source-map.yaml").canonicalFile
         val source = DocumentSource(
             id = "source-map",
             file = file,
-            content = file.readText(),
+            content =
+                """
+                asyncapi: '3.0.0'
+                info:
+                  title: Demo
+                  tags:
+                    - public
+                """.trimIndent(),
             format = DocumentFormat.YAML,
         )
-        val document = reader.read(source)
+        val document = DocumentReaderRegistry.read(source)
+
         val root = ParserNodeFactory.root(document, context)
 
         assertEquals("source_map.root", root.name)
@@ -40,14 +46,22 @@ class ParserNodeFactoryTest {
     @Test
     fun `registers source locations using parser path convention`() {
         val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
+        val file = File("source-map.yaml").canonicalFile
         val source = DocumentSource(
             id = "source-map",
             file = file,
-            content = file.readText(),
+            content =
+                """
+                asyncapi: '3.0.0'
+                info:
+                  title: Demo
+                  tags:
+                    - public
+                """.trimIndent(),
             format = DocumentFormat.YAML,
         )
-        val document = reader.read(source)
+        val document = DocumentReaderRegistry.read(source)
+
         ParserNodeFactory.root(document, context)
 
         assertEquals(1, context.sourceRepository.getLine("source_map.root"))
@@ -61,14 +75,22 @@ class ParserNodeFactoryTest {
     @Test
     fun `registers full source locations using parser path convention`() {
         val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
+        val file = File("source-map.yaml").canonicalFile
         val source = DocumentSource(
             id = "source-map",
             file = file,
-            content = file.readText(),
+            content =
+                """
+                asyncapi: '3.0.0'
+                info:
+                  title: Demo
+                  tags:
+                    - public
+                """.trimIndent(),
             format = DocumentFormat.YAML,
         )
-        val document = reader.read(source)
+        val document = DocumentReaderRegistry.read(source)
+
         ParserNodeFactory.root(document, context)
 
         val titleLocation = assertNotNull(
@@ -90,14 +112,21 @@ class ParserNodeFactoryTest {
     @Test
     fun `strict expectations report locations supplied by the document reader`() {
         val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
+        val file = File("source-map.yaml").canonicalFile
         val source = DocumentSource(
             id = "source-map",
             file = file,
-            content = file.readText(),
+            content =
+                """
+                asyncapi: '3.0.0'
+                info:
+                  title: Demo
+                  tags:
+                    - public
+                """.trimIndent(),
             format = DocumentFormat.YAML,
         )
-        val document = reader.read(source)
+        val document = DocumentReaderRegistry.read(source)
         val title = ParserNodeFactory.root(document, context)
             .expectObject().required("info")
             .expectObject().required("title")
