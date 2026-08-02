@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdPars
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
@@ -64,7 +65,7 @@ class MessageTraitParser(
                     description = objectNode.optional("description")?.expect<String>(),
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, MESSAGE) },
                     examples = objectNode.optional("examples")?.let(messageExampleParser::parseList),
                 ).also { asyncApiContext.register(it, parserNode) }
             )

@@ -19,6 +19,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.UNKNOWN
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
@@ -83,7 +84,7 @@ class ExternalFragmentProcessor(
             CORRELATION_ID -> parseCorrelationId(targetNode)
             EXTERNAL_DOC -> parseExternalDoc(targetNode)
             TAG -> parseTag(targetNode)
-            BINDING -> parseBinding(targetNode)
+            BINDING -> parseBinding(targetNode, reference)
             REFERENCE -> throw IllegalArgumentException(
                 "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
                     "Assign a concrete ReferenceCategoryKey at parser creation site."
@@ -275,8 +276,13 @@ class ExternalFragmentProcessor(
         }
     }
 
-    private fun parseBinding(targetNode: ParserNode): () -> Unit {
-        val parsed: BindingInterface = BindingParser(context).parseElement(targetNode)
+    private fun parseBinding(targetNode: ParserNode, reference: Reference): () -> Unit {
+        val origin = context.getBindingReferenceOrigin(reference)
+        val parsed: BindingInterface = if (origin?.protocol != null) {
+            BindingParser(context).parseProtocol(targetNode, origin.location, origin.protocol)
+        } else {
+            BindingParser(context).parseComponent(targetNode, origin?.location ?: UNKNOWN)
+        }
         return deferredValidation { results ->
             val validationContext = "External Binding '${targetNode.name}'"
             when (parsed) {

@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER as SERVER_BINDING
 
 /**
  * Parses AsyncAPI server objects from parser nodes.
@@ -54,7 +55,7 @@ class ServerParser(
                     summary = objectNode.optional("summary")?.expect<String>(),
                     variables = objectNode.optional("variables")?.let(serverVariableParser::parseMap),
                     security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
-                    bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap),
+                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SERVER_BINDING) },
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                 ).also { asyncApiContext.register(it, parserNode) },

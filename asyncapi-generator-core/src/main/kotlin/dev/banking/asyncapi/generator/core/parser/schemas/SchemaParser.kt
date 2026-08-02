@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA as SCHEMA_BINDING
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
@@ -161,7 +162,7 @@ class SchemaParser(
         val discriminator = objectNode.optional("discriminator")?.expect<String>()
         val externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
         val deprecated = objectNode.optional("deprecated")?.expect<Boolean>()
-        val bindings = objectNode.optional("bindings")?.let(bindingParser::parseMap)
+        val bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SCHEMA_BINDING) }
         val extensions = objectNode
             .membersStartingWith("x-")
             .associateTo(linkedMapOf()) { extension ->

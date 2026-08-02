@@ -36,6 +36,8 @@ Recursive Schema Object traversal covers properties, pattern properties, definit
 
 String patterns remain exact parsed values. AsyncAPI recommends ECMA-262 syntax, but generated Jakarta Validation annotations execute patterns through `java.util.regex`. The validator therefore reports Java-incompatible patterns as generator-capability errors instead of misclassifying them as JSON Schema conformance errors. Generation escapes the exact pattern for its Java or Kotlin source literal without trimming or removing characters. A JavaScript runtime is not added solely to enforce the specification's non-mandatory regex recommendation.
 
+Protocol binding content remains free-form in the public domain model and in serialized output. The parser additionally records validation metadata for each protocol binding: protocol name, owning server/channel/operation/message location, exact binding version value, and parsed schema-valued fields. Binding validators consume that metadata instead of guessing whether a map is wrapped or which vocabulary applies. Kafka 0.4.0 and 0.5.0 are supported explicitly. Unknown protocols are preserved without speculative generic warnings, while known Kafka fields are checked against their location-specific vocabulary and their embedded Schema Objects continue through ordinary schema validation.
+
 ## Finding contract
 
 Every finding contains:

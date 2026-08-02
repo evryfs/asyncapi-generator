@@ -1,0 +1,7 @@
+channelKafka:
+  topic: external.events
+  partitions: 3
+  replicas: 1
+  topicConfiguration:
+    cleanup.policy: [delete, compact]
+  bindingVersion: '0.4.0'

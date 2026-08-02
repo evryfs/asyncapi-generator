@@ -1,49 +1,119 @@
 package dev.banking.asyncapi.generator.core.validator.bindings
 
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
+import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_UNSUPPORTED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CHANNEL_POSITIVE_INTEGER
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CLEANUP_POLICY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 
 class BindingValidatorTest : AbstractValidatorTest() {
 
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
-    fun `invalid bindings trigger warnings`() {
-        val document = parse("validator/bindings/asyncapi_validator_binding_invalid.yaml")
-        val results = asyncApiValidator.validate(document)
-        assertFalse(results.hasErrors(), "Expected no errors, but found: ${results.errors}")
-
-        val warnings = results.warnings.map { it.message }
-        assertEquals(3, warnings.size, "Expected 3 warnings for invalid bindings.")
-        assertFinding(
-            results,
-            severity = WARNING,
-            messageContains = "is empty",
-            sourceFile = "asyncapi_validator_binding_invalid.yaml",
-            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.EmptyBinding",
-            line = 8,
-        )
-        assertFinding(
-            results,
-            severity = WARNING,
-            messageContains = "Property 'protocol'",
-            sourceFile = "asyncapi_validator_binding_invalid.yaml",
-            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.BindingWithNullProperty",
-            line = 11,
-        )
-    }
-
-    @Test
-    fun `valid binding passes validation`() {
+    fun `Kafka binding versions 0_4 and 0_5 pass at every supported location`() {
         val document = parse("validator/bindings/asyncapi_validator_binding_valid.yaml")
         val results = asyncApiValidator.validate(document)
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `Kafka rules report exact fields for each binding location`() {
+        val results = validate("validator/bindings/asyncapi_validator_binding_invalid.yaml")
+
+        assertEquals(17, results.errors.size, "Unexpected findings: ${results.findings}")
+        assertRule(
+            results,
+            BINDING_EMPTY,
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.EmptyBinding",
+            line = 18,
+        )
+        assertRule(
+            results,
+            KAFKA_SCHEMA_REGISTRY_URL_FORMAT,
+            path = "asyncapi_validator_binding_invalid.root.components.serverBindings.InvalidServer.kafka.schemaRegistryUrl",
+            line = 9,
+        )
+        assertRule(
+            results,
+            KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL,
+            path = "asyncapi_validator_binding_invalid.root.components.serverBindings.MissingRegistryUrl.kafka.schemaRegistryVendor",
+            line = 15,
+        )
+        assertRule(
+            results,
+            KAFKA_CHANNEL_POSITIVE_INTEGER,
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.InvalidChannel.kafka.partitions",
+            line = 22,
+        )
+        assertRule(
+            results,
+            KAFKA_CLEANUP_POLICY,
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.InvalidChannel.kafka.topicConfiguration.cleanup.policy",
+            line = 25,
+        )
+        assertRule(
+            results,
+            KAFKA_BINDING_VERSION_TYPE,
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.InvalidVersionType.kafka.bindingVersion",
+            line = 31,
+        )
+        assertRule(
+            results,
+            KAFKA_BINDING_VERSION_TYPE,
+            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.NullVersion.kafka.bindingVersion",
+            line = 34,
+        )
+        assertRule(
+            results,
+            KAFKA_BINDING_FIELD_TYPE,
+            path = "asyncapi_validator_binding_invalid.root.components.operationBindings.InvalidOperation.kafka.groupId",
+            line = 38,
+        )
+        assertRule(
+            results,
+            KAFKA_BINDING_VERSION_UNSUPPORTED,
+            path = "asyncapi_validator_binding_invalid.root.components.messageBindings.InvalidMessage.kafka.bindingVersion",
+            line = 48,
+        )
+        assertEquals(4, results.findings.count { it.code == KAFKA_BINDING_FIELD.code })
+        assertEquals(5, results.findings.count { it.code == KAFKA_BINDING_FIELD_TYPE.code })
+    }
+
+    @Test
+    fun `malformed programmatic protocol content produces a finding instead of an exception`() {
+        val binding = Binding(
+            content = mapOf("kafka" to listOf("not", "an", "object")),
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = CHANNEL,
+                    content = listOf("not", "an", "object"),
+                    bindingVersion = null,
+                ),
+            ),
+        )
+        val collector = ValidationCollector(V3_0)
+
+        BindingValidator(asyncApiContext).validate(binding, "Programmatic binding", collector)
+
+        assertRule(collector.report(), BINDING_PROTOCOL_TYPE)
     }
 
     @Test

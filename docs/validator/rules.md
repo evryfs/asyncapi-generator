@@ -4,7 +4,7 @@ This reference inventories the checks present when validator hardening began. Th
 
 Statuses mean: **valid** is presently defensible, **incomplete** has a sound purpose but incomplete coverage or overly broad implementation, **incorrect** conflicts with the governing specification, **advisory** is optional guidance, and **generator-specific** is a capability boundary rather than conformance.
 
-Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/specification/v3.0.0), [the AsyncAPI 3.0 Schema Object (A3 Schema)](https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject), and [JSON Schema Draft 7 validation (JS7)](https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01). Test names identify the focused test owner; gaps are explicit.
+Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/specification/v3.0.0), [the AsyncAPI 3.0 Schema Object (A3 Schema)](https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject), [JSON Schema Draft 7 validation (JS7)](https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01), and the [official Kafka binding specification](https://www.asyncapi.com/docs/reference/bindings/kafka). Test names identify the focused test owner; gaps are explicit.
 
 ## Document and metadata
 
@@ -97,12 +97,15 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | Code | Object and condition | Authority | Concern / severity | Source field | Status | Test |
 |---|---|---|---|---|---|---|
 | `ADV-BINDING-EMPTY` | Bindings object is empty | Project guidance | advisory / warning | bindings object | advisory | `BindingValidatorTest` |
-| `ADV-BINDING-PROTOCOL-NULL` | Binding protocol value is null | Project guidance | advisory / warning | protocol key | advisory | `BindingValidatorTest` |
-| `AAS3-BINDING-PROTOCOL-TYPE` | Binding protocol value is not an object | A3 Binding Objects | specification / error | protocol key | incomplete: binding location/version context missing | `BindingValidatorTest` |
-| `ADV-BINDING-PROPERTY-NULL` | Binding property is null | Project guidance | advisory / warning | binding property | advisory | `BindingValidatorTest` |
-| `GEN-BINDING-PROPERTY-LIST` | Binding property list is rejected generically | Generator behavior | capability / warning | binding property | incorrect for fields such as Kafka cleanup policy | `BindingValidatorTest` |
-| `ADV-BINDING-PROPERTY-EMPTY` | Binding property string is empty | Project guidance | advisory / warning | binding property | advisory | `BindingValidatorTest` |
-| `GEN-BINDING-PROPERTY-TYPE` | Generic binding property type is unsupported | Generator behavior | capability / warning | binding property | incomplete: protocol/location-specific rules pending | `BindingValidatorTest` |
+| `AAS3-BINDING-PROTOCOL-TYPE` | Binding protocol value is not an object with string property names | A3 Binding Objects | specification / error | protocol key | valid resilience boundary; source documents are rejected structurally by the parser | `BindingValidatorTest` |
+| `AAS3-KAFKA-BINDING-VERSION-TYPE` | Kafka `bindingVersion` is not a string | Kafka binding | specification / error | `bindingVersion` | valid | `BindingValidatorTest` |
+| `GEN-KAFKA-BINDING-VERSION` | Kafka binding version is outside the generator's supported 0.4.0 and 0.5.0 versions | Generator behavior | capability / error | `bindingVersion` | generator-specific | `BindingValidatorTest` |
+| `AAS3-KAFKA-BINDING-FIELD` | Kafka binding contains a field not defined at its server, channel, operation, or message location | Kafka binding | specification / error | unexpected field | valid; specification extensions remain allowed | `BindingValidatorTest` |
+| `AAS3-KAFKA-BINDING-FIELD-TYPE` | Kafka binding field has the wrong exact value type | Kafka binding | specification / error | binding field | valid | `BindingValidatorTest` |
+| `AAS3-KAFKA-CHANNEL-POSITIVE-INTEGER` | Kafka channel partitions or replicas is not a positive integer | Kafka channel binding | specification / error | `partitions` or `replicas` | valid; numeric precision is retained | `BindingValidatorTest` |
+| `AAS3-KAFKA-SCHEMA-REGISTRY-URL` | Kafka schema-registry URL is not absolute | Kafka server binding | specification / error | `schemaRegistryUrl` | valid | `BindingValidatorTest` |
+| `AAS3-KAFKA-SCHEMA-REGISTRY-VENDOR-URL` | Kafka schema-registry vendor is present without a registry URL | Kafka server binding | specification / error | `schemaRegistryVendor` | valid | `BindingValidatorTest` |
+| `AAS3-KAFKA-CLEANUP-POLICY` | Kafka cleanup policy is not an array containing only `delete` and/or `compact` | Kafka channel binding | specification / error | `topicConfiguration.cleanup.policy` | valid; list values are supported | `BindingValidatorTest` |
 | `AAS3-REFERENCE-UNRESOLVED` | Reference cannot resolve | A3 Reference Object | specification / error | `$ref` | valid for reachable typed references | `OperationValidatorTest`, external-reference tests |
 | `GEN-REFERENCE-CATEGORY-REQUIRED` | Parser-created reference lacks the concrete category required by its owning field | Generator/parser contract | capability / error | `$ref` | valid resilience boundary | `ReferenceIntegrityValidatorTest` |
 | `AAS3-REFERENCE-TARGET-CATEGORY` | Reference resolves to an object outside the category required by its owning field | A3 Reference Object and owning field | specification / error | `$ref` | valid | `ReferenceIntegrityValidatorTest` |
@@ -145,4 +148,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message example conformance against header and payload schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet. Message example conformance against header and payload schemas remains a later implementation slice, not implicit behavior of the rules above. Kafka fields whose validity depends on correlating a message binding with a selected server's schema-registry configuration are also deferred until traversal exposes that relationship explicitly.
