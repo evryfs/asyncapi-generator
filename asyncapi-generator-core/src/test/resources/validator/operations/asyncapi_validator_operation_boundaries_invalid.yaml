@@ -77,3 +77,16 @@ operations:
     reply:
       address:
         location: '$message.unknown#/replyTo'
+  EmptyReplyMessages:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      messages: []
+  MissingReplyAddressLocation:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      address:
+        location: ''

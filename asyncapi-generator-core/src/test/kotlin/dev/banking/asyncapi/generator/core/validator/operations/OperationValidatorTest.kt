@@ -5,10 +5,12 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGES_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -31,7 +33,8 @@ class OperationValidatorTest : AbstractValidatorTest() {
     fun `enforces operation and reply channel ownership and message subsets`() {
         val results = validate("validator/operations/asyncapi_validator_operation_boundaries_invalid.yaml")
 
-        assertEquals(7, results.errors.size)
+        assertEquals(8, results.errors.size)
+        assertEquals(1, results.warnings.size)
         assertRule(
             results,
             OPERATION_CHANNEL_REFERENCE_SCOPE,
@@ -73,6 +76,19 @@ class OperationValidatorTest : AbstractValidatorTest() {
             OPERATION_REPLY_ADDRESS_FORMAT,
             path = "asyncapi_validator_operation_boundaries_invalid.root.operations.InvalidReplyAddress.reply.address.location",
             line = 79,
+        )
+        assertRule(
+            results,
+            OPERATION_REPLY_MESSAGES_EMPTY,
+            path = "asyncapi_validator_operation_boundaries_invalid.root.operations.EmptyReplyMessages.reply.messages",
+            line = 85,
+        )
+        assertRule(
+            results,
+            OPERATION_REPLY_ADDRESS_REQUIRED,
+            path = "asyncapi_validator_operation_boundaries_invalid.root.operations." +
+                "MissingReplyAddressLocation.reply.address.location",
+            line = 92,
         )
     }
 

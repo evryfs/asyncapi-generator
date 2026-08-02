@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.validator.asyncapi
 
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.ValidationStage
@@ -35,6 +36,19 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
         val validationResults = validate("validator/asyncapi/asyncapi_validator_document_formats_valid.yaml")
 
         assertNoFindings(validationResults)
+    }
+
+    @Test
+    fun `valid non-URN document identifier produces a source-aware advisory`() {
+        val results = validate("validator/asyncapi/asyncapi_validator_document_advisory.yaml")
+
+        assertEquals(1, results.warnings.size)
+        assertRule(
+            results,
+            DOCUMENT_ID_URN_RECOMMENDED,
+            path = "asyncapi_validator_document_advisory.root.id",
+            line = 2,
+        )
     }
 
     @Test
