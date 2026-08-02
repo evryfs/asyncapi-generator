@@ -60,9 +60,10 @@ class SchemaValidator(
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
+    private val propertyDeclarations = SchemaPropertyDeclarations(asyncApiContext)
 
     fun validateInterface(schemaInterface: SchemaInterface, contextString: String, results: ValidationCollector) {
-        validateInterface(schemaInterface, contextString, results, newVisitedSet())
+        validateInterface(schemaInterface, contextString, results, newVisitedSet(), emptySet())
     }
 
     fun validateMap(
@@ -72,7 +73,7 @@ class SchemaValidator(
     ) {
         val visited = newVisitedSet()
         schemas.forEach { (name, schema) ->
-            validateInterface(schema, "$contextString Schema '$name'", results, visited)
+            validateInterface(schema, "$contextString Schema '$name'", results, visited, emptySet())
         }
     }
 
@@ -81,10 +82,11 @@ class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
         visited: MutableSet<Any>,
+        enclosingDeclarations: Set<String>,
     ) {
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
-                validate(schemaInterface.schema, contextString, results, visited)
+                validate(schemaInterface.schema, contextString, results, visited, enclosingDeclarations)
 
             is SchemaInterface.SchemaReference ->
                 validateReference(schemaInterface.reference, contextString, results, visited)
@@ -95,7 +97,7 @@ class SchemaValidator(
     }
 
     fun validate(node: Schema, contextString: String, results: ValidationCollector) {
-        validate(node, contextString, results, newVisitedSet())
+        validate(node, contextString, results, newVisitedSet(), emptySet())
     }
 
     private fun validate(
@@ -103,10 +105,12 @@ class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
         visited: MutableSet<Any>,
+        enclosingDeclarations: Set<String>,
     ) {
         if (!visited.add(node) || !results.visit(node)) {
             return
         }
+        val applicableDeclarations = enclosingDeclarations + propertyDeclarations.collect(node)
         validateKeywords(node, contextString, results)
         validateDialect(node, contextString, results)
         validateKeywordRepresentations(node, contextString, results)
@@ -117,7 +121,7 @@ class SchemaValidator(
         validateStringLength(node, contextString, results)
         validatePattern(node, contextString, results)
         validateArray(node, contextString, results)
-        validateObject(node, contextString, results)
+        validateObject(node, applicableDeclarations, contextString, results)
         validateDependencies(node, contextString, results)
         validateDefaultValue(node, contextString, results)
         validateDiscriminator(node, contextString, results)
@@ -126,36 +130,48 @@ class SchemaValidator(
 
         // Recursive validation for nested schemas
         node.properties?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, visited)
+            validateInterface(subSchema, name, results, visited, emptySet())
         }
         node.patternProperties?.forEach { (pattern, subSchema) ->
-            validateInterface(subSchema, "Pattern property '$pattern'", results, visited)
+            validateInterface(subSchema, "Pattern property '$pattern'", results, visited, emptySet())
         }
         node.definitions?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, visited)
+            validateInterface(subSchema, name, results, visited, emptySet())
         }
-        node.items?.let { validateInterface(it, contextString, results, visited) }
+        node.items?.let { validateInterface(it, contextString, results, visited, emptySet()) }
         node.tupleItems?.forEachIndexed { index, subSchema ->
-            validateInterface(subSchema, "$contextString tuple item $index", results, visited)
+            validateInterface(subSchema, "$contextString tuple item $index", results, visited, emptySet())
         }
-        node.additionalItems?.let { validateInterface(it, contextString, results, visited) }
-        node.additionalProperties?.let { validateInterface(it, contextString, results, visited) }
-        node.contains?.let { validateInterface(it, contextString, results, visited) }
-        node.propertyNames?.let { validateInterface(it, contextString, results, visited) }
+        node.additionalItems?.let { validateInterface(it, contextString, results, visited, emptySet()) }
+        node.additionalProperties?.let { validateInterface(it, contextString, results, visited, emptySet()) }
+        node.contains?.let { validateInterface(it, contextString, results, visited, emptySet()) }
+        node.propertyNames?.let { validateInterface(it, contextString, results, visited, emptySet()) }
         node.dependencies?.forEach { (name, dependency) ->
             if (dependency is SchemaInterface) {
-                validateInterface(dependency, "$contextString dependency '$name'", results, visited)
+                validateInterface(
+                    dependency,
+                    "$contextString dependency '$name'",
+                    results,
+                    visited,
+                    applicableDeclarations,
+                )
             }
         }
 
-        node.allOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
-        node.anyOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
-        node.oneOf?.forEach { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.allOf?.forEach { subSchema ->
+            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+        }
+        node.anyOf?.forEach { subSchema ->
+            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+        }
+        node.oneOf?.forEach { subSchema ->
+            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+        }
 
-        node.not?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
-        node.ifSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
-        node.thenSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
-        node.elseSchema?.let { subSchema -> validateInterface(subSchema, contextString, results, visited) }
+        node.not?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
+        node.ifSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
+        node.thenSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
+        node.elseSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
     }
 
     private fun validateReference(
@@ -490,7 +506,12 @@ class SchemaValidator(
         )
     }
 
-    private fun validateObject(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateObject(
+        node: Schema,
+        applicableDeclarations: Set<String>,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val minimum = validateNonNegativeInteger(
             node,
             "minProperties",
@@ -534,15 +555,12 @@ class SchemaValidator(
                 doc = "https://www.learnjsonschema.com/draft7/validation/required/",
             )
         }
-        val definedProperties = node.properties?.keys ?: emptySet()
-        // This is a shallow check. It doesn't check 'allOf' or 'patternProperties'.
-        // That's why we use a Warning, not an Error.
-        val missing = required.filter { it !in definedProperties }
+        val missing = required.filter { it !in applicableDeclarations }
         if (missing.isNotEmpty()) {
             results.warn(
                 SCHEMA_REQUIRED_UNDECLARED,
-                "$contextString lists required properties $missing that are not defined in 'properties'. Ensure " +
-                    "they are defined in 'allOf' or 'additionalProperties', otherwise generation may fail.",
+                "$contextString lists required properties $missing that are not declared in this object or its " +
+                    "'allOf' composition. Define them explicitly, otherwise generation may fail.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::required),
                 doc = "https://www.learnjsonschema.com/draft7/validation/required/",
             )
@@ -601,27 +619,21 @@ class SchemaValidator(
 
     private fun validateDiscriminator(node: Schema, contextString: String, results: ValidationCollector) {
         val discriminator = node.discriminator ?: return
-        val required = node.required
-        val properties = node.properties?.keys
-        required?.contains(discriminator)?.let {
-            if (!it) {
-                results.error(
-                    SCHEMA_DISCRIMINATOR_REQUIRED,
-                    "$contextString discriminator property '$discriminator' must be listed in 'required'.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
-                )
-            }
+        if (discriminator !in node.required.orEmpty()) {
+            results.error(
+                SCHEMA_DISCRIMINATOR_REQUIRED,
+                "$contextString discriminator property '$discriminator' must be listed in 'required'.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
+            )
         }
-        properties?.contains(discriminator)?.let {
-            if (!it) {
-                results.error(
-                    SCHEMA_DISCRIMINATOR_PROPERTY,
-                    "$contextString discriminator property '$discriminator' must exist in 'properties'.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
-                )
-            }
+        if (discriminator !in node.properties.orEmpty()) {
+            results.error(
+                SCHEMA_DISCRIMINATOR_PROPERTY,
+                "$contextString discriminator property '$discriminator' must exist in 'properties'.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
+            )
         }
     }
 

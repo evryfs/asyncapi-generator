@@ -123,7 +123,7 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `JSONSCHEMA-DEPENDENCY-ARRAY-NONEMPTY` | Property dependency array is empty | JS7 dependencies | specification / error | dependency array | valid | `SchemaValidatorTest` |
 | `JSONSCHEMA-DEPENDENCY-ARRAY-UNIQUE` | Property dependency repeats a property name | JS7 dependencies | specification / error | duplicate member | valid | `SchemaValidatorTest` |
 | `JSONSCHEMA-EXCLUSIVE-BOUND-TYPE` | Exclusive bound is not numeric | JS7 numeric validation | specification / error | `exclusiveMinimum` or `exclusiveMaximum` | valid | `SchemaValidatorTest` |
-| `AAS3-SCHEMA-DISCRIMINATOR-TYPE` | Discriminator has an unsupported representation | A3 Schema | specification / error | `discriminator` | incomplete: AsyncAPI-specific behavior audit | `SchemaValidatorTest` |
+| `AAS3-SCHEMA-DISCRIMINATOR-TYPE` | Discriminator has an unsupported representation | A3 Schema | specification / error | `discriminator` | valid; exact string representation required | `SchemaValidatorTest` |
 | `GEN-SCHEMA-DIALECT` | Schema dialect is not the supported dialect | A3 Schema / generator behavior | capability / error | `schemaFormat` | incomplete: native and multi-format policy pending | `SchemaValidatorTest` |
 | `JSONSCHEMA-TYPE` | Schema type value is not an exact supported string, or a type-array member is not a string | JS7 type | specification / error | `type` | valid | `SchemaValidatorTest` |
 | `JSONSCHEMA-TYPE-ARRAY-NONEMPTY` | Type array is empty | JS7 type | specification / error | `type` | valid | `SchemaValidatorTest` |
@@ -143,10 +143,10 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `GEN-SCHEMA-OBJECT-SIZE-RANGE` | Minimum property count exceeds maximum count | Generator behavior | capability / error | `minProperties` | valid generator safeguard | `SchemaValidatorTest` |
 | `ADV-SCHEMA-REQUIRED-EMPTY` | Required list is empty | Project guidance | advisory / warning | `required` | advisory | `SchemaValidatorTest` |
 | `JSONSCHEMA-REQUIRED-UNIQUE` | Required list contains duplicates | JS7 required | specification / error | `required` | valid | `SchemaValidatorTest` |
-| `GEN-SCHEMA-REQUIRED-UNDECLARED` | Required property is not locally declared | Generator behavior | capability / warning | `required` | incomplete: composition/dependency awareness pending | `SchemaValidatorTest` |
+| `GEN-SCHEMA-REQUIRED-UNDECLARED` | Required property is absent from its applicable object declaration scope | Generator behavior | capability / warning | `required` | valid; enclosing declarations and cyclic internal/external `allOf` references are followed | `SchemaValidatorTest` |
 | `GEN-SCHEMA-DEFAULT-TYPE` | Default cannot be represented by the generator's declared schema type | Generator behavior | capability / error | `default` | exact values and explicit null supported; absent type is not inferred | `SchemaValidatorTest` |
-| `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not required | A3 Schema | specification / error | `discriminator`, `required` | incomplete: conformance audit pending | `SchemaValidatorTest` |
-| `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not declared | A3 Schema | specification / error | `discriminator`, `properties` | incomplete: composition awareness pending | `SchemaValidatorTest` |
+| `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not locally required | A3 Schema | specification / error | `discriminator`, `required` | valid; absent and non-matching local required lists fail | `SchemaValidatorTest` |
+| `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not locally declared | A3 Schema | specification / error | `discriminator`, `properties` | valid; AsyncAPI requires definition by the same Schema Object | `SchemaValidatorTest` |
 
 ## Known unrepresented rule areas
 

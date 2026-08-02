@@ -14,6 +14,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_ITEMS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
@@ -23,6 +25,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
@@ -387,14 +390,35 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `schema with invalid discriminator definition throws validation errors`() {
-        val document =
-            parse("validator/schemas/asyncapi_validator_schema_invalid_discriminator.yaml")
-        val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(2, exception.errors.size, "Expected 2 errors for invalid discriminator definitions.")
+    fun `invalid discriminators report missing local property and required declarations`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_invalid_discriminator.yaml")
+
+        assertEquals(4, results.errors.size)
+        assertRule(results, SCHEMA_DISCRIMINATOR_REQUIRED, path = discriminatorPath("MissingRequiredDisc"), line = 13)
+        assertRule(results, SCHEMA_DISCRIMINATOR_PROPERTY, path = discriminatorPath("MissingPropertyDisc"), line = 22)
+        assertRule(results, SCHEMA_DISCRIMINATOR_REQUIRED, path = discriminatorPath("MissingCollections"), line = 28)
+        assertRule(results, SCHEMA_DISCRIMINATOR_PROPERTY, path = discriminatorPath("MissingCollections"), line = 28)
+    }
+
+    @Test
+    fun `required property declarations follow compositions conditionals and reference cycles`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_property_declarations.yaml")
+
+        assertEquals(1, results.warnings.size)
+        assertRule(
+            results,
+            SCHEMA_REQUIRED_UNDECLARED,
+            path = "asyncapi_validator_schema_property_declarations.root.components.schemas." +
+                "MissingDeclaration.required",
+            line = 55,
+        )
+    }
+
+    @Test
+    fun `external allOf properties satisfy inline required declarations`() {
+        val results = validate("parser/openapi/asyncapi-single-allof-example.yml")
+
+        assertNoFindings(results)
     }
 
     @Test
@@ -463,4 +487,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     private fun recursivePath(path: String): String =
         "asyncapi_validator_schema_recursive_invalid.root.components.schemas.$path"
+
+    private fun discriminatorPath(schema: String): String =
+        "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.$schema.discriminator"
 }

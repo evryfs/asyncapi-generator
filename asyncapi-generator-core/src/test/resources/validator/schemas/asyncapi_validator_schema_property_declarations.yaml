@@ -1,0 +1,58 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Property Declarations
+  version: 1.0.0
+components:
+  schemas:
+    Base:
+      type: object
+      properties:
+        inherited:
+          type: string
+    Composed:
+      allOf:
+        - $ref: '#/components/schemas/Base'
+        - type: object
+          required: [inherited, local]
+          properties:
+            local:
+              type: string
+    Conditional:
+      type: object
+      properties:
+        kind:
+          type: string
+        wheels:
+          type: integer
+        legs:
+          type: integer
+      if:
+        properties:
+          kind:
+            const: car
+      then:
+        required: [wheels]
+      else:
+        required: [legs]
+    RecursiveA:
+      type: object
+      required: [recursiveB]
+      properties:
+        recursiveA:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/RecursiveB'
+    RecursiveB:
+      type: object
+      required: [recursiveA]
+      properties:
+        recursiveB:
+          type: string
+      allOf:
+        - $ref: '#/components/schemas/RecursiveA'
+    MissingDeclaration:
+      type: object
+      required: [missing]
+      properties:
+        present:
+          type: string
