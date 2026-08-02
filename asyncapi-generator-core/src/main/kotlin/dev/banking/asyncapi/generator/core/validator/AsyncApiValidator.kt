@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
+import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistryValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.components.ComponentValidator
 import dev.banking.asyncapi.generator.core.validator.info.InfoValidator
@@ -30,6 +31,7 @@ class AsyncApiValidator(
     private val operationValidator = OperationValidator(asyncApiContext)
     private val componentValidator = ComponentValidator(asyncApiContext)
     private val referenceTargetTraversal = ReferenceTargetTraversal(asyncApiContext)
+    private val kafkaSchemaRegistryValidator = KafkaSchemaRegistryValidator(asyncApiContext)
 
     override fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
         val results = ValidationCollector(AsyncApiValidationProfile.select(asyncApiDocument))
@@ -57,6 +59,7 @@ class AsyncApiValidator(
         }
 
         referenceTargetTraversal.drain(results)
+        kafkaSchemaRegistryValidator.validate(asyncApiDocument, results)
         return results.report()
     }
 

@@ -13,6 +13,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CLEANUP_POLICY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
@@ -31,6 +32,69 @@ class BindingValidatorTest : AbstractValidatorTest() {
         val results = asyncApiValidator.validate(document)
 
         assertNoFindings(results)
+    }
+
+    @Test
+    fun `Kafka schema id fields pass when every selected Kafka server has a schema registry`() {
+        val results = validate("validator/bindings/asyncapi_validator_kafka_registry_relationship_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `Kafka schema id fields require a registry on selected and default Kafka servers`() {
+        val results = validate("validator/bindings/asyncapi_validator_kafka_registry_relationship_invalid.yaml")
+
+        assertEquals(5, results.errors.size, "Unexpected findings: ${results.findings}")
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            path = "asyncapi_validator_kafka_registry_relationship_invalid.root.channels." +
+                "selectedWithoutRegistry.messages.inline.bindings.kafka.schemaIdLocation",
+            line = 25,
+        )
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            path = "asyncapi_validator_kafka_registry_relationship_invalid.root.channels." +
+                "selectedWithoutRegistry.messages.inline.bindings.kafka.schemaIdPayloadEncoding",
+            line = 26,
+        )
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            path = "asyncapi_validator_kafka_registry_relationship_invalid.root.channels." +
+                "allRootServers.messages.inline.bindings.kafka.schemaLookupStrategy",
+            line = 39,
+        )
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            path = "asyncapi_validator_kafka_registry_relationship_invalid.root.components.messages." +
+                "ReusableEvent.bindings.kafka.schemaIdLocation",
+            line = 53,
+        )
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            path = "asyncapi_validator_kafka_registry_relationship_invalid.root.components.messageTraits." +
+                "RegistryTrait.bindings.kafka.schemaLookupStrategy",
+            line = 59,
+        )
+    }
+
+    @Test
+    fun `Kafka schema registry relationship follows an external message fragment`() {
+        val results = validate("validator/bindings/asyncapi_validator_kafka_registry_external.yaml")
+
+        assertEquals(1, results.errors.size, "Unexpected findings: ${results.findings}")
+        assertRule(
+            results,
+            KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+            sourceFile = "kafka_registry_external_message.yaml",
+            path = "kafka_registry_external_message.root.bindings.kafka.schemaIdLocation",
+            line = 3,
+        )
     }
 
     @Test

@@ -46,6 +46,8 @@ Schema keyword policy is explicit. Keywords represented by the parsed Draft 7 an
 
 Protocol binding content remains free-form in the public domain model and in serialized output. The parser additionally records validation metadata for each protocol binding: protocol name, owning server/channel/operation/message location, exact binding version value, and parsed schema-valued fields. Binding validators consume that metadata instead of guessing whether a map is wrapped or which vocabulary applies. Kafka 0.4.0 and 0.5.0 are supported explicitly. Unknown protocols are preserved without speculative generic warnings, while known Kafka fields are checked against their location-specific vocabulary and their embedded Schema Objects continue through ordinary schema validation.
 
+Kafka constraints that span objects run after ordinary reference traversal. For each root channel, the validator resolves the channel's selected servers, or all root servers when `servers` is absent or empty, and relates its effective message bindings to those servers. Schema-ID fields are permitted only when every applicable Kafka server declares `schemaRegistryUrl`. Unused component messages remain reusable definitions and are not assigned a server context until a root channel uses them.
+
 ## Finding contract
 
 Every finding contains:
