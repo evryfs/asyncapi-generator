@@ -22,6 +22,8 @@ AsyncApiDocument
 
 `ValidationCollector` is mutable only while one validation is running. Each finding is created from a catalogued `ValidationRule`. `ValidationReport` snapshots the findings and exposes read-only `findings`, `errors`, and `warnings` lists. Logging and exception construction happen after validation through `ValidationReporter`, except where a frontend intentionally controls its own output channel.
 
+The collector also owns invocation-local identity sets and a queue of resolved reference targets. Domain validators record each reference edge with its concrete expected category. Resolution follows reference-to-reference chains, checks the final target category, and queues reachable targets. `AsyncApiValidator` drains that queue through explicit category dispatch. A model instance is entered once, so shared targets do not duplicate findings and reference cycles terminate without recursion.
+
 ## Finding contract
 
 Every finding contains:

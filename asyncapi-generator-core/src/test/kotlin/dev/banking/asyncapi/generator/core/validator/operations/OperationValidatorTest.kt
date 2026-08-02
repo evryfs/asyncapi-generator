@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -56,10 +57,9 @@ class OperationValidatorTest : AbstractValidatorTest() {
             throwErrors(validationResults)
         }
         assertEquals(1, exception.errors.size, "Expected 1 error: channel type mismatch.")
-        assertFinding(
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "channel reference must point to a Channel Object",
+            rule = OPERATION_CHANNEL_TARGET,
             sourceFile = "asyncapi_validator_operations_channel_ref_type_mismatch.yaml",
             path = "asyncapi_validator_operations_channel_ref_type_mismatch.root.operations.testOperation.channel",
             line = 18,

@@ -15,6 +15,7 @@ class ContactValidator(
 ) {
 
     fun validate(node: Contact, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         val name = node.name?.let(::sanitizeString)
         val url = node.url?.let(::sanitizeString)
         val email = node.email?.let(::sanitizeString)

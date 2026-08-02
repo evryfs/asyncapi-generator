@@ -5,8 +5,14 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_TRAIT_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -30,11 +36,20 @@ class OperationTraitValidator(
                 validate(node.operationTrait, contextString, results)
 
             is OperationTraitInterface.OperationTraitReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, OPERATION_TRAIT, contextString, results)
         }
     }
 
     fun validate(node: OperationTrait, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
+        if (node.bindings == null && node.security == null && node.tags == null) {
+            results.warn(
+                OPERATION_TRAIT_EMPTY,
+                "$contextString defines no 'bindings', 'security', or 'tags' — may have no effect.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
+            )
+        }
         validateSecurity(node, contextString, results)
         validateTags(node, contextString, results)
         validateExternalDocs(node, contextString, results)
@@ -50,7 +65,12 @@ class OperationTraitValidator(
                     securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        securitySchemeInterface.reference,
+                        SECURITY_SCHEME,
+                        contextString,
+                        results,
+                    )
             }
         }
     }
@@ -64,7 +84,7 @@ class OperationTraitValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -77,7 +97,7 @@ class OperationTraitValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, contextString, results)
+                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
         }
     }
 
@@ -90,7 +110,7 @@ class OperationTraitValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

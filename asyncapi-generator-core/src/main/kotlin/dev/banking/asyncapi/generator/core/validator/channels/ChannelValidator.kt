@@ -8,6 +8,13 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
@@ -43,11 +50,12 @@ class ChannelValidator(
                 validate(node.channel, contextString, results)
 
             is ChannelInterface.ChannelReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, CHANNEL, contextString, results)
         }
     }
 
     private fun validate(node: Channel, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateAddress(node, contextString, results)
         validateMessages(node, contextString, results)
         validateServers(node, contextString, results)
@@ -122,7 +130,7 @@ class ChannelValidator(
                     messageValidator.validate(messageInterface.message, contextString, results)
 
                 is MessageInterface.MessageReference ->
-                    referenceResolver.resolve(messageInterface.reference, contextString, results)
+                    referenceResolver.resolve(messageInterface.reference, MESSAGE, contextString, results)
             }
         }
     }
@@ -138,7 +146,7 @@ class ChannelValidator(
             )
         }
         servers.forEachIndexed { index, reference ->
-            referenceResolver.resolve(reference, "$contextString Server[$index]", results)
+            referenceResolver.resolve(reference, SERVER, "$contextString Server[$index]", results)
         }
     }
 
@@ -151,7 +159,7 @@ class ChannelValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -165,7 +173,7 @@ class ChannelValidator(
                     parameterValidator.validate(parameterInterface.parameter, contextString, results)
 
                 is ParameterInterface.ParameterReference ->
-                    referenceResolver.resolve(parameterInterface.reference, contextString, results)
+                    referenceResolver.resolve(parameterInterface.reference, PARAMETER, contextString, results)
             }
         }
     }
@@ -177,7 +185,7 @@ class ChannelValidator(
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, contextString, results)
+                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
 
             null -> {}
         }
@@ -200,7 +208,7 @@ class ChannelValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

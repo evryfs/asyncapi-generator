@@ -66,7 +66,7 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `AAS3-OPERATION-ACTION-REQUIRED` | Operation action is absent | A3 Operation Object | specification / error | `operation.action` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-ACTION-VALUE` | Action is not send or receive | A3 Operation Object | specification / error | `operation.action` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-CHANNEL-REQUIRED` | Operation channel reference is absent | A3 Operation Object | specification / error | `operation.channel` | valid | `OperationValidatorTest` |
-| `AAS3-OPERATION-CHANNEL-TARGET` | Channel reference does not resolve as a channel | A3 Operation Object | specification / error | `operation.channel.$ref` | incomplete: graph-wide category checks pending | `OperationValidatorTest` |
+| `AAS3-OPERATION-CHANNEL-TARGET` | Operation channel reference resolves to another category | A3 Operation Object | specification / error | `operation.channel.$ref` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-MESSAGE-REFERENCE` | Operation message is not in its channel | A3 Operation Object | specification / error | `operation.messages` | incomplete: complete reference traversal pending | `OperationValidatorTest` |
 | `ADV-OPERATION-TRAIT-EMPTY` | Operation trait has no effective fields | Project guidance | advisory / warning | operation trait | advisory | gap: focused trait test |
 | `ADV-OPERATION-REPLY-MESSAGES-EMPTY` | Reply explicitly has no messages | Project guidance | advisory / warning | `reply.messages` | advisory | gap: focused reply test |
@@ -93,7 +93,9 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `GEN-BINDING-PROPERTY-LIST` | Binding property list is rejected generically | Generator behavior | capability / warning | binding property | incorrect for fields such as Kafka cleanup policy | `BindingValidatorTest` |
 | `ADV-BINDING-PROPERTY-EMPTY` | Binding property string is empty | Project guidance | advisory / warning | binding property | advisory | `BindingValidatorTest` |
 | `GEN-BINDING-PROPERTY-TYPE` | Generic binding property type is unsupported | Generator behavior | capability / warning | binding property | incomplete: protocol/location-specific rules pending | `BindingValidatorTest` |
-| `AAS3-REFERENCE-UNRESOLVED` | Reference cannot resolve | A3 Reference Object | specification / error | `$ref` | incomplete: target-category and cycle traversal pending | `OperationValidatorTest`, external-reference tests |
+| `AAS3-REFERENCE-UNRESOLVED` | Reference cannot resolve | A3 Reference Object | specification / error | `$ref` | valid for reachable typed references | `OperationValidatorTest`, external-reference tests |
+| `GEN-REFERENCE-CATEGORY-REQUIRED` | Parser-created reference lacks the concrete category required by its owning field | Generator/parser contract | capability / error | `$ref` | valid resilience boundary | `ReferenceIntegrityValidatorTest` |
+| `AAS3-REFERENCE-TARGET-CATEGORY` | Reference resolves to an object outside the category required by its owning field | A3 Reference Object and owning field | specification / error | `$ref` | valid | `ReferenceIntegrityValidatorTest` |
 
 ## Schema Object
 

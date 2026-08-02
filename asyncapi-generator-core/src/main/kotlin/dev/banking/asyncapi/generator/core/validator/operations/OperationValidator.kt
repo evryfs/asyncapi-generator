@@ -2,13 +2,20 @@ package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
-import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
@@ -16,7 +23,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_TRAIT_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -34,6 +40,7 @@ class OperationValidator(
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val securitySchemeValidator = SecuritySchemeValidator(asyncApiContext)
     private val operationReplyValidator = OperationReplyValidator(asyncApiContext)
+    private val operationTraitValidator = OperationTraitValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validateInterface(node: OperationInterface, contextString: String, results: ValidationCollector) {
@@ -42,11 +49,12 @@ class OperationValidator(
                 validate(node.operation, contextString, results)
 
             is OperationInterface.OperationReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, OPERATION, contextString, results)
         }
     }
 
     private fun validate(node: Operation, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateAction(node, contextString, results)
         validateChannel(node, contextString, results)
         validateMessages(node, contextString, results)
@@ -88,17 +96,13 @@ class OperationValidator(
             )
             return
         }
-        val channelRefSourceLocation = asyncApiContext.getSourceLocation(channelRef, channelRef::ref)
-        referenceResolver.resolve(channelRef, "Channel", results)
-        if (channelRef.model != null && channelRef.model !is Channel) {
-            val invalidObject = channelRef.model?.javaClass?.simpleName
-            results.error(
-                OPERATION_CHANNEL_TARGET,
-                "$contextString channel reference must point to a Channel Object. Found: $invalidObject.",
-                sourceLocation = channelRefSourceLocation,
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
-            )
-        }
+        referenceResolver.resolve(
+            channelRef,
+            CHANNEL,
+            "$contextString Channel",
+            results,
+            targetCategoryRule = OPERATION_CHANNEL_TARGET,
+        )
     }
 
     private fun validateMessages(node: Operation, contextString: String, results: ValidationCollector) {
@@ -114,7 +118,7 @@ class OperationValidator(
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
                 )
             } else {
-                referenceResolver.resolve(messageReference, contextString, results)
+                referenceResolver.resolve(messageReference, MESSAGE, contextString, results)
             }
         }
     }
@@ -127,7 +131,7 @@ class OperationValidator(
                 operationReplyValidator.validate(reply.operationReply, contextString, results)
 
             is OperationReplyInterface.OperationReplyReference ->
-                referenceResolver.resolve(reply.reference, contextString, results)
+                referenceResolver.resolve(reply.reference, OPERATION_REPLY, contextString, results)
         }
     }
 
@@ -137,22 +141,11 @@ class OperationValidator(
             val contextString = "$contextString Trait[$index]"
             when (trait) {
                 is OperationTraitInterface.OperationTraitInline ->
-                    validateOperationTrait(trait.operationTrait, contextString, results)
+                    operationTraitValidator.validate(trait.operationTrait, contextString, results)
 
                 is OperationTraitInterface.OperationTraitReference ->
-                    referenceResolver.resolve(trait.reference, contextString, results)
+                    referenceResolver.resolve(trait.reference, OPERATION_TRAIT, contextString, results)
             }
-        }
-    }
-
-    private fun validateOperationTrait(node: OperationTrait, contextString: String, results: ValidationCollector) {
-        if (node.bindings == null && node.security == null && node.tags == null) {
-            results.warn(
-                OPERATION_TRAIT_EMPTY,
-                "$contextString defines no 'bindings', 'security', or 'tags' — may have no effect.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
-            )
         }
     }
 
@@ -165,7 +158,7 @@ class OperationValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }
@@ -179,7 +172,12 @@ class OperationValidator(
                     securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        securitySchemeInterface.reference,
+                        SECURITY_SCHEME,
+                        contextString,
+                        results,
+                    )
             }
         }
     }
@@ -193,7 +191,7 @@ class OperationValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -205,7 +203,7 @@ class OperationValidator(
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, contextString, results)
+                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
 
             null -> {}
         }

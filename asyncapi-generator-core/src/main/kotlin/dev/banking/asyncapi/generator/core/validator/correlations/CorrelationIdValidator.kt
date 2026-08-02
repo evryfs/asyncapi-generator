@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -21,11 +22,12 @@ class CorrelationIdValidator(
             is CorrelationIdInterface.CorrelationIdInline ->
                 validate(node.correlationId, contextString, results)
             is CorrelationIdInterface.CorrelationIdReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, CORRELATION_ID, contextString, results)
         }
     }
 
     fun validate(node: CorrelationId, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateLocation(node, contextString, results)
     }
 

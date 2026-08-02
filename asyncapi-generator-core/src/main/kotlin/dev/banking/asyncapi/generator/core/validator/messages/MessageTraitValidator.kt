@@ -6,6 +6,10 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_TRAIT_EMPTY
@@ -35,11 +39,12 @@ class MessageTraitValidator(
                 validate(node.trait, contextString, results)
 
             is MessageTraitInterface.ReferenceMessageTrait ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, MESSAGE_TRAIT, contextString, results)
         }
     }
 
     fun validate(node: MessageTrait, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateMeaningfulContent(node, contextString, results)
         validateHeaders(node, contextString, results)
         validateContentType(node, contextString, results)
@@ -87,7 +92,7 @@ class MessageTraitValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -100,7 +105,7 @@ class MessageTraitValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, contextString, results)
+                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
         }
     }
 
@@ -113,7 +118,7 @@ class MessageTraitValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

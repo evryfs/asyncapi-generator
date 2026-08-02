@@ -15,6 +15,7 @@ class ServerVariableValidator(
 ) {
 
     fun validate(node: ServerVariable, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateEnum(node, contextString, results)
         validateDefault(node, contextString, results)
         validateExamples(node, contextString, results)

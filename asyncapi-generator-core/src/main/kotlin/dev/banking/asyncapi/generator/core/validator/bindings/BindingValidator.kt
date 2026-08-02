@@ -26,6 +26,7 @@ class BindingValidator(
     )
 
     fun validate(binding: Binding, bindingName: String, results: ValidationCollector) {
+        if (!results.visit(binding)) return
         binding.kafkaKeySchema?.let { keySchema ->
             schemaValidator.validateInterface(keySchema, "$bindingName Kafka key", results)
         }

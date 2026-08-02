@@ -37,6 +37,7 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
+import dev.banking.asyncapi.generator.core.validator.ReferenceTargetTraversal
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -121,7 +122,7 @@ class ExternalFragmentProcessor(
                     MessageValidator(context).validate(parsed.message, validationContext, results)
 
                 is MessageInterface.MessageReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(parsed.reference, MESSAGE, validationContext, results)
             }
         }
     }
@@ -201,7 +202,12 @@ class ExternalFragmentProcessor(
                     ServerVariableValidator(context).validate(parsed.serverVariable, validationContext, results)
 
                 is ServerVariableInterface.ServerVariableReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(
+                        parsed.reference,
+                        SERVER_VARIABLE,
+                        validationContext,
+                        results,
+                    )
             }
         }
     }
@@ -226,7 +232,12 @@ class ExternalFragmentProcessor(
                     SecuritySchemeValidator(context).validate(parsed.security, validationContext, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(
+                        parsed.reference,
+                        SECURITY_SCHEME,
+                        validationContext,
+                        results,
+                    )
             }
         }
     }
@@ -273,7 +284,7 @@ class ExternalFragmentProcessor(
                     BindingValidator(context).validate(parsed.binding, validationContext, results)
 
                 is BindingInterface.BindingReference ->
-                    ReferenceResolver(context).resolve(parsed.reference, validationContext, results)
+                    ReferenceResolver(context).resolve(parsed.reference, BINDING, validationContext, results)
             }
         }
     }
@@ -281,6 +292,7 @@ class ExternalFragmentProcessor(
     private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit = {
         val results = ValidationCollector(AsyncApiValidationProfile.V3_0)
         validate(results)
+        ReferenceTargetTraversal(context).drain(results)
         val report = results.report()
         ValidationReporter(context).logWarnings(report)
         ValidationReporter(context).throwErrors(report)

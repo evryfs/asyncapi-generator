@@ -5,6 +5,8 @@ import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_OF_SERVICE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TITLE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_FORMAT
@@ -27,6 +29,7 @@ class InfoValidator(
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validate(node: Info, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateTitle(node, contextString, results)
         validateVersion(node, contextString, results)
         validateTermsOfService(node, contextString, results)
@@ -90,7 +93,7 @@ class InfoValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference -> {
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
                 }
             }
         }
@@ -104,7 +107,7 @@ class InfoValidator(
                 externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, contextString, results)
+                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
         }
     }
 }

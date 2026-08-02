@@ -4,6 +4,9 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
@@ -79,8 +82,8 @@ class SchemaValidator(
             is SchemaInterface.SchemaReference ->
                 validateReference(schemaInterface.reference, contextString, results, visited)
 
-            is SchemaInterface.MultiFormatSchemaInline -> {}
-            is SchemaInterface.BooleanSchema -> {}
+            is SchemaInterface.MultiFormatSchemaInline -> results.visit(schemaInterface.multiFormatSchema)
+            is SchemaInterface.BooleanSchema -> results.visit(schemaInterface)
         }
     }
 
@@ -94,7 +97,7 @@ class SchemaValidator(
         results: ValidationCollector,
         visited: MutableSet<Any>,
     ) {
-        if (!visited.add(node)) {
+        if (!visited.add(node) || !results.visit(node)) {
             return
         }
         validateKeywords(node, contextString, results)
@@ -147,13 +150,7 @@ class SchemaValidator(
             return
         }
         validateKeywords(reference, contextString, results)
-        referenceResolver.resolve(reference, contextString, results)
-        when (val resolved = reference.model) {
-            is Schema -> validate(resolved, contextString, results, visited)
-            is Reference -> validateReference(resolved, contextString, results, visited)
-            is SchemaInterface ->
-                validateInterface(resolved, contextString, results, visited)
-        }
+        referenceResolver.resolve(reference, SCHEMA, contextString, results)
     }
 
     private fun newVisitedSet(): MutableSet<Any> =
@@ -608,7 +605,7 @@ class SchemaValidator(
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, contextString, results)
+                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
 
             null -> {}
         }
@@ -623,7 +620,7 @@ class SchemaValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

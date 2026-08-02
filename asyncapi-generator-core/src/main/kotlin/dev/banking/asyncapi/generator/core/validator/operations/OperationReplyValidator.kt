@@ -4,6 +4,10 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGES_EMPTY
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
@@ -21,11 +25,12 @@ class OperationReplyValidator(
                 validate(node.operationReply, contextString, results)
 
             is OperationReplyInterface.OperationReplyReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, OPERATION_REPLY, contextString, results)
         }
     }
 
     fun validate(node: OperationReply, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateAddress(node, contextString, results)
         validateChannel(node, contextString, results)
         validateMessages(node, contextString, results)
@@ -39,14 +44,19 @@ class OperationReplyValidator(
                 operationReplyAddressValidator.validate(address.operationReplyAddress, contextString, results)
 
             is OperationReplyAddressInterface.OperationReplyAddressReference ->
-                referenceResolver.resolve(address.reference, contextString, results)
+                referenceResolver.resolve(
+                    address.reference,
+                    OPERATION_REPLY_ADDRESS,
+                    contextString,
+                    results,
+                )
         }
     }
 
     private fun validateChannel(node: OperationReply, contextString: String, results: ValidationCollector) {
         val channelRef = node.channel ?: return
         val contextString = "$contextString Channel"
-        referenceResolver.resolve(channelRef, contextString, results)
+        referenceResolver.resolve(channelRef, CHANNEL, contextString, results)
     }
 
     private fun validateMessages(node: OperationReply, operationReplyName: String, results: ValidationCollector) {
@@ -61,7 +71,7 @@ class OperationReplyValidator(
         }
         messages.forEach { messageReference ->
             val contextString = "$operationReplyName Message"
-            referenceResolver.resolve(messageReference, contextString, results)
+            referenceResolver.resolve(messageReference, MESSAGE, contextString, results)
         }
     }
 }

@@ -13,6 +13,7 @@ class LicenseValidator(
 ) {
 
     fun validate(node: License, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         val name = node.name.let(::sanitizeString)
         if (name.isBlank()) {
             results.error(

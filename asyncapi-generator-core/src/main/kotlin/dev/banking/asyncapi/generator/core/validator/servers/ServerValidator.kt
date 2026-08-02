@@ -9,6 +9,12 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_FORMAT
@@ -41,11 +47,12 @@ class ServerValidator(
                 validate(node.server, contextString, results)
 
             is ServerInterface.ServerReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, SERVER, contextString, results)
         }
     }
 
     private fun validate(node: Server, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateHost(node, contextString, results)
         validateProtocol(node, contextString, results)
         validateVariables(node, contextString, results)
@@ -129,7 +136,12 @@ class ServerValidator(
                     serverVariableValidator.validate(serverVariableInterface.serverVariable, contextString, results)
 
                 is ServerVariableInterface.ServerVariableReference ->
-                    referenceResolver.resolve(serverVariableInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        serverVariableInterface.reference,
+                        SERVER_VARIABLE,
+                        contextString,
+                        results,
+                    )
             }
         }
     }
@@ -143,7 +155,12 @@ class ServerValidator(
                     securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        securitySchemeInterface.reference,
+                        SECURITY_SCHEME,
+                        contextString,
+                        results,
+                    )
             }
         }
     }
@@ -157,7 +174,7 @@ class ServerValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -169,7 +186,7 @@ class ServerValidator(
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, contextString, results)
+                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
 
             null -> {}
         }
@@ -184,7 +201,7 @@ class ServerValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

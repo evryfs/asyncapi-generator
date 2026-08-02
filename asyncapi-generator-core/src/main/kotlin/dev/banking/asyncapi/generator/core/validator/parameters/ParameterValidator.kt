@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_EXAMPLES_ENUM
@@ -23,11 +24,12 @@ class ParameterValidator(
             is ParameterInterface.ParameterInline ->
                 validate(parameterInterface.parameter, contextString, results)
             is ParameterInterface.ParameterReference ->
-                referenceResolver.resolve(parameterInterface.reference, contextString, results)
+                referenceResolver.resolve(parameterInterface.reference, PARAMETER, contextString, results)
         }
     }
 
     fun validate(node: Parameter, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateEnum(node, contextString, results)
         validateDefault(node, contextString, results)
         validateExamples(node, contextString, results)

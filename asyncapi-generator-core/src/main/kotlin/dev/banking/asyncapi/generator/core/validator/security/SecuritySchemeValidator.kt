@@ -20,6 +20,7 @@ class SecuritySchemeValidator(
 ) {
 
     fun validate(node: SecurityScheme, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateType(node, contextString, results)
         validateName(node, contextString, results)
         validateInField(node, contextString, results)

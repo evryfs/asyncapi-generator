@@ -31,39 +31,34 @@ class AsyncApiValidator(
     private val serverValidator = ServerValidator(asyncApiContext)
     private val operationValidator = OperationValidator(asyncApiContext)
     private val componentValidator = ComponentValidator(asyncApiContext)
+    private val referenceTargetTraversal = ReferenceTargetTraversal(asyncApiContext)
 
     override fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
         val results = ValidationCollector(AsyncApiValidationProfile.select(asyncApiDocument))
+        results.visit(asyncApiDocument)
 
         validateIdentifier(asyncApiDocument, results)
         validateDefaultContentType(asyncApiDocument, results)
+        infoValidator.validate(asyncApiDocument.info, "Info", results)
+        asyncApiDocument.channels?.forEach { (name, channel) ->
+            channelValidator.validateInterface(channel, "Channel '$name'", results)
+        }
+        asyncApiDocument.servers?.forEach { (name, server) ->
+            serverValidator.validateInterface(server, "Server '$name'", results)
+        }
+        asyncApiDocument.operations?.forEach { (name, operation) ->
+            operationValidator.validateInterface(operation, "Operation '$name'", results)
+        }
+        asyncApiDocument.components?.let { components ->
+            componentValidator.validateInterface(components, "Component", results)
+        }
 
-        asyncApiDocument.info.let { info ->
-            val contextString = "Info"
-            infoValidator.validate(info, contextString, results)
-        }
-        asyncApiDocument.channels?.forEach { (channelName, channelInterface) ->
-            val contextString = "Channel '$channelName'"
-            channelValidator.validateInterface(channelInterface, contextString, results)
-        }
-        asyncApiDocument.servers?.forEach { (serverName, serverInterface) ->
-            val contextString = "Server '$serverName'"
-            serverValidator.validateInterface(serverInterface, contextString, results)
-        }
-        asyncApiDocument.operations?.forEach { (operationName, operationInterface) ->
-            val contextString = "Operation '$operationName'"
-            operationValidator.validateInterface(operationInterface, contextString, results)
-        }
-        asyncApiDocument.components?.let { component ->
-            val contextString = "Component"
-            componentValidator.validateInterface(component, contextString, results)
-        }
+        referenceTargetTraversal.drain(results)
         return results.report()
     }
 
     private fun validateIdentifier(node: AsyncApiDocument, results: ValidationCollector) {
         val id = node.id?.let(::sanitizeString) ?: return
-        // RFC3986 format (loosely)
         if (!URI.matches(id)) {
             results.error(
                 DOCUMENT_ID_FORMAT,

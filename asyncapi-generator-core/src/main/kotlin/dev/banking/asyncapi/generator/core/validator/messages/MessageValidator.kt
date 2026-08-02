@@ -5,11 +5,16 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
+import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
@@ -23,11 +28,14 @@ class MessageValidator(
     private val schemaValidator = SchemaValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
+    private val correlationIdValidator = CorrelationIdValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validate(message: Message, contextString: String, results: ValidationCollector) {
+        if (!results.visit(message)) return
         validatePayload(message, contextString, results)
         validateHeaders(message, contextString, results)
+        validateCorrelationId(message, contextString, results)
         validateTraits(message, contextString, results)
         validateTags(message, contextString, results)
         validateExternalDocs(message, contextString, results)
@@ -57,6 +65,12 @@ class MessageValidator(
         }
     }
 
+    private fun validateCorrelationId(node: Message, contextString: String, results: ValidationCollector) {
+        node.correlationId?.let { correlationId ->
+            correlationIdValidator.validateInterface(correlationId, "$contextString Correlation ID", results)
+        }
+    }
+
     private fun validateTraits(node: Message, contextString: String, results: ValidationCollector) {
         val traits = node.traits ?: return
         if (traits.isEmpty()) return
@@ -67,7 +81,7 @@ class MessageValidator(
                     messageTraitValidator.validate(trait.trait, contextString, results)
 
                 is MessageTraitInterface.ReferenceMessageTrait ->
-                    referenceResolver.resolve(trait.reference, contextString, results)
+                    referenceResolver.resolve(trait.reference, MESSAGE_TRAIT, contextString, results)
             }
         }
     }
@@ -81,7 +95,7 @@ class MessageValidator(
                     tagValidator.validate(tagInterface.tag, contextString, results)
 
                 is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, contextString, results)
+                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
             }
         }
     }
@@ -93,7 +107,7 @@ class MessageValidator(
                 externalDocsValidator.validate(docs.externalDoc, contextString, results)
 
             is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, contextString, results)
+                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
 
             null -> {}
         }
@@ -109,7 +123,7 @@ class MessageValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }

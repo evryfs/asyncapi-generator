@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRE
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -22,11 +23,12 @@ class OperationReplyAddressValidator(
                 validate(node.operationReplyAddress, contextString, results)
 
             is OperationReplyAddressInterface.OperationReplyAddressReference ->
-                referenceResolver.resolve(node.reference, contextString, results)
+                referenceResolver.resolve(node.reference, OPERATION_REPLY_ADDRESS, contextString, results)
         }
     }
 
     fun validate(node: OperationReplyAddress, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
         validateLocation(node, contextString, results)
     }
 

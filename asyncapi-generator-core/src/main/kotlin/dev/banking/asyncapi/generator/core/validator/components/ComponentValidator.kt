@@ -5,6 +5,11 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -56,10 +61,13 @@ class ComponentValidator(
             is ComponentInterface.ComponentInline ->
                 node.component
 
-            is ComponentInterface.ComponentReference ->
+            is ComponentInterface.ComponentReference -> {
+                referenceResolver.resolve(node.reference, REFERENCE, contextString, results)
                 return
+            }
         }
         if (component == null) return
+        if (!results.visit(component)) return
 
         validateSchemas(component, contextString, results)
         validateServers(component, contextString, results)
@@ -93,7 +101,7 @@ class ComponentValidator(
                     messageValidator.validate(messageInterface.message, contextString, results)
 
                 is MessageInterface.MessageReference -> {
-                    referenceResolver.resolve(messageInterface.reference, contextString, results)
+                    referenceResolver.resolve(messageInterface.reference, MESSAGE, contextString, results)
                 }
             }
         }
@@ -114,7 +122,12 @@ class ComponentValidator(
                     securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
 
                 is SecuritySchemeInterface.SecuritySchemeReference -> {
-                    referenceResolver.resolve(securitySchemeInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        securitySchemeInterface.reference,
+                        SECURITY_SCHEME,
+                        contextString,
+                        results,
+                    )
                 }
             }
         }
@@ -142,7 +155,12 @@ class ComponentValidator(
                     serverVariableValidator.validate(serverVariableInterface.serverVariable, contextString, results)
 
                 is ServerVariableInterface.ServerVariableReference -> {
-                    referenceResolver.resolve(serverVariableInterface.reference, contextString, results)
+                    referenceResolver.resolve(
+                        serverVariableInterface.reference,
+                        SERVER_VARIABLE,
+                        contextString,
+                        results,
+                    )
                 }
             }
         }
@@ -223,7 +241,7 @@ class ComponentValidator(
                     bindingValidator.validate(bindingInterface.binding, contextString, results)
 
                 is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, contextString, results)
+                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
             }
         }
     }
