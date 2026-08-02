@@ -7,20 +7,16 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_BINDINGS_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_AMBIGUOUS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_SERVERS_EMPTY
@@ -31,7 +27,6 @@ import dev.banking.asyncapi.generator.core.validator.messages.MessageValidator
 import dev.banking.asyncapi.generator.core.validator.parameters.ParameterValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class ChannelValidator(
     val asyncApiContext: AsyncApiContext,
@@ -66,14 +61,10 @@ class ChannelValidator(
     }
 
     private fun validateAddress(node: Channel, contextString: String, results: ValidationCollector) {
-        val address = node.address?.let(::sanitizeString) ?: return
-        if (address.isBlank()) {
-            results.warn(
-                CHANNEL_ADDRESS_EMPTY,
-                "$contextString does not define an 'address'. It may be treated as dynamically assigned.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
-            )
+        val address = node.address
+        val definedParameters = node.parameters?.keys ?: emptySet()
+        if (address == null) {
+            reportUnusedParameters(node, definedParameters, emptySet(), contextString, results)
             return
         }
         if (address.contains("?") || address.contains("#")) {
@@ -83,10 +74,7 @@ class ChannelValidator(
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
-            return
         }
-        val definedParameters = node.parameters?.keys ?: emptySet()
-        // Extract parameter names from the address (stripping the curly braces)
         val addressParameters = PARAMETER_PLACEHOLDER
             .findAll(address)
             .map { it.groupValues[1] }
@@ -100,11 +88,30 @@ class ChannelValidator(
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
+        reportUnusedParameters(node, definedParameters, addressParameters, contextString, results)
+    }
+
+    private fun reportUnusedParameters(
+        node: Channel,
+        definedParameters: Set<String>,
+        addressParameters: Set<String>,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
+        if (node.parameters != null && addressParameters.isEmpty()) {
+            results.error(
+                CHANNEL_PARAMETER_UNUSED,
+                "$contextString defines 'parameters', but its address contains no channel address expressions.",
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::parameters),
+                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
+            )
+            return
+        }
         val unusedDefinitions = definedParameters - addressParameters
         if (unusedDefinitions.isNotEmpty()) {
-            results.warn(
+            results.error(
                 CHANNEL_PARAMETER_UNUSED,
-                "$contextString defines parameters $unusedDefinitions which are not used in the channel address '$address'.",
+                "$contextString defines parameters $unusedDefinitions which are not used in its channel address.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::parameters),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
@@ -112,16 +119,7 @@ class ChannelValidator(
     }
 
     private fun validateMessages(node: Channel, contextString: String, results: ValidationCollector) {
-        val messages = node.messages
-        if (messages.isNullOrEmpty()) {
-            results.error(
-                CHANNEL_MESSAGES_REQUIRED,
-                "$contextString' must define at least one message in 'messages'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
-            )
-            return
-        }
+        val messages = node.messages ?: return
         checkAmbiguity(node, messages, contextString, results)
         messages.forEach { (messageName, messageInterface) ->
             val contextString = "$contextString Message '$messageName'"
@@ -153,7 +151,7 @@ class ChannelValidator(
     private fun validateTags(node: Channel, contextString: String, results: ValidationCollector) {
         val tags = node.tags ?: return
         tags.forEachIndexed { index, tagInterface ->
-            val contextString = "Channel $contextString Tag[$index]"
+            val contextString = "$contextString Tag[$index]"
             when (tagInterface) {
                 is TagInterface.TagInline ->
                     tagValidator.validate(tagInterface.tag, contextString, results)
@@ -168,13 +166,7 @@ class ChannelValidator(
         val parameters = node.parameters ?: return
         parameters.forEach { (parameterName, parameterInterface) ->
             val contextString = "$contextString Parameter '$parameterName'"
-            when (parameterInterface) {
-                is ParameterInterface.ParameterInline ->
-                    parameterValidator.validate(parameterInterface.parameter, contextString, results)
-
-                is ParameterInterface.ParameterReference ->
-                    referenceResolver.resolve(parameterInterface.reference, PARAMETER, contextString, results)
-            }
+            parameterValidator.validateInterface(parameterInterface, contextString, results, parameterName)
         }
     }
 

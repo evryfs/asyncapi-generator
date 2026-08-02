@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.correlations
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.RUNTIME_EXPRESSION_GENERAL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
@@ -9,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORREL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class CorrelationIdValidator(
     val asyncApiContext: AsyncApiContext,
@@ -32,7 +31,7 @@ class CorrelationIdValidator(
     }
 
     private fun validateLocation(node: CorrelationId, contextString: String, results: ValidationCollector) {
-        val location = node.location.let(::sanitizeString)
+        val location = node.location
         if (location.isBlank()) {
             results.error(
                 CORRELATION_LOCATION_REQUIRED,
@@ -41,9 +40,8 @@ class CorrelationIdValidator(
             )
             return
         }
-        // Basic syntax check for runtime expressions, e.g. "$message.header#/correlationId"
-        if (!RUNTIME_EXPRESSION_GENERAL.matches(location)) {
-            results.warn(
+        if (!ValidationFormats.isRuntimeExpression(location)) {
+            results.error(
                 CORRELATION_LOCATION_FORMAT,
                 "$contextString 'location' ('$location') does not follow valid runtime expression.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::location),

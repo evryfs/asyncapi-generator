@@ -1,0 +1,6 @@
+asyncapi: 3.0.0
+id: URN:example:validator
+defaultContentType: application/json; charset=utf-8
+info:
+  title: Valid document formats
+  version: 1.0.0

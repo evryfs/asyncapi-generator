@@ -3,12 +3,10 @@ package dev.banking.asyncapi.generator.core.validator.servers
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_ENUM
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_ENUM
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class ServerVariableValidator(
     val asyncApiContext: AsyncApiContext,
@@ -22,9 +20,9 @@ class ServerVariableValidator(
     }
 
     private fun validateEnum(node: ServerVariable, contextString: String, results: ValidationCollector) {
-        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) } ?: return
+        val enum = node.enum ?: return
         if (enum.distinct().size != enum.size) {
-            results.warn(
+            results.error(
                 SERVER_VARIABLE_ENUM_UNIQUE,
                 "$contextString 'enum' contains duplicate values.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
@@ -33,19 +31,10 @@ class ServerVariableValidator(
     }
 
     private fun validateDefault(node: ServerVariable, contextString: String, results: ValidationCollector) {
-        val default = node.default?.let(::sanitizeString)
-        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) }
-        if (default == null) {
-            results.error(
-                SERVER_VARIABLE_DEFAULT_REQUIRED,
-                "$contextString must specify a 'default' value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
-            )
-            return
-        }
+        val default = node.default ?: return
+        val enum = node.enum
         if (enum != null && !enum.contains(default)) {
-            results.error(
+            results.warn(
                 SERVER_VARIABLE_DEFAULT_ENUM,
                 "$contextString 'default' ('$default') is not one of the allowed enum values.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
@@ -55,7 +44,7 @@ class ServerVariableValidator(
     }
 
     private fun validateExamples(node: ServerVariable, contextString: String, results: ValidationCollector) {
-        val examples = node.examples?.map { example -> example.let(::sanitizeString) } ?: return
+        val examples = node.examples ?: return
         if (examples.isEmpty()) {
             results.warn(
                 SERVER_VARIABLE_EXAMPLES_EMPTY,
@@ -64,7 +53,7 @@ class ServerVariableValidator(
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
-        val enum = node.enum?.map { enum -> enum.let(::sanitizeString) }
+        val enum = node.enum
         if (enum != null && examples.any { it !in enum }) {
             results.warn(
                 SERVER_VARIABLE_EXAMPLES_ENUM,

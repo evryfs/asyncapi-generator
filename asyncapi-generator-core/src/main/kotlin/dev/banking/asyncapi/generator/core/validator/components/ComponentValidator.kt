@@ -110,7 +110,7 @@ class ComponentValidator(
     private fun validateParameters(component: Component, contextString: String, results: ValidationCollector) {
         component.parameters?.forEach { (parameterName, parameterInterface) ->
             val contextString = "$contextString Parameter '$parameterName'"
-            parameterValidator.validateInterface(parameterInterface, contextString, results)
+            parameterValidator.validateInterface(parameterInterface, contextString, results, parameterName)
         }
     }
 
@@ -143,7 +143,7 @@ class ComponentValidator(
     private fun validateServers(component: Component, contextString: String, results: ValidationCollector) {
         component.servers?.forEach { (serverName, serverInterface) ->
             val contextString = "$contextString Server '$serverName'"
-            serverValidator.validateInterface(serverInterface, contextString, results)
+            serverValidator.validateInterface(serverInterface, contextString, results, serverName)
         }
     }
 

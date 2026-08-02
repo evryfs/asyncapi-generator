@@ -1,7 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.MIME_TYPE
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URI
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
@@ -14,7 +12,7 @@ import dev.banking.asyncapi.generator.core.validator.info.InfoValidator
 import dev.banking.asyncapi.generator.core.validator.operations.OperationValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 /**
  * Validates a parsed [AsyncApiDocument] and returns validation results.
@@ -44,7 +42,7 @@ class AsyncApiValidator(
             channelValidator.validateInterface(channel, "Channel '$name'", results)
         }
         asyncApiDocument.servers?.forEach { (name, server) ->
-            serverValidator.validateInterface(server, "Server '$name'", results)
+            serverValidator.validateInterface(server, "Server '$name'", results, name)
         }
         asyncApiDocument.operations?.forEach { (name, operation) ->
             operationValidator.validateInterface(operation, "Operation '$name'", results)
@@ -58,14 +56,15 @@ class AsyncApiValidator(
     }
 
     private fun validateIdentifier(node: AsyncApiDocument, results: ValidationCollector) {
-        val id = node.id?.let(::sanitizeString) ?: return
-        if (!URI.matches(id)) {
+        val id = node.id ?: return
+        val uri = ValidationFormats.absoluteUri(id)
+        if (uri == null) {
             results.error(
                 DOCUMENT_ID_FORMAT,
                 "The 'id' field must conform to the URI format (RFC3986). Got '$id'.",
                 sourceLocation = asyncApiContext.getSourceLocation(node, node::id),
             )
-        } else if (!id.startsWith("urn:")) {
+        } else if (!uri.scheme.equals("urn", ignoreCase = true)) {
             results.warn(
                 DOCUMENT_ID_URN_RECOMMENDED,
                 "It is RECOMMENDED to use a URN for the 'id' field to ensure global uniqueness.",
@@ -75,8 +74,8 @@ class AsyncApiValidator(
     }
 
     private fun validateDefaultContentType(node: AsyncApiDocument, results: ValidationCollector) {
-        val contentType = node.defaultContentType?.let(::sanitizeString) ?: return
-        if (!MIME_TYPE.matches(contentType)) {
+        val contentType = node.defaultContentType ?: return
+        if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
                 DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
                 "Invalid 'defaultContentType' format '$contentType'. Expected a MIME type (e.g., 'application/json').",

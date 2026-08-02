@@ -41,3 +41,9 @@ components:
     ShortDescription:
       description: "ab"
       location: "$message.header#/id" # ADDED
+
+    InvalidContextLocation:
+      location: "$context.message"
+
+    InvalidJsonPointerEscape:
+      location: "$message.header#/a~2b"

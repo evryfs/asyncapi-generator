@@ -31,6 +31,13 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `accepts an uppercase URN scheme and a specific media type with parameters`() {
+        val validationResults = validate("validator/asyncapi/asyncapi_validator_document_formats_valid.yaml")
+
+        assertNoFindings(validationResults)
+    }
+
+    @Test
     fun `validation findings include source locations for top level document diagnostics`() {
         val validationResults = validate("validator/asyncapi/asyncapi_validator_document_invalid.yaml")
 

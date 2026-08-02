@@ -24,6 +24,8 @@ AsyncApiDocument
 
 The collector also owns invocation-local identity sets and a queue of resolved reference targets. Domain validators record each reference edge with its concrete expected category. Resolution follows reference-to-reference chains, checks the final target category, and queues reachable targets. `AsyncApiValidator` drains that queue through explicit category dispatch. A model instance is entered once, so shared targets do not duplicate findings and reference cycles terminate without recursion.
 
+Semantic format checks operate on the exact strings stored in the domain model. Validators do not trim, unquote, or otherwise normalize values. URI syntax uses `java.net.URI`, media types use Jakarta Activation, email addresses use Jakarta Mail, and runtime-expression fragments use Jackson's JSON Pointer parser.
+
 ## Finding contract
 
 Every finding contains:

@@ -7,7 +7,7 @@ info:
   contact:
     name: Test Contact
     url: https://example.com/contact
-    email: test@example.com
+    email: test@localhost
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0

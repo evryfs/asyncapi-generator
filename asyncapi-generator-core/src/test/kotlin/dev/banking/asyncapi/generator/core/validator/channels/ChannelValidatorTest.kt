@@ -1,8 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_AMBIGUOUS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -22,31 +24,32 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             throwErrors(validationResults)
         }
-        assertEquals(1, exception.errors.size, "Expected 1 error for missing parameter definition.")
-        assertFinding(
+        assertEquals(2, exception.errors.size, "Expected missing and unused parameter errors.")
+        assertRule(
             validationResults,
-            severity = ERROR,
-            messageContains = "address uses parameters [userId]",
+            rule = CHANNEL_PARAMETER_UNDEFINED,
             sourceFile = "asyncapi_validator_channel_parameter_mismatch.yaml",
             path = "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.address",
             line = 7,
         )
+        assertRule(
+            validationResults,
+            rule = CHANNEL_PARAMETER_UNUSED,
+            sourceFile = "asyncapi_validator_channel_parameter_mismatch.yaml",
+            path = "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.parameters",
+            line = 12,
+        )
     }
 
     @Test
-    fun `channel definition with unused parameter triggers warning`() {
+    fun `channel definition with unused parameter triggers specification error`() {
         val document = parse("validator/channels/asyncapi_validator_channel_unused_parameter.yaml")
         val validationResults = asyncApiValidator.validate(document)
 
-        assertFalse(validationResults.hasErrors(), "Should not have errors for unused parameter (only warning).")
-        assertTrue(validationResults.hasWarnings(), "Should have warnings.")
-
-        val warnings = validationResults.warnings.map { it.message }
-        assertEquals(1, warnings.size, "Expected 1 warning for unused parameter.")
-        assertFinding(
+        assertEquals(1, validationResults.errors.size)
+        assertRule(
             validationResults,
-            severity = WARNING,
-            messageContains = "defines parameters [userId]",
+            rule = CHANNEL_PARAMETER_UNUSED,
             sourceFile = "asyncapi_validator_channel_unused_parameter.yaml",
             path = "asyncapi_validator_channel_unused_parameter.root.channels.userUpdates.parameters",
             line = 12,
@@ -63,13 +66,54 @@ class ChannelValidatorTest : AbstractValidatorTest() {
 
         val warnings = validationResults.warnings.map { it.message }
         assertEquals(1, warnings.size, "Expected 1 warnings.")
-        assertFinding(
+        assertRule(
             validationResults,
-            severity = WARNING,
-            messageContains = "contains ambiguous messages",
+            rule = CHANNEL_MESSAGES_AMBIGUOUS,
             sourceFile = "asyncapi_validator_channel_message_ambiguity.yaml",
             path = "asyncapi_validator_channel_message_ambiguity.root.channels.userUpdates.messages",
             line = 8,
+        )
+    }
+
+    @Test
+    fun `channels may omit messages and use an unknown address`() {
+        val results = validate("validator/channels/asyncapi_validator_channel_optional_fields_valid.yaml")
+
+        assertNoFindings(results)
+    }
+
+    @Test
+    fun `parameters property requires a channel address expression even when empty`() {
+        val results = validate("validator/channels/asyncapi_validator_channel_parameters_without_address.yaml")
+
+        assertEquals(1, results.errors.size)
+        assertRule(
+            results,
+            rule = CHANNEL_PARAMETER_UNUSED,
+            sourceFile = "asyncapi_validator_channel_parameters_without_address.yaml",
+            path = "asyncapi_validator_channel_parameters_without_address.root.channels.dynamic.parameters",
+            line = 7,
+        )
+    }
+
+    @Test
+    fun `channel addresses reject query and fragment suffixes`() {
+        val results = validate("validator/channels/asyncapi_validator_channel_address_suffix.yaml")
+
+        assertEquals(2, results.errors.size)
+        assertRule(
+            results,
+            rule = CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
+            sourceFile = "asyncapi_validator_channel_address_suffix.yaml",
+            path = "asyncapi_validator_channel_address_suffix.root.channels.query.address",
+            line = 7,
+        )
+        assertRule(
+            results,
+            rule = CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
+            sourceFile = "asyncapi_validator_channel_address_suffix.yaml",
+            path = "asyncapi_validator_channel_address_suffix.root.channels.fragment.address",
+            line = 9,
         )
     }
 }

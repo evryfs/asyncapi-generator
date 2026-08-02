@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.externaldocs
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -9,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.EXTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.EXTERNAL_DOC_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class ExternalDocsValidator(
     val asyncApiContext: AsyncApiContext,
@@ -29,7 +28,7 @@ class ExternalDocsValidator(
 
     fun validate(node: ExternalDoc, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
-        val url = node.url.let(::sanitizeString)
+        val url = node.url
         if (url.isBlank()) {
             results.error(
                 EXTERNAL_DOC_URL_REQUIRED,
@@ -38,7 +37,7 @@ class ExternalDocsValidator(
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
             )
         } else {
-            if (!URL.matches(url)) {
+            if (ValidationFormats.absoluteUri(url) == null) {
                 results.error(
                     EXTERNAL_DOC_URL_FORMAT,
                     "ExternalDoc '${contextString}' 'url' must be a valid absolute URL.",

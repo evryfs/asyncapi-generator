@@ -12,18 +12,18 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 |---|---|---|---|---|---|---|
 | `AAS3-DOCUMENT-ID-FORMAT` | Document `id` is not a URI | A3 Identifier | specification / error | `id` | valid | `AsyncApiValidatorTest` |
 | `ADV-DOCUMENT-ID-URN` | Document `id` is not a URN | Project guidance | advisory / warning | `id` | advisory | gap: add focused warning test |
-| `AAS3-DOCUMENT-CONTENT-TYPE` | `defaultContentType` is not accepted as a media type | A3 AsyncAPI Object | specification / error | `defaultContentType` | incomplete: replace broad regex | `AsyncApiValidatorTest` |
+| `AAS3-DOCUMENT-CONTENT-TYPE` | `defaultContentType` is not a specific media type | A3 AsyncAPI Object | specification / error | `defaultContentType` | valid | `AsyncApiValidatorTest` |
 | `AAS3-INFO-TITLE-REQUIRED` | Info title is empty | A3 Info Object | specification / error | `info.title` | valid | `InfoValidatorTest` |
 | `AAS3-INFO-VERSION-REQUIRED` | Application version is empty | A3 Info Object | specification / error | `info.version` | valid | `InfoValidatorTest` |
 | `ADV-INFO-VERSION-FORMAT` | Application version is not semver-like | Project guidance | advisory / warning | `info.version` | advisory | `InfoValidatorTest` |
-| `AAS3-INFO-TERMS-URI` | Terms-of-service value is not a URL | A3 Info Object | specification / error | `info.termsOfService` | incomplete: URI semantics need audit | `InfoValidatorTest` |
+| `AAS3-INFO-TERMS-URI` | Terms-of-service value is not an absolute URI | A3 Info Object | specification / error | `info.termsOfService` | valid | `InfoValidatorTest` |
 | `ADV-CONTACT-EMPTY` | Contact has no name, URL, or email | Project guidance | advisory / warning | `info.contact` | advisory | `InfoValidatorTest` |
-| `AAS3-CONTACT-URL-FORMAT` | Contact URL is malformed | A3 Contact Object | specification / error | `contact.url` | incomplete: URI semantics need audit | `InfoValidatorTest` |
+| `AAS3-CONTACT-URL-FORMAT` | Contact URL is not an absolute URI | A3 Contact Object | specification / error | `contact.url` | valid | `InfoValidatorTest` |
 | `AAS3-CONTACT-EMAIL-FORMAT` | Contact email is malformed | A3 Contact Object | specification / error | `contact.email` | incomplete: format implementation needs audit | `InfoValidatorTest` |
 | `AAS3-LICENSE-NAME-REQUIRED` | License name is empty | A3 License Object | specification / error | `license.name` | valid | `InfoValidatorTest` |
-| `AAS3-LICENSE-URL-FORMAT` | License URL is malformed | A3 License Object | specification / error | `license.url` | incomplete: URI semantics need audit | `InfoValidatorTest` |
+| `AAS3-LICENSE-URL-FORMAT` | License URL is not an absolute URI | A3 License Object | specification / error | `license.url` | valid | `InfoValidatorTest` |
 | `AAS3-EXTERNAL-DOC-URL-REQUIRED` | External documentation URL is empty | A3 External Documentation Object | specification / error | `externalDocs.url` | valid | `ExternalDocsValidatorTest` |
-| `AAS3-EXTERNAL-DOC-URL-FORMAT` | External documentation URL is malformed | A3 External Documentation Object | specification / error | `externalDocs.url` | incomplete: URI semantics need audit | `ExternalDocsValidatorTest` |
+| `AAS3-EXTERNAL-DOC-URL-FORMAT` | External documentation URL is not an absolute URI | A3 External Documentation Object | specification / error | `externalDocs.url` | valid | `ExternalDocsValidatorTest` |
 | `AAS3-TAG-NAME-REQUIRED` | Tag name is empty | A3 Tag Object | specification / error | `tag.name` | valid | `TagValidatorTest` |
 
 ## Servers, channels, parameters, and correlation IDs
@@ -31,30 +31,27 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | Code | Object and condition | Authority | Concern / severity | Source field | Status | Test |
 |---|---|---|---|---|---|---|
 | `AAS3-SERVER-HOST-REQUIRED` | Server host is empty | A3 Server Object | specification / error | `server.host` | valid | `ServerValidatorTest` |
+| `AAS3-SERVER-NAME-FORMAT` | Server map key uses unsupported characters | A3 Servers Object | specification / error | server entry | valid | `ServerValidatorTest` |
 | `ADV-SERVER-HOST-PROTOCOL` | Host embeds a protocol scheme | Project guidance | advisory / warning | `server.host` | advisory | `ServerValidatorTest` |
-| `ADV-SERVER-HOST-FORMAT` | Host fails the current host pattern | Project guidance | advisory / warning | `server.host` | incomplete: dynamic hosts need audit | `ServerValidatorTest` |
-| `AAS3-SERVER-VARIABLE-UNDEFINED` | Host variable lacks a definition | A3 Server Object | specification / error | `server.host` | valid | `ServerValidatorTest` |
-| `ADV-SERVER-VARIABLE-UNUSED` | Defined server variable is unused | Project guidance | advisory / warning | `server.variables` | advisory | `ServerValidatorTest` |
+| `AAS3-SERVER-VARIABLE-UNDEFINED` | Host or pathname variable lacks a definition | A3 Server Object | specification / error | `server.host` or `server.pathname` | valid | `ServerValidatorTest` |
 | `AAS3-SERVER-PROTOCOL-REQUIRED` | Server protocol is empty | A3 Server Object | specification / error | `server.protocol` | valid | `ServerValidatorTest` |
-| `ADV-SERVER-VARIABLE-ENUM-UNIQUE` | Server-variable enum repeats values | Project guidance | advisory / warning | `variable.enum` | advisory | `ServerVariableValidatorTest` |
-| `AAS3-SERVER-VARIABLE-DEFAULT` | Server-variable default is absent | A3 Server Variable Object | specification / error | `variable.default` | valid | `ServerVariableValidatorTest` |
-| `AAS3-SERVER-VARIABLE-DEFAULT-ENUM` | Default is outside enum | A3 Server Variable Object | specification / error | `variable.default` | valid | `ServerVariableValidatorTest` |
+| `AAS3-SERVER-VARIABLE-ENUM-UNIQUE` | Server-variable enum repeats values | A3 Server Variable Object | specification / error | `variable.enum` | valid | `ServerVariableValidatorTest` |
+| `ADV-SERVER-VARIABLE-DEFAULT-ENUM` | Default is outside enum | Project guidance | advisory / warning | `variable.default` | advisory | `ServerValidatorTest` |
 | `ADV-SERVER-VARIABLE-EXAMPLES-EMPTY` | Examples collection is empty | Project guidance | advisory / warning | `variable.examples` | advisory | `ServerVariableValidatorTest` |
 | `ADV-SERVER-VARIABLE-EXAMPLES-ENUM` | Example is outside enum | Project guidance | advisory / warning | `variable.examples` | advisory | `ServerVariableValidatorTest` |
 | `AAS3-CHANNEL-ADDRESS-SUFFIX` | Address contains a query or fragment | A3 Channel Object | specification / error | `channel.address` | valid | `ChannelValidatorTest` |
 | `AAS3-CHANNEL-PARAMETER-UNDEFINED` | Address parameter lacks a definition | A3 Channel Object | specification / error | `channel.address` | valid | `ChannelValidatorTest` |
-| `ADV-CHANNEL-PARAMETER-UNUSED` | Defined channel parameter is unused | Project guidance | advisory / warning | `channel.parameters` | advisory | `ChannelValidatorTest` |
-| `AAS3-CHANNEL-MESSAGES-REQUIRED` | Channel has no messages | none | specification / error | `channel.messages` | incorrect: AsyncAPI permits it | existing legacy coverage; remove later |
-| `ADV-CHANNEL-ADDRESS-EMPTY` | Channel address is empty or null | Project guidance | advisory / warning | `channel.address` | incomplete: unknown/dynamic address semantics | `ChannelValidatorTest` |
+| `AAS3-CHANNEL-PARAMETER-UNUSED` | Parameters are present without matching address expressions | A3 Channel and Parameters Objects | specification / error | `channel.parameters` | valid | `ChannelValidatorTest` |
 | `ADV-CHANNEL-SERVERS-EMPTY` | Explicit servers list is empty | Project guidance | advisory / warning | `channel.servers` | advisory | `ChannelValidatorTest` |
 | `GEN-CHANNEL-MESSAGES-AMBIGUOUS` | Multiple messages exceed a generator path | Generator behavior | capability / warning | `channel.messages` | generator-specific | `ChannelValidatorTest` |
 | `ADV-CHANNEL-BINDINGS-EMPTY` | Explicit bindings object is empty | Project guidance | advisory / warning | `channel.bindings` | advisory | `ChannelValidatorTest` |
-| `ADV-PARAMETER-ENUM-UNIQUE` | Parameter enum repeats values | Project guidance | advisory / warning | `parameter.enum` | advisory | `ParameterValidatorTest` |
-| `AAS3-PARAMETER-DEFAULT-ENUM` | Parameter default is outside enum | A3 Parameter Object | specification / error | `parameter.default` | valid | `ParameterValidatorTest` |
+| `AAS3-PARAMETER-ENUM-UNIQUE` | Parameter enum repeats values | A3 Parameter Object | specification / error | `parameter.enum` | valid | `ParameterValidatorTest` |
+| `AAS3-PARAMETER-NAME-FORMAT` | Parameter map key uses unsupported characters | A3 Parameters Object | specification / error | parameter entry | valid | `ParameterValidatorTest` |
+| `ADV-PARAMETER-DEFAULT-ENUM` | Parameter default is outside enum | Project guidance | advisory / warning | `parameter.default` | advisory | `ParameterValidatorTest` |
 | `ADV-PARAMETER-EXAMPLES-ENUM` | Parameter example is outside enum | Project guidance | advisory / warning | `parameter.examples` | advisory | `ParameterValidatorTest` |
-| `AAS3-PARAMETER-LOCATION` | Parameter location expression is malformed | A3 Parameter Object | specification / error | `parameter.location` | incomplete: expression grammar needs audit | `ParameterValidatorTest` |
+| `AAS3-PARAMETER-LOCATION` | Parameter location expression is malformed | A3 Parameter Object | specification / error | `parameter.location` | valid | `ParameterValidatorTest` |
 | `AAS3-CORRELATION-LOCATION-REQUIRED` | Correlation location is empty | A3 Correlation ID Object | specification / error | `correlationId.location` | valid | `CorrelationIdValidatorTest` |
-| `AAS3-CORRELATION-LOCATION-FORMAT` | Correlation location expression is malformed | A3 Runtime Expressions | specification / warning | `correlationId.location` | incomplete: severity and grammar need audit | `CorrelationIdValidatorTest` |
+| `AAS3-CORRELATION-LOCATION-FORMAT` | Correlation location expression is malformed | A3 Runtime Expressions | specification / error | `correlationId.location` | valid | `CorrelationIdValidatorTest` |
 
 ## Messages, operations, and security
 
@@ -129,4 +126,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message examples, message correlation IDs, message payload conformance, operation traits/replies in all traversal positions, component reference category integrity, OAuth flow-specific URLs and scopes, recursive boolean/dependency/tuple schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet: message examples, message payload conformance, root-versus-component reference restrictions, OAuth flow-specific URLs and scopes, recursive boolean/dependency/tuple schemas, and Kafka server/channel/operation/message binding rules with binding version and location. These are later implementation slices, not implicit behavior of the rules above.

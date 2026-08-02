@@ -3,16 +3,6 @@ package dev.banking.asyncapi.generator.core.constants
 object RegexPatterns {
 
     /**
-     * Matches standard email addresses using a simplified pattern.
-     *
-     * While not a full implementation of RFC 5322, this pattern provides sufficient structural
-     * validation for contact information by ensuring the `local-part@domain.tld` format.
-     *
-     * @see <a href="https://datatracker.ietf.org/doc/html/rfc5322">RFC 5322: Internet Message Format</a>
-     */
-    val EMAIL = Regex("""^[^\s@]+@[^\s@]+\.[^\s@]+$""")
-
-    /**
      * Matches absolute URIs with support for both web and socket protocols.
      *
      * Supported schemes: `http`, `https`, `ws`, `wss`.

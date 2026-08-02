@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.SEMANTIC_VERSION
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.URL
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -16,7 +15,7 @@ import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 class InfoValidator(
     val asyncApiContext: AsyncApiContext,
@@ -41,7 +40,7 @@ class InfoValidator(
     }
 
     private fun validateTitle(node: Info, contextString: String, results: ValidationCollector) {
-        val title = node.title.let(::sanitizeString)
+        val title = node.title
         if (title.isBlank()) {
             results.error(
                 INFO_TITLE_REQUIRED,
@@ -53,7 +52,7 @@ class InfoValidator(
     }
 
     private fun validateVersion(node: Info, contextString: String, results: ValidationCollector) {
-        val version = node.version.let(::sanitizeString)
+        val version = node.version
         if (version.isBlank()) {
             results.error(
                 INFO_VERSION_REQUIRED,
@@ -73,8 +72,8 @@ class InfoValidator(
     }
 
     private fun validateTermsOfService(node: Info, contextString: String, results: ValidationCollector) {
-        val termsOfService = node.termsOfService?.let(::sanitizeString) ?: return
-        if (!URL.matches(termsOfService)) {
+        val termsOfService = node.termsOfService ?: return
+        if (ValidationFormats.absoluteUri(termsOfService) == null) {
             results.error(
                 INFO_TERMS_OF_SERVICE_FORMAT,
                 "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",

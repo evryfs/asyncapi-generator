@@ -1,0 +1,9 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid channel address suffixes
+  version: 1.0.0
+channels:
+  query:
+    address: events?priority=high
+  fragment:
+    address: events#priority

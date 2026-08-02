@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Valid runtime expressions
+  version: 1.0.0
+components:
+  parameters:
+    WholePayload:
+      location: $message.payload
+    EscapedPointer:
+      location: $message.header#/a~1b/~0c
+    ExactValues:
+      enum:
+        - value
+        - ' value'
+      default: ' value'
+  correlationIds:
+    WholeHeader:
+      location: $message.header

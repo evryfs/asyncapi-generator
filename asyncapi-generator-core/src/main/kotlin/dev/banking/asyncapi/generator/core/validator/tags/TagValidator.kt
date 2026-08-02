@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NA
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidatorUtility.sanitizeString
 
 class TagValidator(
     val asyncApiContext: AsyncApiContext,
@@ -28,7 +27,7 @@ class TagValidator(
 
     fun validate(node: Tag, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
-        val name = node.name.let(::sanitizeString)
+        val name = node.name
         if (name.isBlank()) {
             results.error(
                 TAG_NAME_REQUIRED,
