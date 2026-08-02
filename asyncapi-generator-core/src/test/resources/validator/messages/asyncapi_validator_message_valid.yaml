@@ -18,3 +18,24 @@ components:
       examples:
         - headers:
             traceId: trace-123
+    MessageWithConformingPayloadExample:
+      payload:
+        type: object
+        required: [id, status, tags]
+        properties:
+          id:
+            type: integer
+            minimum: 1
+          status:
+            type: string
+            enum: [created, updated]
+          tags:
+            type: array
+            uniqueItems: true
+            items:
+              type: string
+      examples:
+        - payload:
+            id: 7
+            status: created
+            tags: [primary, audited]

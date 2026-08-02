@@ -60,7 +60,13 @@ class MessageValidator(
 
     private fun validateExamples(node: Message, contextString: String, results: ValidationCollector) {
         node.examples?.let { examples ->
-            messageExampleValidator.validate(examples, contextString, results)
+            messageExampleValidator.validate(
+                examples = examples,
+                headersSchema = node.headers,
+                payloadSchema = node.payload,
+                contextString = contextString,
+                results = results,
+            )
         }
     }
 

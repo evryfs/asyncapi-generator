@@ -60,6 +60,8 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 | `ADV-MESSAGE-TRAIT-EMPTY` | Message trait defines no fields | Project guidance | advisory / warning | message trait | advisory | `MessageTraitValidatorTest` |
 | `AAS3-MESSAGE-CONTENT-TYPE` | Message or message-trait content type is not a specific media type | A3 Message Object and Message Trait Object | specification / error | `message.contentType` | valid | `MessageValidatorTest`, `MessageTraitValidatorTest` |
 | `AAS3-MESSAGE-EXAMPLE-CONTENT` | Message example contains neither headers nor payload | A3 Message Example Object | specification / error | message example | valid; explicit null payload counts as present | `MessageValidatorTest`, `MessageTraitValidatorTest` |
+| `AAS3-MESSAGE-EXAMPLE-SCHEMA` | Message example headers or payload do not satisfy their ordinary AsyncAPI Schema Object | A3 Message Example and Schema Objects | specification / error | exact failing example value | valid; references, boolean schemas, recursive schemas, and Draft 7 validation applicators are evaluated | `MessageValidatorTest`, `SchemaInstanceValidatorTest` |
+| `GEN-MESSAGE-EXAMPLE-FORMAT` | No proven instance validator exists for a Multi Format Schema example | Generator behavior | capability / warning | example headers or payload | generator-specific; the example is preserved and not falsely validated | `MessageValidatorTest` |
 | `GEN-MESSAGE-HEADER-FORMAT` | Header schema form is unsupported | Generator behavior | capability / warning | `message.headers` | generator-specific | `MessageValidatorTest` |
 | `AAS3-OPERATION-ACTION-REQUIRED` | Operation action is absent | A3 Operation Object | specification / error | `operation.action` | valid | `OperationValidatorTest` |
 | `AAS3-OPERATION-ACTION-VALUE` | Action is not send or receive | A3 Operation Object | specification / error | `operation.action` | valid | `OperationValidatorTest` |
@@ -148,4 +150,4 @@ Authorities are [AsyncAPI 3.0 (A3)](https://www.asyncapi.com/docs/reference/spec
 
 ## Known unrepresented rule areas
 
-The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet. Message example conformance against header and payload schemas remains a later implementation slice, not implicit behavior of the rules above. Kafka fields whose validity depends on correlating a message binding with a selected server's schema-registry configuration are also deferred until traversal exposes that relationship explicitly.
+The inventory exposes important gaps rather than assigning codes to behavior that does not exist yet. Kafka fields whose validity depends on correlating a message binding with a selected server's schema-registry configuration are deferred until traversal exposes that relationship explicitly.

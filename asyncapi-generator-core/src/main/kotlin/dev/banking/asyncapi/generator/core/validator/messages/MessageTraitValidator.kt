@@ -96,7 +96,13 @@ class MessageTraitValidator(
 
     private fun validateExamples(node: MessageTrait, contextString: String, results: ValidationCollector) {
         node.examples?.let { examples ->
-            messageExampleValidator.validate(examples, contextString, results)
+            messageExampleValidator.validate(
+                examples = examples,
+                headersSchema = node.headers,
+                payloadSchema = null,
+                contextString = contextString,
+                results = results,
+            )
         }
     }
 

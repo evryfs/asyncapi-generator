@@ -41,7 +41,7 @@ internal object SchemaValueSemantics {
         }
     }
 
-    private fun equal(left: Any?, right: Any?): Boolean =
+    fun equal(left: Any?, right: Any?): Boolean =
         when {
             left is Number && right is Number -> {
                 val leftDecimal = decimal(left)

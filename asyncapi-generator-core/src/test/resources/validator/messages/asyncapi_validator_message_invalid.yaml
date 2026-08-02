@@ -10,3 +10,38 @@ components:
       examples:
         - name: metadataOnly
           summary: Does not contain message data
+    InvalidSchemaExample:
+      headers:
+        type: object
+        required: [traceId]
+        properties:
+          traceId:
+            type: string
+      payload:
+        type: object
+        required: [id]
+        properties:
+          id:
+            type: integer
+            minimum: 1
+          profile:
+            type: object
+            required: [active]
+            properties:
+              active:
+                type: boolean
+          tags:
+            type: array
+            items:
+              type: string
+      examples:
+        - headers:
+            traceId: 42
+          payload:
+            id: 0
+            profile: {}
+            tags: [valid, 2]
+    RejectedByBooleanSchema:
+      payload: false
+      examples:
+        - payload: anything
