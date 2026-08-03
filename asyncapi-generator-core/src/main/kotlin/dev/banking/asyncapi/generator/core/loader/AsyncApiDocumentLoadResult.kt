@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.loader
 
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
-import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
 import java.io.File
 import java.util.Collections.unmodifiableList
 import java.util.Collections.unmodifiableSet
@@ -20,7 +18,7 @@ class AsyncApiDocumentLoadResult internal constructor(
     val document: AsyncApiDocument,
     warnings: List<ValidationFinding>,
     sourceFiles: Set<File>,
-    private val context: AsyncApiContext,
+    private val formattedWarnings: String,
 ) {
     /** Validation warnings collected from the root document and external fragments. */
     val warnings: List<ValidationFinding> = unmodifiableList(warnings.toList())
@@ -33,14 +31,5 @@ class AsyncApiDocumentLoadResult internal constructor(
             .toCollection(linkedSetOf()),
     )
 
-    fun formatWarnings(): String =
-        if (warnings.isEmpty()) {
-            ""
-        } else {
-            ValidationFindingFormatter.format(
-                title = "Validation found ${warnings.size} warning(s):",
-                findings = warnings,
-                asyncApiContext = context,
-            )
-        }
+    fun formatWarnings(): String = formattedWarnings
 }

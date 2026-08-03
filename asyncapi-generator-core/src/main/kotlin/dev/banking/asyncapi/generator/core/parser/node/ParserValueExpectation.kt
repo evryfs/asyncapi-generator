@@ -16,14 +16,8 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
-@PublishedApi
 internal object ParserValueExpectation {
 
-    @PublishedApi
-    @Suppress("UNCHECKED_CAST")
-    internal fun <T> cast(value: Any?): T = value as T
-
-    @PublishedApi
     internal fun expect(
         node: DocumentNode,
         expectedType: KType,

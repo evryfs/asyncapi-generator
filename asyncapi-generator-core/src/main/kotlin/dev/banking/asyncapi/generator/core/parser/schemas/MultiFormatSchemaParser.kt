@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 
@@ -25,7 +26,11 @@ internal class MultiFormatSchemaParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseFormat(format: String, path: String): SchemaFormat =
+    fun parseFormat(
+        format: String,
+        path: String,
+        sourceLocation: SourceLocation,
+    ): SchemaFormat =
         SchemaFormat.fromValue(format)
-            ?: throw UnexpectedSchemaFormat(format, path, asyncApiContext)
+            ?: throw UnexpectedSchemaFormat(format, path, sourceLocation, asyncApiContext)
 }

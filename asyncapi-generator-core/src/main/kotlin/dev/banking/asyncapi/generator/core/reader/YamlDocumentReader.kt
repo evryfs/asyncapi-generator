@@ -37,15 +37,13 @@ import org.yaml.snakeyaml.reader.ReaderException
  * - `DocumentReaderContractTest`
  * - `DocumentLocationTest`
  */
-internal class YamlDocumentReader internal constructor(
-    private val limits: DocumentReaderLimits,
+internal class YamlDocumentReader(
+    private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
 ) : DocumentReader {
-    constructor() : this(DocumentReaderLimits.DEFAULT)
 
     private val yaml =
         Yaml(
             LoaderOptions().apply {
-                isProcessComments = true
                 isAllowDuplicateKeys = false
                 maxAliasesForCollections = limits.maxAliasesForCollections
                 nestingDepthLimit = limits.maxNestingDepth

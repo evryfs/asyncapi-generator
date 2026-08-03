@@ -3,8 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.node
 import com.fasterxml.jackson.core.io.JsonStringEncoder
 
 /** Collision-safe identity of one document node within one registered source. */
-@PublishedApi
-internal data class NodeAddress private constructor(
+internal data class NodeAddress(
     val sourceId: String,
     val segments: List<NodeAddressSegment>,
 ) {
@@ -64,7 +63,6 @@ internal data class NodeAddress private constructor(
 }
 
 /** Typed path segment used by [NodeAddress] identity. */
-@PublishedApi
 internal sealed interface NodeAddressSegment {
     data class Member(val name: String) : NodeAddressSegment
 

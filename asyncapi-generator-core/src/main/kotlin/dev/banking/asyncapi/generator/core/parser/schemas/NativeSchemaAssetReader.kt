@@ -45,6 +45,7 @@ internal class NativeSchemaAssetReader(
             throw NativeSchemaAssetReadFailure(
                 reference = reference,
                 path = referenceNode.path,
+                sourceLocation = referenceNode.sourceLocation,
                 context = asyncApiContext,
                 reason = exception.message ?: exception::class.simpleName.orEmpty(),
             )
@@ -52,6 +53,7 @@ internal class NativeSchemaAssetReader(
             throw NativeSchemaAssetReadFailure(
                 reference = reference,
                 path = referenceNode.path,
+                sourceLocation = referenceNode.sourceLocation,
                 context = asyncApiContext,
                 reason = exception.message ?: exception::class.simpleName.orEmpty(),
             )

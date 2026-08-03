@@ -63,7 +63,11 @@ internal class SchemaParser(
         }
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
-            val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
+            val schemaFormat = multiFormatParser.parseFormat(
+                format = format,
+                path = parserNode.path,
+                sourceLocation = parserNode.sourceLocation,
+            )
             val schemaNode = objectNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)

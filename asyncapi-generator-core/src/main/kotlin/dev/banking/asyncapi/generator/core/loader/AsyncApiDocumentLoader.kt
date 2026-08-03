@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
@@ -25,12 +26,23 @@ class AsyncApiDocumentLoader {
         val validationResults = AsyncApiValidator(context).validate(document)
 
         ValidationReporter(context).throwErrors(validationResults)
+        val warnings = context.allValidationWarnings(validationResults.warnings)
+        val formattedWarnings =
+            if (warnings.isEmpty()) {
+                ""
+            } else {
+                ValidationFindingFormatter.format(
+                    title = "Validation found ${warnings.size} warning(s):",
+                    findings = warnings,
+                    asyncApiContext = context,
+                )
+            }
 
         return AsyncApiDocumentLoadResult(
             document = document,
-            warnings = context.allValidationWarnings(validationResults.warnings),
+            warnings = warnings,
             sourceFiles = context.sourceFiles(),
-            context = context,
+            formattedWarnings = formattedWarnings,
         )
     }
 }

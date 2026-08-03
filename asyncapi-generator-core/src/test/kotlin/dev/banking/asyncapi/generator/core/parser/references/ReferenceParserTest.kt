@@ -30,7 +30,7 @@ class ReferenceParserTest {
             .expectObject().required("receiveLightMeasurement")
             .expectObject().required("channel")
 
-        val reference = parser.parseElement(referenceNode)
+        val reference = parser.parseElement(referenceNode, REFERENCE)
 
         assertEquals("#/channels/lightingMeasured", reference.ref)
         assertEquals(REFERENCE, reference.referenceCategoryKey)
@@ -45,7 +45,7 @@ class ReferenceParserTest {
             .expectObject().required("receiveLightMeasurement")
             .expectObject().required("messages")
 
-        val references = parser.parseList(referencesNode)
+        val references = parser.parseList(referencesNode, REFERENCE)
 
         assertEquals(listOf("#/components/messages/lightMeasured"), references.map { it.ref })
         assertEquals(listOf(REFERENCE), references.map { it.referenceCategoryKey })
@@ -61,7 +61,7 @@ class ReferenceParserTest {
             .expectObject().required("ExternalSchema")
 
         val error = assertFailsWith<IllegalArgumentException> {
-            parser.parseElement(referenceNode)
+            parser.parseElement(referenceNode, REFERENCE)
         }
 
         assertContains(error.message.orEmpty(), "Generic reference category 'REFERENCE' is not supported")
@@ -78,7 +78,7 @@ class ReferenceParserTest {
             .expectObject().required("MissingReference")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(referenceNode)
+            parser.parseElement(referenceNode, REFERENCE)
         }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -103,7 +103,7 @@ class ReferenceParserTest {
             .expectObject().required("NumericReference")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(referenceNode)
+            parser.parseElement(referenceNode, REFERENCE)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
@@ -129,7 +129,7 @@ class ReferenceParserTest {
             .expectObject().required("NullReference")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(referenceNode)
+            parser.parseElement(referenceNode, REFERENCE)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
@@ -155,7 +155,7 @@ class ReferenceParserTest {
             .expectObject().required("ReferenceList")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(referencesNode)
+            parser.parseList(referencesNode, REFERENCE)
         }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -180,7 +180,7 @@ class ReferenceParserTest {
             .expectObject().required("MissingReference")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(referenceNode)
+            parser.parseList(referenceNode, REFERENCE)
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 

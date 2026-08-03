@@ -11,7 +11,7 @@ internal object DocumentNumberParser {
     private val maxLong = BigInteger.valueOf(Long.MAX_VALUE)
 
     fun parseInteger(value: String): Number? {
-        val integer = value.withoutSeparators().toBigIntegerOrNull() ?: return null
+        val integer = value.toBigIntegerOrNull() ?: return null
         return when (integer) {
             in minInt..maxInt -> integer.toInt()
             in minLong..maxLong -> integer.toLong()
@@ -20,9 +20,8 @@ internal object DocumentNumberParser {
     }
 
     fun parseDecimal(value: String): Number? {
-        val normalized = value.withoutSeparators()
-        val decimal = normalized.toBigDecimalOrNull() ?: return null
-        val double = normalized.toDoubleOrNull()
+        val decimal = value.toBigDecimalOrNull() ?: return null
+        val double = value.toDoubleOrNull()
         return if (
             double != null &&
             double.isFinite() &&
@@ -33,6 +32,4 @@ internal object DocumentNumberParser {
             decimal.stripTrailingZeros()
         }
     }
-
-    private fun String.withoutSeparators(): String = replace("_", "")
 }
