@@ -14,6 +14,16 @@ enum class ParserDiagnosticCategory(
     INVALID_REFERENCE("parser.invalid-reference"),
     REFERENCE_DOCUMENT_NOT_FOUND("parser.reference-document-not-found"),
     REFERENCE_TARGET_NOT_FOUND("parser.reference-target-not-found"),
+    LOAD_RESOURCE_LIMIT_EXCEEDED("parser.load-resource-limit-exceeded"),
+}
+
+/** Load-scoped resource controlled by the parser loading boundary. */
+enum class ParserLoadResourceLimit(val displayName: String) {
+    SOURCE_DOCUMENTS("source documents"),
+    REFERENCE_TARGETS("resolved reference targets"),
+    EXTERNAL_REFERENCE_DEPTH("external reference depth"),
+    AGGREGATE_SOURCE_BYTES("aggregate source bytes"),
+    NATIVE_SCHEMA_ASSET_BYTES("native schema asset bytes"),
 }
 
 /** JSON-compatible runtime value categories exposed by parser diagnostics. */
@@ -140,5 +150,19 @@ sealed interface ParserDiagnostic {
         override val expectedType: String = "existing JSON Pointer target"
         override val actualType: ParserValueType = ParserValueType.STRING
         override val actualValue: Any = reference
+    }
+
+    data class LoadResourceLimitExceeded(
+        val limit: ParserLoadResourceLimit,
+        val maximum: Long,
+        val observed: Long,
+        override val path: String,
+        override val sourceLocation: SourceLocation,
+    ) : ParserDiagnostic {
+        override val category: ParserDiagnosticCategory =
+            ParserDiagnosticCategory.LOAD_RESOURCE_LIMIT_EXCEEDED
+        override val expectedType: String = "at most $maximum ${limit.displayName}"
+        override val actualType: ParserValueType = ParserValueType.NUMBER
+        override val actualValue: Any = observed
     }
 }

@@ -53,9 +53,29 @@ class AsyncApiExternalContext(
             throw missingDocument(reference, externalFile)
         }
 
-        val documentKey = externalFile.canonicalPath
+        val referenceLocation = referenceLocation(reference)
+        val documentKey =
+            try {
+                context.registerExternalDocument(externalFile, referenceLocation)
+                externalFile.canonicalPath
+            } catch (exception: IOException) {
+                throw missingDocument(reference, externalFile)
+            } catch (exception: SecurityException) {
+                throw missingDocument(reference, externalFile)
+            }
         val rootNode = documents.getOrPut(documentKey) {
             AsyncApiRegistry.read(externalFile, context)
+        }
+        try {
+            context.registerReferenceTarget(
+                file = externalFile,
+                pointer = resolved.pointer.toString(),
+                location = referenceLocation,
+            )
+        } catch (exception: IOException) {
+            throw missingDocument(reference, externalFile)
+        } catch (exception: SecurityException) {
+            throw missingDocument(reference, externalFile)
         }
         val isAsyncApiDocument =
             (rootNode.node as? DocumentObject)?.member("asyncapi") != null
@@ -64,11 +84,13 @@ class AsyncApiExternalContext(
                 throw missingTarget(reference)
             }
             if (!loadedDocuments.add(documentKey)) return
-            val parser = AsyncApiParser(context)
-            val parsed = parser.parse(rootNode)
-            val result = AsyncApiValidator(context).validate(parsed)
-            ValidationReporter(context).logWarnings(result)
-            ValidationReporter(context).throwErrors(result)
+            context.withinExternalReference(referenceLocation) {
+                val parser = AsyncApiParser(context)
+                val parsed = parser.parse(rootNode)
+                val result = AsyncApiValidator(context).validate(parsed)
+                ValidationReporter(context).logWarnings(result)
+                ValidationReporter(context).throwErrors(result)
+            }
         } else {
             val parserProfile = referenceOrigin?.parserProfile
             val profiledRoot = parserProfile?.let(rootNode::withProfile) ?: rootNode
@@ -81,7 +103,9 @@ class AsyncApiExternalContext(
                 parserProfile = parserProfile?.name.orEmpty(),
             )
             if (!loadedFragments.add(fragmentIdentity)) return
-            parseFragment(target, reference)
+            context.withinExternalReference(referenceLocation) {
+                parseFragment(target, reference)
+            }
         }
     }
 

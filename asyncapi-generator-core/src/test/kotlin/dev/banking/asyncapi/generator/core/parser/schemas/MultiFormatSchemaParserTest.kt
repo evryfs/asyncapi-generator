@@ -1,9 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.context.ParserLoadResourceLimits
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceLimit
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
@@ -11,12 +13,17 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class MultiFormatSchemaParserTest {
+    @TempDir
+    lateinit var tempDir: Path
+
 
     private val context = AsyncApiContext()
     private val parser = SchemaParser(context)
@@ -153,8 +160,128 @@ class MultiFormatSchemaParserTest {
         assertContains(error.message.orEmpty(), "asyncapi_missing_native_schema_asset.yaml")
         assertContains(
             error.message.orEmpty(),
-            "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema",
+            "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema.\$ref",
         )
+    }
+
+    @Test
+    fun `external native schema assets use a source located size limit`() {
+        val asset = tempDir.resolve("schema.proto").toFile()
+        asset.writeText("message Example {}")
+        val file = tempDir.resolve("native-limit.yaml").toFile()
+        file.writeText(
+            """
+            components:
+              schemas:
+                External:
+                  schemaFormat: application/vnd.google.protobuf;version=3
+                  schema:
+                    ${'$'}ref: ./schema.proto
+            """.trimIndent(),
+        )
+        val limitedContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxNativeSchemaAssetBytes = 4,
+            ),
+        )
+        val schemaNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), limitedContext)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("External")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            SchemaParser(limitedContext).parseElement(schemaNode)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.LOAD_RESOURCE_LIMIT_EXCEEDED, diagnostic.category)
+        assertEquals(ParserLoadResourceLimit.NATIVE_SCHEMA_ASSET_BYTES, diagnostic.limit)
+        assertEquals(4L, diagnostic.maximum)
+        assertEquals(asset.readBytes().size.toLong(), diagnostic.observed)
+        assertEquals("native_limit.root.components.schemas.External.schema.\$ref", diagnostic.path)
+        assertEquals(file.canonicalFile, diagnostic.sourceLocation.file.canonicalFile)
+    }
+
+    @Test
+    fun `external native schema assets are strict utf8 input`() {
+        val asset = tempDir.resolve("invalid.proto").toFile()
+        asset.writeBytes(byteArrayOf(0xC3.toByte(), 0x28))
+        val file = tempDir.resolve("invalid-native-utf8.yaml").toFile()
+        file.writeText(
+            """
+            components:
+              schemas:
+                External:
+                  schemaFormat: application/vnd.google.protobuf;version=3
+                  schema:
+                    ${'$'}ref: ./invalid.proto
+            """.trimIndent(),
+        )
+        val localContext = AsyncApiContext()
+        val schemaNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), localContext)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("External")
+
+        val error = assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+            SchemaParser(localContext).parseElement(schemaNode)
+        }
+
+        assertContains(error.message.orEmpty(), "invalid.proto")
+        assertContains(error.message.orEmpty(), "External.schema.\$ref")
+    }
+
+    @Test
+    fun `repeated native schema assets consume aggregate bytes once`() {
+        val asset = tempDir.resolve("shared.proto").toFile()
+        asset.writeText("message Shared {}")
+        val file = tempDir.resolve("repeated-native.yaml").toFile()
+        file.writeText(
+            """
+            components:
+              schemas:
+                First:
+                  schemaFormat: application/vnd.google.protobuf;version=3
+                  schema:
+                    ${'$'}ref: ./shared.proto
+                Second:
+                  schemaFormat: application/vnd.google.protobuf;version=3
+                  schema:
+                    ${'$'}ref: ./shared.proto
+            """.trimIndent(),
+        )
+        val sourceBytes = file.readBytes().size.toLong()
+        val assetBytes = asset.readBytes().size.toLong()
+        val exactContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxAggregateSourceBytes = sourceBytes + assetBytes,
+            ),
+        )
+        val schemasNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), exactContext)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+
+        val schemas = SchemaParser(exactContext).parseMap(schemasNode)
+
+        assertEquals(2, schemas.size)
+
+        val limitedContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxAggregateSourceBytes = sourceBytes + assetBytes - 1,
+            ),
+        )
+        val limitedSchemasNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), limitedContext)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            SchemaParser(limitedContext).parseMap(limitedSchemasNode)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserLoadResourceLimit.AGGREGATE_SOURCE_BYTES, diagnostic.limit)
+        assertEquals(sourceBytes + assetBytes, diagnostic.observed)
+        assertEquals("repeated_native.root.components.schemas.First.schema.\$ref", diagnostic.path)
     }
 
     @Test

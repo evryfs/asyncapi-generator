@@ -23,7 +23,11 @@ object ParserNodeFactory {
         document: InputDocument,
         context: AsyncApiContext,
     ): ParserNode {
-        val sourceId = context.registerDocumentSource(document.source.file, document.source.content)
+        val sourceId = context.registerDocumentSource(
+            file = document.source.file,
+            content = document.source.content,
+            location = document.root.location,
+        )
 
         val rootAddress = NodeAddress.root(sourceId)
         registerLocations(

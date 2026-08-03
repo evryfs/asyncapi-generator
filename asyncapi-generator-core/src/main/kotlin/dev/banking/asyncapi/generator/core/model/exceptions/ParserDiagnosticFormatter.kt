@@ -71,6 +71,15 @@ internal object ParserDiagnosticFormatter {
                     diagnostic = diagnostic,
                     context = context,
                 )
+
+            is ParserDiagnostic.LoadResourceLimitExceeded ->
+                buildMessage(
+                    header =
+                        "Parser load exceeded the ${diagnostic.limit.displayName} limit of " +
+                            "${diagnostic.maximum}: observed ${diagnostic.observed}.",
+                    diagnostic = diagnostic,
+                    context = context,
+                )
         }
 
     private fun unsupportedVersionMessage(

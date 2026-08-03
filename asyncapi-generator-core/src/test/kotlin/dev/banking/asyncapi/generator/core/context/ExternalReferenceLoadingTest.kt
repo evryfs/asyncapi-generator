@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceLimit
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -29,6 +30,8 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
@@ -38,6 +41,9 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 
 class ExternalReferenceLoadingTest {
+    @TempDir
+    lateinit var tempDir: Path
+
     private val context = AsyncApiContext()
     private val schemaParser = SchemaParser(context)
     private val documentParser = AsyncApiParser(context)
@@ -363,5 +369,194 @@ class ExternalReferenceLoadingTest {
             diagnostic.path,
         )
         assertEquals("external_reference_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
+    fun `limits distinct source documents at the reference that exceeds the budget`() {
+        val fragment = tempDir.resolve("fragment.yaml").toFile()
+        fragment.writeText("type: string")
+        val main = tempDir.resolve("main.yaml").toFile()
+        main.writeText(
+            """
+            asyncapi: 3.0.0
+            info:
+              title: Document limit
+              version: 1.0.0
+            components:
+              schemas:
+                External:
+                  ${'$'}ref: ./fragment.yaml
+            """.trimIndent(),
+        )
+        val limitedContext = AsyncApiContext(
+            ParserLoadResourceLimits(maxSourceDocuments = 1),
+        )
+        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            AsyncApiParser(limitedContext).parse(root)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserDiagnosticCategory.LOAD_RESOURCE_LIMIT_EXCEEDED, diagnostic.category)
+        assertEquals(ParserLoadResourceLimit.SOURCE_DOCUMENTS, diagnostic.limit)
+        assertEquals(1L, diagnostic.maximum)
+        assertEquals(2L, diagnostic.observed)
+        assertEquals("main.root.components.schemas.External.\$ref", diagnostic.path)
+        assertEquals(main.canonicalFile, diagnostic.sourceLocation.file.canonicalFile)
+    }
+
+    @Test
+    fun `limits unique resolved targets while counting repeated targets once`() {
+        val nestedDirectory = tempDir.resolve("nested").toFile()
+        nestedDirectory.mkdirs()
+        val fragment = tempDir.resolve("fragment.yaml").toFile()
+        fragment.writeText(
+            """
+            selected:
+              type: string
+            other:
+              type: integer
+            """.trimIndent(),
+        )
+        val repeatedMain = tempDir.resolve("repeated-main.yaml").toFile()
+        repeatedMain.writeText(
+            """
+            asyncapi: 3.0.0
+            info:
+              title: Repeated target
+              version: 1.0.0
+            components:
+              schemas:
+                Direct:
+                  ${'$'}ref: ./fragment.yaml#/selected
+                CanonicalAlias:
+                  ${'$'}ref: ./nested/../fragment.yaml#/selected
+            """.trimIndent(),
+        )
+        val repeatedContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxSourceDocuments = 2,
+                maxReferenceTargets = 1,
+            ),
+        )
+        val repeatedRoot = ParserNodeFactory.root(
+            DocumentReaderRegistry.read(repeatedMain),
+            repeatedContext,
+        )
+
+        AsyncApiParser(repeatedContext).parse(repeatedRoot)
+
+        val distinctMain = tempDir.resolve("distinct-main.yaml").toFile()
+        distinctMain.writeText(
+            repeatedMain.readText().replace(
+                "./nested/../fragment.yaml#/selected",
+                "./fragment.yaml#/other",
+            ),
+        )
+        val distinctContext = AsyncApiContext(
+            ParserLoadResourceLimits(maxReferenceTargets = 1),
+        )
+        val distinctRoot = ParserNodeFactory.root(
+            DocumentReaderRegistry.read(distinctMain),
+            distinctContext,
+        )
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            AsyncApiParser(distinctContext).parse(distinctRoot)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserLoadResourceLimit.REFERENCE_TARGETS, diagnostic.limit)
+        assertEquals(1L, diagnostic.maximum)
+        assertEquals(2L, diagnostic.observed)
+        assertEquals("distinct_main.root.components.schemas.CanonicalAlias.\$ref", diagnostic.path)
+    }
+
+    @Test
+    fun `limits acyclic external reference depth without charging cycles repeatedly`() {
+        val first = tempDir.resolve("first.yaml").toFile()
+        val second = tempDir.resolve("second.yaml").toFile()
+        val third = tempDir.resolve("third.yaml").toFile()
+        first.writeText("${'$'}ref: ./second.yaml")
+        second.writeText("${'$'}ref: ./third.yaml")
+        third.writeText("type: string")
+        val main = tempDir.resolve("depth-main.yaml").toFile()
+        main.writeText(
+            """
+            asyncapi: 3.0.0
+            info:
+              title: Depth limit
+              version: 1.0.0
+            components:
+              schemas:
+                External:
+                  ${'$'}ref: ./first.yaml
+            """.trimIndent(),
+        )
+        val limitedContext = AsyncApiContext(
+            ParserLoadResourceLimits(maxExternalReferenceDepth = 2),
+        )
+        val limitedRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            AsyncApiParser(limitedContext).parse(limitedRoot)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserLoadResourceLimit.EXTERNAL_REFERENCE_DEPTH, diagnostic.limit)
+        assertEquals(2L, diagnostic.maximum)
+        assertEquals(3L, diagnostic.observed)
+        assertEquals("second.root.\$ref", diagnostic.path)
+        assertEquals(second.canonicalFile, diagnostic.sourceLocation.file.canonicalFile)
+
+        first.writeText("${'$'}ref: ./second.yaml")
+        second.writeText("${'$'}ref: ./first.yaml")
+        val cyclicContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxReferenceTargets = 2,
+                maxExternalReferenceDepth = 2,
+            ),
+        )
+        val cyclicRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), cyclicContext)
+
+        AsyncApiParser(cyclicContext).parse(cyclicRoot)
+    }
+
+    @Test
+    fun `limits aggregate canonical source bytes at the causing reference`() {
+        val fragment = tempDir.resolve("aggregate-fragment.yaml").toFile()
+        fragment.writeText("type: string\ndescription: aggregate bytes")
+        val main = tempDir.resolve("aggregate-main.yaml").toFile()
+        main.writeText(
+            """
+            asyncapi: 3.0.0
+            info:
+              title: Aggregate limit
+              version: 1.0.0
+            components:
+              schemas:
+                External:
+                  ${'$'}ref: ./aggregate-fragment.yaml
+            """.trimIndent(),
+        )
+        val mainBytes = main.readBytes().size.toLong()
+        val fragmentBytes = fragment.readBytes().size.toLong()
+        val limitedContext = AsyncApiContext(
+            ParserLoadResourceLimits(
+                maxAggregateSourceBytes = mainBytes + fragmentBytes - 1,
+            ),
+        )
+        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            AsyncApiParser(limitedContext).parse(root)
+        }
+
+        val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
+        assertEquals(ParserLoadResourceLimit.AGGREGATE_SOURCE_BYTES, diagnostic.limit)
+        assertEquals(mainBytes + fragmentBytes - 1, diagnostic.maximum)
+        assertEquals(mainBytes + fragmentBytes, diagnostic.observed)
+        assertEquals("aggregate_main.root.components.schemas.External.\$ref", diagnostic.path)
     }
 }
