@@ -10,5 +10,4 @@ channels:
         payload:
           type: string
     parameters:
-      userId: # Defined but unused
-        type: string
+      userId: {} # Defined but unused

@@ -1,6 +1,9 @@
 package dev.banking.asyncapi.generator.core.validator.security
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.security.OAuthFlow
+import dev.banking.asyncapi.generator.core.model.security.OAuthFlows
+import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_NAME_REQUIRED
@@ -19,6 +22,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
+import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -113,7 +118,7 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
     fun `validates required OAuth flow fields and absolute URLs`() {
         val results = validate("validator/security/asyncapi_validator_security_oauth_invalid.yaml")
 
-        assertEquals(9, results.errors.size)
+        assertEquals(8, results.errors.size)
         assertRule(
             results,
             SECURITY_IN_REQUIRED,
@@ -152,21 +157,36 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertRule(
             results,
-            SECURITY_OAUTH_AVAILABLE_SCOPES_REQUIRED,
-            path = "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.flows.authorizationCode",
-            line = 20,
-        )
-        assertRule(
-            results,
             SECURITY_OAUTH_SCOPE_AVAILABLE,
             path = "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.scopes",
-            line = 23,
+            line = 24,
         )
         assertRule(
             results,
             SECURITY_OPEN_ID_URL_FORMAT,
             path = "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOpenIdUrl.openIdConnectUrl",
-            line = 27,
+            line = 28,
         )
+    }
+
+    @Test
+    fun `validator defensively rejects programmatic OAuth flows without available scopes`() {
+        val scheme = SecurityScheme(
+            type = "oauth2",
+            flows = OAuthFlows(
+                authorizationCode = OAuthFlow(
+                    authorizationUrl = "https://example.com/authorize",
+                    tokenUrl = "https://example.com/token",
+                    availableScopes = null,
+                ),
+            ),
+        )
+        val collector = ValidationCollector(AsyncApiValidationProfile.V3_0)
+
+        OAuthFlowsValidator(asyncApiContext).validate(scheme, "Security Scheme", collector)
+        val results = collector.report()
+
+        assertEquals(1, results.errors.size)
+        assertRule(results, SECURITY_OAUTH_AVAILABLE_SCOPES_REQUIRED)
     }
 }

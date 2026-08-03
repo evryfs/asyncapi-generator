@@ -1,6 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
+import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
+import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.operations.Operation
+import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
@@ -102,7 +106,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             throwErrors(validationResults)
         }
-        assertEquals(3, exception.errors.size, "Expected invalid action, empty action, and missing channel errors.")
+        assertEquals(2, exception.errors.size, "Expected invalid and empty action errors.")
         assertRule(
             validationResults,
             OPERATION_ACTION_VALUE,
@@ -117,13 +121,22 @@ class OperationValidatorTest : AbstractValidatorTest() {
             path = "asyncapi_validator_operations_invalid_action.root.operations.emptyAction.action",
             line = 24,
         )
-        assertRule(
-            validationResults,
-            OPERATION_CHANNEL_REQUIRED,
-            sourceFile = "asyncapi_validator_operations_invalid_action.yaml",
-            path = "asyncapi_validator_operations_invalid_action.root.operations.missingChannel",
-            line = 27,
+    }
+
+    @Test
+    fun `validator defensively rejects a programmatic operation without a channel`() {
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Programmatic document", version = "1.0.0"),
+            operations = mapOf(
+                "missingChannel" to OperationInterface.OperationInline(Operation(action = "send")),
+            ),
         )
+
+        val validationResults = asyncApiValidator.validate(document)
+
+        assertEquals(1, validationResults.errors.size)
+        assertRule(validationResults, OPERATION_CHANNEL_REQUIRED)
     }
 
     @Test

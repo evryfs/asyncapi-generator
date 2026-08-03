@@ -3,6 +3,9 @@ package dev.banking.asyncapi.generator.core.parser.node
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import dev.banking.asyncapi.generator.core.parser.version.objectMemberPolicy
 
 /**
  * Object-shaped view of a [ParserNode].
@@ -53,7 +56,7 @@ class ParserObjectNode internal constructor(
     ) {
         val unexpectedMember = documentObject.members.entries.firstOrNull { (memberName, _) ->
             memberName !in allowedMembers &&
-                !(specificationExtensionsAllowed && memberName.startsWith("x-"))
+                !(specificationExtensionsAllowed && memberName.matches(SPECIFICATION_EXTENSION_NAME))
         } ?: return
         val (memberName, member) = unexpectedMember
         throw AsyncApiParseException.ParserDiagnosticFailure(
@@ -66,5 +69,20 @@ class ParserObjectNode internal constructor(
             ),
             context = parserNode.context,
         )
+    }
+
+    /** Enforces the fixed-member policy selected by this node's AsyncAPI profile. */
+    internal fun expectOnlyMembers(objectType: AsyncApiObjectType) {
+        val profile = parserNode.profile ?: AsyncApiParserProfile.V3_0
+        val policy = profile.objectMemberPolicy(objectType)
+        expectOnlyMembers(
+            objectType = objectType.displayName,
+            allowedMembers = policy.allowedMembers,
+            specificationExtensionsAllowed = policy.specificationExtensionsAllowed,
+        )
+    }
+
+    private companion object {
+        val SPECIFICATION_EXTENSION_NAME = Regex("""^x-[A-Za-z0-9._-]+$""")
     }
 }

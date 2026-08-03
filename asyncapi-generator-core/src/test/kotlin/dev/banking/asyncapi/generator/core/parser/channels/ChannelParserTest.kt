@@ -184,6 +184,21 @@ class ChannelParserTest {
     }
 
     @Test
+    fun `parse channel preserves an explicit null address as unknown`() {
+        val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val channelsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("channels")
+
+        val channel = assertIs<ChannelInterface.ChannelInline>(
+            parser.parseMap(channelsNode).getValue("unknownAddress"),
+        ).channel
+
+        assertNull(channel.address)
+        assertEquals("Address is intentionally unknown.", channel.description)
+    }
+
+    @Test
     fun `parse channel with invalid messages structure reports its expected type and source`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -243,7 +258,7 @@ class ChannelParserTest {
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
+        assertEquals("String?", diagnostic.expectedType)
         assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
         assertEquals(false, diagnostic.actualValue)
         assertEquals(

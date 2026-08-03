@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PARAMETER as PARAMETER_OBJECT
 
 /**
  * Parses AsyncAPI parameter objects from parser nodes.
@@ -35,6 +36,7 @@ class ParameterParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(PARAMETER_OBJECT)
             ParameterInterface.ParameterInline(
                 Parameter(
                     description = objectNode.optional("description")?.expect<String>(),

@@ -134,6 +134,33 @@ class OperationParserTest {
     }
 
     @Test
+    fun `parse operation missing channel reports the required member and source`() {
+        val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val operationsNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("operationCases")
+            .expectObject().required("MissingChannel")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(operationsNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("channel", diagnostic.memberName)
+        assertEquals("present member", diagnostic.expectedType)
+        assertEquals(
+            "asyncapi_parser_operations_invalid.root.operationCases.MissingChannel.invalidOperation.channel",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.operationCases.MissingChannel.invalidOperation",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
     fun `parse operation with boolean action reports its expected type and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)

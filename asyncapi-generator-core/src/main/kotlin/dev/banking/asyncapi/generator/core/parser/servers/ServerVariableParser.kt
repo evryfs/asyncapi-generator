@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SERVER_VARIABLE as SERVER_VARIABLE_OBJECT
 
 /**
  * Parses AsyncAPI server variable objects from parser nodes.
@@ -35,6 +36,7 @@ class ServerVariableParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(SERVER_VARIABLE_OBJECT)
             ServerVariableInterface.ServerVariableInline(
                 ServerVariable(
                     enum = objectNode.optional("enum")?.expect<List<String>>(),

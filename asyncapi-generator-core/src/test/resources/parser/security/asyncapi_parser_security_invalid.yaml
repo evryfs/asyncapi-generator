@@ -25,6 +25,13 @@ components:
             valid: "A valid scope"
             invalid: 7
 
+    MissingAvailableScopes:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: https://example.com/authorize
+          tokenUrl: https://example.com/token
+
   securitySchemeCases:
     ObjectInsteadOfList:
       invalidScheme:

@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION_REPLY_ADDRESS as REPLY_ADDRESS_OBJECT
 
 /**
  * Parses AsyncAPI operation reply address objects from parser nodes.
@@ -34,6 +35,7 @@ class OperationReplyAddressParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
+        objectNode.expectOnlyMembers(REPLY_ADDRESS_OBJECT)
         return OperationReplyAddressInterface.OperationReplyAddressInline(
             OperationReplyAddress(
                 location = objectNode.required("location").expect<String>(),

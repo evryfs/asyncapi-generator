@@ -115,6 +115,10 @@ channels:
       powerMessage:
         $ref: '#/components/messages/lightMeasured'
 
+  unknownAddress:
+    address: null
+    description: Address is intentionally unknown.
+
   referencedChannel:
     $ref: '#/channels/lightingMeasured'
 

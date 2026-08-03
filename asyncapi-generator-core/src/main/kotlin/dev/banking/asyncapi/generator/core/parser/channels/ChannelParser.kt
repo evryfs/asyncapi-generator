@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHANNEL as CHANNEL_OBJECT
 
 /**
  * Parses AsyncAPI channel objects from parser nodes.
@@ -49,9 +50,10 @@ class ChannelParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(CHANNEL_OBJECT)
             ChannelInterface.ChannelInline(
                 Channel(
-                    address = objectNode.optional("address")?.expect<String>(),
+                    address = objectNode.optional("address")?.expect<String?>(),
                     messages = objectNode.optional("messages")?.let(messageParser::parseMap),
                     title = objectNode.optional("title")?.expect<String>(),
                     summary = objectNode.optional("summary")?.expect<String>(),

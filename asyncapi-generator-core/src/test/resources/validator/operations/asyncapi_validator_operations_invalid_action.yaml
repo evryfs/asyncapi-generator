@@ -24,5 +24,3 @@ operations:
     action: ""
     channel:
       $ref: '#/channels/myChannel'
-  missingChannel:
-    action: send

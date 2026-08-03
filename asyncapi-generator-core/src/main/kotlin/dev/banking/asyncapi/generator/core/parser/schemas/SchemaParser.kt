@@ -15,6 +15,7 @@ import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.DocumentString
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
 import kotlin.String
 import kotlin.collections.Map
 
@@ -62,6 +63,7 @@ class SchemaParser(
             ).also { asyncApiContext.register(it.reference, parserNode) }
         }
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
+            objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
             val schemaFormat = multiFormatParser.parseFormat(format, parserNode.path)
             val schemaNode = objectNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {

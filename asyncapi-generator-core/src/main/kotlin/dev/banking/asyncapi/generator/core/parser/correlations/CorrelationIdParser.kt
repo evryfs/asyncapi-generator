@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CORRELATION_ID as CORRELATION_ID_OBJECT
 
 /**
  * Parses AsyncAPI correlation ID objects from parser nodes.
@@ -35,6 +36,7 @@ class CorrelationIdParser(
                 ).also { asyncApiContext.register(it, node) }
             )
         }
+        objectNode.expectOnlyMembers(CORRELATION_ID_OBJECT)
         return CorrelationIdInterface.CorrelationIdInline(
             CorrelationId(
                 location = objectNode.required("location").expect<String>(),

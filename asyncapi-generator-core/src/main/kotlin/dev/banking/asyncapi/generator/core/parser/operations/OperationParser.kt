@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION as OPERATION_OBJECT
 
 /**
  * Parses AsyncAPI operation objects from parser nodes.
@@ -50,13 +51,14 @@ class OperationParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(OPERATION_OBJECT)
             OperationInterface.OperationInline(
                 Operation(
                     title = objectNode.optional("title")?.expect<String>(),
                     summary = objectNode.optional("summary")?.expect<String>(),
                     description = objectNode.optional("description")?.expect<String>(),
                     action = objectNode.required("action").expect<String>(),
-                    channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
+                    channel = objectNode.required("channel").let { referenceParser.parseElement(it, CHANNEL) },
                     messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION_BINDING) },
                     traits = objectNode.optional("traits")?.let(operationTraitParser::parseList),

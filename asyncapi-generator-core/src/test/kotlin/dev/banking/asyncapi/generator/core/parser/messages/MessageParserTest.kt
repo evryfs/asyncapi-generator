@@ -147,6 +147,22 @@ class MessageParserTest {
     }
 
     @Test
+    fun `parse reference object ignores sibling members`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val messagesNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("messages")
+
+        val reference = assertIs<MessageInterface.MessageReference>(
+            parser.parseMap(messagesNode).getValue("referencedMessage"),
+        ).reference
+
+        assertEquals("#/components/messages/lightMeasured", reference.ref)
+        assertEquals(MESSAGE, reference.referenceCategoryKey)
+    }
+
+    @Test
     fun `parse message with empty payload and inline trait`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_edge_cases.yaml")
         val document = DocumentReaderRegistry.read(file)

@@ -187,4 +187,24 @@ class InfoParserTest {
 
         assertNull(parser.parseMap(infoNode).extensions)
     }
+
+    @Test
+    fun `parse info rejects a member that does not match the specification extension pattern`() {
+        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val infoNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("infoInvalidExtensionName")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseMap(infoNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
+
+        assertEquals("X-ignored", diagnostic.memberName)
+        assertEquals(
+            "asyncapi_parser_info_invalid.root.infoInvalidExtensionName.X-ignored",
+            diagnostic.path,
+        )
+        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
 }

@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.info.InfoParser
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiSpecificationLine
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.ASYNC_API
 
 /**
  * Parses a reader-backed parser-node tree into an AsyncAPI document model.
@@ -34,6 +35,7 @@ class AsyncApiParser(
     fun parse(parserNode: ParserNode): AsyncApiDocument {
         val root = AsyncApiSpecificationLine.select(parserNode)
         val rootObject = root.expectObject()
+        rootObject.expectOnlyMembers(ASYNC_API)
         return AsyncApiDocument(
             asyncapi = rootObject.required("asyncapi").expect<String>(),
             id = rootObject.optional("id")?.expect<String>(),

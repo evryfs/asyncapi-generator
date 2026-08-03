@@ -8,6 +8,9 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OAUTH_FLOW
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OAUTH_FLOWS
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SECURITY_SCHEME as SECURITY_SCHEME_OBJECT
 
 /**
  * Parses AsyncAPI security scheme objects from parser nodes.
@@ -41,6 +44,7 @@ class SecuritySchemeParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }
+        objectNode.expectOnlyMembers(SECURITY_SCHEME_OBJECT)
         val type = objectNode.required("type").expect<String>()
         val description = objectNode.optional("description")?.expect<String>()
         val nameField = objectNode.optional("name")?.expect<String>()
@@ -67,6 +71,7 @@ class SecuritySchemeParser(
 
     private fun parseFlows(parserNode: ParserNode): OAuthFlows {
         val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(OAUTH_FLOWS)
         return OAuthFlows(
             implicit = objectNode.optional("implicit")?.let(::parseFlow),
             password = objectNode.optional("password")?.let(::parseFlow),
@@ -77,10 +82,11 @@ class SecuritySchemeParser(
 
     private fun parseFlow(parserNode: ParserNode): OAuthFlow {
         val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(OAUTH_FLOW)
         val authorizationUrl = objectNode.optional("authorizationUrl")?.expect<String>()
         val tokenUrl = objectNode.optional("tokenUrl")?.expect<String>()
         val refreshUrl = objectNode.optional("refreshUrl")?.expect<String>()
-        val availableScopes = objectNode.optional("availableScopes")?.expect<Map<String, String>>()
+        val availableScopes = objectNode.required("availableScopes").expect<Map<String, String>>()
         return OAuthFlow(
             authorizationUrl = authorizationUrl,
             tokenUrl = tokenUrl,

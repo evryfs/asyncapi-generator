@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.EXTERNAL_DOCUMENTATION
 
 /**
  * Parses AsyncAPI external documentation objects from parser nodes.
@@ -35,6 +36,7 @@ class ExternalDocsParser(
                 ).also { asyncApiContext.register(it, node) }
             )
         }
+        objectNode.expectOnlyMembers(EXTERNAL_DOCUMENTATION)
         return ExternalDocInterface.ExternalDocInline(
             ExternalDoc(
                 description = objectNode.optional("description")?.expect<String>(),

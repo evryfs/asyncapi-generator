@@ -17,6 +17,10 @@ infoMissingLicenseName:
   version: 1.0.0
   license:
     url: https://example.com/license
+infoInvalidExtensionName:
+  title: Invalid Extension Name
+  version: 1.0.0
+  X-ignored: case-sensitive
 components:
   schemas:
     InvalidTypeSchema:

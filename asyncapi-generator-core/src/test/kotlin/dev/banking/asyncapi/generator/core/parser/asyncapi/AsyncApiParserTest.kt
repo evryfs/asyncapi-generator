@@ -1,7 +1,10 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.document.DocumentFormat
+import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
@@ -13,10 +16,12 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AsyncApiParserTest {
@@ -66,6 +71,197 @@ class AsyncApiParserTest {
         assertEquals("urn:com:example:format-independent", yaml.id)
         assertEquals("application/json", yaml.defaultContentType)
         assertEquals(yaml, json)
+    }
+
+    @Test
+    fun `yaml and json reject unknown root members`() {
+        val sources = listOf(
+            DocumentSource(
+                id = "unknown-yaml",
+                file = File("unknown.yaml").canonicalFile,
+                content =
+                    """
+                    asyncapi: 3.0.0
+                    info:
+                      title: Unknown member
+                      version: 1.0.0
+                    unexpected: true
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            ),
+            DocumentSource(
+                id = "unknown-json",
+                file = File("unknown.json").canonicalFile,
+                content =
+                    """
+                    {
+                      "asyncapi": "3.0.0",
+                      "info": {"title": "Unknown member", "version": "1.0.0"},
+                      "unexpected": true
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            ),
+        )
+
+        sources.forEach { source ->
+            val sourceContext = AsyncApiContext()
+            val document = DocumentReaderRegistry.read(source)
+            val root = ParserNodeFactory.root(document, sourceContext)
+
+            val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(sourceContext).parse(root)
+            }
+            val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
+
+            assertEquals("unexpected", diagnostic.memberName)
+            assertEquals("root.unexpected", diagnostic.sourceLocation.path)
+            assertEquals(source.file.name, diagnostic.sourceLocation.file.name)
+        }
+    }
+
+    @Test
+    fun `yaml and json accept an explicit null channel address`() {
+        val sources = listOf(
+            DocumentSource(
+                id = "nullable-channel-yaml",
+                file = File("nullable-channel.yaml").canonicalFile,
+                content =
+                    """
+                    asyncapi: 3.0.0
+                    info:
+                      title: Nullable channel
+                      version: 1.0.0
+                    channels:
+                      dynamic:
+                        address: null
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            ),
+            DocumentSource(
+                id = "nullable-channel-json",
+                file = File("nullable-channel.json").canonicalFile,
+                content =
+                    """
+                    {
+                      "asyncapi": "3.0.0",
+                      "info": {"title": "Nullable channel", "version": "1.0.0"},
+                      "channels": {"dynamic": {"address": null}}
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            ),
+        )
+
+        sources.forEach { source ->
+            val sourceContext = AsyncApiContext()
+            val document = DocumentReaderRegistry.read(source)
+            val root = ParserNodeFactory.root(document, sourceContext)
+
+            val parsed = AsyncApiParser(sourceContext).parse(root)
+            val channel = assertIs<ChannelInterface.ChannelInline>(parsed.channels?.get("dynamic")).channel
+
+            assertNull(channel.address)
+        }
+    }
+
+    @Test
+    fun `yaml and json require operation channel`() {
+        val sources = listOf(
+            DocumentSource(
+                id = "missing-operation-channel-yaml",
+                file = File("missing-operation-channel.yaml").canonicalFile,
+                content =
+                    """
+                    asyncapi: 3.0.0
+                    info:
+                      title: Missing operation channel
+                      version: 1.0.0
+                    operations:
+                      sendMessage:
+                        action: send
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            ),
+            DocumentSource(
+                id = "missing-operation-channel-json",
+                file = File("missing-operation-channel.json").canonicalFile,
+                content =
+                    """
+                    {
+                      "asyncapi": "3.0.0",
+                      "info": {"title": "Missing operation channel", "version": "1.0.0"},
+                      "operations": {"sendMessage": {"action": "send"}}
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            ),
+        )
+
+        sources.forEach { source ->
+            val sourceContext = AsyncApiContext()
+            val document = DocumentReaderRegistry.read(source)
+            val root = ParserNodeFactory.root(document, sourceContext)
+
+            val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(sourceContext).parse(root)
+            }
+            val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+            assertEquals("channel", diagnostic.memberName)
+            assertEquals("root.operations.sendMessage", diagnostic.sourceLocation.path)
+            assertEquals(source.file.name, diagnostic.sourceLocation.file.name)
+        }
+    }
+
+    @Test
+    fun `yaml and json ignore Reference Object siblings`() {
+        val sources = listOf(
+            DocumentSource(
+                id = "reference-siblings-yaml",
+                file = File("reference-siblings.yaml").canonicalFile,
+                content =
+                    """
+                    asyncapi: 3.0.0
+                    info:
+                      title: Reference siblings
+                      version: 1.0.0
+                    channels:
+                      source: {}
+                      alias:
+                        ${'$'}ref: '#/channels/source'
+                        unexpected: ignored
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            ),
+            DocumentSource(
+                id = "reference-siblings-json",
+                file = File("reference-siblings.json").canonicalFile,
+                content =
+                    """
+                    {
+                      "asyncapi": "3.0.0",
+                      "info": {"title": "Reference siblings", "version": "1.0.0"},
+                      "channels": {
+                        "source": {},
+                        "alias": {"${'$'}ref": "#/channels/source", "unexpected": "ignored"}
+                      }
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            ),
+        )
+
+        sources.forEach { source ->
+            val sourceContext = AsyncApiContext()
+            val document = DocumentReaderRegistry.read(source)
+            val root = ParserNodeFactory.root(document, sourceContext)
+
+            val parsed = AsyncApiParser(sourceContext).parse(root)
+            val reference = assertIs<ChannelInterface.ChannelReference>(parsed.channels?.get("alias")).reference
+
+            assertEquals("#/channels/source", reference.ref)
+        }
     }
 
     @Test

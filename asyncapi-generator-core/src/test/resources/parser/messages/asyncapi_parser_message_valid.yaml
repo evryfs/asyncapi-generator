@@ -81,6 +81,7 @@ components:
             sentAt: '2024-09-12T12:00:00Z'
     referencedMessage:
       $ref: '#/components/messages/lightMeasured'
+      ImportedMessage: ignored reference sibling
   schemas:
     lightMeasuredPayload:
       type: object

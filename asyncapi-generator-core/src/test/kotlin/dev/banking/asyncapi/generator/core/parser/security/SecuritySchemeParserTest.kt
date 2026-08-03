@@ -229,6 +229,34 @@ class SecuritySchemeParserTest {
     }
 
     @Test
+    fun `parse OAuth flow missing available scopes reports the required member and source`() {
+        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemeNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("securitySchemes")
+            .expectObject().required("MissingAvailableScopes")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemeNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
+        assertEquals("availableScopes", diagnostic.memberName)
+        assertEquals(
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingAvailableScopes." +
+                "flows.authorizationCode.availableScopes",
+            diagnostic.path,
+        )
+        assertEquals(
+            "root.components.securitySchemes.MissingAvailableScopes.flows.authorizationCode",
+            diagnostic.sourceLocation.path,
+        )
+        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
+    }
+
+    @Test
     fun `parse security list from an object reports the container type and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)

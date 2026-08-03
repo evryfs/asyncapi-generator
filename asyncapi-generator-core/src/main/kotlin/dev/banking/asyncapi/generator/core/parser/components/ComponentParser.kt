@@ -24,6 +24,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNE
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COMPONENTS
 
 /**
  * Parses AsyncAPI component objects from parser nodes.
@@ -53,6 +54,7 @@ class ComponentParser(
     private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
 
     fun parseElement(node: ParserNode): ComponentInterface = with(node.expectObject()) {
+        expectOnlyMembers(COMPONENTS)
         ComponentInterface.ComponentInline(
             Component(
                 schemas = optional("schemas")?.let(schemaParser::parseMap),
