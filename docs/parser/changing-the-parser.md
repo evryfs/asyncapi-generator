@@ -16,6 +16,7 @@ Start by classifying the behavior.
 | AsyncAPI object members and domain-model construction | The matching domain parser package |
 | Schema Object keywords or `schemaFormat` dispatch | `parser.schemas` |
 | External path, URI, JSON Pointer, document identity, or fragment selection | `context` external-reference classes |
+| Complete-load warnings, source dependencies, or stateless orchestration | `loader` |
 | Cross-field, specification, or reference-resolution rule on a model | `validator` |
 | Inlining or rewriting references | `bundler` |
 
@@ -67,6 +68,18 @@ child to the appropriate parser. For an array of domain objects, use
 `expectArray().elements()`. The structural expectations reject the wrong
 container shape, and the views preserve child paths.
 
+For an ordinary fixed-field object, select its profile-owned policy before
+reading fields:
+
+```kotlin
+objectNode.expectOnlyMembers(AsyncApiObjectType.MESSAGE)
+```
+
+Add or remove fixed fields in `AsyncApiObjectMemberPolicy`, not in duplicated
+sets across domain parsers. Patterned maps, bindings, Schema Objects, and
+free-form values are deliberate exceptions and must not be forced through an
+ordinary-object policy.
+
 Use `toPlainValue()` only when the specification intentionally accepts any
 JSON-compatible value. Do not use it to avoid defining a known field's type.
 
@@ -80,6 +93,11 @@ For a reference, assign the concrete `ReferenceCategoryKey` and register the
 `Reference` at the Reference Object node so source ownership and external
 loading remain correct.
 
+When a field permits either a Reference Object or an inline object, inspect
+`$ref` first. If present, require a string and return the reference without
+applying the inline member policy; AsyncAPI 3.0 ignores Reference Object
+siblings. Never treat explicit-null or malformed `$ref` as if it were absent.
+
 ## 4. Treat schemas separately
 
 Before parsing a Schema Object keyword with a generic expectation, decide
@@ -89,9 +107,38 @@ schema positions.
 
 Keep structural dispatch in `SchemaParser` and keyword policy in
 `SchemaValidator`. Preserve the distinction between absent values and explicit
-null when the model exposes that distinction.
+null through field registration even when the domain property cannot represent
+both states directly. For example, `type: null` reaches `SchemaValidator` and
+produces `JSONSCHEMA-TYPE`, while an absent `type` is valid. Nullable schemas use
+`type: [string, "null"]`.
 
-## 5. Add focused tests
+Do not apply ordinary fixed-member rejection to Schema Objects. Unknown or
+unsupported keywords must remain available to `ModelRepository` so validation
+can produce dialect and capability findings. Tuple `items` likewise remains
+preserved for validator diagnostics rather than being flattened.
+
+## 5. Preserve identity, limits, and API ownership
+
+Use `NodeAddress` and its typed member/index operations for repository identity.
+Rendered paths are for diagnostics only. Do not split or normalize a display
+path to find a model or source node; legal names may contain dots, brackets,
+slashes, tildes, or numeric-looking text.
+
+All file access belongs to the reader, external-reference loader, or native
+schema asset reader and must participate in the existing per-document and
+load-wide budgets. Reuse the load context's bounded strict UTF-8 operations.
+Do not add direct `readText()` calls, independent counters, remote loading, or a
+project-root sandbox without a separate design.
+
+Keep the supported API small. `AsyncApiDocumentLoader`, its result, the domain
+model, findings, source locations, and caller-relevant exceptions are public.
+Document nodes, readers, cursors, contexts, repositories, registries, version
+implementations, individual parsers, and individual validators remain
+`internal`. If a new external capability genuinely requires a public type,
+design that contract explicitly rather than exposing the current implementation
+for convenience.
+
+## 6. Add focused tests
 
 Add tests beside the owning implementation. Cover the smallest relevant set:
 
@@ -106,6 +153,11 @@ Add tests beside the owning implementation. Cover the smallest relevant set:
 - relative path, same-named files, encoded paths, escaped JSON Pointer tokens,
   missing documents/targets, and cycles when external loading is involved.
 
+Loader changes should also cover immutable canonical `sourceFiles`, root and
+external warning aggregation, repeated calls, and concurrent calls. Resource
+changes should use injected small limits and prove canonical deduplication and
+source-located failures.
+
 Schema changes should cover boolean, reference, inline, and Multi Format Schema
 branches that the keyword can affect. Free-form tests should include nested
 objects, arrays, scalars, and explicit null as applicable.
@@ -114,7 +166,7 @@ Avoid fixtures that rely on non-standard shapes. For example, AsyncAPI 3
 `Channel.messages` is a map; a list of Reference Objects is malformed even if a
 previous parser happened to synthesize map keys for it.
 
-## 6. Verify the slice
+## 7. Verify the slice
 
 Run the focused test class or package while implementing. Before handing off a
 parser slice, run:
@@ -129,7 +181,7 @@ only the intended parser work. At the pull-request-ready stage, also run the
 complete repository build when parser behavior affects Maven invoker fixtures
 or other module integrations.
 
-## 7. Review the boundary
+## 8. Review the boundary
 
 Before declaring the change complete, confirm all of the following:
 
@@ -137,12 +189,19 @@ Before declaring the change complete, confirm all of the following:
 - A known field is not accepted through unsafe coercion or an unchecked generic
   cast.
 - Absence and explicit null have deliberate behavior.
+- Ordinary fixed-field objects use the selected profile policy, while Reference
+  Object siblings and Schema Object keywords retain their special behavior.
 - Failures point to the originating source and parser path.
+- Repository identity uses typed path segments rather than rendered strings.
 - References retain their concrete category and source owner.
 - External loading has not leaked into an ordinary domain parser.
+- All newly loaded content participates in the complete-load resource budget and
+  `sourceFiles` result.
 - Schema-specific shapes still use `SchemaParser`.
 - Extensions and free-form fields are the only places that discard node typing
   through `toPlainValue()`.
 - Validation, bundling, and generation responsibilities remain downstream.
+- No low-level implementation type became public merely to satisfy a caller or
+  test that should use the loader facade.
 - Existing valid contracts, external fragments, Native/Multi Format Schema
   behavior, bundled output, and generated output remain stable.
