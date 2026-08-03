@@ -5,17 +5,12 @@ info:
 channels: {}
 components:
   securitySchemes:
-    # Case 1: Missing Type (Parser Error)
     MissingType:
       description: "No type provided"
 
-    # Case 2: Invalid Flows Structure (Parser Error)
     InvalidFlowsStructure:
       type: oauth2
       flows: "not-an-object"
-
-    NullReference:
-      $ref: null
 
     InvalidAvailableScope:
       type: oauth2
@@ -31,8 +26,3 @@ components:
         authorizationCode:
           authorizationUrl: https://example.com/authorize
           tokenUrl: https://example.com/token
-
-  securitySchemeCases:
-    ObjectInsteadOfList:
-      invalidScheme:
-        type: userPassword

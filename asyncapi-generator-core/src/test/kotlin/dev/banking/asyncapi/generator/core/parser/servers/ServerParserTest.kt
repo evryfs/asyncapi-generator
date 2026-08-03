@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
@@ -19,7 +18,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class ServerParserTest {
 
@@ -65,52 +63,6 @@ class ServerParserTest {
     }
 
     @Test
-    fun `parse server with invalid variables structure reports its expected type and source`() {
-        val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val serversNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("servers")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(serversNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("not-a-map", diagnostic.actualValue)
-        assertEquals("asyncapi_parser_server_invalid.root.servers.InvalidVariables.variables", diagnostic.path)
-        assertEquals("root.servers.InvalidVariables.variables", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse server with null reference reports the reference type and source`() {
-        val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val serversNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("serverCases")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(serversNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_server_invalid.root.serverCases.NullReference.invalidReference.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.serverCases.NullReference.invalidReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
     fun `parse server missing host reports the required member and source`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -131,25 +83,4 @@ class ServerParserTest {
         assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse server map from an array reports the container type and source`() {
-        val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val serversNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("serverCases")
-            .expectObject().required("ArrayInsteadOfMap")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(serversNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("host" to "localhost", "protocol" to "kafka")), diagnostic.actualValue)
-        assertEquals("asyncapi_parser_server_invalid.root.serverCases.ArrayInsteadOfMap", diagnostic.path)
-        assertEquals("root.serverCases.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

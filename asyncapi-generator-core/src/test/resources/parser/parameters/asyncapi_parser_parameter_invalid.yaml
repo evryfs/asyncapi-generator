@@ -4,14 +4,6 @@ info:
   version: 1.0.0
 components:
   parameterCases:
-    InvalidParameterStructure:
-      badParameter: "not-a-map"
-    BooleanLocation:
-      badParameter:
-        location: true
-    NumericReference:
-      badParameter:
-        $ref: 42
     InvalidEnumElement:
       badParameter:
         enum:

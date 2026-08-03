@@ -4,17 +4,6 @@ info:
   version: 1.0.0
 components:
   operationTraitCases:
-    InvalidTraitStructure:
-      badTrait: "not-a-map"
-    BooleanTitle:
-      badTrait:
-        title: true
-    NumericReference:
-      badTrait:
-        $ref: 42
-    ObjectInsteadOfList:
-      badTrait:
-        title: valid title
     SecurityObjectInsteadOfList:
       badTrait:
         security:

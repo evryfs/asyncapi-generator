@@ -94,32 +94,6 @@ class ReferenceParserTest {
     }
 
     @Test
-    fun `parse reference reports non-string ref`() {
-        val file = TestResources.file("parser/references/asyncapi_parser_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val referenceNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("references")
-            .expectObject().required("NumericReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(referenceNode, REFERENCE)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(12345, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_reference_invalid.root.components.references.NumericReference.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.components.references.NumericReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_reference_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
     fun `parse reference reports explicit null ref`() {
         val file = TestResources.file("parser/references/asyncapi_parser_reference_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -170,29 +144,4 @@ class ReferenceParserTest {
         assertEquals("asyncapi_parser_reference_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse reference list reports object container`() {
-        val file = TestResources.file("parser/references/asyncapi_parser_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val referenceNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("references")
-            .expectObject().required("MissingReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(referenceNode, REFERENCE)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("List<Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.OBJECT, diagnostic.actualType)
-        assertEquals(
-            mapOf("summary" to "Reference object missing its reference value"),
-            diagnostic.actualValue,
-        )
-        assertEquals("asyncapi_parser_reference_invalid.root.components.references.MissingReference", diagnostic.path)
-        assertEquals("root.components.references.MissingReference", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_reference_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

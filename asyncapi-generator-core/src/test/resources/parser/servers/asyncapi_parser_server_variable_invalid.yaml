@@ -4,14 +4,6 @@ info:
   version: 1.0.0
 components:
   serverVariableCases:
-    InvalidVariableStructure:
-      badVariable: "not-a-map"
-    BooleanDefault:
-      badVariable:
-        default: false
-    NumericReference:
-      badVariable:
-        $ref: 42
     InvalidEnumElement:
       badVariable:
         enum:

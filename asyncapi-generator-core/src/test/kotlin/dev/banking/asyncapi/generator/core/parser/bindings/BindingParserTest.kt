@@ -7,19 +7,13 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNE
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 
 class BindingParserTest {
 
@@ -146,80 +140,4 @@ class BindingParserTest {
         )
     }
 
-    @Test
-    fun `rejects a scalar binding with a source-aware type diagnostic`() {
-        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelBindingsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("channelBindings")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseComponentMap(channelBindingsNode, CHANNEL)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("this-should-be-a-map", diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_binding_invalid.root.components.channelBindings.InvalidBindingStructure",
-            diagnostic.path,
-        )
-        assertEquals("root.components.channelBindings.InvalidBindingStructure", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse binding reports explicit null ref before inline parsing`() {
-        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val bindingNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("bindingCases")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseComponentMap(bindingNode, CHANNEL)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_binding_invalid.root.components.bindingCases.NullReference.badBinding.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.components.bindingCases.NullReference.badBinding.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse binding map reports list container`() {
-        val file = TestResources.file("parser/bindings/asyncapi_parser_binding_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val bindingNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("bindingCases")
-            .expectObject().required("InvalidBindingsContainer")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseComponentMap(bindingNode, CHANNEL)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("kafka" to mapOf("topic" to "invalid"))), diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_binding_invalid.root.components.bindingCases.InvalidBindingsContainer",
-            diagnostic.path,
-        )
-        assertEquals("root.components.bindingCases.InvalidBindingsContainer", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_binding_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

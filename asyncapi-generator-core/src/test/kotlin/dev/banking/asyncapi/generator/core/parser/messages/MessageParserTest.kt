@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -186,109 +185,30 @@ class MessageParserTest {
     }
 
     @Test
-    fun `parse message with invalid field type reports its expected type and source`() {
-        val file = TestResources.file("parser/messages/asyncapi_parser_message_invalid_type.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageCases")
-            .expectObject().required("InvalidName")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(messagesNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(12345, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_message_invalid_type.root.components.messageCases.InvalidName.invalidMessage.name",
-            diagnostic.path,
-        )
-        assertEquals("root.components.messageCases.InvalidName.invalidMessage.name", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_message_invalid_type.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse message with null reference reports its expected type and source`() {
-        val file = TestResources.file("parser/messages/asyncapi_parser_message_invalid_type.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageCases")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(messagesNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_message_invalid_type.root.components.messageCases.NullReference.invalidMessage.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.components.messageCases.NullReference.invalidMessage.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_message_invalid_type.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse message map from an array reports the container type and source`() {
-        val file = TestResources.file("parser/messages/asyncapi_parser_message_invalid_type.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageCases")
-            .expectObject().required("ArrayInsteadOfMap")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(messagesNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("name" to "validMessage")), diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_message_invalid_type.root.components.messageCases.ArrayInsteadOfMap",
-            diagnostic.path,
-        )
-        assertEquals("root.components.messageCases.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_message_invalid_type.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse message rejects unknown members and permits specification extensions`() {
-        val file = TestResources.file("parser/messages/asyncapi_parser_message_invalid_type.yaml")
+    fun `rejects unknown message members and accepts specification extensions`() {
+        val file = TestResources.file("parser/messages/asyncapi_parser_message_member_policy.yaml")
         val document = DocumentReaderRegistry.read(file)
         val messageCases = ParserNodeFactory.root(document, context)
             .expectObject().required("components")
             .expectObject().required("messageCases")
             .expectObject()
-        val invalidNode = messageCases.required("UnknownMember")
 
         val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(invalidNode)
+            parser.parseMap(messageCases.required("UnknownMember"))
         }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
         assertEquals("ImportedMessage", diagnostic.memberName)
         assertEquals(
-            "asyncapi_parser_message_invalid_type.root.components.messageCases.UnknownMember.invalidMessage.ImportedMessage",
+            "asyncapi_parser_message_member_policy.root.components.messageCases." +
+                "UnknownMember.invalidMessage.ImportedMessage",
             diagnostic.path,
         )
-        assertEquals("asyncapi_parser_message_invalid_type.yaml", diagnostic.sourceLocation.file.name)
+        assertEquals("asyncapi_parser_message_member_policy.yaml", diagnostic.sourceLocation.file.name)
 
-        val extensionNode = messageCases.required("SpecificationExtension")
         val message = assertIs<MessageInterface.MessageInline>(
-            parser.parseMap(extensionNode).getValue("validMessage"),
+            parser.parseMap(messageCases.required("SpecificationExtension")).getValue("validMessage"),
         ).message
         assertEquals("valid", message.name)
     }

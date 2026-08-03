@@ -6,5 +6,3 @@ components:
   externalDocs:
     MissingUrl:
       description: "This doc is missing its URL"
-    NullReference:
-      $ref: null

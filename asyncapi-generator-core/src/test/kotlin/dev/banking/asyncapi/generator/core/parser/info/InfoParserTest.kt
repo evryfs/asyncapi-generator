@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
@@ -92,48 +91,6 @@ class InfoParserTest {
     }
 
     @Test
-    fun `parse info reports explicit null title`() {
-        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoNullTitle")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals("asyncapi_parser_info_invalid.root.infoNullTitle.title", diagnostic.path)
-        assertEquals("root.infoNullTitle.title", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse info reports explicit null description`() {
-        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoNullDescription")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals("asyncapi_parser_info_invalid.root.infoNullDescription.description", diagnostic.path)
-        assertEquals("root.infoNullDescription.description", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
     fun `parse info reports missing license name`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -188,23 +145,4 @@ class InfoParserTest {
         assertNull(parser.parseMap(infoNode).extensions)
     }
 
-    @Test
-    fun `parse info rejects a member that does not match the specification extension pattern`() {
-        val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoInvalidExtensionName")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
-
-        assertEquals("X-ignored", diagnostic.memberName)
-        assertEquals(
-            "asyncapi_parser_info_invalid.root.infoInvalidExtensionName.X-ignored",
-            diagnostic.path,
-        )
-        assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

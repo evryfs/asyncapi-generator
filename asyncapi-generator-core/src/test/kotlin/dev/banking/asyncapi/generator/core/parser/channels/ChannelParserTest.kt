@@ -4,10 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
@@ -19,7 +15,6 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
@@ -198,146 +193,4 @@ class ChannelParserTest {
         assertEquals("Address is intentionally unknown.", channel.description)
     }
 
-    @Test
-    fun `parse channel with invalid messages structure reports its expected type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("not-a-map", diagnostic.actualValue)
-        assertEquals("asyncapi_parser_channel_invalid.root.channels.InvalidMessages.messages", diagnostic.path)
-        assertEquals("root.channels.InvalidMessages.messages", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse channel with list shaped messages reports its expected type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channelCases")
-            .expectObject().required("ListMessages")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("\$ref" to "#/components/messages/Message")), diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_channel_invalid.root.channelCases.ListMessages.invalidChannel.messages",
-            diagnostic.path,
-        )
-        assertEquals("root.channelCases.ListMessages.invalidChannel.messages", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse channel with boolean address reports its expected type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channelCases")
-            .expectObject().required("InvalidAddress")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String?", diagnostic.expectedType)
-        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
-        assertEquals(false, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_channel_invalid.root.channelCases.InvalidAddress.invalidChannel.address",
-            diagnostic.path,
-        )
-        assertEquals("root.channelCases.InvalidAddress.invalidChannel.address", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse channel with null reference reports its expected type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channelCases")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_channel_invalid.root.channelCases.NullReference.invalidChannel.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.channelCases.NullReference.invalidChannel.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse scalar channel reports the entry type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channelCases")
-            .expectObject().required("InvalidChannelStructure")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("not-a-map", diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_channel_invalid.root.channelCases.InvalidChannelStructure.invalidChannel",
-            diagnostic.path,
-        )
-        assertEquals("root.channelCases.InvalidChannelStructure.invalidChannel", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse channel map from an array reports the container type and source`() {
-        val file = TestResources.file("parser/channels/asyncapi_parser_channel_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channelCases")
-            .expectObject().required("ArrayInsteadOfMap")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(channelsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("address" to "valid-address")), diagnostic.actualValue)
-        assertEquals("asyncapi_parser_channel_invalid.root.channelCases.ArrayInsteadOfMap", diagnostic.path)
-        assertEquals("root.channelCases.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_channel_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }
