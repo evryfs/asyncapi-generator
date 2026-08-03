@@ -10,6 +10,7 @@ import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DocumentReaderRegistryTest {
@@ -52,9 +53,11 @@ class DocumentReaderRegistryTest {
         val file = tempDir.resolve("contract.txt").toFile()
         file.writeText("asyncapi: '3.0.0'")
 
-        assertFailsWith<DocumentReadException.UnsupportedFormat> {
+        val failure = assertFailsWith<DocumentReadException.UnsupportedFormat> {
             DocumentReaderRegistry.read(file)
         }
+        assertEquals(file, failure.file)
+        assertEquals("txt", failure.format)
     }
 
     @Test
@@ -64,6 +67,8 @@ class DocumentReaderRegistryTest {
         val failure = assertFailsWith<DocumentReadException.UnreadableDocument> {
             DocumentReaderRegistry.read(file)
         }
+        assertEquals(file, failure.file)
+        assertNotNull(failure.cause)
         assertTrue(failure.message.orEmpty().endsWith(file.absolutePath))
     }
 
@@ -75,6 +80,9 @@ class DocumentReaderRegistryTest {
         val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
             DocumentReaderRegistry.read(file)
         }
+        assertEquals(file, failure.file)
+        assertEquals(null, failure.location)
+        assertNotNull(failure.cause)
         assertTrue(failure.message.orEmpty().endsWith(file.absolutePath))
     }
 }

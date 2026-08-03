@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.reader
 
 import dev.banking.asyncapi.generator.core.document.DocumentSource
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction.REPORT
@@ -20,7 +21,11 @@ internal data class DocumentReaderLimits(
             input.readNBytes(maxDocumentBytes + 1)
         }
         if (bytes.size > maxDocumentBytes) {
-            throw limitExceeded(file)
+            throw limitExceeded(
+                file = file,
+                limit = DocumentResourceLimit.DOCUMENT_BYTES,
+                maximum = maxDocumentBytes,
+            )
         }
         return try {
             UTF_8.newDecoder()
@@ -34,31 +39,51 @@ internal data class DocumentReaderLimits(
     }
 
     fun requireDocumentSize(source: DocumentSource) {
-        if (
-            source.content.length > maxDocumentCharacters ||
-            source.content.toByteArray(UTF_8).size > maxDocumentBytes
-        ) {
-            throw limitExceeded(source.file)
+        val encodedBytes = source.content.toByteArray(UTF_8).size
+        if (encodedBytes > maxDocumentBytes) {
+            throw limitExceeded(
+                file = source.file,
+                limit = DocumentResourceLimit.DOCUMENT_BYTES,
+                maximum = maxDocumentBytes,
+            )
         }
-    }
-
-    fun requireNumberLength(file: File, value: String) {
-        if (value.length > maxNumberCharacters) {
-            throw DocumentReadException.ResourceLimitExceeded(
-                file = file,
-                cause = IllegalArgumentException(
-                    "Maximum numeric token length is $maxNumberCharacters characters",
-                ),
+        if (source.content.length > maxDocumentCharacters) {
+            throw limitExceeded(
+                file = source.file,
+                limit = DocumentResourceLimit.DOCUMENT_CHARACTERS,
+                maximum = maxDocumentCharacters,
             )
         }
     }
 
-    private fun limitExceeded(file: File): DocumentReadException.ResourceLimitExceeded =
+    fun requireNumberLength(
+        value: String,
+        location: SourceLocation,
+    ) {
+        if (value.length > maxNumberCharacters) {
+            throw DocumentReadException.ResourceLimitExceeded(
+                file = location.file,
+                limit = DocumentResourceLimit.NUMBER_CHARACTERS,
+                maximum = maxNumberCharacters.toLong(),
+                cause = IllegalArgumentException(
+                    "Maximum numeric token length is $maxNumberCharacters characters",
+                ),
+                location = location,
+            )
+        }
+    }
+
+    private fun limitExceeded(
+        file: File,
+        limit: DocumentResourceLimit,
+        maximum: Int,
+    ): DocumentReadException.ResourceLimitExceeded =
         DocumentReadException.ResourceLimitExceeded(
             file = file,
+            limit = limit,
+            maximum = maximum.toLong(),
             cause = IllegalArgumentException(
-                "Maximum document size is $maxDocumentBytes UTF-8 bytes and " +
-                    "$maxDocumentCharacters characters",
+                "Maximum ${limit.description} is $maximum",
             ),
         )
 

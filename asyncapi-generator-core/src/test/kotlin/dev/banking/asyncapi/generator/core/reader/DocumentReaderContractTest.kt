@@ -101,6 +101,67 @@ class DocumentReaderContractTest {
     }
 
     @Test
+    fun `readers accept utf8 bom and crlf input consistently`() {
+        val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
+        val yamlSource = DocumentSource(
+            id = "bom-crlf",
+            file = yamlFile,
+            content = "\uFEFFvalue:\r\n  nested: true\r\n",
+            format = DocumentFormat.YAML,
+        )
+        val jsonFile = TestResources.file("reader/json/invalid-root.json")
+        val jsonSource = DocumentSource(
+            id = "bom-crlf",
+            file = jsonFile,
+            content = "\uFEFF{\r\n  \"value\": {\r\n    \"nested\": true\r\n  }\r\n}",
+            format = DocumentFormat.JSON,
+        )
+
+        val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
+        val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)
+        val yamlValue = assertIs<DocumentObject>(yamlRoot["value"])
+        val jsonValue = assertIs<DocumentObject>(jsonRoot["value"])
+
+        assertEquals(true, assertIs<DocumentBoolean>(yamlValue["nested"]).value)
+        assertEquals(true, assertIs<DocumentBoolean>(jsonValue["nested"]).value)
+        assertEquals(2, yamlValue.location.line)
+        assertEquals(2, jsonValue.location.line)
+    }
+
+    @Test
+    fun `readers identify byte and character limits separately`() {
+        val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
+        val byteLimitedSource = DocumentSource(
+            id = "byte-limited",
+            file = yamlFile,
+            content = "éé",
+            format = DocumentFormat.YAML,
+        )
+        val characterLimitedSource = DocumentSource(
+            id = "character-limited",
+            file = yamlFile,
+            content = "true",
+            format = DocumentFormat.YAML,
+        )
+
+        val byteFailure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            YamlDocumentReader(
+                DocumentReaderLimits.DEFAULT.copy(maxDocumentBytes = 3),
+            ).read(byteLimitedSource)
+        }
+        val characterFailure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+            YamlDocumentReader(
+                DocumentReaderLimits.DEFAULT.copy(maxDocumentCharacters = 3),
+            ).read(characterLimitedSource)
+        }
+
+        assertEquals(DocumentResourceLimit.DOCUMENT_BYTES, byteFailure.limit)
+        assertEquals(3L, byteFailure.maximum)
+        assertEquals(DocumentResourceLimit.DOCUMENT_CHARACTERS, characterFailure.limit)
+        assertEquals(3L, characterFailure.maximum)
+    }
+
+    @Test
     fun `readers enforce the same encoded document size limit`() {
         val limits =
             DocumentReaderLimits.DEFAULT.copy(

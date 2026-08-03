@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.document.InputDocument
 import dev.banking.asyncapi.generator.core.document.SourceLocation
+import org.yaml.snakeyaml.DumperOptions.ScalarStyle.PLAIN
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.error.Mark
@@ -23,7 +24,6 @@ import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.reader.ReaderException
-import java.io.File
 
 /**
  * Reads YAML input into an [InputDocument].
@@ -55,19 +55,28 @@ class YamlDocumentReader internal constructor(
 
     override fun read(source: DocumentSource): InputDocument {
         limits.requireDocumentSize(source)
-        if (source.content.isBlank()) {
+        val content = source.content.removePrefix(UTF_8_BOM)
+        if (content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
 
         val rootNode =
             try {
-                yaml.compose(source.content.reader())
+                yaml.compose(content.reader())
             } catch (ex: MarkedYAMLException) {
-                throw DocumentReadException.MalformedDocument(source.file, ex)
+                throw DocumentReadException.MalformedDocument(
+                    file = source.file,
+                    cause = ex,
+                    location = ex.problemMark?.let { locationOf(source, ROOT_PATH, it) },
+                )
             } catch (ex: ReaderException) {
-                throw DocumentReadException.MalformedDocument(source.file, ex)
+                throw DocumentReadException.MalformedDocument(
+                    file = source.file,
+                    cause = ex,
+                    location = locationAtOffset(source, content, ex.position),
+                )
             } catch (ex: YAMLException) {
-                throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
+                throw normalizeYamlException(source, ex)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
         val root = parseNode(
@@ -92,7 +101,10 @@ class YamlDocumentReader internal constructor(
             NodeId.scalar -> parseScalar(node as ScalarNode, location)
             NodeId.sequence -> parseSequence(node as SequenceNode, path, source, location)
             NodeId.mapping -> parseMapping(node as MappingNode, path, source, location)
-            else -> DocumentNull(location)
+            else -> throw malformed(
+                location = location,
+                message = "Unsupported YAML node kind '${node.nodeId}'",
+            )
         }
     }
 
@@ -101,13 +113,15 @@ class YamlDocumentReader internal constructor(
         path: String,
         source: DocumentSource,
         location: SourceLocation,
-    ): DocumentArray =
-        DocumentArray(
+    ): DocumentArray {
+        requireYamlTag(node, Tag.SEQ, location)
+        return DocumentArray(
             elements = node.value.mapIndexed { index, child ->
                 parseNode(child, "$path[$index]", source)
             },
             location = location,
         )
+    }
 
     private fun parseMapping(
         node: MappingNode,
@@ -115,17 +129,18 @@ class YamlDocumentReader internal constructor(
         source: DocumentSource,
         location: SourceLocation,
     ): DocumentObject {
+        requireYamlTag(node, Tag.MAP, location)
         val result = linkedMapOf<String, DocumentMember>()
         node.value.forEach { tuple ->
             val keyNode = tuple.keyNode as? ScalarNode
-                ?: throw invalidMappingKey(source.file, tuple.keyNode.startMark)
+                ?: throw invalidMappingKey(source, path, tuple.keyNode.startMark)
             if (keyNode.tag != Tag.STR) {
-                throw invalidMappingKey(source.file, keyNode.startMark)
+                throw invalidMappingKey(source, "$path.${keyNode.value}", keyNode.startMark)
             }
             val key = keyNode.value
             val keyLocation = locationOf(source, "$path.$key", keyNode.startMark)
             if (result.containsKey(key)) {
-                throw DocumentReadException.DuplicateKey(source.file, key, keyLocation.line, keyLocation.column)
+                throw DocumentReadException.DuplicateKey(source.file, key, keyLocation)
             }
             val keyPath = "$path.$key"
             result[key] = DocumentMember(
@@ -145,8 +160,26 @@ class YamlDocumentReader internal constructor(
             Tag.BOOL -> parseBoolean(node.value, location)
             Tag.INT -> parseNumber(node.value, location, DocumentNumberParser::parseInteger)
             Tag.FLOAT -> parseNumber(node.value, location, DocumentNumberParser::parseDecimal)
-            else -> DocumentString(node.value, location)
+            Tag.STR -> parseString(node, location)
+            Tag.TIMESTAMP -> DocumentString(node.value, location)
+            else -> throw malformed(
+                location = location,
+                message = "Unsupported YAML scalar tag '${node.tag.value}'",
+            )
         }
+
+    private fun parseString(
+        node: ScalarNode,
+        location: SourceLocation,
+    ): DocumentNode {
+        if (node.scalarStyle == PLAIN && YAML_ONLY_PLAIN_NUMBER.matches(node.value)) {
+            throw malformed(
+                location = location,
+                message = "YAML numeric value '${node.value}' is not a JSON-compatible number",
+            )
+        }
+        return DocumentString(node.value, location)
+    }
 
     private fun parseBoolean(
         value: String,
@@ -163,10 +196,75 @@ class YamlDocumentReader internal constructor(
         location: SourceLocation,
         parse: (String) -> Number?,
     ): DocumentNode {
-        limits.requireNumberLength(location.file, value)
+        limits.requireNumberLength(value, location)
+        if (!JSON_NUMBER.matches(value)) {
+            throw malformed(
+                location = location,
+                message = "YAML numeric value '$value' is not a JSON-compatible number",
+            )
+        }
         return parse(value)?.let { DocumentNumber(it, location) }
-            ?: DocumentString(value, location)
+            ?: throw malformed(location, "Invalid numeric value '$value'")
     }
+
+    private fun requireYamlTag(
+        node: Node,
+        expected: Tag,
+        location: SourceLocation,
+    ) {
+        if (node.tag != expected) {
+            throw malformed(
+                location = location,
+                message = "Unsupported YAML tag '${node.tag.value}' for ${node.nodeId} node",
+            )
+        }
+    }
+
+    private fun normalizeYamlException(
+        source: DocumentSource,
+        exception: YAMLException,
+    ): DocumentReadException {
+        val message = exception.message.orEmpty()
+        val (limit, maximum) =
+            when {
+                message.startsWith("Nesting Depth exceeded max") ->
+                    DocumentResourceLimit.NESTING_DEPTH to limits.maxNestingDepth
+                message.startsWith("Number of aliases for non-scalar nodes exceeds the specified max=") ->
+                    DocumentResourceLimit.COLLECTION_ALIASES to limits.maxAliasesForCollections
+                message.startsWith("The incoming YAML document exceeds the limit:") ->
+                    DocumentResourceLimit.DOCUMENT_CHARACTERS to limits.maxDocumentCharacters
+                else -> return DocumentReadException.MalformedDocument(source.file, exception)
+            }
+        return DocumentReadException.ResourceLimitExceeded(
+            file = source.file,
+            limit = limit,
+            maximum = maximum.toLong(),
+            cause = exception,
+        )
+    }
+
+    private fun locationAtOffset(
+        source: DocumentSource,
+        content: String,
+        offset: Int,
+    ): SourceLocation {
+        val boundedOffset = offset.coerceIn(0, content.length)
+        val prefix = content.substring(0, boundedOffset)
+        val line = prefix.count { it == '\n' } + 1
+        val lastLineBreak = prefix.lastIndexOf('\n')
+        val column = boundedOffset - lastLineBreak
+        return SourceLocation.from(source, ROOT_PATH, line, column)
+    }
+
+    private fun malformed(
+        location: SourceLocation,
+        message: String,
+    ): DocumentReadException.MalformedDocument =
+        DocumentReadException.MalformedDocument(
+            file = location.file,
+            cause = IllegalArgumentException(message),
+            location = location,
+        )
 
     private fun locationOf(
         source: DocumentSource,
@@ -181,16 +279,19 @@ class YamlDocumentReader internal constructor(
         )
 
     private fun invalidMappingKey(
-        file: File,
+        source: DocumentSource,
+        path: String,
         mark: Mark,
     ): DocumentReadException.InvalidMappingKey =
         DocumentReadException.InvalidMappingKey(
-            file = file,
-            line = mark.line + 1,
-            column = mark.column + 1,
+            file = source.file,
+            location = locationOf(source, path, mark),
         )
 
     private companion object {
         const val ROOT_PATH = "root"
+        const val UTF_8_BOM = "\uFEFF"
+        val JSON_NUMBER = Regex("-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?")
+        val YAML_ONLY_PLAIN_NUMBER = Regex("[-+]?0[oO][0-7](?:_?[0-7])*")
     }
 }

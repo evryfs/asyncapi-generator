@@ -48,12 +48,13 @@ class JsonDocumentReader internal constructor(
 
     override fun read(source: DocumentSource): InputDocument {
         limits.requireDocumentSize(source)
-        if (source.content.isBlank()) {
+        val content = source.content.removePrefix(UTF_8_BOM)
+        if (content.isBlank()) {
             throw DocumentReadException.EmptyDocument(source.file)
         }
 
         return try {
-            jsonFactory.createParser(source.content).use { parser ->
+            jsonFactory.createParser(content).use { parser ->
                 val rootToken = parser.nextToken()
                     ?: throw DocumentReadException.EmptyDocument(source.file)
                 val root = parseNode(parser, rootToken, ROOT_PATH, source)
@@ -69,9 +70,13 @@ class JsonDocumentReader internal constructor(
         } catch (ex: DocumentReadException) {
             throw ex
         } catch (ex: StreamConstraintsException) {
-            throw DocumentReadException.ResourceLimitExceeded(source.file, ex)
+            throw resourceLimitExceeded(source, ex)
         } catch (ex: JsonProcessingException) {
-            throw DocumentReadException.MalformedDocument(source.file, ex)
+            throw DocumentReadException.MalformedDocument(
+                file = source.file,
+                cause = ex,
+                location = ex.location?.let { locationOf(source, ROOT_PATH, it) },
+            )
         }
     }
 
@@ -128,9 +133,8 @@ class JsonDocumentReader internal constructor(
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(
                     file = source.file,
-                    key = key,
-                    line = keyLocation.line,
-                    column = keyLocation.column,
+                    memberName = key,
+                    location = keyLocation,
                 )
             }
 
@@ -177,9 +181,37 @@ class JsonDocumentReader internal constructor(
         parser: JsonParser,
         message: String,
     ): DocumentReadException.MalformedDocument =
-        DocumentReadException.MalformedDocument(source.file, JsonParseException(parser, message))
+        DocumentReadException.MalformedDocument(
+            file = source.file,
+            cause = JsonParseException(parser, message),
+            location = locationOf(source, ROOT_PATH, parser.currentLocation()),
+        )
+
+    private fun resourceLimitExceeded(
+        source: DocumentSource,
+        exception: StreamConstraintsException,
+    ): DocumentReadException.ResourceLimitExceeded {
+        val message = exception.message.orEmpty().lowercase()
+        val (limit, maximum) =
+            when {
+                "nesting depth" in message ->
+                    DocumentResourceLimit.NESTING_DEPTH to limits.maxNestingDepth
+                "number value length" in message || "number length" in message ->
+                    DocumentResourceLimit.NUMBER_CHARACTERS to limits.maxNumberCharacters
+                else ->
+                    DocumentResourceLimit.DOCUMENT_CHARACTERS to limits.maxDocumentCharacters
+            }
+        return DocumentReadException.ResourceLimitExceeded(
+            file = source.file,
+            limit = limit,
+            maximum = maximum.toLong(),
+            cause = exception,
+            location = exception.location?.let { locationOf(source, ROOT_PATH, it) },
+        )
+    }
 
     private companion object {
         const val ROOT_PATH = "root"
+        const val UTF_8_BOM = "\uFEFF"
     }
 }
