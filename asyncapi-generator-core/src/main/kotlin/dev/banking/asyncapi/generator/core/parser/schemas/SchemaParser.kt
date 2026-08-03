@@ -14,7 +14,6 @@ import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
 import kotlin.String
 import kotlin.collections.Map
@@ -241,14 +240,8 @@ class SchemaParser(
             else -> parserNode.expect<String>()
         }
 
-    private fun isBooleanSchema(node: ParserNode): Boolean {
-        val value = node.node
-        return value is DocumentBoolean ||
-                (value is DocumentString && (value.value.equals("true", ignoreCase = true) || value.value.equals(
-                    "false",
-                    ignoreCase = true
-                )))
-    }
+    private fun isBooleanSchema(node: ParserNode): Boolean =
+        node.node is DocumentBoolean
 
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {
         val objectNode = parserNode.expectObject()

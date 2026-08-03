@@ -102,7 +102,7 @@ class SchemaParserTest {
         assertEquals(2, composed.allOf?.size)
         assertEquals(2, composed.anyOf?.size)
         assertEquals(2, composed.oneOf?.size)
-        assertEquals(null, assertIs<SchemaInterface.SchemaInline>(composed.not).schema.type)
+        assertEquals("null", assertIs<SchemaInterface.SchemaInline>(composed.not).schema.type)
 
         val conditional = assertIs<SchemaInterface.SchemaInline>(schemas["conditionalExample"]).schema
         val ifSchema = assertIs<SchemaInterface.SchemaInline>(conditional.ifSchema).schema
@@ -374,23 +374,31 @@ class SchemaParserTest {
     }
 
     @Test
-    fun `rejects a quoted boolean schema with a source-aware type diagnostic`() {
-        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("QuotedBooleanSchema")
+    fun `yaml and json distinguish boolean schemas from quoted strings`() {
+        listOf(
+            "parser/schemas/schema_boolean_representations.yaml",
+            "parser/schemas/schema_boolean_representations.json",
+        ).forEach { path ->
+            val sourceContext = AsyncApiContext()
+            val sourceParser = SchemaParser(sourceContext)
+            val schemas = ParserNodeFactory.root(DocumentReaderRegistry.read(TestResources.file(path)), sourceContext)
+                .expectObject()
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
+            val booleanSchema = assertIs<SchemaInterface.BooleanSchema>(
+                sourceParser.parseElement(schemas.required("actualBoolean")),
+            )
+            assertEquals(true, booleanSchema.value)
+
+            val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                sourceParser.parseElement(schemas.required("quotedBoolean"))
+            }
+            val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+            assertEquals("Map<String, Any?>", diagnostic.expectedType)
+            assertEquals(ParserValueType.STRING, diagnostic.actualType)
+            assertEquals("true", diagnostic.actualValue)
+            assertEquals("root.quotedBoolean", diagnostic.sourceLocation.path)
         }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals("Boolean", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("true", diagnostic.actualValue)
-        assertEquals("root.components.schemas.QuotedBooleanSchema", diagnostic.sourceLocation.path)
     }
 
     @Test

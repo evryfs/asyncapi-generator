@@ -1,0 +1,16 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Foreign Schema Container With Explicit Null Type",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ExternalPayload": {
+        "description": "Only this selected fragment uses AsyncAPI Schema Object semantics.",
+        "type": null
+      }
+    }
+  }
+}
