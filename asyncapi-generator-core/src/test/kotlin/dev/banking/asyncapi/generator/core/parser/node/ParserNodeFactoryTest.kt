@@ -68,7 +68,6 @@ class ParserNodeFactoryTest {
         assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
         assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
         assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
-        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags.0"))
         assertEquals(file, context.findFileById("source_map"))
     }
 
@@ -102,11 +101,50 @@ class ParserNodeFactoryTest {
         assertEquals(3, titleLocation.line)
         assertEquals(3, titleLocation.column)
 
-        val normalizedArrayLocation = assertNotNull(
-            context.sourceRepository.getLocation("source_map.root.info.tags.0"),
+        val arrayLocation = assertNotNull(
+            context.sourceRepository.getLocation("source_map.root.info.tags[0]"),
         )
-        assertEquals("source_map.root.info.tags.0", normalizedArrayLocation.path)
-        assertEquals(5, normalizedArrayLocation.line)
+        assertEquals("source_map.root.info.tags[0]", arrayLocation.path)
+        assertEquals(5, arrayLocation.line)
+    }
+
+    @Test
+    fun `keeps complex members and array indexes collision safe`() {
+        val context = AsyncApiContext()
+        val source = DocumentSource(
+            id = "identity",
+            file = File("identity.yaml").canonicalFile,
+            content =
+                """
+                "A.properties.x": dotted
+                "bracket[name]": bracketed
+                "0": numeric member
+                items:
+                  - numeric index
+                """.trimIndent(),
+            format = DocumentFormat.YAML,
+        )
+        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(source), context)
+        val rootObject = root.expectObject()
+        val dotted = rootObject.required("A.properties.x")
+        val bracketed = rootObject.required("bracket[name]")
+        val numericMember = rootObject.required("0")
+        val numericIndex = rootObject.required("items").expectArray().elements().single()
+
+        assertEquals("identity.root[\"A.properties.x\"]", dotted.path)
+        assertEquals("identity.root[\"bracket[name]\"]", bracketed.path)
+        assertEquals("identity.root.0", numericMember.path)
+        assertEquals("identity.root.items[0]", numericIndex.path)
+        assertEquals(
+            numericMember.address,
+            context.sourceRepository.resolveAddress(root.address.sourceId, listOf("0")),
+        )
+        assertEquals(
+            numericIndex.address,
+            context.sourceRepository.resolveAddress(root.address.sourceId, listOf("items", "0")),
+        )
+        assertNotNull(context.sourceRepository.getLocation(dotted.address))
+        assertNotNull(context.sourceRepository.getLocation(bracketed.address))
     }
 
     @Test

@@ -90,6 +90,16 @@ class ExternalReferenceLoadingTest {
         ).reference
         val arraySchema = assertIs<Schema>(context.findReference(arrayReference))
         assertEquals("array root target", arraySchema.description)
+
+        fun resolvedType(referenceName: String): String? {
+            val reference = assertIs<SchemaInterface.SchemaReference>(schemas.getValue(referenceName)).reference
+            return assertIs<Schema>(context.findReference(reference)).type as? String
+        }
+
+        assertEquals("integer", resolvedType("DottedExternalReference"))
+        assertEquals("string", resolvedType("NestedExternalReference"))
+        assertEquals("number", resolvedType("BracketExternalReference"))
+        assertEquals("boolean", resolvedType("NumericMemberExternalReference"))
     }
 
     @Test

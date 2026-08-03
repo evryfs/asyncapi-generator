@@ -92,7 +92,7 @@ class ParameterValidatorTest : AbstractValidatorTest() {
             results,
             rule = PARAMETER_NAME_FORMAT,
             sourceFile = "asyncapi_validator_parameter_name_invalid.yaml",
-            path = "asyncapi_validator_parameter_name_invalid.root.channels.events.parameters.invalid.name",
+            path = "asyncapi_validator_parameter_name_invalid.root.channels.events.parameters[\"invalid.name\"]",
             line = 9,
         )
     }

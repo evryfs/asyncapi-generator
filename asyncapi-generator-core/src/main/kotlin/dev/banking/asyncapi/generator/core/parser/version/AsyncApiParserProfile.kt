@@ -39,7 +39,7 @@ internal enum class AsyncApiSpecificationLine(
                     diagnostic = ParserDiagnostic.InvalidSpecificationVersion(
                         declaredVersion = declaredVersion,
                         path = versionNode.path,
-                        sourceLocation = versionNode.node.location,
+                        sourceLocation = versionNode.sourceLocation,
                     ),
                 )
             val specificationLine = entries.firstOrNull { candidate ->
@@ -53,7 +53,7 @@ internal enum class AsyncApiSpecificationLine(
                         knownVersionLine = specificationLine != null,
                         supportedVersionLines = supportedVersionLines,
                         path = versionNode.path,
-                        sourceLocation = versionNode.node.location,
+                        sourceLocation = versionNode.sourceLocation,
                     ),
                 )
             return root.withProfile(profile)

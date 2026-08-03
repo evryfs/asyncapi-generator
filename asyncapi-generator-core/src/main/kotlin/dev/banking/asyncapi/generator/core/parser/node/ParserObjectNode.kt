@@ -19,30 +19,29 @@ class ParserObjectNode internal constructor(
 ) {
 
     fun required(memberName: String): ParserNode {
-        val memberPath = "${parserNode.path}.$memberName"
+        val memberAddress = parserNode.address.member(memberName)
         val member = documentObject[memberName]
             ?: throw AsyncApiParseException.ParserDiagnosticFailure(
                 diagnostic = ParserDiagnostic.MissingRequiredMember(
                     memberName = memberName,
-                    path = memberPath,
-                    sourceLocation = documentObject.location,
+                    path = memberAddress.displayPath,
+                    sourceLocation = documentObject.location.copy(path = parserNode.address.documentPath),
                 ),
                 context = parserNode.context,
             )
-        return parserNode.child(memberName, member, memberPath)
+        return parserNode.member(memberName, member)
     }
 
     fun optional(memberName: String): ParserNode? {
         val member = documentObject[memberName] ?: return null
-        return parserNode.child(memberName, member, "${parserNode.path}.$memberName")
+        return parserNode.member(memberName, member)
     }
 
     fun members(): List<ParserNode> =
         documentObject.members.map { (memberName, member) ->
-            parserNode.child(
+            parserNode.member(
                 name = memberName,
                 node = member.value,
-                path = "${parserNode.path}.$memberName",
             )
         }
 
@@ -59,13 +58,14 @@ class ParserObjectNode internal constructor(
                 !(specificationExtensionsAllowed && memberName.matches(SPECIFICATION_EXTENSION_NAME))
         } ?: return
         val (memberName, member) = unexpectedMember
+        val memberPath = parserNode.address.member(memberName).displayPath
         throw AsyncApiParseException.ParserDiagnosticFailure(
             diagnostic = ParserDiagnostic.UnexpectedObjectMember(
                 memberName = memberName,
                 objectType = objectType,
                 specificationExtensionsAllowed = specificationExtensionsAllowed,
-                path = "${parserNode.path}.$memberName",
-                sourceLocation = member.keyLocation,
+                path = memberPath,
+                sourceLocation = member.keyLocation.copy(path = parserNode.address.member(memberName).documentPath),
             ),
             context = parserNode.context,
         )

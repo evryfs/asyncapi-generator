@@ -25,10 +25,8 @@ class NativeSchemaAssetReader(
 
     fun readIfExternalReference(schemaNode: ParserNode): String? {
         val reference = schemaNode.externalReferenceValue() ?: return null
-        val sourceId = schemaNode.path.substringBefore(".root", missingDelimiterValue = "")
         val sourceFile =
-            sourceId.takeIf(String::isNotBlank)
-                ?.let(asyncApiContext::findFileById)
+            asyncApiContext.findFileById(schemaNode.address.sourceId)
                 ?: asyncApiContext.getCurrentFile()
         val file =
             pathResolver.resolve(

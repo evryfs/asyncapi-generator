@@ -3,3 +3,14 @@ components:
     "Escaped/Payload~V1":
       type: string
       description: escaped pointer target
+    A:
+      type: object
+      properties:
+        x:
+          type: string
+    "A.properties.x":
+      type: integer
+    "bracket[name]":
+      type: number
+    "0":
+      type: boolean

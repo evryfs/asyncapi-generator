@@ -15,10 +15,9 @@ class ParserArrayNode internal constructor(
 
     fun elements(): List<ParserNode> =
         documentArray.elements.mapIndexed { index, element ->
-            parserNode.child(
-                name = "${parserNode.name}[$index]",
+            parserNode.index(
+                index = index,
                 node = element,
-                path = "${parserNode.path}[$index]",
             )
         }
 }

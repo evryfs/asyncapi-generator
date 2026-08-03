@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants.ROOT
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentNode
@@ -26,35 +25,35 @@ object ParserNodeFactory {
     ): ParserNode {
         val sourceId = context.registerDocumentSource(document.source.file, document.source.content)
 
-        val rootPath = "$sourceId.$ROOT"
+        val rootAddress = NodeAddress.root(sourceId)
         registerLocations(
             node = document.root,
-            parserPath = rootPath,
+            address = rootAddress,
             location = document.root.location,
             context = context,
         )
 
         return ParserNode(
-            name = rootPath,
+            name = rootAddress.displayPath,
             node = document.root,
-            path = rootPath,
+            address = rootAddress,
             context = context,
         )
     }
 
     private fun registerLocations(
         node: DocumentNode,
-        parserPath: String,
+        address: NodeAddress,
         location: SourceLocation,
         context: AsyncApiContext,
     ) {
-        registerLocation(parserPath, location, context)
+        context.registerSourceLocation(address, location)
 
         when (node) {
             is DocumentObject -> node.members.forEach { (name, member) ->
                 registerLocations(
                     node = member.value,
-                    parserPath = "$parserPath.$name",
+                    address = address.member(name),
                     location = member.keyLocation,
                     context = context,
                 )
@@ -63,7 +62,7 @@ object ParserNodeFactory {
             is DocumentArray -> node.elements.forEachIndexed { index, element ->
                 registerLocations(
                     node = element,
-                    parserPath = "$parserPath[$index]",
+                    address = address.index(index),
                     location = element.location,
                     context = context,
                 )
@@ -72,21 +71,4 @@ object ParserNodeFactory {
             else -> Unit
         }
     }
-
-    private fun registerLocation(
-        path: String,
-        location: SourceLocation,
-        context: AsyncApiContext,
-    ) {
-        context.registerSourceLocation(path, location)
-
-        val normalizedPath = normalizeArrayPath(path)
-        if (normalizedPath != path) {
-            context.registerSourceLocation(normalizedPath, location)
-        }
-    }
-
-    private fun normalizeArrayPath(path: String): String =
-        path.replace(Regex("""\[(\d+)]"""), ".$1")
-
 }

@@ -19,24 +19,18 @@ internal object ExternalReferenceTargetResolver {
                 is DocumentObject -> {
                     val memberName = currentPointer.matchingProperty
                     val member = documentNode.member(memberName) ?: return null
-                    ParserNode(
+                    currentNode.member(
                         name = memberName,
                         node = member.value,
-                        path = "${currentNode.path}.$memberName",
-                        context = currentNode.context,
-                        profile = currentNode.profile,
                     )
                 }
 
                 is DocumentArray -> {
                     val index = currentPointer.matchingIndex
                     if (index !in documentNode.elements.indices) return null
-                    ParserNode(
-                        name = "${currentNode.name}[$index]",
+                    currentNode.index(
+                        index = index,
                         node = documentNode[index],
-                        path = "${currentNode.path}[$index]",
-                        context = currentNode.context,
-                        profile = currentNode.profile,
                     )
                 }
 

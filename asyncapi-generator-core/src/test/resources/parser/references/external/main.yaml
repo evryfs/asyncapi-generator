@@ -22,3 +22,11 @@ components:
       $ref: './boolean-schema.yaml'
     ArrayRootReference:
       $ref: './array-schemas.yaml#/0'
+    DottedExternalReference:
+      $ref: './fragments.yaml#/components/schemas/A.properties.x'
+    NestedExternalReference:
+      $ref: './fragments.yaml#/components/schemas/A/properties/x'
+    BracketExternalReference:
+      $ref: './fragments.yaml#/components/schemas/bracket%5Bname%5D'
+    NumericMemberExternalReference:
+      $ref: './fragments.yaml#/components/schemas/0'

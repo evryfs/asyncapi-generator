@@ -5,9 +5,11 @@ import java.io.File
 /**
  * Location of a value in an input document.
  *
- * Paths start at `root`, use dot-separated object member names, and use
- * bracketed zero-based array indexes, for example `root.channels[0]`. Lines
- * and columns are one-based for both YAML and JSON sources.
+ * Paths start at `root`, use dot-separated simple object member names, and use
+ * bracketed zero-based array indexes, for example `root.channels[0]`. Member
+ * names containing path delimiters use JSON-quoted bracket notation, for
+ * example `root["channel.name"]`. Lines and columns are one-based for both
+ * YAML and JSON sources.
  *
  * @property sourceId stable identity of the input source that owns the value
  * @property file source file used for diagnostics and relative reference resolution
