@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants
  *
  * Expected behavior is covered by:
  * - `SchemaFormatTest`
- * - `MultiFormatSchemaParserTest`
+ * - `SchemaParserMultiFormatTest`
  */
 enum class SchemaFormat(
     val value: String,

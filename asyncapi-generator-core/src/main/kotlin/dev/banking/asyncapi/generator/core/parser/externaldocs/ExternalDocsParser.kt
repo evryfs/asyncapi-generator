@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.EXT
  * - `ExternalDocsParserTest`
  */
 internal class ExternalDocsParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ExternalDocInterface> = buildMap {

@@ -23,7 +23,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHA
  * - `ChannelParserTest`
  */
 internal class ChannelParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser: TagParser = TagParser(asyncApiContext)

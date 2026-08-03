@@ -15,7 +15,7 @@ import java.io.IOException
  * instead of being routed through the YAML/JSON document reader.
  *
  * Expected behavior is covered by:
- * - `MultiFormatSchemaParserTest`
+ * - `SchemaParserMultiFormatTest`
  */
 internal class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,

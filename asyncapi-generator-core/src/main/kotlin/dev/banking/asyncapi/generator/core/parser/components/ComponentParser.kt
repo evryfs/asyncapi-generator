@@ -33,7 +33,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COM
  * - `ComponentParserTest`
  */
 internal class ComponentParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser = TagParser(asyncApiContext)

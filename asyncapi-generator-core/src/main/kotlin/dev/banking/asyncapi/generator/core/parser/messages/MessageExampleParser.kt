@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
  * - `MessageParserTest`
  */
 internal class MessageExampleParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseList(parserNode: ParserNode): List<MessageExample> = buildList {

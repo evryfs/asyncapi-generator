@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * - `OperationReplyParserTest`
  */
 internal class ReferenceParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseList(

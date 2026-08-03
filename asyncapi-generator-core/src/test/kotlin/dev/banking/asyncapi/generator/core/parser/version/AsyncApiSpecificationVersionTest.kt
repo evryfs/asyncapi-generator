@@ -7,14 +7,11 @@ import kotlin.test.assertNull
 class AsyncApiSpecificationVersionTest {
 
     @Test
-    fun `parses an exact version without losing its declared value`() {
+    fun `parses a valid version into its specification line`() {
         assertEquals(
             AsyncApiSpecificationVersion(
-                raw = "3.0.7-rc1",
                 major = 3,
                 minor = 0,
-                patch = 7,
-                suffix = "rc1",
             ),
             AsyncApiSpecificationVersion.parse("3.0.7-rc1"),
         )

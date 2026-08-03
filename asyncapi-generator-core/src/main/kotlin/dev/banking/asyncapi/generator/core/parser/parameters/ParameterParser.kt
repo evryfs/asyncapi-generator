@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PAR
  * - `ChannelParserTest`
  */
 internal class ParameterParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ParameterInterface> = buildMap {

@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
  * and schema-valued fields for semantic validation.
  */
 internal class BindingParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 

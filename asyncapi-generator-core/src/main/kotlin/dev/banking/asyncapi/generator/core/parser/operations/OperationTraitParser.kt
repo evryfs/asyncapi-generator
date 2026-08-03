@@ -21,7 +21,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
  * - `OperationParserTest`
  */
 internal class OperationTraitParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser = TagParser(asyncApiContext)

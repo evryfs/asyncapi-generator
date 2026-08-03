@@ -20,7 +20,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
  * - `ServerParserTest`
  */
 internal class ServerParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser = TagParser(asyncApiContext)

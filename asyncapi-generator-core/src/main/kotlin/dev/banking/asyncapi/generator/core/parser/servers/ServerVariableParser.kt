@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
  * - `ServerParserTest`
  */
 internal class ServerVariableParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, ServerVariableInterface> = buildMap {

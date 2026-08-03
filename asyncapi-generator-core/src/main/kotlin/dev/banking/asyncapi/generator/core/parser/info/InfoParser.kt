@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.LIC
  * - `InfoParserTest`
  */
 internal class InfoParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)

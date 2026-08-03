@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
-import dev.banking.asyncapi.generator.core.parser.version.objectMemberPolicy
+import dev.banking.asyncapi.generator.core.parser.version.allowedMembers
 
 /**
  * Object-shaped view of a [ParserNode].
@@ -74,11 +74,9 @@ internal class ParserObjectNode(
     /** Enforces the fixed-member policy selected by this node's AsyncAPI profile. */
     internal fun expectOnlyMembers(objectType: AsyncApiObjectType) {
         val profile = parserNode.profile ?: AsyncApiParserProfile.V3_0
-        val policy = profile.objectMemberPolicy(objectType)
         expectOnlyMembers(
             objectType = objectType.displayName,
-            allowedMembers = policy.allowedMembers,
-            specificationExtensionsAllowed = policy.specificationExtensionsAllowed,
+            allowedMembers = profile.allowedMembers(objectType),
         )
     }
 

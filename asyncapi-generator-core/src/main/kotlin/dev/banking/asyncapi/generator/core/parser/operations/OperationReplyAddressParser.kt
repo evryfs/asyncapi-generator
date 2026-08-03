@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
  * - `OperationReplyParserTest`
  */
 internal class OperationReplyAddressParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyAddressInterface> = buildMap {

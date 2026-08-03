@@ -19,7 +19,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SEC
  * - `SecuritySchemeParserTest`
  */
 internal class SecuritySchemeParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, SecuritySchemeInterface> = buildMap {

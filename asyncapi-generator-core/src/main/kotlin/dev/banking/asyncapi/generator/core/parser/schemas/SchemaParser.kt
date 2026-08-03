@@ -14,6 +14,8 @@ import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
 import kotlin.String
 import kotlin.collections.Map
@@ -25,12 +27,11 @@ import kotlin.collections.Map
  * - `SchemaParserTest`
  */
 internal class SchemaParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val bindingParser = BindingParser(asyncApiContext)
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
-    private val multiFormatParser = MultiFormatSchemaParser(asyncApiContext)
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
 
     fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> = buildMap {
@@ -63,11 +64,13 @@ internal class SchemaParser(
         }
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
-            val schemaFormat = multiFormatParser.parseFormat(
-                format = format,
-                path = parserNode.path,
-                sourceLocation = parserNode.sourceLocation,
-            )
+            val schemaFormat = SchemaFormat.fromValue(format)
+                ?: throw UnexpectedSchemaFormat(
+                    format,
+                    parserNode.path,
+                    parserNode.sourceLocation,
+                    asyncApiContext,
+                )
             val schemaNode = objectNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
@@ -91,7 +94,7 @@ internal class SchemaParser(
     }
 
 
-    fun parseSchema(parserNode: ParserNode): SchemaInterface {
+    private fun parseSchema(parserNode: ParserNode): SchemaInterface {
         val objectNode = parserNode.expectObject()
         objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
             return SchemaInterface.SchemaReference(

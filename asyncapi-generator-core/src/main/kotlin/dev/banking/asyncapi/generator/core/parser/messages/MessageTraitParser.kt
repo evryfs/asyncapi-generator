@@ -22,7 +22,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
  * - `MessageParserTest`
  */
 internal class MessageTraitParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser = TagParser(asyncApiContext)

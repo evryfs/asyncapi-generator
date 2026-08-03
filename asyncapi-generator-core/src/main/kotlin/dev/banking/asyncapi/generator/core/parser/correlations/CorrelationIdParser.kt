@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COR
  * - `CorrelationIdParserTest`
  */
 internal class CorrelationIdParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseMap(parserNode: ParserNode): Map<String, CorrelationIdInterface> = buildMap {

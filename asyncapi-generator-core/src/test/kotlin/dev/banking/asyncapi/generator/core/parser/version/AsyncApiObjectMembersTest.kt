@@ -14,15 +14,14 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class AsyncApiObjectMemberPolicyParserTest {
+class AsyncApiObjectMembersTest {
 
     @Test
-    fun `version 3 profile defines every ordinary object policy`() {
-        val policies = AsyncApiObjectType.entries.associateWith(AsyncApiParserProfile.V3_0::objectMemberPolicy)
+    fun `version 3 profile defines members for every ordinary object`() {
+        val members = AsyncApiObjectType.entries.associateWith(AsyncApiParserProfile.V3_0::allowedMembers)
 
-        assertEquals(AsyncApiObjectType.entries.toSet(), policies.keys)
-        assertTrue(policies.values.all { it.allowedMembers.isNotEmpty() })
-        assertTrue(policies.values.all { it.specificationExtensionsAllowed })
+        assertEquals(AsyncApiObjectType.entries.toSet(), members.keys)
+        assertTrue(members.values.all { it.isNotEmpty() })
     }
 
     @Test
