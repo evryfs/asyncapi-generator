@@ -20,7 +20,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
  * - `OperationTraitParserTest`
  * - `OperationParserTest`
  */
-class OperationTraitParser(
+internal class OperationTraitParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

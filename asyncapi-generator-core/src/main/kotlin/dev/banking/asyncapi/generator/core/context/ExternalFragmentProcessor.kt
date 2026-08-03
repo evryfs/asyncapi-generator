@@ -58,7 +58,7 @@ import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
-class ExternalFragmentProcessor(
+internal class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
 ) {
     internal fun parseAndDeferValidation(
@@ -300,7 +300,7 @@ class ExternalFragmentProcessor(
         validate(results)
         ReferenceTargetTraversal(context).drain(results)
         val report = results.report()
-        ValidationReporter(context).logWarnings(report)
         ValidationReporter(context).throwErrors(report)
+        context.collectExternalValidationWarnings(report.warnings)
     }
 }

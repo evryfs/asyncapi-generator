@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
  * Expected behavior is covered by:
  * - `OperationReplyParserTest`
  */
-class OperationReplyParser(
+internal class OperationReplyParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

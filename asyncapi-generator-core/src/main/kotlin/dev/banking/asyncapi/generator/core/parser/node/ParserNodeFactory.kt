@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * Expected behavior is covered by:
  * - `ParserNodeFactoryTest`
  */
-object ParserNodeFactory {
+internal object ParserNodeFactory {
 
     fun root(
         document: InputDocument,

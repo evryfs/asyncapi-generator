@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
  * Parses raw binding content while retaining its protocol, location, version,
  * and schema-valued fields for semantic validation.
  */
-class BindingParser(
+internal class BindingParser(
     val asyncApiContext: AsyncApiContext,
 ) {
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }

@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import org.slf4j.LoggerFactory
 
 /** Formats and delivers an immutable validation report at an application boundary. */
-class ValidationReporter(
+internal class ValidationReporter(
     private val context: AsyncApiContext,
 ) {
     private val logger = LoggerFactory.getLogger(ValidationReporter::class.java)

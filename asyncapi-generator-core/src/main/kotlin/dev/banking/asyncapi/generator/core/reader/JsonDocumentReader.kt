@@ -32,7 +32,7 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * - `DocumentReaderContractTest`
  * - `DocumentLocationTest`
  */
-class JsonDocumentReader internal constructor(
+internal class JsonDocumentReader internal constructor(
     private val limits: DocumentReaderLimits,
 ) : DocumentReader {
     constructor() : this(DocumentReaderLimits.DEFAULT)

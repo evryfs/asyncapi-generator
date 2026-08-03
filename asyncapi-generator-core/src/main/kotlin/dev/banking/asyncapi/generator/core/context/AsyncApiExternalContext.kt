@@ -14,7 +14,7 @@ import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
 
-class AsyncApiExternalContext(
+internal class AsyncApiExternalContext(
     val context: AsyncApiContext,
 ) {
     private data class FragmentIdentity(
@@ -88,8 +88,8 @@ class AsyncApiExternalContext(
                 val parser = AsyncApiParser(context)
                 val parsed = parser.parse(rootNode)
                 val result = AsyncApiValidator(context).validate(parsed)
-                ValidationReporter(context).logWarnings(result)
                 ValidationReporter(context).throwErrors(result)
+                context.collectExternalValidationWarnings(result.warnings)
             }
         } else {
             val parserProfile = referenceOrigin?.parserProfile

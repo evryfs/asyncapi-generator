@@ -136,6 +136,10 @@ internal class ParserLoadResourceBudget(
         return content
     }
 
+    fun sourceFiles(): Set<File> =
+        aggregateSources.keys
+            .mapTo(linkedSetOf(), ::File)
+
     private fun requireAggregateCapacity(
         canonicalPath: String,
         sourceBytes: Long,

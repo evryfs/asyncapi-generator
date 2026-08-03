@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PAR
  * - `ParameterParserTest`
  * - `ChannelParserTest`
  */
-class ParameterParser(
+internal class ParameterParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

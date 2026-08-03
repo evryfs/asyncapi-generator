@@ -22,7 +22,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHA
  * Expected behavior is covered by:
  * - `ChannelParserTest`
  */
-class ChannelParser(
+internal class ChannelParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

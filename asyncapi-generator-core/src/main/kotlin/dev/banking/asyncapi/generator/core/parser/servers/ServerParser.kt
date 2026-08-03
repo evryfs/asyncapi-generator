@@ -19,7 +19,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
  * Expected behavior is covered by:
  * - `ServerParserTest`
  */
-class ServerParser(
+internal class ServerParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SEC
  * Expected behavior is covered by:
  * - `SecuritySchemeParserTest`
  */
-class SecuritySchemeParser(
+internal class SecuritySchemeParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

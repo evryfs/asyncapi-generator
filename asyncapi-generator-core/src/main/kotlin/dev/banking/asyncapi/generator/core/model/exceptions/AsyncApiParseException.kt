@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 sealed class AsyncApiParseException(message: String) : Exception(message) {
 
-    class ParserDiagnosticFailure(
+    class ParserDiagnosticFailure internal constructor(
         val diagnostic: ParserDiagnostic,
         context: AsyncApiContext,
     ) : AsyncApiParseException(ParserDiagnosticFormatter.format(diagnostic, context))
@@ -13,10 +13,10 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
     class EmptyYamlFile(fileName: String) :
         AsyncApiParseException("Empty Yaml file : $fileName")
 
-    class UnexpectedSchemaFormat(format: String, path: String, context: AsyncApiContext) :
+    class UnexpectedSchemaFormat internal constructor(format: String, path: String, context: AsyncApiContext) :
         AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
 
-    class NativeSchemaAssetReadFailure(
+    class NativeSchemaAssetReadFailure internal constructor(
         reference: String,
         path: String,
         context: AsyncApiContext,

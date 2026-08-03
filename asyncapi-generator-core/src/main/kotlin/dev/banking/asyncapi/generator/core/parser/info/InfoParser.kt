@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.LIC
  * Expected behavior is covered by:
  * - `InfoParserTest`
  */
-class InfoParser(
+internal class InfoParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

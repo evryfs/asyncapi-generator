@@ -24,7 +24,7 @@ import kotlin.collections.Map
  * Expected behavior is covered by:
  * - `SchemaParserTest`
  */
-class SchemaParser(
+internal class SchemaParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

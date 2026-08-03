@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.TAG
  * Expected behavior is covered by:
  * - `TagParserTest`
  */
-class TagParser(
+internal class TagParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

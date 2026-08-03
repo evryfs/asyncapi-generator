@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class KafkaBindingValidator(
+internal class KafkaBindingValidator(
     private val asyncApiContext: AsyncApiContext,
 ) : ProtocolValidator {
     private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }

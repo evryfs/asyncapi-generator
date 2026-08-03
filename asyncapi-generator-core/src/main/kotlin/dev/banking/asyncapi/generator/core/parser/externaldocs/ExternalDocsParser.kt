@@ -14,7 +14,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.EXT
  * Expected behavior is covered by:
  * - `ExternalDocsParserTest`
  */
-class ExternalDocsParser(
+internal class ExternalDocsParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

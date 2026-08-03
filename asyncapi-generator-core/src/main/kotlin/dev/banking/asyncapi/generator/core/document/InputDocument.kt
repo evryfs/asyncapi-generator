@@ -15,7 +15,7 @@ package dev.banking.asyncapi.generator.core.document
  * - `DocumentReaderContractTest`
  * - `YamlDocumentReaderTest`
  */
-data class InputDocument(
+internal data class InputDocument(
     val source: DocumentSource,
     val root: DocumentNode,
 )

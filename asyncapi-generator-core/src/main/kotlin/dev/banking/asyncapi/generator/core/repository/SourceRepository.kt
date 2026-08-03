@@ -15,7 +15,7 @@ import kotlin.math.min
  * - `ParserNodeFactoryTest`
  * - `AsyncApiRegistryTest`
  */
-class SourceRepository {
+internal class SourceRepository {
     data class Source(
         val file: File,
         val id: String,

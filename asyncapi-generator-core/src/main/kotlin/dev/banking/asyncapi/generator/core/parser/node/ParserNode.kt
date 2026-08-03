@@ -15,7 +15,7 @@ import kotlin.reflect.typeOf
  * - `ParserNodeTest`
  * - parser package tests
  */
-class ParserNode internal constructor(
+internal class ParserNode internal constructor(
     val name: String,
     val node: DocumentNode,
     @PublishedApi

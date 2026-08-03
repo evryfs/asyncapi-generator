@@ -46,7 +46,7 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.util.Collections
 import java.util.IdentityHashMap
 
-class ReferenceResolver(
+internal class ReferenceResolver(
     private val asyncApiContext: AsyncApiContext,
 ) {
 

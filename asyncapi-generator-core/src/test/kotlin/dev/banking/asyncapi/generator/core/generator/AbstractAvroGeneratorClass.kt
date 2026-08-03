@@ -12,7 +12,7 @@ import java.io.File
 
 abstract class AbstractAvroGeneratorClass {
 
-    protected val asyncApiContext = AsyncApiContext()
+    private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     protected val generator = AsyncApiGenerator()
 

@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
  * - `ValidationReportTest`
  * - validator package tests
  */
-object ValidationFindingFormatter {
+internal object ValidationFindingFormatter {
 
     fun format(
         title: String,

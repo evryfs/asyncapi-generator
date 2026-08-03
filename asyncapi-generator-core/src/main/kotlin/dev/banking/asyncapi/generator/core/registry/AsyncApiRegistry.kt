@@ -13,16 +13,13 @@ import dev.banking.asyncapi.generator.core.serializers.AsyncApiListSerializer
 import dev.banking.asyncapi.generator.core.serializers.AsyncApiStringSerializer
 import java.io.File
 
-object AsyncApiRegistry {
+internal object AsyncApiRegistry {
 
     fun read(file: File, asyncApiContext: AsyncApiContext): ParserNode =
         ParserNodeFactory.root(
             document = DocumentReaderRegistry.read(file),
             context = asyncApiContext,
         )
-
-    fun readYaml(file: File, asyncApiContext: AsyncApiContext): ParserNode =
-        read(file, asyncApiContext)
 
     fun writeYaml(file: File, obj: Any) {
         val yamlText = yamlMapper.writeValueAsString(obj)

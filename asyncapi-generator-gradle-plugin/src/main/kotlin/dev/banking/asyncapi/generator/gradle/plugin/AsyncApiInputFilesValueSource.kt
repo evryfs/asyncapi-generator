@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.gradle.plugin
 
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
@@ -20,20 +18,10 @@ abstract class AsyncApiInputFilesValueSource :
     }
 
     override fun obtain(): List<String> {
-        val context = AsyncApiContext()
-        val root = AsyncApiRegistry.read(parameters.inputSpec.get().asFile, context)
-
-        AsyncApiParser(context).parse(root)
-
-        return context.sourceRepository
-            .getAllSources()
-            .map { source ->
-                source.file
-                    .toPath()
-                    .toAbsolutePath()
-                    .normalize()
-                    .toString()
-            }.distinct()
+        return AsyncApiDocumentLoader()
+            .load(parameters.inputSpec.get().asFile)
+            .sourceFiles
+            .map { file -> file.absolutePath }
             .sorted()
     }
 }

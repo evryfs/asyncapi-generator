@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractKotlinGeneratorClass {
-    val asyncApiContext = AsyncApiContext()
+    private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     val generator = AsyncApiGenerator()
 

@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class TagValidator(
+internal class TagValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

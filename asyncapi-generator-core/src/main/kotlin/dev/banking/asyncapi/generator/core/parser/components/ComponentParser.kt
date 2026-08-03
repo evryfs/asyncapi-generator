@@ -32,7 +32,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COM
  * Expected behavior is covered by:
  * - `ComponentParserTest`
  */
-class ComponentParser(
+internal class ComponentParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

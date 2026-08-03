@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class OperationReplyValidator(
+internal class OperationReplyValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

@@ -33,7 +33,12 @@ class CliDiagnosticsTest {
             )
 
         assertEquals(1, result.statusCode)
-        assertTrue(result.stderr.contains("Malformed input document: ${inputFile.absolutePath}"))
+        assertTrue(
+            result.stderr.contains(
+                "Malformed input document at line 2, column 1: ${inputFile.absolutePath}",
+            ),
+            result.stderr,
+        )
         assertFalse(result.stderr.contains("DocumentReadException"))
         assertFalse(result.stderr.contains("\tat "))
         assertFalse(outputFile.exists())

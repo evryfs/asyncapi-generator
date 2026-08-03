@@ -14,7 +14,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COR
  * Expected behavior is covered by:
  * - `CorrelationIdParserTest`
  */
-class CorrelationIdParser(
+internal class CorrelationIdParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

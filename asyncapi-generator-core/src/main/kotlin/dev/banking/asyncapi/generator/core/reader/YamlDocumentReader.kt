@@ -37,7 +37,7 @@ import org.yaml.snakeyaml.reader.ReaderException
  * - `DocumentReaderContractTest`
  * - `DocumentLocationTest`
  */
-class YamlDocumentReader internal constructor(
+internal class YamlDocumentReader internal constructor(
     private val limits: DocumentReaderLimits,
 ) : DocumentReader {
     constructor() : this(DocumentReaderLimits.DEFAULT)

@@ -21,7 +21,7 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
  * Expected behavior is covered by:
  * - `AsyncApiValidatorTest`
  */
-class AsyncApiValidator(
+internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
 ) : ValidationStage {
 

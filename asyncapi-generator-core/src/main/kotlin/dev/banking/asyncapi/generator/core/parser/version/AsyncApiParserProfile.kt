@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /** Parser behavior implemented for one AsyncAPI major/minor specification line. */
-enum class AsyncApiParserProfile(
+internal enum class AsyncApiParserProfile(
     val major: Int,
     val minor: Int,
 ) {

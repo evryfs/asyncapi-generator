@@ -17,7 +17,7 @@ import java.io.IOException
  * Expected behavior is covered by:
  * - `MultiFormatSchemaParserTest`
  */
-class NativeSchemaAssetReader(
+internal class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
 ) {
     private val pathResolver = ExternalReferencePathResolver()

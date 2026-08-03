@@ -20,7 +20,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
  * Expected behavior is covered by:
  * - `MessageParserTest`
  */
-class MessageParser(
+internal class MessageParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

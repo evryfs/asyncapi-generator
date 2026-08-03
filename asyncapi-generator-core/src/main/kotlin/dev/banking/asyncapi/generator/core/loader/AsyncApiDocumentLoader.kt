@@ -28,7 +28,8 @@ class AsyncApiDocumentLoader {
 
         return AsyncApiDocumentLoadResult(
             document = document,
-            warnings = validationResults.warnings,
+            warnings = context.allValidationWarnings(validationResults.warnings),
+            sourceFiles = context.sourceFiles(),
             context = context,
         )
     }

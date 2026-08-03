@@ -15,6 +15,6 @@ import dev.banking.asyncapi.generator.core.document.InputDocument
  * - `YamlDocumentReaderTest`
  * - `JsonDocumentReaderTest`
  */
-interface DocumentReader {
+internal interface DocumentReader {
     fun read(source: DocumentSource): InputDocument
 }

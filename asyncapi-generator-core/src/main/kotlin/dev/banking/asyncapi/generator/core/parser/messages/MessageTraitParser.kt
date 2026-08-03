@@ -21,7 +21,7 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
  * - `MessageTraitParserTest`
  * - `MessageParserTest`
  */
-class MessageTraitParser(
+internal class MessageTraitParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

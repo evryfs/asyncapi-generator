@@ -51,7 +51,7 @@ import java.util.IdentityHashMap
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
-class SchemaValidator(
+internal class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

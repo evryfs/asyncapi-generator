@@ -10,9 +10,13 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.io.File
 import java.nio.file.Path
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
@@ -45,6 +49,64 @@ class AsyncApiDocumentLoaderTest {
             (schemas.getValue("RootReference") as SchemaInterface.SchemaReference).reference
 
         assertEquals("root schema target", reference.requireModel<Schema>().description)
+    }
+
+    @Test
+    fun `returns every canonical document and native schema source once`() {
+        val result = loader.load(
+            TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml"),
+        )
+
+        assertEquals(
+            setOf(
+                "asyncapi_external_native_schema_assets.yaml",
+                "user-created.avsc",
+                "user-created.proto",
+            ),
+            result.sourceFiles.mapTo(mutableSetOf()) { it.name },
+        )
+        assertEquals(result.sourceFiles.size, result.sourceFiles.map { it.canonicalPath }.distinct().size)
+        assertTrue(result.sourceFiles.all { it == it.canonicalFile })
+        assertFailsWith<UnsupportedOperationException> {
+            (result.sourceFiles as MutableSet<File>).add(tempDir.resolve("unexpected.yaml").toFile())
+        }
+    }
+
+    @Test
+    fun `returns each external warning once without logging from parser infrastructure`() {
+        val external = tempDir.resolve("external-schema.yaml").toFile()
+        external.writeText(
+            """
+            type: object
+            required:
+              - missingProperty
+            properties: {}
+            """.trimIndent(),
+        )
+        val main = tempDir.resolve("external-warning-main.yaml").toFile()
+        main.writeText(
+            """
+            asyncapi: 3.0.0
+            info:
+              title: External warning
+              version: 1.0.0
+            components:
+              schemas:
+                External:
+                  ${'$'}ref: ./external-schema.yaml
+            """.trimIndent(),
+        )
+
+        val result = loader.load(main)
+
+        assertEquals(1, result.warnings.size, result.warnings.joinToString("\n"))
+        val warning = result.warnings.single()
+        assertEquals("external-schema.yaml", warning.sourceLocation?.file?.name)
+        assertEquals("external_schema.root.required", warning.path)
+        assertTrue(result.formatWarnings().contains("external-schema.yaml"))
+        assertFailsWith<UnsupportedOperationException> {
+            (result.warnings as MutableList<ValidationFinding>).clear()
+        }
     }
 
     @Test
@@ -185,5 +247,27 @@ class AsyncApiDocumentLoaderTest {
 
         assertEquals(1, loader.load(warningFile).warnings.size)
         assertEquals(emptyList(), loader.load(validFile).warnings)
+    }
+
+    @Test
+    fun `supports concurrent loads without sharing parser state`() {
+        val yamlFile = TestResources.file("parser/asyncapi/format-independent.yaml")
+        val jsonFile = TestResources.file("parser/asyncapi/format-independent.json")
+        val executor = Executors.newFixedThreadPool(4)
+
+        try {
+            val futures = (0 until 20).map { index ->
+                executor.submit<AsyncApiDocumentLoadResult> {
+                    loader.load(if (index % 2 == 0) yamlFile else jsonFile)
+                }
+            }
+            val results = futures.map { future -> future.get(30, TimeUnit.SECONDS) }
+
+            assertTrue(results.all { it.document == results.first().document })
+            assertTrue(results.all { it.warnings.isEmpty() })
+            assertTrue(results.all { it.sourceFiles.size == 1 })
+        } finally {
+            executor.shutdownNow()
+        }
     }
 }

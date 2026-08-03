@@ -19,7 +19,7 @@ import kotlin.reflect.KProperty0
  * Expected behavior is covered by:
  * - `AsyncApiParserTest`
  */
-class ModelRepository(
+internal class ModelRepository(
     private val sourceRepository: SourceRepository,
 ) {
 

@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.parser.version.objectMemberPolicy
  * This view owns member navigation and object-member policy after the source
  * node has been checked by [ParserNode.expectObject].
  */
-class ParserObjectNode internal constructor(
+internal class ParserObjectNode internal constructor(
     private val parserNode: ParserNode,
     private val documentObject: DocumentObject,
 ) {
