@@ -15,7 +15,7 @@ import java.util.Collections
  *
  * @property location source file, parser path, line, and column for this value
  */
-sealed interface DocumentNode {
+internal sealed interface DocumentNode {
     val location: SourceLocation
 }
 
@@ -28,7 +28,7 @@ sealed interface DocumentNode {
  * @param members members keyed by their document field names
  * @property location location at which the object value begins
  */
-class DocumentObject(
+internal class DocumentObject(
     members: Map<String, DocumentMember>,
     override val location: SourceLocation,
 ) : DocumentNode {
@@ -54,7 +54,7 @@ class DocumentObject(
  * @property keyLocation location at which the member name begins
  * @property value source-located value assigned to the member
  */
-data class DocumentMember(
+internal data class DocumentMember(
     val keyLocation: SourceLocation,
     val value: DocumentNode,
 )
@@ -68,7 +68,7 @@ data class DocumentMember(
  * @param elements values in document order
  * @property location location at which the array value begins
  */
-class DocumentArray(
+internal class DocumentArray(
     elements: List<DocumentNode>,
     override val location: SourceLocation,
 ) : DocumentNode {
@@ -81,7 +81,7 @@ class DocumentArray(
 }
 
 /** A string value and its source [location]. */
-data class DocumentString(
+internal data class DocumentString(
     val value: String,
     override val location: SourceLocation,
 ) : DocumentNode
@@ -92,13 +92,13 @@ data class DocumentString(
  * Equivalent YAML and JSON numbers use the same runtime [Number]
  * representation so parsers do not depend on reader-specific number types.
  */
-data class DocumentNumber(
+internal data class DocumentNumber(
     val value: Number,
     override val location: SourceLocation,
 ) : DocumentNode
 
 /** A boolean value and its source [location]. */
-data class DocumentBoolean(
+internal data class DocumentBoolean(
     val value: Boolean,
     override val location: SourceLocation,
 ) : DocumentNode
@@ -109,7 +109,7 @@ data class DocumentBoolean(
  * This node is present in the document tree and is therefore distinct from an
  * absent object member or unavailable array element.
  */
-data class DocumentNull(
+internal data class DocumentNull(
     override val location: SourceLocation,
 ) : DocumentNode
 

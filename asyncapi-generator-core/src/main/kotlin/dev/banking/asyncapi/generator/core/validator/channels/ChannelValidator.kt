@@ -28,7 +28,7 @@ import dev.banking.asyncapi.generator.core.validator.parameters.ParameterValidat
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class ChannelValidator(
+internal class ChannelValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

@@ -10,6 +10,7 @@ val result = AsyncApiDocumentLoader().load(file)
 val document = result.document
 val warnings = result.warnings
 val renderedWarnings = result.formatWarnings()
+val sourceFiles = result.sourceFiles
 ```
 
 Each call creates an isolated `AsyncApiContext`. The loader accepts `.yaml`,
@@ -17,15 +18,35 @@ Each call creates an isolated `AsyncApiContext`. The loader accepts `.yaml`,
 eagerly loads supported external references, and runs semantic validation.
 Reader, parser, external-reference, and validation errors are thrown. A
 successful result contains the existing `AsyncApiDocument` domain model and an
-immutable copy of validation warnings.
+immutable list of validation warnings. Warnings found while validating external
+documents or selected fragments are returned with root warnings, deduplicated
+by rule and source location, and are never logged by parser infrastructure.
+`formatWarnings()` returns an empty string when no warnings exist and otherwise
+renders source-aware snippets.
+
+`sourceFiles` is an immutable, deterministic set of canonical `File` values. It
+contains the root document, every loaded external document, and every external
+native Avro or Protobuf schema asset. Canonical files appear once even when
+multiple references or cycles reach them. Build frontends use this set for
+incremental input tracking.
+
+The loader is stateless. Every call owns a new context, repositories, warning
+collector, resource budget, and reader instances. Repeated and concurrent calls
+therefore cannot share parser state.
 
 Bundling and generation are not performed by this API.
 
+The loader, load result, domain model, validation findings, source locations,
+and caller-relevant diagnostics and exceptions form the supported API. The
+document tree, concrete readers, cursor types, contexts, repositories,
+registries, resolvers, version implementations, individual parsers, and
+individual validators are internal to the core module.
+
 ## Reader contract
 
-`DocumentReaderRegistry.read(File)` selects a reader by case-insensitive file
-extension. `DocumentReaderRegistry.read(DocumentSource)` uses the explicitly
-declared `DocumentFormat`.
+Inside the loader, `DocumentReaderRegistry` selects a reader by case-insensitive
+file extension. The registry, its `DocumentSource` overload, and both reader
+implementations are internal; external callers use `AsyncApiDocumentLoader`.
 
 Both readers return an `InputDocument` whose root is a `DocumentNode` and whose
 contents use the same semantic node categories:
@@ -55,6 +76,15 @@ valid strings. This prevents YAML-only key coercion from producing a document
 tree that could not be represented by equivalent JSON. YAML merge keys are
 rejected rather than being exposed as literal `<<` members; shared members must
 be written explicitly.
+
+YAML custom tags and unsupported node kinds are malformed input.
+Only JSON-compatible numeric spellings are accepted: YAML-only octal forms,
+non-finite numbers, and other YAML numeric representations are rejected rather
+than silently becoming different values. Timestamp-looking values remain
+strings. Plain `yes`, `no`, `on`, and `off` remain strings, while actual
+`true` and `false` tokens become booleans. A UTF-8 BOM is accepted, CRLF input
+retains correct source locations, and additional YAML or JSON documents after
+the root are rejected.
 
 The AsyncAPI parser requires the root cursor to contain an object. Any other
 root produces an `unexpected-value-type` parser diagnostic at the root source
@@ -86,8 +116,14 @@ the same default limits of 20 MiB for UTF-8 input and decoded document length,
 plus a nesting depth of 100. YAML additionally permits at most 50 expanded
 collection aliases. Numeric tokens are limited to 1,000 characters in both
 formats. Size, depth, alias, and numeric-token violations are reported as
-`ResourceLimitExceeded`. These limits bound untrusted input while remaining
-well above ordinary AsyncAPI contract sizes.
+`ResourceLimitExceeded`. An unrecognized SnakeYAML exception is
+`MalformedDocument`, not a resource-limit failure.
+
+`DocumentReadException` exposes structured information independently of its
+message: every subtype has `file`, failures with a known source mark have
+`location`, `DuplicateKey` has `memberName`, `UnsupportedFormat` has `format`,
+and `ResourceLimitExceeded` has `limit` and `maximum`. The original cause is
+retained where a library, decoding, or file-access failure exists.
 
 File input is decoded as strict UTF-8. Malformed byte sequences are rejected as
 `MalformedDocument` rather than being silently replaced before syntax parsing.
@@ -132,6 +168,24 @@ an unchecked cast.
 `toPlainValue()` communicates that source metadata is intentionally discarded
 at a free-form boundary.
 
+## Fixed-field object policy
+
+The AsyncAPI 3.0 parser profile owns the allowed-member set for each ordinary
+fixed-field object. Domain parsers select the relevant object type and do not
+repeat large field sets locally. An unknown non-extension member produces
+`parser.unexpected-object-member` at the member key. A specification extension
+is accepted when its name matches `x-` followed by letters, digits, dots,
+underscores, or hyphens.
+
+This policy applies to ordinary AsyncAPI objects such as Info, Server, Channel,
+Message, Operation, Components, Security Scheme, and their traits and nested
+fixed-field objects. It does not reinterpret patterned maps, bindings, Schema
+Objects, or deliberately free-form values as fixed-field objects.
+
+Unconditional required fields are parser-owned. In particular, an inline
+Operation Object requires both `action` and `channel`. Whether the referenced
+channel resolves to the correct semantic target remains validator-owned.
+
 ## Absent and null values
 
 Absence and explicit null are different parser states.
@@ -146,6 +200,12 @@ Callers must not use a nullable expectation merely to make malformed nulls
 disappear. Use it only when the corresponding domain contract permits explicit
 null. When presence itself is significant, retain the member cursor separately;
 `SchemaParser` does this for `default` through its `defaultSet` flag.
+
+`Channel.address` is a specification-defined nullable exception: absence and
+explicit null both produce a null domain value, while a non-string, non-null
+value is a structural parser error. JSON Schema nullability is expressed with a
+type union such as `type: [string, "null"]`; a Schema Object `type: null` is not
+a nullable schema.
 
 ## Parser diagnostics
 
@@ -174,24 +234,52 @@ Current categories are:
 | `parser.invalid-reference`                 | A reference is not a supported URI reference with JSON Pointer semantics |
 | `parser.reference-document-not-found`      | The external document does not exist or is unreadable                    |
 | `parser.reference-target-not-found`        | The JSON Pointer target does not exist in the loaded document            |
+| `parser.load-resource-limit-exceeded`      | One complete load exceeded a configured source/reference resource budget |
 
 Diagnostic messages may include targeted hints for common quoted scalar
 mistakes. The category and structured fields, rather than rendered prose, are
 the stable surface for programmatic assertions.
 
+## Internal identity and display paths
+
+Repositories identify nodes with a canonical source identifier and typed
+member/index segments. A rendered dot path is never parsed to recover identity.
+This distinguishes a component named `A.properties.x` from property `x` below
+component `A`, and distinguishes an object member named `"0"` from array index
+`0`.
+
+Simple names keep the existing display form. Ambiguous names use quoted bracket
+notation with JSON string escaping. For example:
+
+```text
+contract.root.components.schemas.Order
+contract.root.components.schemas["Order.properties.id"]
+contract.root.values["0"]
+contract.root.values[0]
+```
+
+`SourceLocation.path` and parser diagnostic paths are presentation values. The
+source and model repositories use the segment-aware address directly.
+
 ## Reference behavior
 
 A Reference Object must be an object containing a string `$ref`. A missing
-member produces a missing-required-member diagnostic; an explicit null or a
-non-string value produces an unexpected-value-type diagnostic. Domain parsers
-must attach the concrete `ReferenceCategoryKey` used to parse external
-fragments.
+member produces a missing-required-member diagnostic where a Reference Object
+is required; an explicit null or a non-string value produces an
+unexpected-value-type diagnostic at `$ref`. For reference-versus-inline fields,
+a present `$ref` controls discrimination. Once it is a valid string, sibling
+members are ignored as required by AsyncAPI 3.0 and are not checked against the
+inline object's member policy. Domain parsers attach the concrete
+`ReferenceCategoryKey` used to parse external fragments; the category is not
+inferred from substrings in the reference path.
 
-Internal references do not load a file. External paths are resolved relative to
-the source document that owns the reference. Canonical file paths distinguish
+Internal references do not load a file. Local relative paths and `file:` URIs
+are resolved relative to the source document that owns the reference. HTTP and
+other remote schemes are unsupported. Canonical file paths distinguish
 same-named files in different directories. URI percent encoding is decoded for
 file paths, and JSON Pointer `~0` and `~1` escapes are supported when selecting
-targets.
+targets. Numeric-looking object keys remain object members rather than being
+mistaken for array indexes.
 
 External targets have two modes:
 
@@ -221,15 +309,39 @@ fragment that owns it.
 Loading is eager and deduplicated. It preserves each file's source locations and
 does not bundle or inline the model.
 
+One loader call applies these additional load-wide defaults:
+
+| Resource | Default maximum |
+| --- | ---: |
+| Distinct canonical source documents | 256 |
+| Unique resolved file-and-pointer targets | 4,096 |
+| Acyclic external-reference depth | 64 |
+| Aggregate canonical source bytes | 64 MiB |
+| One native Avro or Protobuf schema asset | 20 MiB |
+
+Canonical sources and previously processed targets count once. Cycles therefore
+terminate without repeatedly consuming the budget. Native assets count toward
+aggregate bytes and use bounded strict UTF-8 decoding. A limit failure is
+`parser.load-resource-limit-exceeded` and exposes the limit, configured maximum,
+observed value, and source location of the reference that caused the load.
+
+Referenced local files are trusted build input. The loader deliberately has no
+project-root sandbox; adding one requires a separate configuration design.
+
 ## Schema Object behavior
 
 `SchemaParser` is specialized because Schema Objects are recursive and permit
 shapes that ordinary AsyncAPI objects do not:
 
-- Boolean schemas are represented as `SchemaInterface.BooleanSchema`.
+- Boolean schemas are represented as `SchemaInterface.BooleanSchema` only when
+  the YAML or JSON value is an actual boolean. Quoted `"true"` and `"false"`
+  values are strings and fail structural parsing.
 - String `$ref` values produce schema references.
-- `type` accepts a string, an array of strings, or explicit null as represented
-  by the existing model API.
+- An absent `type` is valid. A present `type` is parsed as a string, an array of
+  strings, or an explicit null retained through field registration. The
+  validator reports explicit null with the stable `JSONSCHEMA-TYPE` finding;
+  it is not treated as absence. Nullable schemas use a union such as
+  `type: [string, "null"]`.
 - Recursive keywords such as `properties`, `items`, `allOf`, `anyOf`, `oneOf`,
   `not`, conditional schemas, and schema-valued dependencies recurse through
   `SchemaParser`.
@@ -248,6 +360,14 @@ shapes that ordinary AsyncAPI objects do not:
   external schema assets.
 - Unknown `schemaFormat` values are rejected by the existing schema-format
   contract.
+
+Schema Objects are not subject to ordinary AsyncAPI fixed-member rejection.
+Unknown and unsupported keywords remain registered with their original values
+and locations so `SchemaValidator` can issue dialect or capability findings.
+Referencing a fragment from an OpenAPI-like or otherwise heterogeneous file
+does not switch parser dialects: the selected fragment still follows AsyncAPI
+3.0 Schema Object and JSON Schema Draft 7 behavior, while unrelated surrounding
+content is ignored.
 
 The schema parser constructs model shape. `SchemaValidator` remains responsible
 for semantic keyword policy and combinations.

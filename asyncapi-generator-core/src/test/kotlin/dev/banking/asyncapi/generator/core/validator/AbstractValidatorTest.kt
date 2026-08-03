@@ -14,7 +14,7 @@ import kotlin.test.fail
 
 abstract class AbstractValidatorTest {
 
-    protected val asyncApiContext = AsyncApiContext()
+    internal val asyncApiContext = AsyncApiContext()
     private val validatorFixtures = ValidatorFixtures(asyncApiContext)
 
     /**

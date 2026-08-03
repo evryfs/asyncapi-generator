@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.helpers
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
-class ModelRepositoryPrinter(private val modelRepository: ModelRepository) {
+internal class ModelRepositoryPrinter(private val modelRepository: ModelRepository) {
 
     fun printAll() {
         val entries = modelRepository.getModelsByInstance().values

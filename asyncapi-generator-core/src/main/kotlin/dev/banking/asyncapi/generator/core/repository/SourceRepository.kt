@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.parser.node.NodeAddress
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.util.UUID
@@ -14,7 +15,7 @@ import kotlin.math.min
  * - `ParserNodeFactoryTest`
  * - `AsyncApiRegistryTest`
  */
-class SourceRepository {
+internal class SourceRepository {
     data class Source(
         val file: File,
         val id: String,
@@ -29,8 +30,10 @@ class SourceRepository {
     // Map of node path → line number
     internal val lineMap = mutableMapOf<String, Int>()
 
-    // Map of node path → source location
-    private val locations = mutableMapOf<String, SourceLocation>()
+    // Parser identity is segment-aware. String paths are presentation indexes only.
+    private val locationsByAddress = mutableMapOf<NodeAddress, SourceLocation>()
+    private val addressesByDisplayPath = mutableMapOf<String, NodeAddress>()
+    private val standaloneLocationsByPath = mutableMapOf<String, SourceLocation>()
 
     private lateinit var current: Source
 
@@ -81,13 +84,28 @@ class SourceRepository {
         path: String,
         location: SourceLocation,
     ) {
-        locations[path] = location.copy(path = path)
+        standaloneLocationsByPath[path] = location.copy(path = path)
         registerLine(path, location.line)
+    }
+
+    internal fun registerLocation(
+        address: NodeAddress,
+        location: SourceLocation,
+    ) {
+        val displayPath = address.displayPath
+        locationsByAddress[address] = location.copy(path = displayPath)
+        addressesByDisplayPath[displayPath] = address
+        registerLine(displayPath, location.line)
     }
 
     fun getLine(path: String): Int? = lineMap[path]
 
-    fun getLocation(path: String): SourceLocation? = locations[path]
+    fun getLocation(path: String): SourceLocation? =
+        addressesByDisplayPath[path]?.let(locationsByAddress::get)
+            ?: standaloneLocationsByPath[path]
+
+    internal fun getLocation(address: NodeAddress): SourceLocation? =
+        locationsByAddress[address]
 
     fun getCurrentFile(): File = current.file
 
@@ -101,15 +119,44 @@ class SourceRepository {
 
     fun getAllLines(): Map<String, Int> = lineMap.toMap()
 
-    fun getAllLocations(): Map<String, SourceLocation> = locations.toMap()
+    fun getAllLocations(): Map<String, SourceLocation> =
+        buildMap {
+            locationsByAddress.forEach { (address, location) -> put(address.displayPath, location) }
+            putAll(standaloneLocationsByPath)
+        }
 
     fun findNearestLine(path: String): Int? {
         findNearestLocation(path)?.let { return it.line }
-        return nearestPaths(path).mapNotNull(lineMap::get).firstOrNull()
+        return lineMap[path]
     }
 
     fun findNearestLocation(path: String): SourceLocation? =
-        nearestPaths(path).mapNotNull(locations::get).firstOrNull()
+        getLocation(path)
+
+    internal fun findNearestLocation(address: NodeAddress): SourceLocation? =
+        address.ancestors().mapNotNull(locationsByAddress::get).firstOrNull()
+
+    internal fun resolveAddress(
+        sourceId: String,
+        pointerSegments: List<String>,
+    ): NodeAddress? {
+        var address = NodeAddress.root(sourceId)
+        if (address !in locationsByAddress) return null
+
+        pointerSegments.forEach { pointerSegment ->
+            val memberAddress = address.member(pointerSegment)
+            val indexAddress = pointerSegment
+                .takeIf(JSON_ARRAY_INDEX::matches)
+                ?.toIntOrNull()
+                ?.let(address::index)
+            address = when {
+                memberAddress in locationsByAddress -> memberAddress
+                indexAddress != null && indexAddress in locationsByAddress -> indexAddress
+                else -> return null
+            }
+        }
+        return address
+    }
 
     fun pathSnippet(
         path: String,
@@ -173,18 +220,7 @@ class SourceRepository {
         return candidate
     }
 
-    private fun nearestPaths(path: String): Sequence<String> = sequence {
-        val candidates = linkedSetOf(
-            path,
-            path.replace(Regex("""\[(\d+)]"""), ".$1"),
-            path.replace(Regex("""\[\d+]"""), ""),
-        )
-        candidates.forEach { candidate ->
-            var key = candidate
-            while (key.isNotEmpty()) {
-                yield(key)
-                key = key.substringBeforeLast(".", missingDelimiterValue = "")
-            }
-        }
+    private companion object {
+        val JSON_ARRAY_INDEX = Regex("""0|[1-9]\d*""")
     }
 }

@@ -20,6 +20,7 @@ components:
         authorizationCode:
           authorizationUrl: relative/authorize
           tokenUrl: https://example.com/token
+          availableScopes: {}
       scopes:
         - missing:scope
     InvalidOpenIdUrl:

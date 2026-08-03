@@ -51,7 +51,7 @@ import java.util.IdentityHashMap
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
 
-class SchemaValidator(
+internal class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -280,7 +280,18 @@ class SchemaValidator(
     }
 
     private fun validateType(node: Schema, contextString: String, results: ValidationCollector) {
-        val type = node.type ?: return
+        val type = node.type
+        if (type == null) {
+            if ("type" in asyncApiContext.getFieldNames(node)) {
+                results.error(
+                    SCHEMA_TYPE,
+                    "$contextString Schema 'type' field must be a string or an array of strings. Found: null",
+                    sourceLocation = asyncApiContext.getSourceLocation(node, "type"),
+                    doc = "https://www.learnjsonschema.com/draft7/validation/type/",
+                )
+            }
+            return
+        }
         val allowedTypes = setOf("string", "number", "integer", "boolean", "array", "object", "null")
         val contextString = "$contextString Schema"
         when (type) {

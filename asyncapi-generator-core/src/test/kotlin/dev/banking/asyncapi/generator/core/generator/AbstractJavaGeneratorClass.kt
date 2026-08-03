@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractJavaGeneratorClass {
-    protected val asyncApiContext = AsyncApiContext()
+    private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     protected val generator = AsyncApiGenerator()
 

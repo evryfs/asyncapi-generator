@@ -20,7 +20,7 @@ import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeVali
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class OperationTraitValidator(
+internal class OperationTraitValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

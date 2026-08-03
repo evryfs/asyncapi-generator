@@ -8,6 +8,9 @@ operations:
     channel:
       $ref: '#/channels/myChannel'
 operationCases:
+  MissingChannel:
+    invalidOperation:
+      action: send
   BooleanAction:
     invalidOperation:
       action: false

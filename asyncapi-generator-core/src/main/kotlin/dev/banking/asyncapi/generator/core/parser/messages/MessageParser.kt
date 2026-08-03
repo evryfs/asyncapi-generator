@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MESSAGE as MESSAGE_OBJECT
 
 /**
  * Parses AsyncAPI message objects from parser nodes.
@@ -19,7 +20,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * Expected behavior is covered by:
  * - `MessageParserTest`
  */
-class MessageParser(
+internal class MessageParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -39,10 +40,6 @@ class MessageParser(
 
     fun parseElement(parserNode: ParserNode): MessageInterface {
         val objectNode = parserNode.expectObject()
-        objectNode.expectOnlyMembers(
-            objectType = "Message Object",
-            allowedMembers = MESSAGE_OBJECT_MEMBERS,
-        )
         val reference = objectNode.optional($$"$ref")?.expect<String>()
         return if (reference != null) {
             MessageInterface.MessageReference(
@@ -52,6 +49,7 @@ class MessageParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(MESSAGE_OBJECT)
             MessageInterface.MessageInline(
                 Message(
                     name = objectNode.optional("name")?.expect<String>(),
@@ -72,23 +70,4 @@ class MessageParser(
         }
     }
 
-    private companion object {
-        val MESSAGE_OBJECT_MEMBERS =
-            setOf(
-                $$"$ref",
-                "headers",
-                "payload",
-                "correlationId",
-                "contentType",
-                "name",
-                "title",
-                "summary",
-                "description",
-                "tags",
-                "externalDocs",
-                "bindings",
-                "examples",
-                "traits",
-            )
-    }
 }

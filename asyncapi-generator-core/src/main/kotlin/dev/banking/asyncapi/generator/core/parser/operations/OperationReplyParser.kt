@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION_REPLY as OPERATION_REPLY_OBJECT
 
 /**
  * Parses AsyncAPI operation reply objects from parser nodes.
@@ -16,7 +17,7 @@ import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
  * Expected behavior is covered by:
  * - `OperationReplyParserTest`
  */
-class OperationReplyParser(
+internal class OperationReplyParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -40,6 +41,7 @@ class OperationReplyParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {
+            objectNode.expectOnlyMembers(OPERATION_REPLY_OBJECT)
             OperationReplyInterface.OperationReplyInline(
                 OperationReply(
                     address = objectNode.optional("address")?.let(operationReplyAddressParser::parseElement),

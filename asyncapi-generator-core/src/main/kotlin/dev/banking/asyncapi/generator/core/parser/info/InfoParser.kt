@@ -7,6 +7,9 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CONTACT
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.INFO
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.LICENSE
 
 /**
  * Parses the AsyncAPI info object from parser nodes.
@@ -14,7 +17,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
  * Expected behavior is covered by:
  * - `InfoParserTest`
  */
-class InfoParser(
+internal class InfoParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -23,6 +26,7 @@ class InfoParser(
 
     fun parseMap(parserNode: ParserNode): Info {
         val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(INFO)
         return Info(
             title = objectNode.required("title").expect<String>(),
             version = objectNode.required("version").expect<String>(),
@@ -38,6 +42,7 @@ class InfoParser(
 
     private fun parseContact(parserNode: ParserNode): Contact {
         val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(CONTACT)
         return Contact(
             name = objectNode.optional("name")?.expect<String>(),
             url = objectNode.optional("url")?.expect<String>(),
@@ -47,6 +52,7 @@ class InfoParser(
 
     private fun parseLicense(parserNode: ParserNode): License {
         val objectNode = parserNode.expectObject()
+        objectNode.expectOnlyMembers(LICENSE)
         return License(
             name = objectNode.required("name").expect<String>(),
             url = objectNode.optional("url")?.expect<String>()

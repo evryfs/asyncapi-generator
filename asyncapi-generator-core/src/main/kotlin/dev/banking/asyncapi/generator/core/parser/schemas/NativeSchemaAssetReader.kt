@@ -2,10 +2,9 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.context.ExternalReferencePathResolver
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.NativeSchemaAssetReadFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentString
 import java.io.IOException
 
 /**
@@ -18,17 +17,17 @@ import java.io.IOException
  * Expected behavior is covered by:
  * - `MultiFormatSchemaParserTest`
  */
-class NativeSchemaAssetReader(
+internal class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
 ) {
     private val pathResolver = ExternalReferencePathResolver()
 
     fun readIfExternalReference(schemaNode: ParserNode): String? {
-        val reference = schemaNode.externalReferenceValue() ?: return null
-        val sourceId = schemaNode.path.substringBefore(".root", missingDelimiterValue = "")
+        val referenceMember = (schemaNode.node as? DocumentObject)?.member("\$ref") ?: return null
+        val referenceNode = schemaNode.member("\$ref", referenceMember.value)
+        val reference = referenceNode.expect<String>().takeIf { it.isNotBlank() } ?: return null
         val sourceFile =
-            sourceId.takeIf(String::isNotBlank)
-                ?.let(asyncApiContext::findFileById)
+            asyncApiContext.findFileById(schemaNode.address.sourceId)
                 ?: asyncApiContext.getCurrentFile()
         val file =
             pathResolver.resolve(
@@ -37,20 +36,25 @@ class NativeSchemaAssetReader(
             )?.file ?: return null
 
         return try {
-            file.readText()
+            asyncApiContext.readNativeSchemaAsset(
+                file = file,
+                location = referenceNode.sourceLocation,
+                path = referenceNode.path,
+            )
         } catch (exception: IOException) {
             throw NativeSchemaAssetReadFailure(
                 reference = reference,
-                path = schemaNode.path,
+                path = referenceNode.path,
+                context = asyncApiContext,
+                reason = exception.message ?: exception::class.simpleName.orEmpty(),
+            )
+        } catch (exception: SecurityException) {
+            throw NativeSchemaAssetReadFailure(
+                reference = reference,
+                path = referenceNode.path,
                 context = asyncApiContext,
                 reason = exception.message ?: exception::class.simpleName.orEmpty(),
             )
         }
-    }
-
-    private fun ParserNode.externalReferenceValue(): String? {
-        val map = node as? DocumentObject ?: return null
-        val reference = (map["\$ref"] as? DocumentString)?.value ?: return null
-        return reference.takeIf { it.isNotBlank() }
     }
 }

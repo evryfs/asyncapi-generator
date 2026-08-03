@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.LICENS
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class LicenseValidator(
+internal class LicenseValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

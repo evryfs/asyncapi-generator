@@ -129,7 +129,9 @@ class BindingValidatorTest : AbstractValidatorTest() {
         assertRule(
             results,
             KAFKA_CLEANUP_POLICY,
-            path = "asyncapi_validator_binding_invalid.root.components.channelBindings.InvalidChannel.kafka.topicConfiguration.cleanup.policy",
+            path =
+                "asyncapi_validator_binding_invalid.root.components.channelBindings.InvalidChannel.kafka." +
+                    "topicConfiguration[\"cleanup.policy\"]",
             line = 25,
         )
         assertRule(

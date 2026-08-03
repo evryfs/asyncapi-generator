@@ -11,7 +11,7 @@ import java.io.File
  * Expected behavior is covered by:
  * - `SchemaParserTest`
  */
-class ExternalReferencePathResolver {
+internal class ExternalReferencePathResolver {
     data class ResolvedReference(
         val file: File,
         val pointer: JsonPointer,

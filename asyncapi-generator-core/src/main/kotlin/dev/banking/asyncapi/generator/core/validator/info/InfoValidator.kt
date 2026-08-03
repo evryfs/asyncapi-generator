@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class InfoValidator(
+internal class InfoValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

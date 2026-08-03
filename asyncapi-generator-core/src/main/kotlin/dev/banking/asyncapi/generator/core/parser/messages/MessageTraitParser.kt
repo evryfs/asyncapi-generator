@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MESSAGE_TRAIT as MESSAGE_TRAIT_OBJECT
 
 /**
  * Parses AsyncAPI message trait objects from parser nodes.
@@ -20,7 +21,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * - `MessageTraitParserTest`
  * - `MessageParserTest`
  */
-class MessageTraitParser(
+internal class MessageTraitParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -54,6 +55,7 @@ class MessageTraitParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {
+            objectNode.expectOnlyMembers(MESSAGE_TRAIT_OBJECT)
             MessageTraitInterface.InlineMessageTrait(
                 MessageTrait(
                     headers = objectNode.optional("headers")?.let(schemaParser::parseElement),

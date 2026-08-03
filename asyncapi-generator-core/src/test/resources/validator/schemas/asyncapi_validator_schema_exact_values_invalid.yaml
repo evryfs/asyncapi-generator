@@ -21,3 +21,5 @@ components:
       default: null
     UntypedNonStringEnum:
       enum: [one, 2]
+    ExplicitNullType:
+      type: null

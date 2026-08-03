@@ -132,7 +132,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
             results,
             rule = SERVER_NAME_FORMAT,
             sourceFile = "asyncapi_validator_server_name_invalid.yaml",
-            path = "asyncapi_validator_server_name_invalid.root.servers.invalid.name",
+            path = "asyncapi_validator_server_name_invalid.root.servers[\"invalid.name\"]",
             line = 6,
         )
     }

@@ -34,7 +34,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEach
 
-class ComponentValidator(
+internal class ComponentValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.version
 
 /** Exact AsyncAPI specification version declared by an input document. */
-data class AsyncApiSpecificationVersion(
+internal data class AsyncApiSpecificationVersion(
     val raw: String,
     val major: Int,
     val minor: Int,

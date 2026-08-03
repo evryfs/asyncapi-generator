@@ -27,46 +27,46 @@ internal object ParserValueExpectation {
     internal fun expect(
         node: DocumentNode,
         expectedType: KType,
-        path: String,
+        address: NodeAddress,
         context: AsyncApiContext,
     ): Any? {
         if (node is DocumentNull) {
             if (expectedType.isMarkedNullable) {
                 return null
             }
-            unexpectedType(node, expectedType, path, context)
+            unexpectedType(node, expectedType, address, context)
         }
 
         return when (expectedType.classifier) {
-            List::class -> expectList(node, expectedType, path, context)
-            Map::class -> expectMap(node, expectedType, path, context)
+            List::class -> expectList(node, expectedType, address, context)
+            Map::class -> expectMap(node, expectedType, address, context)
             Any::class -> node.toValue()
-            else -> expectScalar(node, expectedType, path, context)
+            else -> expectScalar(node, expectedType, address, context)
         }
     }
 
     private fun expectList(
         node: DocumentNode,
         expectedType: KType,
-        path: String,
+        address: NodeAddress,
         context: AsyncApiContext,
     ): List<Any?> {
         val array = node as? DocumentArray
-            ?: unexpectedType(node, expectedType, path, context)
+            ?: unexpectedType(node, expectedType, address, context)
         val elementType = expectedType.arguments.singleOrNull()?.type ?: typeOf<Any?>()
         return array.elements.mapIndexed { index, element ->
-            expect(element, elementType, "$path[$index]", context)
+            expect(element, elementType, address.index(index), context)
         }
     }
 
     private fun expectMap(
         node: DocumentNode,
         expectedType: KType,
-        path: String,
+        address: NodeAddress,
         context: AsyncApiContext,
     ): Map<Any?, Any?> {
         val objectNode = node as? DocumentObject
-            ?: unexpectedType(node, expectedType, path, context)
+            ?: unexpectedType(node, expectedType, address, context)
         val keyType = expectedType.arguments.getOrNull(0)?.type ?: typeOf<Any?>()
         val valueType = expectedType.arguments.getOrNull(1)?.type ?: typeOf<Any?>()
         return buildMap {
@@ -74,12 +74,12 @@ internal object ParserValueExpectation {
                 val parsedKey = expect(
                     node = DocumentString(name, member.keyLocation),
                     expectedType = keyType,
-                    path = "$path.$name",
+                    address = address.member(name),
                     context = context,
                 )
                 put(
                     parsedKey,
-                    expect(member.value, valueType, "$path.$name", context),
+                    expect(member.value, valueType, address.member(name), context),
                 )
             }
         }
@@ -88,21 +88,21 @@ internal object ParserValueExpectation {
     private fun expectScalar(
         node: DocumentNode,
         expectedType: KType,
-        path: String,
+        address: NodeAddress,
         context: AsyncApiContext,
     ): Any {
         val value = node.toValue()
-            ?: unexpectedType(node, expectedType, path, context)
+            ?: unexpectedType(node, expectedType, address, context)
         val expectedClass = expectedType.classifier as? KClass<*>
-            ?: unexpectedType(node, expectedType, path, context)
+            ?: unexpectedType(node, expectedType, address, context)
         return value.takeIf(expectedClass::isInstance)
-            ?: unexpectedType(node, expectedType, path, context)
+            ?: unexpectedType(node, expectedType, address, context)
     }
 
     internal fun unexpectedType(
         node: DocumentNode,
         expectedType: KType,
-        path: String,
+        address: NodeAddress,
         context: AsyncApiContext,
     ): Nothing =
         throw AsyncApiParseException.ParserDiagnosticFailure(
@@ -110,8 +110,8 @@ internal object ParserValueExpectation {
                 expectedType = renderType(expectedType),
                 actualType = actualType(node),
                 actualValue = node.toValue(),
-                path = path,
-                sourceLocation = node.location,
+                path = address.displayPath,
+                sourceLocation = node.location.copy(path = address.documentPath),
             ),
             context = context,
         )

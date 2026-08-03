@@ -14,7 +14,7 @@ import java.io.File
  * - `DocumentReaderRegistryTest`
  * - `YamlDocumentReaderTest`
  */
-data class DocumentSource(
+internal data class DocumentSource(
     val id: String,
     val file: File,
     val content: String,

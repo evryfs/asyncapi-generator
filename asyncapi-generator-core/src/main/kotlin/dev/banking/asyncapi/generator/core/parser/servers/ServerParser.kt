@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER as SERVER_BINDING
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SERVER as SERVER_OBJECT
 
 /**
  * Parses AsyncAPI server objects from parser nodes.
@@ -18,7 +19,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
  * Expected behavior is covered by:
  * - `ServerParserTest`
  */
-class ServerParser(
+internal class ServerParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -45,6 +46,7 @@ class ServerParser(
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         } else {
+            objectNode.expectOnlyMembers(SERVER_OBJECT)
             ServerInterface.ServerInline(
                 Server(
                     host = objectNode.required("host").expect<String>(),

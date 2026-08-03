@@ -15,22 +15,33 @@ import kotlin.reflect.typeOf
  * - `ParserNodeTest`
  * - parser package tests
  */
-data class ParserNode(
+internal class ParserNode internal constructor(
     val name: String,
     val node: DocumentNode,
-    val path: String,
+    @PublishedApi
+    internal val address: NodeAddress,
     val context: AsyncApiContext,
     val profile: AsyncApiParserProfile? = null,
 ) {
 
-    internal fun child(
+    val path: String
+        get() = address.displayPath
+
+    internal val sourceLocation
+        get() = node.location.copy(path = address.documentPath)
+
+    internal fun member(
         name: String,
         node: DocumentNode,
-        path: String,
-    ): ParserNode = ParserNode(name, node, path, context, profile)
+    ): ParserNode = ParserNode(name, node, address.member(name), context, profile)
+
+    internal fun index(
+        index: Int,
+        node: DocumentNode,
+    ): ParserNode = ParserNode("$name[$index]", node, address.index(index), context, profile)
 
     fun withProfile(profile: AsyncApiParserProfile): ParserNode =
-        copy(profile = profile)
+        ParserNode(name, node, address, context, profile)
 
     /** Requires this value to be an object and exposes object navigation. */
     fun expectObject(): ParserObjectNode =
@@ -40,7 +51,7 @@ data class ParserNode(
                 ?: ParserValueExpectation.unexpectedType(
                     node = node,
                     expectedType = typeOf<Map<String, Any?>>(),
-                    path = path,
+                    address = address,
                     context = context,
                 ),
         )
@@ -53,7 +64,7 @@ data class ParserNode(
                 ?: ParserValueExpectation.unexpectedType(
                     node = node,
                     expectedType = typeOf<List<Any?>>(),
-                    path = path,
+                    address = address,
                     context = context,
                 ),
         )
@@ -63,7 +74,7 @@ data class ParserNode(
             ParserValueExpectation.expect(
                 node = node,
                 expectedType = typeOf<T>(),
-                path = path,
+                address = address,
                 context = context,
             ),
         )

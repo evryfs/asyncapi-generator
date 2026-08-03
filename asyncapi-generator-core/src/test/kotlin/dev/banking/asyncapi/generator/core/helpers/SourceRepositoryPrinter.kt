@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.helpers
 
 import dev.banking.asyncapi.generator.core.repository.SourceRepository
 
-class SourceRepositoryPrinter(private val sourceRepository: SourceRepository) {
+internal class SourceRepositoryPrinter(private val sourceRepository: SourceRepository) {
 
     fun printSources() {
         val sources = sourceRepository.getAllSources()

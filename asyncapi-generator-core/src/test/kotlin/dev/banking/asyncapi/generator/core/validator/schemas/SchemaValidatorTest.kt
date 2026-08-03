@@ -90,7 +90,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     fun `type arrays enum equality and explicit null values use exact semantics`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_invalid.yaml")
 
-        assertEquals(7, results.errors.size)
+        assertEquals(8, results.errors.size)
         assertRule(results, SCHEMA_TYPE_ARRAY_NONEMPTY, path = exactValuesPath("EmptyTypeArray.type"), line = 8)
         assertRule(results, SCHEMA_TYPE_ARRAY_UNIQUE, path = exactValuesPath("DuplicateTypeArray.type"), line = 10)
         assertRule(results, SCHEMA_TYPE, path = exactValuesPath("UnnormalizedType.type"), line = 12)
@@ -98,6 +98,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertRule(results, SCHEMA_CONST_TYPE, path = exactValuesPath("NullConstForString.const"), line = 18)
         assertRule(results, SCHEMA_DEFAULT_TYPE, path = exactValuesPath("NullDefaultForString.default"), line = 21)
         assertRule(results, SCHEMA_UNTYPED_ENUM, path = exactValuesPath("UntypedNonStringEnum.enum"), line = 23)
+        assertRule(results, SCHEMA_TYPE, path = exactValuesPath("ExplicitNullType.type"), line = 25)
     }
 
     @Test
@@ -332,6 +333,24 @@ class SchemaValidatorTest : AbstractValidatorTest() {
             finding.path,
         )
         assertEquals(13, finding.line)
+    }
+
+    @Test
+    fun `external json schema explicit null type reports its original source`() {
+        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
+            parse("validator/schemas/external/asyncapi_external_null_type.yaml")
+        }
+
+        assertEquals(1, exception.errors.size)
+        val finding = exception.errors.single()
+        assertEquals(SCHEMA_TYPE.code, finding.code)
+        assertEquals(ERROR, finding.severity)
+        assertEquals("foreign_container_null_type.json", finding.sourceLocation?.file?.name)
+        assertEquals(
+            "foreign_container_null_type.root.components.schemas.ExternalPayload.type",
+            finding.path,
+        )
+        assertEquals(12, finding.line)
     }
 
     @Test

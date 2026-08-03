@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDIN
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class BindingValidator(
+internal class BindingValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
     private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }

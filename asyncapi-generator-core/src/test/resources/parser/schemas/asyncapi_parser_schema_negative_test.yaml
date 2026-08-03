@@ -39,8 +39,6 @@ components:
         invalid:
           type: string
 
-    QuotedBooleanSchema: "true"
-
     TupleItemsSchema:
       type: array
       items:

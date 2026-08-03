@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION_TRAIT as OPERATION_TRAIT_OBJECT
 
 /**
  * Parses AsyncAPI operation trait objects from parser nodes.
@@ -19,7 +20,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
  * - `OperationTraitParserTest`
  * - `OperationParserTest`
  */
-class OperationTraitParser(
+internal class OperationTraitParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -51,6 +52,7 @@ class OperationTraitParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {
+            objectNode.expectOnlyMembers(OPERATION_TRAIT_OBJECT)
             OperationTraitInterface.OperationTraitInline(
                 OperationTrait(
                     title = objectNode.optional("title")?.expect<String>(),

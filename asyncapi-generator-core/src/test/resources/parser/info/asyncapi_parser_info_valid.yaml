@@ -26,7 +26,6 @@ infoWithExtensions:
       - enabled: true
         limit: 2
   version: 2.0.0
-  X-ignored: case-sensitive
   x-null: null
   description: Extensions preserve source order
   x-array:
@@ -36,4 +35,3 @@ infoWithExtensions:
 infoWithoutExtensions:
   title: No Extensions Info Test
   version: 3.0.0
-  X-ignored: case-sensitive

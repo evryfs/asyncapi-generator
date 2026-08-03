@@ -16,10 +16,7 @@ import java.io.IOException
  * Expected behavior is covered by:
  * - `DocumentReaderRegistryTest`
  */
-object DocumentReaderRegistry {
-    private val yamlReader = YamlDocumentReader()
-    private val jsonReader = JsonDocumentReader()
-
+internal object DocumentReaderRegistry {
     fun read(file: File): InputDocument {
         val format = DocumentFormat.fromFile(file)
             ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
@@ -43,7 +40,7 @@ object DocumentReaderRegistry {
 
     fun read(source: DocumentSource): InputDocument =
         when (source.format) {
-            DocumentFormat.YAML -> yamlReader.read(source)
-            DocumentFormat.JSON -> jsonReader.read(source)
+            DocumentFormat.YAML -> YamlDocumentReader().read(source)
+            DocumentFormat.JSON -> JsonDocumentReader().read(source)
         }
 }

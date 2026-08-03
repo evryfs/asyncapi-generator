@@ -10,7 +10,7 @@ import java.io.File
  * Expected behavior is covered by:
  * - `DocumentReaderRegistryTest`
  */
-enum class DocumentFormat(
+internal enum class DocumentFormat(
     val extensions: Set<String>,
 ) {
     YAML(setOf("yaml", "yml")),

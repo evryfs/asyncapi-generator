@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.messages
 import dev.banking.asyncapi.generator.core.model.messages.MessageExample
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MESSAGE_EXAMPLE
 
 /**
  * Parses AsyncAPI message example objects from parser nodes.
@@ -11,13 +12,14 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
  * - `MessageExampleParserTest`
  * - `MessageParserTest`
  */
-class MessageExampleParser(
+internal class MessageExampleParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
     fun parseList(parserNode: ParserNode): List<MessageExample> = buildList {
         parserNode.expectArray().elements().forEach { node ->
             val objectNode = node.expectObject()
+            objectNode.expectOnlyMembers(MESSAGE_EXAMPLE)
             val messageExample = MessageExample(
                 headers = objectNode.optional("headers")?.expect<Map<String, Any?>>(),
                 payload = objectNode.optional("payload")?.toPlainValue(),

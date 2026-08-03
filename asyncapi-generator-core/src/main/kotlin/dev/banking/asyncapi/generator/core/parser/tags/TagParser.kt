@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.TAG as TAG_OBJECT
 
 /**
  * Parses AsyncAPI tag objects from parser nodes.
@@ -14,7 +15,7 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
  * Expected behavior is covered by:
  * - `TagParserTest`
  */
-class TagParser(
+internal class TagParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 
@@ -43,6 +44,7 @@ class TagParser(
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         } else {
+            objectNode.expectOnlyMembers(TAG_OBJECT)
             TagInterface.TagInline(
                 Tag(
                     name = objectNode.required("name").expect<String>(),

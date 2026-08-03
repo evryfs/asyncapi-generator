@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_ENUM
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
-class ServerVariableValidator(
+internal class ServerVariableValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

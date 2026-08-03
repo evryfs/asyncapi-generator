@@ -98,7 +98,7 @@ components:
         - $ref: '#/components/schemas/simpleNumber'
         - type: boolean
       not:
-        type: null
+        type: "null"
 
     # Conditional
     conditionalExample:

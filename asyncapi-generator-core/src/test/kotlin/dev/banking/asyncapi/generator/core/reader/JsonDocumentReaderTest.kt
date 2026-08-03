@@ -58,9 +58,12 @@ class JsonDocumentReaderTest {
             format = DocumentFormat.JSON,
         )
 
-        assertFailsWith<DocumentReadException.MalformedDocument> {
+        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
             reader.read(source)
         }
+        assertEquals(source.file, failure.file)
+        assertNotNull(failure.location)
+        assertNotNull(failure.cause)
     }
 
     @Test
@@ -109,6 +112,9 @@ class JsonDocumentReaderTest {
             reader.read(source)
         }
 
+        assertEquals(source.file, failure.file)
+        assertEquals("title", failure.memberName)
+        assertEquals("root.info.title", failure.location?.path)
         assertTrue(failure.message.orEmpty().contains("title"))
         assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
     }
@@ -130,6 +136,8 @@ class JsonDocumentReaderTest {
         val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             constrainedReader.read(source)
         }
+        assertEquals(DocumentResourceLimit.NESTING_DEPTH, failure.limit)
+        assertEquals(2L, failure.maximum)
         assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
     }
 

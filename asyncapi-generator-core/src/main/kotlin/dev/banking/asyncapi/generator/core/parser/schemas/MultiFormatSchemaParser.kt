@@ -21,7 +21,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
  * - `MultiFormatSchemaParserTest`
  * - `SchemaParserTest`
  */
-class MultiFormatSchemaParser(
+internal class MultiFormatSchemaParser(
     val asyncApiContext: AsyncApiContext,
 ) {
 

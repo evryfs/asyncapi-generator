@@ -34,16 +34,4 @@ class AsyncApiRegistryTest {
         assertEquals(4, context.sourceRepository.getLine("source_map.root.info.title"))
         assertEquals(6, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
     }
-
-    @Test
-    fun `readYaml delegates to format independent reader`() {
-        val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
-        val root = AsyncApiRegistry.readYaml(file, context)
-        assertEquals("source_map.root", root.path)
-        val title = root.expectObject().optional("info")?.let { info ->
-            info.expectObject().optional("title")?.expect<String>()
-        }
-        assertEquals("Demo", title)
-    }
 }

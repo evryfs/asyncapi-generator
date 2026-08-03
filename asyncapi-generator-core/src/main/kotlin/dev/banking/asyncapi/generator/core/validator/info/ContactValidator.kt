@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTAC
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class ContactValidator(
+internal class ContactValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

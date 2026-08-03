@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class SecuritySchemeValidator(
+internal class SecuritySchemeValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
     private val oAuthFlowsValidator = OAuthFlowsValidator(asyncApiContext)

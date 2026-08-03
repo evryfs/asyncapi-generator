@@ -6,9 +6,9 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingForma
 
 sealed class AsyncApiValidateException(message: String) : Exception(message) {
 
-    class ValidateError(
+    class ValidateError internal constructor(
         val errors: List<ValidationFinding>,
-        val context: AsyncApiContext
+        context: AsyncApiContext,
     ) : AsyncApiValidateException(
         format(
             title = "Validation failed with ${errors.size} error(s):",

@@ -21,7 +21,7 @@ import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class MessageTraitValidator(
+internal class MessageTraitValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 

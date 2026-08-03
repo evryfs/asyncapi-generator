@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
-class ParameterValidator(
+internal class ParameterValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
 
