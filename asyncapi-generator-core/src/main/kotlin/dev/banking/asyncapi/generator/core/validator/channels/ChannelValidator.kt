@@ -2,24 +2,13 @@ package dev.banking.asyncapi.generator.core.validator.channels
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
-import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_BINDINGS_EMPTY
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_AMBIGUOUS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_SERVERS_EMPTY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -120,112 +109,43 @@ internal class ChannelValidator(
 
     private fun validateMessages(node: Channel, contextString: String, results: ValidationCollector) {
         val messages = node.messages ?: return
-        checkAmbiguity(node, messages, contextString, results)
         messages.forEach { (messageName, messageInterface) ->
-            val contextString = "$contextString Message '$messageName'"
-            when (messageInterface) {
-                is MessageInterface.MessageInline ->
-                    messageValidator.validate(messageInterface.message, contextString, results)
-
-                is MessageInterface.MessageReference ->
-                    referenceResolver.resolve(messageInterface.reference, MESSAGE, contextString, results)
-            }
+            messageValidator.validateInterface(
+                messageInterface,
+                "$contextString Message '$messageName'",
+                results,
+            )
         }
     }
 
     private fun validateServers(node: Channel, contextString: String, results: ValidationCollector) {
-        val servers = node.servers ?: return
-        if (servers.isEmpty()) {
-            results.warn(
-                CHANNEL_SERVERS_EMPTY,
-                "$contextString defines an empty 'servers' array. It will be available on all servers.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::servers),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
-            )
-        }
-        servers.forEachIndexed { index, reference ->
+        node.servers?.forEachIndexed { index, reference ->
             referenceResolver.resolve(reference, SERVER, "$contextString Server[$index]", results)
         }
     }
 
     private fun validateTags(node: Channel, contextString: String, results: ValidationCollector) {
-        val tags = node.tags ?: return
-        tags.forEachIndexed { index, tagInterface ->
-            val contextString = "$contextString Tag[$index]"
-            when (tagInterface) {
-                is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, contextString, results)
-
-                is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
-            }
-        }
+        tagValidator.validateList(node.tags, contextString, results)
     }
 
     private fun validateParameters(node: Channel, contextString: String, results: ValidationCollector) {
         val parameters = node.parameters ?: return
         parameters.forEach { (parameterName, parameterInterface) ->
-            val contextString = "$contextString Parameter '$parameterName'"
-            parameterValidator.validateInterface(parameterInterface, contextString, results, parameterName)
+            val context = "$contextString Parameter '$parameterName'"
+            parameterValidator.validateInterface(parameterInterface, context, results, parameterName)
         }
     }
 
     private fun validateExternalDocs(node: Channel, contextString: String, results: ValidationCollector) {
-        val contextString = "$contextString ExternalDocs"
-        when (val docs = node.externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
-
-            null -> {}
-        }
+        val externalDocs = node.externalDocs ?: return
+        externalDocsValidator.validateInterface(
+            externalDocs,
+            "$contextString ExternalDocs",
+            results,
+        )
     }
 
     private fun validateBindings(node: Channel, contextString: String, results: ValidationCollector) {
-        val bindings = node.bindings ?: return
-        if (bindings.isEmpty()) {
-            results.warn(
-                CHANNEL_BINDINGS_EMPTY,
-                "$contextString defines an empty 'bindings' object. Can be omitted if no bindings are defined.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::bindings),
-            )
-            return
-        }
-        bindings.forEach { (bindingName, bindingInterface) ->
-            val contextString = "$contextString Binding '$bindingName'"
-            when (bindingInterface) {
-                is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, contextString, results)
-
-                is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
-            }
-        }
-    }
-
-    private fun checkAmbiguity(
-        node: Channel,
-        messages: Map<String, MessageInterface>,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        val refMap = mutableMapOf<String, String>()
-        messages.forEach { (msgName, msgInterface) ->
-            if (msgInterface is MessageInterface.MessageReference) {
-                val ref = msgInterface.reference.ref
-                if (refMap.containsKey(ref)) {
-                    results.warn(
-                        CHANNEL_MESSAGES_AMBIGUOUS,
-                        "$contextString contains ambiguous messages which may be indistinguishable at runtime.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
-                        doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
-                    )
-                } else {
-                    refMap[ref] = msgName
-                }
-            }
-        }
+        bindingValidator.validateMap(node.bindings, contextString, results)
     }
 }

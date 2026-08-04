@@ -1,19 +1,12 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_MESSAGES_AMBIGUOUS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_SERVERS_EMPTY
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_BINDINGS_EMPTY
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 class ChannelValidatorTest : AbstractValidatorTest() {
 
@@ -23,24 +16,34 @@ class ChannelValidatorTest : AbstractValidatorTest() {
     fun `channel address parameter missing definition throws validation error`() {
         val document = parse("validator/channels/asyncapi_validator_channel_parameter_mismatch.yaml")
         val validationResults = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(validationResults)
+
+        assertEquals(2, validationResults.errors.size)
+        val missing = validationResults.findings.single { finding ->
+            finding.code == CHANNEL_PARAMETER_UNDEFINED.code
         }
-        assertEquals(2, exception.errors.size, "Expected missing and unused parameter errors.")
-        assertRule(
-            validationResults,
-            rule = CHANNEL_PARAMETER_UNDEFINED,
-            sourceFile = "asyncapi_validator_channel_parameter_mismatch.yaml",
-            path = "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.address",
-            line = 7,
+        assertEquals(
+            "asyncapi_validator_channel_parameter_mismatch.yaml",
+            missing.sourceLocation?.file?.name,
         )
-        assertRule(
-            validationResults,
-            rule = CHANNEL_PARAMETER_UNUSED,
-            sourceFile = "asyncapi_validator_channel_parameter_mismatch.yaml",
-            path = "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.parameters",
-            line = 12,
+        assertEquals(
+            "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.address",
+            missing.path,
         )
+        assertEquals(7, missing.line)
+        val unused = validationResults.findings.single { finding ->
+            finding.code == CHANNEL_PARAMETER_UNUSED.code
+        }
+        assertEquals(CHANNEL_PARAMETER_UNUSED.severity, unused.severity)
+        assertEquals(CHANNEL_PARAMETER_UNUSED.concern, unused.concern)
+        assertEquals(
+            "asyncapi_validator_channel_parameter_mismatch.yaml",
+            unused.sourceLocation?.file?.name,
+        )
+        assertEquals(
+            "asyncapi_validator_channel_parameter_mismatch.root.channels.userUpdates.parameters",
+            unused.path,
+        )
+        assertEquals(12, unused.line)
     }
 
     @Test
@@ -49,48 +52,33 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val validationResults = asyncApiValidator.validate(document)
 
         assertEquals(1, validationResults.errors.size)
-        assertRule(
-            validationResults,
-            rule = CHANNEL_PARAMETER_UNUSED,
-            sourceFile = "asyncapi_validator_channel_unused_parameter.yaml",
-            path = "asyncapi_validator_channel_unused_parameter.root.channels.userUpdates.parameters",
-            line = 12,
+        val unused = validationResults.findings.single()
+        assertEquals(CHANNEL_PARAMETER_UNUSED.code, unused.code)
+        assertEquals(CHANNEL_PARAMETER_UNUSED.severity, unused.severity)
+        assertEquals(CHANNEL_PARAMETER_UNUSED.concern, unused.concern)
+        assertEquals(
+            "asyncapi_validator_channel_unused_parameter.yaml",
+            unused.sourceLocation?.file?.name,
         )
-    }
-
-    @Test
-    fun `channel with ambiguous message references triggers warning`() {
-        val document = parse("validator/channels/asyncapi_validator_channel_message_ambiguity.yaml")
-        val validationResults = asyncApiValidator.validate(document)
-
-        assertFalse(validationResults.hasErrors(), "Ambiguity should not be a hard error.")
-        assertTrue(validationResults.hasWarnings(), "Should trigger a warning for ambiguous messages.")
-
-        val warnings = validationResults.warnings.map { it.message }
-        assertEquals(1, warnings.size, "Expected 1 warnings.")
-        assertRule(
-            validationResults,
-            rule = CHANNEL_MESSAGES_AMBIGUOUS,
-            sourceFile = "asyncapi_validator_channel_message_ambiguity.yaml",
-            path = "asyncapi_validator_channel_message_ambiguity.root.channels.userUpdates.messages",
-            line = 8,
+        assertEquals(
+            "asyncapi_validator_channel_unused_parameter.root.channels.userUpdates.parameters",
+            unused.path,
         )
+        assertEquals(12, unused.line)
     }
 
     @Test
     fun `channels may omit messages and use an unknown address`() {
         val results = validate("validator/channels/asyncapi_validator_channel_optional_fields_valid.yaml")
 
-        assertNoFindings(results)
+        assertEquals(emptyList(), results.findings)
     }
 
     @Test
-    fun `empty channel servers and bindings produce distinct advisories`() {
-        val results = validate("validator/channels/asyncapi_validator_channel_advisories.yaml")
+    fun `empty channel collections are accepted`() {
+        val results = validate("validator/channels/asyncapi_validator_channel_empty_collections_valid.yaml")
 
-        assertEquals(2, results.warnings.size)
-        assertRule(results, CHANNEL_SERVERS_EMPTY, path = "asyncapi_validator_channel_advisories.root.channels.events.servers", line = 8)
-        assertRule(results, CHANNEL_BINDINGS_EMPTY, path = "asyncapi_validator_channel_advisories.root.channels.events.bindings", line = 9)
+        assertEquals(emptyList(), results.findings)
     }
 
     @Test
@@ -98,13 +86,19 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/channels/asyncapi_validator_channel_parameters_without_address.yaml")
 
         assertEquals(1, results.errors.size)
-        assertRule(
-            results,
-            rule = CHANNEL_PARAMETER_UNUSED,
-            sourceFile = "asyncapi_validator_channel_parameters_without_address.yaml",
-            path = "asyncapi_validator_channel_parameters_without_address.root.channels.dynamic.parameters",
-            line = 7,
+        val unused = results.findings.single()
+        assertEquals(CHANNEL_PARAMETER_UNUSED.code, unused.code)
+        assertEquals(CHANNEL_PARAMETER_UNUSED.severity, unused.severity)
+        assertEquals(CHANNEL_PARAMETER_UNUSED.concern, unused.concern)
+        assertEquals(
+            "asyncapi_validator_channel_parameters_without_address.yaml",
+            unused.sourceLocation?.file?.name,
         )
+        assertEquals(
+            "asyncapi_validator_channel_parameters_without_address.root.channels.dynamic.parameters",
+            unused.path,
+        )
+        assertEquals(7, unused.line)
     }
 
     @Test
@@ -112,19 +106,28 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/channels/asyncapi_validator_channel_address_suffix.yaml")
 
         assertEquals(2, results.errors.size)
-        assertRule(
-            results,
-            rule = CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
-            sourceFile = "asyncapi_validator_channel_address_suffix.yaml",
-            path = "asyncapi_validator_channel_address_suffix.root.channels.query.address",
-            line = 7,
+        val suffixErrors = results.findings.filter { it.code == CHANNEL_ADDRESS_QUERY_OR_FRAGMENT.code }
+        assertEquals(2, suffixErrors.size)
+        val queryError = suffixErrors.single {
+            it.path == "asyncapi_validator_channel_address_suffix.root.channels.query.address"
+        }
+        assertEquals(
+            "asyncapi_validator_channel_address_suffix.yaml",
+            queryError.sourceLocation?.file?.name,
         )
-        assertRule(
-            results,
-            rule = CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
-            sourceFile = "asyncapi_validator_channel_address_suffix.yaml",
-            path = "asyncapi_validator_channel_address_suffix.root.channels.fragment.address",
-            line = 9,
+        assertEquals("asyncapi_validator_channel_address_suffix.root.channels.query.address", queryError.path)
+        assertEquals(7, queryError.line)
+        val fragmentError = suffixErrors.single {
+            it.path == "asyncapi_validator_channel_address_suffix.root.channels.fragment.address"
+        }
+        assertEquals(
+            "asyncapi_validator_channel_address_suffix.yaml",
+            fragmentError.sourceLocation?.file?.name,
         )
+        assertEquals(
+            "asyncapi_validator_channel_address_suffix.root.channels.fragment.address",
+            fragmentError.path,
+        )
+        assertEquals(9, fragmentError.line)
     }
 }

@@ -27,25 +27,6 @@ object RegexPatterns {
     val NON_ALPHANUMERIC = Regex("[^A-Za-z0-9]")
 
     /**
-     * Matches Semantic Versioning strings (SemVer 2.0.0).
-     *
-     * Validates that the version follows the `MAJOR.MINOR.PATCH` format, optionally followed
-     * by a pre-release identifier.
-     *
-     * **Example:** `1.0.0`, `3.0.0-rc1`
-     * @see <a href="https://semver.org/">Semantic Versioning 2.0.0</a>
-     */
-    val SEMANTIC_VERSION = Regex("""^\d+\.\d+\.\d+(-[A-Za-z0-9]+)?$""")
-
-    /**
-     * Matches generic version strings containing alphanumeric characters and common separators.
-     *
-     * Useful for user-defined versions in the `info` block that may not strictly adhere to SemVer.
-     * Supported characters: `A-Z`, `a-z`, `0-9`, `.`, `-`, `_`.
-     */
-    val ALPHANUMERIC_VERSION = Regex("""^[A-Za-z0-9_.-]+$""")
-
-    /**
      * Matches URI and URN strings according to RFC 3986.
      *
      * Requires a scheme starting with an alphabetic character, followed by a colon and

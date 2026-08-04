@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGES_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
@@ -121,14 +120,6 @@ internal class OperationReplyValidator(
         results: ValidationCollector,
     ) {
         val messages = node.messages ?: return
-        if (messages.isEmpty()) {
-            results.warn(
-                OPERATION_REPLY_MESSAGES_EMPTY,
-                "$operationReplyName 'messages' is an empty list — omit it if unused.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
-            )
-            return
-        }
         messages.forEachIndexed { index, messageReference ->
             val contextString = "$operationReplyName Message[$index]"
             val target = referenceResolver.resolve(messageReference, MESSAGE, contextString, results)

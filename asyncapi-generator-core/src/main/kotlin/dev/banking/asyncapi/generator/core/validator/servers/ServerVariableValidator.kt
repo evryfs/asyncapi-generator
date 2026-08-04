@@ -2,15 +2,39 @@ package dev.banking.asyncapi.generator.core.validator.servers
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
+import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_ENUM_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_ENUM
+import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 internal class ServerVariableValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
+
+    private val referenceResolver = ReferenceResolver(asyncApiContext)
+
+    fun validateInterface(node: ServerVariableInterface, contextString: String, results: ValidationCollector) {
+        when (node) {
+            is ServerVariableInterface.ServerVariableInline ->
+                validate(node.serverVariable, contextString, results)
+
+            is ServerVariableInterface.ServerVariableReference ->
+                referenceResolver.resolve(node.reference, SERVER_VARIABLE, contextString, results)
+        }
+    }
+
+    fun validateMap(variables: Map<String, ServerVariableInterface>?, contextString: String, results: ValidationCollector) {
+        variables?.forEach { (name, serverVariableInterface) ->
+            validateInterface(
+                serverVariableInterface,
+                "$contextString Server Variable '$name'",
+                results,
+            )
+        }
+    }
 
     fun validate(node: ServerVariable, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
@@ -45,14 +69,6 @@ internal class ServerVariableValidator(
 
     private fun validateExamples(node: ServerVariable, contextString: String, results: ValidationCollector) {
         val examples = node.examples ?: return
-        if (examples.isEmpty()) {
-            results.warn(
-                SERVER_VARIABLE_EXAMPLES_EMPTY,
-                "$contextString 'examples' list is empty — omit it if unused.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::examples),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
-            )
-        }
         val enum = node.enum
         if (enum != null && examples.any { it !in enum }) {
             results.warn(

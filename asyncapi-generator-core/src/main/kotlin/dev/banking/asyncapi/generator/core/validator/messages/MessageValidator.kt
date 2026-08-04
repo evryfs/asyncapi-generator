@@ -1,16 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
-import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
+import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -34,17 +28,27 @@ internal class MessageValidator(
     private val messageExampleValidator = MessageExampleValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validate(message: Message, contextString: String, results: ValidationCollector) {
-        if (!results.visit(message)) return
-        validatePayload(message, contextString, results)
-        validateHeaders(message, contextString, results)
-        validateContentType(message, contextString, results)
-        validateExamples(message, contextString, results)
-        validateCorrelationId(message, contextString, results)
-        validateTraits(message, contextString, results)
-        validateTags(message, contextString, results)
-        validateExternalDocs(message, contextString, results)
-        validateBindings(message, contextString, results)
+    fun validateInterface(node: MessageInterface, contextString: String, results: ValidationCollector) {
+        when (node) {
+            is MessageInterface.MessageInline ->
+                validate(node.message, contextString, results)
+
+            is MessageInterface.MessageReference ->
+                referenceResolver.resolve(node.reference, MESSAGE, contextString, results)
+        }
+    }
+
+    fun validate(node: Message, contextString: String, results: ValidationCollector) {
+        if (!results.visit(node)) return
+        validatePayload(node, contextString, results)
+        validateHeaders(node, contextString, results)
+        validateContentType(node, contextString, results)
+        validateExamples(node, contextString, results)
+        validateCorrelationId(node, contextString, results)
+        validateTraits(node, contextString, results)
+        validateTags(node, contextString, results)
+        validateExternalDocs(node, contextString, results)
+        validateBindings(node, contextString, results)
     }
 
     private fun validateContentType(node: Message, contextString: String, results: ValidationCollector) {
@@ -101,59 +105,24 @@ internal class MessageValidator(
 
     private fun validateTraits(node: Message, contextString: String, results: ValidationCollector) {
         val traits = node.traits ?: return
-        if (traits.isEmpty()) return
         traits.forEachIndexed { index, trait ->
-            val contextString = "$contextString Trait[$index]"
-            when (trait) {
-                is MessageTraitInterface.InlineMessageTrait ->
-                    messageTraitValidator.validate(trait.trait, contextString, results)
-
-                is MessageTraitInterface.ReferenceMessageTrait ->
-                    referenceResolver.resolve(trait.reference, MESSAGE_TRAIT, contextString, results)
-            }
+            val traitContext = "$contextString Trait[$index]"
+            messageTraitValidator.validateInterface(trait, traitContext, results)
         }
     }
 
     private fun validateTags(node: Message, contextString: String, results: ValidationCollector) {
-        val tags = node.tags ?: return
-        tags.forEachIndexed { index, tagInterface ->
-            val contextString = "$contextString Tag[$index]"
-            when (tagInterface) {
-                is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, contextString, results)
-
-                is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
-            }
-        }
+        tagValidator.validateList(node.tags, contextString, results)
     }
 
     private fun validateExternalDocs(node: Message, contextString: String, results: ValidationCollector) {
-        val contextString = "$contextString ExternalDocs"
-        when (val docs = node.externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
-
-            null -> {}
-        }
+        val externalDocs = node.externalDocs ?: return
+        val context = "$contextString ExternalDocs"
+        externalDocsValidator.validateInterface(externalDocs, context, results)
     }
 
     private fun validateBindings(node: Message, contextString: String, results: ValidationCollector) {
-        val bindings = node.bindings ?: return
-        if (bindings.isEmpty()) return
-        bindings.forEach { (bindingName, bindingInterface) ->
-            val contextString = "$contextString Binding '$bindingName'"
-            when (bindingInterface) {
-                is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, contextString, results)
-
-                is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
-            }
-        }
+        bindingValidator.validateMap(node.bindings, contextString, results)
     }
 
 }

@@ -1,67 +1,58 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_TRAIT_EMPTY
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 class MessageTraitValidatorTest : AbstractValidatorTest() {
 
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
-    fun `invalid message traits trigger errors and warnings`() {
+    fun `invalid message traits trigger errors only`() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_invalid.yaml")
         val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(2, exception.errors.size, "Expected content-type and example errors.")
-        assertTrue(results.hasWarnings(), "Should have warnings.")
 
-        assertRule(
-            results,
-            MESSAGE_CONTENT_TYPE_FORMAT,
-            sourceFile = "asyncapi_validator_messagetrait_invalid.yaml",
-            path = "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidContentType.contentType",
-            line = 10,
+        assertEquals(2, results.errors.size)
+        val contentType = results.findings.single { it.code == MESSAGE_CONTENT_TYPE_FORMAT.code }
+        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.severity, contentType.severity)
+        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.concern, contentType.concern)
+        assertEquals("asyncapi_validator_messagetrait_invalid.yaml", contentType.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidContentType.contentType",
+            contentType.path,
         )
-        assertRule(
-            results,
-            MESSAGE_TRAIT_EMPTY,
-            sourceFile = "asyncapi_validator_messagetrait_invalid.yaml",
-            path = "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.EmptyTrait",
-            line = 15,
+        assertEquals(10, contentType.line)
+
+        val example = results.findings.single {
+            it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
+        }
+        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.severity, example.severity)
+        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.concern, example.concern)
+        assertEquals("asyncapi_validator_messagetrait_invalid.yaml", example.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidExample.examples[0]",
+            example.path,
         )
-        assertRule(
-            results,
-            MESSAGE_EXAMPLE_CONTENT_REQUIRED,
-            sourceFile = "asyncapi_validator_messagetrait_invalid.yaml",
-            path = "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidExample.examples[0]",
-            line = 22,
-        )
+        assertEquals(18, example.line)
     }
 
     @Test
     fun `accepts valid message traits including documentation-only traits and explicit null examples`() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_headers_ref_valid.yaml")
         val results = asyncApiValidator.validate(document)
-        assertNoFindings(results)
+
+        assertEquals(emptyList(), results.findings)
     }
 
     @Test
     fun `message trait headers broken ref triggers validation error`() {
         val document = parse("validator/messages/asyncapi_validator_messagetrait_headers_ref_invalid.yaml")
         val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(1, exception.errors.size, "Expected 1 error for unresolved message trait headers ref.")
+
+        assertEquals(1, results.errors.size)
     }
 }

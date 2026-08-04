@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -19,13 +18,14 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
-import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -103,16 +103,7 @@ internal class OperationValidator(
         results: ValidationCollector,
         rootChannels: Map<String, ChannelInterface>?,
     ): Channel? {
-        val channelRef = node.channel
-        if (channelRef == null) {
-            results.error(
-                OPERATION_CHANNEL_REQUIRED,
-                "$contextString must define a 'channel' reference.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::channel),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
-            )
-            return null
-        }
+        val channelRef = node.channel ?: return null
         val channel = referenceResolver.resolve(
             channelRef,
             CHANNEL,
@@ -143,8 +134,8 @@ internal class OperationValidator(
     ) {
         val messages = node.messages ?: return
         messages.forEachIndexed { index, messageReference ->
-            val contextString = "$contextString Message[$index]"
-            val target = referenceResolver.resolve(messageReference, MESSAGE, contextString, results)
+            val messageContext = "$contextString Message[$index]"
+            val target = referenceResolver.resolve(messageReference, MESSAGE, messageContext, results)
             if (
                 target != null &&
                 channel != null &&
@@ -152,7 +143,7 @@ internal class OperationValidator(
             ) {
                 results.error(
                     OPERATION_MESSAGE_REFERENCE,
-                    "$contextString must reference a message from the operation channel's 'messages' object.",
+                    "$messageContext must reference a message from the operation channel's 'messages' object.",
                     sourceLocation = asyncApiContext.getSourceLocation(messageReference, messageReference::ref),
                 )
             }
@@ -166,87 +157,49 @@ internal class OperationValidator(
         rootChannels: Map<String, ChannelInterface>?,
     ) {
         val reply = node.reply ?: return
-        val contextString = "$contextString Reply"
+        val replyContext = "$contextString Reply"
         when (reply) {
             is OperationReplyInterface.OperationReplyInline ->
-                operationReplyValidator.validate(reply.operationReply, contextString, results, rootChannels)
+                operationReplyValidator.validate(reply.operationReply, replyContext, results, rootChannels)
 
             is OperationReplyInterface.OperationReplyReference ->
-                referenceResolver.resolve(reply.reference, OPERATION_REPLY, contextString, results)
+                referenceResolver.resolve(reply.reference, OPERATION_REPLY, replyContext, results)
         }
     }
 
     private fun validateTraits(node: Operation, contextString: String, results: ValidationCollector) {
-        val traits = node.traits ?: return
-        traits.forEachIndexed { index, trait ->
-            val contextString = "$contextString Trait[$index]"
-            when (trait) {
-                is OperationTraitInterface.OperationTraitInline ->
-                    operationTraitValidator.validate(trait.operationTrait, contextString, results)
-
-                is OperationTraitInterface.OperationTraitReference ->
-                    referenceResolver.resolve(trait.reference, OPERATION_TRAIT, contextString, results)
+        node.traits
+            ?.forEachIndexed { index, trait ->
+                operationTraitValidator.validateInterface(
+                    trait,
+                    "$contextString Trait[$index]",
+                    results,
+                )
             }
-        }
     }
 
     private fun validateBindings(node: Operation, contextString: String, results: ValidationCollector) {
-        val bindings = node.bindings ?: return
-        bindings.forEach { (bindingName, bindingInterface) ->
-            val contextString = "$contextString Binding '$bindingName' "
-            when (bindingInterface) {
-                is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, contextString, results)
-
-                is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
-            }
-        }
+        bindingValidator.validateMap(node.bindings, contextString, results)
     }
 
     private fun validateSecurity(node: Operation, contextString: String, results: ValidationCollector) {
-        val security = node.security ?: return
-        security.forEachIndexed { index, securitySchemeInterface ->
-            val contextString = "$contextString Security Scheme [index=$index]"
-            when (securitySchemeInterface) {
-                is SecuritySchemeInterface.SecuritySchemeInline ->
-                    securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
-
-                is SecuritySchemeInterface.SecuritySchemeReference ->
-                    referenceResolver.resolve(
-                        securitySchemeInterface.reference,
-                        SECURITY_SCHEME,
-                        contextString,
-                        results,
-                    )
-            }
-        }
+        securitySchemeValidator.validateList(
+            node.security ?: return,
+            "$contextString Security Scheme",
+            results,
+        )
     }
 
     private fun validateTags(node: Operation, contextString: String, results: ValidationCollector) {
-        val tags = node.tags ?: return
-        tags.forEachIndexed { index, tagInterface ->
-            val contextString = "$contextString Tag[$index]"
-            when (tagInterface) {
-                is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, contextString, results)
-
-                is TagInterface.TagReference ->
-                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
-            }
-        }
+        tagValidator.validateList(node.tags, contextString, results)
     }
 
     private fun validateExternalDocs(node: Operation, contextString: String, results: ValidationCollector) {
-        val contextString = "$contextString ExternalDocs"
-        when (val docs = node.externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
-
-            null -> {}
-        }
+        val externalDocs = node.externalDocs ?: return
+        externalDocsValidator.validateInterface(
+            externalDocs,
+            "$contextString ExternalDocs",
+            results,
+        )
     }
 }

@@ -1,11 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -17,8 +13,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_ITEMS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
@@ -32,7 +26,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
@@ -524,14 +517,6 @@ internal class SchemaValidator(
             results,
         )
         val required = node.required ?: return
-        if (required.isEmpty()) {
-            results.warn(
-                SCHEMA_REQUIRED_EMPTY,
-                "$contextString defines an empty 'required' list — omit it if unused.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::required),
-                doc = "https://www.learnjsonschema.com/draft7/validation/required/",
-            )
-        }
         if (required.distinct().size != required.size) {
             results.error(
                 SCHEMA_REQUIRED_UNIQUE,
@@ -556,25 +541,6 @@ internal class SchemaValidator(
         node.dependencies?.forEach { (propertyName, dependency) ->
             val propertyNames = dependency as? List<*> ?: return@forEach
             val location = asyncApiContext.getSourceLocation(dependency)
-            if (propertyNames.isEmpty()) {
-                results.error(
-                    SCHEMA_DEPENDENCY_ARRAY_NONEMPTY,
-                    "$contextString dependency '$propertyName' must contain at least one property name.",
-                    sourceLocation = location,
-                    doc = JSON_SCHEMA_DEPENDENCIES_DOC,
-                )
-            }
-
-            val nonStringIndex = propertyNames.indexOfFirst { it !is String }
-            if (nonStringIndex >= 0) {
-                results.error(
-                    SCHEMA_DEPENDENCY_ARRAY_ITEMS,
-                    "$contextString dependency '$propertyName' must contain only property names.",
-                    sourceLocation = asyncApiContext.getSourceLocation(dependency, "[$nonStringIndex]") ?: location,
-                    doc = JSON_SCHEMA_DEPENDENCIES_DOC,
-                )
-            }
-
             val duplicateIndex = propertyNames.indices.firstOrNull { index ->
                 propertyNames.subList(0, index).contains(propertyNames[index])
             }
@@ -624,29 +590,13 @@ internal class SchemaValidator(
 
     private fun validateExternalDocs(node: Schema, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString ExternalDocs"
-        when (val docs = node.externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(docs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(docs.reference, EXTERNAL_DOC, contextString, results)
-
-            null -> {}
+        node.externalDocs?.let { docs ->
+            externalDocsValidator.validateInterface(docs, contextString, results)
         }
     }
 
     private fun validateBindings(node: Schema, contextString: String, results: ValidationCollector) {
-        val bindings = node.bindings ?: return
-        bindings.forEach { (bindingName, bindingInterface) ->
-            val contextString = "$contextString Binding '$bindingName'"
-            when (bindingInterface) {
-                is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, contextString, results)
-
-                is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
-            }
-        }
+        bindingValidator.validateMap(node.bindings, contextString, results)
     }
 
     private fun validateNonNegativeInteger(

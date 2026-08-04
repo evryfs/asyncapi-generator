@@ -1,7 +1,9 @@
 package dev.banking.asyncapi.generator.core.validator.security
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_NAME_REQUIRED
@@ -10,13 +12,36 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_SCHEME_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
+import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 internal class SecuritySchemeValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
+    private val referenceResolver = ReferenceResolver(asyncApiContext)
     private val oAuthFlowsValidator = OAuthFlowsValidator(asyncApiContext)
+
+    fun validateInterface(node: SecuritySchemeInterface, contextString: String, results: ValidationCollector) {
+        when (node) {
+            is SecuritySchemeInterface.SecuritySchemeInline ->
+                validate(node.security, contextString, results)
+
+            is SecuritySchemeInterface.SecuritySchemeReference ->
+                referenceResolver.resolve(node.reference, SECURITY_SCHEME, contextString, results)
+        }
+    }
+
+    fun validateList(
+        securitySchemeInterfaces: List<SecuritySchemeInterface>,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
+        securitySchemeInterfaces.forEachIndexed { index, securitySchemeInterface ->
+            val securitySchemeContext = "$contextString [index=$index]"
+            validateInterface(securitySchemeInterface, securitySchemeContext, results)
+        }
+    }
 
     fun validate(node: SecurityScheme, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return

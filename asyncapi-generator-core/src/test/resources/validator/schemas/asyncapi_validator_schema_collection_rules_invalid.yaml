@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Schema Collection Rules Test
+  version: 1.0.0
+components:
+  schemas:
+    # Case 1: Empty enum
+    EmptyEnumString:
+      type: string
+      enum: []
+
+    # Case 2: Duplicate required entries
+    DuplicateRequiredObject:
+      type: object
+      properties:
+        id:
+          type: string
+      required: [id, id]

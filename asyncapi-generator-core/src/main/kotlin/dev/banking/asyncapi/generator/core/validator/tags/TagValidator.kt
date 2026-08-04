@@ -1,10 +1,8 @@
 package dev.banking.asyncapi.generator.core.validator.tags
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NAME_REQUIRED
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -25,6 +23,12 @@ internal class TagValidator(
         }
     }
 
+    fun validateList(tags: List<TagInterface>?, contextString: String, results: ValidationCollector) {
+        tags?.forEachIndexed { index, tagInterface ->
+            validateInterface(tagInterface, "$contextString Tag[$index]", results)
+        }
+    }
+
     fun validate(node: Tag, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
         val name = node.name
@@ -41,13 +45,6 @@ internal class TagValidator(
 
     private fun validateExternalDocs(node: Tag, contextString: String, results: ValidationCollector) {
         val externalDocs = node.externalDocs ?: return
-        val contextString = "$contextString ExternalDocs"
-        when (externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
-        }
+        externalDocsValidator.validateInterface(externalDocs, "$contextString ExternalDocs", results)
     }
 }

@@ -66,7 +66,7 @@ Messages remain useful to people but are not stable machine identifiers. Tests s
 
 `SPECIFICATION` findings enforce AsyncAPI 3.0, the supported JSON Schema dialect, or an official protocol binding. `GENERATOR_CAPABILITY` findings describe otherwise valid input that this generator cannot safely consume. `ADVISORY` findings are optional guidance and must not be presented as specification conformance.
 
-The [rule inventory](rules.md) records the implemented rule catalog, its authorities, source ownership, and focused test owners. Stable codes are the machine-facing contract; adding a code requires a defensible rule classification and matching tests and documentation.
+The [rule inventory](rules.md) records the implemented rule catalog, its authorities, and stable contracts. Stable codes are the machine-facing contract; adding a code requires a defensible rule classification and matching tests and documentation.
 
 ## External fragments
 
