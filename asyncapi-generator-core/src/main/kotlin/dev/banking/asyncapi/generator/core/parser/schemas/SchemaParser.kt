@@ -13,7 +13,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
@@ -22,9 +21,6 @@ import kotlin.collections.Map
 
 /**
  * Parses AsyncAPI schema objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `SchemaParserTest`
  */
 internal class SchemaParser(
     private val asyncApiContext: AsyncApiContext,
@@ -34,20 +30,16 @@ internal class SchemaParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
-    fun parseList(parserNode: ParserNode): List<SchemaInterface> = buildList {
-        parserNode.expectArray().elements().forEach { node ->
-            add(parseElement(node))
-        }
-    }
+    fun parseList(parserNode: ParserNode): List<SchemaInterface> =
+        parserNode.expectArray().elements().map(::parseElement)
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
-        if (isBooleanSchema(parserNode)) {
+        if (parserNode.node is DocumentBoolean) {
             val bool = parserNode.expect<Boolean>()
             return SchemaInterface.BooleanSchema(
                 value = bool,
@@ -96,15 +88,6 @@ internal class SchemaParser(
 
     private fun parseSchema(parserNode: ParserNode): SchemaInterface {
         val objectNode = parserNode.expectObject()
-        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
-            return SchemaInterface.SchemaReference(
-                Reference(
-                    ref = reference,
-                    referenceCategoryKey = SCHEMA
-                ).also { asyncApiContext.register(it, parserNode) }
-            )
-        }
-
         val id = objectNode.optional($$"$id")?.expect<String>()
         val schema = objectNode.optional($$"$schema")?.expect<String>()
         val comment = objectNode.optional($$"$comment")?.expect<String>()
@@ -247,17 +230,12 @@ internal class SchemaParser(
             else -> parserNode.expect<String>()
         }
 
-    private fun isBooleanSchema(node: ParserNode): Boolean =
-        node.node is DocumentBoolean
-
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {
         val objectNode = parserNode.expectObject()
         return objectNode.members().associate { dependency ->
-            val dependencyValue = dependency.node
-            val parsedValue: Any = when (dependencyValue) {
+            val parsedValue: Any = when (dependency.node) {
                 is DocumentArray -> dependency.expect<List<String>>().also { asyncApiContext.register(it, dependency) }
-                is DocumentObject, is DocumentBoolean -> parseElement(dependency)
-                else -> dependency.expect<Map<String, Any?>>()
+                else -> parseElement(dependency)
             }
             dependency.name to parsedValue
         }

@@ -28,14 +28,10 @@ import dev.banking.asyncapi.generator.core.document.appendDocumentMember
  *
  * JSON input must produce the same document tree shape as equivalent YAML
  * input so later stages remain format-independent.
- *
- * Expected behavior is covered by:
- * - `JsonDocumentReaderTest`
- * - `DocumentReaderContractTest`
  */
 internal class JsonDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
-) : DocumentReader {
+) {
 
     private val jsonFactory: JsonFactory =
         JsonFactoryBuilder().streamReadConstraints(
@@ -46,7 +42,7 @@ internal class JsonDocumentReader(
                 .build(),
         ).build()
 
-    override fun read(source: DocumentSource): InputDocument {
+    fun read(source: DocumentSource): InputDocument {
         limits.requireDocumentSize(source)
         val content = source.content.removePrefix(UTF_8_BOM)
         if (content.isBlank()) {

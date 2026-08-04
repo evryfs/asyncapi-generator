@@ -10,10 +10,6 @@ import kotlin.reflect.typeOf
 
 /**
  * Represents one parser input node together with its source path and context.
- *
- * Expected behavior is covered by:
- * - `ParserNodeTest`
- * - parser package tests
  */
 internal class ParserNode(
     val name: String,

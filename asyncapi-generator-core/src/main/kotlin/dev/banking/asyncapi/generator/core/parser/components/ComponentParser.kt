@@ -28,9 +28,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COM
 
 /**
  * Parses AsyncAPI component objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ComponentParserTest`
  */
 internal class ComponentParser(
     private val asyncApiContext: AsyncApiContext,

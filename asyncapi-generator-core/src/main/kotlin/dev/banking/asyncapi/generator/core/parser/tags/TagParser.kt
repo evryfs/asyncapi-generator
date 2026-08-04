@@ -11,9 +11,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.TAG
 
 /**
  * Parses AsyncAPI tag objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `TagParserTest`
  */
 internal class TagParser(
     private val asyncApiContext: AsyncApiContext,
@@ -21,17 +18,13 @@ internal class TagParser(
 
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, TagInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, TagInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
-    fun parseList(parserNode: ParserNode): List<TagInterface> = buildList {
-        parserNode.expectArray().elements().forEach { node ->
-            add(parseElement(node))
-        }
-    }
+    fun parseList(parserNode: ParserNode): List<TagInterface> =
+        parserNode.expectArray().elements().map(::parseElement)
 
     fun parseElement(parserNode: ParserNode): TagInterface {
         val objectNode = parserNode.expectObject()

@@ -14,11 +14,6 @@ enum class DocumentResourceLimit(val description: String) {
 
 /**
  * Reader-stage errors raised before AsyncAPI parsing or validation starts.
- *
- * Expected behavior is covered by:
- * - `DocumentReadExceptionTest`
- * - `YamlDocumentReaderTest`
- * - `JsonDocumentReaderTest`
  */
 sealed class DocumentReadException(
     message: String,

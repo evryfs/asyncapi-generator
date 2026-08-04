@@ -9,10 +9,6 @@ import java.io.File
  * @property file file used for diagnostics and relative reference resolution
  * @property content complete YAML or JSON source text
  * @property format reader format selected for [content]
- *
- * Expected behavior is covered by:
- * - `DocumentReaderRegistryTest`
- * - `YamlDocumentReaderTest`
  */
 internal data class DocumentSource(
     val id: String,

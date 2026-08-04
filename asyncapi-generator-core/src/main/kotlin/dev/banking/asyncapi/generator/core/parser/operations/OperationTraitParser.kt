@@ -15,10 +15,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
 
 /**
  * Parses AsyncAPI operation trait objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `OperationTraitParserTest`
- * - `OperationParserTest`
  */
 internal class OperationTraitParser(
     private val asyncApiContext: AsyncApiContext,
@@ -29,17 +25,13 @@ internal class OperationTraitParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, OperationTraitInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, OperationTraitInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
-    fun parseList(parserNode: ParserNode): List<OperationTraitInterface> = buildList {
-        parserNode.expectArray().elements().forEach { node ->
-            add(parseElement(node))
-        }
-    }
+    fun parseList(parserNode: ParserNode): List<OperationTraitInterface> =
+        parserNode.expectArray().elements().map(::parseElement)
 
     fun parseElement(parserNode: ParserNode): OperationTraitInterface {
         val objectNode = parserNode.expectObject()

@@ -7,14 +7,11 @@ import java.io.File
 import java.io.IOException
 
 /**
- * Selects the correct `DocumentReader` for an input file.
+ * Selects the correct format-specific reader for an input file.
  *
  * This is the reader-stage entry point for file-based inputs. It detects the
  * input format, creates the `DocumentSource`, and delegates parsing to a
  * format-specific reader.
- *
- * Expected behavior is covered by:
- * - `DocumentReaderRegistryTest`
  */
 internal object DocumentReaderRegistry {
     fun read(file: File): InputDocument {

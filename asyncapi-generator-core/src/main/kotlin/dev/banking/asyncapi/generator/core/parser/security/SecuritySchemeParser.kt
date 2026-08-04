@@ -14,25 +14,18 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SEC
 
 /**
  * Parses AsyncAPI security scheme objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `SecuritySchemeParserTest`
  */
 internal class SecuritySchemeParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseMap(parserNode: ParserNode): Map<String, SecuritySchemeInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, SecuritySchemeInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
-    fun parseList(parserNode: ParserNode): List<SecuritySchemeInterface> = buildList {
-        parserNode.expectArray().elements().forEach { node ->
-            add(parseElement(node))
-        }
-    }
+    fun parseList(parserNode: ParserNode): List<SecuritySchemeInterface> =
+        parserNode.expectArray().elements().map(::parseElement)
 
     fun parseElement(parserNode: ParserNode): SecuritySchemeInterface {
         val objectNode = parserNode.expectObject()

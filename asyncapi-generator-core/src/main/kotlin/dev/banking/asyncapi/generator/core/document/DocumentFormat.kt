@@ -6,9 +6,6 @@ import java.io.File
  * Supported input document formats for the reader stage.
  *
  * @property extensions recognized lowercase file extensions without a leading dot
- *
- * Expected behavior is covered by:
- * - `DocumentReaderRegistryTest`
  */
 internal enum class DocumentFormat(
     val extensions: Set<String>,

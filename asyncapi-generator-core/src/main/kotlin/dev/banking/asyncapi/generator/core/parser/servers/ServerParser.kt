@@ -15,9 +15,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
 
 /**
  * Parses AsyncAPI server objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ServerParserTest`
  */
 internal class ServerParser(
     private val asyncApiContext: AsyncApiContext,
@@ -29,11 +26,10 @@ internal class ServerParser(
     private val serverVariableParser = ServerVariableParser(asyncApiContext)
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): ServerInterface {
         val objectNode = parserNode.expectObject()

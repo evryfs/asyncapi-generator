@@ -7,10 +7,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
 
 /**
  * Parses AsyncAPI message example objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `MessageExampleParserTest`
- * - `MessageParserTest`
  */
 internal class MessageExampleParser(
     private val asyncApiContext: AsyncApiContext,
