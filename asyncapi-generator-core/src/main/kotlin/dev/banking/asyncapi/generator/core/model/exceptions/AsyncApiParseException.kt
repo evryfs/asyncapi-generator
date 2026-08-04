@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 sealed class AsyncApiParseException(message: String) : Exception(message) {
@@ -10,17 +11,19 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
         context: AsyncApiContext,
     ) : AsyncApiParseException(ParserDiagnosticFormatter.format(diagnostic, context))
 
-    class EmptyYamlFile(fileName: String) :
-        AsyncApiParseException("Empty Yaml file : $fileName")
-
-    class UnexpectedSchemaFormat internal constructor(format: String, path: String, context: AsyncApiContext) :
-        AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
+    class UnexpectedSchemaFormat internal constructor(
+        val format: String,
+        val path: String,
+        val sourceLocation: SourceLocation,
+        context: AsyncApiContext,
+    ) : AsyncApiParseException(buildMessage("SchemaFormat: $format is not valid.", path, context))
 
     class NativeSchemaAssetReadFailure internal constructor(
-        reference: String,
-        path: String,
+        val reference: String,
+        val path: String,
+        val sourceLocation: SourceLocation,
         context: AsyncApiContext,
-        reason: String,
+        val reason: String,
     ) : AsyncApiParseException(
             buildMessage(
                 "Native schema asset '$reference' could not be read. Reason: $reason",
@@ -40,6 +43,5 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
                 appendLine(snippet.ifBlank { "→ $fileName ($path)" })
             }.trimEnd()
         }
-
     }
 }

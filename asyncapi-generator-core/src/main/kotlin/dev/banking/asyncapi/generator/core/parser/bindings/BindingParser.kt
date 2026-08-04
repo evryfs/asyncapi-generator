@@ -18,23 +18,23 @@ import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
  * and schema-valued fields for semantic validation.
  */
 internal class BindingParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     /** Parses the protocol-keyed `bindings` property of an AsyncAPI object. */
-    fun parseMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> = buildMap {
-        parserNode.expectObject().members().forEach { protocolNode ->
-            put(protocolNode.name, parseProtocol(protocolNode, location))
-        }
-    }
+    fun parseMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> =
+        parserNode.expectObject()
+            .members()
+            .associate { protocolNode ->
+                protocolNode.name to parseProtocol(protocolNode, location)
+            }
 
     /** Parses a component registry whose values are complete Bindings Objects. */
-    fun parseComponentMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> = buildMap {
-        parserNode.expectObject().members().forEach { componentNode ->
-            put(componentNode.name, parseComponent(componentNode, location))
+    fun parseComponentMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> =
+        parserNode.expectObject().members().associate { componentNode ->
+            componentNode.name to parseComponent(componentNode, location)
         }
-    }
 
     fun parseProtocol(parserNode: ParserNode, location: BindingLocation): BindingInterface {
         parseReference(parserNode, location, parserNode.name)?.let { return it }

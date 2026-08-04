@@ -20,22 +20,18 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.document.InputDocument
 import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
+import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 
 /**
  * Reads JSON input into an [InputDocument].
  *
  * JSON input must produce the same document tree shape as equivalent YAML
  * input so later stages remain format-independent.
- *
- * Expected behavior is covered by:
- * - `JsonDocumentReaderTest`
- * - `DocumentReaderContractTest`
- * - `DocumentLocationTest`
  */
-internal class JsonDocumentReader internal constructor(
-    private val limits: DocumentReaderLimits,
-) : DocumentReader {
-    constructor() : this(DocumentReaderLimits.DEFAULT)
+internal class JsonDocumentReader(
+    private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
+) {
 
     private val jsonFactory: JsonFactory =
         JsonFactoryBuilder().streamReadConstraints(
@@ -46,7 +42,7 @@ internal class JsonDocumentReader internal constructor(
                 .build(),
         ).build()
 
-    override fun read(source: DocumentSource): InputDocument {
+    fun read(source: DocumentSource): InputDocument {
         limits.requireDocumentSize(source)
         val content = source.content.removePrefix(UTF_8_BOM)
         if (content.isBlank()) {
@@ -128,7 +124,7 @@ internal class JsonDocumentReader internal constructor(
             }
 
             val key = parser.currentName()
-            val keyPath = "$path.$key"
+            val keyPath = appendDocumentMember(path, key)
             val keyLocation = locationOf(source, keyPath, parser.currentTokenLocation())
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(
@@ -160,7 +156,7 @@ internal class JsonDocumentReader internal constructor(
             if (token == JsonToken.END_ARRAY) {
                 return DocumentArray(result, location)
             }
-            result += parseNode(parser, token, "$path[${result.size}]", source)
+            result += parseNode(parser, token, appendDocumentIndex(path, result.size), source)
         }
     }
 

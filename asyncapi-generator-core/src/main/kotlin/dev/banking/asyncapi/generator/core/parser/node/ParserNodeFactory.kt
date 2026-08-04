@@ -13,9 +13,6 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * This is the adapter between the reader stage and parser stage. It preserves
  * the existing parser path convention while registering reader-provided source
  * locations in the parser context.
- *
- * Expected behavior is covered by:
- * - `ParserNodeFactoryTest`
  */
 internal object ParserNodeFactory {
 

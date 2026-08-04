@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
  * while [format] gives later stages a typed way to distinguish native formats.
  *
  * Expected behavior is covered by:
- * - `MultiFormatSchemaParserTest`
+ * - `SchemaParserMultiFormatTest`
  */
 data class MultiFormatSchema(
     val schemaFormat: String,

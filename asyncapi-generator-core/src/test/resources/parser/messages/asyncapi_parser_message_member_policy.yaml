@@ -1,0 +1,11 @@
+components:
+  messageCases:
+    UnknownMember:
+      invalidMessage:
+        ImportedMessage:
+          name: nested
+    SpecificationExtension:
+      validMessage:
+        name: valid
+        x-owner:
+          team: parser

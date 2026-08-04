@@ -10,20 +10,15 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PAR
 
 /**
  * Parses AsyncAPI parameter objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ParameterParserTest`
- * - `ChannelParserTest`
  */
 internal class ParameterParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseMap(parserNode: ParserNode): Map<String, ParameterInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, ParameterInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): ParameterInterface {
         val objectNode = parserNode.expectObject()

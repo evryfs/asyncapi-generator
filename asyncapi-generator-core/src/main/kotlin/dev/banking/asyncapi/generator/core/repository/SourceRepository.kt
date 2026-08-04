@@ -28,7 +28,7 @@ internal class SourceRepository {
     private val sourcesByPathId = mutableMapOf<String, Source>()
 
     // Map of node path → line number
-    internal val lineMap = mutableMapOf<String, Int>()
+    private val lineMap = mutableMapOf<String, Int>()
 
     // Parser identity is segment-aware. String paths are presentation indexes only.
     private val locationsByAddress = mutableMapOf<NodeAddress, SourceLocation>()
@@ -114,10 +114,6 @@ internal class SourceRepository {
     fun findIdByFile(file: File): String? = sources[file.canonicalFile.absolutePath]?.pathId
 
     fun findStableIdByPathId(pathId: String): String? = sourcesByPathId[pathId]?.id
-
-    fun getAllSources(): Collection<Source> = sources.values
-
-    fun getAllLines(): Map<String, Int> = lineMap.toMap()
 
     fun getAllLocations(): Map<String, SourceLocation> =
         buildMap {

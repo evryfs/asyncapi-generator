@@ -6,13 +6,9 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /** Parser behavior implemented for one AsyncAPI major/minor specification line. */
 internal enum class AsyncApiParserProfile(
-    val major: Int,
-    val minor: Int,
+    val displayName: String,
 ) {
-    V3_0(major = 3, minor = 0),
-    ;
-
-    val displayName: String = "$major.$minor.x"
+    V3_0(displayName = "3.0.x"),
 }
 
 /** Published AsyncAPI specification lines known to this parser. */

@@ -18,12 +18,9 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.ASY
  * AsyncAPI structures into [AsyncApiDocument]. It does not read files, detect
  * input formats, parse YAML or JSON, validate the model, bundle references, or
  * generate output.
- *
- * Expected behavior is covered by:
- * - `AsyncApiParserTest`
  */
 internal class AsyncApiParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val infoParser = InfoParser(asyncApiContext)

@@ -16,12 +16,9 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
 
 /**
  * Parses AsyncAPI message objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `MessageParserTest`
  */
 internal class MessageParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val schemaParser = SchemaParser(asyncApiContext)
@@ -32,11 +29,10 @@ internal class MessageParser(
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val correlationIdParser = CorrelationIdParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, MessageInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, MessageInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): MessageInterface {
         val objectNode = parserNode.expectObject()

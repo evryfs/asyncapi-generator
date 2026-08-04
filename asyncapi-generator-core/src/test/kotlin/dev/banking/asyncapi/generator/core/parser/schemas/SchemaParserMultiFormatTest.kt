@@ -19,8 +19,9 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
-class MultiFormatSchemaParserTest {
+class SchemaParserMultiFormatTest {
     @TempDir
     lateinit var tempDir: Path
 
@@ -156,6 +157,13 @@ class MultiFormatSchemaParserTest {
             parser.parseElement(schemaNode)
         }
 
+        assertEquals("missing-user-created.avsc", error.reference)
+        assertEquals(
+            "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema.\$ref",
+            error.path,
+        )
+        assertEquals("asyncapi_missing_native_schema_asset.yaml", error.sourceLocation.file.name)
+        assertTrue(error.reason.isNotBlank())
         assertContains(error.message.orEmpty(), "Native schema asset 'missing-user-created.avsc' could not be read.")
         assertContains(error.message.orEmpty(), "asyncapi_missing_native_schema_asset.yaml")
         assertContains(
@@ -297,6 +305,12 @@ class MultiFormatSchemaParserTest {
             parser.parseElement(schemaNode)
         }
 
+        assertEquals("application/unknown", error.format)
+        assertEquals(
+            "asyncapi_parser_schema_format_invalid.root.components.schemas.UnknownSchemaFormat",
+            error.path,
+        )
+        assertEquals("asyncapi_parser_schema_format_invalid.yaml", error.sourceLocation.file.name)
         assertContains(error.message.orEmpty(), "SchemaFormat: application/unknown is not valid.")
         assertContains(error.message.orEmpty(), "asyncapi_parser_schema_format_invalid.yaml")
         assertContains(

@@ -15,12 +15,9 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
 
 /**
  * Parses AsyncAPI server objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ServerParserTest`
  */
 internal class ServerParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser = TagParser(asyncApiContext)
@@ -29,11 +26,10 @@ internal class ServerParser(
     private val serverVariableParser = ServerVariableParser(asyncApiContext)
     private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, ServerInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): ServerInterface {
         val objectNode = parserNode.expectObject()
@@ -52,6 +48,7 @@ internal class ServerParser(
                     host = objectNode.required("host").expect<String>(),
                     protocol = objectNode.required("protocol").expect<String>(),
                     protocolVersion = objectNode.optional("protocolVersion")?.expect<String>(),
+                    pathname = objectNode.optional("pathname")?.expect<String>(),
                     description = objectNode.optional("description")?.expect<String>(),
                     title = objectNode.optional("title")?.expect<String>(),
                     summary = objectNode.optional("summary")?.expect<String>(),

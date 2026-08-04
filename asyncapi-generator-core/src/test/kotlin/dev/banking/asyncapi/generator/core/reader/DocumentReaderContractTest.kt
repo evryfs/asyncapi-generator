@@ -10,11 +10,13 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
+import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DocumentReaderContractTest {
@@ -126,6 +128,71 @@ class DocumentReaderContractTest {
         assertEquals(true, assertIs<DocumentBoolean>(jsonValue["nested"]).value)
         assertEquals(2, yamlValue.location.line)
         assertEquals(2, jsonValue.location.line)
+    }
+
+    @Test
+    fun `readers produce equivalent unambiguous source paths`() {
+        val escapedMemberName = "quote\"slash\\line\nbreak"
+        val yamlSource = DocumentSource(
+            id = "paths",
+            file = File("paths.yaml").canonicalFile,
+            content =
+                """
+                a:
+                  b:
+                    - nested
+                "a.b":
+                  - literal
+                "quote\"slash\\line\nbreak": escaped
+                """.trimIndent(),
+            format = DocumentFormat.YAML,
+        )
+        val jsonSource = DocumentSource(
+            id = "paths",
+            file = File("paths.json").canonicalFile,
+            content =
+                """
+                {
+                  "a": {"b": ["nested"]},
+                  "a.b": ["literal"],
+                  "quote\"slash\\line\nbreak": "escaped"
+                }
+                """.trimIndent(),
+            format = DocumentFormat.JSON,
+        )
+
+        val roots = listOf(
+            assertIs<DocumentObject>(reader.read(yamlSource).root) to yamlSource,
+            assertIs<DocumentObject>(jsonReader.read(jsonSource).root) to jsonSource,
+        )
+
+        roots.forEach { (root, source) ->
+            assertEquals(source.id, root.location.sourceId)
+            assertEquals(source.file, root.location.file)
+            assertEquals("root", root.location.path)
+            assertTrue(root.location.line >= 1)
+            assertTrue(root.location.column >= 1)
+
+            val nested = assertIs<DocumentObject>(root["a"])
+            val nestedArray = assertIs<DocumentArray>(nested["b"])
+            assertEquals("root.a.b", assertNotNull(nested.member("b")).keyLocation.path)
+            assertEquals("root.a.b[0]", nestedArray[0].location.path)
+
+            val dottedMember = assertNotNull(root.member("a.b"))
+            val dottedArray = assertIs<DocumentArray>(dottedMember.value)
+            assertEquals(source.id, dottedMember.keyLocation.sourceId)
+            assertEquals(source.file, dottedMember.keyLocation.file)
+            assertEquals("root[\"a.b\"]", dottedMember.keyLocation.path)
+            assertTrue(dottedMember.keyLocation.line >= 1)
+            assertTrue(dottedMember.keyLocation.column >= 1)
+            assertEquals("root[\"a.b\"]", dottedArray.location.path)
+            assertEquals("root[\"a.b\"][0]", dottedArray[0].location.path)
+
+            val escapedMember = assertNotNull(root.member(escapedMemberName))
+            val escapedPath = "root[\"quote\\\"slash\\\\line\\nbreak\"]"
+            assertEquals(escapedPath, escapedMember.keyLocation.path)
+            assertEquals(escapedPath, escapedMember.value.location.path)
+        }
     }
 
     @Test

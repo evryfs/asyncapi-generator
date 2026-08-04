@@ -1,12 +1,9 @@
 package dev.banking.asyncapi.generator.core.parser.version
 
-/** Exact AsyncAPI specification version declared by an input document. */
+/** Major and minor specification line selected from a valid AsyncAPI version. */
 internal data class AsyncApiSpecificationVersion(
-    val raw: String,
     val major: Int,
     val minor: Int,
-    val patch: Int,
-    val suffix: String?,
 ) {
     companion object {
         private val VERSION_PATTERN =
@@ -16,13 +13,10 @@ internal data class AsyncApiSpecificationVersion(
             val match = VERSION_PATTERN.matchEntire(value) ?: return null
             val major = match.groupValues[1].toIntOrNull() ?: return null
             val minor = match.groupValues[2].toIntOrNull() ?: return null
-            val patch = match.groupValues[3].toIntOrNull() ?: return null
+            match.groupValues[3].toIntOrNull() ?: return null
             return AsyncApiSpecificationVersion(
-                raw = value,
                 major = major,
                 minor = minor,
-                patch = patch,
-                suffix = match.groupValues[4].ifBlank { null },
             )
         }
     }

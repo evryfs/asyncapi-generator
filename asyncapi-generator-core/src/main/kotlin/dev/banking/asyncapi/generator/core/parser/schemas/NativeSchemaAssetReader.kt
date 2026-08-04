@@ -13,9 +13,6 @@ import java.io.IOException
  *
  * Native schema assets are not AsyncAPI documents, so they are read as text
  * instead of being routed through the YAML/JSON document reader.
- *
- * Expected behavior is covered by:
- * - `MultiFormatSchemaParserTest`
  */
 internal class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
@@ -45,6 +42,7 @@ internal class NativeSchemaAssetReader(
             throw NativeSchemaAssetReadFailure(
                 reference = reference,
                 path = referenceNode.path,
+                sourceLocation = referenceNode.sourceLocation,
                 context = asyncApiContext,
                 reason = exception.message ?: exception::class.simpleName.orEmpty(),
             )
@@ -52,6 +50,7 @@ internal class NativeSchemaAssetReader(
             throw NativeSchemaAssetReadFailure(
                 reference = reference,
                 path = referenceNode.path,
+                sourceLocation = referenceNode.sourceLocation,
                 context = asyncApiContext,
                 reason = exception.message ?: exception::class.simpleName.orEmpty(),
             )

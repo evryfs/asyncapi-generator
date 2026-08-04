@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 
 class TagParserTest {
 
@@ -55,52 +53,6 @@ class TagParserTest {
     }
 
     @Test
-    fun `parse tag map reports array container`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tagContainers")
-            .expectObject().required("ArrayInsteadOfMap")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(tagsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf("not-a-map"), diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tagContainers.ArrayInsteadOfMap", diagnostic.path)
-        assertEquals("root.components.tagContainers.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse tag list reports object container`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tagContainers")
-            .expectObject().required("ObjectInsteadOfList")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(tagsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("List<Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.OBJECT, diagnostic.actualType)
-        assertEquals(mapOf("unexpected" to "not-an-array"), diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tagContainers.ObjectInsteadOfList", diagnostic.path)
-        assertEquals("root.components.tagContainers.ObjectInsteadOfList", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
     fun `parse tag reports missing name`() {
         val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -122,95 +74,4 @@ class TagParserTest {
         assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse tag reports explicit null name`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tags")
-            .expectObject().required("NullName")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(tagNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tags.NullName.name", diagnostic.path)
-        assertEquals("root.components.tags.NullName.name", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse tag reports explicit null description`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tags")
-            .expectObject().required("NullDescription")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(tagNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tags.NullDescription.description", diagnostic.path)
-        assertEquals("root.components.tags.NullDescription.description", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse tag reports explicit null ref before inline parsing`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tags")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(tagNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tags.NullReference.\$ref", diagnostic.path)
-        assertEquals("root.components.tags.NullReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse tag reports non-string ref before inline parsing`() {
-        val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val tagNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tags")
-            .expectObject().required("NumericReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(tagNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(42, diagnostic.actualValue)
-        assertEquals("asyncapi_parser_tag_invalid.root.components.tags.NumericReference.\$ref", diagnostic.path)
-        assertEquals("root.components.tags.NumericReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

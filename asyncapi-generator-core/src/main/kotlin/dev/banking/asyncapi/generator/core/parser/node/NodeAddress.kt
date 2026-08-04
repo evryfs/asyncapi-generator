@@ -1,18 +1,18 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import com.fasterxml.jackson.core.io.JsonStringEncoder
+import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
+import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 
 /** Collision-safe identity of one document node within one registered source. */
-@PublishedApi
-internal data class NodeAddress private constructor(
+internal data class NodeAddress(
     val sourceId: String,
     val segments: List<NodeAddressSegment>,
 ) {
     val displayPath: String
-        get() = sourceId + renderSegments()
+        get() = renderSegments(sourceId)
 
     val documentPath: String
-        get() = renderSegments().removePrefix(".")
+        get() = renderSegments("")
 
     val parent: NodeAddress?
         get() = segments.dropLast(1).takeIf(List<*>::isNotEmpty)?.let { NodeAddress(sourceId, it) }
@@ -28,33 +28,12 @@ internal data class NodeAddress private constructor(
     fun ancestors(): Sequence<NodeAddress> =
         generateSequence(this, NodeAddress::parent)
 
-    private fun renderSegments(): String = buildString {
-        segments.forEach { segment ->
+    private fun renderSegments(initialPath: String): String =
+        segments.fold(initialPath) { path, segment ->
             when (segment) {
-                is NodeAddressSegment.Member -> appendMember(segment.name)
-                is NodeAddressSegment.Index -> append('[').append(segment.index).append(']')
+                is NodeAddressSegment.Member -> appendDocumentMember(path, segment.name)
+                is NodeAddressSegment.Index -> appendDocumentIndex(path, segment.index)
             }
-        }
-    }
-
-    private fun StringBuilder.appendMember(name: String) {
-        if (name.isSimpleDisplayMember()) {
-            append('.').append(name)
-        } else {
-            append("[\"")
-            append(JsonStringEncoder.getInstance().quoteAsString(name))
-            append("\"]")
-        }
-    }
-
-    private fun String.isSimpleDisplayMember(): Boolean =
-        isNotEmpty() && none { character ->
-            character == '.' ||
-                character == '[' ||
-                character == ']' ||
-                character == '"' ||
-                character == '\\' ||
-                character.isISOControl()
         }
 
     companion object {
@@ -64,7 +43,6 @@ internal data class NodeAddress private constructor(
 }
 
 /** Typed path segment used by [NodeAddress] identity. */
-@PublishedApi
 internal sealed interface NodeAddressSegment {
     data class Member(val name: String) : NodeAddressSegment
 

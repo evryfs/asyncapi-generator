@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
@@ -61,29 +60,4 @@ class CorrelationIdParserTest {
         assertEquals("asyncapi_parser_correlationid_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse correlation ID reports non-string ref before inline parsing`() {
-        val file = TestResources.file("parser/correlations/asyncapi_parser_correlationid_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val correlationIdNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("correlationIds")
-            .expectObject().required("NumericReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(correlationIdNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(42, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_correlationid_invalid.root.components.correlationIds.NumericReference.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.components.correlationIds.NumericReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_correlationid_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

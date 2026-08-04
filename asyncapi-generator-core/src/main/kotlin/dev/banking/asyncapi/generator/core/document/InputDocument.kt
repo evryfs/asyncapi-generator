@@ -10,10 +10,6 @@ package dev.banking.asyncapi.generator.core.document
  *
  * @property source content and identity from which this document was read
  * @property root source-located root value, which is not required to be an object
- *
- * Expected behavior is covered by:
- * - `DocumentReaderContractTest`
- * - `YamlDocumentReaderTest`
  */
 internal data class InputDocument(
     val source: DocumentSource,

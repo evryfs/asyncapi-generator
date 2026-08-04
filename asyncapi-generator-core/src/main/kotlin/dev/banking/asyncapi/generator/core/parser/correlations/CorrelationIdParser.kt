@@ -10,21 +10,15 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COR
 
 /**
  * Parses AsyncAPI correlation ID objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `CorrelationIdParserTest`
  */
 internal class CorrelationIdParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseMap(parserNode: ParserNode): Map<String, CorrelationIdInterface> = buildMap {
-        val nodes = parserNode.expectObject().members()
-        nodes.forEach { node ->
-            val correlationId = parseElement(node)
-            put(node.name, correlationId)
+    fun parseMap(parserNode: ParserNode): Map<String, CorrelationIdInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(node: ParserNode): CorrelationIdInterface {
         val objectNode = node.expectObject()

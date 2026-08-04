@@ -9,7 +9,7 @@ data class Server(
     val host: String,
     val protocol: String,
     val protocolVersion: String? = null,
-    val pathName: String? = null,
+    val pathname: String? = null,
     val description: String? = null,
     val title: String? = null,
     val summary: String? = null,

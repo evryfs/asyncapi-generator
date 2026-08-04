@@ -7,17 +7,3 @@ components:
   tags:
     MissingName:
       description: "Missing name field"
-    NullName:
-      name: null
-    NullDescription:
-      name: "null-description"
-      description: null
-    NullReference:
-      $ref: null
-    NumericReference:
-      $ref: 42
-  tagContainers:
-    ArrayInsteadOfMap:
-      - "not-a-map"
-    ObjectInsteadOfList:
-      unexpected: "not-an-array"

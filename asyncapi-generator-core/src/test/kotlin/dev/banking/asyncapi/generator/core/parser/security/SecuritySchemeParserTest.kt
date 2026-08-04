@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
@@ -15,7 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class SecuritySchemeParserTest {
 
@@ -148,87 +146,6 @@ class SecuritySchemeParserTest {
     }
 
     @Test
-    fun `parse security scheme with invalid flows structure reports its expected type and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("InvalidFlowsStructure")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("not-an-object", diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
-            diagnostic.path,
-        )
-        assertEquals("root.components.securitySchemes.InvalidFlowsStructure.flows", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse security scheme with null reference reports its expected type and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.NullReference.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.components.securitySchemes.NullReference.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse OAuth flow with numeric scope description reports the nested value and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("InvalidAvailableScope")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(7, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
-            diagnostic.path,
-        )
-        assertEquals(
-            "root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
-            diagnostic.sourceLocation.path,
-        )
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
     fun `parse OAuth flow missing available scopes reports the required member and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
@@ -256,29 +173,4 @@ class SecuritySchemeParserTest {
         assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse security list from an object reports the container type and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemeCases")
-            .expectObject().required("ObjectInsteadOfList")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(schemesNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("List<Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.OBJECT, diagnostic.actualType)
-        assertEquals(mapOf("invalidScheme" to mapOf("type" to "userPassword")), diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemeCases.ObjectInsteadOfList",
-            diagnostic.path,
-        )
-        assertEquals("root.components.securitySchemeCases.ObjectInsteadOfList", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }

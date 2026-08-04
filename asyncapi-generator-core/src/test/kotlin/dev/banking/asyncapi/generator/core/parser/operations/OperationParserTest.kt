@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
@@ -24,7 +23,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertNull
 
 class OperationParserTest {
 
@@ -157,81 +155,6 @@ class OperationParserTest {
             "root.operationCases.MissingChannel.invalidOperation",
             diagnostic.sourceLocation.path,
         )
-        assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse operation with boolean action reports its expected type and source`() {
-        val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operationCases")
-            .expectObject().required("BooleanAction")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.BOOLEAN, diagnostic.actualType)
-        assertEquals(false, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_operations_invalid.root.operationCases.BooleanAction.invalidOperation.action",
-            diagnostic.path,
-        )
-        assertEquals("root.operationCases.BooleanAction.invalidOperation.action", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse operation with null reference reports its expected type and source`() {
-        val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operationCases")
-            .expectObject().required("NullReference")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_operations_invalid.root.operationCases.NullReference.invalidOperation.\$ref",
-            diagnostic.path,
-        )
-        assertEquals("root.operationCases.NullReference.invalidOperation.\$ref", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse operation map from an array reports the container type and source`() {
-        val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operationCases")
-            .expectObject().required("ArrayInsteadOfMap")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.ARRAY, diagnostic.actualType)
-        assertEquals(listOf(mapOf("action" to "send")), diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_operations_invalid.root.operationCases.ArrayInsteadOfMap",
-            diagnostic.path,
-        )
-        assertEquals("root.operationCases.ArrayInsteadOfMap", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 

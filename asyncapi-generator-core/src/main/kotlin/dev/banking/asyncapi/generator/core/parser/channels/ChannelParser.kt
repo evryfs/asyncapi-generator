@@ -18,12 +18,9 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHA
 
 /**
  * Parses AsyncAPI channel objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ChannelParserTest`
  */
 internal class ChannelParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
     private val tagParser: TagParser = TagParser(asyncApiContext)
@@ -33,11 +30,10 @@ internal class ChannelParser(
     private val parameterParser: ParameterParser = ParameterParser(asyncApiContext)
     private val externalDocsParser: ExternalDocsParser = ExternalDocsParser(asyncApiContext)
 
-    fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, ChannelInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): ChannelInterface {
         val objectNode = parserNode.expectObject()

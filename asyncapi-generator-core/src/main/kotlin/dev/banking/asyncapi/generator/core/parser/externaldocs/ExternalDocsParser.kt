@@ -10,21 +10,15 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.EXT
 
 /**
  * Parses AsyncAPI external documentation objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `ExternalDocsParserTest`
  */
 internal class ExternalDocsParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseMap(parserNode: ParserNode): Map<String, ExternalDocInterface> = buildMap {
-        val nodes = parserNode.expectObject().members()
-        nodes.forEach { node ->
-            val externalDoc = parseElement(node)
-            put(node.name, externalDoc)
+    fun parseMap(parserNode: ParserNode): Map<String, ExternalDocInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(node: ParserNode): ExternalDocInterface {
         val objectNode = node.expectObject()

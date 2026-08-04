@@ -5,34 +5,8 @@ info:
   description: "Info with missing fields"
 infoMissingVersion:
   title: Missing Version
-infoNullTitle:
-  title: null
-  version: 1.0.0
-infoNullDescription:
-  title: Null Description
-  version: 1.0.0
-  description: null
 infoMissingLicenseName:
   title: Missing License Name
   version: 1.0.0
   license:
     url: https://example.com/license
-infoInvalidExtensionName:
-  title: Invalid Extension Name
-  version: 1.0.0
-  X-ignored: case-sensitive
-components:
-  schemas:
-    InvalidTypeSchema:
-      # 'type' should be string or list of strings (in some versions), but here we test a number
-      type: 123
-
-    InvalidEnumSchema:
-      type: string
-      # 'enum' should be a list
-      enum: "not-a-list"
-
-    MissingDependenciesObject:
-      type: object
-      # dependencies should be an object/map
-      dependencies: ["wrong", "type"]

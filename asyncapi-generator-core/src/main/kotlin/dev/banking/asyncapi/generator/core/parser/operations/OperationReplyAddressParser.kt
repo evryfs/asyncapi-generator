@@ -10,20 +10,15 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
 
 /**
  * Parses AsyncAPI operation reply address objects from parser nodes.
- *
- * Expected behavior is covered by:
- * - `OperationReplyAddressParserTest`
- * - `OperationReplyParserTest`
  */
 internal class OperationReplyAddressParser(
-    val asyncApiContext: AsyncApiContext,
+    private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseMap(parserNode: ParserNode): Map<String, OperationReplyAddressInterface> = buildMap {
-        parserNode.expectObject().members().forEach { node ->
-            put(node.name, parseElement(node))
+    fun parseMap(parserNode: ParserNode): Map<String, OperationReplyAddressInterface> =
+        parserNode.expectObject().members().associate { node ->
+            node.name to parseElement(node)
         }
-    }
 
     fun parseElement(parserNode: ParserNode): OperationReplyAddressInterface {
         val objectNode = parserNode.expectObject()

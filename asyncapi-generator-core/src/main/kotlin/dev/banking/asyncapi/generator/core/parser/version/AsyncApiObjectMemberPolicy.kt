@@ -29,24 +29,15 @@ internal enum class AsyncApiObjectType(
     OAUTH_FLOW("OAuth Flow Object"),
 }
 
-internal data class ObjectMemberPolicy(
-    val allowedMembers: Set<String>,
-    val specificationExtensionsAllowed: Boolean,
-)
-
 /** Returns the fixed-member contract implemented by this parser profile. */
-internal fun AsyncApiParserProfile.objectMemberPolicy(objectType: AsyncApiObjectType): ObjectMemberPolicy =
+internal fun AsyncApiParserProfile.allowedMembers(objectType: AsyncApiObjectType): Set<String> =
     when (this) {
-        AsyncApiParserProfile.V3_0 -> V3_0_OBJECT_MEMBER_POLICIES.getValue(objectType)
+        AsyncApiParserProfile.V3_0 -> V3_0_OBJECT_MEMBERS.getValue(objectType)
     }
 
-private fun members(vararg names: String): ObjectMemberPolicy =
-    ObjectMemberPolicy(
-        allowedMembers = names.toSet(),
-        specificationExtensionsAllowed = true,
-    )
+private fun members(vararg names: String): Set<String> = names.toSet()
 
-private val V3_0_OBJECT_MEMBER_POLICIES: Map<AsyncApiObjectType, ObjectMemberPolicy> =
+private val V3_0_OBJECT_MEMBERS: Map<AsyncApiObjectType, Set<String>> =
     mapOf(
         AsyncApiObjectType.ASYNC_API to members(
             "asyncapi",
@@ -74,6 +65,7 @@ private val V3_0_OBJECT_MEMBER_POLICIES: Map<AsyncApiObjectType, ObjectMemberPol
             "host",
             "protocol",
             "protocolVersion",
+            "pathname",
             "description",
             "title",
             "summary",

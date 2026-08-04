@@ -10,16 +10,11 @@ import kotlin.reflect.typeOf
 
 /**
  * Represents one parser input node together with its source path and context.
- *
- * Expected behavior is covered by:
- * - `ParserNodeTest`
- * - parser package tests
  */
-internal class ParserNode internal constructor(
+internal class ParserNode(
     val name: String,
     val node: DocumentNode,
-    @PublishedApi
-    internal val address: NodeAddress,
+    val address: NodeAddress,
     val context: AsyncApiContext,
     val profile: AsyncApiParserProfile? = null,
 ) {
@@ -69,15 +64,14 @@ internal class ParserNode internal constructor(
                 ),
         )
 
+    @Suppress("UNCHECKED_CAST")
     inline fun <reified T> expect(): T =
-        ParserValueExpectation.cast(
-            ParserValueExpectation.expect(
-                node = node,
-                expectedType = typeOf<T>(),
-                address = address,
-                context = context,
-            ),
-        )
+        ParserValueExpectation.expect(
+            node = node,
+            expectedType = typeOf<T>(),
+            address = address,
+            context = context,
+        ) as T
 
     /** Converts this source-located node to plain maps, lists, scalars, or null. */
     fun toPlainValue(): Any? = node.toValue()

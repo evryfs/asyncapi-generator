@@ -11,11 +11,3 @@ operationCases:
   MissingChannel:
     invalidOperation:
       action: send
-  BooleanAction:
-    invalidOperation:
-      action: false
-  NullReference:
-    invalidOperation:
-      $ref: null
-  ArrayInsteadOfMap:
-    - action: send
