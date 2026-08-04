@@ -7,6 +7,7 @@ servers:
     host: 'test.mykafkacluster.org:{port}/{environment}'
     protocol: kafka-secure
     protocolVersion: '3.7'
+    pathname: '/vhosts/{environment}'
     title: SCRAM test broker
     summary: Kafka broker secured with SCRAM
     description: Test broker secured with scramSha256

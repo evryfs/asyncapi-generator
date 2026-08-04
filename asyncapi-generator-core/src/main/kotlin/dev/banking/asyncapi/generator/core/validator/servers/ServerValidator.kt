@@ -101,7 +101,7 @@ internal class ServerValidator(
             .findAll(host)
             .map { it.groupValues[1] }
             .toSet()
-        val pathVars = node.pathName
+        val pathVars = node.pathname
             ?.let(PARAMETER_PLACEHOLDER::findAll)
             ?.map { it.groupValues[1] }
             ?.toSet()
@@ -120,7 +120,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_VARIABLE_UNDEFINED,
                 "$contextString pathname uses variables $missingPathVars which are not defined in 'variables'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::pathName),
+                sourceLocation = asyncApiContext.getSourceLocation(node, node::pathname),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }

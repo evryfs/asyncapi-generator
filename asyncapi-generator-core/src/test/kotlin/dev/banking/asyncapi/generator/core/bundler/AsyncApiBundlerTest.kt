@@ -8,8 +8,11 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
+import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.servers.Server
+import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
@@ -51,6 +54,37 @@ class AsyncApiBundlerTest {
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
             .isEqualTo(expected)
+    }
+
+    @Test
+    fun `bundling preserves the specification server pathname in yaml and json`(
+        @TempDir tempDir: Path,
+    ) {
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Pathname API", version = "1.0.0"),
+            servers = mapOf(
+                "production" to ServerInterface.ServerInline(
+                    Server(
+                        host = "api.example.com",
+                        protocol = "https",
+                        pathname = "/{environment}",
+                    ),
+                ),
+            ),
+        )
+        val bundled = bundler.bundle(document)
+        val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
+        val jsonFile = tempDir.resolve("asyncapi.json").toFile()
+
+        AsyncApiRegistry.writeYaml(yamlFile, bundled)
+        AsyncApiRegistry.writeJson(jsonFile, bundled)
+
+        listOf(yamlFile, jsonFile).forEach { outputFile ->
+            assertThat(outputFile.readText())
+                .contains("pathname")
+                .doesNotContain("pathName")
+        }
     }
 
     @Test

@@ -9,7 +9,12 @@ servers:
     protocol: kafka
     # no variables map
 
-  # Case 2: Variable defined but unused (Warning)
+  missingPathnameVariableDefServer:
+    host: "api.com"
+    pathname: "/{environment}"
+    protocol: https
+
+  # Case 3: Variable defined but unused (Warning)
   unusedVariableServer:
     host: "api.com"
     protocol: kafka

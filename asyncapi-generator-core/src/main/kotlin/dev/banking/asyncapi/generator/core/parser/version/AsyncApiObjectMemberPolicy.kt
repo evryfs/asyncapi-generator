@@ -65,6 +65,7 @@ private val V3_0_OBJECT_MEMBERS: Map<AsyncApiObjectType, Set<String>> =
             "host",
             "protocol",
             "protocolVersion",
+            "pathname",
             "description",
             "title",
             "summary",

@@ -37,6 +37,7 @@ class ServerParserTest {
         assertEquals("test.mykafkacluster.org:{port}/{environment}", scram.host)
         assertEquals("kafka-secure", scram.protocol)
         assertEquals("3.7", scram.protocolVersion)
+        assertEquals("/vhosts/{environment}", scram.pathname)
         assertEquals("SCRAM test broker", scram.title)
         assertEquals("Kafka broker secured with SCRAM", scram.summary)
         assertEquals("Test broker secured with scramSha256", scram.description)

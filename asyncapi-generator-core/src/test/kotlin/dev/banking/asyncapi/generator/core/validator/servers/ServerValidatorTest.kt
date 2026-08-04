@@ -90,15 +90,22 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
             throwErrors(results)
         }
-        assertEquals(1, exception.errors.size, "Expected 1 error for missing variable definition.")
+        assertEquals(2, exception.errors.size, "Expected errors for missing variable definitions.")
 
-        assertEquals(1, results.findings.size)
+        assertEquals(2, results.findings.size)
         assertRule(
             results,
             rule = SERVER_VARIABLE_UNDEFINED,
             sourceFile = "asyncapi_validator_server_variable_mismatch.yaml",
             path = "asyncapi_validator_server_variable_mismatch.root.servers.missingVariableDefServer.host",
             line = 8,
+        )
+        assertRule(
+            results,
+            rule = SERVER_VARIABLE_UNDEFINED,
+            sourceFile = "asyncapi_validator_server_variable_mismatch.yaml",
+            path = "asyncapi_validator_server_variable_mismatch.root.servers.missingPathnameVariableDefServer.pathname",
+            line = 14,
         )
     }
 
@@ -141,7 +148,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
     fun `recognizes server variables used in pathname`() {
         val server = Server(
             host = "api.example.com",
-            pathName = "/{environment}",
+            pathname = "/{environment}",
             protocol = "https",
             variables = mapOf(
                 "environment" to ServerVariableInterface.ServerVariableInline(ServerVariable()),

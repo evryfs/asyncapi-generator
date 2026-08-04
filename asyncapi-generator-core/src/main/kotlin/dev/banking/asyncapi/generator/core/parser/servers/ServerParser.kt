@@ -52,6 +52,7 @@ internal class ServerParser(
                     host = objectNode.required("host").expect<String>(),
                     protocol = objectNode.required("protocol").expect<String>(),
                     protocolVersion = objectNode.optional("protocolVersion")?.expect<String>(),
+                    pathname = objectNode.optional("pathname")?.expect<String>(),
                     description = objectNode.optional("description")?.expect<String>(),
                     title = objectNode.optional("title")?.expect<String>(),
                     summary = objectNode.optional("summary")?.expect<String>(),
