@@ -17,11 +17,24 @@ class BundlingContextTest {
 
     @Test
     fun `enter returns a context with the visited reference`() {
+        val reference = Reference("#/components/schemas/User")
         val original = BundlingContext.empty()
 
-        val next = original.enter("#/components/schemas/User")
+        val next = original.enter(reference)
 
-        assertThat(original.hasVisited("#/components/schemas/User")).isFalse()
-        assertThat(next.hasVisited("#/components/schemas/User")).isTrue()
+        assertThat(next).isNotSameAs(original)
+        assertThat(original.hasVisited(reference)).isFalse()
+        assertThat(next.hasVisited(reference)).isTrue()
+    }
+
+    @Test
+    fun `references from different source documents have distinct traversal identities`() {
+        val first = Reference("#/components/schemas/User", sourceId = "first.yaml")
+        val second = Reference("#/components/schemas/User", sourceId = "second.yaml")
+
+        val context = BundlingContext.empty().enter(first)
+
+        assertThat(context.hasVisited(first)).isTrue()
+        assertThat(context.hasVisited(second)).isFalse()
     }
 }

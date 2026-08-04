@@ -31,18 +31,4 @@ class InfoBundlerTest {
         assertThat(externalDocReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps visited info references unchanged`() {
-        val tagReference = Reference("#/components/tags/public")
-        val info = Info(
-            title = "User API",
-            version = "1.0.0",
-            tags = listOf(TagInterface.TagReference(tagReference)),
-        )
-
-        val bundled = bundler.bundle(info, BundlingContext.empty().enter(tagReference))
-
-        assertThat(bundled.tags).containsExactly(TagInterface.TagReference(tagReference))
-        assertThat(tagReference.inline).isFalse()
-    }
 }

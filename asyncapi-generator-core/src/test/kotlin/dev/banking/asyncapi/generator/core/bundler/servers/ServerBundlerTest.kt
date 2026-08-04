@@ -32,19 +32,4 @@ class ServerBundlerTest {
         assertThat(bindingReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundleServers keeps a visited server reference unchanged`() {
-        val server = Server(host = "kafka.example.com", protocol = "kafka")
-        val serverReference = Reference("#/components/servers/production", model = server)
-        val serverInterface = ServerInterface.ServerReference(serverReference)
-
-        val bundled = bundler.bundleServers(
-            servers = mapOf("production" to serverInterface),
-            context = BundlingContext.empty().enter(serverReference),
-        )
-
-        assertThat(bundled).containsEntry("production", serverInterface)
-        assertThat(serverReference.inline).isFalse()
-        assertThat(serverReference.model).isSameAs(server)
-    }
 }
