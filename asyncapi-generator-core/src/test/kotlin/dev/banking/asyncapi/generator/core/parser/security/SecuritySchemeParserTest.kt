@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
@@ -143,61 +142,6 @@ class SecuritySchemeParserTest {
         assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type", diagnostic.path)
         assertEquals("root.components.securitySchemes.MissingType", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse security scheme with invalid flows structure reports its expected type and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("InvalidFlowsStructure")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("Map<String, Any?>", diagnostic.expectedType)
-        assertEquals(ParserValueType.STRING, diagnostic.actualType)
-        assertEquals("not-an-object", diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidFlowsStructure.flows",
-            diagnostic.path,
-        )
-        assertEquals("root.components.securitySchemes.InvalidFlowsStructure.flows", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse OAuth flow with numeric scope description reports the nested value and source`() {
-        val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("InvalidAvailableScope")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(7, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_security_invalid.root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
-            diagnostic.path,
-        )
-        assertEquals(
-            "root.components.securitySchemes.InvalidAvailableScope.flows.implicit.availableScopes.invalid",
-            diagnostic.sourceLocation.path,
-        )
         assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 

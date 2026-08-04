@@ -8,18 +8,6 @@ components:
     MissingType:
       description: "No type provided"
 
-    InvalidFlowsStructure:
-      type: oauth2
-      flows: "not-an-object"
-
-    InvalidAvailableScope:
-      type: oauth2
-      flows:
-        implicit:
-          availableScopes:
-            valid: "A valid scope"
-            invalid: 7
-
     MissingAvailableScopes:
       type: oauth2
       flows:

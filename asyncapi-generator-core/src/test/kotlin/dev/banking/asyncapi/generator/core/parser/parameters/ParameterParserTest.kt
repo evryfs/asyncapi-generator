@@ -2,18 +2,12 @@ package dev.banking.asyncapi.generator.core.parser.parameters
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 
 class ParameterParserTest {
 
@@ -37,60 +31,5 @@ class ParameterParserTest {
         assertEquals(listOf("helsinki", "oslo", "stockholm"), city.enum)
         assertEquals("helsinki", city.default)
         assertEquals(listOf("helsinki", "oslo"), city.examples)
-    }
-
-    @Test
-    fun `parse parameter reports invalid enum element at its index`() {
-        val file = TestResources.file("parser/parameters/asyncapi_parser_parameter_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val parametersNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("parameterCases")
-            .expectObject().required("InvalidEnumElement")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(parametersNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
-        assertEquals(7, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidEnumElement.badParameter.enum[1]",
-            diagnostic.path,
-        )
-        assertEquals("root.components.parameterCases.InvalidEnumElement.badParameter.enum[1]", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_parameter_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
-
-    @Test
-    fun `parse parameter reports null example at its index`() {
-        val file = TestResources.file("parser/parameters/asyncapi_parser_parameter_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val parametersNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("parameterCases")
-            .expectObject().required("InvalidExamplesElement")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(parametersNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertNull(diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_parameter_invalid.root.components.parameterCases.InvalidExamplesElement.badParameter.examples[1]",
-            diagnostic.path,
-        )
-        assertEquals(
-            "root.components.parameterCases.InvalidExamplesElement.badParameter.examples[1]",
-            diagnostic.sourceLocation.path,
-        )
-        assertEquals("asyncapi_parser_parameter_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 }

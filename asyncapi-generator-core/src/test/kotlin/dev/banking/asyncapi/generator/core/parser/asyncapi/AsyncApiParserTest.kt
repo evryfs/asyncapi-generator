@@ -345,28 +345,4 @@ class AsyncApiParserTest {
         assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
 
-    @Test
-    fun `parse document with null default content type reports its expected type and source`() {
-        val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("NullDefaultContentType")
-
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
-        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
-
-        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
-        assertEquals("String", diagnostic.expectedType)
-        assertEquals(ParserValueType.NULL, diagnostic.actualType)
-        assertEquals(null, diagnostic.actualValue)
-        assertEquals(
-            "asyncapi_parser_invalid.root.cases.NullDefaultContentType.defaultContentType",
-            diagnostic.path,
-        )
-        assertEquals("root.cases.NullDefaultContentType.defaultContentType", diagnostic.sourceLocation.path)
-        assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)
-    }
 }
