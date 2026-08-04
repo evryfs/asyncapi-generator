@@ -12,17 +12,15 @@ internal class MessageExampleParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
 
-    fun parseList(parserNode: ParserNode): List<MessageExample> = buildList {
-        parserNode.expectArray().elements().forEach { node ->
+    fun parseList(parserNode: ParserNode): List<MessageExample> =
+        parserNode.expectArray().elements().map { node ->
             val objectNode = node.expectObject()
             objectNode.expectOnlyMembers(MESSAGE_EXAMPLE)
-            val messageExample = MessageExample(
+            MessageExample(
                 headers = objectNode.optional("headers")?.expect<Map<String, Any?>>(),
                 payload = objectNode.optional("payload")?.toPlainValue(),
                 name = objectNode.optional("name")?.expect<String>(),
                 summary = objectNode.optional("summary")?.expect<String>()
             ).also { asyncApiContext.register(it, node) }
-            add(messageExample)
         }
-    }
 }

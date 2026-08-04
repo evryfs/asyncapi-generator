@@ -16,8 +16,6 @@ import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
-import kotlin.String
-import kotlin.collections.Map
 
 /**
  * Parses AsyncAPI schema objects from parser nodes.
@@ -84,7 +82,6 @@ internal class SchemaParser(
         }
         return parseSchema(parserNode)
     }
-
 
     private fun parseSchema(parserNode: ParserNode): SchemaInterface {
         val objectNode = parserNode.expectObject()
