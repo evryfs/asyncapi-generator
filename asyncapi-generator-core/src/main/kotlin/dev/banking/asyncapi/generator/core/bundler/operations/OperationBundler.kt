@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
  * Expected behavior is covered by:
  * - `OperationBundlerTest`
  */
-class OperationBundler {
+internal class OperationBundler {
 
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
@@ -23,13 +23,6 @@ class OperationBundler {
     private val bindingBundler = BindingBundler()
     private val operationTraitBundler = OperationTraitBundler()
     private val operationReplyBundler = OperationReplyBundler()
-
-    fun bundleMap(
-        operations: Map<String, OperationInterface>?,
-        visited: Set<String>,
-    ): Map<String, OperationInterface>? =
-        bundleMap(operations, BundlingContext.from(visited))
-
     fun bundleMap(
         operations: Map<String, OperationInterface>?,
         context: BundlingContext,
@@ -39,10 +32,6 @@ class OperationBundler {
             bundle(opInterface, context)
         }
     }
-
-    fun bundle(operationInterface: OperationInterface, visited: Set<String>): OperationInterface =
-        bundle(operationInterface, BundlingContext.from(visited))
-
     fun bundle(operationInterface: OperationInterface, context: BundlingContext): OperationInterface =
         when (operationInterface) {
             is OperationInterface.OperationInline ->
@@ -60,10 +49,6 @@ class OperationBundler {
                 operationInterface
             }
         }
-
-    fun bundleOperation(operation: Operation, visited: Set<String>): Operation =
-        bundleOperation(operation, BundlingContext.from(visited))
-
     fun bundleOperation(operation: Operation, context: BundlingContext): Operation {
         val bundledBindings = bindingBundler.bundleMap(operation.bindings, context)
         val bundledTraits = operationTraitBundler.bundleList(operation.traits, context)

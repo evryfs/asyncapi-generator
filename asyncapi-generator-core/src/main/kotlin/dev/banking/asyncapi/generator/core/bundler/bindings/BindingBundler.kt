@@ -11,14 +11,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
  * Expected behavior is covered by:
  * - `BindingBundlerTest`
  */
-class BindingBundler {
-
-    fun bundleMap(
-        bindings: Map<String, BindingInterface>?,
-        visited: Set<String>
-    ): Map<String, BindingInterface>? =
-        bundleMap(bindings, BundlingContext.from(visited))
-
+internal class BindingBundler {
     fun bundleMap(
         bindings: Map<String, BindingInterface>?,
         context: BundlingContext,
@@ -26,10 +19,6 @@ class BindingBundler {
         bindings?.mapValues { (_, binding) ->
             bundle(binding, context)
         }
-
-    fun bundle(binding: BindingInterface, visited: Set<String>): BindingInterface =
-        bundle(binding, BundlingContext.from(visited))
-
     fun bundle(binding: BindingInterface, context: BundlingContext): BindingInterface =
         when (binding) {
             is BindingInterface.BindingInline -> {

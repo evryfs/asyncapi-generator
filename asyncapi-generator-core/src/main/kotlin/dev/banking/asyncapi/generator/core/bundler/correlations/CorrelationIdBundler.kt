@@ -10,14 +10,7 @@ import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInter
  * Expected behavior is covered by:
  * - `CorrelationIdBundlerTest`
  */
-class CorrelationIdBundler {
-
-    fun bundleMap(
-        correlationIds: Map<String, CorrelationIdInterface>?,
-        visited: Set<String>,
-    ): Map<String, CorrelationIdInterface>? =
-        bundleMap(correlationIds, BundlingContext.from(visited))
-
+internal class CorrelationIdBundler {
     fun bundleMap(
         correlationIds: Map<String, CorrelationIdInterface>?,
         context: BundlingContext,
@@ -25,10 +18,6 @@ class CorrelationIdBundler {
         correlationIds?.mapValues { (_, correlationId) ->
             bundle(correlationId, context)
         }
-
-    fun bundle(correlationId: CorrelationIdInterface, visited: Set<String>): CorrelationIdInterface =
-        bundle(correlationId, BundlingContext.from(visited))
-
     fun bundle(correlationId: CorrelationIdInterface, context: BundlingContext): CorrelationIdInterface =
         when (correlationId) {
             is CorrelationIdInterface.CorrelationIdReference -> {

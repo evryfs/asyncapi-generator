@@ -16,27 +16,19 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
  * Expected behavior is covered by:
  * - `ChannelBundlerTest`
  */
-class ChannelBundler {
+internal class ChannelBundler {
 
     private val messagesBundler: MessagesBundler = MessagesBundler()
     private val parameterBundler: ParameterBundler = ParameterBundler()
     private val tagBundler: TagBundler = TagBundler()
     private val externalDocsBundler: ExternalDocsBundler = ExternalDocsBundler()
     private val bindingBundler = BindingBundler()
-
-    fun bundleMap(channels: Map<String, ChannelInterface>?, visited: Set<String>): Map<String, ChannelInterface>? =
-        bundleMap(channels, BundlingContext.from(visited))
-
     fun bundleMap(channels: Map<String, ChannelInterface>?, context: BundlingContext): Map<String, ChannelInterface>? {
         if (channels == null) return null
         return channels.mapValues { (_, channelInterface) ->
             bundle(channelInterface, context)
         }
     }
-
-    fun bundle(channelInterface: ChannelInterface, visited: Set<String>): ChannelInterface =
-        bundle(channelInterface, BundlingContext.from(visited))
-
     fun bundle(channelInterface: ChannelInterface, context: BundlingContext): ChannelInterface =
         when (channelInterface) {
             is ChannelInterface.ChannelInline ->
@@ -53,10 +45,6 @@ class ChannelBundler {
                 channelInterface
             }
         }
-
-    fun bundleChannel(channel: Channel, visited: Set<String>): Channel =
-        bundleChannel(channel, BundlingContext.from(visited))
-
     fun bundleChannel(channel: Channel, context: BundlingContext): Channel {
         val bundledMessages = messagesBundler.bundleMap(channel.messages, context)
         val bundledParameters = parameterBundler.bundleMap(channel.parameters, context)

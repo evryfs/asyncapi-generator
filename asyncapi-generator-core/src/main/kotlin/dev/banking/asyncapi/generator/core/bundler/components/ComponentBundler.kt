@@ -28,7 +28,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Expected behavior is covered by:
  * - `ComponentBundlerTest`
  */
-class ComponentBundler {
+internal class ComponentBundler {
 
     private val schemaBundler = SchemaBundler()
     private val serverBundler = ServerBundler()
@@ -46,13 +46,6 @@ class ComponentBundler {
     private val operationReplyAddressBundler = OperationReplyAddressBundler()
     private val bindingBundler = BindingBundler()
     private val serverVariableBundler = ServerVariableBundler()
-
-    fun bundleComponents(
-        components: ComponentInterface?,
-        visited: Set<String>,
-    ): ComponentInterface? =
-        bundleComponents(components, BundlingContext.from(visited))
-
     fun bundleComponents(
         components: ComponentInterface?,
         context: BundlingContext,
@@ -75,10 +68,6 @@ class ComponentBundler {
             }
         }
     }
-
-    fun bundleComponent(component: Component, visited: Set<String>): Component =
-        bundleComponent(component, BundlingContext.from(visited))
-
     fun bundleComponent(component: Component, context: BundlingContext): Component {
         val bundledSchemas = schemaBundler.bundleComponentMap(component.schemas, context)
         val bundledServers = component.servers?.let { serverBundler.bundleServers(it, context) }

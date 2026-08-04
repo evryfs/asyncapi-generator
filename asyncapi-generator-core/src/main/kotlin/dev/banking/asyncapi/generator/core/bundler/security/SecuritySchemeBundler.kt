@@ -10,11 +10,7 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
  * Expected behavior is covered by:
  * - `SecuritySchemeBundlerTest`
  */
-class SecuritySchemeBundler {
-
-    fun bundleMap(schemes: Map<String, SecuritySchemeInterface>?, visited: Set<String>): Map<String, SecuritySchemeInterface>? =
-        bundleMap(schemes, BundlingContext.from(visited))
-
+internal class SecuritySchemeBundler {
     fun bundleMap(
         schemes: Map<String, SecuritySchemeInterface>?,
         context: BundlingContext,
@@ -22,10 +18,6 @@ class SecuritySchemeBundler {
         schemes?.mapValues { (_, scheme) ->
             bundle(scheme, context)
         }
-
-    fun bundleList(schemes: List<SecuritySchemeInterface>?, visited: Set<String>): List<SecuritySchemeInterface>? =
-        bundleList(schemes, BundlingContext.from(visited))
-
     fun bundleList(
         schemes: List<SecuritySchemeInterface>?,
         context: BundlingContext,

@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Expected behavior is covered by:
  * - `BundlingContextTest`
  */
-class BundlingContext private constructor(
+internal class BundlingContext private constructor(
     private val visitedReferences: Set<ReferenceIdentity>,
     internal val schemaPromotions: PromotedSchemaRegistry,
     internal val schemaRecursion: SchemaRecursionAnalyzer,
@@ -32,14 +32,8 @@ class BundlingContext private constructor(
     fun hasVisited(reference: Reference): Boolean =
         ReferenceIdentity(reference.sourceId, reference.ref) in visitedReferences
 
-    fun hasVisited(reference: String): Boolean =
-        ReferenceIdentity(null, reference) in visitedReferences
-
     fun enter(reference: Reference): BundlingContext =
         copy(visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref))
-
-    fun enter(reference: String): BundlingContext =
-        copy(visitedReferences = visitedReferences + ReferenceIdentity(null, reference))
 
     internal fun enterExternalSchema(reference: Reference): BundlingContext =
         copy(
@@ -68,7 +62,7 @@ class BundlingContext private constructor(
         )
 
     companion object {
-        fun empty(): BundlingContext = withRootSchemas(emptyMap())
+        internal fun empty(): BundlingContext = withRootSchemas(emptyMap())
 
         internal fun withRootSchemas(rootSchemas: Map<String, SchemaInterface>): BundlingContext =
             BundlingContext(
@@ -79,11 +73,5 @@ class BundlingContext private constructor(
                 rootSchemaDefinition = null,
             )
 
-        fun from(visitedReferences: Set<String>): BundlingContext =
-            empty().copy(
-                visitedReferences = visitedReferences.mapTo(linkedSetOf()) { reference ->
-                    ReferenceIdentity(null, reference)
-                },
-            )
     }
 }

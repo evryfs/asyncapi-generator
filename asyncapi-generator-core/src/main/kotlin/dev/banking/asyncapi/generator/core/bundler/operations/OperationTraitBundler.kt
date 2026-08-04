@@ -15,40 +15,22 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
  * Expected behavior is covered by:
  * - `OperationTraitBundlerTest`
  */
-class OperationTraitBundler {
+internal class OperationTraitBundler {
 
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val securitySchemeBundler = SecuritySchemeBundler()
     private val bindingBundler = BindingBundler()
-
-    fun bundleMap(
-        traits: Map<String, OperationTraitInterface>?,
-        visited: Set<String>
-    ): Map<String, OperationTraitInterface>? =
-        bundleMap(traits, BundlingContext.from(visited))
-
     fun bundleMap(
         traits: Map<String, OperationTraitInterface>?,
         context: BundlingContext,
     ): Map<String, OperationTraitInterface>? =
         traits?.mapValues { (_, trait) -> bundle(trait, context) }
-
-    fun bundleList(
-        traits: List<OperationTraitInterface>?,
-        visited: Set<String>
-    ): List<OperationTraitInterface>? =
-        bundleList(traits, BundlingContext.from(visited))
-
     fun bundleList(
         traits: List<OperationTraitInterface>?,
         context: BundlingContext,
     ): List<OperationTraitInterface>? =
         traits?.map { trait -> bundle(trait, context) }
-
-    fun bundle(traitInterface: OperationTraitInterface, visited: Set<String>): OperationTraitInterface =
-        bundle(traitInterface, BundlingContext.from(visited))
-
     fun bundle(traitInterface: OperationTraitInterface, context: BundlingContext): OperationTraitInterface =
         when (traitInterface) {
             is OperationTraitInterface.OperationTraitInline ->

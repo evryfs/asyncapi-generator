@@ -11,14 +11,10 @@ import dev.banking.asyncapi.generator.core.model.info.Info
  * Expected behavior is covered by:
  * - `InfoBundlerTest`
  */
-class InfoBundler {
+internal class InfoBundler {
 
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
-
-    fun bundle(info: Info, visited: Set<String>): Info =
-        bundle(info, BundlingContext.from(visited))
-
     fun bundle(info: Info, context: BundlingContext): Info {
         val bundledTags = tagBundler.bundleList(info.tags, context)
         val bundledExternalDocs = info.externalDocs?.let { externalDocsBundler.bundle(it, context) }
