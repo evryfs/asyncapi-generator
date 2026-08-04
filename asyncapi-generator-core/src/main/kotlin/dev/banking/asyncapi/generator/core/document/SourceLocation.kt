@@ -16,9 +16,6 @@ import java.io.File
  * @property path reader/parser path of the value within the source
  * @property line one-based source line
  * @property column one-based source column
- *
- * Expected behavior is covered by:
- * - `DocumentLocationTest`
  */
 data class SourceLocation(
     val sourceId: String,

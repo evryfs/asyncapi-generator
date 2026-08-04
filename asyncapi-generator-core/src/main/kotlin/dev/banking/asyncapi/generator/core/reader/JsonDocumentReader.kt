@@ -20,6 +20,8 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.document.InputDocument
 import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
+import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 
 /**
  * Reads JSON input into an [InputDocument].
@@ -30,7 +32,6 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * Expected behavior is covered by:
  * - `JsonDocumentReaderTest`
  * - `DocumentReaderContractTest`
- * - `DocumentLocationTest`
  */
 internal class JsonDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
@@ -127,7 +128,7 @@ internal class JsonDocumentReader(
             }
 
             val key = parser.currentName()
-            val keyPath = "$path.$key"
+            val keyPath = appendDocumentMember(path, key)
             val keyLocation = locationOf(source, keyPath, parser.currentTokenLocation())
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(
@@ -159,7 +160,7 @@ internal class JsonDocumentReader(
             if (token == JsonToken.END_ARRAY) {
                 return DocumentArray(result, location)
             }
-            result += parseNode(parser, token, "$path[${result.size}]", source)
+            result += parseNode(parser, token, appendDocumentIndex(path, result.size), source)
         }
     }
 

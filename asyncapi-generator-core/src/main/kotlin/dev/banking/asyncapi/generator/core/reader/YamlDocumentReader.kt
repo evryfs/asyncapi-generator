@@ -11,6 +11,8 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.document.InputDocument
 import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
+import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 import org.yaml.snakeyaml.DumperOptions.ScalarStyle.PLAIN
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml
@@ -35,7 +37,6 @@ import org.yaml.snakeyaml.reader.ReaderException
  * Expected behavior is covered by:
  * - `YamlDocumentReaderTest`
  * - `DocumentReaderContractTest`
- * - `DocumentLocationTest`
  */
 internal class YamlDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
@@ -115,7 +116,7 @@ internal class YamlDocumentReader(
         requireYamlTag(node, Tag.SEQ, location)
         return DocumentArray(
             elements = node.value.mapIndexed { index, child ->
-                parseNode(child, "$path[$index]", source)
+                parseNode(child, appendDocumentIndex(path, index), source)
             },
             location = location,
         )
@@ -133,14 +134,14 @@ internal class YamlDocumentReader(
             val keyNode = tuple.keyNode as? ScalarNode
                 ?: throw invalidMappingKey(source, path, tuple.keyNode.startMark)
             if (keyNode.tag != Tag.STR) {
-                throw invalidMappingKey(source, "$path.${keyNode.value}", keyNode.startMark)
+                throw invalidMappingKey(source, appendDocumentMember(path, keyNode.value), keyNode.startMark)
             }
             val key = keyNode.value
-            val keyLocation = locationOf(source, "$path.$key", keyNode.startMark)
+            val keyPath = appendDocumentMember(path, key)
+            val keyLocation = locationOf(source, keyPath, keyNode.startMark)
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(source.file, key, keyLocation)
             }
-            val keyPath = "$path.$key"
             result[key] = DocumentMember(
                 keyLocation = keyLocation,
                 value = parseNode(tuple.valueNode, keyPath, source),
