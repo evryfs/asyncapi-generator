@@ -37,7 +37,6 @@ import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerVariableParser
 import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
 import dev.banking.asyncapi.generator.core.validator.ReferenceTargetTraversal
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
@@ -296,7 +295,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit = {
-        val results = ValidationCollector(AsyncApiValidationProfile.V3_0)
+        val results = ValidationCollector()
         validate(results)
         ReferenceTargetTraversal(context).drain(results)
         val report = results.report()

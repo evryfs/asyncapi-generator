@@ -12,9 +12,7 @@ internal class BindingValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
     private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }
-    private val protocolValidators: Map<String, ProtocolValidator> = mapOf(
-        "kafka" to KafkaBindingValidator(asyncApiContext),
-    )
+    private val kafkaBindingValidator = KafkaBindingValidator(asyncApiContext)
 
     fun validate(binding: Binding, bindingName: String, results: ValidationCollector) {
         if (!results.visit(binding)) return
@@ -56,6 +54,8 @@ internal class BindingValidator(
 
         @Suppress("UNCHECKED_CAST")
         val stringProperties = properties as Map<String, Any?>
-        protocolValidators[binding.protocol]?.validate(binding, stringProperties, results)
+        if (binding.protocol == "kafka") {
+            kafkaBindingValidator.validate(binding, stringProperties, results)
+        }
     }
 }

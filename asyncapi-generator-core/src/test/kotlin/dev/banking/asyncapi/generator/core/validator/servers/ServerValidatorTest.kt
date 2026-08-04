@@ -15,7 +15,6 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
@@ -154,7 +153,7 @@ class ServerValidatorTest : AbstractValidatorTest() {
                 "environment" to ServerVariableInterface.ServerVariableInline(ServerVariable()),
             ),
         )
-        val collector = ValidationCollector(AsyncApiValidationProfile.V3_0)
+        val collector = ValidationCollector()
 
         ServerValidator(asyncApiContext).validateInterface(
             ServerInterface.ServerInline(server),

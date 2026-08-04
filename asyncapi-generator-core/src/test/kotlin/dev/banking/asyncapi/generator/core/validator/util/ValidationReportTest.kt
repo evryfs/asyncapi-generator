@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUME
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertContains
@@ -29,7 +28,7 @@ class ValidationReportTest {
             line = 8,
             column = 5,
         )
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
 
         collector.error(DOCUMENT_ID_FORMAT, "Invalid identifier.", sourceLocation)
         collector.warn(DOCUMENT_ID_URN_RECOMMENDED, "Prefer a URN.", sourceLocation)
@@ -55,7 +54,7 @@ class ValidationReportTest {
 
     @Test
     fun `report is a snapshot of collector state`() {
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
         collector.error(DOCUMENT_ID_FORMAT, "First error.")
         val report = collector.report()
 
@@ -86,7 +85,7 @@ class ValidationReportTest {
             column = 1,
         )
         context.registerSourceLocation(sourceLocation.path, sourceLocation)
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
         collector.error(DOCUMENT_ID_FORMAT, "Unsupported AsyncAPI version.", sourceLocation)
         val report = collector.report()
 

@@ -8,14 +8,11 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
 import java.util.Collections
 import java.util.IdentityHashMap
 
 /** Mutable validation state confined to one validator invocation. */
-class ValidationCollector internal constructor(
-    internal val profile: AsyncApiValidationProfile,
-) {
+class ValidationCollector internal constructor() {
     internal data class PendingReferenceTarget(
         val category: ReferenceCategoryKey,
         val target: Any,

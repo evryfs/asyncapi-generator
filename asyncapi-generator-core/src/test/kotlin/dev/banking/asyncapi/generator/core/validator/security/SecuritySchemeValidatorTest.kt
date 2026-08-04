@@ -22,7 +22,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -181,7 +180,7 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
                 ),
             ),
         )
-        val collector = ValidationCollector(AsyncApiValidationProfile.V3_0)
+        val collector = ValidationCollector()
 
         OAuthFlowsValidator(asyncApiContext).validate(scheme, "Security Scheme", collector)
         val results = collector.report()

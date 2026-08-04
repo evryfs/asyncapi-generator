@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
@@ -175,7 +174,7 @@ class BindingValidatorTest : AbstractValidatorTest() {
                 ),
             ),
         )
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
 
         BindingValidator(asyncApiContext).validate(binding, "Programmatic binding", collector)
 

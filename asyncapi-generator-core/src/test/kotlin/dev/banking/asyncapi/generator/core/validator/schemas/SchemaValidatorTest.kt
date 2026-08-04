@@ -39,7 +39,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidationProfile.V3_0
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -103,7 +102,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `malformed programmatic type array produces a finding instead of throwing`() {
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
 
         SchemaValidator(asyncApiContext).validate(
             Schema(type = listOf("string", 42)),
@@ -118,7 +117,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `malformed programmatic property dependency produces a finding instead of throwing`() {
-        val collector = ValidationCollector(V3_0)
+        val collector = ValidationCollector()
 
         SchemaValidator(asyncApiContext).validate(
             Schema(dependencies = mapOf("property" to listOf(42))),

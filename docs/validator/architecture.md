@@ -11,14 +11,13 @@ The reader owns syntax and source coordinates. The parser owns structural interp
 ```text
 AsyncApiDocument
     -> AsyncApiValidator
-    -> AsyncApiValidationProfile
     -> domain validators and reference resolution
     -> ValidationCollector (invocation-local mutable state)
     -> ValidationReport (immutable public result)
     -> ValidationReporter or frontend-specific rendering
 ```
 
-`AsyncApiValidator` selects the validation profile once from the parsed specification version. Validators receive the collector selected for that invocation; they do not compare raw version strings.
+`AsyncApiValidator` applies the supported AsyncAPI 3.0 validation rules to the parsed document. Version selection and support are enforced before validation by the parser.
 
 `ValidationCollector` is mutable only while one validation is running. Each finding is created from a catalogued `ValidationRule`. `ValidationReport` snapshots the findings and exposes read-only `findings`, `errors`, and `warnings` lists. Logging and exception construction happen after validation through `ValidationReporter`, except where a frontend intentionally controls its own output channel.
 
@@ -73,4 +72,4 @@ The [rule inventory](rules.md) records the implemented rule catalog, its authori
 
 An external AsyncAPI document is parsed and validated as a document. A fragment selected from a non-AsyncAPI document is parsed and validated only as the requested AsyncAPI object category. Unrelated surrounding OpenAPI, JSON Schema, or plain YAML content is outside the validator boundary.
 
-External fragment validation uses the AsyncAPI 3.0 profile because that is the only parser and validator profile implemented. Reachable fragment targets enter the same category-specific traversal as inline objects, while unrelated content in the surrounding foreign document remains outside the validation boundary.
+External fragment validation uses the AsyncAPI 3.0 rules because that is the only parser and validator version implemented. Reachable fragment targets enter the same category-specific traversal as inline objects, while unrelated content in the surrounding foreign document remains outside the validation boundary.

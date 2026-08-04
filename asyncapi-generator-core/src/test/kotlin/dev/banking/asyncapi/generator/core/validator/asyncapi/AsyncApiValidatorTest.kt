@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUME
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.ValidationStage
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -19,16 +18,6 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
         logWarnings(validationResults)
         throwErrors(validationResults)
-    }
-
-    @Test
-    fun `validates parsed document through validator stage contract`() {
-        val asyncApiDocument = parse("validator/info/asyncapi_validator_info_valid_simple.yaml")
-        val validationStage: ValidationStage = asyncApiValidator
-
-        val validationResults = validationStage.validate(asyncApiDocument)
-
-        assertNoFindings(validationResults)
     }
 
     @Test
