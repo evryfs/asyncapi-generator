@@ -1,0 +1,9 @@
+components:
+  schemas:
+    OrderPayload:
+      type: object
+      required:
+        - orderId
+      properties:
+        orderId:
+          type: string

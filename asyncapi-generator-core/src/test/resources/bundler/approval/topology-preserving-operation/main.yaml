@@ -1,0 +1,23 @@
+asyncapi: 3.0.0
+info:
+  title: Topology-Preserving Operation
+  version: 1.0.0
+servers:
+  kafka:
+    host: order.kafka.local:9092
+    protocol: kafka
+channels:
+  orders:
+    address: orders
+    servers:
+      - $ref: '#/servers/kafka'
+    messages:
+      orderCreated:
+        $ref: './messages.yaml#/components/messages/orderCreated'
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/orderCreated'
