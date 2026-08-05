@@ -1,0 +1,13 @@
+asyncapi: 3.0.0
+info:
+  title: Shared Channels for Multi-File Test
+  version: 1.0.0
+channels:
+  externalAuditChannel:
+    address: "external.audit"
+    description: "External audit events channel defined in shared file"
+    messages:
+      externalAuditMessage:
+        name: "ExternalAuditMessage"
+        payload:
+          $ref: 'asyncapi_multifile_example_schemas.yaml#/components/schemas/auditMetadata'

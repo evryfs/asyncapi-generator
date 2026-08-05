@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Shared Tags for Multi-File Test
+  version: 1.0.0
+components:
+  tags:
+    shared:
+      name: shared
+      description: Shared server tag used across environments
+    scram:
+      name: scram
+      description: SCRAM-based Kafka cluster
+    mtls:
+      name: mtls
+      description: mTLS-protected Kafka cluster
