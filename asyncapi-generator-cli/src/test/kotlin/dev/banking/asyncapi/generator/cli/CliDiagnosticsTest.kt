@@ -69,7 +69,7 @@ class CliDiagnosticsTest {
     }
 
     @Test
-    fun `should report formatted warnings and complete generation`(@TempDir tempDir: Path) {
+    fun `should accept an arbitrary application version and complete generation`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-validation-warning.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
 
@@ -84,11 +84,9 @@ class CliDiagnosticsTest {
             )
 
         assertEquals(0, result.statusCode)
-        assertTrue(result.stderr.contains("Validation found 1 warning(s):"))
-        assertTrue(result.stderr.contains("Info 'version' field contains unusual characters."))
-        assertTrue(result.stderr.contains("asyncapi-validation-warning.yaml"))
-        assertTrue(result.stderr.contains("version: release-candidate"))
+        assertTrue(result.stderr.isBlank(), result.stderr)
         assertTrue(result.stdout.contains("Generation complete."))
         assertTrue(outputFile.exists())
+        assertTrue(outputFile.readText().contains("version: release-candidate"))
     }
 }

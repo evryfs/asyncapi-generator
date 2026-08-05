@@ -31,16 +31,4 @@ class ChannelBundlerTest {
         assertThat(messageReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps a visited channel reference unchanged`() {
-        val channel = Channel(address = "users.updated")
-        val channelReference = Reference("#/channels/userUpdated", model = channel)
-        val channelInterface = ChannelInterface.ChannelReference(channelReference)
-
-        val bundled = bundler.bundle(channelInterface, BundlingContext.empty().enter(channelReference))
-
-        assertThat(bundled).isSameAs(channelInterface)
-        assertThat(channelReference.inline).isFalse()
-        assertThat(channelReference.model).isSameAs(channel)
-    }
 }

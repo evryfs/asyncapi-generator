@@ -19,12 +19,10 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Expected behavior is covered by:
  * - `SchemaBundlerTest`
  */
-class SchemaBundler {
+internal class SchemaBundler {
 
     private val externalDocsBundler = ExternalDocsBundler()
     private val bindingsBundler = BindingBundler()
-    fun bundleMap(schemas: Map<String, SchemaInterface>?, visited: Set<String>): Map<String, SchemaInterface>? =
-        bundleMap(schemas, BundlingContext.from(visited))
 
     fun bundleMap(schemas: Map<String, SchemaInterface>?, context: BundlingContext): Map<String, SchemaInterface>? =
         schemas?.mapValues { (_, schemaInterface) ->
@@ -38,21 +36,10 @@ class SchemaBundler {
         schemas?.mapValues { (name, schemaInterface) ->
             bundle(schemaInterface, context.defineRootSchema(name))
         }
-
-    fun bundleList(schemas: List<SchemaInterface>?, visited: Set<String>): List<SchemaInterface>? =
-        bundleList(schemas, BundlingContext.from(visited))
-
     fun bundleList(schemas: List<SchemaInterface>?, context: BundlingContext): List<SchemaInterface>? =
         schemas?.map { schemaInterface -> bundle(schemaInterface, context) }
-
-    fun bundle(schemaInterface: SchemaInterface?, visited: Set<String>): SchemaInterface =
-        bundle(schemaInterface, BundlingContext.from(visited))
-
-    fun bundle(schemaInterface: SchemaInterface?, context: BundlingContext): SchemaInterface =
+    fun bundle(schemaInterface: SchemaInterface, context: BundlingContext): SchemaInterface =
         when (schemaInterface) {
-            null ->
-                throw IllegalArgumentException("Schema Interface $schemaInterface is not recognized")
-
             is SchemaInterface.SchemaInline ->
                 SchemaInterface.SchemaInline(
                     bundleSchema(schemaInterface.schema, context)

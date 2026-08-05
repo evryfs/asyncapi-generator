@@ -10,14 +10,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
  * Expected behavior is covered by:
  * - `ServerVariableBundlerTest`
  */
-class ServerVariableBundler {
-
-    fun bundleMap(
-        variables: Map<String, ServerVariableInterface>?,
-        visited: Set<String>
-    ): Map<String, ServerVariableInterface>? =
-        bundleMap(variables, BundlingContext.from(visited))
-
+internal class ServerVariableBundler {
     fun bundleMap(
         variables: Map<String, ServerVariableInterface>?,
         context: BundlingContext,
@@ -25,10 +18,6 @@ class ServerVariableBundler {
         variables?.mapValues { (_, variable) ->
             bundle(variable, context)
         }
-
-    fun bundle(variable: ServerVariableInterface, visited: Set<String>): ServerVariableInterface =
-        bundle(variable, BundlingContext.from(visited))
-
     fun bundle(variable: ServerVariableInterface, context: BundlingContext): ServerVariableInterface =
         when (variable) {
             is ServerVariableInterface.ServerVariableInline -> {

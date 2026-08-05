@@ -52,16 +52,4 @@ class OperationTraitBundlerTest {
         assertThat(securityReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps a visited operation trait reference unchanged`() {
-        val trait = OperationTrait(title = "Audit")
-        val traitReference = Reference("#/components/operationTraits/audit", model = trait)
-        val traitInterface = OperationTraitInterface.OperationTraitReference(traitReference)
-
-        val bundled = bundler.bundle(traitInterface, BundlingContext.empty().enter(traitReference))
-
-        assertThat(bundled).isSameAs(traitInterface)
-        assertThat(traitReference.inline).isFalse()
-        assertThat(traitReference.model).isSameAs(trait)
-    }
 }

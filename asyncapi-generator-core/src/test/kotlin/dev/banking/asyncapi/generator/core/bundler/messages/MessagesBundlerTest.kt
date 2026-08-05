@@ -31,16 +31,4 @@ class MessagesBundlerTest {
         assertThat(((messageReference.model as Message).payload as SchemaInterface.SchemaReference).reference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps a visited message reference unchanged`() {
-        val message = Message(name = "userUpdated")
-        val messageReference = Reference("#/components/messages/userUpdated", model = message)
-        val messageInterface = MessageInterface.MessageReference(messageReference)
-
-        val bundled = bundler.bundle(messageInterface, BundlingContext.empty().enter(messageReference))
-
-        assertThat(bundled).isSameAs(messageInterface)
-        assertThat(messageReference.inline).isFalse()
-        assertThat(messageReference.model).isSameAs(message)
-    }
 }

@@ -1,41 +1,62 @@
 # Bundler Strategy
 
-The **Bundler** is responsible for transforming a potentially multi-file AsyncAPI definition (using `$ref` to external files) into a **Single, Self-Contained Document**.
+The bundler transforms a parsed AsyncAPI model into a self-contained model that
+can be passed to generation or document output without access to the source
+documents that supplied its references.
 
-## Core Goal
+## Boundary contract
 
-The Code Generator expects a single `AsyncApiDocument` object where all references are local or resolved. It should not have to worry about file I/O or external loaders. The Bundler provides this abstraction.
+`AsyncApiBundler` accepts an `AsyncApiDocument` that has already been parsed,
+validated, and resolved by the loader. Reference objects retain their resolved
+models, source identity, and reference fragments. The bundler does not perform
+file I/O, parse input, load or resolve references, validate semantic rules, or
+generate artifacts.
 
-## Architecture
+The public entry point is `AsyncApiBundler.bundle(AsyncApiDocument)`. The
+bundler traverses the supported AsyncAPI object model and updates existing
+reference state so that resolved models are available where generation and
+document output need them.
 
-The Bundler operates on the **Parsed Model** (`AsyncApiDocument`), not the raw YAML. It traverses the model and "flattens" it.
+## Reference traversal
 
-### Data Flow
+Traversal identity is the pair of `Reference.sourceId` and `Reference.ref`.
+The fragment alone is not sufficient: the same fragment can identify different
+models in different source documents. Traversal contexts are copied as the
+bundler enters a reference, so cycle detection does not mutate the parent
+traversal path while promotion and recursion state remain shared for the root
+document.
 
-1.  **Input:** A parsed `AsyncApiDocument` (which may contain `Reference` objects pointing to external files loaded in `AsyncApiContext`).
-2.  **Traversal:** The bundler visits every node (Channels, Messages, Schemas).
-3.  **Resolution:**
-    *   If it encounters an **Inline** definition, it copies it.
-    *   If it encounters a **Reference** (`$ref`):
-        1.  It asks the `AsyncApiContext` (implicitly or explicitly via `Reference.ref`) to resolve the target.
-        2.  **Strategy Decision:**
-            *   **Dereference (Inline):** Replace the `$ref` with the actual object definition. (Used for small objects or cross-file refs).
-            *   **Internalize:** Move the referenced object into the `components` section of the root document and rewrite the `$ref` to point to `#/components/schemas/MyMovedObject`. (Preferred for Schemas to keep the document clean).
-4.  **Output:** A new `AsyncApiDocument` that is structurally identical but has no dependencies on external files.
+For ordinary object references, the bundler traverses the model already stored
+in `Reference.model` and marks the reference for inline serialization. This
+makes the referenced object available in the bundled model without requiring
+the generator or document writer to load another file.
 
-### Circular Dependency Handling
+## Schema references and cycles
 
-The bundler maintains a `visited` set of references during traversal. If it detects a cycle (A -> B -> A), it stops recursing and keeps the `$ref` as-is (or ensures it points to a component definition), preventing infinite loops during bundling.
+Schema references have a narrower policy because schemas can be recursive:
 
-## Bundler Components
+- Non-recursive external schemas may be inlined into the referencing model.
+- Recursive external schemas are promoted into the root
+  `components.schemas` collection.
+- Recursive edges are rewritten as local component references to the promoted
+  schema.
+- A promoted name collision with a root schema or another promoted schema
+  fails explicitly.
 
-*   `AsyncApiBundler` (Root orchestrator)
-*   `SchemaBundler` (Complex logic for flattening schema inheritance and refs)
-*   `ChannelBundler`
-*   `MessageBundler`
-*   ... etc.
+This policy supports self-recursive and mutually recursive external schemas
+while ensuring that the bundled document has local definitions for the cycle.
+Boolean schemas and multi-format schemas remain their native model forms; the
+bundler does not cast multi-format schemas to the AsyncAPI `Schema` type.
 
-## Why Bundle?
+## Output guarantee and boundaries
 
-1.  **Generator Simplicity:** The Generator logic becomes stateless and file-system agnostic.
-2.  **Portability:** The output of the Bundler can be saved as a single `asyncapi.bundled.yaml` file, which is useful for distribution or importing into other tools (like UI documentation renderers).
+For supported parsed models, bundling produces a model whose traversed
+references and promoted recursive schemas are self-contained for generation and
+portable document output. Self-contained does not mean that the bundler
+performs a complete AsyncAPI or JSON Schema transformation, normalizes every
+possible reference category, or formats YAML and JSON. Serialization details
+remain the responsibility of the document-output boundary.
+
+Keeping this work at the model boundary simplifies generation and allows a
+bundled document to be written or transferred without the original external
+source files.

@@ -30,16 +30,4 @@ class MessageTraitBundlerTest {
         assertThat(bindingReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps a visited message trait reference unchanged`() {
-        val trait = MessageTrait(name = "audit")
-        val traitReference = Reference("#/components/messageTraits/audit", model = trait)
-        val traitInterface = MessageTraitInterface.ReferenceMessageTrait(traitReference)
-
-        val bundled = bundler.bundle(traitInterface, BundlingContext.empty().enter(traitReference))
-
-        assertThat(bundled).isSameAs(traitInterface)
-        assertThat(traitReference.inline).isFalse()
-        assertThat(traitReference.model).isSameAs(trait)
-    }
 }

@@ -15,20 +15,13 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
  * Expected behavior is covered by:
  * - `ServerBundlerTest`
  */
-class ServerBundler {
+internal class ServerBundler {
 
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val securitySchemeBundler = SecuritySchemeBundler()
     private val serverVariableBundler = ServerVariableBundler()
     private val bindingBundler = BindingBundler()
-
-    fun bundleServers(
-        servers: Map<String, ServerInterface>?,
-        visited: Set<String>,
-    ): Map<String, ServerInterface>? =
-        bundleServers(servers, BundlingContext.from(visited))
-
     fun bundleServers(
         servers: Map<String, ServerInterface>?,
         context: BundlingContext,
@@ -54,10 +47,6 @@ class ServerBundler {
             }
         }
     }
-
-    fun bundleServer(server: Server, visited: Set<String>): Server =
-        bundleServer(server, BundlingContext.from(visited))
-
     fun bundleServer(server: Server, context: BundlingContext): Server {
         val bundledVariables = serverVariableBundler.bundleMap(server.variables, context)
         val bundledSecurity = securitySchemeBundler.bundleList(server.security, context)

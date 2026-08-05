@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
  * Expected behavior is covered by:
  * - `ReferenceBundlerTest`
  */
-object ReferenceBundler {
+internal object ReferenceBundler {
 
     fun inlineIfUnvisited(
         reference: Reference,
