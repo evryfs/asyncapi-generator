@@ -23,7 +23,7 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
  */
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
-) : ValidationStage {
+) {
 
     private val infoValidator = InfoValidator(asyncApiContext)
     private val channelValidator = ChannelValidator(asyncApiContext)
@@ -33,8 +33,8 @@ internal class AsyncApiValidator(
     private val referenceTargetTraversal = ReferenceTargetTraversal(asyncApiContext)
     private val kafkaSchemaRegistryValidator = KafkaSchemaRegistryValidator(asyncApiContext)
 
-    override fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
-        val results = ValidationCollector(AsyncApiValidationProfile.select(asyncApiDocument))
+    fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
+        val results = ValidationCollector()
         results.visit(asyncApiDocument)
 
         validateIdentifier(asyncApiDocument, results)

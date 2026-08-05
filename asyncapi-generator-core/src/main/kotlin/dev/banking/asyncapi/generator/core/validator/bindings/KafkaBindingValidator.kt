@@ -19,10 +19,10 @@ import java.math.BigInteger
 
 internal class KafkaBindingValidator(
     private val asyncApiContext: AsyncApiContext,
-) : ProtocolValidator {
+) {
     private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }
 
-    override fun validate(
+    fun validate(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         results: ValidationCollector,

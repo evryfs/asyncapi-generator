@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AVAILABLE_SCOPES_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_REFRESH_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_SCOPE_AVAILABLE
@@ -118,14 +117,6 @@ internal class OAuthFlowsValidator(
                     sourceLocation = asyncApiContext.getSourceLocation(flow, flow::refreshUrl),
                 )
             }
-        }
-        if (flow.availableScopes == null) {
-            results.error(
-                SECURITY_OAUTH_AVAILABLE_SCOPES_REQUIRED,
-                "$contextString must define 'availableScopes'.",
-                sourceLocation = asyncApiContext.getSourceLocation(flow, flow::availableScopes)
-                    ?: asyncApiContext.getSourceLocation(flow),
-            )
         }
     }
 

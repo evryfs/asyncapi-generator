@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.validator.info
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.info.Contact
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_EMAIL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_URL_FORMAT
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
@@ -14,16 +13,8 @@ internal class ContactValidator(
 
     fun validate(node: Contact, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
-        val name = node.name
         val url = node.url
         val email = node.email
-        if (name.isNullOrBlank() && url.isNullOrBlank() && email.isNullOrBlank()) {
-            results.warn(
-                CONTACT_EMPTY,
-                "$contextString is defined but all its fields are empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
-            )
-        }
         url?.let {
             if (ValidationFormats.absoluteUri(it) == null) {
                 results.error(

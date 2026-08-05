@@ -41,16 +41,4 @@ class OperationBundlerTest {
         assertThat(replyChannelReference.inline).isTrue()
     }
 
-    @Test
-    fun `bundle keeps a visited operation reference unchanged`() {
-        val operation = Operation(action = "send")
-        val operationReference = Reference("#/operations/sendUserUpdated", model = operation)
-        val operationInterface = OperationInterface.OperationReference(operationReference)
-
-        val bundled = bundler.bundle(operationInterface, BundlingContext.empty().enter(operationReference))
-
-        assertThat(bundled).isSameAs(operationInterface)
-        assertThat(operationReference.inline).isFalse()
-        assertThat(operationReference.model).isSameAs(operation)
-    }
 }

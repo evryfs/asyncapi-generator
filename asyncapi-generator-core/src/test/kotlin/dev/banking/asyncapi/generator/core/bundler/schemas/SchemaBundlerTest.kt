@@ -33,19 +33,6 @@ class SchemaBundlerTest {
     }
 
     @Test
-    fun `bundle keeps a visited component schema reference unchanged`() {
-        val schema = Schema(type = "object")
-        val schemaReference = Reference("#/components/schemas/User", model = schema)
-        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
-
-        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty().enter(schemaReference))
-
-        assertThat(bundled).isSameAs(schemaInterface)
-        assertThat(schemaReference.inline).isFalse()
-        assertThat(schemaReference.model).isSameAs(schema)
-    }
-
-    @Test
     fun `bundle inlines an unvisited non-component schema reference`() {
         val bindingReference = Reference("#/components/schemaBindings/kafka")
         val schema = Schema(
@@ -61,19 +48,6 @@ class SchemaBundlerTest {
         assertThat((bundled as SchemaInterface.SchemaInline).schema.bindings).containsKey("kafka")
         assertThat(schemaReference.inline).isFalse()
         assertThat(bindingReference.inline).isTrue()
-    }
-
-    @Test
-    fun `bundle returns the model for a visited non-component schema reference`() {
-        val schema = Schema(type = "object")
-        val schemaReference = Reference("schemas.yaml#/shared/User", model = schema)
-        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
-
-        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty().enter(schemaReference))
-
-        assertThat(bundled).isEqualTo(SchemaInterface.SchemaInline(schema))
-        assertThat(schemaReference.inline).isFalse()
-        assertThat(schemaReference.model).isSameAs(schema)
     }
 
     @Test

@@ -1,17 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.info
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.SEMANTIC_VERSION
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_OF_SERVICE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TITLE_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_REQUIRED
-import dev.banking.asyncapi.generator.core.model.tags.TagInterface
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
@@ -25,7 +18,6 @@ internal class InfoValidator(
     private val contactValidator = ContactValidator(asyncApiContext)
     private val licenseValidator = LicenseValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
-    private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validate(node: Info, contextString: String, results: ValidationCollector) {
         if (!results.visit(node)) return
@@ -62,13 +54,6 @@ internal class InfoValidator(
             )
             return
         }
-        if (!SEMANTIC_VERSION.matches(version)) {
-            results.warn(
-                INFO_VERSION_FORMAT,
-                "$contextString 'version' field contains unusual characters. Expected Semantic Versioning or alphanumeric format.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
-            )
-        }
     }
 
     private fun validateTermsOfService(node: Info, contextString: String, results: ValidationCollector) {
@@ -84,29 +69,12 @@ internal class InfoValidator(
     }
 
     private fun validateTags(node: Info, contextString: String, results: ValidationCollector) {
-        val tags = node.tags ?: return
-        tags.forEachIndexed { index, tagInterface ->
-            val contextString = "$contextString Tag[$index]"
-            when (tagInterface) {
-                is TagInterface.TagInline ->
-                    tagValidator.validate(tagInterface.tag, contextString, results)
-
-                is TagInterface.TagReference -> {
-                    referenceResolver.resolve(tagInterface.reference, TAG, contextString, results)
-                }
-            }
-        }
+        tagValidator.validateList(node.tags, contextString, results)
     }
 
     private fun validateExternalDocs(node: Info, contextString: String, results: ValidationCollector) {
-        val externalDocs = node.externalDocs ?: return
-        val contextString = "$contextString ExternalDocs"
-        when (externalDocs) {
-            is ExternalDocInterface.ExternalDocInline ->
-                externalDocsValidator.validate(externalDocs.externalDoc, contextString, results)
-
-            is ExternalDocInterface.ExternalDocReference ->
-                referenceResolver.resolve(externalDocs.reference, EXTERNAL_DOC, contextString, results)
+        node.externalDocs?.let { externalDocs ->
+            externalDocsValidator.validateInterface(externalDocs, "$contextString ExternalDocs", results)
         }
     }
 }

@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
  * Expected behavior is covered by:
  * - `MessagesBundlerTest`
  */
-class MessagesBundler {
+internal class MessagesBundler {
 
     private val schemaBundler = SchemaBundler()
     private val correlationIdBundler = CorrelationIdBundler()
@@ -25,18 +25,10 @@ class MessagesBundler {
     private val externalDocsBundler = ExternalDocsBundler()
     private val bindingBundler = BindingBundler()
     private val messageTraitBundler = MessageTraitBundler()
-
-    fun bundleMap(messages: Map<String, MessageInterface>?, visited: Set<String>): Map<String, MessageInterface>? =
-        bundleMap(messages, BundlingContext.from(visited))
-
     fun bundleMap(messages: Map<String, MessageInterface>?, context: BundlingContext): Map<String, MessageInterface>? =
         messages?.mapValues { (_, message) ->
             bundle(message, context)
         }
-
-    fun bundle(message: MessageInterface, visited: Set<String>): MessageInterface =
-        bundle(message, BundlingContext.from(visited))
-
     fun bundle(message: MessageInterface, context: BundlingContext): MessageInterface =
         when (message) {
             is MessageInterface.MessageInline -> {

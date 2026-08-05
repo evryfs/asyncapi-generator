@@ -1,17 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.components
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
-import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
-import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
@@ -95,15 +88,8 @@ internal class ComponentValidator(
 
     private fun validateMessages(component: Component, contextString: String, results: ValidationCollector) {
         component.messages?.forEach { (messageName, messageInterface) ->
-            val contextString = "$contextString Message '$messageName'"
-            when (messageInterface) {
-                is MessageInterface.MessageInline ->
-                    messageValidator.validate(messageInterface.message, contextString, results)
-
-                is MessageInterface.MessageReference -> {
-                    referenceResolver.resolve(messageInterface.reference, MESSAGE, contextString, results)
-                }
-            }
+            val messageContext = "$contextString Message '$messageName'"
+            messageValidator.validateInterface(messageInterface, messageContext, results)
         }
     }
 
@@ -116,20 +102,8 @@ internal class ComponentValidator(
 
     private fun validateSecuritySchemes(component: Component, contextString: String, results: ValidationCollector) {
         component.securitySchemes?.forEach { (securitySchemeName, securitySchemeInterface) ->
-            val contextString = "$contextString Security Scheme '$securitySchemeName'"
-            when (securitySchemeInterface) {
-                is SecuritySchemeInterface.SecuritySchemeInline ->
-                    securitySchemeValidator.validate(securitySchemeInterface.security, contextString, results)
-
-                is SecuritySchemeInterface.SecuritySchemeReference -> {
-                    referenceResolver.resolve(
-                        securitySchemeInterface.reference,
-                        SECURITY_SCHEME,
-                        contextString,
-                        results,
-                    )
-                }
-            }
+            val context = "$contextString Security Scheme '$securitySchemeName'"
+            securitySchemeValidator.validateInterface(securitySchemeInterface, context, results)
         }
     }
 
@@ -149,20 +123,8 @@ internal class ComponentValidator(
 
     private fun validateServerVariables(component: Component, contextString: String, results: ValidationCollector) {
         component.serverVariables?.forEach { (serverVariableName, serverVariableInterface) ->
-            val contextString = "$contextString Server Variable '$serverVariableName'"
-            when (serverVariableInterface) {
-                is ServerVariableInterface.ServerVariableInline ->
-                    serverVariableValidator.validate(serverVariableInterface.serverVariable, contextString, results)
-
-                is ServerVariableInterface.ServerVariableReference -> {
-                    referenceResolver.resolve(
-                        serverVariableInterface.reference,
-                        SERVER_VARIABLE,
-                        contextString,
-                        results,
-                    )
-                }
-            }
+            val context = "$contextString Server Variable '$serverVariableName'"
+            serverVariableValidator.validateInterface(serverVariableInterface, context, results)
         }
     }
 
@@ -223,26 +185,33 @@ internal class ComponentValidator(
     }
 
     private fun validateBindings(component: Component, contextString: String, results: ValidationCollector) {
-        validateBindingMap(component.serverBindings, "$contextString Server", results)
-        validateBindingMap(component.channelBindings, "$contextString Channel", results)
-        validateBindingMap(component.operationBindings, "$contextString Operation", results)
-        validateBindingMap(component.messageBindings, "$contextString Message", results)
-    }
-
-    private fun validateBindingMap(
-        bindings: Map<String, BindingInterface>?,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        bindings?.forEach { (bindingName, bindingInterface) ->
-            val contextString = "$contextString Binding '$bindingName'"
-            when (bindingInterface) {
-                is BindingInterface.BindingInline ->
-                    bindingValidator.validate(bindingInterface.binding, contextString, results)
-
-                is BindingInterface.BindingReference ->
-                    referenceResolver.resolve(bindingInterface.reference, BINDING, contextString, results)
-            }
+        component.serverBindings?.forEach { (bindingName, bindingInterface) ->
+            bindingValidator.validateInterface(
+                bindingInterface,
+                "$contextString Server Binding '$bindingName'",
+                results,
+            )
+        }
+        component.channelBindings?.forEach { (bindingName, bindingInterface) ->
+            bindingValidator.validateInterface(
+                bindingInterface,
+                "$contextString Channel Binding '$bindingName'",
+                results,
+            )
+        }
+        component.operationBindings?.forEach { (bindingName, bindingInterface) ->
+            bindingValidator.validateInterface(
+                bindingInterface,
+                "$contextString Operation Binding '$bindingName'",
+                results,
+            )
+        }
+        component.messageBindings?.forEach { (bindingName, bindingInterface) ->
+            bindingValidator.validateInterface(
+                bindingInterface,
+                "$contextString Message Binding '$bindingName'",
+                results,
+            )
         }
     }
 }

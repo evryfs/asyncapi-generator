@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.validator.asyncapi
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.ValidationStage
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -17,25 +17,24 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
     fun validateAsyncApiDocument() {
         val asyncApiDocument = parse("asyncapi_kafka_single_file_example.yaml")
         val validationResults = asyncApiValidator.validate(asyncApiDocument)
-        logWarnings(validationResults)
-        throwErrors(validationResults)
-    }
 
-    @Test
-    fun `validates parsed document through validator stage contract`() {
-        val asyncApiDocument = parse("validator/info/asyncapi_validator_info_valid_simple.yaml")
-        val validationStage: ValidationStage = asyncApiValidator
-
-        val validationResults = validationStage.validate(asyncApiDocument)
-
-        assertNoFindings(validationResults)
+        assertEquals(1, validationResults.warnings.size)
+        val required = validationResults.findings.single { it.code == SCHEMA_REQUIRED_UNDECLARED.code }
+        assertEquals(SCHEMA_REQUIRED_UNDECLARED.severity, required.severity)
+        assertEquals(SCHEMA_REQUIRED_UNDECLARED.concern, required.concern)
+        assertEquals("asyncapi_kafka_single_file_example.yaml", required.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_kafka_single_file_example.root.components.schemas.turnOnOffPayload.required",
+            required.path,
+        )
+        assertEquals(382, required.line)
     }
 
     @Test
     fun `accepts an uppercase URN scheme and a specific media type with parameters`() {
         val validationResults = validate("validator/asyncapi/asyncapi_validator_document_formats_valid.yaml")
 
-        assertNoFindings(validationResults)
+        assertEquals(emptyList(), validationResults.findings)
     }
 
     @Test
@@ -43,12 +42,12 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/asyncapi/asyncapi_validator_document_advisory.yaml")
 
         assertEquals(1, results.warnings.size)
-        assertRule(
-            results,
-            DOCUMENT_ID_URN_RECOMMENDED,
-            path = "asyncapi_validator_document_advisory.root.id",
-            line = 2,
-        )
+        val advisory = results.findings.single()
+        assertEquals(DOCUMENT_ID_URN_RECOMMENDED.code, advisory.code)
+        assertEquals(DOCUMENT_ID_URN_RECOMMENDED.severity, advisory.severity)
+        assertEquals(DOCUMENT_ID_URN_RECOMMENDED.concern, advisory.concern)
+        assertEquals("asyncapi_validator_document_advisory.root.id", advisory.path)
+        assertEquals(2, advisory.line)
     }
 
     @Test
@@ -57,20 +56,24 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
 
         assertEquals(2, validationResults.errors.size)
         assertEquals(2, validationResults.findings.size)
-        assertRule(
-            validationResults,
-            rule = DOCUMENT_ID_FORMAT,
-            sourceFile = "asyncapi_validator_document_invalid.yaml",
-            path = "asyncapi_validator_document_invalid.root.id",
-            line = 2,
+
+        val idFormat = validationResults.findings.single { it.code == DOCUMENT_ID_FORMAT.code }
+        assertEquals(DOCUMENT_ID_FORMAT.severity, idFormat.severity)
+        assertEquals(DOCUMENT_ID_FORMAT.concern, idFormat.concern)
+        assertEquals("asyncapi_validator_document_invalid.yaml", idFormat.sourceLocation?.file?.name)
+        assertEquals("asyncapi_validator_document_invalid.root.id", idFormat.path)
+        assertEquals(2, idFormat.line)
+
+        val defaultContentType =
+            validationResults.findings.single { it.code == DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.code }
+        assertEquals(DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.severity, defaultContentType.severity)
+        assertEquals(DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.concern, defaultContentType.concern)
+        assertEquals(
+            "asyncapi_validator_document_invalid.yaml",
+            defaultContentType.sourceLocation?.file?.name,
         )
-        assertRule(
-            validationResults,
-            rule = DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
-            sourceFile = "asyncapi_validator_document_invalid.yaml",
-            path = "asyncapi_validator_document_invalid.root.defaultContentType",
-            line = 3,
-        )
+        assertEquals("asyncapi_validator_document_invalid.root.defaultContentType", defaultContentType.path)
+        assertEquals(3, defaultContentType.line)
     }
 
     @Test
@@ -82,19 +85,27 @@ class AsyncApiValidatorTest : AbstractValidatorTest() {
             yaml.findings.map { Triple(it.code, it.concern, it.severity) },
             json.findings.map { Triple(it.code, it.concern, it.severity) },
         )
-        assertRule(
-            json,
-            DOCUMENT_ID_FORMAT,
-            sourceFile = "asyncapi_validator_document_invalid_json.json",
-            path = "asyncapi_validator_document_invalid_json.root.id",
-            line = 3,
+
+        val idFormat =
+            json.findings.single { it.code == DOCUMENT_ID_FORMAT.code }
+        assertEquals(DOCUMENT_ID_FORMAT.severity, idFormat.severity)
+        assertEquals(DOCUMENT_ID_FORMAT.concern, idFormat.concern)
+        assertEquals("asyncapi_validator_document_invalid_json.json", idFormat.sourceLocation?.file?.name)
+        assertEquals("asyncapi_validator_document_invalid_json.root.id", idFormat.path)
+        assertEquals(3, idFormat.line)
+
+        val defaultContentType =
+            json.findings.single { it.code == DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.code }
+        assertEquals(DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.severity, defaultContentType.severity)
+        assertEquals(DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT.concern, defaultContentType.concern)
+        assertEquals(
+            "asyncapi_validator_document_invalid_json.json",
+            defaultContentType.sourceLocation?.file?.name,
         )
-        assertRule(
-            json,
-            DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
-            sourceFile = "asyncapi_validator_document_invalid_json.json",
-            path = "asyncapi_validator_document_invalid_json.root.defaultContentType",
-            line = 4,
+        assertEquals(
+            "asyncapi_validator_document_invalid_json.root.defaultContentType",
+            defaultContentType.path,
         )
+        assertEquals(4, defaultContentType.line)
     }
 }

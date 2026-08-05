@@ -1,39 +1,40 @@
 package dev.banking.asyncapi.generator.core.validator.externaldocs
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.EXTERNAL_DOC_URL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.EXTERNAL_DOC_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class ExternalDocsValidatorTest : AbstractValidatorTest() {
 
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
-    fun `invalid external docs trigger errors and warnings`() {
+    fun `invalid external docs trigger errors only`() {
         val document = parse("validator/externaldocs/asyncapi_validator_externaldocs_invalid.yaml")
         val results = asyncApiValidator.validate(document)
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            throwErrors(results)
-        }
-        assertEquals(2, exception.errors.size, "Expected invalid and missing URL errors.")
-        assertRule(
-            results,
-            EXTERNAL_DOC_URL_FORMAT,
-            sourceFile = "asyncapi_validator_externaldocs_invalid.yaml",
-            path = "asyncapi_validator_externaldocs_invalid.root.components.schemas.InvalidExternalDoc.externalDocs.url",
-            line = 10,
+
+        assertEquals(2, results.errors.size)
+        val invalid = results.findings.single { it.code == EXTERNAL_DOC_URL_FORMAT.code }
+        assertEquals(EXTERNAL_DOC_URL_FORMAT.severity, invalid.severity)
+        assertEquals(EXTERNAL_DOC_URL_FORMAT.concern, invalid.concern)
+        assertEquals("asyncapi_validator_externaldocs_invalid.yaml", invalid.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_externaldocs_invalid.root.components.schemas.InvalidExternalDoc.externalDocs.url",
+            invalid.path,
         )
-        assertRule(
-            results,
-            EXTERNAL_DOC_URL_REQUIRED,
-            sourceFile = "asyncapi_validator_externaldocs_invalid.yaml",
-            path = "asyncapi_validator_externaldocs_invalid.root.components.schemas.MissingExternalDocUrl.externalDocs.url",
-            line = 15,
+        assertEquals(10, invalid.line)
+
+        val required = results.findings.single { it.code == EXTERNAL_DOC_URL_REQUIRED.code }
+        assertEquals(EXTERNAL_DOC_URL_REQUIRED.severity, required.severity)
+        assertEquals(EXTERNAL_DOC_URL_REQUIRED.concern, required.concern)
+        assertEquals("asyncapi_validator_externaldocs_invalid.yaml", required.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_externaldocs_invalid.root.components.schemas.MissingExternalDocUrl.externalDocs.url",
+            required.path,
         )
+        assertEquals(15, required.line)
     }
 }

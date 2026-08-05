@@ -11,25 +11,14 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
  * Expected behavior is covered by:
  * - `OperationReplyBundlerTest`
  */
-class OperationReplyBundler {
+internal class OperationReplyBundler {
 
     private val operationReplyAddressBundler = OperationReplyAddressBundler()
-
-    fun bundleMap(
-        replies: Map<String, OperationReplyInterface>?,
-        visited: Set<String>,
-    ): Map<String, OperationReplyInterface>? =
-        bundleMap(replies, BundlingContext.from(visited))
-
     fun bundleMap(
         replies: Map<String, OperationReplyInterface>?,
         context: BundlingContext,
     ): Map<String, OperationReplyInterface>? =
         replies?.mapValues { (_, reply) -> bundle(reply, context) }
-
-    fun bundle(replyInterface: OperationReplyInterface, visited: Set<String>): OperationReplyInterface =
-        bundle(replyInterface, BundlingContext.from(visited))
-
     fun bundle(replyInterface: OperationReplyInterface, context: BundlingContext): OperationReplyInterface =
         when (replyInterface) {
             is OperationReplyInterface.OperationReplyInline ->

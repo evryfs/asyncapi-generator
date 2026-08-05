@@ -10,10 +10,6 @@ components:
       contentType: "invalid-type" # Missing '/'
       headers:
         type: object
-
-    # Case 2: Empty Trait (Warning)
-    EmptyTrait: {}
-
     # Case 3: Example without headers or payload (Error)
     InvalidExample:
       headers:

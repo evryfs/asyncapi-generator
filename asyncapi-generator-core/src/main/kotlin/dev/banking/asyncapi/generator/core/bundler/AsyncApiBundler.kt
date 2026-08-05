@@ -15,10 +15,9 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  * validate AsyncAPI semantics, or generate code.
  *
  * Expected behavior is covered by:
- * - `AsyncApiBundlerContractTest`
  * - `AsyncApiBundlerTest`
  */
-class AsyncApiBundler : BundlingStage {
+class AsyncApiBundler {
 
     private val infoBundler = InfoBundler()
     private val serverBundler = ServerBundler()
@@ -26,7 +25,7 @@ class AsyncApiBundler : BundlingStage {
     private val operationBundler = OperationBundler()
     private val componentBundler = ComponentBundler()
 
-    override fun bundle(document: AsyncApiDocument): AsyncApiDocument {
+    fun bundle(document: AsyncApiDocument): AsyncApiDocument {
         val context = BundlingContext.withRootSchemas(componentBundler.schemas(document.components))
         val bundledInfo = infoBundler.bundle(document.info, context)
         val bundledServers = serverBundler.bundleServers(document.servers, context)

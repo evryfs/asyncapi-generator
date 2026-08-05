@@ -10,14 +10,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
  * Expected behavior is covered by:
  * - `ExternalDocsBundlerTest`
  */
-class ExternalDocsBundler {
-
-    fun bundleMap(
-        externalDocs: Map<String, ExternalDocInterface>?,
-        visited: Set<String>,
-    ): Map<String, ExternalDocInterface>? =
-        bundleMap(externalDocs, BundlingContext.from(visited))
-
+internal class ExternalDocsBundler {
     fun bundleMap(
         externalDocs: Map<String, ExternalDocInterface>?,
         context: BundlingContext,
@@ -25,10 +18,6 @@ class ExternalDocsBundler {
         if (externalDocs == null) return null
         return externalDocs.mapValues { (_, external) -> bundle(external, context) }
     }
-
-    fun bundle(externalDoc: ExternalDocInterface, visited: Set<String>): ExternalDocInterface =
-        bundle(externalDoc, BundlingContext.from(visited))
-
     fun bundle(externalDoc: ExternalDocInterface, context: BundlingContext): ExternalDocInterface =
         when (externalDoc) {
             is ExternalDocInterface.ExternalDocReference -> {

@@ -10,23 +10,12 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
  * Expected behavior is covered by:
  * - `OperationReplyAddressBundlerTest`
  */
-class OperationReplyAddressBundler {
-
-    fun bundleMap(
-        addresses: Map<String, OperationReplyAddressInterface>?,
-        visited: Set<String>
-    ): Map<String, OperationReplyAddressInterface>? =
-        bundleMap(addresses, BundlingContext.from(visited))
-
+internal class OperationReplyAddressBundler {
     fun bundleMap(
         addresses: Map<String, OperationReplyAddressInterface>?,
         context: BundlingContext,
     ): Map<String, OperationReplyAddressInterface>? =
         addresses?.mapValues { (_, addr) -> bundle(addr, context) }
-
-    fun bundle(address: OperationReplyAddressInterface, visited: Set<String>): OperationReplyAddressInterface =
-        bundle(address, BundlingContext.from(visited))
-
     fun bundle(address: OperationReplyAddressInterface, context: BundlingContext): OperationReplyAddressInterface =
         when (address) {
             is OperationReplyAddressInterface.OperationReplyAddressInline -> address

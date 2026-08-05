@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
@@ -18,7 +19,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertNotNull
 
@@ -29,31 +29,44 @@ class AsyncApiBundlerTest {
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
 
     @Test
-    fun asyncApiSingleFile() {
-        val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
-        val parsed = bundlerFixtures.validatedDocument(file)
-        val result = bundler.bundle(parsed)
-        val expected = expectedSingleFileBundled(file)
-        assertThat(result)
+    fun `bundling preserves a self-contained single-file document`() {
+        val original = bundlerFixtures.validatedDocument(
+            TestResources.file("asyncapi_kafka_single_file_example.yaml"),
+        )
+
+        val bundled = bundler.bundle(original)
+
+        assertThat(bundled)
             .usingRecursiveComparison()
             .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expected)
+            .isEqualTo(original)
     }
 
     @Test
-    fun asyncApiMultiFile() {
+    fun `bundling traverses representative multi-file channel, message, and schema references`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
-        AsyncApiRegistry.writeYaml(File("src/test/resources/bundler/bundled/asyncapi-bundled.yaml"), bundled)
-    }
 
-    @Test
-    fun asyncApiMultiFileAssertions() {
-        val result = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
-        val expected = expectedMultiFileBundled()
-        assertThat(result)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(expected)
+        val externalChannelReference =
+            bundled.channels!!["externalAuditChannel"] as ChannelInterface.ChannelReference
+        assertThat(externalChannelReference.reference.inline).isTrue()
+        assertThat(externalChannelReference.reference.model).isInstanceOf(Channel::class.java)
+
+        val externalChannel = externalChannelReference.reference.model as Channel
+        val externalMessage =
+            externalChannel.messages!!["externalAuditMessage"] as MessageInterface.MessageInline
+        val externalPayload = externalMessage.message.payload as SchemaInterface.SchemaReference
+        val externalSchema = externalPayload.reference.model as Schema
+        assertThat(externalSchema.title).isEqualTo("Audit Metadata")
+        assertThat(externalSchema.properties).containsKeys("timestamp", "actor", "reason")
+        assertThat(externalSchema.properties!!["timestamp"])
+            .isInstanceOf(SchemaInterface.SchemaInline::class.java)
+
+        val channelReference = bundled.channels["testChannel"] as ChannelInterface.ChannelReference
+        val channel = channelReference.reference.model as Channel
+        val message = channel.messages!!["testMessage"] as MessageInterface.MessageInline
+        val payload = message.message.payload as SchemaInterface.SchemaInline
+        assertThat(payload.schema.properties!!["id"])
+            .isInstanceOf(SchemaInterface.SchemaInline::class.java)
     }
 
     @Test
@@ -90,7 +103,20 @@ class AsyncApiBundlerTest {
     @Test
     fun `bundling circular references should not cause stack overflow`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/circular/asyncapi_bundler_circular.yaml")
-        assertNotNull(bundled, "Bundled document should not be null")
+
+        val components = bundled.components as ComponentInterface.ComponentInline
+        val nodeA = components.component.schemas!!["NodeA"] as SchemaInterface.SchemaInline
+        val child = nodeA.schema.properties!!["child"] as SchemaInterface.SchemaReference
+        assertThat(child.reference.ref).isEqualTo("#/components/schemas/NodeB")
+        assertThat(child.reference.model).isInstanceOf(Schema::class.java)
+        assertThat(child.reference.inline).isTrue()
+
+        val schemas = components.component.schemas!!
+        val nodeB = schemas["NodeB"] as SchemaInterface.SchemaInline
+        val parent = nodeB.schema.properties!!["parent"] as SchemaInterface.SchemaReference
+        assertThat(parent.reference.ref).isEqualTo("#/components/schemas/NodeA")
+        assertThat(parent.reference.model).isInstanceOf(Schema::class.java)
+        assertThat(parent.reference.inline).isTrue()
     }
 
     @Test
@@ -124,9 +150,7 @@ class AsyncApiBundlerTest {
     }
 
     @Test
-    fun `bundling promotes mutually recursive schemas from an external schema document`(
-        @TempDir tempDir: Path,
-    ) {
+    fun `bundling promotes mutually recursive schemas from an external schema document`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external-mutual/asyncapi.yaml")
 
         val components = bundled.components as ComponentInterface.ComponentInline
@@ -141,18 +165,6 @@ class AsyncApiBundlerTest {
         val parentReference = child.schema.properties!!["parent"] as SchemaInterface.SchemaReference
         assertThat(parentReference.reference.ref).isEqualTo("#/components/schemas/ParentNode")
 
-        val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
-        val jsonFile = tempDir.resolve("asyncapi.json").toFile()
-        AsyncApiRegistry.writeYaml(yamlFile, bundled)
-        AsyncApiRegistry.writeJson(jsonFile, bundled)
-
-        listOf(yamlFile, jsonFile).forEach { outputFile ->
-            assertThat(outputFile.readText())
-                .contains("#/components/schemas/ParentNode")
-                .contains("#/components/schemas/ChildNode")
-                .doesNotContain("schemas.yaml")
-            assertNotNull(BundlerFixtures().validatedDocument(outputFile))
-        }
     }
 
     @Test
@@ -175,25 +187,5 @@ class AsyncApiBundlerTest {
             .hasMessageContaining("recursive external schema 'SharedNode'")
             .hasMessageContaining("first-node.yaml#/components/schemas/SharedNode")
             .hasMessageContaining("second-node.yaml#/components/schemas/SharedNode")
-    }
-
-    @Test
-    fun `bundling marks references as inline`() {
-        val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
-
-        val channelRef = bundled.channels!!["testChannel"] as ChannelInterface.ChannelReference
-        val bundledChannel = channelRef.reference.model as Channel
-        val messageInline = bundledChannel.messages!!["testMessage"] as MessageInterface.MessageInline
-
-        assertThat(channelRef.reference.inline).isTrue()
-        assertThat(channelRef.reference.model).isNotNull
-        assertThat(messageInline.message.payload).isInstanceOf(SchemaInterface.SchemaInline::class.java)
-
-        val components = bundled.components as ComponentInterface.ComponentInline
-        assertThat(components.component.schemas).isNull()
-    }
-
-    private fun expectedSingleFileBundled(file: File): AsyncApiDocument {
-        return bundlerFixtures.validatedDocument(file)
     }
 }

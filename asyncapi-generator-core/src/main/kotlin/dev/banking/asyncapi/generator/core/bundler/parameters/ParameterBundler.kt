@@ -10,14 +10,7 @@ import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
  * Expected behavior is covered by:
  * - `ParameterBundlerTest`
  */
-class ParameterBundler {
-
-    fun bundleMap(
-        parameters: Map<String, ParameterInterface>?,
-        visited: Set<String>,
-    ): Map<String, ParameterInterface>? =
-        bundleMap(parameters, BundlingContext.from(visited))
-
+internal class ParameterBundler {
     fun bundleMap(
         parameters: Map<String, ParameterInterface>?,
         context: BundlingContext,

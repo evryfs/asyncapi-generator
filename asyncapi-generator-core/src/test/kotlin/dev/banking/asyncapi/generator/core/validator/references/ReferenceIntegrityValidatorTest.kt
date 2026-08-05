@@ -19,20 +19,22 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
         val report = validate("validator/references/asyncapi_validator_reference_chain.yaml")
 
         assertEquals(1, report.findings.size)
-        assertRule(
-            report,
-            rule = TAG_NAME_REQUIRED,
-            sourceFile = "asyncapi_validator_reference_chain.yaml",
-            path = "asyncapi_validator_reference_chain.root.components.messages.actual.tags[0].name",
-            line = 21,
+        val missingTagName = report.findings.single { it.code == TAG_NAME_REQUIRED.code }
+        assertEquals(TAG_NAME_REQUIRED.severity, missingTagName.severity)
+        assertEquals(TAG_NAME_REQUIRED.concern, missingTagName.concern)
+        assertEquals("asyncapi_validator_reference_chain.yaml", missingTagName.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_reference_chain.root.components.messages.actual.tags[0].name",
+            missingTagName.path,
         )
+        assertEquals(21, missingTagName.line)
     }
 
     @Test
     fun `terminates reference cycles without duplicating findings or rejecting resolvable edges`() {
         val report = validate("validator/references/asyncapi_validator_reference_cycle.yaml")
 
-        assertNoFindings(report)
+        assertEquals(emptyList(), report.findings)
     }
 
     @Test
@@ -40,13 +42,15 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
         val report = validate("validator/references/asyncapi_validator_external_target_mismatch.yaml")
 
         assertEquals(1, report.errors.size)
-        assertRule(
-            report,
-            rule = REFERENCE_TARGET_CATEGORY,
-            sourceFile = "asyncapi_validator_external_target_mismatch.yaml",
-            path = "asyncapi_validator_external_target_mismatch.root.components.messages.invalidMessage",
-            line = 7,
+        val mismatch = report.findings.single { it.code == REFERENCE_TARGET_CATEGORY.code }
+        assertEquals(REFERENCE_TARGET_CATEGORY.severity, mismatch.severity)
+        assertEquals(REFERENCE_TARGET_CATEGORY.concern, mismatch.concern)
+        assertEquals("asyncapi_validator_external_target_mismatch.yaml", mismatch.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_external_target_mismatch.root.components.messages.invalidMessage",
+            mismatch.path,
         )
+        assertEquals(7, mismatch.line)
     }
 
     @Test
@@ -59,13 +63,15 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
 
         val report = AsyncApiValidator(asyncApiContext).validate(document)
 
-        assertRule(
-            report,
-            rule = REFERENCE_CATEGORY_REQUIRED,
-            sourceFile = "asyncapi_validator_reference_chain.yaml",
-            path = "asyncapi_validator_reference_chain.root.channels.events.messages.first",
-            line = 9,
+        val missingCategory = report.findings.single { it.code == REFERENCE_CATEGORY_REQUIRED.code }
+        assertEquals(REFERENCE_CATEGORY_REQUIRED.severity, missingCategory.severity)
+        assertEquals(REFERENCE_CATEGORY_REQUIRED.concern, missingCategory.concern)
+        assertEquals("asyncapi_validator_reference_chain.yaml", missingCategory.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_reference_chain.root.channels.events.messages.first",
+            missingCategory.path,
         )
+        assertEquals(9, missingCategory.line)
     }
 
     @Test
@@ -73,26 +79,35 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
         val report = validate("validator/references/asyncapi_validator_nested_traversal.yaml")
 
         assertEquals(3, report.findings.size)
-        assertRule(
-            report,
-            rule = CORRELATION_LOCATION_FORMAT,
-            sourceFile = "asyncapi_validator_nested_traversal.yaml",
-            path = "asyncapi_validator_nested_traversal.root.components.messages.event.correlationId.location",
-            line = 26,
+
+        val location = report.findings.single { it.code == CORRELATION_LOCATION_FORMAT.code }
+        assertEquals(CORRELATION_LOCATION_FORMAT.severity, location.severity)
+        assertEquals(CORRELATION_LOCATION_FORMAT.concern, location.concern)
+        assertEquals("asyncapi_validator_nested_traversal.yaml", location.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_nested_traversal.root.components.messages.event.correlationId.location",
+            location.path,
         )
-        assertRule(
-            report,
-            rule = TAG_NAME_REQUIRED,
-            sourceFile = "asyncapi_validator_nested_traversal.yaml",
-            path = "asyncapi_validator_nested_traversal.root.components.operationTraits.shared.tags[0].name",
-            line = 30,
+        assertEquals(26, location.line)
+
+        val missingTagName = report.findings.single { it.code == TAG_NAME_REQUIRED.code }
+        assertEquals(TAG_NAME_REQUIRED.severity, missingTagName.severity)
+        assertEquals(TAG_NAME_REQUIRED.concern, missingTagName.concern)
+        assertEquals("asyncapi_validator_nested_traversal.yaml", missingTagName.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_nested_traversal.root.components.operationTraits.shared.tags[0].name",
+            missingTagName.path,
         )
-        assertRule(
-            report,
-            rule = OPERATION_REPLY_ADDRESS_FORMAT,
-            sourceFile = "asyncapi_validator_nested_traversal.yaml",
-            path = "asyncapi_validator_nested_traversal.root.components.replyAddresses.shared.location",
-            line = 37,
+        assertEquals(30, missingTagName.line)
+
+        val replyAddress = report.findings.single { it.code == OPERATION_REPLY_ADDRESS_FORMAT.code }
+        assertEquals(OPERATION_REPLY_ADDRESS_FORMAT.severity, replyAddress.severity)
+        assertEquals(OPERATION_REPLY_ADDRESS_FORMAT.concern, replyAddress.concern)
+        assertEquals("asyncapi_validator_nested_traversal.yaml", replyAddress.sourceLocation?.file?.name)
+        assertEquals(
+            "asyncapi_validator_nested_traversal.root.components.replyAddresses.shared.location",
+            replyAddress.path,
         )
+        assertEquals(37, replyAddress.line)
     }
 }

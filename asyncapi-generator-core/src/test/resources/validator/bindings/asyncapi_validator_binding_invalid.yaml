@@ -15,7 +15,8 @@ components:
         schemaRegistryVendor: confluent
         bindingVersion: '0.5.0'
   channelBindings:
-    EmptyBinding: {}
+    InvalidProtocol:
+      kafka: [not, an, object]
     InvalidChannel:
       kafka:
         topic: 42
