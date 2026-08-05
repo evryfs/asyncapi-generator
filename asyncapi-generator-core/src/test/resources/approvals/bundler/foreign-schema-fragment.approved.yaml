@@ -1,0 +1,14 @@
+asyncapi: "3.0.0"
+info:
+  title: "Selected External Schema"
+  version: "1.0.0"
+components:
+  schemas:
+    LocalEnvelope:
+      type: "object"
+      properties:
+        payload:
+          type: "object"
+          properties:
+            value:
+              type: "string"

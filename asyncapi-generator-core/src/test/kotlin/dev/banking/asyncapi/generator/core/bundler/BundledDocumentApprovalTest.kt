@@ -2,7 +2,9 @@ package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
+import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -66,6 +68,64 @@ class BundledDocumentApprovalTest {
         BundlerApprovals.verify(
             generated = bundledText,
             scenario = "topology-preserving-operation",
+        )
+    }
+
+    @Test
+    fun `bundles a selected schema fragment from a foreign document`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "validator/schemas/external/asyncapi_external_selected_schema.yaml",
+                scenario = "foreign-schema-fragment",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components)
+        val schemas = assertNotNull(components.component.schemas)
+        assertEquals(setOf("LocalEnvelope"), schemas.keys)
+        assertIs<SchemaInterface.SchemaInline>(schemas["LocalEnvelope"])
+
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("openapi:"))
+        assertFalse(bundledText.contains("paths:"))
+        assertFalse(bundledText.contains("UnreferencedOpenApiPayload"))
+        assertFalse(bundledText.contains("foreign_container_with_unreferenced_invalid.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "foreign-schema-fragment",
+        )
+    }
+
+    @Test
+    fun `promotes mutually recursive external schemas to local components`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/recursive-external-mutual/asyncapi.yaml",
+                scenario = "mutually-recursive-schemas",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components)
+        val schemas = assertNotNull(components.component.schemas)
+        assertEquals(setOf("ParentNode", "ChildNode"), schemas.keys)
+
+        val parentNode = assertIs<SchemaInterface.SchemaInline>(schemas["ParentNode"])
+        val childReference =
+            assertIs<SchemaInterface.SchemaReference>(assertNotNull(parentNode.schema.properties)["child"])
+        assertEquals("#/components/schemas/ChildNode", childReference.reference.ref)
+
+        val childNode = assertIs<SchemaInterface.SchemaInline>(schemas["ChildNode"])
+        val parentReference =
+            assertIs<SchemaInterface.SchemaReference>(assertNotNull(childNode.schema.properties)["parent"])
+        assertEquals("#/components/schemas/ParentNode", parentReference.reference.ref)
+
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("schemas.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "mutually-recursive-schemas",
         )
     }
 
