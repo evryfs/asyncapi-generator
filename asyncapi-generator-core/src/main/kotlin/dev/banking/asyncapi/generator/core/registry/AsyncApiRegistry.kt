@@ -2,15 +2,12 @@ package dev.banking.asyncapi.generator.core.registry
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
-import dev.banking.asyncapi.generator.core.serializers.AsyncApiListSerializer
-import dev.banking.asyncapi.generator.core.serializers.AsyncApiStringSerializer
 import java.io.File
 
 internal object AsyncApiRegistry {
@@ -37,11 +34,6 @@ internal object AsyncApiRegistry {
         println("Json written to: ${file.absolutePath}")
     }
 
-    private val module = SimpleModule().apply {
-        addSerializer(String::class.java, AsyncApiStringSerializer())
-        addSerializer(List::class.java, AsyncApiListSerializer())
-    }
-
     private val yamlMapper: ObjectMapper = ObjectMapper(
         YAMLFactory.builder()
             .configure(YAMLGenerator.Feature.WRITE_DOC_START_MARKER, false)
@@ -49,7 +41,6 @@ internal object AsyncApiRegistry {
             .configure(YAMLGenerator.Feature.LITERAL_BLOCK_STYLE, true)
             .build()
     ).apply {
-        registerModule(module)
         setSerializationInclusion(JsonInclude.Include.NON_NULL)
     }
 
