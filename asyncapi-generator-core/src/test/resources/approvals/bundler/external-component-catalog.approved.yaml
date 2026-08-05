@@ -1,0 +1,89 @@
+asyncapi: "3.0.0"
+info:
+  title: "External Component Catalog"
+  version: "1.0.0"
+components:
+  channels:
+    AuditEvents:
+      address: "audit.events"
+      messages:
+        AuditEvent:
+          payload:
+            type: "object"
+            required:
+              - "eventId"
+            properties:
+              eventId:
+                type: "string"
+          correlationId:
+            location: "$message.header#/traceId"
+          name: "AuditEvent"
+          traits:
+            - contentType: "application/json"
+  operations:
+    PublishAudit:
+      action: "send"
+      channel:
+        $ref: "#/components/channels/AuditEvents"
+      traits:
+        - tags:
+            - name: "audit"
+              description: "Audit event contracts"
+          externalDocs:
+            url: "https://example.com/audit-guide"
+      reply:
+        address:
+          location: "$message.header#/replyTopic"
+      security:
+        - type: "userPassword"
+  messages:
+    AuditEvent:
+      payload:
+        type: "object"
+        required:
+          - "eventId"
+        properties:
+          eventId:
+            type: "string"
+      correlationId:
+        location: "$message.header#/traceId"
+      name: "AuditEvent"
+      traits:
+        - contentType: "application/json"
+  securitySchemes:
+    Credentials:
+      type: "userPassword"
+  correlationIds:
+    TraceId:
+      location: "$message.header#/traceId"
+  replies:
+    Accepted:
+      address:
+        location: "$message.header#/replyTopic"
+  replyAddresses:
+    ReplyTopic:
+      location: "$message.header#/replyTopic"
+  externalDocs:
+    AuditGuide:
+      url: "https://example.com/audit-guide"
+  tags:
+    Audit:
+      name: "audit"
+      description: "Audit event contracts"
+  operationTraits:
+    Audited:
+      tags:
+        - name: "audit"
+          description: "Audit event contracts"
+      externalDocs:
+        url: "https://example.com/audit-guide"
+  messageTraits:
+    CloudEvent:
+      contentType: "application/json"
+  channelBindings:
+    AuditTopic:
+      kafka:
+        topic: "audit.events"
+        partitions: 3
+        replicas: 1
+        bindingVersion: "0.5.0"

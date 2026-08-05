@@ -1,0 +1,79 @@
+components:
+  channels:
+    AuditEvents:
+      address: audit.events
+      messages:
+        AuditEvent:
+          $ref: '#/components/messages/AuditEvent'
+
+  operations:
+    PublishAudit:
+      action: send
+      channel:
+        $ref: '#/components/channels/AuditEvents'
+      traits:
+        - $ref: '#/components/operationTraits/Audited'
+      reply:
+        $ref: '#/components/replies/Accepted'
+      security:
+        - $ref: '#/components/securitySchemes/Credentials'
+
+  messages:
+    AuditEvent:
+      name: AuditEvent
+      correlationId:
+        $ref: '#/components/correlationIds/TraceId'
+      payload:
+        type: object
+        required:
+          - eventId
+        properties:
+          eventId:
+            type: string
+      traits:
+        - $ref: '#/components/messageTraits/CloudEvent'
+
+  operationTraits:
+    Audited:
+      tags:
+        - $ref: '#/components/tags/Audit'
+      externalDocs:
+        $ref: '#/components/externalDocs/AuditGuide'
+
+  messageTraits:
+    CloudEvent:
+      contentType: application/json
+
+  replies:
+    Accepted:
+      address:
+        $ref: '#/components/replyAddresses/ReplyTopic'
+
+  replyAddresses:
+    ReplyTopic:
+      location: $message.header#/replyTopic
+
+  securitySchemes:
+    Credentials:
+      type: userPassword
+
+  correlationIds:
+    TraceId:
+      location: $message.header#/traceId
+
+  tags:
+    Audit:
+      name: audit
+      description: Audit event contracts
+
+  externalDocs:
+    AuditGuide:
+      url: https://example.com/audit-guide
+
+  channelBindings:
+    AuditTopic:
+      kafka:
+        topic: audit.events
+        partitions: 3
+        replicas: 1
+        bindingVersion: '0.5.0'

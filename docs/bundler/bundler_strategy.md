@@ -60,3 +60,6 @@ remain the responsibility of the document-output boundary.
 Keeping this work at the model boundary simplifies generation and allows a
 bundled document to be written or transferred without the original external
 source files.
+
+See [bundled document examples](examples.md) for complete, verified input and
+output documents covering the supported reference behaviors.

@@ -1,0 +1,7 @@
+components:
+  messages:
+    orderCreated:
+      name: OrderCreated
+      title: Order Created Message
+      payload:
+        $ref: './schemas.yaml#/components/schemas/OrderPayload'
