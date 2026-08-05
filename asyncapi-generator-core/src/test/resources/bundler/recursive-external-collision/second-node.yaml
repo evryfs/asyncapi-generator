@@ -1,7 +1,0 @@
-components:
-  schemas:
-    SharedNode:
-      type: object
-      properties:
-        secondChild:
-          $ref: '#/components/schemas/SharedNode'
