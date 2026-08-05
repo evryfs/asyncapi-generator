@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: External Component Catalog
+  version: 1.0.0
+components:
+  channels:
+    AuditEvents:
+      $ref: './catalog.yaml#/components/channels/AuditEvents'
+  operations:
+    PublishAudit:
+      $ref: './catalog.yaml#/components/operations/PublishAudit'
+  messages:
+    AuditEvent:
+      $ref: './catalog.yaml#/components/messages/AuditEvent'
+  operationTraits:
+    Audited:
+      $ref: './catalog.yaml#/components/operationTraits/Audited'
+  messageTraits:
+    CloudEvent:
+      $ref: './catalog.yaml#/components/messageTraits/CloudEvent'
+  replies:
+    Accepted:
+      $ref: './catalog.yaml#/components/replies/Accepted'
+  replyAddresses:
+    ReplyTopic:
+      $ref: './catalog.yaml#/components/replyAddresses/ReplyTopic'
+  securitySchemes:
+    Credentials:
+      $ref: './catalog.yaml#/components/securitySchemes/Credentials'
+  correlationIds:
+    TraceId:
+      $ref: './catalog.yaml#/components/correlationIds/TraceId'
+  tags:
+    Audit:
+      $ref: './catalog.yaml#/components/tags/Audit'
+  externalDocs:
+    AuditGuide:
+      $ref: './catalog.yaml#/components/externalDocs/AuditGuide'
+  channelBindings:
+    AuditTopic:
+      $ref: './catalog.yaml#/components/channelBindings/AuditTopic'

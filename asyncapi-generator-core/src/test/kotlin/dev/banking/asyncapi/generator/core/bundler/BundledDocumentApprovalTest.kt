@@ -1,10 +1,15 @@
 package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
+import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -126,6 +131,37 @@ class BundledDocumentApprovalTest {
         BundlerApprovals.verify(
             generated = bundledText,
             scenario = "mutually-recursive-schemas",
+        )
+    }
+
+    @Test
+    fun `bundles reusable objects from an external component catalog`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/external-component-catalog/main.yaml",
+                scenario = "external-component-catalog",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        assertIs<MessageInterface.MessageInline>(components.messages?.get("AuditEvent"))
+        assertIs<OperationTraitInterface.OperationTraitInline>(components.operationTraits?.get("Audited"))
+        assertIs<OperationReplyInterface.OperationReplyInline>(components.replies?.get("Accepted"))
+        assertIs<SecuritySchemeInterface.SecuritySchemeInline>(components.securitySchemes?.get("Credentials"))
+        assertIs<BindingInterface.BindingInline>(components.channelBindings?.get("AuditTopic"))
+
+        val operation = assertIs<OperationInterface.OperationInline>(components.operations?.get("PublishAudit"))
+        assertEquals(
+            "#/components/channels/AuditEvents",
+            assertNotNull(operation.operation.channel).ref,
+        )
+
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("catalog.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "external-component-catalog",
         )
     }
 
