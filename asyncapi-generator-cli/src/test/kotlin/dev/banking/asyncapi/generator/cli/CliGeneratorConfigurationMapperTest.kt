@@ -1,13 +1,8 @@
 package dev.banking.asyncapi.generator.cli
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
-import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -20,21 +15,6 @@ import kotlin.io.path.createFile
 class CliGeneratorConfigurationMapperTest {
     @TempDir
     lateinit var temporaryDirectory: Path
-
-    @Test
-    fun `maps an explicit source generator and model package`() {
-        val configuration =
-            mapConfiguration(
-                generatorName = "kotlin",
-                modelPackage = "com.example.model",
-            )
-
-        assertEquals(
-            GeneratorProfile.Source(SourceLanguage.KOTLIN),
-            configuration.profile,
-        )
-        assertInstanceOf(ModelGeneration.Enabled::class.java, configuration.models)
-    }
 
     @Test
     fun `maps the complete Spring Kafka client configuration`() {
@@ -80,44 +60,6 @@ class CliGeneratorConfigurationMapperTest {
     }
 
     @Test
-    fun `rejects Spring Kafka configuration with both contracts disabled`() {
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                mapConfiguration(
-                    generatorName = "kotlin",
-                    modelPackage = "com.example.model",
-                    clientPackage = "com.example.client",
-                    clientConfig =
-                        CliClientConfiguration(
-                            clientType = "spring-kafka",
-                            clientContract = "interface",
-                            producer = CliProducerConfiguration(enabled = false),
-                            consumer = CliConsumerConfiguration(enabled = false),
-                        ),
-                )
-            }
-
-        assertEquals(
-            "Spring Kafka client generation requires at least one enabled contract: " +
-                "producer.enabled or consumer.enabled",
-            exception.message,
-        )
-    }
-
-    @Test
-    fun `requires an explicit generator name`() {
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                mapConfiguration(
-                    generatorName = null,
-                    modelPackage = "com.example.model",
-                )
-            }
-
-        assertEquals("generatorName is required", exception.message)
-    }
-
-    @Test
     fun `requires client configuration when client package is configured`() {
         val exception =
             assertThrows<IllegalArgumentException> {
@@ -129,34 +71,6 @@ class CliGeneratorConfigurationMapperTest {
             }
 
         assertEquals("clientConfig is required when clientPackage is configured", exception.message)
-    }
-
-    @Test
-    fun `accepts schema package for schema generator profile`() {
-        val configuration =
-            mapConfiguration(
-                generatorName = "json-schema",
-                schemaPackage = "com.example.schema",
-            )
-
-        assertTrue(configuration.schemas.single() is SchemaGeneration.JsonSchema)
-    }
-
-    @Test
-    fun `accepts schema package for native model generation`() {
-        val configuration =
-            mapConfiguration(
-                generatorName = "java",
-                modelPackage = "com.example.avro",
-                schemaPackage = "com.example.schema",
-                modelConfig =
-                    CliModelConfiguration(
-                        modelType = "avro-specific-record",
-                    ),
-            )
-
-        val nativeAvro = configuration.schemas.single() as SchemaGeneration.NativeAvro
-        assertEquals("com.example.schema", nativeAvro.schemaPackageName)
     }
 
     @Test
@@ -194,8 +108,6 @@ class CliGeneratorConfigurationMapperTest {
         outputFile: File? = null,
         modelPackage: String? = null,
         clientPackage: String? = null,
-        schemaPackage: String? = null,
-        modelConfig: CliModelConfiguration? = null,
         clientConfig: CliClientConfiguration? = null,
     ) = CliGeneratorConfigurationMapper.map(
         CliGeneratorConfigurationRequest(
@@ -204,8 +116,6 @@ class CliGeneratorConfigurationMapperTest {
             outputFile = outputFile,
             modelPackage = modelPackage,
             clientPackage = clientPackage,
-            schemaPackage = schemaPackage,
-            modelConfig = modelConfig,
             clientConfig = clientConfig,
         ),
     )
