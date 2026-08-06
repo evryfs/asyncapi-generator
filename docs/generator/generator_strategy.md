@@ -22,9 +22,9 @@ delegates specific tasks to specialized components.
 
 Planning and compatibility validation complete before rendering starts. A planned capability that is not implemented must fail explicitly during compatibility validation; it must not be logged and skipped, because a successful run otherwise implies that every planned output was produced.
 
-Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing relative paths, content, and artifact kinds, but do not create directories or write files. `AsyncApiGenerator` is the orchestration boundary that passes those results to the configured `GeneratedArtifactWriter`. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
+Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing relative paths, content, and artifact kinds, but do not create directories or write files. `AsyncApiGenerator` renders every artifact task before it invokes the configured `GeneratedArtifactWriter`, so a later rendering failure cannot leave outputs from earlier tasks. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
 
-Bundled document output is the deliberate exception. It targets the explicit file configured for that task rather than a source or resource output root, so document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`.
+Bundled document output is the deliberate exception. It targets the explicit file configured for that task rather than a source or resource output root, so document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`. Serialization runs only after artifact rendering and writing complete.
 
 Compatibility checks that depend only on prepared input and the generation plan belong in `GenerationInputCompatibilityValidator`. Renderers may still reject invalid states discovered while building their generation-specific models, but they do not repeat compatibility checks already completed before output begins.
 

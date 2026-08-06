@@ -137,6 +137,54 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate completes artifact rendering before writing any output`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+        val sourceConfiguration =
+            generatorConfiguration(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                clients =
+                    listOf(
+                        ClientGeneration.Kafka(
+                            packageName = "com.example.kafka",
+                            modelPackageName = "com.example.model",
+                            springKafka = ClientGeneration.SpringKafka(),
+                        ),
+                    ),
+            )
+        val configuration =
+            sourceConfiguration.copy(
+                output =
+                    sourceConfiguration.output.copy(
+                        document =
+                            DocumentOutput(
+                                file = documentOutputFile,
+                                format = DocumentFormat.YAML,
+                            ),
+                    ),
+            )
+
+        val error =
+            assertFailsWith<IllegalArgumentException> {
+                generator.generate(
+                    asyncApiDocument =
+                        bundlerFixtures.bundledDocument(
+                            File("src/test/resources/generator/spring-kafka/single-message.yaml"),
+                        ),
+                    generatorConfiguration = configuration,
+                )
+            }
+
+        assertTrue(error.message!!.contains("without matching topicParameterProperties entries"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(documentOutputFile.exists())
+    }
+
+    @Test
     fun `generate writes native Avro schema and SpecificRecord artifacts to output directories`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()

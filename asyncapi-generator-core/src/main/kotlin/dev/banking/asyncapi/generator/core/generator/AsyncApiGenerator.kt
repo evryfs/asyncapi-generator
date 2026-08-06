@@ -7,10 +7,12 @@ import dev.banking.asyncapi.generator.core.generator.artifact.ModelArtifactGener
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeProtobufArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputCompatibilityValidator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientGeneration
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -51,65 +53,67 @@ class AsyncApiGenerator {
                 javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
             )
 
-        generationPlan.tasks.forEach { task ->
-            when (task) {
-                is GenerationTask.DocumentArtifact ->
-                    documentArtifactGeneration.generate(
-                        task = task,
-                        asyncApiDocument = asyncApiDocument,
-                    )
-                is GenerationTask.ModelArtifacts ->
-                    artifactWriter.write(
-                        modelArtifactGeneration.renderModelArtifacts(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.KafkaKeyModelArtifacts ->
-                    artifactWriter.write(
-                        modelArtifactGeneration.renderKafkaKeyModelArtifacts(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.SpringKafkaClient ->
-                    artifactWriter.write(
-                        springKafkaClientGeneration.render(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.QuarkusKafkaClient ->
-                    throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
-                is GenerationTask.NativeAvroArtifacts ->
-                    artifactWriter.write(
-                        nativeAvroArtifactGeneration.render(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.NativeProtobufArtifacts ->
-                    artifactWriter.write(
-                        nativeProtobufArtifactGeneration.render(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.AvroSchemaArtifacts ->
-                    artifactWriter.write(
-                        avroSchemaArtifactGeneration.render(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-                is GenerationTask.JsonSchemaArtifacts ->
-                    artifactWriter.write(
-                        jsonSchemaArtifactGeneration.render(
-                            task = task,
-                            generationInput = generationInput,
-                        ),
-                    )
-            }
+        val result = renderArtifacts(generationPlan.tasks, generationInput)
+        artifactWriter.write(result)
+
+        generationPlan.tasks.filterIsInstance<GenerationTask.DocumentArtifact>().forEach { task ->
+            documentArtifactGeneration.generate(
+                task = task,
+                asyncApiDocument = asyncApiDocument,
+            )
         }
     }
+
+    private fun renderArtifacts(
+        tasks: List<GenerationTask>,
+        generationInput: GenerationInput,
+    ): GenerationResult =
+        tasks.fold(GenerationResult.Empty) { result, task ->
+            result + renderArtifactTask(task, generationInput)
+        }
+
+    private fun renderArtifactTask(
+        task: GenerationTask,
+        generationInput: GenerationInput,
+    ): GenerationResult =
+        when (task) {
+            is GenerationTask.DocumentArtifact -> GenerationResult.Empty
+            is GenerationTask.ModelArtifacts ->
+                modelArtifactGeneration.renderModelArtifacts(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.KafkaKeyModelArtifacts ->
+                modelArtifactGeneration.renderKafkaKeyModelArtifacts(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.SpringKafkaClient ->
+                springKafkaClientGeneration.render(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.QuarkusKafkaClient ->
+                throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
+            is GenerationTask.NativeAvroArtifacts ->
+                nativeAvroArtifactGeneration.render(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.NativeProtobufArtifacts ->
+                nativeProtobufArtifactGeneration.render(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.AvroSchemaArtifacts ->
+                avroSchemaArtifactGeneration.render(
+                    task = task,
+                    generationInput = generationInput,
+                )
+            is GenerationTask.JsonSchemaArtifacts ->
+                jsonSchemaArtifactGeneration.render(
+                    task = task,
+                    generationInput = generationInput,
+                )
+        }
 }
