@@ -3,14 +3,12 @@ package dev.banking.asyncapi.generator.core.generator.java.factory
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.EnumLiteralCollision
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidEnum
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import kotlin.text.trimStart
 
 class JavaGeneratorModelFactory(
     val packageName: String,
@@ -19,7 +17,7 @@ class JavaGeneratorModelFactory(
     val annotation: QualifiedTypeName? = null,
 ) {
     private val propertyFactory = PropertyFactory(context)
-    private val javaEnumIdentifierRegex = Regex("^[A-Z_][A-Z0-9_]*$")
+    private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName)
 
     fun create(
         name: String,
@@ -38,7 +36,7 @@ class JavaGeneratorModelFactory(
                     name = name,
                     packageName = packageName,
                     description = description,
-                    values = validateAndNormalizeEnumValues(name, schema.enum),
+                    values = enumLiteralNormalizer.normalize(name, schema.enum),
                 )
             isUnionType -> {
                 val discriminatorPropertyName = schema.discriminator
@@ -107,46 +105,4 @@ class JavaGeneratorModelFactory(
             else -> null
         }
     }
-
-    private fun validateAndNormalizeEnumValues(
-        schemaName: String,
-        rawValues: List<Any?>,
-    ): List<String> {
-        val normalizedToOriginals = linkedMapOf<String, MutableList<String>>()
-        val normalizedValues =
-            rawValues.map { raw ->
-                val original = raw.toEnumLiteral()
-                val normalized = normalizeEnumLiteral(original)
-                if (!javaEnumIdentifierRegex.matches(normalized)) {
-                    throw InvalidEnum(
-                        schemaName = schemaName,
-                        literal = original,
-                        packageName = packageName,
-                    )
-                }
-                normalizedToOriginals.getOrPut(normalized) { mutableListOf() }.add(original)
-                normalized
-            }
-
-        normalizedToOriginals.forEach { (normalized, originals) ->
-            if (originals.size > 1) {
-                throw EnumLiteralCollision(
-                    schemaName = schemaName,
-                    originals = originals,
-                    normalized = normalized,
-                    packageName = packageName,
-                )
-            }
-        }
-
-        return normalizedValues
-    }
-
-    private fun Any?.toEnumLiteral(): String =
-        this
-            .toString()
-            .trimStart('"', '\'', '|', '>')
-            .removeSurrounding("\"")
-
-    private fun normalizeEnumLiteral(value: String): String = value.uppercase()
 }
