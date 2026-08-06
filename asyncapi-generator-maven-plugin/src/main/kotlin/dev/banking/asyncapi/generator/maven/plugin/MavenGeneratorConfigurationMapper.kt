@@ -41,26 +41,22 @@ internal object MavenGeneratorConfigurationMapper {
             } else {
                 null
             }
-        val configuration =
-            GeneratorConfigurationFactory.create(
-                GeneratorConfigurationRequest(
-                    generatorName = targetGenerator,
-                    sourceOutputDirectory = request.outputDirectory,
-                    javaSourceOutputDirectory = request.outputDirectory,
-                    resourceOutputDirectory = request.outputDirectory,
-                    outputFile = request.outputFile,
-                    schemaPackageName = request.schemaPackage,
-                    models = modelRequest,
-                    clients =
-                        request.clientConfig?.toRequest(
-                            clientPackage = request.clientPackage,
-                            modelPackage = request.modelPackage,
-                        ) ?: GeneratorConfigurationRequest.Clients(),
-                ),
-            )
-
-        validateActivatedOutputs(request, configuration)
-        return configuration
+        return GeneratorConfigurationFactory.create(
+            GeneratorConfigurationRequest(
+                generatorName = targetGenerator,
+                sourceOutputDirectory = request.outputDirectory,
+                javaSourceOutputDirectory = request.outputDirectory,
+                resourceOutputDirectory = request.outputDirectory,
+                outputFile = request.outputFile,
+                schemaPackageName = request.schemaPackage,
+                models = modelRequest,
+                clients =
+                    request.clientConfig?.toRequest(
+                        clientPackage = request.clientPackage,
+                        modelPackage = request.modelPackage,
+                    ) ?: GeneratorConfigurationRequest.Clients(),
+            ),
+        )
     }
 
     private fun validateMavenConfiguration(request: MavenGeneratorConfigurationRequest) {
@@ -74,23 +70,6 @@ internal object MavenGeneratorConfigurationMapper {
         }
         if (request.outputFile?.isDirectory == true) {
             throw IllegalArgumentException("outputFile must be a file: ${request.outputFile}")
-        }
-    }
-
-    private fun validateActivatedOutputs(
-        request: MavenGeneratorConfigurationRequest,
-        configuration: GeneratorConfiguration,
-    ) {
-        if (request.schemaPackage != null && configuration.schemas.isEmpty()) {
-            throw IllegalArgumentException(
-                "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models",
-            )
-        }
-        if (!configuration.hasConfiguredOutputs()) {
-            throw IllegalArgumentException(
-                "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
-                    "schemaPackage with a schema generator, or outputFile.",
-            )
         }
     }
 }

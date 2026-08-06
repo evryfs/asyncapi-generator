@@ -9,7 +9,6 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GeneratorConfigurationFactoryTest {
@@ -24,7 +23,13 @@ class GeneratorConfigurationFactoryTest {
         ).forEach { (generatorName, sourceLanguage) ->
             assertEquals(
                 sourceLanguage,
-                GeneratorConfigurationFactory.create(request(generatorName = generatorName)).sourceLanguage,
+                GeneratorConfigurationFactory
+                    .create(
+                        request(
+                            generatorName = generatorName,
+                            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        ),
+                    ).sourceLanguage,
             )
         }
     }
@@ -296,6 +301,7 @@ class GeneratorConfigurationFactoryTest {
             GeneratorConfigurationFactory.create(
                 request(
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
                 ),
             )
 
@@ -554,15 +560,35 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create returns no configured output when no output requests are configured`() {
-        val configuration =
-            GeneratorConfigurationFactory.create(
-                request(),
-            )
+    fun `create rejects source configuration without an activated output`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(request())
+            }
 
-        assertEquals(emptyList(), configuration.clients)
-        assertEquals(emptyList(), configuration.schemas)
-        assertFalse(configuration.hasConfiguredOutputs())
+        assertEquals(
+            "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
+                "schemaPackage with a schema generator, or outputFile.",
+            exception.message,
+        )
+    }
+
+    @Test
+    fun `create rejects schema package when selected outputs do not generate schemas`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        schemaPackageName = "com.example.schema",
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models",
+            exception.message,
+        )
     }
 
     @Test

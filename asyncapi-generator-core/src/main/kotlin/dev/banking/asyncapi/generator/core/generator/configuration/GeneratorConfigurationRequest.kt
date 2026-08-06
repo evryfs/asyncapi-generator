@@ -195,6 +195,61 @@ data class GeneratorConfigurationRequest(
                 else -> KafkaConsumer(enabled = enabled)
             }
 
+        fun clients(
+            clientType: String?,
+            clientContract: String?,
+            clientPackage: String?,
+            modelPackage: String?,
+            producerEnabled: Boolean? = null,
+            consumerEnabled: Boolean? = null,
+            topicParameterProperties: Map<String, String> = emptyMap(),
+            validationClientContract: String? = null,
+            validationPayloadParameter: String? = null,
+        ): Clients {
+            val resolvedClientType =
+                ClientType.fromConfigurationValue(
+                    value = clientType,
+                    path = "clientConfig.clientType",
+                )
+            val resolvedClientContract =
+                ClientContract.fromConfigurationValue(
+                    value = clientContract,
+                    path = "clientConfig.clientContract",
+                )
+            val resolvedClientPackage = requiredClientPackage(clientPackage, "clientPackage")
+            val resolvedModelPackage = requiredClientPackage(modelPackage, "modelPackage")
+            val validationAnnotations =
+                ClientValidationAnnotations(
+                    clientContract =
+                        validationClientContract.toQualifiedTypeName(
+                            "clientConfig.validationAnnotations.clientContract",
+                        ),
+                    payloadParameter =
+                        validationPayloadParameter.toQualifiedTypeName(
+                            "clientConfig.validationAnnotations.payloadParameter",
+                        ),
+                )
+
+            return when (resolvedClientType) {
+                ClientType.SPRING_KAFKA ->
+                    Clients(
+                        kafka =
+                            Kafka(
+                                packageName = resolvedClientPackage,
+                                modelPackageName = resolvedModelPackage,
+                                springKafka =
+                                    KafkaSpringKafka(
+                                        clientContract = resolvedClientContract,
+                                        topicParameterProperties = topicParameterProperties,
+                                        validationAnnotations = validationAnnotations,
+                                        producer = KafkaProducer(enabled = producerEnabled ?: true),
+                                        consumer = KafkaConsumer(enabled = consumerEnabled ?: true),
+                                    ),
+                            ),
+                    )
+            }
+        }
+
         fun quarkusKafka(
             enabled: Boolean? = null,
             packageName: String? = null,
@@ -208,6 +263,23 @@ data class GeneratorConfigurationRequest(
                         modelPackageName = modelPackageName,
                     )
                 else -> null
+            }
+
+        private fun requiredClientPackage(
+            value: String?,
+            path: String,
+        ): String =
+            PackageName.fromConfigurationValue(
+                value = value ?: throw IllegalArgumentException("$path is required when clientConfig is configured"),
+                path = path,
+            ).value
+
+        private fun String?.toQualifiedTypeName(path: String): QualifiedTypeName? =
+            this?.let { value ->
+                QualifiedTypeName.fromConfigurationValue(
+                    value = value,
+                    path = path,
+                )
             }
     }
 }
