@@ -3,11 +3,13 @@ package dev.banking.asyncapi.generator.cli
 import com.github.ajalt.clikt.parameters.groups.OptionGroup
 import com.github.ajalt.clikt.parameters.options.associate
 import com.github.ajalt.clikt.parameters.options.default
+import com.github.ajalt.clikt.parameters.options.multiple
 import com.github.ajalt.clikt.parameters.options.nullableFlag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
@@ -139,6 +141,15 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
         help = "Generate producer contracts; enabled by default.",
     ).nullableFlag("--no-generate-producer")
 
+    private val producerAdditionalPayloadTypes by option(
+        "--producer-additional-payload-type",
+        help = "Add a producer method for an already serialized payload value.",
+    ).choice(
+        *AdditionalProducerPayloadType.entries
+            .map { payloadType -> payloadType.configurationValue to payloadType.configurationValue }
+            .toTypedArray(),
+    ).multiple()
+
     private val consumerEnabled by option(
         "--generate-consumer",
         help = "Generate consumer contracts; enabled by default.",
@@ -167,7 +178,15 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
         return CliClientConfiguration(
             clientType = clientType?.configurationValue,
             clientContract = clientContract?.configurationValue,
-            producer = producerEnabled?.let(::CliProducerConfiguration),
+            producer =
+                if (producerEnabled != null || producerAdditionalPayloadTypes.isNotEmpty()) {
+                    CliProducerConfiguration(
+                        enabled = producerEnabled,
+                        additionalPayloadTypes = producerAdditionalPayloadTypes.takeIf(List<String>::isNotEmpty),
+                    )
+                } else {
+                    null
+                },
             consumer = consumerEnabled?.let(::CliConsumerConfiguration),
             topicParameterProperties = topicParameterProperties,
             validationAnnotations =
@@ -189,6 +208,7 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
         clientType != null ||
             clientContract != null ||
             producerEnabled != null ||
+            producerAdditionalPayloadTypes.isNotEmpty() ||
             consumerEnabled != null ||
             topicParameterProperties.isNotEmpty() ||
             clientContractValidationAnnotation != null ||

@@ -16,34 +16,62 @@ internal object SpringKafkaClientMethodNameValidator {
         task: GenerationTask.SpringKafkaClient,
     ) {
         channels.forEach { channel ->
-            val methodPrefixes = channel.generatedMethodPrefixes(task)
-            if (methodPrefixes.isEmpty()) return@forEach
-
             val collision =
                 channel.messageIdentities()
-                    .groupBy(MessageIdentity::generatedName)
+                    .flatMap { message -> message.generatedMethods(task) }
+                    .groupBy { method -> method.scope to method.name }
                     .asSequence()
-                    .filter { (_, messages) -> messages.size > 1 }
-                    .sortedBy { (generatedName, _) -> generatedName }
+                    .filter { (_, methods) -> methods.size > 1 }
+                    .sortedWith(
+                        compareBy(
+                            { (method, _) -> method.first.ordinal },
+                            { (method, _) -> method.second },
+                        ),
+                    )
                     .firstOrNull()
                     ?: return@forEach
 
-            val generatedMessageName = collision.key
             throw SpringKafkaClientMethodNameCollision(
                 channelName = channel.channelName,
-                messageIds = collision.value.map(MessageIdentity::messageId).sorted(),
-                generatedMessageName = generatedMessageName,
-                methodNames = methodPrefixes.map { prefix -> "$prefix$generatedMessageName" },
+                messageIds = collision.value.map(GeneratedMethod::messageId).sorted(),
+                methodName = collision.key.second,
             )
         }
     }
 
-    private fun AnalyzedChannel.generatedMethodPrefixes(
+    private fun MessageIdentity.generatedMethods(
         task: GenerationTask.SpringKafkaClient,
-    ): List<String> =
+    ): List<GeneratedMethod> =
         buildList {
-            if (task.generateProducers) add("send")
-            if (task.generateConsumers) add("listen")
+            if (task.generateProducers) {
+                add(
+                    GeneratedMethod(
+                        messageId = messageId,
+                        name = "send$generatedName",
+                        scope = MethodScope.PRODUCER,
+                    ),
+                )
+                if (hasPayload) {
+                    task.additionalPayloadTypes.inCanonicalOrder().forEach { additionalPayloadType ->
+                        add(
+                            GeneratedMethod(
+                                messageId = messageId,
+                                name = "send$generatedName${additionalPayloadType.methodSuffix}",
+                                scope = MethodScope.PRODUCER,
+                            ),
+                        )
+                    }
+                }
+            }
+            if (task.generateConsumers) {
+                add(
+                    GeneratedMethod(
+                        messageId = messageId,
+                        name = "listen$generatedName",
+                        scope = MethodScope.CONSUMER,
+                    ),
+                )
+            }
         }
 
     private fun AnalyzedChannel.messageIdentities(): List<MessageIdentity> =
@@ -51,17 +79,35 @@ internal object SpringKafkaClientMethodNameValidator {
             MessageIdentity(
                 messageId = message.messageId,
                 generatedName = message.messageName,
+                hasPayload = message.schema != null,
             )
         } +
-            multiFormatMessages.map { message ->
-                MessageIdentity(
-                    messageId = message.messageId,
-                    generatedName = message.messageName,
-                )
-            }
+            multiFormatMessages
+                .filter { message ->
+                    message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf
+                }
+                .map { message ->
+                    MessageIdentity(
+                        messageId = message.messageId,
+                        generatedName = message.messageName,
+                        hasPayload = true,
+                    )
+                }
 
     private data class MessageIdentity(
         val messageId: String,
         val generatedName: String,
+        val hasPayload: Boolean,
     )
+
+    private data class GeneratedMethod(
+        val messageId: String,
+        val name: String,
+        val scope: MethodScope,
+    )
+
+    private enum class MethodScope {
+        PRODUCER,
+        CONSUMER,
+    }
 }

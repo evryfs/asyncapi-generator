@@ -43,6 +43,20 @@ reader, parser, validator, and bundler, but channel analysis does not use them t
 contracts. This keeps generation deterministic for both application-oriented documents and channel-oriented
 integration contracts.
 
+### Producer Payload Representations
+
+Every payload-bearing Spring Kafka producer contract includes the contract-derived `send<MessageName>` method. This
+method is the stable expression of the AsyncAPI payload schema and retains configured payload validation annotations.
+The producer `additionalPayloadTypes` collection may add `byte-array` and `string` representations for payloads that
+the application has already serialized. Omitted or empty configuration generates only the contract-derived method.
+Configured alternatives generate `send<MessageName>ByteArray` and `send<MessageName>String` after that method; they do
+not replace it and do not receive the payload validation annotation.
+
+The additional values must already conform to the AsyncAPI payload schema and content type. Serializer selection,
+message conversion, encoding, record construction, and compatible Spring Kafka configuration remain application-owned.
+In particular, implementations must not pass already serialized values through a JSON converter that serializes them
+again. Consumer payload contracts are unaffected by producer representation configuration.
+
 ---
 
 ## Payload Format Boundary

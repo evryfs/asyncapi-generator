@@ -29,6 +29,7 @@ class MavenModelConfiguration {
  */
 class MavenProducerConfiguration {
     var enabled: Boolean? = null
+    var additionalPayloadTypes: List<String>? = null
 }
 
 /**
@@ -65,6 +66,7 @@ class MavenClientConfiguration {
             clientPackage = clientPackage,
             modelPackage = modelPackage,
             producerEnabled = producer?.enabled,
+            producerAdditionalPayloadTypes = producer?.additionalPayloadTypes,
             consumerEnabled = consumer?.enabled,
             topicParameterProperties = topicParameterProperties.orEmpty(),
             validationClientContract = validationAnnotations?.clientContract,

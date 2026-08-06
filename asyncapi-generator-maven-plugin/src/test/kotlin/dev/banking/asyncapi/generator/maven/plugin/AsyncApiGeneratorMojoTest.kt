@@ -93,7 +93,11 @@ class AsyncApiGeneratorMojoTest {
             clientConfig(
                 clientType = "spring-kafka",
                 clientContract = "interface",
-                producer = producer(enabled = false),
+                producer =
+                    producer(
+                        enabled = false,
+                        additionalPayloadTypes = listOf("byte-array", "string"),
+                    ),
                 consumer = consumer(enabled = true),
                 topicParameterProperties = mapOf("environment" to "kafka.environment"),
                 validationAnnotations =
@@ -113,6 +117,10 @@ class AsyncApiGeneratorMojoTest {
         val configuredSpringKafka = springKafka!!
         assertEquals(ClientContract.INTERFACE, configuredSpringKafka.clientContract)
         assertFalse(configuredSpringKafka.producer.enabled)
+        assertEquals(
+            listOf("byte-array", "string"),
+            configuredSpringKafka.producer.additionalPayloadTypes,
+        )
         assertTrue(configuredSpringKafka.consumer.enabled)
         assertEquals(
             mapOf("environment" to "kafka.environment"),

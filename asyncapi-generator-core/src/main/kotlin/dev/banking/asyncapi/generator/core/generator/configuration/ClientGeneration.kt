@@ -30,6 +30,7 @@ sealed interface ClientGeneration {
 
     data class Producer(
         val enabled: Boolean = true,
+        val additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
     )
 
     data class Consumer(

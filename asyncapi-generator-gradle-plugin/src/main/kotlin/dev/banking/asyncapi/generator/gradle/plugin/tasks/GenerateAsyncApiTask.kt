@@ -14,6 +14,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
@@ -87,6 +88,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @get:Input
     @get:Optional
+    abstract val producerAdditionalPayloadTypes: ListProperty<String>
+
+    @get:Input
+    @get:Optional
     abstract val consumerEnabled: Property<Boolean>
 
     @get:Input
@@ -144,7 +149,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             GradleClientConfiguration(
                 clientType = clientType.orNull,
                 clientContract = clientContract.orNull,
-                producer = GradleProducerConfiguration(enabled = producerEnabled.orNull),
+                producer =
+                    GradleProducerConfiguration(
+                        enabled = producerEnabled.orNull,
+                        additionalPayloadTypes = producerAdditionalPayloadTypes.orNull,
+                    ),
                 consumer = GradleConsumerConfiguration(enabled = consumerEnabled.orNull),
                 topicParameterProperties = topicParameterProperties.orNull.orEmpty(),
                 validationAnnotations = validationAnnotationsConfiguration(),

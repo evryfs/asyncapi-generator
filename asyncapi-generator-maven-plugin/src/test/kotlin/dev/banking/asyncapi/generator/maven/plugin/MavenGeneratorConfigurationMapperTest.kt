@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
@@ -30,6 +32,36 @@ class MavenGeneratorConfigurationMapperTest {
             configuration.profile,
         )
         assertInstanceOf(ModelGeneration.Enabled::class.java, configuration.models)
+    }
+
+    @Test
+    fun `maps additional producer payload types`() {
+        val configuration =
+            mapConfiguration(
+                generatorName = "kotlin",
+                modelPackage = "com.example.model",
+                clientPackage = "com.example.client",
+                clientConfig =
+                    MavenTestHelper.clientConfig(
+                        clientType = "spring-kafka",
+                        clientContract = "interface",
+                        producer =
+                            MavenTestHelper.producer(
+                                additionalPayloadTypes = listOf("string", "byte-array"),
+                            ),
+                    ),
+            )
+
+        val kafka = configuration.clients.single() as ClientGeneration.Kafka
+        val producer = kafka.springKafka!!.producer
+
+        assertEquals(
+            listOf(
+                AdditionalProducerPayloadType.BYTE_ARRAY,
+                AdditionalProducerPayloadType.STRING,
+            ),
+            producer.additionalPayloadTypes.toList(),
+        )
     }
 
     @Test

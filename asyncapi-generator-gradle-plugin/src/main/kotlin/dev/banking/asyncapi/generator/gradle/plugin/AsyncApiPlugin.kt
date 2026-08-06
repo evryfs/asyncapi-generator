@@ -51,6 +51,9 @@ class AsyncApiPlugin : Plugin<Project> {
                     clientType.set(extension.clientConfig.clientType)
                     clientContract.set(extension.clientConfig.clientContract)
                     producerEnabled.set(extension.clientConfig.producer.enabled)
+                    producerAdditionalPayloadTypes.set(
+                        extension.clientConfig.producer.additionalPayloadTypes,
+                    )
                     consumerEnabled.set(extension.clientConfig.consumer.enabled)
                     topicParameterProperties.set(extension.clientConfig.topicParameterProperties)
                     clientContractValidationAnnotation.set(

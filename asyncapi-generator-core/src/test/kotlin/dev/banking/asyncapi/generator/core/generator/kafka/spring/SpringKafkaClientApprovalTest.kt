@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtu
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -123,6 +124,74 @@ class SpringKafkaClientApprovalTest {
                     scenario = "three-message-consumer",
                 )
             },
+        )
+    }
+
+    @Test
+    fun approves_kotlin_producer_with_all_additional_payload_types() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("kotlin-producer-payload-types"),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.singleProducer(),
+            format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+            scenario = "additional-payload-types-producer",
+        )
+    }
+
+    @Test
+    fun approves_java_producer_with_all_additional_payload_types() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-producer-payload-types"),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.singleProducer(),
+            format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+            scenario = "additional-payload-types-producer",
+        )
+    }
+
+    @Test
+    fun approves_kotlin_byte_array_producer_implementation_example() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("kotlin-byte-array-producer"),
+                additionalPayloadTypes = setOf(AdditionalProducerPayloadType.BYTE_ARRAY),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.singleProducer(),
+            format = GeneratorApprovalFormat.SPRING_KAFKA_KOTLIN,
+            scenario = "byte-array-additional-producer",
+        )
+    }
+
+    @Test
+    fun approves_java_string_producer_implementation_example() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("java-string-producer"),
+                additionalPayloadTypes = setOf(AdditionalProducerPayloadType.STRING),
+            )
+
+        GeneratorApprovals.verify(
+            generated = contracts.singleProducer(),
+            format = GeneratorApprovalFormat.SPRING_KAFKA_JAVA,
+            scenario = "string-additional-producer",
         )
     }
 

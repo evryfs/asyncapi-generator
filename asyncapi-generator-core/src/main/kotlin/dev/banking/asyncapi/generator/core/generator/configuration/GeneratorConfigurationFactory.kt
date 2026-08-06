@@ -75,6 +75,11 @@ object GeneratorConfigurationFactory {
                                             producer =
                                                 ClientGeneration.Producer(
                                                     enabled = springKafka.producer.enabled,
+                                                    additionalPayloadTypes =
+                                                        AdditionalProducerPayloadType.fromConfigurationValues(
+                                                            values = springKafka.producer.additionalPayloadTypes,
+                                                            path = "clientConfig.producer.additionalPayloadTypes",
+                                                        ),
                                                 ),
                                             consumer =
                                                 ClientGeneration.Consumer(
