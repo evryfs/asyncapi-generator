@@ -1,10 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.factory
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
-import dev.banking.asyncapi.generator.core.generator.kotlin.mapper.ConstraintMapper
 import dev.banking.asyncapi.generator.core.generator.kotlin.mapper.KotlinTypeMapper
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.PropertyModel
 import dev.banking.asyncapi.generator.core.generator.kotlin.serialization.SerializationAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
@@ -15,7 +16,7 @@ class PropertyFactory(
     val context: GeneratorContext,
     val serializationFramework: String = "jackson",
 ) {
-    private val constraintMapper = ConstraintMapper()
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
     private val serializationAnnotationMapper = SerializationAnnotationMapper(serializationFramework)
     private val defaultValueFactory = DefaultValueFactory(context)
     private val validationDetector = ValidationDetector(context)

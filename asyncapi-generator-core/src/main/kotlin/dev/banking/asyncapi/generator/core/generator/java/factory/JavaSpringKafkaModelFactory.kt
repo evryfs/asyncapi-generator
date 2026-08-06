@@ -5,7 +5,8 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.java.mapper.ConstraintMapper
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
@@ -30,7 +31,7 @@ class JavaSpringKafkaModelFactory(
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
-    private val constraintMapper = ConstraintMapper()
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!generateConsumers && !generateProducers) {

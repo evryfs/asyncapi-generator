@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.mapper
 
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -7,7 +9,7 @@ import kotlin.test.assertTrue
 
 class ConstraintMapperTest {
 
-    private val mapper = ConstraintMapper()
+    private val mapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
 
     @Test
     fun `buildAnnotations should generate size constraints`() {

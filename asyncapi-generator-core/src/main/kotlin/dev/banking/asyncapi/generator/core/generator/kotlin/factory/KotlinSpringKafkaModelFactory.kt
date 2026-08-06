@@ -13,7 +13,8 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContra
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
-import dev.banking.asyncapi.generator.core.generator.kotlin.mapper.ConstraintMapper
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -29,7 +30,7 @@ class KotlinSpringKafkaModelFactory(
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
-    private val constraintMapper = ConstraintMapper()
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!generateConsumers && !generateProducers) {
