@@ -3,12 +3,12 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.factory
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidEnum
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.EnumLiteralCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class KotlinGeneratorModelFactory(
     val packageName: String,
@@ -26,7 +26,7 @@ class KotlinGeneratorModelFactory(
         val isUnionType = !schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty()
         val isEnum = schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty()
         val isObject = schema.type.getPrimaryType() == "object"
-        val isOpenPayload = isOpenPayloadSchema(schema)
+        val isOpenPayload = schema.isOpenPayload()
 
         val description = DocumentationUtils.toKDocLines(schema.description)
 
@@ -73,28 +73,6 @@ class KotlinGeneratorModelFactory(
                 )
             }
             else -> null // This schema type does not result in its own generated file (e.g., a primitive type alias)
-        }
-    }
-
-    private fun isOpenPayloadSchema(schema: Schema): Boolean {
-        if (schema.type == null) {
-            return schema.properties.isNullOrEmpty() &&
-                schema.additionalProperties == null &&
-                schema.enum.isNullOrEmpty() &&
-                schema.oneOf.isNullOrEmpty() &&
-                schema.anyOf.isNullOrEmpty() &&
-                schema.allOf.isNullOrEmpty()
-        }
-        if (schema.type.getPrimaryType() != "object") return false
-        if (!schema.properties.isNullOrEmpty()) return false
-        return when (val additional = schema.additionalProperties) {
-            null -> true
-            is SchemaInterface.BooleanSchema -> additional.value
-            is SchemaInterface.SchemaInline ->
-                additional.schema.type == null &&
-                    additional.schema.properties.isNullOrEmpty() &&
-                    additional.schema.additionalProperties == null
-            else -> false
         }
     }
 
