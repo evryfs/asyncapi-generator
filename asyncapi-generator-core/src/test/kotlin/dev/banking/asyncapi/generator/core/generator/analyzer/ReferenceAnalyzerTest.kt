@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ReferenceAnalyzerTest {
@@ -70,6 +71,36 @@ class ReferenceAnalyzerTest {
         assertTrue(result.containsKey("Root"))
         assertTrue(result.containsKey("Middle"))
         assertTrue(result.containsKey("End"), "Deeply nested reference should be discovered")
+    }
+
+    @Test
+    fun `analyze discovers external schema used as an inline map value`() {
+        val externalItem = Schema(type = "object")
+        val container =
+            Schema(
+                type = "object",
+                properties =
+                    mapOf(
+                        "itemsById" to
+                            SchemaInterface.SchemaInline(
+                                Schema(
+                                    type = "object",
+                                    additionalProperties =
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "./items.yaml#/components/schemas/ExternalItem",
+                                                model = externalItem,
+                                            ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+
+        val result = analyzer.analyze(mapOf("Container" to container))
+
+        assertEquals(setOf("Container", "ExternalItem"), result.keys)
+        assertSame(externalItem, result["ExternalItem"])
     }
 
     @Test

@@ -3,11 +3,11 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class CompositionNormalizer : NormalizationStage {
+class CompositionNormalizer {
 
     private val schemaMerger = SchemaMerger()
 
-    override fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
+    fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
         return schemas.mapValues { (name, schema) ->
             resolveSchemaRecursive(schema, name, schemas, mutableSetOf())
         }

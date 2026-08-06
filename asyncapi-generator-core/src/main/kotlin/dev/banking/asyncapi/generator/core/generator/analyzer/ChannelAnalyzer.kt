@@ -7,8 +7,8 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 
 class ChannelAnalyzer {
-    fun analyze(document: AsyncApiDocument): ChannelAnalysisResult {
-        val channels = document.channels ?: return ChannelAnalysisResult(emptyList())
+    fun analyze(document: AsyncApiDocument): List<AnalyzedChannel> {
+        val channels = document.channels ?: return emptyList()
 
         val analyzedChannels =
             channels.mapNotNull { (name, chInterface) ->
@@ -28,7 +28,7 @@ class ChannelAnalyzer {
                 )
             }
 
-        return ChannelAnalysisResult(analyzedChannels)
+        return analyzedChannels
     }
 
     private fun resolveMessages(

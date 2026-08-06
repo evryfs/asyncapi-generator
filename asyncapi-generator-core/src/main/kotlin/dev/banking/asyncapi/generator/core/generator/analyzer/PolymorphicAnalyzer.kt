@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class PolymorphicAnalyzer : AnalysisStage<Map<String, List<String>>> {
+class PolymorphicAnalyzer {
 
-    override fun analyze(schemas: Map<String, Schema>): Map<String, List<String>> {
+    fun analyze(schemas: Map<String, Schema>): Map<String, List<String>> {
         val childToParents = mutableMapOf<String, MutableList<String>>()
 
         // Iterate through all schemas to find the ones that act as parents (i.e., have `oneOf` or `anyOf`)

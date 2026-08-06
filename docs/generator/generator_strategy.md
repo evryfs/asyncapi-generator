@@ -9,12 +9,12 @@ delegates specific tasks to specialized components.
 
 ### The Pipeline
 
-1.  **Prepare Input:** The parsed `AsyncApiDocument` is converted into `GenerationInput`. JSON-compatible AsyncAPI Schema Object payloads are kept separately from explicit multi-format schemas.
-2.  **Plan:** The typed generator configuration is converted into a `GenerationPlan` with explicit output tasks.
-3.  **Validate Compatibility:** The planned outputs are checked against the prepared input before any files are written.
-4.  **Analyze:** Schema and channel analyzers build generation-focused models such as relationships, payload names, topic addresses, message payload contracts, and Kafka key and header bindings.
-5.  **Generate:** Specialized generators render source and schema artifacts from the prepared input and planned tasks.
-6.  **Write:** Generated artifacts are written through the output contract into either source or resource output directories.
+1.  **Prepare Input:** Load, normalize, and analyze the parsed `AsyncApiDocument` into `GenerationInput`. JSON-compatible AsyncAPI Schema Object payloads remain separate from explicit multi-format schemas, while generation-focused relationships, payload names, topic addresses, Kafka keys, and message headers are derived.
+2.  **Plan:** Convert the typed generator configuration into a `GenerationPlan` with explicit output tasks.
+3.  **Validate Compatibility:** Check that every planned output can consume the prepared input.
+4.  **Render:** Render or serialize every planned output in memory.
+5.  **Preflight:** Resolve every configured destination and reject collisions before creating output directories or files.
+6.  **Write:** Write the complete rendered result to its rooted or explicitly configured destinations.
 
 ---
 
@@ -22,9 +22,9 @@ delegates specific tasks to specialized components.
 
 Planning and compatibility validation complete before rendering starts. A planned capability that is not implemented must fail explicitly during compatibility validation; it must not be logged and skipped, because a successful run otherwise implies that every planned output was produced.
 
-Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing relative paths, content, and artifact kinds, but do not create directories or write files. `AsyncApiGenerator` renders every artifact task before it invokes the configured `GeneratedArtifactWriter`, so a later rendering failure cannot leave outputs from earlier tasks. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
+Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing rooted artifacts or explicit bundled-document output, but do not create configured output directories or write configured destinations. `AsyncApiGenerator` renders every artifact task before it invokes the configured `GeneratedArtifactWriter`, so a later rendering failure cannot leave outputs from earlier tasks. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
 
-Before writing, the filesystem writer resolves every artifact against its configured output root and rejects destination collisions. This prevents one generated artifact from silently overwriting another, including when source and Java-source roots point to the same directory.
+Before writing, the filesystem writer resolves rooted artifacts against their configured output roots, resolves bundled documents to their explicit files, and rejects destination collisions. This prevents one generated output from silently overwriting another, including when source and Java-source roots point to the same directory.
 
 Bundled document output retains the explicit file configured for that task rather than being routed through a source or resource output root. Document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`, but its rendered content and explicit destination participate in the same render-before-write and collision-preflight boundary as other generated output.
 

@@ -4,9 +4,9 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
+class ReferenceAnalyzer {
 
-    override fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
+    fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val discoveredSchemas = schemas.toMutableMap()
         val namesToProcess = discoveredSchemas.keys.toMutableList()
         val processedSet = mutableSetOf<String>()
@@ -25,14 +25,11 @@ class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
     private fun discoverReferencesInSchema(
         schema: Schema,
         discoveredSchemas: MutableMap<String, Schema>,
-        namesToProcess: MutableList<String>
+        namesToProcess: MutableList<String>,
     ) {
-        // Look in properties
         schema.properties?.values?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
-
-        // Look in array items
         schema.items?.let { processSubSchema(it, discoveredSchemas, namesToProcess) }
-
+        schema.additionalProperties?.let { processSubSchema(it, discoveredSchemas, namesToProcess) }
         schema.oneOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
         schema.anyOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
         schema.allOf?.forEach { processSubSchema(it, discoveredSchemas, namesToProcess) }
@@ -41,25 +38,20 @@ class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
     private fun processSubSchema(
         schemaInterface: SchemaInterface,
         discoveredSchemas: MutableMap<String, Schema>,
-        namesToProcess: MutableList<String>
+        namesToProcess: MutableList<String>,
     ) {
         when (schemaInterface) {
             is SchemaInterface.SchemaReference -> {
-                val refModel = schemaInterface.reference.model
-                // Ensure refModel is a Schema before adding
-                if (refModel != null && refModel is Schema) {
-                    val refName = MapperUtil.toPascalCase(schemaInterface.reference.ref.substringAfterLast('/'))
-                    if (!discoveredSchemas.containsKey(refName)) {
-                        discoveredSchemas[refName] = refModel
-                        namesToProcess.add(refName) // Add to queue to process its children, too
-                    }
+                val referencedSchema = schemaInterface.reference.model as? Schema ?: return
+                val refName = MapperUtil.toPascalCase(schemaInterface.reference.ref.substringAfterLast('/'))
+                if (!discoveredSchemas.containsKey(refName)) {
+                    discoveredSchemas[refName] = referencedSchema
+                    namesToProcess.add(refName)
                 }
             }
-            is SchemaInterface.SchemaInline -> {
-                // If it's an inline schema, recurse into its contents to find references within it
+            is SchemaInterface.SchemaInline ->
                 discoverReferencesInSchema(schemaInterface.schema, discoveredSchemas, namesToProcess)
-            }
-            else -> { }
+            else -> Unit
         }
     }
 }

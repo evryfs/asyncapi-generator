@@ -3,15 +3,11 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 class SchemaNormalizer {
+    private val compositionNormalizer = CompositionNormalizer()
+    private val conditionalNormalizer = ConditionalNormalizer()
 
-    private val stages: List<NormalizationStage> = listOf(
-        CompositionNormalizer(),
-        ConditionalNormalizer()
-    )
-
-    fun normalize(initialSchemas: Map<String, Schema>): Map<String, Schema> {
-        return stages.fold(initialSchemas) { currentSchemas, stage ->
-            stage.normalize(currentSchemas)
-        }
-    }
+    fun normalize(initialSchemas: Map<String, Schema>): Map<String, Schema> =
+        conditionalNormalizer.normalize(
+            compositionNormalizer.normalize(initialSchemas),
+        )
 }
