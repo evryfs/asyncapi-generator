@@ -85,7 +85,7 @@ class ChannelAnalyzerTest {
             channels = mapOf("userEvents" to ChannelInterface.ChannelInline(channel)),
         )
 
-        val analyzed = analyzer.analyze(doc).channels.single().messages.single()
+        val analyzed = analyzer.analyze(doc).single().messages.single()
 
         assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
     }
@@ -133,7 +133,7 @@ class ChannelAnalyzerTest {
                 channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
             )
 
-        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+        val analyzed = analyzer.analyze(document).single().messages.single()
 
         assertEquals("accountUpdateAlias", analyzed.messageId)
         assertEquals("AccountUpdatedV1", analyzed.messageName)
@@ -160,7 +160,7 @@ class ChannelAnalyzerTest {
             channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
         )
 
-        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+        val analyzed = analyzer.analyze(document).single().messages.single()
 
         assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
     }
@@ -201,7 +201,7 @@ class ChannelAnalyzerTest {
                 channels = mapOf("cacheEvents" to ChannelInterface.ChannelInline(channel)),
             )
 
-        val analyzed = analyzer.analyze(document).channels.single().messages.single()
+        val analyzed = analyzer.analyze(document).single().messages.single()
 
         assertEquals("CacheInvalidatedV1", analyzed.messageName)
         assertEquals(false, analyzed.hasPayload)
@@ -232,7 +232,7 @@ class ChannelAnalyzerTest {
             channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
         )
 
-        val analyzed = analyzer.analyze(doc).channels.single()
+        val analyzed = analyzer.analyze(doc).single()
 
         assertTrue(analyzed.messages.isEmpty())
         val multiFormatMessage = analyzed.multiFormatMessages.single()
@@ -267,7 +267,7 @@ class ChannelAnalyzerTest {
             channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
         )
 
-        val analyzed = analyzer.analyze(doc).channels.single()
+        val analyzed = analyzer.analyze(doc).single()
 
         assertTrue(analyzed.messages.isEmpty())
         val multiFormatMessage = analyzed.multiFormatMessages.single()

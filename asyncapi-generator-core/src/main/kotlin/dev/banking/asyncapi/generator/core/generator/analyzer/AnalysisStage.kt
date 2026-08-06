@@ -1,7 +1,0 @@
-package dev.banking.asyncapi.generator.core.generator.analyzer
-
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-
-interface AnalysisStage<T> {
-    fun analyze(schemas: Map<String, Schema>): T
-}

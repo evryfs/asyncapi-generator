@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class ConditionalNormalizer : NormalizationStage {
+class ConditionalNormalizer {
 
-    override fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
+    fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
         return schemas.mapValues { (_, schema) ->
             if (schema.ifSchema != null || schema.thenSchema != null || schema.elseSchema != null) {
                 resolveConditionalSchema(schema)

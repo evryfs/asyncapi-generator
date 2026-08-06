@@ -34,18 +34,18 @@ class SchemaAnalyzerTest {
         val input = mapOf("Root" to rootSchema)
 
         // Act
-        val (schemas, relationships) = analyzer.analyze(input)
+        val analysis = analyzer.analyze(input)
 
         // Assert
         // 1. ReferenceAnalyzer found "External"
-        assertTrue(schemas.containsKey("External"))
+        assertTrue(analysis.schemas.containsKey("External"))
 
         // 2. InlineSchemaAnalyzer found "Status" (from External.status)
-        assertTrue(schemas.containsKey("Status"))
+        assertTrue(analysis.schemas.containsKey("Status"))
 
         // 3. PolymorphicAnalyzer linked External to Root
-        assertEquals(listOf("Root"), relationships["External"])
+        assertEquals(listOf("Root"), analysis.polymorphicRelationships["External"])
 
-        assertEquals(3, schemas.size, "Should have Root, External, and Status")
+        assertEquals(3, analysis.schemas.size, "Should have Root, External, and Status")
     }
 }

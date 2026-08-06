@@ -4,9 +4,9 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class ReferenceAnalyzer : AnalysisStage<Map<String, Schema>> {
+class ReferenceAnalyzer {
 
-    override fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
+    fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val discoveredSchemas = schemas.toMutableMap()
         val namesToProcess = discoveredSchemas.keys.toMutableList()
         val processedSet = mutableSetOf<String>()
