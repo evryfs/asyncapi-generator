@@ -1,11 +1,6 @@
 package dev.banking.asyncapi.generator.cli
 
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.PackageName
-import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 
 /**
  * CLI model generation configuration.
@@ -34,12 +29,7 @@ internal data class CliModelConfiguration(
  */
 internal data class CliProducerConfiguration(
     val enabled: Boolean? = null,
-) {
-    fun toRequest(): GeneratorConfigurationRequest.KafkaProducer =
-        GeneratorConfigurationRequest.KafkaProducer(
-            enabled = enabled ?: true,
-        )
-}
+)
 
 /**
  * CLI consumer generation configuration.
@@ -49,12 +39,7 @@ internal data class CliProducerConfiguration(
  */
 internal data class CliConsumerConfiguration(
     val enabled: Boolean? = null,
-) {
-    fun toRequest(): GeneratorConfigurationRequest.KafkaConsumer =
-        GeneratorConfigurationRequest.KafkaConsumer(
-            enabled = enabled ?: true,
-        )
-}
+)
 
 /**
  * CLI client generation configuration.
@@ -73,54 +58,18 @@ internal data class CliClientConfiguration(
     fun toRequest(
         clientPackage: String?,
         modelPackage: String?,
-    ): GeneratorConfigurationRequest.Clients {
-        val resolvedClientType =
-            ClientType.fromConfigurationValue(
-                value = clientType,
-                path = "clientConfig.clientType",
-            )
-        val resolvedClientContract =
-            ClientContract.fromConfigurationValue(
-                value = clientContract,
-                path = "clientConfig.clientContract",
-            )
-        val resolvedClientPackage = requiredPackageName(clientPackage, "clientPackage")
-        val resolvedModelPackage = requiredPackageName(modelPackage, "modelPackage")
-
-        return when (resolvedClientType) {
-            ClientType.SPRING_KAFKA ->
-                GeneratorConfigurationRequest.Clients(
-                    kafka =
-                        GeneratorConfigurationRequest.Kafka(
-                            packageName = resolvedClientPackage,
-                            modelPackageName = resolvedModelPackage,
-                            springKafka =
-                                GeneratorConfigurationRequest.KafkaSpringKafka(
-                                    clientContract = resolvedClientContract,
-                                    topicParameterProperties = topicParameterProperties,
-                                    validationAnnotations =
-                                        validationAnnotations?.toRequest()
-                                            ?: ClientValidationAnnotations(),
-                                    producer =
-                                        producer?.toRequest()
-                                            ?: GeneratorConfigurationRequest.KafkaProducer(),
-                                    consumer =
-                                        consumer?.toRequest()
-                                            ?: GeneratorConfigurationRequest.KafkaConsumer(),
-                                ),
-                        ),
-                )
-        }
-    }
-
-    private fun requiredPackageName(
-        value: String?,
-        path: String,
-    ): String =
-        PackageName.fromConfigurationValue(
-            value = value ?: throw IllegalArgumentException("$path is required when clientConfig is configured"),
-            path = path,
-        ).value
+    ): GeneratorConfigurationRequest.Clients =
+        GeneratorConfigurationRequest.clients(
+            clientType = clientType,
+            clientContract = clientContract,
+            clientPackage = clientPackage,
+            modelPackage = modelPackage,
+            producerEnabled = producer?.enabled,
+            consumerEnabled = consumer?.enabled,
+            topicParameterProperties = topicParameterProperties,
+            validationClientContract = validationAnnotations?.clientContract,
+            validationPayloadParameter = validationAnnotations?.payloadParameter,
+        )
 }
 
 /**
@@ -135,18 +84,4 @@ internal data class CliClientConfiguration(
 internal data class CliValidationAnnotationsConfiguration(
     val clientContract: String? = null,
     val payloadParameter: String? = null,
-) {
-    fun toRequest(): ClientValidationAnnotations =
-        ClientValidationAnnotations(
-            clientContract = clientContract.toQualifiedTypeName("clientContract"),
-            payloadParameter = payloadParameter.toQualifiedTypeName("payloadParameter"),
-        )
-
-    private fun String?.toQualifiedTypeName(fieldName: String): QualifiedTypeName? =
-        this?.let { value ->
-            QualifiedTypeName.fromConfigurationValue(
-                value = value,
-                path = "clientConfig.validationAnnotations.$fieldName",
-            )
-        }
-}
+)

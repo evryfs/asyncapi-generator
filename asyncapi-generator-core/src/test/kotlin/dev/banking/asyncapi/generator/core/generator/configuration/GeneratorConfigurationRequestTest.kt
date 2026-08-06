@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
+
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 class GeneratorConfigurationRequestTest {
@@ -161,6 +163,86 @@ class GeneratorConfigurationRequestTest {
             GeneratorConfigurationRequest.kafkaSpringKafka(
                 validationAnnotations = validationAnnotations,
             ),
+        )
+    }
+
+    @Test
+    fun `clients request resolves Spring Kafka configuration values`() {
+        assertEquals(
+            GeneratorConfigurationRequest.Clients(
+                kafka =
+                    GeneratorConfigurationRequest.Kafka(
+                        packageName = "com.example.client",
+                        modelPackageName = "com.example.model",
+                        springKafka =
+                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                clientContract = ClientContract.INTERFACE,
+                                topicParameterProperties =
+                                    mapOf(
+                                        "environment" to "kafka.environment",
+                                    ),
+                                validationAnnotations =
+                                    ClientValidationAnnotations(
+                                        clientContract =
+                                            QualifiedTypeName.fromConfigurationValue(
+                                                value = "org.springframework.validation.annotation.Validated",
+                                                path = "clientConfig.validationAnnotations.clientContract",
+                                            ),
+                                        payloadParameter =
+                                            QualifiedTypeName.fromConfigurationValue(
+                                                value = "jakarta.validation.Valid",
+                                                path = "clientConfig.validationAnnotations.payloadParameter",
+                                            ),
+                                    ),
+                                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                                consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
+                            ),
+                    ),
+            ),
+            GeneratorConfigurationRequest.clients(
+                clientType = "spring-kafka",
+                clientContract = "interface",
+                clientPackage = "com.example.client",
+                modelPackage = "com.example.model",
+                producerEnabled = false,
+                topicParameterProperties =
+                    mapOf(
+                        "environment" to "kafka.environment",
+                    ),
+                validationClientContract = "org.springframework.validation.annotation.Validated",
+                validationPayloadParameter = "jakarta.validation.Valid",
+            ),
+        )
+    }
+
+    @Test
+    fun `clients request requires client and model packages`() {
+        val missingClientPackage =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationRequest.clients(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                    clientPackage = null,
+                    modelPackage = "com.example.model",
+                )
+            }
+        assertEquals(
+            "clientPackage is required when clientConfig is configured",
+            missingClientPackage.message,
+        )
+
+        val missingModelPackage =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationRequest.clients(
+                    clientType = "spring-kafka",
+                    clientContract = "interface",
+                    clientPackage = "com.example.client",
+                    modelPackage = null,
+                )
+            }
+        assertEquals(
+            "modelPackage is required when clientConfig is configured",
+            missingModelPackage.message,
         )
     }
 
