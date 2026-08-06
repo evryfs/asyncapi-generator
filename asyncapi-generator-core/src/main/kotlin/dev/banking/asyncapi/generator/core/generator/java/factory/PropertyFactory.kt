@@ -1,23 +1,22 @@
 package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
-import dev.banking.asyncapi.generator.core.generator.java.mapper.ConstraintMapper
 import dev.banking.asyncapi.generator.core.generator.java.mapper.JavaTypeMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.PropertyModel
-import dev.banking.asyncapi.generator.core.generator.java.serialization.SerializationAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class PropertyFactory(
     val context: GeneratorContext,
-    val serializationFramework: String = "jackson",
 ) {
     private val typeMapper = JavaTypeMapper(context)
-    private val constraintMapper = ConstraintMapper()
-    private val serializationAnnotationMapper = SerializationAnnotationMapper(serializationFramework)
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
 
     private val defaultValueFactory = DefaultValueFactory(context)
     private val validationDetector = ValidationDetector(context)
@@ -34,7 +33,7 @@ class PropertyFactory(
 
         val annotations = mutableListOf<String>()
         annotations.addAll(constraintMapper.buildAnnotations(finalPropSchema))
-        annotations.addAll(serializationAnnotationMapper.buildAnnotations(propertyName, finalPropSchema))
+        JsonPropertyAccessAnnotationMapper.annotationFor(finalPropSchema)?.let(annotations::add)
 
         if (isRequired && !isSchemaNullable) {
             annotations.add("@NotNull")
@@ -72,7 +71,7 @@ class PropertyFactory(
                 val referencedTypeName = typeMapper.typeNameFromRef(propSchemaInterface.reference)
                 val schema = context.findSchemaByName(referencedTypeName)
                 val type =
-                    if (shouldInlineReferencedSchema(schema)) {
+                    if (schema?.isScalarAlias() == true) {
                         typeMapper.mapJavaType(propertyName, schema)
                     } else {
                         referencedTypeName
@@ -86,14 +85,4 @@ class PropertyFactory(
                 null to "Object"
             }
         }
-
-    private fun shouldInlineReferencedSchema(schema: Schema?): Boolean {
-        if (schema == null) return false
-        if (!schema.enum.isNullOrEmpty()) return false
-
-        return when (schema.type.getPrimaryType()) {
-            "string", "number", "integer", "boolean" -> true
-            else -> false
-        }
-    }
 }

@@ -5,7 +5,8 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.java.mapper.ConstraintMapper
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
@@ -15,11 +16,11 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContra
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
+import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
@@ -30,7 +31,7 @@ class JavaSpringKafkaModelFactory(
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
-    private val constraintMapper = ConstraintMapper()
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!generateConsumers && !generateProducers) {
@@ -281,7 +282,7 @@ class JavaSpringKafkaModelFactory(
 
     private fun resolvePayloadType(msg: AnalyzedMessage): String? {
         val schema = msg.schema ?: return null
-        return if (isOpenPayloadSchema(schema)) {
+        return if (schema.isOpenPayload()) {
             "Object"
         } else {
             when (schema.type.getPrimaryType()) {
@@ -291,28 +292,6 @@ class JavaSpringKafkaModelFactory(
                 "boolean" -> "Boolean"
                 else -> msg.payloadTypeName
             }
-        }
-    }
-
-    private fun isOpenPayloadSchema(schema: Schema): Boolean {
-        if (schema.type == null) {
-            return schema.properties.isNullOrEmpty() &&
-                schema.additionalProperties == null &&
-                schema.enum.isNullOrEmpty() &&
-                schema.oneOf.isNullOrEmpty() &&
-                schema.anyOf.isNullOrEmpty() &&
-                schema.allOf.isNullOrEmpty()
-        }
-        if (schema.type.getPrimaryType() != "object") return false
-        if (!schema.properties.isNullOrEmpty()) return false
-        return when (val additional = schema.additionalProperties) {
-            null -> true
-            is SchemaInterface.BooleanSchema -> additional.value
-            is SchemaInterface.SchemaInline ->
-                additional.schema.type == null &&
-                    additional.schema.properties.isNullOrEmpty() &&
-                    additional.schema.additionalProperties == null
-            else -> false
         }
     }
 
