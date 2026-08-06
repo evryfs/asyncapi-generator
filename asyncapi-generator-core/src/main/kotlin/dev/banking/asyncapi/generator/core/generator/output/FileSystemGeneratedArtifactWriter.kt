@@ -8,7 +8,8 @@ import java.io.File
  *
  * Source artifacts are written under [sourceOutputDirectory]. Java source
  * artifacts are written under [javaSourceOutputDirectory]. Resource and schema
- * artifacts are written under [resourceOutputDirectory].
+ * artifacts are written under [resourceOutputDirectory]. Bundled documents are
+ * written to their explicitly configured files.
  *
  * Expected behavior is covered by:
  * - `GeneratedArtifactWriterTest`
@@ -19,28 +20,44 @@ class FileSystemGeneratedArtifactWriter(
     private val javaSourceOutputDirectory: File = sourceOutputDirectory,
 ) : GeneratedArtifactWriter {
     override fun write(result: GenerationResult) {
-        rejectOutputCollisions(result)
-        result.artifacts.forEach(::writeArtifact)
+        val outputs = resolveOutputs(result)
+        rejectOutputCollisions(outputs)
+        outputs.forEach(::writeOutput)
     }
 
-    private fun rejectOutputCollisions(result: GenerationResult) {
+    private fun resolveOutputs(result: GenerationResult): List<ResolvedOutput> =
+        result.artifacts.map { artifact ->
+            ResolvedOutput(
+                file = outputFile(artifact),
+                content = artifact.content,
+                description = "${artifact.kind}: ${artifact.relativePath}",
+            )
+        } +
+            result.documentArtifacts.map { artifact ->
+                ResolvedOutput(
+                    file = artifact.file,
+                    content = artifact.content,
+                    description = "BUNDLED_DOCUMENT: ${artifact.file.path}",
+                )
+            }
+
+    private fun rejectOutputCollisions(outputs: List<ResolvedOutput>) {
         val collision =
-            result.artifacts
-                .groupBy { artifact -> outputFile(artifact).toPath().toAbsolutePath().normalize() }
+            outputs
+                .groupBy { output -> output.file.toPath().toAbsolutePath().normalize() }
                 .entries
-                .firstOrNull { (_, artifacts) -> artifacts.size > 1 }
+                .firstOrNull { (_, collidingOutputs) -> collidingOutputs.size > 1 }
                 ?: return
 
         throw GeneratedArtifactCollision(
             destination = collision.key.toString(),
-            artifacts = collision.value.map { artifact -> "${artifact.kind}: ${artifact.relativePath}" },
+            artifacts = collision.value.map(ResolvedOutput::description),
         )
     }
 
-    private fun writeArtifact(artifact: GeneratedArtifact) {
-        val outputFile = outputFile(artifact)
-        outputFile.parentFile?.mkdirs()
-        outputFile.writeText(artifact.content)
+    private fun writeOutput(output: ResolvedOutput) {
+        output.file.parentFile?.mkdirs()
+        output.file.writeText(output.content)
     }
 
     private fun outputFile(artifact: GeneratedArtifact): File {
@@ -53,4 +70,10 @@ class FileSystemGeneratedArtifactWriter(
             }
         return outputRoot.toPath().resolve(artifact.relativePath).toFile()
     }
+
+    private data class ResolvedOutput(
+        val file: File,
+        val content: String,
+        val description: String,
+    )
 }

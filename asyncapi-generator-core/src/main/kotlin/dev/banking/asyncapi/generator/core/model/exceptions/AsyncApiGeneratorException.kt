@@ -30,7 +30,7 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
                 appendLine("Generated artifacts resolve to the same output file: $destination")
                 artifacts.forEach { artifact -> appendLine("- $artifact") }
-                appendLine("Configure distinct packages or output directories for these artifacts.")
+                appendLine("Configure distinct output files, packages, or output directories for these artifacts.")
                 appendLine()
             }.trimEnd(),
         )

@@ -26,7 +26,7 @@ Specialized generators own model preparation and template rendering. They return
 
 Before writing, the filesystem writer resolves every artifact against its configured output root and rejects destination collisions. This prevents one generated artifact from silently overwriting another, including when source and Java-source roots point to the same directory.
 
-Bundled document output is the deliberate exception. It targets the explicit file configured for that task rather than a source or resource output root, so document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`. Serialization runs only after artifact rendering and writing complete.
+Bundled document output retains the explicit file configured for that task rather than being routed through a source or resource output root. Document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`, but its rendered content and explicit destination participate in the same render-before-write and collision-preflight boundary as other generated output.
 
 Compatibility checks that depend only on prepared input and the generation plan belong in `GenerationInputCompatibilityValidator`. Renderers may still reject invalid states discovered while building their generation-specific models, but they do not repeat compatibility checks already completed before output begins.
 

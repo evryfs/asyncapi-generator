@@ -14,7 +14,14 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModel
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.components.Component
+import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
+import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -137,7 +144,7 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
-    fun `generate completes artifact rendering before writing any output`() {
+    fun `late native Avro rendering failure leaves earlier outputs unwritten`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
         val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
@@ -145,14 +152,10 @@ class AsyncApiGeneratorOutputContractTest {
             generatorConfiguration(
                 sourceOutputDirectory = sourceOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
-                models = ModelGeneration.Enabled(packageName = "com.example.model"),
-                clients =
+                schemas =
                     listOf(
-                        ClientGeneration.Kafka(
-                            packageName = "com.example.kafka",
-                            modelPackageName = "com.example.model",
-                            springKafka = ClientGeneration.SpringKafka(),
-                        ),
+                        SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
+                        SchemaGeneration.NativeAvro(generateSpecificRecords = false),
                     ),
             )
         val configuration =
@@ -168,20 +171,55 @@ class AsyncApiGeneratorOutputContractTest {
             )
 
         val error =
-            assertFailsWith<IllegalArgumentException> {
+            assertFailsWith<AsyncApiGeneratorException.InvalidNativeAvroSchema> {
                 generator.generate(
-                    asyncApiDocument =
-                        bundlerFixtures.bundledDocument(
-                            File("src/test/resources/generator/spring-kafka/single-message.yaml"),
-                        ),
+                    asyncApiDocument = documentWithAsyncApiAndInvalidNativeAvroSchemas(),
                     generatorConfiguration = configuration,
                 )
             }
 
-        assertTrue(error.message!!.contains("without matching topicParameterProperties entries"))
+        assertTrue(error.message!!.contains("Native Avro generation failed for payload 'InvalidNative'"))
         assertFalse(sourceOutputDirectory.exists())
         assertFalse(resourceOutputDirectory.exists())
         assertFalse(documentOutputFile.exists())
+    }
+
+    @Test
+    fun `generate rejects bundled document and generated artifact destination collisions`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val documentOutputFile = sourceOutputDirectory.resolve("com/example/model/Task.kt")
+        val sourceConfiguration =
+            generatorConfiguration(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                models = ModelGeneration.Enabled(packageName = "com.example.model"),
+            )
+        val configuration =
+            sourceConfiguration.copy(
+                output =
+                    sourceConfiguration.output.copy(
+                        document =
+                            DocumentOutput(
+                                file = documentOutputFile,
+                                format = DocumentFormat.YAML,
+                            ),
+                    ),
+            )
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.GeneratedArtifactCollision> {
+                generator.generate(
+                    asyncApiDocument = bundledDocument(),
+                    generatorConfiguration = configuration,
+                )
+            }
+
+        assertTrue(error.message!!.contains("SOURCE: com/example/model/Task.kt"))
+        assertTrue(error.message!!.contains("BUNDLED_DOCUMENT: ${documentOutputFile.path}"))
+        assertFalse(documentOutputFile.exists())
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
     }
 
     @Test
@@ -494,6 +532,42 @@ class AsyncApiGeneratorOutputContractTest {
     private fun externalNativeSchemaAssetsDocument() =
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml"),
+        )
+
+    private fun documentWithAsyncApiAndInvalidNativeAvroSchemas(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Render order", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            linkedMapOf(
+                                "Task" to
+                                    SchemaInterface.SchemaInline(
+                                        Schema(
+                                            type = "object",
+                                            properties =
+                                                mapOf(
+                                                    "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                ),
+                                        ),
+                                    ),
+                                "InvalidNative" to
+                                    SchemaInterface.MultiFormatSchemaInline(
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+                                            schema =
+                                                mapOf(
+                                                    "type" to "record",
+                                                    "name" to "InvalidNative",
+                                                    "fields" to "not-a-field-list",
+                                                ),
+                                        ),
+                                    ),
+                            ),
+                    ),
+                ),
         )
 
     private fun generatorConfiguration(

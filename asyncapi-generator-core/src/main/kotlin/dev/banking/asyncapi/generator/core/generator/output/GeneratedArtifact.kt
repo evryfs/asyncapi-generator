@@ -5,9 +5,9 @@ import java.nio.file.Path
 /**
  * Generated file-like output produced before it is written to disk.
  *
- * [GeneratedArtifact] is the generator output boundary. It keeps rendered
- * content together with the relative path and artifact kind that a writer can
- * later use to persist the artifact.
+ * [GeneratedArtifact] keeps rooted output content together with the relative
+ * path and artifact kind that a writer can later use to persist it. Bundled
+ * documents use [GeneratedDocumentArtifact] because they target explicit files.
  *
  * Expected behavior is covered by:
  * - `GenerationOutputContractTest`

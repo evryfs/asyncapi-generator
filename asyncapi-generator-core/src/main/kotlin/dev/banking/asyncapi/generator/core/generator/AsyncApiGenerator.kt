@@ -53,31 +53,30 @@ class AsyncApiGenerator {
                 javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
             )
 
-        val result = renderArtifacts(generationPlan.tasks, generationInput)
+        val result = renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
         artifactWriter.write(result)
-
-        generationPlan.tasks.filterIsInstance<GenerationTask.DocumentArtifact>().forEach { task ->
-            documentArtifactGeneration.generate(
-                task = task,
-                asyncApiDocument = asyncApiDocument,
-            )
-        }
     }
 
     private fun renderArtifacts(
         tasks: List<GenerationTask>,
         generationInput: GenerationInput,
+        asyncApiDocument: AsyncApiDocument,
     ): GenerationResult =
         tasks.fold(GenerationResult.Empty) { result, task ->
-            result + renderArtifactTask(task, generationInput)
+            result + renderArtifactTask(task, generationInput, asyncApiDocument)
         }
 
     private fun renderArtifactTask(
         task: GenerationTask,
         generationInput: GenerationInput,
+        asyncApiDocument: AsyncApiDocument,
     ): GenerationResult =
         when (task) {
-            is GenerationTask.DocumentArtifact -> GenerationResult.Empty
+            is GenerationTask.DocumentArtifact ->
+                documentArtifactGeneration.render(
+                    task = task,
+                    asyncApiDocument = asyncApiDocument,
+                )
             is GenerationTask.ModelArtifacts ->
                 modelArtifactGeneration.renderModelArtifacts(
                     task = task,

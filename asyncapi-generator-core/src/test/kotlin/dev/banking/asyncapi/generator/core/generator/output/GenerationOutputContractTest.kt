@@ -1,12 +1,22 @@
 package dev.banking.asyncapi.generator.core.generator.output
 
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerationOutputContractTest {
+    @Test
+    fun `generated document artifact keeps explicit file and content`() {
+        val file = File("bundled/asyncapi.yaml")
+        val artifact = GeneratedDocumentArtifact(file, "asyncapi: 3.0.0\n")
+
+        assertEquals(file, artifact.file)
+        assertEquals("asyncapi: 3.0.0\n", artifact.content)
+    }
+
     @Test
     fun `generated artifact keeps relative path content and kind`() {
         val artifact =
@@ -92,10 +102,15 @@ class GenerationOutputContractTest {
     fun `generation result combines artifacts`() {
         val source = artifact("com/example/User.kt", GeneratedArtifactKind.SOURCE)
         val schema = artifact("com/example/schema/User.avsc", GeneratedArtifactKind.SCHEMA)
+        val document = GeneratedDocumentArtifact(File("asyncapi.yaml"), "asyncapi: 3.0.0")
 
-        val result = GenerationResult.of(source) + GenerationResult.of(schema)
+        val result =
+            GenerationResult.of(source) +
+                GenerationResult.of(document) +
+                GenerationResult.of(schema)
 
         assertEquals(listOf(source, schema), result.artifacts)
+        assertEquals(listOf(document), result.documentArtifacts)
     }
 
     @Test
@@ -104,7 +119,13 @@ class GenerationOutputContractTest {
 
         assertTrue(result.isEmpty())
         assertEquals(emptyList(), result.artifacts)
+        assertEquals(emptyList(), result.documentArtifacts)
         assertFalse(GenerationResult.of(artifact("com/example/User.kt", GeneratedArtifactKind.SOURCE)).isEmpty())
+        assertFalse(
+            GenerationResult.of(
+                GeneratedDocumentArtifact(File("asyncapi.yaml"), "asyncapi: 3.0.0"),
+            ).isEmpty(),
+        )
     }
 
     private fun artifact(

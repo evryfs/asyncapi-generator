@@ -119,6 +119,27 @@ class GeneratedArtifactWriterTest {
     }
 
     @Test
+    fun `filesystem writer writes bundled documents to their explicit destinations`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedDocumentArtifact(
+                    file = documentOutputFile,
+                    content = "asyncapi: 3.0.0\n",
+                ),
+            ),
+        )
+
+        assertEquals("asyncapi: 3.0.0\n", documentOutputFile.readText())
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
     fun `filesystem writer creates parent directories and writes all artifacts`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
@@ -188,6 +209,72 @@ class GeneratedArtifactWriterTest {
         assertTrue(error.message!!.contains("JAVA_SOURCE: com/example/User.java"))
         assertFalse(sourceOutputDirectory.exists())
         assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `filesystem writer rejects artifact and bundled document destination collisions before writing`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val destination = sourceOutputDirectory.resolve("com/example/User.kt")
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        val error =
+            assertFailsWith<GeneratedArtifactCollision> {
+                writer.write(
+                    GenerationResult(
+                        artifacts =
+                            listOf(
+                                GeneratedArtifact(
+                                    relativePath = "com/example/User.kt",
+                                    content = "source model",
+                                    kind = GeneratedArtifactKind.SOURCE,
+                                ),
+                            ),
+                        documentArtifacts =
+                            listOf(
+                                GeneratedDocumentArtifact(
+                                    file = destination,
+                                    content = "asyncapi: 3.0.0\n",
+                                ),
+                            ),
+                    ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("SOURCE: com/example/User.kt"))
+        assertTrue(error.message!!.contains("BUNDLED_DOCUMENT: ${destination.path}"))
+        assertFalse(destination.exists())
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `filesystem writer rejects matching bundled document destinations before writing`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val destination = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        val error =
+            assertFailsWith<GeneratedArtifactCollision> {
+                writer.write(
+                    GenerationResult(
+                        artifacts = emptyList(),
+                        documentArtifacts =
+                            listOf(
+                                GeneratedDocumentArtifact(destination, "first"),
+                                GeneratedDocumentArtifact(destination, "second"),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            2,
+            error.message!!.lineSequence().count { line -> line.contains("BUNDLED_DOCUMENT:") },
+        )
+        assertFalse(destination.exists())
+        assertFalse(destination.parentFile.exists())
     }
 
     @Test
