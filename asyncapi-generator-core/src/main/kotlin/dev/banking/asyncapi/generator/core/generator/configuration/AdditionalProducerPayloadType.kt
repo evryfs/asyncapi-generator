@@ -1,28 +1,21 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-/** Payload representation exposed by generated Spring Kafka producer contracts. */
-enum class ProducerPayloadType(
+/** Additional payload representation exposed by generated Spring Kafka producer contracts. */
+enum class AdditionalProducerPayloadType(
     val configurationValue: String,
 ) {
-    CONTRACT("contract"),
     BYTE_ARRAY("byte-array"),
     STRING("string"),
     ;
 
     companion object {
-        val DEFAULT: Set<ProducerPayloadType> = setOf(CONTRACT)
         val supportedConfigurationValues: List<String> = entries.map { it.configurationValue }
 
         fun fromConfigurationValues(
             values: List<String>?,
             path: String,
-        ): Set<ProducerPayloadType> {
-            if (values == null) return DEFAULT
-            if (values.isEmpty()) {
-                throw IllegalArgumentException(
-                    "$path cannot be empty. Supported values: ${supportedConfigurationValues.joinToString(", ")}",
-                )
-            }
+        ): Set<AdditionalProducerPayloadType> {
+            if (values.isNullOrEmpty()) return emptySet()
 
             val configured =
                 values.map { value ->

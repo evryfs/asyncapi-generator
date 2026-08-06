@@ -22,13 +22,19 @@ import {{{.}}}
  * Generated methods return an exceptionally completed future until the
  * application overrides them. Inheriting this interface alone cannot publish
  * records.
-{{#hasMultipleMethods}}
+{{#hasAdditionalPayloadMethods}}
+ *
+ * Additional payload methods accept final serialized record values. Send them
+ * with application-configured compatible serializers; do not pass them through
+ * a JSON message converter that can serialize the payload again.
+{{/hasAdditionalPayloadMethods}}
+{{#hasMultipleMessageTypes}}
  *
  * This channel declares multiple message types. Each generated method is an
  * independent publication contract. Override every method the application
  * intends to publish.
-{{/hasMultipleMethods}}
-{{#hasSinglePayloadMethod}}
+{{/hasMultipleMessageTypes}}
+{{#hasSingleContractPayloadMethod}}
  *
  * Example implementation:
  *
@@ -66,7 +72,50 @@ import {{{.}}}
 {{/sendMethods}}
  * }
  * ```
-{{/hasSinglePayloadMethod}}
+{{/hasSingleContractPayloadMethod}}
+{{#hasAdditionalPayloadExample}}
+ *
+ * Example implementation for forwarding an already serialized record value:
+{{#hasAdditionalPayloadExampleHeaders}}
+ *
+ * Contract-defined headers still require application-owned encoding before
+ * they are added to the `ProducerRecord` headers.
+{{/hasAdditionalPayloadExampleHeaders}}
+ *
+ * ```kotlin
+ * @Component
+ * class {{name}}Impl(
+ *     @param:Value({{name}}.{{topicAddressConstantName}})
+ *     private val topicAddress: String,
+ *     private val kafkaTemplate: KafkaTemplate<{{implementationExampleKeyType}}, {{implementationExamplePayloadType}}>,
+ * ) : {{name}} {
+{{#additionalPayloadExampleMethods}}
+ *     override fun {{methodName}}(
+ *         payload: {{payloadType}}{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+ *         {{parameterName}}: {{typeName}}{{#hasHeaders}},{{/hasHeaders}}
+{{/keyParameter}}
+{{#headerProperties}}
+ *         {{parameterName}}: {{typeName}},
+{{/headerProperties}}
+ *     ): CompletableFuture<RecordMetadata> {
+ *         val record = ProducerRecord<{{implementationExampleKeyType}}, {{implementationExamplePayloadType}}>(
+ *             topicAddress,
+{{#keyParameter}}
+ *             {{parameterName}},
+{{/keyParameter}}
+{{^keyParameter}}
+ *             null,
+{{/keyParameter}}
+ *             payload,
+ *         )
+ *         return kafkaTemplate.send(record)
+ *             .thenApply { result -> result.recordMetadata }
+ *     }
+{{/additionalPayloadExampleMethods}}
+ * }
+ * ```
+{{/hasAdditionalPayloadExample}}
  */
 {{#clientContractAnnotation}}
 @{{.}}

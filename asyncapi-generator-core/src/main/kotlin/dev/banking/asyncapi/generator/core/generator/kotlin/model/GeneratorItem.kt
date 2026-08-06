@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.model
 
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+
 sealed interface GeneratorItem {
     val name: String
     val packageName: String
@@ -62,8 +64,25 @@ sealed interface GeneratorItem {
         val imports: List<String> = emptyList(),
     ) : GeneratorItem {
         val hasSingleMethod: Boolean get() = sendMethods.size == 1
-        val hasMultipleMethods: Boolean get() = sendMethods.size > 1
+        val hasMultipleMessageTypes: Boolean get() = sendMethods.map { it.messageName }.distinct().size > 1
+        val hasAdditionalPayloadMethods: Boolean get() =
+            sendMethods.any { method -> method.additionalPayloadType != null }
         val hasSinglePayloadMethod: Boolean get() = hasSingleMethod && sendMethods.single().hasPayload
+        val hasSingleContractPayloadMethod: Boolean get() =
+            hasSinglePayloadMethod && sendMethods.single().additionalPayloadType == null
+        val additionalPayloadExampleMethods: List<SendMethod> get() =
+            sendMethods.filter { method -> method.additionalPayloadType != null }
+                .takeIf { methods ->
+                    sendMethods.map { method -> method.messageName }.distinct().size == 1 &&
+                        methods.size == 1
+                }.orEmpty()
+        val hasAdditionalPayloadExample: Boolean get() = additionalPayloadExampleMethods.isNotEmpty()
+        val hasAdditionalPayloadExampleHeaders: Boolean get() =
+            additionalPayloadExampleMethods.singleOrNull()?.hasHeaders == true
+        val implementationExamplePayloadType: String? get() =
+            additionalPayloadExampleMethods.singleOrNull()?.payloadType
+        val implementationExampleKeyType: String get() =
+            additionalPayloadExampleMethods.singleOrNull()?.keyParameter?.typeName ?: "Any?"
     }
 
     data class ConsumerMethod(
@@ -91,6 +110,7 @@ sealed interface GeneratorItem {
         val keyParameter: KeyParameter? = null,
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
+        val additionalPayloadType: AdditionalProducerPayloadType? = null,
     ) {
         val hasPayload: Boolean get() = payloadType != null
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()

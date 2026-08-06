@@ -434,7 +434,7 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create resolves producer payload types canonically without duplicates`() {
+    fun `create resolves additional producer payload types canonically without duplicates`() {
         val configuration =
             GeneratorConfigurationFactory.create(
                 request(
@@ -448,10 +448,9 @@ class GeneratorConfigurationFactoryTest {
                                         GeneratorConfigurationRequest.KafkaSpringKafka(
                                             producer =
                                                 GeneratorConfigurationRequest.KafkaProducer(
-                                                    payloadTypes =
+                                                    additionalPayloadTypes =
                                                         listOf(
                                                             "string",
-                                                            "contract",
                                                             "byte-array",
                                                             "string",
                                                         ),
@@ -465,49 +464,70 @@ class GeneratorConfigurationFactoryTest {
         val springKafka = configuration.clients.filterIsInstance<ClientGeneration.Kafka>().single().springKafka
         assertEquals(
             listOf(
-                ProducerPayloadType.CONTRACT,
-                ProducerPayloadType.BYTE_ARRAY,
-                ProducerPayloadType.STRING,
+                AdditionalProducerPayloadType.BYTE_ARRAY,
+                AdditionalProducerPayloadType.STRING,
             ),
-            springKafka?.producer?.payloadTypes?.toList(),
+            springKafka?.producer?.additionalPayloadTypes?.toList(),
         )
     }
 
     @Test
-    fun `create rejects invalid and empty producer payload types`() {
-        listOf(
-            listOf("bytes") to
-                "Invalid clients.kafka.springKafka.producer.payloadTypes 'bytes'. " +
-                "Supported values: contract, byte-array, string",
-            emptyList<String>() to
-                "clients.kafka.springKafka.producer.payloadTypes cannot be empty. " +
-                "Supported values: contract, byte-array, string",
-        ).forEach { (payloadTypes, expectedMessage) ->
-            val exception =
-                assertFailsWith<IllegalArgumentException> {
-                    GeneratorConfigurationFactory.create(
-                        request(
-                            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
-                            clients =
-                                GeneratorConfigurationRequest.Clients(
-                                    kafka =
-                                        GeneratorConfigurationRequest.Kafka(
-                                            packageName = "com.example.client",
-                                            springKafka =
-                                                GeneratorConfigurationRequest.KafkaSpringKafka(
-                                                    producer =
-                                                        GeneratorConfigurationRequest.KafkaProducer(
-                                                            payloadTypes = payloadTypes,
-                                                        ),
+    fun `create accepts empty additional producer payload types`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
+                                    packageName = "com.example.client",
+                                    springKafka =
+                                        GeneratorConfigurationRequest.KafkaSpringKafka(
+                                            producer =
+                                                GeneratorConfigurationRequest.KafkaProducer(
+                                                    additionalPayloadTypes = emptyList(),
                                                 ),
                                         ),
                                 ),
                         ),
-                    )
-                }
+                ),
+            )
 
-            assertEquals(expectedMessage, exception.message)
-        }
+        val springKafka = configuration.clients.filterIsInstance<ClientGeneration.Kafka>().single().springKafka
+        assertEquals(emptySet(), springKafka?.producer?.additionalPayloadTypes)
+    }
+
+    @Test
+    fun `create rejects invalid additional producer payload types`() {
+        val exception =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(
+                    request(
+                        models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                        clients =
+                            GeneratorConfigurationRequest.Clients(
+                                kafka =
+                                    GeneratorConfigurationRequest.Kafka(
+                                        packageName = "com.example.client",
+                                        springKafka =
+                                            GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                producer =
+                                                    GeneratorConfigurationRequest.KafkaProducer(
+                                                        additionalPayloadTypes = listOf("contract"),
+                                                    ),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertEquals(
+            "Invalid clientConfig.producer.additionalPayloadTypes 'contract'. " +
+                "Supported values: byte-array, string",
+            exception.message,
+        )
     }
 
     @Test

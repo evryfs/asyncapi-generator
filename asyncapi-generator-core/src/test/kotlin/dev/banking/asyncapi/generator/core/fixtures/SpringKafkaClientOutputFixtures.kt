@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
@@ -35,6 +36,7 @@ internal class SpringKafkaClientOutputFixtures(
         outputDirectory: Path,
         validationAnnotations: ClientValidationAnnotations = defaultValidationAnnotations,
         topicParameterProperties: TopicParameterProperties = defaultTopicParameterProperties,
+        additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
         javaModelType: JavaModelType = JavaModelType.CLASS,
     ): GeneratedSpringKafkaContracts {
         generator.generate(
@@ -61,6 +63,10 @@ internal class SpringKafkaClientOutputFixtures(
                                     ClientGeneration.SpringKafka(
                                         topicParameterProperties = topicParameterProperties,
                                         validationAnnotations = validationAnnotations,
+                                        producer =
+                                            ClientGeneration.Producer(
+                                                additionalPayloadTypes = additionalPayloadTypes,
+                                            ),
                                     ),
                             ),
                         ),

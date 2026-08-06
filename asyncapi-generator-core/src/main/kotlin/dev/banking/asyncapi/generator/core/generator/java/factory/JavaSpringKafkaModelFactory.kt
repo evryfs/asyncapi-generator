@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
@@ -16,6 +17,8 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContra
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.methodSuffix
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -26,6 +29,7 @@ class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
     private val modelPackage: String,
     private val generateProducers: Boolean = true,
+    private val additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
     private val generateConsumers: Boolean = true,
     private val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     private val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
@@ -151,7 +155,7 @@ class JavaSpringKafkaModelFactory(
 
         if (generateProducers) {
             val sendMethods =
-                payloads.map { payload ->
+                payloads.flatMap { payload ->
                     val headerProperties =
                         payload.headerProperties.mapIndexed { index, header ->
                             GeneratorItem.HeaderProperty(
@@ -170,30 +174,37 @@ class JavaSpringKafkaModelFactory(
                                         ")",
                             )
                         }
-                    GeneratorItem.SendMethod(
-                        messageName = payload.messageName,
-                        methodName = payload.methodName("send"),
-                        payloadType = payload.payloadType,
-                        payloadDescription =
-                            if (payload.hasPayload) {
-                                DocumentationUtils.toJavaDocLines(payload.payloadDescription)
-                                    .ifEmpty { listOf("Message payload.") }
-                            } else {
-                                emptyList()
-                            },
-                        payloadBindingAnnotation = "Payload".takeIf { payload.hasPayload },
-                        keyParameter =
-                            keyContracts.getValue(payload)?.toJavaKeyParameter(
-                                parameterName = "messageKey",
-                                consumer = false,
-                                hasFollowingParameters = headerProperties.isNotEmpty(),
-                            ),
-                        headerProperties = headerProperties,
-                        payloadParameterAnnotation =
-                            validationAnnotations.payloadParameter
-                                ?.simpleName
-                                ?.takeIf { payload.hasPayload },
-                    )
+                    val configuredAdditionalTypes =
+                        if (payload.hasPayload) {
+                            AdditionalProducerPayloadType.entries.filter { it in additionalPayloadTypes }
+                        } else {
+                            emptyList()
+                        }
+                    val methodPayloadTypes: List<AdditionalProducerPayloadType?> =
+                        listOf(null) + configuredAdditionalTypes
+
+                    methodPayloadTypes.map { additionalPayloadType ->
+                        GeneratorItem.SendMethod(
+                            messageName = payload.messageName,
+                            methodName =
+                                payload.methodName("send") + additionalPayloadType?.methodSuffix.orEmpty(),
+                            payloadType = payload.javaProducerPayloadType(additionalPayloadType),
+                            payloadDescription = payload.producerPayloadDescription(additionalPayloadType),
+                            payloadBindingAnnotation = "Payload".takeIf { payload.hasPayload },
+                            keyParameter =
+                                keyContracts.getValue(payload)?.toJavaKeyParameter(
+                                    parameterName = "messageKey",
+                                    consumer = false,
+                                    hasFollowingParameters = headerProperties.isNotEmpty(),
+                                ),
+                            headerProperties = headerProperties,
+                            payloadParameterAnnotation =
+                                validationAnnotations.payloadParameter
+                                    ?.simpleName
+                                    ?.takeIf { payload.hasPayload && additionalPayloadType == null },
+                            additionalPayloadType = additionalPayloadType,
+                        )
+                    }
                 }
             val keyAnnotations =
                 sendMethods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
@@ -297,6 +308,31 @@ class JavaSpringKafkaModelFactory(
 
     private fun isPrimitive(type: String): Boolean =
         type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal", "Object")
+
+    private fun KafkaPayload.javaProducerPayloadType(
+        additionalPayloadType: AdditionalProducerPayloadType?,
+    ): String? =
+        when (additionalPayloadType) {
+            AdditionalProducerPayloadType.BYTE_ARRAY -> "byte[]"
+            AdditionalProducerPayloadType.STRING -> "String"
+            null -> payloadType
+        }
+
+    private fun KafkaPayload.producerPayloadDescription(
+        additionalPayloadType: AdditionalProducerPayloadType?,
+    ): List<String> =
+        when (additionalPayloadType) {
+            AdditionalProducerPayloadType.BYTE_ARRAY,
+            AdditionalProducerPayloadType.STRING,
+            -> additionalPayloadType.serializedPayloadDescription()
+            null ->
+                if (hasPayload) {
+                    DocumentationUtils.toJavaDocLines(payloadDescription)
+                        .ifEmpty { listOf("Message payload.") }
+                } else {
+                    emptyList()
+                }
+        }
 
     private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
         copy(headerProperties = KafkaHeaderPropertyFactory.create(headers, messageName))

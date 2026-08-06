@@ -167,14 +167,14 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
-    fun `producer request preserves omitted and configured payload types`() {
+    fun `producer request preserves omitted and configured additional payload types`() {
         assertNull(GeneratorConfigurationRequest.kafkaProducer())
         assertEquals(
             GeneratorConfigurationRequest.KafkaProducer(
-                payloadTypes = listOf("contract", "byte-array"),
+                additionalPayloadTypes = listOf("byte-array", "string"),
             ),
             GeneratorConfigurationRequest.kafkaProducer(
-                payloadTypes = listOf("contract", "byte-array"),
+                additionalPayloadTypes = listOf("byte-array", "string"),
             ),
         )
     }
@@ -210,7 +210,7 @@ class GeneratorConfigurationRequestTest {
                                 producer =
                                     GeneratorConfigurationRequest.KafkaProducer(
                                         enabled = false,
-                                        payloadTypes = listOf("byte-array"),
+                                        additionalPayloadTypes = listOf("byte-array"),
                                     ),
                                 consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
                             ),
@@ -222,7 +222,7 @@ class GeneratorConfigurationRequestTest {
                 clientPackage = "com.example.client",
                 modelPackage = "com.example.model",
                 producerEnabled = false,
-                producerPayloadTypes = listOf("byte-array"),
+                producerAdditionalPayloadTypes = listOf("byte-array"),
                 topicParameterProperties =
                     mapOf(
                         "environment" to "kafka.environment",

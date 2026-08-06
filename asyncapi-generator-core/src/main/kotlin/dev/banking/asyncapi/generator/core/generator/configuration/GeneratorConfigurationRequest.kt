@@ -67,7 +67,7 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaProducer(
         val enabled: Boolean = true,
-        val payloadTypes: List<String>? = null,
+        val additionalPayloadTypes: List<String>? = null,
     )
 
     data class KafkaConsumer(
@@ -184,11 +184,15 @@ data class GeneratorConfigurationRequest(
 
         fun kafkaProducer(
             enabled: Boolean? = null,
-            payloadTypes: List<String>? = null,
+            additionalPayloadTypes: List<String>? = null,
         ): KafkaProducer? =
             when {
-                enabled == null && payloadTypes == null -> null
-                else -> KafkaProducer(enabled = enabled ?: true, payloadTypes = payloadTypes)
+                enabled == null && additionalPayloadTypes == null -> null
+                else ->
+                    KafkaProducer(
+                        enabled = enabled ?: true,
+                        additionalPayloadTypes = additionalPayloadTypes,
+                    )
             }
 
         fun kafkaConsumer(enabled: Boolean? = null): KafkaConsumer? =
@@ -203,7 +207,7 @@ data class GeneratorConfigurationRequest(
             clientPackage: String?,
             modelPackage: String?,
             producerEnabled: Boolean? = null,
-            producerPayloadTypes: List<String>? = null,
+            producerAdditionalPayloadTypes: List<String>? = null,
             consumerEnabled: Boolean? = null,
             topicParameterProperties: Map<String, String> = emptyMap(),
             validationClientContract: String? = null,
@@ -248,7 +252,7 @@ data class GeneratorConfigurationRequest(
                                         producer =
                                             KafkaProducer(
                                                 enabled = producerEnabled ?: true,
-                                                payloadTypes = producerPayloadTypes,
+                                                additionalPayloadTypes = producerAdditionalPayloadTypes,
                                             ),
                                         consumer = KafkaConsumer(enabled = consumerEnabled ?: true),
                                     ),

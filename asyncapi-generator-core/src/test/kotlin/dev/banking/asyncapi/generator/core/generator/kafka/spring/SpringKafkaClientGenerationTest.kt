@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -156,6 +157,120 @@ class SpringKafkaClientGenerationTest {
                 "@Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic",
             ),
         )
+    }
+
+    @Test
+    fun `render generates Kotlin producer payload methods in canonical order`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                        additionalPayloadTypes =
+                            linkedSetOf(
+                                AdditionalProducerPayloadType.STRING,
+                                AdditionalProducerPayloadType.BYTE_ARRAY,
+                            ),
+                        generateConsumers = false,
+                        validationAnnotations = validationAnnotations,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
+
+        val producerContent = result.artifacts.single().content
+        val contractMethod = producerContent.indexOf("fun sendUserSignedUp(")
+        val byteArrayMethod = producerContent.indexOf("fun sendUserSignedUpByteArray(")
+        val stringMethod = producerContent.indexOf("fun sendUserSignedUpString(")
+
+        assertTrue(contractMethod >= 0)
+        assertTrue(byteArrayMethod > contractMethod)
+        assertTrue(stringMethod > byteArrayMethod)
+        assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
+        assertTrue(producerContent.contains("payload: ByteArray"))
+        assertTrue(producerContent.contains("payload: String"))
+        assertEquals(
+            1,
+            producerContent.lineSequence().count { line -> line.trim() == "@ValidPayload" },
+        )
+    }
+
+    @Test
+    fun `render keeps the contract producer method when an additional payload type is configured`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                        additionalPayloadTypes =
+                            setOf(AdditionalProducerPayloadType.BYTE_ARRAY),
+                        validationAnnotations = validationAnnotations,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
+
+        val producerContent =
+            result.artifacts.single {
+                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
+            }.content
+        val consumerContent =
+            result.artifacts.single {
+                it.relativePath == "com/example/client/consumer/UserEventsConsumer.kt"
+            }.content
+
+        assertTrue(producerContent.contains("import com.example.model.UserSignedUpPayload"))
+        assertTrue(producerContent.contains("fun sendUserSignedUp("))
+        assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
+        assertTrue(producerContent.contains("fun sendUserSignedUpByteArray("))
+        assertTrue(producerContent.contains("payload: ByteArray"))
+        assertEquals(
+            1,
+            producerContent.lineSequence().count { line -> line.trim() == "@ValidPayload" },
+        )
+        assertTrue(consumerContent.contains("import com.example.model.UserSignedUpPayload"))
+        assertTrue(consumerContent.contains("payload: UserSignedUpPayload"))
+        assertTrue(consumerContent.contains("@ValidPayload"))
+    }
+
+    @Test
+    fun `render does not duplicate payloadless producer methods`() {
+        val generationInput = fixtures.generationInputWithUserSignupChannel()
+        val channel = generationInput.channels.single()
+        val payloadlessInput =
+            generationInput.copy(
+                channels =
+                    listOf(
+                        channel.copy(
+                            messages =
+                                channel.messages.map { message ->
+                                    message.copy(schema = null)
+                                },
+                        ),
+                    ),
+            )
+
+        SourceLanguage.entries.forEach { language ->
+            val result =
+                generator.render(
+                    task =
+                        springKafkaClientTask(
+                            language = language,
+                            additionalPayloadTypes =
+                                AdditionalProducerPayloadType.entries.toSet(),
+                            generateConsumers = false,
+                        ),
+                    generationInput = payloadlessInput,
+                )
+
+            val producerContent = result.artifacts.single().content
+            assertEquals(
+                1,
+                producerContent.lineSequence().count { line ->
+                    line.contains("sendUserSignedUp(")
+                },
+            )
+            assertFalse(producerContent.contains("sendUserSignedUpByteArray"))
+            assertFalse(producerContent.contains("sendUserSignedUpString"))
+        }
     }
 
     @Test
@@ -348,6 +463,7 @@ class SpringKafkaClientGenerationTest {
     private fun springKafkaClientTask(
         language: SourceLanguage,
         generateProducers: Boolean = true,
+        additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
         generateConsumers: Boolean = true,
         validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     ): GenerationTask.SpringKafkaClient =
@@ -356,6 +472,7 @@ class SpringKafkaClientGenerationTest {
             clientPackage = "com.example.client",
             modelPackage = "com.example.model",
             generateProducers = generateProducers,
+            additionalPayloadTypes = additionalPayloadTypes,
             generateConsumers = generateConsumers,
             validationAnnotations = validationAnnotations,
         )

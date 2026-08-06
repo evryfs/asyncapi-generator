@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtu
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -106,6 +107,50 @@ class SpringKafkaTopicAddressCompilationTest {
                 ),
             keyModelNames = listOf("MyAccountClosureKey"),
             workspace = tempDir.resolve("mixed-java-compilation"),
+        )
+    }
+
+    @Test
+    fun `generated Kotlin producer payload representations compile`() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.KOTLIN,
+                outputDirectory = tempDir.resolve("generated-kotlin-payload-contracts"),
+                validationAnnotations = ClientValidationAnnotations(),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
+            )
+
+        compilationFixtures.compileKotlinContracts(
+            producerSource = contracts.singleProducer(),
+            consumerSource = contracts.singleConsumer(),
+            producerName = "MyAccountUpdatedProducer",
+            consumerName = "MyAccountUpdatedConsumer",
+            payloadNames = listOf("MyAccountUpdatedPayload"),
+            keyModelNames = listOf("MyAccountKey"),
+            workspace = tempDir.resolve("kotlin-payload-compilation"),
+        )
+    }
+
+    @Test
+    fun `generated Java producer payload representations compile`() {
+        val contracts =
+            generatedClients.generate(
+                contractPath = SINGLE_MESSAGE_CONTRACT,
+                language = SourceLanguage.JAVA,
+                outputDirectory = tempDir.resolve("generated-java-payload-contracts"),
+                validationAnnotations = ClientValidationAnnotations(),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
+            )
+
+        compilationFixtures.compileJavaContracts(
+            producerSource = contracts.singleProducer(),
+            consumerSource = contracts.singleConsumer(),
+            producerName = "MyAccountUpdatedProducer",
+            consumerName = "MyAccountUpdatedConsumer",
+            payloadNames = listOf("MyAccountUpdatedPayload"),
+            keyModelNames = listOf("MyAccountKey"),
+            workspace = tempDir.resolve("java-payload-compilation"),
         )
     }
 }

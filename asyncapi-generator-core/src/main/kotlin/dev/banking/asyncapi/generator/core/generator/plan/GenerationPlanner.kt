@@ -63,7 +63,7 @@ class GenerationPlanner {
                                         clientPackage = client.packageName,
                                         modelPackage = client.modelPackageName,
                                         generateProducers = springKafka.producer.enabled,
-                                        producerPayloadTypes = springKafka.producer.payloadTypes,
+                                        additionalPayloadTypes = springKafka.producer.additionalPayloadTypes,
                                         generateConsumers = springKafka.consumer.enabled,
                                         clientContract = springKafka.clientContract,
                                         topicParameterProperties = springKafka.topicParameterProperties,

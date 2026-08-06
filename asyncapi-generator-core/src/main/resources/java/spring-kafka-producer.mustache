@@ -22,13 +22,19 @@ import {{{.}}};
  * <p>Generated methods return an exceptionally completed future until the
  * application overrides them. Inheriting this interface alone cannot publish
  * records.
-{{#hasMultipleMethods}}
+{{#hasAdditionalPayloadMethods}}
+ *
+ * <p>Additional payload methods accept final serialized record values. Send
+ * them with application-configured compatible serializers; do not pass them
+ * through a JSON message converter that can serialize the payload again.
+{{/hasAdditionalPayloadMethods}}
+{{#hasMultipleMessageTypes}}
  *
  * <p>This channel declares multiple message types. Each generated method is an
  * independent publication contract. Override every method the application
  * intends to publish.
-{{/hasMultipleMethods}}
-{{#hasSinglePayloadMethod}}
+{{/hasMultipleMessageTypes}}
+{{#hasSingleContractPayloadMethod}}
  *
  * <p>Example implementation:
  *
@@ -72,7 +78,57 @@ import {{{.}}};
 {{/sendMethods}}
  * }
  * }</pre>
-{{/hasSinglePayloadMethod}}
+{{/hasSingleContractPayloadMethod}}
+{{#hasAdditionalPayloadExample}}
+ *
+ * <p>Example implementation for forwarding an already serialized record value:
+{{#hasAdditionalPayloadExampleHeaders}}
+ *
+ * <p>Contract-defined headers still require application-owned encoding before
+ * they are added to the {@code ProducerRecord} headers.
+{{/hasAdditionalPayloadExampleHeaders}}
+ *
+ * <pre>{@code
+ * @Component
+ * public final class {{name}}Impl implements {{name}} {
+ *     private final String topicAddress;
+ *     private final KafkaTemplate<{{implementationExampleKeyType}}, {{implementationExamplePayloadType}}> kafkaTemplate;
+ *
+ *     public {{name}}Impl(
+ *             @Value({{name}}.{{topicAddressConstantName}}) String topicAddress,
+ *             KafkaTemplate<{{implementationExampleKeyType}}, {{implementationExamplePayloadType}}> kafkaTemplate) {
+ *         this.topicAddress = topicAddress;
+ *         this.kafkaTemplate = kafkaTemplate;
+ *     }
+ *
+{{#additionalPayloadExampleMethods}}
+ *     @Override
+ *     public CompletableFuture<RecordMetadata> {{methodName}}(
+ *             {{payloadType}} payload{{#hasAdditionalParameters}},{{/hasAdditionalParameters}}
+{{#keyParameter}}
+ *             {{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/keyParameter}}
+{{#headerProperties}}
+ *             {{typeName}} {{parameterName}}{{parameterSuffix}}
+{{/headerProperties}}
+ *     ) {
+ *         var record = new ProducerRecord<{{implementationExampleKeyType}}, {{implementationExamplePayloadType}}>(
+ *                 topicAddress,
+{{#keyParameter}}
+ *                 {{parameterName}},
+{{/keyParameter}}
+{{^keyParameter}}
+ *                 null,
+{{/keyParameter}}
+ *                 payload
+ *         );
+ *         return kafkaTemplate.send(record)
+ *                 .thenApply(result -> result.getRecordMetadata());
+ *     }
+{{/additionalPayloadExampleMethods}}
+ * }
+ * }</pre>
+{{/hasAdditionalPayloadExample}}
  */
 {{#clientContractAnnotation}}
 @{{.}}
