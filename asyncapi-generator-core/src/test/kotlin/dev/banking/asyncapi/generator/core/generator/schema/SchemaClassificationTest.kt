@@ -42,4 +42,19 @@ class SchemaClassificationTest {
             ).isOpenPayload(),
         )
     }
+
+    @Test
+    fun `recognizes non-enum scalar aliases`() {
+        assertTrue(Schema(type = "string").isScalarAlias())
+        assertTrue(Schema(type = "integer").isScalarAlias())
+        assertTrue(Schema(type = "number").isScalarAlias())
+        assertTrue(Schema(type = "boolean").isScalarAlias())
+    }
+
+    @Test
+    fun `keeps enums and structured schemas as generated models`() {
+        assertFalse(Schema(type = "string", enum = listOf("active")).isScalarAlias())
+        assertFalse(Schema(type = "object").isScalarAlias())
+        assertFalse(Schema().isScalarAlias())
+    }
 }

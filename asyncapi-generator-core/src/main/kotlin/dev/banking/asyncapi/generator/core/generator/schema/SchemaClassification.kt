@@ -26,3 +26,10 @@ internal fun Schema.isOpenPayload(): Boolean {
         else -> false
     }
 }
+
+internal fun Schema.isScalarAlias(): Boolean {
+    if (!enum.isNullOrEmpty()) {
+        return false
+    }
+    return type.getPrimaryType() in setOf("string", "number", "integer", "boolean")
+}
