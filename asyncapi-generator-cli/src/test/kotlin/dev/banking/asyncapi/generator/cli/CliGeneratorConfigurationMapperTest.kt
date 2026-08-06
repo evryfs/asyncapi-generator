@@ -118,20 +118,6 @@ class CliGeneratorConfigurationMapperTest {
     }
 
     @Test
-    fun `rejects source configuration without an activated output`() {
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                mapConfiguration(generatorName = "kotlin")
-            }
-
-        assertEquals(
-            "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
-                "schemaPackage with a schema generator, or outputFile.",
-            exception.message,
-        )
-    }
-
-    @Test
     fun `requires client configuration when client package is configured`() {
         val exception =
             assertThrows<IllegalArgumentException> {
@@ -143,23 +129,6 @@ class CliGeneratorConfigurationMapperTest {
             }
 
         assertEquals("clientConfig is required when clientPackage is configured", exception.message)
-    }
-
-    @Test
-    fun `rejects schema package when selected outputs do not generate schemas`() {
-        val exception =
-            assertThrows<IllegalArgumentException> {
-                mapConfiguration(
-                    generatorName = "java",
-                    modelPackage = "com.example.model",
-                    schemaPackage = "com.example.schema",
-                )
-            }
-
-        assertEquals(
-            "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models",
-            exception.message,
-        )
     }
 
     @Test

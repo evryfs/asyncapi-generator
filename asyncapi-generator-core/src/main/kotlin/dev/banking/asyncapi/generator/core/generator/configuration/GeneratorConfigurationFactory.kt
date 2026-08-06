@@ -25,7 +25,7 @@ object GeneratorConfigurationFactory {
         val modelAnnotation = resolveModelAnnotation(request, modelType)
         val protobufModels = request.protobufModels(modelType)
 
-        return GeneratorConfiguration(
+        val configuration = GeneratorConfiguration(
             profile = profile,
             output =
                 GeneratorOutputConfiguration(
@@ -103,6 +103,9 @@ object GeneratorConfigurationFactory {
                     }
                 },
         )
+
+        validateActivatedOutputs(request, configuration)
+        return configuration
     }
 
     private fun validate(request: GeneratorConfigurationRequest) {
@@ -162,6 +165,23 @@ object GeneratorConfigurationFactory {
             path = "clients.quarkusKafka.modelPackageName",
             value = request.clients.quarkusKafka?.modelPackageName,
         )
+    }
+
+    private fun validateActivatedOutputs(
+        request: GeneratorConfigurationRequest,
+        configuration: GeneratorConfiguration,
+    ) {
+        if (request.schemaPackageName != null && configuration.schemas.isEmpty()) {
+            throw IllegalArgumentException(
+                "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models",
+            )
+        }
+        if (!configuration.hasConfiguredOutputs()) {
+            throw IllegalArgumentException(
+                "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
+                    "schemaPackage with a schema generator, or outputFile.",
+            )
+        }
     }
 
     private fun validateProfileConfiguration(request: GeneratorConfigurationRequest) {
