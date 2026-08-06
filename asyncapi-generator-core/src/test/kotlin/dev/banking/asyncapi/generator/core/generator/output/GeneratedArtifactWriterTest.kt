@@ -1,10 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.output
 
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.GeneratedArtifactCollision
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class GeneratedArtifactWriterTest {
     @TempDir
@@ -150,5 +153,71 @@ class GeneratedArtifactWriterTest {
 
         assertFalse(sourceOutputDirectory.exists())
         assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `filesystem writer rejects destination collisions before writing artifacts`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        val error =
+            assertFailsWith<GeneratedArtifactCollision> {
+                writer.write(
+                    GenerationResult.of(
+                        GeneratedArtifact(
+                            relativePath = "com/example/Unrelated.kt",
+                            content = "unrelated",
+                            kind = GeneratedArtifactKind.SOURCE,
+                        ),
+                        GeneratedArtifact(
+                            relativePath = "com/example/User.java",
+                            content = "source model",
+                            kind = GeneratedArtifactKind.SOURCE,
+                        ),
+                        GeneratedArtifact(
+                            relativePath = "com/example/User.java",
+                            content = "native model",
+                            kind = GeneratedArtifactKind.JAVA_SOURCE,
+                        ),
+                    ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("SOURCE: com/example/User.java"))
+        assertTrue(error.message!!.contains("JAVA_SOURCE: com/example/User.java"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `filesystem writer allows matching relative paths under distinct output roots`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer =
+            FileSystemGeneratedArtifactWriter(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                javaSourceOutputDirectory = javaSourceOutputDirectory,
+            )
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.java",
+                    content = "source model",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+                GeneratedArtifact(
+                    relativePath = "com/example/User.java",
+                    content = "native model",
+                    kind = GeneratedArtifactKind.JAVA_SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals("source model", sourceOutputDirectory.resolve("com/example/User.java").readText())
+        assertEquals("native model", javaSourceOutputDirectory.resolve("com/example/User.java").readText())
     }
 }

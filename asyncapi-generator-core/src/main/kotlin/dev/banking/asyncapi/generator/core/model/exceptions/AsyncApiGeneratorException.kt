@@ -22,6 +22,19 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class GeneratedArtifactCollision(
+        destination: String,
+        artifacts: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Generated artifacts resolve to the same output file: $destination")
+                artifacts.forEach { artifact -> appendLine("- $artifact") }
+                appendLine("Configure distinct packages or output directories for these artifacts.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class InvalidEnum(
         schemaName: String,
         literal: String,

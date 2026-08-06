@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.output
 
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.GeneratedArtifactCollision
 import java.io.File
 
 /**
@@ -18,10 +19,31 @@ class FileSystemGeneratedArtifactWriter(
     private val javaSourceOutputDirectory: File = sourceOutputDirectory,
 ) : GeneratedArtifactWriter {
     override fun write(result: GenerationResult) {
+        rejectOutputCollisions(result)
         result.artifacts.forEach(::writeArtifact)
     }
 
+    private fun rejectOutputCollisions(result: GenerationResult) {
+        val collision =
+            result.artifacts
+                .groupBy { artifact -> outputFile(artifact).toPath().toAbsolutePath().normalize() }
+                .entries
+                .firstOrNull { (_, artifacts) -> artifacts.size > 1 }
+                ?: return
+
+        throw GeneratedArtifactCollision(
+            destination = collision.key.toString(),
+            artifacts = collision.value.map { artifact -> "${artifact.kind}: ${artifact.relativePath}" },
+        )
+    }
+
     private fun writeArtifact(artifact: GeneratedArtifact) {
+        val outputFile = outputFile(artifact)
+        outputFile.parentFile?.mkdirs()
+        outputFile.writeText(artifact.content)
+    }
+
+    private fun outputFile(artifact: GeneratedArtifact): File {
         val outputRoot =
             when (artifact.kind) {
                 GeneratedArtifactKind.SOURCE -> sourceOutputDirectory
@@ -29,8 +51,6 @@ class FileSystemGeneratedArtifactWriter(
                 GeneratedArtifactKind.RESOURCE -> resourceOutputDirectory
                 GeneratedArtifactKind.SCHEMA -> resourceOutputDirectory
             }
-        val outputFile = outputRoot.toPath().resolve(artifact.relativePath).toFile()
-        outputFile.parentFile?.mkdirs()
-        outputFile.writeText(artifact.content)
+        return outputRoot.toPath().resolve(artifact.relativePath).toFile()
     }
 }
