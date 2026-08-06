@@ -4,9 +4,10 @@ import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientCompilation
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -66,10 +67,29 @@ class SpringKafkaTopicAddressCompilationTest {
                 language = SourceLanguage.KOTLIN,
                 outputDirectory = tempDir.resolve("generated-mixed-kotlin-contracts"),
                 validationAnnotations = ClientValidationAnnotations(),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
             )
+        val producerSource = contracts.singleProducer()
+
+        listOf(
+            "sendMyAccountCreated",
+            "sendMyAccountCreatedByteArray",
+            "sendMyAccountCreatedString",
+            "sendMyAccountUpdated",
+            "sendMyAccountUpdatedByteArray",
+            "sendMyAccountUpdatedString",
+            "sendMyAccountClosed",
+            "sendMyAccountClosedByteArray",
+            "sendMyAccountClosedString",
+        ).forEach { methodName ->
+            assertTrue(
+                producerSource.contains("fun $methodName("),
+                "Expected generated Kotlin producer method: $methodName",
+            )
+        }
 
         compilationFixtures.compileKotlinContracts(
-            producerSource = contracts.singleProducer(),
+            producerSource = producerSource,
             consumerSource = contracts.singleConsumer(),
             producerName = "MyAccountLifecycleProducer",
             consumerName = "MyAccountLifecycleConsumer",
@@ -92,10 +112,29 @@ class SpringKafkaTopicAddressCompilationTest {
                 language = SourceLanguage.JAVA,
                 outputDirectory = tempDir.resolve("generated-mixed-java-contracts"),
                 validationAnnotations = ClientValidationAnnotations(),
+                additionalPayloadTypes = AdditionalProducerPayloadType.entries.toSet(),
             )
+        val producerSource = contracts.singleProducer()
+
+        listOf(
+            "sendMyAccountCreated",
+            "sendMyAccountCreatedByteArray",
+            "sendMyAccountCreatedString",
+            "sendMyAccountUpdated",
+            "sendMyAccountUpdatedByteArray",
+            "sendMyAccountUpdatedString",
+            "sendMyAccountClosed",
+            "sendMyAccountClosedByteArray",
+            "sendMyAccountClosedString",
+        ).forEach { methodName ->
+            assertTrue(
+                producerSource.contains("default CompletableFuture<RecordMetadata> $methodName("),
+                "Expected generated Java producer method: $methodName",
+            )
+        }
 
         compilationFixtures.compileJavaContracts(
-            producerSource = contracts.singleProducer(),
+            producerSource = producerSource,
             consumerSource = contracts.singleConsumer(),
             producerName = "MyAccountLifecycleProducer",
             consumerName = "MyAccountLifecycleConsumer",
