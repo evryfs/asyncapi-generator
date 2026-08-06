@@ -5,10 +5,9 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
-import java.io.File
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
 class KotlinSpringKafkaGenerator(
-    outputDir: File,
     clientPackage: String,
     modelPackage: String,
     generateProducers: Boolean = true,
@@ -25,19 +24,19 @@ class KotlinSpringKafkaGenerator(
             topicParameterProperties = topicParameterProperties,
             validationAnnotations = validationAnnotations,
         )
-    private val producerGenerator = KotlinSpringKafkaProducerGenerator(outputDir)
-    private val consumerGenerator = KotlinSpringKafkaConsumerGenerator(outputDir)
+    private val producerGenerator = KotlinSpringKafkaProducerGenerator()
+    private val consumerGenerator = KotlinSpringKafkaConsumerGenerator()
 
-    fun generate(channels: List<AnalyzedChannel>) {
-        channels.forEach { channel ->
-            val items = modelFactory.create(channel)
-            items.forEach { item ->
-                when (item) {
-                    is GeneratorItem.KafkaProducerClass -> producerGenerator.generate(item)
-                    is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.generate(item)
-                    else -> { /* Ignore */ }
+    fun render(channels: List<AnalyzedChannel>): GenerationResult =
+        GenerationResult(
+            channels.flatMap { channel ->
+                modelFactory.create(channel).mapNotNull { item ->
+                    when (item) {
+                        is GeneratorItem.KafkaProducerClass -> producerGenerator.render(item)
+                        is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.render(item)
+                        else -> null
+                    }
                 }
-            }
-        }
-    }
+            },
+        )
 }

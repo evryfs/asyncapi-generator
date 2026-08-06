@@ -3,18 +3,13 @@ package dev.banking.asyncapi.generator.core.generator.kotlin
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class KotlinModelArtifactGeneratorTest {
-    @TempDir
-    lateinit var tempDir: Path
-
     @Test
     fun `enum render returns source artifact with package-relative path and content`() {
-        val generator = KotlinEnumGenerator(tempDir.toFile())
+        val generator = KotlinEnumGenerator()
         val enumModel =
             GeneratorItem.EnumClassModel(
                 name = "Status",
@@ -33,26 +28,8 @@ class KotlinModelArtifactGeneratorTest {
     }
 
     @Test
-    fun `enum generate writes rendered artifact to output directory`() {
-        val generator = KotlinEnumGenerator(tempDir.toFile())
-        val enumModel =
-            GeneratorItem.EnumClassModel(
-                name = "Status",
-                packageName = "com.example.model",
-                description = emptyList(),
-                values = listOf("ACTIVE", "INACTIVE"),
-            )
-
-        generator.generate(enumModel)
-
-        val output = tempDir.resolve("com/example/model/Status.kt").toFile()
-        assertTrue(output.exists())
-        assertTrue(output.readText().contains("enum class Status"))
-    }
-
-    @Test
     fun `sealed interface render returns source artifact with package-relative path and content`() {
-        val generator = KotlinSealedInterfaceGenerator(tempDir.toFile())
+        val generator = KotlinSealedInterfaceGenerator()
         val sealedInterfaceModel =
             GeneratorItem.SealedInterfaceModel(
                 name = "Command",
@@ -69,25 +46,8 @@ class KotlinModelArtifactGeneratorTest {
     }
 
     @Test
-    fun `sealed interface generate writes rendered artifact to output directory`() {
-        val generator = KotlinSealedInterfaceGenerator(tempDir.toFile())
-        val sealedInterfaceModel =
-            GeneratorItem.SealedInterfaceModel(
-                name = "Command",
-                packageName = "com.example.model",
-                description = emptyList(),
-            )
-
-        generator.generate(sealedInterfaceModel)
-
-        val output = tempDir.resolve("com/example/model/Command.kt").toFile()
-        assertTrue(output.exists())
-        assertTrue(output.readText().contains("sealed interface Command"))
-    }
-
-    @Test
     fun `type alias render returns source artifact with package-relative path and content`() {
-        val generator = KotlinTypeAliasGenerator(tempDir.toFile())
+        val generator = KotlinTypeAliasGenerator()
         val typeAliasModel =
             GeneratorItem.TypeAliasModel(
                 name = "UserId",
@@ -104,21 +64,4 @@ class KotlinModelArtifactGeneratorTest {
         assertTrue(artifact.content.contains("typealias UserId = String"))
     }
 
-    @Test
-    fun `type alias generate writes rendered artifact to output directory`() {
-        val generator = KotlinTypeAliasGenerator(tempDir.toFile())
-        val typeAliasModel =
-            GeneratorItem.TypeAliasModel(
-                name = "UserId",
-                packageName = "com.example.model",
-                description = emptyList(),
-                aliasType = "String",
-            )
-
-        generator.generate(typeAliasModel)
-
-        val output = tempDir.resolve("com/example/model/UserId.kt").toFile()
-        assertTrue(output.exists())
-        assertTrue(output.readText().contains("typealias UserId = String"))
-    }
 }

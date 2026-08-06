@@ -4,12 +4,9 @@ import com.github.mustachejava.DefaultMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.java.mapper.ImportMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
-import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import java.io.File
 import java.io.StringWriter
 
 /**
@@ -20,17 +17,10 @@ import java.io.StringWriter
  * - `JavaModelApprovalTest`
  */
 class JavaClassGenerator(
-    val outputDir: File,
     val packageName: String,
 ) {
     private val mustacheFactory = DefaultMustacheFactory("java")
     private val importMapper = ImportMapper(packageName)
-
-    fun generate(model: GeneratorItem.ClassModel) {
-        val artifact = render(model)
-        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
-            .write(GenerationResult.of(artifact))
-    }
 
     fun render(model: GeneratorItem.ClassModel): GeneratedArtifact {
         val template = mustacheFactory.compile("javaClass.mustache")

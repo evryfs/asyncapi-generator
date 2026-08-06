@@ -42,7 +42,6 @@ class ModelArtifactGenerationTest {
                     annotation = modelAnnotation,
                 ),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 
@@ -70,7 +69,6 @@ class ModelArtifactGenerationTest {
                     annotation = modelAnnotation,
                 ),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 
@@ -101,7 +99,6 @@ class ModelArtifactGenerationTest {
                     packageName = "com.example.model",
                 ),
             generationInput = fixtures.generationInputWithNativeAvroMessageAndObjectKey(),
-            sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 
@@ -129,7 +126,6 @@ class ModelArtifactGenerationTest {
                     javaModelType = JavaModelType.RECORD,
                 ),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 

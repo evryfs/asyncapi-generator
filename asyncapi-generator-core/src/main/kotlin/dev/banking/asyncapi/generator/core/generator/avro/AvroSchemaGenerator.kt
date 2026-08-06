@@ -5,12 +5,9 @@ import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnum
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroUnion
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
-import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import java.io.File
 import java.io.StringWriter
 
 /**
@@ -20,16 +17,8 @@ import java.io.StringWriter
  * - `AvroSchemaGeneratorTest`
  * - `AvroSchemaApprovalTest`
  */
-class AvroSchemaGenerator(
-    private val outputDir: File,
-) {
+class AvroSchemaGenerator {
     private val mustacheFactory = DefaultMustacheFactory("avro")
-
-    fun generate(schemaItem: AvroSchema) {
-        val artifact = render(schemaItem)
-        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
-            .write(GenerationResult.of(artifact))
-    }
 
     fun render(schemaItem: AvroSchema): GeneratedArtifact =
         when (schemaItem) {

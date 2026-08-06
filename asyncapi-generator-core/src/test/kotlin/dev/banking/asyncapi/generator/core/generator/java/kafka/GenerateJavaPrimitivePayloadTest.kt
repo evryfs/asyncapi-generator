@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
-import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -13,7 +12,6 @@ class GenerateJavaPrimitivePayloadTest {
 
     @Test
     fun `should generate producer contract for single string payload`() {
-        val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive"
         val stringSchema = Schema(type = "string")
         val channel =
@@ -31,15 +29,14 @@ class GenerateJavaPrimitivePayloadTest {
             )
         val generator =
             JavaSpringKafkaGenerator(
-                outputDir,
-                packageName,
-                packageName,
+                clientPackage = packageName,
+                modelPackage = packageName,
             )
-        generator.generate(listOf(channel))
-        val consumerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/consumer/SimpleTopicConsumer.java")
-        assertTrue(consumerFile.exists(), "Consumer should be generated")
-        val consumerContent = consumerFile.readText()
+        val result = generator.render(listOf(channel))
+        val consumerContent =
+            result.artifacts.single {
+                it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.java"
+            }.content
         assertTrue(
             consumerContent.contains("void listenSimpleStringMessage("),
             "Consumer should expose the contract method",
@@ -57,12 +54,10 @@ class GenerateJavaPrimitivePayloadTest {
             "Consumer contract should not own listener record mapping"
         )
 
-        val producerFile =
-            outputDir.resolve(
-                packageName.replace('.', '/') + "/producer/SimpleTopicProducer.java",
-            )
-        assertTrue(producerFile.exists(), "Producer should be generated")
-        val producerContent = producerFile.readText()
+        val producerContent =
+            result.artifacts.single {
+                it.relativePath == "com/example/primitive/producer/SimpleTopicProducer.java"
+            }.content
         assertTrue(
             producerContent.contains("interface SimpleTopicProducer {"),
             "Producer should be generated as a contract interface",
@@ -84,7 +79,6 @@ class GenerateJavaPrimitivePayloadTest {
 
     @Test
     fun `should generate one producer method per payload for multiple messages`() {
-        val outputDir = File("target/generated-sources/asyncapi")
         val packageName = "com.example.primitive.multi"
         val stringSchema = Schema(type = "string")
         val intSchema = Schema(type = "integer")
@@ -108,15 +102,14 @@ class GenerateJavaPrimitivePayloadTest {
             )
         val generator =
             JavaSpringKafkaGenerator(
-                outputDir,
-                packageName,
-                packageName,
+                clientPackage = packageName,
+                modelPackage = packageName,
             )
-        generator.generate(listOf(channel))
-        val producerFile =
-            outputDir.resolve(packageName.replace('.', '/') + "/producer/MultiTopicProducer.java")
-        assertTrue(producerFile.exists(), "Channel producer should be generated")
-        val producerContent = producerFile.readText()
+        val result = generator.render(listOf(channel))
+        val producerContent =
+            result.artifacts.single {
+                it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.java"
+            }.content
         assertTrue(
             producerContent.contains("interface MultiTopicProducer {"),
             "Channel producer should be generated as a contract interface",

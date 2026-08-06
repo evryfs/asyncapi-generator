@@ -2,9 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java
 
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import java.io.File
 
 /**
  * Renders Java model items into a generation result before writing them.
@@ -15,26 +13,20 @@ import java.io.File
  */
 class JavaGenerator(
     private val packageName: String,
-    private val outputDir: File,
     private val generationModel: List<GeneratorItem>,
     private val javaModelType: JavaModelType = JavaModelType.CLASS,
 ) {
     private val classGenerator: JavaClassGenerator by lazy {
-        JavaClassGenerator(outputDir, packageName)
+        JavaClassGenerator(packageName)
     }
     private val recordGenerator: JavaRecordGenerator by lazy {
-        JavaRecordGenerator(outputDir, packageName)
+        JavaRecordGenerator(packageName)
     }
     private val enumGenerator: JavaEnumGenerator by lazy {
-        JavaEnumGenerator(outputDir)
+        JavaEnumGenerator()
     }
     private val interfaceGenerator: JavaInterfaceGenerator by lazy {
-        JavaInterfaceGenerator(outputDir)
-    }
-
-    fun generate() {
-        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
-            .write(render())
+        JavaInterfaceGenerator()
     }
 
     fun render(): GenerationResult =

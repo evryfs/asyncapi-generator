@@ -29,7 +29,6 @@ class AvroSchemaArtifactGenerationTest {
         generation.generate(
             task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
             generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            resourceOutputDirectory = resourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
 

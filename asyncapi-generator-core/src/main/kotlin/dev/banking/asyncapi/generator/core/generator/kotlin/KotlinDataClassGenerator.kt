@@ -1,15 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import com.github.mustachejava.DefaultMustacheFactory
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
-import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.kotlin.mapper.ImportMapper
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
-import java.io.File
 import java.io.StringWriter
 
 /**
@@ -20,18 +17,11 @@ import java.io.StringWriter
  * - `KotlinModelApprovalTest`
  */
 class KotlinDataClassGenerator(
-    val outputDir: File,
     val packageName: String,
 ) {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")
 
     private val importMapper = ImportMapper(packageName)
-
-    fun generate(model: GeneratorItem.DataClassModel) {
-        val artifact = render(model)
-        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
-            .write(GenerationResult.of(artifact))
-    }
 
     fun render(model: GeneratorItem.DataClassModel): GeneratedArtifact {
         val template = mustacheFactory.compile("dataClass.mustache")

@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import java.io.File
 
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.
@@ -25,7 +24,6 @@ class ModelArtifactGeneration(
     fun generateModelArtifacts(
         task: GenerationTask.ModelArtifacts,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
         artifactWriter: GeneratedArtifactWriter,
     ) {
         when (task.language) {
@@ -39,7 +37,6 @@ class ModelArtifactGeneration(
                 val generator =
                     KotlinGenerator(
                         packageName = task.packageName,
-                        outputDir = sourceOutputDirectory,
                         generationModel = generationModel,
                     )
                 artifactWriter.write(generator.render())
@@ -54,7 +51,6 @@ class ModelArtifactGeneration(
                 val generator =
                     JavaGenerator(
                         packageName = task.packageName,
-                        outputDir = sourceOutputDirectory,
                         generationModel = generationModel,
                         javaModelType = task.javaModelType,
                     )
@@ -66,7 +62,6 @@ class ModelArtifactGeneration(
     fun generateKafkaKeyModelArtifacts(
         task: GenerationTask.KafkaKeyModelArtifacts,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
         artifactWriter: GeneratedArtifactWriter,
     ) {
         val keySchemas = KafkaKeyModelSelector.select(generationInput)
@@ -84,7 +79,6 @@ class ModelArtifactGeneration(
                     declaredSchemas = keySchemas,
                     multiFormatSchemas = emptyMap(),
                 ),
-            sourceOutputDirectory = sourceOutputDirectory,
             artifactWriter = artifactWriter,
         )
     }

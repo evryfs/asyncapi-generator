@@ -11,6 +11,17 @@ sealed class AsyncApiGeneratorException(
         language: String,
     ) : AsyncApiGeneratorException("The language $language is not supported")
 
+    class UnsupportedGenerationCapability(
+        capability: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$capability is not implemented.")
+                appendLine("Remove this capability from the generator configuration.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class InvalidEnum(
         schemaName: String,
         literal: String,

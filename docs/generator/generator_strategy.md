@@ -18,6 +18,16 @@ delegates specific tasks to specialized components.
 
 ---
 
+## Generation and Output Boundary
+
+Planning and compatibility validation complete before rendering starts. A planned capability that is not implemented must fail explicitly during compatibility validation; it must not be logged and skipped, because a successful run otherwise implies that every planned output was produced.
+
+Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing relative paths, content, and artifact kinds, but do not create directories or write files. `AsyncApiGenerator` is the orchestration boundary that passes those results to the configured `GeneratedArtifactWriter`. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
+
+Compatibility checks that depend only on prepared input and the generation plan belong in `GenerationInputCompatibilityValidator`. Renderers may still reject invalid states discovered while building their generation-specific models, but they do not repeat compatibility checks already completed before output begins.
+
+---
+
 ## Client Contract Selection
 
 Spring Kafka producer and consumer contract selection belongs to the typed generator configuration. When client

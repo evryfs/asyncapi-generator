@@ -5,8 +5,8 @@ import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSprin
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import java.io.File
 
 /**
  * Dispatches planned Spring Kafka client generation to the supported contract generator.
@@ -15,32 +15,21 @@ import java.io.File
  * - `SpringKafkaClientGenerationTest`
  */
 class SpringKafkaClientGeneration {
-    fun generate(
+    fun render(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-        @Suppress("UNUSED_PARAMETER")
-        resourceOutputDirectory: File,
-    ) {
-        SpringKafkaClientContractValidator.validate(
-            channels = generationInput.channels,
-            task = task,
-        )
-
+    ): GenerationResult =
         when (task.language) {
-            KOTLIN -> generateKotlinClient(task, generationInput, sourceOutputDirectory)
-            JAVA -> generateJavaClient(task, generationInput, sourceOutputDirectory)
+            KOTLIN -> renderKotlinClient(task, generationInput)
+            JAVA -> renderJavaClient(task, generationInput)
         }
-    }
 
-    private fun generateKotlinClient(
+    private fun renderKotlinClient(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-    ) {
+    ): GenerationResult {
         val kafkaGenerator =
             KotlinSpringKafkaGenerator(
-                outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
                 generateProducers = task.generateProducers,
@@ -48,17 +37,15 @@ class SpringKafkaClientGeneration {
                 topicParameterProperties = task.topicParameterProperties,
                 validationAnnotations = task.validationAnnotations,
             )
-        kafkaGenerator.generate(generationInput.channels)
+        return kafkaGenerator.render(generationInput.channels)
     }
 
-    private fun generateJavaClient(
+    private fun renderJavaClient(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-    ) {
+    ): GenerationResult {
         val kafkaGenerator =
             JavaSpringKafkaGenerator(
-                outputDir = sourceOutputDirectory,
                 clientPackage = task.clientPackage,
                 modelPackage = task.modelPackage,
                 generateProducers = task.generateProducers,
@@ -66,6 +53,6 @@ class SpringKafkaClientGeneration {
                 topicParameterProperties = task.topicParameterProperties,
                 validationAnnotations = task.validationAnnotations,
             )
-        kafkaGenerator.generate(generationInput.channels)
+        return kafkaGenerator.render(generationInput.channels)
     }
 }
