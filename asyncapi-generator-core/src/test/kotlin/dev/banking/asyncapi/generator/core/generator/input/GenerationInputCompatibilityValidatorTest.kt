@@ -1,7 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
@@ -448,6 +450,56 @@ class GenerationInputCompatibilityValidatorTest {
 
         assertTrue(error.message!!.contains("channel 'auditEvents'"))
         assertTrue(error.message!!.contains("does not declare any messages"))
+    }
+
+    @Test
+    fun `rejects additional producer method name collisions during compatibility validation`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "messageEvents",
+                                        topic = "message.events",
+                                        messages =
+                                            listOf(
+                                                AnalyzedMessage(
+                                                    messageId = "my-message-v1",
+                                                    messageName = "MyMessageV1",
+                                                    payloadTypeName = "MyMessageV1Payload",
+                                                    schema = Schema(type = "object"),
+                                                ),
+                                                AnalyzedMessage(
+                                                    messageId = "my-message-v1-byte-array",
+                                                    messageName = "MyMessageV1ByteArray",
+                                                    payloadTypeName = "MyMessageV1ByteArrayPayload",
+                                                    schema = Schema(type = "object"),
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.SpringKafkaClient(
+                                    language = SourceLanguage.KOTLIN,
+                                    clientPackage = "com.example.kafka",
+                                    modelPackage = "com.example.model",
+                                    additionalPayloadTypes =
+                                        setOf(AdditionalProducerPayloadType.BYTE_ARRAY),
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("generated client method 'sendMyMessageV1ByteArray'"))
     }
 
     private fun generationInputWithMultiFormatSchema(

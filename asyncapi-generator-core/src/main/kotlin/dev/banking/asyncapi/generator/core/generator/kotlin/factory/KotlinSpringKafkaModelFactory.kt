@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContra
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.inCanonicalOrder
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.methodSuffix
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
@@ -162,7 +163,7 @@ class KotlinSpringKafkaModelFactory(
                         }
                     val configuredAdditionalTypes =
                         if (payload.hasPayload) {
-                            AdditionalProducerPayloadType.entries.filter { it in additionalPayloadTypes }
+                            additionalPayloadTypes.inCanonicalOrder()
                         } else {
                             emptyList()
                         }
