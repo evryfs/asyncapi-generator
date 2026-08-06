@@ -3,15 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.kotlin
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.PropertyModel
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class KotlinGeneratorTest {
-    @TempDir
-    lateinit var tempDir: Path
-
     @Test
     fun `render returns generation result with artifacts for Kotlin model items`() {
         val generationModel =
@@ -61,7 +55,6 @@ class KotlinGeneratorTest {
         val generator =
             KotlinGenerator(
                 packageName = "com.example.model",
-                outputDir = tempDir.toFile(),
                 generationModel = generationModel,
             )
 
@@ -78,37 +71,4 @@ class KotlinGeneratorTest {
         )
     }
 
-    @Test
-    fun `generate writes rendered artifacts to output directory`() {
-        val generationModel =
-            listOf(
-                GeneratorItem.EnumClassModel(
-                    name = "Status",
-                    packageName = "com.example.model",
-                    description = emptyList(),
-                    values = listOf("ACTIVE", "INACTIVE"),
-                ),
-                GeneratorItem.TypeAliasModel(
-                    name = "UserId",
-                    packageName = "com.example.model",
-                    description = emptyList(),
-                    aliasType = "String",
-                ),
-            )
-        val generator =
-            KotlinGenerator(
-                packageName = "com.example.model",
-                outputDir = tempDir.toFile(),
-                generationModel = generationModel,
-            )
-
-        generator.generate()
-
-        val enumOutput = tempDir.resolve("com/example/model/Status.kt").toFile()
-        val typeAliasOutput = tempDir.resolve("com/example/model/UserId.kt").toFile()
-        assertTrue(enumOutput.exists())
-        assertTrue(typeAliasOutput.exists())
-        assertTrue(enumOutput.readText().contains("enum class Status"))
-        assertTrue(typeAliasOutput.readText().contains("typealias UserId = String"))
-    }
 }

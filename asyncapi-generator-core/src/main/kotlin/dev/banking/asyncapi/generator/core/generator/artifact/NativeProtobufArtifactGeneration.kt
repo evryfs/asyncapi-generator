@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufGenerator
 
@@ -14,19 +14,12 @@ import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufGene
 class NativeProtobufArtifactGeneration {
     private val nativeProtobufGenerator = NativeProtobufGenerator()
 
-    fun generate(
+    fun render(
         task: GenerationTask.NativeProtobufArtifacts,
         generationInput: GenerationInput,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
-        val result =
-            nativeProtobufGenerator.render(
-                schemas = generationInput.multiFormatSchemas,
-                models = task.models,
-            ).inSchemaPackage(task.schemaPackageName)
-
-        artifactWriter.write(
-            result,
-        )
-    }
+    ): GenerationResult =
+        nativeProtobufGenerator.render(
+            schemas = generationInput.multiFormatSchemas,
+            models = task.models,
+        ).inSchemaPackage(task.schemaPackageName)
 }

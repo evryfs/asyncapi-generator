@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
-import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
-import java.io.File
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
 /**
  * Renders Kotlin model items into a generation result before writing them.
@@ -14,25 +12,19 @@ import java.io.File
  */
 class KotlinGenerator(
     private val packageName: String,
-    private val outputDir: File,
     private val generationModel: List<GeneratorItem>,
 ) {
     private val dataClassGenerator: KotlinDataClassGenerator by lazy {
-        KotlinDataClassGenerator(outputDir, packageName)
+        KotlinDataClassGenerator(packageName)
     }
     private val sealedInterfaceGenerator: KotlinSealedInterfaceGenerator by lazy {
-        KotlinSealedInterfaceGenerator(outputDir)
+        KotlinSealedInterfaceGenerator()
     }
     private val enumGenerator: KotlinEnumGenerator by lazy {
-        KotlinEnumGenerator(outputDir)
+        KotlinEnumGenerator()
     }
     private val typeAliasGenerator: KotlinTypeAliasGenerator by lazy {
-        KotlinTypeAliasGenerator(outputDir)
-    }
-
-    fun generate() {
-        FileSystemGeneratedArtifactWriter(outputDir, outputDir)
-            .write(render())
+        KotlinTypeAliasGenerator()
     }
 
     fun render(): GenerationResult =

@@ -19,20 +19,26 @@ internal object AsyncApiRegistry {
         )
 
     fun writeYaml(file: File, obj: Any) {
-        val yamlText = yamlMapper.writeValueAsString(obj)
+        val yamlText = serializeYaml(obj)
         file.parentFile?.mkdirs()
         file.writeText(yamlText)
         println("Yaml written to: ${file.absolutePath}")
     }
 
     fun writeJson(file: File, obj: Any) {
-        val jsonText = jsonMapper
-            .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(obj)
+        val jsonText = serializeJson(obj)
         file.parentFile?.mkdirs()
         file.writeText(jsonText)
         println("Json written to: ${file.absolutePath}")
     }
+
+    fun serializeYaml(obj: Any): String =
+        yamlMapper.writeValueAsString(obj)
+
+    fun serializeJson(obj: Any): String =
+        jsonMapper
+            .writerWithDefaultPrettyPrinter()
+            .writeValueAsString(obj)
 
     private val yamlMapper: ObjectMapper = ObjectMapper(
         YAMLFactory.builder()

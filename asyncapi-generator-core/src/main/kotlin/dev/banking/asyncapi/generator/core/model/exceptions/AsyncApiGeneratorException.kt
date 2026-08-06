@@ -11,6 +11,30 @@ sealed class AsyncApiGeneratorException(
         language: String,
     ) : AsyncApiGeneratorException("The language $language is not supported")
 
+    class UnsupportedGenerationCapability(
+        capability: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$capability is not implemented.")
+                appendLine("Remove this capability from the generator configuration.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    class GeneratedArtifactCollision(
+        destination: String,
+        artifacts: List<String>,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Generated artifacts resolve to the same output file: $destination")
+                artifacts.forEach { artifact -> appendLine("- $artifact") }
+                appendLine("Configure distinct output files, packages, or output directories for these artifacts.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class InvalidEnum(
         schemaName: String,
         literal: String,

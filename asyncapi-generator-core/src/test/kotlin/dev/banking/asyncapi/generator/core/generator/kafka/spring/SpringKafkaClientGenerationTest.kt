@@ -6,11 +6,9 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHea
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -33,103 +31,87 @@ class SpringKafkaClientGenerationTest {
                 ),
         )
 
-    @TempDir
-    lateinit var tempDir: Path
+    @Test
+    fun `render delegates Kotlin client task to Kotlin generator`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
+
+        assertEquals(
+            setOf(
+                "com/example/client/producer/UserEventsProducer.kt",
+                "com/example/client/consumer/UserEventsConsumer.kt",
+            ),
+            result.artifacts.map { it.relativePath }.toSet(),
+        )
+        assertTrue(result.artifacts.all { it.kind == GeneratedArtifactKind.SOURCE })
+    }
 
     @Test
-    fun `generate delegates Kotlin client task to Kotlin generator`() {
-        val sourceOutputDirectory = tempDir.resolve("kotlin-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("kotlin-resources").toFile()
+    fun `render delegates Java client task to Java generator`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.JAVA,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
 
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.KOTLIN,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
+        assertEquals(
+            setOf(
+                "com/example/client/producer/UserEventsProducer.java",
+                "com/example/client/consumer/UserEventsConsumer.java",
+            ),
+            result.artifacts.map { it.relativePath }.toSet(),
         )
+        assertTrue(result.artifacts.all { it.kind == GeneratedArtifactKind.SOURCE })
+    }
 
-        assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.kt").exists(),
-        )
-        assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.kt").exists(),
+    @Test
+    fun `render respects producer and consumer task options`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                        generateProducers = false,
+                        generateConsumers = true,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
+
+        assertEquals(
+            listOf("com/example/client/consumer/UserEventsConsumer.kt"),
+            result.artifacts.map { it.relativePath },
         )
     }
 
     @Test
-    fun `generate delegates Java client task to Java generator`() {
-        val sourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("java-resources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.JAVA,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-        )
-
-        assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.java").exists(),
-        )
-        assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.java").exists(),
-        )
-    }
-
-    @Test
-    fun `generate respects producer and consumer task options`() {
-        val sourceOutputDirectory = tempDir.resolve("configured-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("configured-resources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.KOTLIN,
-                    generateProducers = false,
-                    generateConsumers = true,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = resourceOutputDirectory,
-        )
-
-        assertFalse(
-            sourceOutputDirectory.resolve("com/example/client/producer/UserEventsProducer.kt").exists(),
-        )
-        assertTrue(
-            sourceOutputDirectory.resolve("com/example/client/consumer/UserEventsConsumer.kt").exists(),
-        )
-    }
-
-    @Test
-    fun `generate applies configured validation annotations to Kotlin client contracts`() {
-        val sourceOutputDirectory = tempDir.resolve("configured-kotlin-sources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.KOTLIN,
-                    validationAnnotations = validationAnnotations,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = tempDir.resolve("configured-kotlin-resources").toFile(),
-        )
+    fun `render applies configured validation annotations to Kotlin client contracts`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                        validationAnnotations = validationAnnotations,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
 
         val producerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducer.kt")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
+            }.content
         val consumerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/consumer/UserEventsConsumer.kt")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/consumer/UserEventsConsumer.kt"
+            }.content
 
         listOf(producerContent, consumerContent).forEach { content ->
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract"))
@@ -140,28 +122,25 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `generate applies configured validation annotations to Java client contracts`() {
-        val sourceOutputDirectory = tempDir.resolve("configured-java-sources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.JAVA,
-                    validationAnnotations = validationAnnotations,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = tempDir.resolve("configured-java-resources").toFile(),
-        )
+    fun `render applies configured validation annotations to Java client contracts`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.JAVA,
+                        validationAnnotations = validationAnnotations,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
 
         val producerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducer.java")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/producer/UserEventsProducer.java"
+            }.content
         val consumerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/consumer/UserEventsConsumer.java")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/consumer/UserEventsConsumer.java"
+            }.content
 
         listOf(producerContent, consumerContent).forEach { content ->
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract;"))
@@ -180,51 +159,45 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `generate leaves the Kotlin producer record value type to the implementation`() {
-        val sourceOutputDirectory = tempDir.resolve("flexible-kotlin-producer-sources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.KOTLIN,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = tempDir.resolve("flexible-kotlin-producer-resources").toFile(),
-        )
+    fun `render leaves the Kotlin producer record value type to the implementation`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.KOTLIN,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
 
         val producerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducer.kt")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
+            }.content
         assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
     @Test
-    fun `generate leaves the Java producer record value type to the implementation`() {
-        val sourceOutputDirectory = tempDir.resolve("flexible-java-producer-sources").toFile()
-
-        generator.generate(
-            task =
-                springKafkaClientTask(
-                    language = SourceLanguage.JAVA,
-                ),
-            generationInput = fixtures.generationInputWithUserSignupChannel(),
-            sourceOutputDirectory = sourceOutputDirectory,
-            resourceOutputDirectory = tempDir.resolve("flexible-java-producer-resources").toFile(),
-        )
+    fun `render leaves the Java producer record value type to the implementation`() {
+        val result =
+            generator.render(
+                task =
+                    springKafkaClientTask(
+                        language = SourceLanguage.JAVA,
+                    ),
+                generationInput = fixtures.generationInputWithUserSignupChannel(),
+            )
 
         val producerContent =
-            sourceOutputDirectory
-                .resolve("com/example/client/producer/UserEventsProducer.java")
-                .readText()
+            result.artifacts.single {
+                it.relativePath == "com/example/client/producer/UserEventsProducer.java"
+            }.content
         assertTrue(producerContent.contains("interface UserEventsProducer {"))
         assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
     }
 
     @Test
-    fun `generate preserves contract header scalar types in Java and Kotlin clients`() {
+    fun `render preserves contract header scalar types in Java and Kotlin clients`() {
         val generationInput = fixtures.generationInputWithUserSignupChannel()
         val channel = generationInput.channels.single()
         val message = channel.messages.single()
@@ -264,21 +237,19 @@ class SpringKafkaClientGenerationTest {
             )
 
         SourceLanguage.entries.forEach { language ->
-            val sourceOutputDirectory = tempDir.resolve("typed-header-$language-sources").toFile()
-            generator.generate(
-                task = springKafkaClientTask(language = language),
-                generationInput = inputWithTypedHeaders,
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = tempDir.resolve("typed-header-$language-resources").toFile(),
-            )
+            val result =
+                generator.render(
+                    task = springKafkaClientTask(language = language),
+                    generationInput = inputWithTypedHeaders,
+                )
 
             val extension = if (language == SourceLanguage.KOTLIN) "kt" else "java"
             val generatedContracts =
                 listOf("producer/UserEventsProducer", "consumer/UserEventsConsumer")
                     .map { relativePath ->
-                        sourceOutputDirectory
-                            .resolve("com/example/client/$relativePath.$extension")
-                            .readText()
+                        result.artifacts.single {
+                            it.relativePath == "com/example/client/$relativePath.$extension"
+                        }.content
                     }
 
             generatedContracts.forEach { content ->
@@ -305,7 +276,7 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `generate rejects a parameterized topic without a configured property mapping`() {
+    fun `render rejects a parameterized topic without a configured property mapping`() {
         val generationInput = fixtures.generationInputWithUserSignupChannel()
         val parameterizedInput =
             generationInput.copy(
@@ -317,11 +288,9 @@ class SpringKafkaClientGenerationTest {
 
         val exception =
             assertFailsWith<IllegalArgumentException> {
-                generator.generate(
+                generator.render(
                     task = springKafkaClientTask(language = SourceLanguage.KOTLIN),
                     generationInput = parameterizedInput,
-                    sourceOutputDirectory = tempDir.resolve("missing-mapping-sources").toFile(),
-                    resourceOutputDirectory = tempDir.resolve("missing-mapping-resources").toFile(),
                 )
             }
 
@@ -334,7 +303,7 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `generate leaves multi-message handler selection to the application`() {
+    fun `render leaves multi-message handler selection to the application`() {
         val generationInput = fixtures.generationInputWithUserSignupChannel()
         val channel = generationInput.channels.single()
         val message = channel.messages.single()
@@ -353,19 +322,17 @@ class SpringKafkaClientGenerationTest {
             )
 
         SourceLanguage.entries.forEach { language ->
-            val sourceOutputDirectory = tempDir.resolve("shared-payload-$language-sources").toFile()
-            generator.generate(
-                task = springKafkaClientTask(language = language),
-                generationInput = sharedPayloadInput,
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = tempDir.resolve("shared-payload-$language-resources").toFile(),
-            )
+            val result =
+                generator.render(
+                    task = springKafkaClientTask(language = language),
+                    generationInput = sharedPayloadInput,
+                )
 
             val extension = if (language == SourceLanguage.KOTLIN) "kt" else "java"
             val consumerContent =
-                sourceOutputDirectory
-                    .resolve("com/example/client/consumer/UserEventsConsumer.$extension")
-                    .readText()
+                result.artifacts.single {
+                    it.relativePath == "com/example/client/consumer/UserEventsConsumer.$extension"
+                }.content
 
             assertTrue(consumerContent.contains("listenUserSignedUp"))
             assertTrue(consumerContent.contains("listenUserProfileUpdated"))
@@ -376,45 +343,6 @@ class SpringKafkaClientGenerationTest {
                 },
             )
         }
-    }
-
-    @Test
-    fun `generate rejects method name collisions before writing client sources`() {
-        val generationInput = fixtures.generationInputWithUserSignupChannel()
-        val channel = generationInput.channels.single()
-        val message = channel.messages.single()
-        val sourceOutputDirectory = tempDir.resolve("colliding-method-sources").toFile()
-
-        val error =
-            assertFailsWith<SpringKafkaClientMethodNameCollision> {
-                generator.generate(
-                    task = springKafkaClientTask(language = SourceLanguage.JAVA),
-                    generationInput =
-                        generationInput.copy(
-                            channels =
-                                listOf(
-                                    channel.copy(
-                                        messages =
-                                            listOf(
-                                                message.copy(
-                                                    messageId = "user-signed-up",
-                                                    messageName = "UserSignedUp",
-                                                ),
-                                                message.copy(
-                                                    messageId = "user_signed_up",
-                                                    messageName = "UserSignedUp",
-                                                ),
-                                            ),
-                                    ),
-                                ),
-                        ),
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = tempDir.resolve("colliding-method-resources").toFile(),
-                )
-            }
-
-        assertTrue(error.message!!.contains("['user-signed-up', 'user_signed_up']"))
-        assertFalse(sourceOutputDirectory.exists())
     }
 
     private fun springKafkaClientTask(
@@ -431,5 +359,4 @@ class SpringKafkaClientGenerationTest {
             generateConsumers = generateConsumers,
             validationAnnotations = validationAnnotations,
         )
-
 }

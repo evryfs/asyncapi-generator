@@ -1,41 +1,33 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
-import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.assertEquals
 
 class AvroSchemaArtifactGenerationTest {
     private val generation = AvroSchemaArtifactGeneration()
     private val fixtures = GenerationInputFixtures()
 
-    @TempDir
-    lateinit var tempDir: Path
-
     @Test
-    fun `generate writes Avro schema artifacts through writer`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
-        val artifactWriter =
-            FileSystemGeneratedArtifactWriter(
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
+    fun `render returns Avro schema artifacts and ignores unsupported primitive projection`() {
+        val result =
+            generation.render(
+                task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )
 
-        generation.generate(
-            task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
-            generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
-            resourceOutputDirectory = resourceOutputDirectory,
-            artifactWriter = artifactWriter,
+        assertEquals(
+            setOf(
+                "com/example/avro/User.avsc",
+                "com/example/avro/Status.avsc",
+            ),
+            result.artifacts.map { it.relativePath }.toSet(),
         )
-
-        assertTrue(resourceOutputDirectory.resolve("com/example/avro/User.avsc").exists())
-        assertTrue(resourceOutputDirectory.resolve("com/example/avro/Status.avsc").exists())
-        assertFalse(resourceOutputDirectory.resolve("com/example/avro/IgnoredPrimitive.avsc").exists())
-        assertFalse(sourceOutputDirectory.resolve("com/example/avro/User.avsc").exists())
+        assertEquals(
+            setOf(GeneratedArtifactKind.SCHEMA),
+            result.artifacts.map { it.kind }.toSet(),
+        )
     }
 }

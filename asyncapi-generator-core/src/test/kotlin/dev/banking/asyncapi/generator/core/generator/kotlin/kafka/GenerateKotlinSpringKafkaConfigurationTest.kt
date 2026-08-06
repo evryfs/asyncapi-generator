@@ -3,17 +3,13 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.kafka
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateKotlinSpringKafkaConfigurationTest {
-    @TempDir
-    lateinit var outputDir: Path
-
     private val packageName = "com.example.kafka"
     private val channel =
         AnalyzedChannel(
@@ -31,63 +27,60 @@ class GenerateKotlinSpringKafkaConfigurationTest {
 
     @Test
     fun `generates producer and consumer contracts by default`() {
-        generate()
+        val result = render()
 
-        assertTrue(producerContract().toFile().exists())
-        assertTrue(consumerContract().toFile().exists())
+        assertTrue(result.artifacts.any { it.relativePath == producerContract })
+        assertTrue(result.artifacts.any { it.relativePath == consumerContract })
     }
 
     @Test
     fun `configuration can generate only producer contracts`() {
-        generate(
+        val result = render(
             generateProducers = true,
             generateConsumers = false,
         )
 
-        assertTrue(producerContract().toFile().exists())
-        assertFalse(consumerContract().toFile().exists())
+        assertTrue(result.artifacts.any { it.relativePath == producerContract })
+        assertFalse(result.artifacts.any { it.relativePath == consumerContract })
     }
 
     @Test
     fun `configuration can generate only consumer contracts`() {
-        generate(
+        val result = render(
             generateProducers = false,
             generateConsumers = true,
         )
 
-        assertFalse(producerContract().toFile().exists())
-        assertTrue(consumerContract().toFile().exists())
+        assertFalse(result.artifacts.any { it.relativePath == producerContract })
+        assertTrue(result.artifacts.any { it.relativePath == consumerContract })
     }
 
     @Test
     fun `generates no contracts when both capabilities are disabled`() {
-        generate(
+        val result = render(
             generateProducers = false,
             generateConsumers = false,
         )
 
-        assertFalse(producerContract().toFile().exists())
-        assertFalse(consumerContract().toFile().exists())
+        assertFalse(result.artifacts.any { it.relativePath == producerContract })
+        assertFalse(result.artifacts.any { it.relativePath == consumerContract })
     }
 
-    private fun generate(
+    private fun render(
         generateProducers: Boolean = true,
         generateConsumers: Boolean = true,
-    ) {
+    ): GenerationResult {
         val generator =
             KotlinSpringKafkaGenerator(
-                outputDir = outputDir.toFile(),
                 clientPackage = packageName,
                 modelPackage = packageName,
                 generateProducers = generateProducers,
                 generateConsumers = generateConsumers,
             )
-        generator.generate(listOf(channel))
+        return generator.render(listOf(channel))
     }
 
-    private fun producerContract(): Path =
-        outputDir.resolve("com/example/kafka/producer/EventsProducer.kt")
+    private val producerContract = "com/example/kafka/producer/EventsProducer.kt"
 
-    private fun consumerContract(): Path =
-        outputDir.resolve("com/example/kafka/consumer/EventsConsumer.kt")
+    private val consumerContract = "com/example/kafka/consumer/EventsConsumer.kt"
 }

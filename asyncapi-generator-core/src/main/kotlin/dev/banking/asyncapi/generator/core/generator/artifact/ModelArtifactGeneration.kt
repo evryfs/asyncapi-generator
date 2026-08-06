@@ -8,9 +8,8 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import java.io.File
 
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.
@@ -22,12 +21,10 @@ class ModelArtifactGeneration(
     private val kotlinModelPreparer: KotlinModelPreparer = KotlinModelPreparer(),
     private val javaModelPreparer: JavaModelPreparer = JavaModelPreparer(),
 ) {
-    fun generateModelArtifacts(
+    fun renderModelArtifacts(
         task: GenerationTask.ModelArtifacts,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
+    ): GenerationResult =
         when (task.language) {
             KOTLIN -> {
                 val generationModel =
@@ -39,10 +36,9 @@ class ModelArtifactGeneration(
                 val generator =
                     KotlinGenerator(
                         packageName = task.packageName,
-                        outputDir = sourceOutputDirectory,
                         generationModel = generationModel,
                     )
-                artifactWriter.write(generator.render())
+                generator.render()
             }
             JAVA -> {
                 val generationModel =
@@ -54,25 +50,21 @@ class ModelArtifactGeneration(
                 val generator =
                     JavaGenerator(
                         packageName = task.packageName,
-                        outputDir = sourceOutputDirectory,
                         generationModel = generationModel,
                         javaModelType = task.javaModelType,
                     )
-                artifactWriter.write(generator.render())
+                generator.render()
             }
         }
-    }
 
-    fun generateKafkaKeyModelArtifacts(
+    fun renderKafkaKeyModelArtifacts(
         task: GenerationTask.KafkaKeyModelArtifacts,
         generationInput: GenerationInput,
-        sourceOutputDirectory: File,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
+    ): GenerationResult {
         val keySchemas = KafkaKeyModelSelector.select(generationInput)
-        if (keySchemas.isEmpty()) return
+        if (keySchemas.isEmpty()) return GenerationResult.Empty
 
-        generateModelArtifacts(
+        return renderModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
                     language = task.language,
@@ -84,9 +76,6 @@ class ModelArtifactGeneration(
                     declaredSchemas = keySchemas,
                     multiFormatSchemas = emptyMap(),
                 ),
-            sourceOutputDirectory = sourceOutputDirectory,
-            artifactWriter = artifactWriter,
         )
     }
-
 }

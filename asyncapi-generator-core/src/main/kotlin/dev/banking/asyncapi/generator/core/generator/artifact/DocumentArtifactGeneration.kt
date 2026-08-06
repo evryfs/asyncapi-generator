@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedDocumentArtifact
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -9,16 +11,22 @@ import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
  * Serializes a bundled AsyncAPI document in the configured output format.
  *
  * Expected behavior is covered by:
+ * - `DocumentArtifactGenerationTest`
  * - `AsyncApiGeneratorOutputContractTest`
  */
 class DocumentArtifactGeneration {
-    fun generate(
+    fun render(
         task: GenerationTask.DocumentArtifact,
         asyncApiDocument: AsyncApiDocument,
-    ) {
-        when (task.format) {
-            DocumentFormat.YAML -> AsyncApiRegistry.writeYaml(task.file, asyncApiDocument)
-            DocumentFormat.JSON -> AsyncApiRegistry.writeJson(task.file, asyncApiDocument)
-        }
-    }
+    ): GenerationResult =
+        GenerationResult.of(
+            GeneratedDocumentArtifact(
+                file = task.file,
+                content =
+                    when (task.format) {
+                        DocumentFormat.YAML -> AsyncApiRegistry.serializeYaml(asyncApiDocument)
+                        DocumentFormat.JSON -> AsyncApiRegistry.serializeJson(asyncApiDocument)
+                    },
+            ),
+        )
 }
