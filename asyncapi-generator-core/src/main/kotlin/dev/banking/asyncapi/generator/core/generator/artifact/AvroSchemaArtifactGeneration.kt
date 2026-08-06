@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.generator.avro.AvroGenerator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
@@ -12,15 +12,14 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
  * - `AvroSchemaArtifactGenerationTest`
  */
 class AvroSchemaArtifactGeneration {
-    fun generate(
+    fun render(
         task: GenerationTask.AvroSchemaArtifacts,
         generationInput: GenerationInput,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
+    ): GenerationResult {
         val avroGenerator =
             AvroGenerator(
                 packageName = task.packageName,
             )
-        artifactWriter.write(avroGenerator.render(generationInput.schemas))
+        return avroGenerator.render(generationInput.schemas)
     }
 }

@@ -59,16 +59,18 @@ class AsyncApiGenerator {
                         asyncApiDocument = asyncApiDocument,
                     )
                 is GenerationTask.ModelArtifacts ->
-                    modelArtifactGeneration.generateModelArtifacts(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        modelArtifactGeneration.renderModelArtifacts(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
                 is GenerationTask.KafkaKeyModelArtifacts ->
-                    modelArtifactGeneration.generateKafkaKeyModelArtifacts(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        modelArtifactGeneration.renderKafkaKeyModelArtifacts(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
                 is GenerationTask.SpringKafkaClient ->
                     artifactWriter.write(
@@ -80,28 +82,32 @@ class AsyncApiGenerator {
                 is GenerationTask.QuarkusKafkaClient ->
                     throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
                 is GenerationTask.NativeAvroArtifacts ->
-                    nativeAvroArtifactGeneration.generate(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        nativeAvroArtifactGeneration.render(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
                 is GenerationTask.NativeProtobufArtifacts ->
-                    nativeProtobufArtifactGeneration.generate(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        nativeProtobufArtifactGeneration.render(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
                 is GenerationTask.AvroSchemaArtifacts ->
-                    avroSchemaArtifactGeneration.generate(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        avroSchemaArtifactGeneration.render(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
                 is GenerationTask.JsonSchemaArtifacts ->
-                    jsonSchemaArtifactGeneration.generate(
-                        task = task,
-                        generationInput = generationInput,
-                        artifactWriter = artifactWriter,
+                    artifactWriter.write(
+                        jsonSchemaArtifactGeneration.render(
+                            task = task,
+                            generationInput = generationInput,
+                        ),
                     )
             }
         }

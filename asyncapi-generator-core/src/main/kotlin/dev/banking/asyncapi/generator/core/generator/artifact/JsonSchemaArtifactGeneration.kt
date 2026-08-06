@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.jsonschema.JsonSchemaGenerator
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
@@ -14,17 +14,13 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 class JsonSchemaArtifactGeneration(
     private val jsonSchemaGenerator: JsonSchemaGenerator = JsonSchemaGenerator(),
 ) {
-    fun generate(
+    fun render(
         task: GenerationTask.JsonSchemaArtifacts,
         generationInput: GenerationInput,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
-        artifactWriter.write(
-            jsonSchemaGenerator.render(
-                schemas = generationInput.declaredSchemas,
-                multiFormatSchemas = generationInput.multiFormatSchemas,
-                packageName = task.packageName,
-            ),
+    ): GenerationResult =
+        jsonSchemaGenerator.render(
+            schemas = generationInput.declaredSchemas,
+            multiFormatSchemas = generationInput.multiFormatSchemas,
+            packageName = task.packageName,
         )
-    }
 }

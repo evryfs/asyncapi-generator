@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactWriter
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
@@ -21,11 +21,10 @@ class ModelArtifactGeneration(
     private val kotlinModelPreparer: KotlinModelPreparer = KotlinModelPreparer(),
     private val javaModelPreparer: JavaModelPreparer = JavaModelPreparer(),
 ) {
-    fun generateModelArtifacts(
+    fun renderModelArtifacts(
         task: GenerationTask.ModelArtifacts,
         generationInput: GenerationInput,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
+    ): GenerationResult =
         when (task.language) {
             KOTLIN -> {
                 val generationModel =
@@ -39,7 +38,7 @@ class ModelArtifactGeneration(
                         packageName = task.packageName,
                         generationModel = generationModel,
                     )
-                artifactWriter.write(generator.render())
+                generator.render()
             }
             JAVA -> {
                 val generationModel =
@@ -54,20 +53,18 @@ class ModelArtifactGeneration(
                         generationModel = generationModel,
                         javaModelType = task.javaModelType,
                     )
-                artifactWriter.write(generator.render())
+                generator.render()
             }
         }
-    }
 
-    fun generateKafkaKeyModelArtifacts(
+    fun renderKafkaKeyModelArtifacts(
         task: GenerationTask.KafkaKeyModelArtifacts,
         generationInput: GenerationInput,
-        artifactWriter: GeneratedArtifactWriter,
-    ) {
+    ): GenerationResult {
         val keySchemas = KafkaKeyModelSelector.select(generationInput)
-        if (keySchemas.isEmpty()) return
+        if (keySchemas.isEmpty()) return GenerationResult.Empty
 
-        generateModelArtifacts(
+        return renderModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
                     language = task.language,
@@ -79,8 +76,6 @@ class ModelArtifactGeneration(
                     declaredSchemas = keySchemas,
                     multiFormatSchemas = emptyMap(),
                 ),
-            artifactWriter = artifactWriter,
         )
     }
-
 }

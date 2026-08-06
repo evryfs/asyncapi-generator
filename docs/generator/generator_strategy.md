@@ -24,6 +24,8 @@ Planning and compatibility validation complete before rendering starts. A planne
 
 Specialized generators own model preparation and template rendering. They return `GenerationResult` values containing relative paths, content, and artifact kinds, but do not create directories or write files. `AsyncApiGenerator` is the orchestration boundary that passes those results to the configured `GeneratedArtifactWriter`. This keeps destination selection and filesystem behavior out of language, client, and schema renderers.
 
+Bundled document output is the deliberate exception. It targets the explicit file configured for that task rather than a source or resource output root, so document serialization remains owned by `DocumentArtifactGeneration` and `AsyncApiRegistry`.
+
 Compatibility checks that depend only on prepared input and the generation plan belong in `GenerationInputCompatibilityValidator`. Renderers may still reject invalid states discovered while building their generation-specific models, but they do not repeat compatibility checks already completed before output begins.
 
 ---
