@@ -434,6 +434,83 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
+    fun `create resolves producer payload types canonically without duplicates`() {
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                    clients =
+                        GeneratorConfigurationRequest.Clients(
+                            kafka =
+                                GeneratorConfigurationRequest.Kafka(
+                                    packageName = "com.example.client",
+                                    springKafka =
+                                        GeneratorConfigurationRequest.KafkaSpringKafka(
+                                            producer =
+                                                GeneratorConfigurationRequest.KafkaProducer(
+                                                    payloadTypes =
+                                                        listOf(
+                                                            "string",
+                                                            "contract",
+                                                            "byte-array",
+                                                            "string",
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                        ),
+                ),
+            )
+
+        val springKafka = configuration.clients.filterIsInstance<ClientGeneration.Kafka>().single().springKafka
+        assertEquals(
+            listOf(
+                ProducerPayloadType.CONTRACT,
+                ProducerPayloadType.BYTE_ARRAY,
+                ProducerPayloadType.STRING,
+            ),
+            springKafka?.producer?.payloadTypes?.toList(),
+        )
+    }
+
+    @Test
+    fun `create rejects invalid and empty producer payload types`() {
+        listOf(
+            listOf("bytes") to
+                "Invalid clients.kafka.springKafka.producer.payloadTypes 'bytes'. " +
+                "Supported values: contract, byte-array, string",
+            emptyList<String>() to
+                "clients.kafka.springKafka.producer.payloadTypes cannot be empty. " +
+                "Supported values: contract, byte-array, string",
+        ).forEach { (payloadTypes, expectedMessage) ->
+            val exception =
+                assertFailsWith<IllegalArgumentException> {
+                    GeneratorConfigurationFactory.create(
+                        request(
+                            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                            clients =
+                                GeneratorConfigurationRequest.Clients(
+                                    kafka =
+                                        GeneratorConfigurationRequest.Kafka(
+                                            packageName = "com.example.client",
+                                            springKafka =
+                                                GeneratorConfigurationRequest.KafkaSpringKafka(
+                                                    producer =
+                                                        GeneratorConfigurationRequest.KafkaProducer(
+                                                            payloadTypes = payloadTypes,
+                                                        ),
+                                                ),
+                                        ),
+                                ),
+                        ),
+                    )
+                }
+
+            assertEquals(expectedMessage, exception.message)
+        }
+    }
+
+    @Test
     fun `create rejects spring kafka configuration without an enabled contract`() {
         val exception =
             assertFailsWith<IllegalArgumentException> {

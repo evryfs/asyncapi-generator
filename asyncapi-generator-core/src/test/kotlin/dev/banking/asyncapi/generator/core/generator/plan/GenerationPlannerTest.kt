@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
@@ -317,6 +318,11 @@ class GenerationPlannerTest {
                                         producer =
                                             ClientGeneration.Producer(
                                                 enabled = false,
+                                                payloadTypes =
+                                                    setOf(
+                                                        ProducerPayloadType.BYTE_ARRAY,
+                                                        ProducerPayloadType.STRING,
+                                                    ),
                                             ),
                                         consumer = ClientGeneration.Consumer(enabled = true),
                                     ),
@@ -329,6 +335,11 @@ class GenerationPlannerTest {
             listOf(
                 springKafkaClientTask(
                     generateProducers = false,
+                    producerPayloadTypes =
+                        setOf(
+                            ProducerPayloadType.BYTE_ARRAY,
+                            ProducerPayloadType.STRING,
+                        ),
                     generateConsumers = true,
                     clientContract = ClientContract.INTERFACE,
                     topicParameterProperties = topicParameterProperties,
@@ -408,6 +419,7 @@ class GenerationPlannerTest {
         clientPackage: String = "com.example.client",
         modelPackage: String = "com.example.model",
         generateProducers: Boolean = true,
+        producerPayloadTypes: Set<ProducerPayloadType> = ProducerPayloadType.DEFAULT,
         generateConsumers: Boolean = true,
         clientContract: ClientContract = ClientContract.INTERFACE,
         topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
@@ -418,6 +430,7 @@ class GenerationPlannerTest {
             clientPackage = clientPackage,
             modelPackage = modelPackage,
             generateProducers = generateProducers,
+            producerPayloadTypes = producerPayloadTypes,
             generateConsumers = generateConsumers,
             clientContract = clientContract,
             topicParameterProperties = topicParameterProperties,

@@ -67,6 +67,7 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaProducer(
         val enabled: Boolean = true,
+        val payloadTypes: List<String>? = null,
     )
 
     data class KafkaConsumer(
@@ -183,10 +184,11 @@ data class GeneratorConfigurationRequest(
 
         fun kafkaProducer(
             enabled: Boolean? = null,
+            payloadTypes: List<String>? = null,
         ): KafkaProducer? =
-            when (enabled) {
-                null -> null
-                else -> KafkaProducer(enabled = enabled)
+            when {
+                enabled == null && payloadTypes == null -> null
+                else -> KafkaProducer(enabled = enabled ?: true, payloadTypes = payloadTypes)
             }
 
         fun kafkaConsumer(enabled: Boolean? = null): KafkaConsumer? =
@@ -201,6 +203,7 @@ data class GeneratorConfigurationRequest(
             clientPackage: String?,
             modelPackage: String?,
             producerEnabled: Boolean? = null,
+            producerPayloadTypes: List<String>? = null,
             consumerEnabled: Boolean? = null,
             topicParameterProperties: Map<String, String> = emptyMap(),
             validationClientContract: String? = null,
@@ -242,7 +245,11 @@ data class GeneratorConfigurationRequest(
                                         clientContract = resolvedClientContract,
                                         topicParameterProperties = topicParameterProperties,
                                         validationAnnotations = validationAnnotations,
-                                        producer = KafkaProducer(enabled = producerEnabled ?: true),
+                                        producer =
+                                            KafkaProducer(
+                                                enabled = producerEnabled ?: true,
+                                                payloadTypes = producerPayloadTypes,
+                                            ),
                                         consumer = KafkaConsumer(enabled = consumerEnabled ?: true),
                                     ),
                             ),

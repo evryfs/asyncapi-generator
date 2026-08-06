@@ -167,6 +167,19 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
+    fun `producer request preserves omitted and configured payload types`() {
+        assertNull(GeneratorConfigurationRequest.kafkaProducer())
+        assertEquals(
+            GeneratorConfigurationRequest.KafkaProducer(
+                payloadTypes = listOf("contract", "byte-array"),
+            ),
+            GeneratorConfigurationRequest.kafkaProducer(
+                payloadTypes = listOf("contract", "byte-array"),
+            ),
+        )
+    }
+
+    @Test
     fun `clients request resolves Spring Kafka configuration values`() {
         assertEquals(
             GeneratorConfigurationRequest.Clients(
@@ -194,7 +207,11 @@ class GeneratorConfigurationRequestTest {
                                                 path = "clientConfig.validationAnnotations.payloadParameter",
                                             ),
                                     ),
-                                producer = GeneratorConfigurationRequest.KafkaProducer(enabled = false),
+                                producer =
+                                    GeneratorConfigurationRequest.KafkaProducer(
+                                        enabled = false,
+                                        payloadTypes = listOf("byte-array"),
+                                    ),
                                 consumer = GeneratorConfigurationRequest.KafkaConsumer(enabled = true),
                             ),
                     ),
@@ -205,6 +222,7 @@ class GeneratorConfigurationRequestTest {
                 clientPackage = "com.example.client",
                 modelPackage = "com.example.model",
                 producerEnabled = false,
+                producerPayloadTypes = listOf("byte-array"),
                 topicParameterProperties =
                     mapOf(
                         "environment" to "kafka.environment",
