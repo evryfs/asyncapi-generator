@@ -29,6 +29,7 @@ internal data class CliModelConfiguration(
  */
 internal data class CliProducerConfiguration(
     val enabled: Boolean? = null,
+    val additionalPayloadTypes: List<String>? = null,
 )
 
 /**
@@ -65,6 +66,7 @@ internal data class CliClientConfiguration(
             clientPackage = clientPackage,
             modelPackage = modelPackage,
             producerEnabled = producer?.enabled,
+            producerAdditionalPayloadTypes = producer?.additionalPayloadTypes,
             consumerEnabled = consumer?.enabled,
             topicParameterProperties = topicParameterProperties,
             validationClientContract = validationAnnotations?.clientContract,

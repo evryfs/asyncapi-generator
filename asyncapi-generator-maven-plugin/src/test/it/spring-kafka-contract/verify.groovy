@@ -6,6 +6,8 @@ assert producerContent.contains("interface UserEventsProducer {") : "Expected ch
 assert producerContent.contains("@Validated") : "Expected configured client contract validation annotation"
 assert producerContent.contains("@Valid") : "Expected configured payload parameter validation annotation"
 assert producerContent.contains("fun sendUserSignedUp(") : "Expected message-qualified send method"
+assert producerContent.contains("fun sendUserSignedUpByteArray(") : "Expected additive byte-array send method"
+assert producerContent.contains("fun sendUserSignedUpString(") : "Expected additive string send method"
 assert producerContent.contains("CompletableFuture<RecordMetadata>") : "Expected producer acknowledgement metadata return type"
 assert producerContent.contains("CompletableFuture.failedFuture(") : "Expected an explicit unimplemented producer default"
 assert producerContent.contains('const val USER_EVENTS_TOPIC_ADDRESS: String = "user.\\${kafka.environment}.events.v1"') : "Expected mapped producer topic address"

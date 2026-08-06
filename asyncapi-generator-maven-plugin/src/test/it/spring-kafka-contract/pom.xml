@@ -30,7 +30,12 @@
                     <clientConfig>
                         <clientType>spring-kafka</clientType>
                         <clientContract>interface</clientContract>
-                        <producer/>
+                        <producer>
+                            <additionalPayloadTypes>
+                                <additionalPayloadType>byte-array</additionalPayloadType>
+                                <additionalPayloadType>string</additionalPayloadType>
+                            </additionalPayloadTypes>
+                        </producer>
                         <consumer/>
                         <topicParameterProperties>
                             <environment>kafka.environment</environment>

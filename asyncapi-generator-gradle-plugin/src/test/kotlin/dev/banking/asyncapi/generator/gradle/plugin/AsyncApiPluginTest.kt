@@ -480,7 +480,16 @@ class AsyncApiPluginTest {
         GradleTestHelper.writeBuildScript(
             projectDirectory,
             kotlinBuildScript(
-                sharedConfiguration = springKafkaConfiguration(),
+                sharedConfiguration =
+                    """
+                    clientConfig {
+                        clientType.set("spring-kafka")
+                        clientContract.set("interface")
+                        producer {
+                            additionalPayloadTypes.set(listOf("byte-array", "string"))
+                        }
+                    }
+                    """,
                 executionName = "client",
                 executionConfiguration =
                     """
@@ -500,6 +509,14 @@ class AsyncApiPluginTest {
             projectDirectory = projectDirectory,
             extension = "kt",
         )
+        val producer =
+            File(
+                projectDirectory,
+                "build/generated/client/com/example/kafka/client/producer/UserSignedUpProducer.kt",
+            ).readText()
+        assertTrue(producer.contains("fun sendUserSignedUp("))
+        assertTrue(producer.contains("fun sendUserSignedUpByteArray("))
+        assertTrue(producer.contains("fun sendUserSignedUpString("))
     }
 
     @Test

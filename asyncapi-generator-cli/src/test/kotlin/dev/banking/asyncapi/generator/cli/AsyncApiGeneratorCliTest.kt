@@ -29,6 +29,7 @@ class AsyncApiGeneratorCliTest {
         assertTrue(help.contains("Clients"))
         assertTrue(help.contains("--generator-name"))
         assertTrue(help.contains("--topic-parameter-property"))
+        assertTrue(help.contains("--producer-additional-payload-type"))
         assertTrue(help.contains("--version"))
         assertTrue(help.contains("--generate-completion"))
         assertTrue(help.contains("Generate Kotlin models and Spring Kafka contracts"))
@@ -59,6 +60,8 @@ class AsyncApiGeneratorCliTest {
                 "--client-package", "com.example.cli.client",
                 "--client-type", "spring-kafka",
                 "--client-contract", "interface",
+                "--producer-additional-payload-type", "string",
+                "--producer-additional-payload-type", "byte-array",
                 "--generator-name", "kotlin",
             )
         )
@@ -74,6 +77,10 @@ class AsyncApiGeneratorCliTest {
                 "Expected channel-driven client contract: $relativePath",
             )
         }
+        val producer = clientDirectory.resolve("producer/UserSignedUpProducer.kt").readText()
+        assertTrue(producer.contains("fun sendUserSignedUp("))
+        assertTrue(producer.contains("fun sendUserSignedUpByteArray("))
+        assertTrue(producer.contains("fun sendUserSignedUpString("))
     }
 
     @Test

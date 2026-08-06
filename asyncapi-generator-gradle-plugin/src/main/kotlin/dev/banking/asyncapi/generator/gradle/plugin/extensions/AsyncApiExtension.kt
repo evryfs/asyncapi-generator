@@ -6,6 +6,7 @@ import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import javax.inject.Inject
@@ -122,6 +123,7 @@ abstract class AsyncApiValidationAnnotationsConfiguration @Inject constructor(ob
  */
 abstract class AsyncApiProducerConfiguration @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+    val additionalPayloadTypes: ListProperty<String> = objects.listProperty(String::class.java)
 }
 
 /**

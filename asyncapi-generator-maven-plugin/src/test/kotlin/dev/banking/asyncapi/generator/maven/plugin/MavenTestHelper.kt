@@ -85,9 +85,13 @@ object MavenTestHelper {
             this.validationAnnotations = validationAnnotations
         }
 
-    fun producer(enabled: Boolean? = null): MavenProducerConfiguration =
+    fun producer(
+        enabled: Boolean? = null,
+        additionalPayloadTypes: List<String>? = null,
+    ): MavenProducerConfiguration =
         MavenProducerConfiguration().apply {
             this.enabled = enabled
+            this.additionalPayloadTypes = additionalPayloadTypes
         }
 
     fun consumer(enabled: Boolean? = null): MavenConsumerConfiguration =
