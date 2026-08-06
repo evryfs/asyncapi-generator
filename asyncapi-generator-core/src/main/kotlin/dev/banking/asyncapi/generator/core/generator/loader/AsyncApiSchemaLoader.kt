@@ -22,15 +22,30 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 object AsyncApiSchemaLoader {
 
-    fun load(asyncApiDocument: AsyncApiDocument): Map<String, Schema> {
+    fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val collectedSchemas = mutableMapOf<String, Schema>()
+        val collectedMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
         componentNode?.schemas?.forEach { (name, schemaInterface) ->
-            val schema = resolveSchema(schemaInterface) ?: return@forEach
             val schemaName = MapperUtil.toPascalCase(name)
-            if (!usageIndex.isHeaderOnly(schemaName)) {
-                collectedSchemas[schemaName] = schema
+            when (schemaInterface) {
+                is SchemaInterface.SchemaInline ->
+                    if (!usageIndex.isHeaderOnly(schemaName)) {
+                        collectedSchemas[schemaName] = schemaInterface.schema
+                    }
+                is SchemaInterface.MultiFormatSchemaInline ->
+                    collectedMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
+                is SchemaInterface.SchemaReference ->
+                    when (val model = schemaInterface.reference.model) {
+                        is Schema ->
+                            if (!usageIndex.isHeaderOnly(schemaName)) {
+                                collectedSchemas[schemaName] = model
+                            }
+                        is MultiFormatSchema -> collectedMultiFormatSchemas[schemaName] = model
+                        else -> Unit
+                    }
+                is SchemaInterface.BooleanSchema -> Unit
             }
         }
 
@@ -39,40 +54,20 @@ object AsyncApiSchemaLoader {
             when (val payload = MessagePayloadResolver.resolvePayload(message, messageKey)) {
                 is ResolvedMessagePayload.AsyncApi ->
                     collectedSchemas.putIfAbsent(payload.typeName, payload.schema)
-                is ResolvedMessagePayload.MultiFormat,
-                null,
-                -> Unit
+                is ResolvedMessagePayload.MultiFormat ->
+                    collectedMultiFormatSchemas.putIfAbsent(payload.typeName, payload.schema)
+                null -> Unit
             }
             collectKafkaKeySchema(
                 messageKey = messageKey,
-                messageInterface = messageInterface,
+                message = message,
                 collectedSchemas = collectedSchemas,
             )
         }
-        return collectedSchemas
-    }
-
-    fun loadMultiFormatSchemas(asyncApiDocument: AsyncApiDocument): Map<String, MultiFormatSchema> {
-        val collectedSchemas = mutableMapOf<String, MultiFormatSchema>()
-        val componentNode = resolveComponent(asyncApiDocument.components)
-
-        componentNode?.schemas?.forEach { (name, schemaInterface) ->
-            val multiFormatSchema = resolveMultiFormatSchema(schemaInterface) ?: return@forEach
-            collectedSchemas[MapperUtil.toPascalCase(name)] = multiFormatSchema
-        }
-
-        collectMessages(asyncApiDocument, componentNode).forEach { (messageKey, messageInterface) ->
-            val message = MessagePayloadResolver.resolveMessage(messageInterface) ?: return@forEach
-            when (val payload = MessagePayloadResolver.resolvePayload(message, messageKey)) {
-                is ResolvedMessagePayload.MultiFormat ->
-                    collectedSchemas.putIfAbsent(payload.typeName, payload.schema)
-                is ResolvedMessagePayload.AsyncApi,
-                null,
-                -> Unit
-            }
-        }
-
-        return collectedSchemas
+        return LoadedSchemas(
+            schemas = collectedSchemas,
+            multiFormatSchemas = collectedMultiFormatSchemas,
+        )
     }
 
     private fun resolveComponent(componentInterface: ComponentInterface?): Component? =
@@ -80,20 +75,6 @@ object AsyncApiSchemaLoader {
             is ComponentInterface.ComponentInline -> componentInterface.component
             is ComponentInterface.ComponentReference -> componentInterface.reference.model as? Component
             null -> null
-        }
-
-    private fun resolveSchema(schemaInterface: SchemaInterface): Schema? =
-        when (schemaInterface) {
-            is SchemaInterface.SchemaInline -> schemaInterface.schema
-            is SchemaInterface.SchemaReference -> schemaInterface.reference.model as? Schema
-            else -> null
-        }
-
-    private fun resolveMultiFormatSchema(schemaInterface: SchemaInterface): MultiFormatSchema? =
-        when (schemaInterface) {
-            is SchemaInterface.MultiFormatSchemaInline -> schemaInterface.multiFormatSchema
-            is SchemaInterface.SchemaReference -> schemaInterface.reference.model as? MultiFormatSchema
-            else -> null
         }
 
     private fun collectMessages(
@@ -205,10 +186,9 @@ object AsyncApiSchemaLoader {
 
     private fun collectKafkaKeySchema(
         messageKey: String,
-        messageInterface: MessageInterface,
+        message: Message,
         collectedSchemas: MutableMap<String, Schema>,
     ) {
-        val message = MessagePayloadResolver.resolveMessage(messageInterface) ?: return
         val keySchema = message.kafkaKeySchema() ?: return
         val keyModel =
             KafkaKeySchemaResolver.resolveObjectModelOrNull(

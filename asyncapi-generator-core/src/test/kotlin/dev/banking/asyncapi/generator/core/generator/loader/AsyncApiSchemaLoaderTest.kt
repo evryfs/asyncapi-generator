@@ -30,7 +30,7 @@ class AsyncApiSchemaLoaderTest {
             )
         )
         val doc = docWithComponents(components)
-        val loaded = AsyncApiSchemaLoader.load(doc)
+        val loaded = AsyncApiSchemaLoader.load(doc).schemas
         assertTrue(loaded.containsKey("User"))
     }
 
@@ -46,7 +46,7 @@ class AsyncApiSchemaLoaderTest {
             )
         )
         val doc = docWithComponents(components)
-        val loaded = AsyncApiSchemaLoader.load(doc)
+        val loaded = AsyncApiSchemaLoader.load(doc).schemas
         assertTrue(loaded.containsKey("UserSignedUpPayload"))
     }
 
@@ -90,7 +90,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(document)
+        val loaded = AsyncApiSchemaLoader.load(document).schemas
 
         assertSame(payloadSchema, loaded["BillingAccountCreatedV1Payload"])
     }
@@ -112,7 +112,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components)).schemas
 
         assertSame(payloadSchema, loaded["AccountPayload"])
         assertFalse(loaded.containsKey("ExternalAccount"))
@@ -166,7 +166,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(document)
+        val loaded = AsyncApiSchemaLoader.load(document).schemas
 
         assertSame(recursiveSchema, loaded["RecursiveNodePayload"])
     }
@@ -189,7 +189,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components)).schemas
 
         assertTrue(loaded.containsKey("AccountUpdatedV2Payload"))
         assertTrue(loaded.containsKey("AccountUpdatedV2Key"))
@@ -222,7 +222,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components)).schemas
 
         assertSame(keySchema, loaded["AccountUpdatedKey"])
     }
@@ -252,7 +252,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components)).schemas
 
         assertSame(keySchema, loaded["AccountKey"])
     }
@@ -262,17 +262,18 @@ class AsyncApiSchemaLoaderTest {
         val avroSchema = nativeAvroSchema()
         val components = Component(
             schemas = mapOf(
+                "Task" to SchemaInterface.SchemaInline(Schema(type = "object")),
                 "UserCreated" to SchemaInterface.MultiFormatSchemaInline(avroSchema),
             ),
         )
         val doc = docWithComponents(components)
 
-        val loadedSchemas = AsyncApiSchemaLoader.load(doc)
-        val loadedMultiFormatSchemas = AsyncApiSchemaLoader.loadMultiFormatSchemas(doc)
+        val loaded = AsyncApiSchemaLoader.load(doc)
 
-        assertFalse(loadedSchemas.containsKey("UserCreated"))
-        assertSame(avroSchema, loadedMultiFormatSchemas["UserCreated"])
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, loadedMultiFormatSchemas["UserCreated"]?.format)
+        assertTrue(loaded.schemas.containsKey("Task"))
+        assertFalse(loaded.schemas.containsKey("UserCreated"))
+        assertSame(avroSchema, loaded.multiFormatSchemas["UserCreated"])
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, loaded.multiFormatSchemas["UserCreated"]?.format)
     }
 
     @Test
@@ -289,7 +290,7 @@ class AsyncApiSchemaLoaderTest {
         )
         val doc = docWithComponents(components)
 
-        val loadedMultiFormatSchemas = AsyncApiSchemaLoader.loadMultiFormatSchemas(doc)
+        val loadedMultiFormatSchemas = AsyncApiSchemaLoader.load(doc).multiFormatSchemas
 
         assertSame(avroSchema, loadedMultiFormatSchemas["UserSignedUpPayload"])
     }
@@ -332,7 +333,7 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.loadMultiFormatSchemas(document)
+        val loaded = AsyncApiSchemaLoader.load(document).multiFormatSchemas
 
         assertSame(avroSchema, loaded["UserSignedUp"])
     }
