@@ -1,30 +1,25 @@
 package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderPropertyFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContractResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayloadFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.inCanonicalOrder
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.methodSuffix
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
-import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
@@ -37,6 +32,7 @@ class JavaSpringKafkaModelFactory(
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
+    private val payloadFactory = KafkaPayloadFactory(modelPackage, nativeKafkaPayloadResolver)
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!generateConsumers && !generateProducers) {
@@ -47,7 +43,7 @@ class JavaSpringKafkaModelFactory(
         val baseName = MapperUtil.toPascalCase(channel.channelName)
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
-        val payloads = channel.payloads()
+        val payloads = payloadFactory.create(channel)
         val keyContracts =
             payloads.associateWith { payload ->
                 KafkaKeyContractResolver.resolve(
@@ -83,7 +79,7 @@ class JavaSpringKafkaModelFactory(
                     GeneratorItem.ConsumerMethod(
                         messageName = payload.messageName,
                         methodName = payload.methodName("listen"),
-                        payloadType = payload.payloadType,
+                        payloadType = payload.javaTypeName,
                         payloadDescription =
                             if (payload.hasPayload) {
                                 DocumentationUtils.toJavaDocLines(payload.payloadDescription)
@@ -109,7 +105,7 @@ class JavaSpringKafkaModelFactory(
                 methods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
             val imports =
                 (
-                    payloads.mapNotNull { payload -> payload.importName } +
+                    payloads.mapNotNull { payload -> payload.javaImportName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
                         payloads.flatMap { payload ->
                             payload.headerProperties.mapNotNull { header -> header.importName }
@@ -211,7 +207,7 @@ class JavaSpringKafkaModelFactory(
                 sendMethods.flatMap { method -> method.keyParameter?.annotations.orEmpty() }
             val imports =
                 (
-                    payloads.mapNotNull { payload -> payload.importName } +
+                    payloads.mapNotNull { payload -> payload.javaImportName } +
                         keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
                         payloads.flatMap { payload ->
                             payload.headerProperties.mapNotNull { header -> header.importName }
@@ -268,55 +264,13 @@ class JavaSpringKafkaModelFactory(
         return items
     }
 
-    private fun AnalyzedChannel.payloads(): List<KafkaPayload> =
-        messages.map(::payload) +
-            multiFormatMessages.mapNotNull { message ->
-                nativeKafkaPayloadResolver.resolve(message)
-                    ?.withHeaders(message.headers)
-            }
-
-    private fun payload(msg: AnalyzedMessage): KafkaPayload {
-        val type = resolvePayloadType(msg)
-        return KafkaPayload(
-            messageName = msg.messageName,
-            payloadType = type,
-            payloadDescription = msg.schema?.description,
-            keySchema = msg.keySchema,
-            importName =
-                if (type == null || isPrimitive(type)) {
-                    null
-                } else {
-                    "$modelPackage.$type"
-                },
-            headerProperties = KafkaHeaderPropertyFactory.create(msg.headers, msg.messageName),
-        )
-    }
-
-    private fun resolvePayloadType(msg: AnalyzedMessage): String? {
-        val schema = msg.schema ?: return null
-        return if (schema.isOpenPayload()) {
-            "Object"
-        } else {
-            when (schema.type.getPrimaryType()) {
-                "string" -> "String"
-                "integer" -> "Integer"
-                "number" -> "java.math.BigDecimal"
-                "boolean" -> "Boolean"
-                else -> msg.payloadTypeName
-            }
-        }
-    }
-
-    private fun isPrimitive(type: String): Boolean =
-        type in setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal", "Object")
-
     private fun KafkaPayload.javaProducerPayloadType(
         additionalPayloadType: AdditionalProducerPayloadType?,
     ): String? =
         when (additionalPayloadType) {
             AdditionalProducerPayloadType.BYTE_ARRAY -> "byte[]"
             AdditionalProducerPayloadType.STRING -> "String"
-            null -> payloadType
+            null -> javaTypeName
         }
 
     private fun KafkaPayload.producerPayloadDescription(
@@ -334,9 +288,6 @@ class JavaSpringKafkaModelFactory(
                     emptyList()
                 }
         }
-
-    private fun KafkaPayload.withHeaders(headers: AnalyzedMessageHeaders?): KafkaPayload =
-        copy(headerProperties = KafkaHeaderPropertyFactory.create(headers, messageName))
 
     private fun KafkaHeaderProperty.parameterDescription(): List<String> =
         description

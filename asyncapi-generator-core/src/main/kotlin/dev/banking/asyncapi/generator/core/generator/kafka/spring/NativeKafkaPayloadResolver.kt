@@ -19,15 +19,19 @@ class NativeKafkaPayloadResolver(
         nativeAvroPayloadTypeResolver.resolve(message)?.let { payloadType ->
             KafkaPayload(
                 messageName = message.messageName,
-                payloadType = payloadType.typeName,
-                importName = payloadType.importName,
+                javaTypeName = payloadType.typeName,
+                kotlinTypeName = payloadType.typeName,
+                javaImportName = payloadType.importName,
+                kotlinImportName = payloadType.importName,
                 keySchema = message.keySchema,
             )
         } ?: nativeProtobufPayloadTypeResolver.resolve(message)?.let { payloadType ->
             KafkaPayload(
                 messageName = message.messageName,
-                payloadType = payloadType.typeName,
-                importName = payloadType.importName,
+                javaTypeName = payloadType.typeName,
+                kotlinTypeName = payloadType.typeName,
+                javaImportName = payloadType.importName,
+                kotlinImportName = payloadType.importName,
                 keySchema = message.keySchema,
             )
         }
