@@ -1,98 +1,145 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import java.util.Collections
+import java.util.IdentityHashMap
 
+/**
+ * Flattens `allOf` compositions into the static schema shape consumed by the
+ * source and projection generators.
+ *
+ * Resolved references remain authoritative. Inline object properties, array
+ * items, and map values are traversed recursively, with schema identity used
+ * to terminate recursive compositions.
+ */
 class CompositionNormalizer {
-
     private val schemaMerger = SchemaMerger()
 
-    fun normalize(schemas: Map<String, Schema>): Map<String, Schema> {
-        return schemas.mapValues { (name, schema) ->
-            resolveSchemaRecursive(schema, name, schemas, mutableSetOf())
+    fun normalize(schemas: Map<String, Schema>): Map<String, Schema> =
+        schemas.mapValues { (name, schema) ->
+            resolveSchemaRecursive(
+                schema = schema,
+                schemaName = name,
+                visiting = Collections.newSetFromMap(IdentityHashMap<Schema, Boolean>()),
+            )
         }
-    }
 
     private fun resolveSchemaRecursive(
         schema: Schema,
         schemaName: String,
-        allSchemas: Map<String, Schema>,
-        visited: MutableSet<String>,
+        visiting: MutableSet<Schema>,
     ): Schema {
-        if (schemaName in visited) return schema
+        if (!visiting.add(schema)) return schema
 
-        var currentSchema = schema
-        visited.add(schemaName)
+        try {
+            val currentSchema =
+                schema.copy(
+                    properties =
+                        schema.properties?.mapValues { (propertyName, propertySchema) ->
+                            normalizeNestedSchema(
+                                schemaInterface = propertySchema,
+                                schemaName = "$schemaName.$propertyName",
+                                visiting = visiting,
+                            ) ?: propertySchema
+                        },
+                    items =
+                        normalizeNestedSchema(
+                            schemaInterface = schema.items,
+                            schemaName = "$schemaName.items",
+                            visiting = visiting,
+                        ),
+                    additionalProperties =
+                        normalizeNestedSchema(
+                            schemaInterface = schema.additionalProperties,
+                            schemaName = "$schemaName.additionalProperties",
+                            visiting = visiting,
+                        ),
+                )
 
-        currentSchema.properties?.let { properties ->
-            val newProperties = properties.mapValues { (propName, propSchema) ->
-                if (propSchema is SchemaInterface.SchemaInline) {
-                    SchemaInterface.SchemaInline(
-                        resolveSchemaRecursive(
-                            propSchema.schema,
-                            "$schemaName.$propName",
-                            allSchemas,
-                            visited
-                        )
-                    )
-                } else {
-                    propSchema
+            if (currentSchema.allOf.isNullOrEmpty()) {
+                return currentSchema
+            }
+
+            var mergedSchema = currentSchema
+            var titleFromReference: String? = null
+
+            currentSchema.allOf.forEach { schemaInterface ->
+                if (schemaInterface is SchemaInterface.SchemaReference) {
+                    titleFromReference = schemaInterface.reference.ref.substringAfterLast('/')
+                }
+
+                resolveSubSchema(
+                    schemaInterface = schemaInterface,
+                    parentName = schemaName,
+                    visiting = visiting,
+                )?.let { parentSchema ->
+                    mergedSchema = schemaMerger.merge(parentSchema, mergedSchema)
                 }
             }
-            currentSchema = currentSchema.copy(properties = newProperties)
+
+            return mergedSchema.copy(
+                allOf = null,
+                title = mergedSchema.title ?: titleFromReference,
+            )
+        } finally {
+            visiting.remove(schema)
         }
-
-        if (currentSchema.allOf.isNullOrEmpty()) {
-            visited.remove(schemaName)
-            return currentSchema
-        }
-
-        var mergedSchema = currentSchema
-        var titleFromRef: String? = null
-
-        currentSchema.allOf.forEach { subSchemaInterface ->
-            if (subSchemaInterface is SchemaInterface.SchemaReference) {
-                titleFromRef = subSchemaInterface.reference.ref.substringAfterLast('/')
-            }
-
-            val parentSchema = resolveSubSchema(subSchemaInterface, schemaName, allSchemas, visited)
-            if (parentSchema != null) {
-                mergedSchema = schemaMerger.merge(parentSchema, mergedSchema)
-            }
-        }
-
-        visited.remove(schemaName)
-
-        return mergedSchema.copy(
-            allOf = null,
-            title = mergedSchema.title ?: titleFromRef
-        )
     }
 
     private fun resolveSubSchema(
-        subSchemaInterface: SchemaInterface,
+        schemaInterface: SchemaInterface,
         parentName: String,
-        allSchemas: Map<String, Schema>,
-        visited: MutableSet<String>,
-    ): Schema? {
-        return when (subSchemaInterface) {
-            is SchemaInterface.SchemaInline -> {
-                resolveSchemaRecursive(subSchemaInterface.schema, "inline_in_${parentName}", allSchemas, visited)
-            }
-
+        visiting: MutableSet<Schema>,
+    ): Schema? =
+        when (schemaInterface) {
+            is SchemaInterface.SchemaInline ->
+                resolveSchemaRecursive(
+                    schema = schemaInterface.schema,
+                    schemaName = "$parentName.allOf",
+                    visiting = visiting,
+                )
             is SchemaInterface.SchemaReference -> {
-                val refName = subSchemaInterface.reference.ref.substringAfterLast('/')
-                val referencedSchema = (subSchemaInterface.reference.model as? Schema)
-                    ?: allSchemas[refName]
-                    // TODO - better error handling
+                val referencedSchema =
+                    resolveReference(schemaInterface.reference)
                     ?: throw IllegalArgumentException(
-                        "CompositionProcessor: Unresolved reference in allOf for " +
-                            "schema '$parentName': ${subSchemaInterface.reference.ref}"
+                        "Schema normalization requires allOf reference " +
+                            "'${schemaInterface.reference.ref}' in schema '$parentName' to resolve to a Schema.",
                     )
-                resolveSchemaRecursive(referencedSchema, refName, allSchemas, visited)
+                resolveSchemaRecursive(
+                    schema = referencedSchema,
+                    schemaName = schemaInterface.reference.ref,
+                    visiting = visiting,
+                )
             }
-
             else -> null
         }
+
+    private fun normalizeNestedSchema(
+        schemaInterface: SchemaInterface?,
+        schemaName: String,
+        visiting: MutableSet<Schema>,
+    ): SchemaInterface? =
+        if (schemaInterface is SchemaInterface.SchemaInline) {
+            SchemaInterface.SchemaInline(
+                resolveSchemaRecursive(
+                    schema = schemaInterface.schema,
+                    schemaName = schemaName,
+                    visiting = visiting,
+                ),
+            )
+        } else {
+            schemaInterface
+        }
+
+    private fun resolveReference(reference: Reference): Schema? {
+        val visitedReferences: MutableSet<Reference> =
+            Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
+        var target: Any? = reference
+        while (target is Reference && visitedReferences.add(target)) {
+            target = target.model
+        }
+        return target as? Schema
     }
 }
