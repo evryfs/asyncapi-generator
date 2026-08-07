@@ -29,6 +29,8 @@ class GenerationInputCompatibilityValidator(
             generationPlan.tasks.any { task -> task is GenerationTask.AvroSchemaArtifacts }
         val hasNativeAvro =
             generationPlan.tasks.any { task -> task is GenerationTask.NativeAvroArtifacts }
+        val hasNativeProtobuf =
+            generationPlan.tasks.any { task -> task is GenerationTask.NativeProtobufArtifacts }
 
         generationPlan.tasks.forEach { task ->
             when (task) {
@@ -48,12 +50,11 @@ class GenerationInputCompatibilityValidator(
                     )
                 }
                 is GenerationTask.AvroSchemaArtifacts ->
-                    if (!hasNativeAvro) {
-                        rejectMultiFormatSchemas(
-                            output = "Avro Projection",
-                            multiFormatSchemas = generationInput.multiFormatSchemas,
-                        )
-                    }
+                    rejectUnplannedAvroProjectionFormats(
+                        multiFormatSchemas = generationInput.multiFormatSchemas,
+                        hasNativeAvro = hasNativeAvro,
+                        hasNativeProtobuf = hasNativeProtobuf,
+                    )
                 is GenerationTask.NativeAvroArtifacts -> {
                     if (
                         task.generateSpecificRecords ||
@@ -185,6 +186,27 @@ class GenerationInputCompatibilityValidator(
             output = output,
             payloadName = firstSchema.key,
             schemaFormat = firstSchema.value.schemaFormat,
+        )
+    }
+
+    private fun rejectUnplannedAvroProjectionFormats(
+        multiFormatSchemas: Map<String, MultiFormatSchema>,
+        hasNativeAvro: Boolean,
+        hasNativeProtobuf: Boolean,
+    ) {
+        val firstUnsupportedSchema =
+            multiFormatSchemas.entries.firstOrNull { (_, schema) ->
+                when {
+                    schema.format.isNativeAvro -> !hasNativeAvro
+                    schema.format.isNativeProtobuf -> !hasNativeProtobuf
+                    else -> true
+                }
+            } ?: return
+
+        throw UnsupportedPayloadSchemaFormat(
+            output = "Avro Projection",
+            payloadName = firstUnsupportedSchema.key,
+            schemaFormat = firstUnsupportedSchema.value.schemaFormat,
         )
     }
 

@@ -69,9 +69,15 @@ The generator intentionally separates AsyncAPI Schema Object payloads from nativ
 
 Channel analysis follows the same boundary. `AnalyzedChannel.messages` contains messages with AsyncAPI Schema Object payloads. `AnalyzedChannel.multiFormatMessages` contains messages with explicit multi-format payloads.
 
-Model generation and Avro Projection reject multi-format payloads through `GenerationInputCompatibilityValidator`. This is deliberate. Those outputs consume AsyncAPI Schema Object payloads only, and native Avro or Protobuf support is modeled as dedicated generator capabilities instead of silently projecting one transfer format into another.
+Model generation rejects multi-format payloads through `GenerationInputCompatibilityValidator`. Avro Projection also
+never interprets a multi-format schema as an AsyncAPI Schema Object. Multi-format schemas may coexist with projection
+only when the generation plan contains the matching native Avro or Protobuf capability; otherwise compatibility
+validation rejects the unhandled format before rendering.
 
 Spring Kafka client generation can reference native Avro `SpecificRecord` payload types and native Protobuf Java message payload types when those schemas provide enough native package and type information. The native schema artifact generators are still responsible for producing the `.avsc`, `.proto`, `SpecificRecord`, or Java Protobuf message source artifacts.
+
+Schema artifact generators render component schemas in component-name order. This keeps output and collision
+diagnostics deterministic when declarations are reordered in the source document.
 
 ---
 
@@ -101,6 +107,10 @@ It does not consume native Avro schemas declared through `schemaFormat`, and it 
 *   AsyncAPI Schema Object -> projected `.avsc` files.
 *   Native Avro schemaFormat -> native Avro artifacts and generated `SpecificRecord` classes.
 
+Projection emits named record and enum artifacts. A top-level schema composed only from referenced `oneOf` alternatives
+does not produce a separate union file; its referenced concrete record or enum schemas are generated independently.
+Field-level Avro unions remain supported for nullable fields and supported `oneOf` property schemas.
+
 ### 1. Enum Handling: Strict Support
 Contrary to earlier iterations or loose mapping strategies, this generator **fully supports Avro Enums**.
 
@@ -111,7 +121,7 @@ Contrary to earlier iterations or loose mapping strategies, this generator **ful
 ### 2. Record Handling
 *   **Objects:** AsyncAPI `type: object` maps to Avro `record`.
 *   **Nullable Fields:** Handled via Avro Unions `["null", "Type"]`.
-*   **Logical Types:** Supports `decimal`, `uuid`, `date`, `time-millis`, `timestamp-millis`.
+*   **Logical Types:** Supports `uuid`, `date`, and `timestamp-millis` mappings.
 
 ### 3. Evolution Strategy
 While Avro Enums are supported, users are advised to use the `default` property for enum symbols to ensure forward compatibility (allowing readers to handle unknown symbols safely).
@@ -127,14 +137,18 @@ While Avro Enums are supported, users are advised to use the `default` property 
 
 ---
 
+## JSON Schema Generator Strategy
+
+Standalone JSON Schema generation consumes AsyncAPI Schema Objects and native Draft 7 schemas. AsyncAPI-only Schema
+Object fields are removed, an explicit Draft 7 `$schema` declaration is added when absent, and component references are
+rewritten to the corresponding generated `.schema.json` files. Boolean schemas and explicitly declared null defaults
+or constants retain their exact Draft 7 meaning.
+
+---
+
 ## Protobuf Generator Strategy
 
-Native Protobuf generation consumes schemas declared through Protobuf `schemaFormat`. It writes native `.proto` schema artifacts and can generate Java Protobuf message sources by running `protoc` during generation.
+Native Protobuf generation consumes schemas declared through Protobuf `schemaFormat`. It writes native `.proto` schema
+artifacts and can run `protoc` to generate Java message sources or Java message sources with Kotlin DSL APIs.
 
 Spring Kafka client generation can reference those generated Java message types when the `.proto` schema declares a Java package or Protobuf package, enables `option java_multiple_files = true;`, and contains a top-level message matching the AsyncAPI payload name.
-
-## Future Enhancements
-
-*  **Common Type Mapping:** We have some redundancy in type mapping logic across generators. Future work will focus on 
-centralizing this logic where possible. We also need to consider more languages, which is an argument for granular type
-mapping strategies.

@@ -131,6 +131,61 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `allows native Protobuf schemas when dedicated generation is planned with Avro projection`() {
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = mapOf("Account" to Schema(type = "object")),
+                    multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.AvroSchemaArtifacts(
+                            packageName = "com.example.avro",
+                        ),
+                        GenerationTask.NativeProtobufArtifacts(
+                            schemaPackageName = "com.example.protobuf",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects multi format schemas without their dedicated generation task alongside Avro projection`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = mapOf("Account" to Schema(type = "object")),
+                            multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                            polymorphicRelationships = emptyMap(),
+                            channels = emptyList(),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.AvroSchemaArtifacts(
+                                    packageName = "com.example.avro",
+                                ),
+                                GenerationTask.NativeAvroArtifacts(
+                                    generateSpecificRecords = false,
+                                    schemaPackageName = "com.example.avro",
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Avro Projection cannot consume payload 'UserCreated'"))
+        assertTrue(error.message!!.contains("application/vnd.google.protobuf;version=3"))
+    }
+
+    @Test
     fun `allows native Avro model package matching the schema namespace`() {
         validator.validate(
             generationInput =

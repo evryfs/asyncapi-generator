@@ -30,32 +30,7 @@ class NativeProtobufArtifactGenerationTest {
     }
 
     @Test
-    fun `render returns native Protobuf schema and Java message artifacts`() {
-        val result =
-            generation.render(
-                task =
-                    GenerationTask.NativeProtobufArtifacts(
-                        models = ProtobufModelGeneration(packageName = "com.example.protobuf"),
-                    ),
-                generationInput = fixtures.generationInputWithNativeProtobufJavaMessageSchema(),
-            )
-
-        assertEquals(
-            GeneratedArtifactKind.SCHEMA,
-            result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.proto" }.kind,
-        )
-        assertEquals(
-            GeneratedArtifactKind.JAVA_SOURCE,
-            result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }.kind,
-        )
-        assertEquals(
-            GeneratedArtifactKind.JAVA_SOURCE,
-            result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreatedOrBuilder.java" }.kind,
-        )
-    }
-
-    @Test
-    fun `render returns Kotlin Protobuf DSL and Java message artifacts`() {
+    fun `render propagates Kotlin Protobuf model generation`() {
         val result =
             generation.render(
                 task =

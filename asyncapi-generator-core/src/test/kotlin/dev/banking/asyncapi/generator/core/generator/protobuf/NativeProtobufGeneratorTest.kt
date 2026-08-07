@@ -37,6 +37,25 @@ class NativeProtobufGeneratorTest {
     }
 
     @Test
+    fun `render orders native Protobuf artifacts by payload name`() {
+        val result =
+            generator.render(
+                linkedMapOf(
+                    "UserUpdated" to nativeProtobufSchema("UserUpdated"),
+                    "UserCreated" to nativeProtobufSchema("UserCreated"),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                "com/example/protobuf/UserCreated.proto",
+                "com/example/protobuf/UserUpdated.proto",
+            ),
+            result.artifacts.map { artifact -> artifact.relativePath },
+        )
+    }
+
+    @Test
     fun `render returns Java message artifacts when Java Protobuf models are configured`() {
         val result =
             generator.render(
@@ -190,4 +209,17 @@ class NativeProtobufGeneratorTest {
             ),
         )
     }
+
+    private fun nativeProtobufSchema(messageName: String): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.google.protobuf;version=3",
+            schema =
+                """
+                syntax = "proto3";
+
+                package com.example.protobuf;
+
+                message $messageName {}
+                """.trimIndent(),
+        )
 }

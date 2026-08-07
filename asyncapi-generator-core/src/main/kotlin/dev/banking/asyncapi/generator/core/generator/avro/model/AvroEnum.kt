@@ -4,7 +4,6 @@ data class AvroEnum(
     val namespace: String,
     val name: String,
     val doc: String?,
-    val symbols: List<AvroUnionType>, // Using existing wrapper for convenience
-    val default: String?
+    val symbols: List<AvroEnumSymbol>,
+    val default: String?,
 ) : AvroSchema
-

@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -78,6 +79,28 @@ class JsonSchemaGeneratorTest {
             "Address.schema.json",
             schema.path("properties").path("address").path($$"$ref").asText(),
         )
+    }
+
+    @Test
+    fun `preserves explicit null const from AsyncAPI Schema Objects`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "NullValue" to
+                            Schema(
+                                type = "null",
+                                const = null,
+                                constSet = true,
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        val schema = objectMapper.readTree(result.artifacts.single().content)
+        assertTrue(schema.has("const"))
+        assertTrue(schema.path("const").isNull)
     }
 
     @Test
