@@ -8,12 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
-/**
- * Dispatches planned Spring Kafka client generation to the supported contract generator.
- *
- * Expected behavior is covered by:
- * - `SpringKafkaClientGenerationTest`
- */
+/** Dispatches planned Spring Kafka client generation to the supported contract generator. */
 class SpringKafkaClientGeneration {
     fun render(
         task: GenerationTask.SpringKafkaClient,

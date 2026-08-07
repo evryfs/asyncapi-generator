@@ -4,13 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiForma
 import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroPayloadTypeResolver
 import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufPayloadTypeResolver
 
-/**
- * Resolves native multi-format payloads into Spring Kafka payload signatures.
- *
- * Expected behavior is covered by:
- * - `GenerateKotlinSpringKafkaTest`
- * - `GenerateJavaSpringKafkaTest`
- */
+/** Resolves native multi-format payloads into Spring Kafka payload signatures. */
 class NativeKafkaPayloadResolver(
     private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),
     private val nativeProtobufPayloadTypeResolver: NativeProtobufPayloadTypeResolver = NativeProtobufPayloadTypeResolver(),

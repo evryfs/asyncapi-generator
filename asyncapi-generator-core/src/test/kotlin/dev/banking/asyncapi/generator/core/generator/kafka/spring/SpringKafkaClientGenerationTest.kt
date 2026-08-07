@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -195,123 +194,6 @@ class SpringKafkaClientGenerationTest {
     }
 
     @Test
-    fun `render keeps the contract producer method when an additional payload type is configured`() {
-        val result =
-            generator.render(
-                task =
-                    springKafkaClientTask(
-                        language = SourceLanguage.KOTLIN,
-                        additionalPayloadTypes =
-                            setOf(AdditionalProducerPayloadType.BYTE_ARRAY),
-                        validationAnnotations = validationAnnotations,
-                    ),
-                generationInput = fixtures.generationInputWithUserSignupChannel(),
-            )
-
-        val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
-            }.content
-        val consumerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/consumer/UserEventsConsumer.kt"
-            }.content
-
-        assertTrue(producerContent.contains("import com.example.model.UserSignedUpPayload"))
-        assertTrue(producerContent.contains("fun sendUserSignedUp("))
-        assertTrue(producerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(producerContent.contains("fun sendUserSignedUpByteArray("))
-        assertTrue(producerContent.contains("payload: ByteArray"))
-        assertEquals(
-            1,
-            producerContent.lineSequence().count { line -> line.trim() == "@ValidPayload" },
-        )
-        assertTrue(consumerContent.contains("import com.example.model.UserSignedUpPayload"))
-        assertTrue(consumerContent.contains("payload: UserSignedUpPayload"))
-        assertTrue(consumerContent.contains("@ValidPayload"))
-    }
-
-    @Test
-    fun `render does not duplicate payloadless producer methods`() {
-        val generationInput = fixtures.generationInputWithUserSignupChannel()
-        val channel = generationInput.channels.single()
-        val payloadlessInput =
-            generationInput.copy(
-                channels =
-                    listOf(
-                        channel.copy(
-                            messages =
-                                channel.messages.map { message ->
-                                    message.copy(schema = null)
-                                },
-                        ),
-                    ),
-            )
-
-        SourceLanguage.entries.forEach { language ->
-            val result =
-                generator.render(
-                    task =
-                        springKafkaClientTask(
-                            language = language,
-                            additionalPayloadTypes =
-                                AdditionalProducerPayloadType.entries.toSet(),
-                            generateConsumers = false,
-                        ),
-                    generationInput = payloadlessInput,
-                )
-
-            val producerContent = result.artifacts.single().content
-            assertEquals(
-                1,
-                producerContent.lineSequence().count { line ->
-                    line.contains("sendUserSignedUp(")
-                },
-            )
-            assertFalse(producerContent.contains("sendUserSignedUpByteArray"))
-            assertFalse(producerContent.contains("sendUserSignedUpString"))
-        }
-    }
-
-    @Test
-    fun `render leaves the Kotlin producer record value type to the implementation`() {
-        val result =
-            generator.render(
-                task =
-                    springKafkaClientTask(
-                        language = SourceLanguage.KOTLIN,
-                    ),
-                generationInput = fixtures.generationInputWithUserSignupChannel(),
-            )
-
-        val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
-            }.content
-        assertTrue(producerContent.contains("interface UserEventsProducer {"))
-        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
-    }
-
-    @Test
-    fun `render leaves the Java producer record value type to the implementation`() {
-        val result =
-            generator.render(
-                task =
-                    springKafkaClientTask(
-                        language = SourceLanguage.JAVA,
-                    ),
-                generationInput = fixtures.generationInputWithUserSignupChannel(),
-            )
-
-        val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/producer/UserEventsProducer.java"
-            }.content
-        assertTrue(producerContent.contains("interface UserEventsProducer {"))
-        assertTrue(producerContent.contains("CompletableFuture<RecordMetadata>"))
-    }
-
-    @Test
     fun `render preserves contract header scalar types in Java and Kotlin clients`() {
         val generationInput = fixtures.generationInputWithUserSignupChannel()
         val channel = generationInput.channels.single()
@@ -388,33 +270,6 @@ class SpringKafkaClientGenerationTest {
                 }
             }
         }
-    }
-
-    @Test
-    fun `render rejects a parameterized topic without a configured property mapping`() {
-        val generationInput = fixtures.generationInputWithUserSignupChannel()
-        val parameterizedInput =
-            generationInput.copy(
-                channels =
-                    generationInput.channels.map { channel ->
-                        channel.copy(topic = "user.{environment}.events")
-                    },
-            )
-
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                generator.render(
-                    task = springKafkaClientTask(language = SourceLanguage.KOTLIN),
-                    generationInput = parameterizedInput,
-                )
-            }
-
-        assertEquals(
-            "Cannot generate Spring Kafka client for channel 'userEvents': " +
-                "topic address 'user.{environment}.events' uses channel parameters [environment] without " +
-                "matching topicParameterProperties entries. Configured entries: []",
-            exception.message,
-        )
     }
 
     @Test

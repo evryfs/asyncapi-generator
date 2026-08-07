@@ -8,13 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * Resolves an AsyncAPI Kafka key schema into its generated client-contract type.
- *
- * Expected behavior is exercised by:
- * - `KafkaKeyContractResolverTest`
- * - `SpringKafkaClientApprovalTest`
- */
+/** Resolves an AsyncAPI Kafka key schema into its generated client-contract type. */
 internal object KafkaKeyContractResolver {
     fun resolve(
         messageName: String,

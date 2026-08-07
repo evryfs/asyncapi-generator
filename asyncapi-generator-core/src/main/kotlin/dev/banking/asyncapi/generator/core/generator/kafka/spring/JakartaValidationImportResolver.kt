@@ -1,11 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-/**
- * Resolves imports for Jakarta Validation annotations emitted on Kafka contract parameters.
- *
- * Expected behavior is covered by:
- * - `SpringKafkaClientApprovalTest`
- */
+/** Resolves imports for Jakarta Validation annotations emitted on Kafka contract parameters. */
 internal object JakartaValidationImportResolver {
     private val importsByAnnotation =
         mapOf(

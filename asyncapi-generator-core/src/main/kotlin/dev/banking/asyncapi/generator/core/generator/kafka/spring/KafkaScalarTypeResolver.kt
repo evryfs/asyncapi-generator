@@ -3,12 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
-/**
- * Maps supported scalar AsyncAPI schemas to Java and Kotlin source types.
- *
- * Expected behavior is exercised by `KafkaKeyContractResolverTest` and
- * `KafkaHeaderPropertyFactoryTest`.
- */
+/** Maps supported scalar AsyncAPI schemas to Java and Kotlin source types. */
 internal object KafkaScalarTypeResolver {
     fun resolve(schema: Schema): KafkaScalarType? =
         when (schema.type.getPrimaryType()) {

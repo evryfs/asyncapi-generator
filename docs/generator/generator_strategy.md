@@ -43,6 +43,18 @@ reader, parser, validator, and bundler, but channel analysis does not use them t
 contracts. This keeps generation deterministic for both application-oriented documents and channel-oriented
 integration contracts.
 
+### Spring Kafka Planning and Rendering
+
+Spring Kafka contract generation prepares one language-neutral contract for each analyzed channel. Preparation owns
+the generated contract and method names, topic-property placeholders, payload identity, supported native payload
+types, Kafka key contracts, header contracts, and canonical producer payload variants. Compatibility validation uses
+the same producer method planning when detecting generated-name collisions.
+
+Java and Kotlin generation consume that prepared contract but retain ownership of source-language syntax, imports,
+nullability, validation annotation placement, parameter formatting, and generated documentation. Producer and consumer
+templates render those language-specific models; they do not repeat channel or message analysis. Unsupported client
+input must fail compatibility validation or contract preparation rather than being omitted during rendering.
+
 ### Producer Payload Representations
 
 Every payload-bearing Spring Kafka producer contract includes the contract-derived `send<MessageName>` method. This

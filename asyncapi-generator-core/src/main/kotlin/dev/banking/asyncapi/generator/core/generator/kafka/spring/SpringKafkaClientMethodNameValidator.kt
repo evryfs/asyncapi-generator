@@ -4,12 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
 
-/**
- * Rejects message names that would produce duplicate methods in one generated
- * Spring Kafka client contract.
- *
- * Expected behavior is covered by `SpringKafkaClientMethodNameValidatorTest`.
- */
+/** Rejects message names that would produce duplicate methods in one generated Spring Kafka client contract. */
 internal object SpringKafkaClientMethodNameValidator {
     fun validate(
         channels: List<AnalyzedChannel>,

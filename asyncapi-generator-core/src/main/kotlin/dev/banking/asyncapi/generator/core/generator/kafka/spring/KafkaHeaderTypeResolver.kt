@@ -7,11 +7,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-/**
- * Resolves a contract-defined Kafka header schema into a generated parameter type.
- *
- * Expected behavior is exercised by `KafkaHeaderPropertyFactoryTest`.
- */
+/** Resolves a contract-defined Kafka header schema into a generated parameter type. */
 internal object KafkaHeaderTypeResolver {
     fun resolve(
         headerContractName: String,
