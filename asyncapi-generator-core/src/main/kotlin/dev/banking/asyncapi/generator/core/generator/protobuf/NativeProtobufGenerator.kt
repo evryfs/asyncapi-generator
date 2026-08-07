@@ -14,7 +14,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.deleteIfExists
 
 /**
  * Renders native Protobuf `schemaFormat` payloads into `.proto` artifacts and
@@ -75,15 +74,24 @@ class NativeProtobufGenerator(
     ): List<GeneratedArtifact> {
         validateModelGenerationSupport(parsedSchema, models)
 
-        val sourceDirectory = Files.createTempDirectory("asyncapi-native-protobuf-schemas-")
+        val workspaceDirectory =
+            try {
+                Files.createTempDirectory("asyncapi-native-protobuf-")
+            } catch (ex: IOException) {
+                throw protobufModelGenerationFailed(parsedSchema, models, ex)
+            }
+        val sourceDirectory = workspaceDirectory.resolve("schemas")
         val sourceSchemaFile = sourceDirectory.resolve("${parsedSchema.payloadName}.proto")
-        val destinationDirectory = Files.createTempDirectory("asyncapi-native-protobuf-java-")
+        val destinationDirectory = workspaceDirectory.resolve("java")
         val kotlinDestinationDirectory =
             models.modelType
                 .takeIf { it == ProtobufModelType.KOTLIN }
-                ?.let { Files.createTempDirectory("asyncapi-native-protobuf-kotlin-") }
+                ?.let { workspaceDirectory.resolve("kotlin") }
 
         try {
+            Files.createDirectory(sourceDirectory)
+            Files.createDirectory(destinationDirectory)
+            kotlinDestinationDirectory?.let(Files::createDirectory)
             Files.writeString(sourceSchemaFile, parsedSchema.protobufSchema.content.trimEnd() + System.lineSeparator())
             val compilerArguments =
                 buildList {
@@ -118,10 +126,7 @@ class NativeProtobufGenerator(
         } catch (ex: RuntimeException) {
             throw protobufModelGenerationFailed(parsedSchema, models, ex)
         } finally {
-            sourceSchemaFile.deleteIfExists()
-            sourceDirectory.toFile().deleteRecursively()
-            destinationDirectory.toFile().deleteRecursively()
-            kotlinDestinationDirectory?.toFile()?.deleteRecursively()
+            workspaceDirectory.toFile().deleteRecursively()
         }
     }
 

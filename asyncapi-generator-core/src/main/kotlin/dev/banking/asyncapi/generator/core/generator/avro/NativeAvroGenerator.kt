@@ -14,7 +14,6 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.io.path.deleteIfExists
 
 /**
  * Renders native Avro `schemaFormat` payloads into `.avsc` and SpecificRecord artifacts.
@@ -73,10 +72,17 @@ class NativeAvroGenerator(
             return emptyList()
         }
 
-        val sourceSchemaFile = Files.createTempFile("asyncapi-native-avro-", ".avsc")
-        val destinationDirectory = Files.createTempDirectory("asyncapi-native-avro-specific-records-")
+        val workspaceDirectory =
+            try {
+                Files.createTempDirectory("asyncapi-native-avro-")
+            } catch (ex: IOException) {
+                throw specificRecordGenerationFailed(parsedSchema, ex)
+            }
+        val sourceSchemaFile = workspaceDirectory.resolve("schema.avsc")
+        val destinationDirectory = workspaceDirectory.resolve("generated")
 
         try {
+            Files.createDirectory(destinationDirectory)
             Files.writeString(sourceSchemaFile, prettySchemaJson(parsedSchema.avroSchema))
             SpecificCompiler(parsedSchema.avroSchema)
                 .compileToDestination(sourceSchemaFile.toFile(), destinationDirectory.toFile())
@@ -94,8 +100,7 @@ class NativeAvroGenerator(
         } catch (ex: RuntimeException) {
             throw specificRecordGenerationFailed(parsedSchema, ex)
         } finally {
-            sourceSchemaFile.deleteIfExists()
-            destinationDirectory.toFile().deleteRecursively()
+            workspaceDirectory.toFile().deleteRecursively()
         }
     }
 
