@@ -4,6 +4,11 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.math.BigDecimal
 
+/**
+ * Combines the schema fragments of an `allOf` composition into one static
+ * generator schema while retaining generator-observable shapes, constraints,
+ * and explicit exact-value presence.
+ */
 class SchemaMerger {
     fun merge(base: Schema, override: Schema): Schema {
         val baseProps = base.properties ?: emptyMap()

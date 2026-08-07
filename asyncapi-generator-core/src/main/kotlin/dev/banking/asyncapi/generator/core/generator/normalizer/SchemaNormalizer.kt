@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.normalizer
 
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
+/** Produces the static schema view consumed by generator model analysis. */
 class SchemaNormalizer {
     private val compositionNormalizer = CompositionNormalizer()
     private val conditionalNormalizer = ConditionalNormalizer()

@@ -6,6 +6,14 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.util.Collections
 import java.util.IdentityHashMap
 
+/**
+ * Projects conditional property branches into a static schema suitable for
+ * generated source models.
+ *
+ * Branch-only properties remain optional. Conflicting property shapes become
+ * open values, and constraints that differ between both branches are omitted
+ * rather than applied unconditionally.
+ */
 class ConditionalNormalizer {
     fun normalize(schemas: Map<String, Schema>): Map<String, Schema> =
         schemas.mapValues { (_, schema) ->

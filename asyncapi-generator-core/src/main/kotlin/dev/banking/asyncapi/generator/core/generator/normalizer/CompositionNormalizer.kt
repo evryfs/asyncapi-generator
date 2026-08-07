@@ -6,6 +6,14 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.util.Collections
 import java.util.IdentityHashMap
 
+/**
+ * Flattens `allOf` compositions into the static schema shape consumed by the
+ * source and projection generators.
+ *
+ * Resolved references remain authoritative. Inline object properties, array
+ * items, and map values are traversed recursively, with schema identity used
+ * to terminate recursive compositions.
+ */
 class CompositionNormalizer {
     private val schemaMerger = SchemaMerger()
 

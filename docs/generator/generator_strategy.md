@@ -81,6 +81,27 @@ diagnostics deterministic when declarations are reordered in the source document
 
 ---
 
+## Schema Normalization Boundary
+
+Source-model and Avro projection generators consume a static view of AsyncAPI Schema Objects. `GenerationInput.schemas`
+contains that normalized view, while `GenerationInput.declaredSchemas` retains the parsed declarations for outputs that
+must preserve schema semantics, including standalone JSON Schema generation.
+
+Normalization flattens supported `allOf` compositions by following resolved schema references and merging their object
+properties, required members, generated types, validation constraints, array items, map values, and polymorphic model
+metadata. Recursive compositions terminate by schema identity, so external schemas with the same component name are
+not mistaken for cycles.
+
+Conditional `if`/`then`/`else` schemas cannot be represented as runtime branching in a static generated type.
+Normalization therefore produces a property superset: unconditional properties retain their declared shape,
+branch-only properties remain optional, and incompatible branch shapes become schemas without a fixed JSON type. Java
+and Kotlin models render those open values as `Object` and `Any`; other generators retain ownership of their open-schema
+mapping. When both branches use the same generated type but declare different constraints, those branch-specific
+constraints are not applied unconditionally. Applications that require complete conditional validation must validate
+against the declared schema rather than relying on the generated type alone.
+
+---
+
 ## Language Generators
 
 ### Kotlin & Java Generators

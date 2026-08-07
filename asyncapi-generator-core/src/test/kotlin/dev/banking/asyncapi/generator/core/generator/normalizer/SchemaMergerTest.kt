@@ -9,32 +9,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class MergeSchemaNormalizerTest {
-
+class SchemaMergerTest {
     private val merger = SchemaMerger()
 
     @Test
-    fun `merge should prioritize override values`() {
-        val base = Schema(description = "Base Desc", minLength = 10)
-        val override = Schema(description = "Override Desc", minLength = 5)
-
-        val result = merger.merge(base, override)
-
-        assertEquals("Override Desc", result.description)
-    }
-
-    @Test
-    fun `merge should intersect numeric constraints`() {
-        val base = Schema(minimum = 5.toBigDecimal())
-        val override = Schema(minimum = 10.toBigDecimal())
-
-        val result = merger.merge(base, override)
-
-        assertEquals(10.toBigDecimal(), result.minimum, "Should take the stricter (larger) minimum")
-    }
-
-    @Test
-    fun `merge should deep merge properties`() {
+    fun `deep merges properties while retaining override metadata`() {
         val base =
             Schema(
                 properties =
@@ -53,17 +32,16 @@ class MergeSchemaNormalizerTest {
 
         val result = merger.merge(base, override)
 
-        val props = result.properties
-        assertNotNull(props)
-        assertEquals(2, props.size)
+        val properties = assertNotNull(result.properties)
+        assertEquals(2, properties.size)
 
-        val shared = (props["shared"] as? SchemaInterface.SchemaInline)?.schema
-        assertEquals("BaseTitle", shared?.title, "Should retain base title")
-        assertEquals("Added Desc", shared?.description, "Should add override description")
+        val shared = (properties.getValue("shared") as SchemaInterface.SchemaInline).schema
+        assertEquals("BaseTitle", shared.title)
+        assertEquals("Added Desc", shared.description)
     }
 
     @Test
-    fun `merge preserves generator property shapes from the base schema`() {
+    fun `preserves generator property shapes inherited from the base schema`() {
         val stringItems = SchemaInterface.SchemaInline(Schema(type = "string"))
         val stringValues = SchemaInterface.SchemaInline(Schema(type = "string"))
         val base =
@@ -109,7 +87,7 @@ class MergeSchemaNormalizerTest {
     }
 
     @Test
-    fun `merge preserves generator constraints and explicit null values`() {
+    fun `preserves generator constraints and explicit null values`() {
         val base =
             Schema(
                 type = listOf("string", "null"),
@@ -133,7 +111,7 @@ class MergeSchemaNormalizerTest {
     }
 
     @Test
-    fun `merge lets explicit null values override inherited exact values`() {
+    fun `lets explicit null values override inherited exact values`() {
         val base =
             Schema(
                 default = "inherited",
@@ -158,7 +136,7 @@ class MergeSchemaNormalizerTest {
     }
 
     @Test
-    fun `merge preserves inherited polymorphic model metadata`() {
+    fun `preserves inherited polymorphic model metadata`() {
         val alternatives =
             listOf(
                 SchemaInterface.SchemaReference(Reference("#/components/schemas/CardPayment")),
@@ -178,7 +156,7 @@ class MergeSchemaNormalizerTest {
     }
 
     @Test
-    fun `merge selects the strictest inclusive or exclusive numeric bounds`() {
+    fun `selects the strictest inclusive or exclusive numeric bounds`() {
         val base =
             Schema(
                 type = "number",
