@@ -133,6 +133,9 @@ class JsonSchemaGenerator(
         if (schema.defaultSet && schema.default == null) {
             schemaNode.putNull("default")
         }
+        if (schema.constSet && schema.const == null) {
+            schemaNode.putNull("const")
+        }
 
         normalizeSchemaInterface(schemaNode.get("items"), schema.items)
         normalizeSchemaInterface(schemaNode.get("additionalItems"), schema.additionalItems)
