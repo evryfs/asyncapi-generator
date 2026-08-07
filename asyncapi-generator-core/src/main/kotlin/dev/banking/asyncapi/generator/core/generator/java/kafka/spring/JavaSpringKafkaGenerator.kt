@@ -33,11 +33,11 @@ class JavaSpringKafkaGenerator(
     fun render(channels: List<AnalyzedChannel>): GenerationResult =
         GenerationResult(
             channels.flatMap { channel ->
-                modelFactory.create(channel).mapNotNull { item ->
+                modelFactory.create(channel).map { item ->
                     when (item) {
                         is GeneratorItem.KafkaProducerClass -> producerGenerator.render(item)
                         is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.render(item)
-                        else -> null
+                        else -> error("Unexpected Java Spring Kafka model: ${item::class.simpleName}")
                     }
                 }
             },
