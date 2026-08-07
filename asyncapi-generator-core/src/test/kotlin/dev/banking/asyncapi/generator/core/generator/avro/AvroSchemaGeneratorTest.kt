@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnum
+import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnumSymbol
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroField
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
-import dev.banking.asyncapi.generator.core.generator.avro.model.AvroUnionType
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -48,8 +48,8 @@ class AvroSchemaGeneratorTest {
                 doc = null,
                 symbols =
                     listOf(
-                        AvroUnionType(name = "ACTIVE", last = false),
-                        AvroUnionType(name = "INACTIVE", last = true),
+                        AvroEnumSymbol(name = "ACTIVE", last = false),
+                        AvroEnumSymbol(name = "INACTIVE", last = true),
                     ),
                 default = "ACTIVE",
             )

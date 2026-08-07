@@ -4,7 +4,6 @@ import com.github.mustachejava.DefaultMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnum
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
-import dev.banking.asyncapi.generator.core.generator.avro.model.AvroUnion
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
@@ -23,7 +22,6 @@ class AvroSchemaGenerator {
     fun render(schemaItem: AvroSchema): GeneratedArtifact =
         when (schemaItem) {
             is AvroRecord -> renderRecord(schemaItem)
-            is AvroUnion -> renderUnion(schemaItem)
             is AvroEnum -> renderEnum(schemaItem)
         }
 
@@ -33,14 +31,6 @@ class AvroSchemaGenerator {
         template.execute(writer, record).flush()
 
         return schemaArtifact(record.namespace, record.name, writer.toString())
-    }
-
-    private fun renderUnion(union: AvroUnion): GeneratedArtifact {
-        val template = mustacheFactory.compile("avro-union.mustache")
-        val writer = StringWriter()
-        template.execute(writer, union).flush()
-
-        return schemaArtifact(union.namespace, union.name, writer.toString())
     }
 
     private fun renderEnum(enumModel: AvroEnum): GeneratedArtifact {
