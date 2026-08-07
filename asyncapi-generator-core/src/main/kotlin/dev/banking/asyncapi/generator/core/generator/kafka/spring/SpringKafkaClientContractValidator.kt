@@ -6,12 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientContractNameCollision
 
-/**
- * Validates source-contract invariants required by generated Spring Kafka
- * clients.
- *
- * Expected behavior is covered by `SpringKafkaClientContractValidatorTest`.
- */
+/** Validates source-contract invariants required by generated Spring Kafka clients. */
 internal object SpringKafkaClientContractValidator {
     fun validate(
         channels: List<AnalyzedChannel>,

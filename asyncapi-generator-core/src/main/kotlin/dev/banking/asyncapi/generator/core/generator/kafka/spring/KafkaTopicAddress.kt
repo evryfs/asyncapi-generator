@@ -4,12 +4,7 @@ import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLA
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 
-/**
- * Spring-resolvable Kafka topic address used by generated client contracts.
- *
- * Expected behavior is covered by:
- * - `KafkaTopicAddressTest`
- */
+/** Spring-resolvable Kafka topic address used by generated client contracts. */
 @ConsistentCopyVisibility
 data class KafkaTopicAddress private constructor(
     val propertyPlaceholderValue: String,

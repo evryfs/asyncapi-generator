@@ -3,12 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKafkaHeaderName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KafkaHeaderParameterNameCollision
 
-/**
- * Converts Kafka wire-header names into source identifiers shared by Java and Kotlin output.
- *
- * Expected behavior is covered by:
- * - `KafkaHeaderParameterNamesTest`
- */
+/** Converts Kafka wire-header names into source identifiers shared by Java and Kotlin output. */
 internal object KafkaHeaderParameterNames {
     private val invalidIdentifierCharacters = Regex("[^A-Za-z0-9_]+")
 

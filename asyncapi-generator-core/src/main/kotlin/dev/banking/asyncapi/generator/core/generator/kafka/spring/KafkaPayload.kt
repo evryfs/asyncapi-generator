@@ -7,13 +7,15 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  */
 data class KafkaPayload(
     val messageName: String,
-    val payloadType: String?,
+    val javaTypeName: String?,
+    val kotlinTypeName: String?,
     val payloadDescription: String? = null,
-    val importName: String? = null,
+    val javaImportName: String? = null,
+    val kotlinImportName: String? = null,
     val keySchema: SchemaInterface? = null,
     val headerProperties: List<KafkaHeaderProperty> = emptyList(),
 ) {
-    val hasPayload: Boolean get() = payloadType != null
+    val hasPayload: Boolean get() = javaTypeName != null || kotlinTypeName != null
 }
 
 data class KafkaHeaderProperty(
