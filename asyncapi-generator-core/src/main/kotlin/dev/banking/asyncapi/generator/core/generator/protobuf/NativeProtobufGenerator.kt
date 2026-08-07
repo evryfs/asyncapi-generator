@@ -33,8 +33,9 @@ class NativeProtobufGenerator(
         models: ProtobufModelGeneration? = null,
     ): GenerationResult {
         val parsedSchemas =
-            schemas
+            schemas.entries
                 .filter { (_, schema) -> schema.format.isNativeProtobuf }
+                .sortedBy(Map.Entry<String, MultiFormatSchema>::key)
                 .map { (payloadName, schema) ->
                     ParsedNativeProtobufSchema(
                         payloadName = payloadName,

@@ -26,6 +26,25 @@ class NativeAvroGeneratorTest {
     }
 
     @Test
+    fun `render orders native Avro artifacts by payload name`() {
+        val result =
+            generator.render(
+                linkedMapOf(
+                    "UserUpdated" to nativeAvroRecord("UserUpdated"),
+                    "UserCreated" to nativeAvroRecord("UserCreated"),
+                ),
+            )
+
+        assertEquals(
+            listOf(
+                "com/example/avro/UserCreated.avsc",
+                "com/example/avro/UserUpdated.avsc",
+            ),
+            result.artifacts.map { artifact -> artifact.relativePath },
+        )
+    }
+
+    @Test
     fun `render returns SpecificRecord source artifacts when enabled`() {
         val result =
             generator.render(
@@ -79,4 +98,16 @@ class NativeAvroGeneratorTest {
         assertTrue(error.message!!.contains("Native Avro generation failed for payload 'UserCreated'"))
         assertTrue(error.message!!.contains("schema is not valid Avro"))
     }
+
+    private fun nativeAvroRecord(name: String): MultiFormatSchema =
+        MultiFormatSchema(
+            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+            schema =
+                mapOf(
+                    "type" to "record",
+                    "name" to name,
+                    "namespace" to "com.example.avro",
+                    "fields" to emptyList<Any>(),
+                ),
+        )
 }

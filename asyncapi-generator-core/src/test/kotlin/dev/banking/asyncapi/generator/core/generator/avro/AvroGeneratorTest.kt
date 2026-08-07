@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 
 class AvroGeneratorTest {
     @Test
-    fun `render returns generation result with artifacts for Avro schemas`() {
+    fun `render returns Avro schema artifacts in schema name order`() {
         val generator =
             AvroGenerator(
                 packageName = "com.example.avro",
@@ -32,8 +32,8 @@ class AvroGeneratorTest {
 
         assertEquals(
             listOf(
-                "com/example/avro/User.avsc",
                 "com/example/avro/Status.avsc",
+                "com/example/avro/User.avsc",
             ),
             result.artifacts.map { it.relativePath },
         )

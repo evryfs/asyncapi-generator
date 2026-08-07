@@ -31,8 +31,9 @@ class NativeAvroGenerator(
         generateSpecificRecords: Boolean = false,
     ): GenerationResult {
         val parsedSchemas =
-            schemas
+            schemas.entries
                 .filter { (_, schema) -> schema.format.isNativeAvro }
+                .sortedBy(Map.Entry<String, MultiFormatSchema>::key)
                 .map { (payloadName, schema) ->
                     ParsedNativeAvroSchema(
                         payloadName = payloadName,

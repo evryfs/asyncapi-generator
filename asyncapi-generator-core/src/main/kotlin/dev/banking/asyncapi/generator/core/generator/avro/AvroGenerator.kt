@@ -19,8 +19,10 @@ class AvroGenerator(
 
     fun render(schemas: Map<String, Schema>): GenerationResult =
         GenerationResult(
-            schemas.mapNotNull { (name, schema) ->
-                factory.create(name, schema)?.let(generator::render)
-            },
+            schemas.entries
+                .sortedBy(Map.Entry<String, Schema>::key)
+                .mapNotNull { (name, schema) ->
+                    factory.create(name, schema)?.let(generator::render)
+                },
         )
 }
