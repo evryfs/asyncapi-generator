@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
  * Prepares message payload contracts shared by Java and Kotlin Spring Kafka generation.
  *
  * Language-specific rendering remains responsible for syntax, while payload identity,
- * model imports, keys, headers, and native-schema resolution are derived once here.
+ * model imports, headers, and native-schema resolution are derived once here.
  */
 internal class KafkaPayloadFactory(
     private val modelPackage: String,

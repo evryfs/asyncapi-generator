@@ -44,23 +44,18 @@ internal object SpringKafkaClientMethodNameValidator {
     ): List<GeneratedMethod> =
         buildList {
             if (task.generateProducers) {
-                add(
-                    GeneratedMethod(
-                        messageId = messageId,
-                        name = "send$generatedName",
-                        scope = MethodScope.PRODUCER,
-                    ),
-                )
-                if (hasPayload) {
-                    task.additionalPayloadTypes.inCanonicalOrder().forEach { additionalPayloadType ->
-                        add(
-                            GeneratedMethod(
-                                messageId = messageId,
-                                name = "send$generatedName${additionalPayloadType.methodSuffix}",
-                                scope = MethodScope.PRODUCER,
-                            ),
-                        )
-                    }
+                producerPayloadMethods(
+                    messageName = generatedName,
+                    hasPayload = hasPayload,
+                    additionalPayloadTypes = task.additionalPayloadTypes,
+                ).forEach { producerMethod ->
+                    add(
+                        GeneratedMethod(
+                            messageId = messageId,
+                            name = producerMethod.methodName,
+                            scope = MethodScope.PRODUCER,
+                        ),
+                    )
                 }
             }
             if (task.generateConsumers) {

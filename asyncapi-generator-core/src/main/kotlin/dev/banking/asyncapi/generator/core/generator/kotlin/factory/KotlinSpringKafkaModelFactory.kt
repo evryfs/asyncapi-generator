@@ -7,19 +7,14 @@ import dev.banking.asyncapi.generator.core.generator.configuration.TopicParamete
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContractResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayloadFactory
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaTopicAddress
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.inCanonicalOrder
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.methodSuffix
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContractFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 
 class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
@@ -32,7 +27,13 @@ class KotlinSpringKafkaModelFactory(
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
-    private val payloadFactory = KafkaPayloadFactory(modelPackage, nativeKafkaPayloadResolver)
+    private val channelContractFactory =
+        SpringKafkaChannelContractFactory(
+            modelPackage = modelPackage,
+            additionalPayloadTypes = additionalPayloadTypes,
+            topicParameterProperties = topicParameterProperties,
+            nativeKafkaPayloadResolver = nativeKafkaPayloadResolver,
+        )
 
     fun create(channel: AnalyzedChannel): List<GeneratorItem> {
         if (!generateConsumers && !generateProducers) {
@@ -40,29 +41,19 @@ class KotlinSpringKafkaModelFactory(
         }
 
         val items = mutableListOf<GeneratorItem>()
-        val baseName = MapperUtil.toPascalCase(channel.channelName)
+        val channelContract = channelContractFactory.create(channel)
+        val baseName = channelContract.baseName
         val producerPackage = "$clientPackage.producer"
         val consumerPackage = "$clientPackage.consumer"
-        val payloads = payloadFactory.create(channel)
-        val keyContracts =
-            payloads.associateWith { payload ->
-                KafkaKeyContractResolver.resolve(
-                    messageName = payload.messageName,
-                    schema = payload.keySchema,
-                    modelPackage = modelPackage,
-                )
-            }
-        val topicAddress =
-            KafkaTopicAddress.from(
-                channelName = channel.channelName,
-                value = channel.topic,
-                topicParameterProperties = topicParameterProperties,
-        )
+        val payloads = channelContract.messages.map { message -> message.payload }
+        val keyContracts = channelContract.messages.mapNotNull { message -> message.keyContract }
+        val topicAddress = channelContract.topicAddress
 
         if (generateConsumers) {
             val consumerName = "${baseName}Consumer"
             val methods =
-                payloads.map { payload ->
+                channelContract.messages.map { message ->
+                    val payload = message.payload
                     val headerProperties =
                         payload.headerProperties.map { header ->
                             GeneratorItem.HeaderProperty(
@@ -76,7 +67,7 @@ class KotlinSpringKafkaModelFactory(
                         }
                     GeneratorItem.ConsumerMethod(
                         messageName = payload.messageName,
-                        methodName = payload.methodName("listen"),
+                        methodName = message.consumerMethodName,
                         payloadType = payload.kotlinTypeName,
                         payloadDescription =
                             if (payload.hasPayload) {
@@ -86,7 +77,7 @@ class KotlinSpringKafkaModelFactory(
                                 emptyList()
                             },
                         keyParameter =
-                            keyContracts.getValue(payload)?.toKotlinKeyParameter(
+                            message.keyContract?.toKotlinKeyParameter(
                                 parameterName = "receivedKey",
                                 consumer = true,
                             ),
@@ -102,7 +93,7 @@ class KotlinSpringKafkaModelFactory(
             val imports =
                 (
                     payloads.mapNotNull { payload -> payload.kotlinImportName } +
-                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        keyContracts.mapNotNull { keyContract -> keyContract.importName } +
                         payloads.flatMap { payload ->
                             payload.headerProperties.mapNotNull { header -> header.importName }
                         } +
@@ -128,7 +119,7 @@ class KotlinSpringKafkaModelFactory(
                     description =
                         toKDocLines(
                             "Defines the Spring Kafka consumer contract for messages received from the " +
-                                "`${channel.topic}` AsyncAPI channel.",
+                                "`${channelContract.topic}` AsyncAPI channel.",
                         ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toKotlinStringLiteral(),
@@ -141,7 +132,8 @@ class KotlinSpringKafkaModelFactory(
 
         if (generateProducers) {
             val sendMethods =
-                payloads.flatMap { payload ->
+                channelContract.messages.flatMap { message ->
+                    val payload = message.payload
                     val headerProperties =
                         payload.headerProperties.map { header ->
                             GeneratorItem.HeaderProperty(
@@ -158,25 +150,16 @@ class KotlinSpringKafkaModelFactory(
                                         ")",
                             )
                         }
-                    val configuredAdditionalTypes =
-                        if (payload.hasPayload) {
-                            additionalPayloadTypes.inCanonicalOrder()
-                        } else {
-                            emptyList()
-                        }
-                    val methodPayloadTypes: List<AdditionalProducerPayloadType?> =
-                        listOf(null) + configuredAdditionalTypes
-
-                    methodPayloadTypes.map { additionalPayloadType ->
+                    message.producerMethods.map { producerMethod ->
+                        val additionalPayloadType = producerMethod.additionalPayloadType
                         GeneratorItem.SendMethod(
                             messageName = payload.messageName,
-                            methodName =
-                                payload.methodName("send") + additionalPayloadType?.methodSuffix.orEmpty(),
+                            methodName = producerMethod.methodName,
                             payloadType = payload.kotlinProducerPayloadType(additionalPayloadType),
                             payloadDescription = payload.producerPayloadDescription(additionalPayloadType),
                             payloadBindingAnnotation = "Payload".takeIf { payload.hasPayload },
                             keyParameter =
-                                keyContracts.getValue(payload)?.toKotlinKeyParameter(
+                                message.keyContract?.toKotlinKeyParameter(
                                     parameterName = "messageKey",
                                     consumer = false,
                                 ),
@@ -194,7 +177,7 @@ class KotlinSpringKafkaModelFactory(
             val imports =
                 (
                     payloads.mapNotNull { payload -> payload.kotlinImportName } +
-                        keyContracts.values.mapNotNull { keyContract -> keyContract?.importName } +
+                        keyContracts.mapNotNull { keyContract -> keyContract.importName } +
                         payloads.flatMap { payload ->
                             payload.headerProperties.mapNotNull { header -> header.importName }
                         } +
@@ -225,7 +208,7 @@ class KotlinSpringKafkaModelFactory(
                     description =
                         toKDocLines(
                             "Defines the Spring Kafka producer contract for messages published to the " +
-                                "`${channel.topic}` AsyncAPI channel.",
+                                "`${channelContract.topic}` AsyncAPI channel.",
                         ),
                     topicAddressConstantName = topicAddress.constantName,
                     topicAddress = topicAddress.propertyPlaceholderValue.toKotlinStringLiteral(),
@@ -298,10 +281,6 @@ class KotlinSpringKafkaModelFactory(
                     ),
         )
     }
-
-    private fun KafkaPayload.methodName(
-        prefix: String,
-    ): String = "$prefix$messageName"
 
     private fun String.toKotlinStringLiteral(): String =
         replace("\\", "\\\\")
