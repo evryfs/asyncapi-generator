@@ -69,3 +69,6 @@ replay_pid*
 
 # ApprovalTests received artifacts
 *.received.*
+
+# MkDocs generated site
+site/
