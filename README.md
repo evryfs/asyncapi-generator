@@ -13,7 +13,12 @@ The project is currently in BETA.
 - Native Avro - `.avsc` schema artifacts and Apache Avro Java `SpecificRecord` sources from native Avro `schemaFormat` payloads
 - Native Protobuf - `.proto` schema artifacts and Java Protobuf message sources from native Protobuf `schemaFormat` payloads
 
-The current documentation provided is still a draft, found in `docs/` folder at the repository root.
+## Documentation
+
+The project documentation is published at
+[evryfs.github.io/asyncapi-generator](https://evryfs.github.io/asyncapi-generator/).
+Documentation changes can be previewed locally before publication; see
+[contributing to the documentation](docs/contributing/documentation.md).
 
 ## Usage
 

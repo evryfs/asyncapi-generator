@@ -29,6 +29,7 @@ nav:
       - Generator strategy: generator/generator_strategy.md
       - Schema validation library evaluation: validator/schema_validation_library_evaluation.md
   - Contributing:
+      - Documentation: contributing/documentation.md
       - Parser documentation: parser/README.md
       - Changing the parser: parser/changing-the-parser.md
       - Validator documentation: validator/README.md
