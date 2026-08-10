@@ -1,0 +1,36 @@
+site_name: AsyncAPI Generator
+site_description: Documentation for the AsyncAPI Generator project
+site_url: https://evryfs.github.io/asyncapi-generator/
+repo_url: https://github.com/evryfs/asyncapi-generator
+repo_name: evryfs/asyncapi-generator
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: readthedocs
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Examples:
+      - Bundled documents: bundler/examples.md
+  - Reference:
+      - Parser contract: parser/parser-contract.md
+      - Validation rules: validator/rules.md
+      - YAML output: serializers/yaml-output.md
+  - Explanation:
+      - Parser architecture: parser/architecture.md
+      - Validator architecture: validator/architecture.md
+      - Bundler strategy: bundler/bundler_strategy.md
+      - Generator strategy: generator/generator_strategy.md
+      - Schema validation library evaluation: validator/schema_validation_library_evaluation.md
+  - Contributing:
+      - Documentation: contributing/documentation.md
+      - Parser documentation: parser/README.md
+      - Changing the parser: parser/changing-the-parser.md
+      - Validator documentation: validator/README.md
+      - Adding a validation rule: validator/adding-validation-rule.md
