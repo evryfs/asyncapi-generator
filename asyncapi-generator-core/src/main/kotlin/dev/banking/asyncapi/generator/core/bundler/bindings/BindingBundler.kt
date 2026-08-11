@@ -38,27 +38,35 @@ internal class BindingBundler {
         }
 
     private fun bundleBinding(binding: Binding, context: BundlingContext): Binding {
-        val bundledKey = binding.kafkaKeySchema?.let { schemaBundler.bundle(it, context) } ?: return binding
+        val bundledContent = binding.protocolBindings.fold(binding.content) { content, protocolBinding ->
+            protocolBinding.schemaFields.entries.fold(content) { currentContent, (fieldName, schema) ->
+                currentContent.withBundledSchema(
+                    protocol = protocolBinding.protocol,
+                    fieldName = fieldName,
+                    schema = schemaBundler.bundle(schema, context),
+                )
+            }
+        }
+        if (bundledContent === binding.content) return binding
         return binding.copy(
-            content = binding.content.withBundledKafkaKey(bundledKey),
+            content = bundledContent,
         )
     }
 
-    private fun Map<String, Any?>.withBundledKafkaKey(key: SchemaInterface): Map<String, Any?> {
-        val kafka = get(KAFKA_PROTOCOL) as? Map<*, *>
+    private fun Map<String, Any?>.withBundledSchema(
+        protocol: String,
+        fieldName: String,
+        schema: SchemaInterface,
+    ): Map<String, Any?> {
+        val protocolContent = get(protocol) as? Map<*, *>
         return when {
-            kafka?.containsKey(KAFKA_KEY) == true ->
-                this + (KAFKA_PROTOCOL to (kafka + (KAFKA_KEY to key)))
+            protocolContent?.containsKey(fieldName) == true ->
+                this + (protocol to (protocolContent + (fieldName to schema)))
 
-            containsKey(KAFKA_KEY) ->
-                this + (KAFKA_KEY to key)
+            containsKey(fieldName) ->
+                this + (fieldName to schema)
 
             else -> this
         }
-    }
-
-    private companion object {
-        const val KAFKA_PROTOCOL = "kafka"
-        const val KAFKA_KEY = "key"
     }
 }

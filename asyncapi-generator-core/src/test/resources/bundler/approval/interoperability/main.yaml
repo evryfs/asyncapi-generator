@@ -24,6 +24,13 @@ operations:
     action: send
     channel:
       $ref: '#/channels/lifecycleEvents'
+    bindings:
+      kafka:
+        groupId:
+          $ref: '../../../generator/spring-kafka/key-schemas.yaml#/myAccountKey/properties/institutionId'
+        clientId:
+          $ref: '../../../generator/spring-kafka/key-schemas.yaml#/myAccountKey/properties/accountId'
+        bindingVersion: 0.5.0
     messages:
       - $ref: '#/channels/lifecycleEvents/messages/accountUpdated'
       - $ref: '#/channels/lifecycleEvents/messages/auditEvent'

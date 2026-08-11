@@ -185,6 +185,17 @@ class BundledDocumentApprovalTest {
             ),
             publish.messages?.map { it.ref },
         )
+        val operationBinding = assertIs<BindingInterface.BindingInline>(publish.bindings?.get("kafka")).binding
+        assertEquals(
+            "string",
+            assertIs<SchemaInterface.SchemaInline>(operationBinding.protocolBindings.single().schemaFields["groupId"])
+                .schema.type,
+        )
+        assertEquals(
+            "string",
+            assertIs<SchemaInterface.SchemaInline>(operationBinding.protocolBindings.single().schemaFields["clientId"])
+                .schema.type,
+        )
 
         val accountUpdated = assertIs<MessageInterface.MessageInline>(channel.messages?.get("accountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(accountUpdated.bindings?.get("kafka")).binding

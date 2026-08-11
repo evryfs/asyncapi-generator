@@ -67,13 +67,42 @@ class BindingBundlerTest {
         assertSame(originalKey, bundledBinding.kafkaKeySchema)
     }
 
-    private fun kafkaBinding(content: Map<String, Any?>): Binding {
-        val key = SchemaInterface.SchemaReference(
-            Reference(
-                ref = "key-schemas.yaml#/AccountKey",
-                model = Schema(type = "object"),
+    @Test
+    fun `bundles external Kafka operation schema fields`() {
+        val groupId = schemaReference("group-id.yaml#/GroupId")
+        val clientId = schemaReference("client-id.yaml#/ClientId")
+        val binding = Binding(
+            content = mapOf(
+                "groupId" to mapOf("\$ref" to "group-id.yaml#/GroupId"),
+                "clientId" to mapOf("\$ref" to "client-id.yaml#/ClientId"),
+                "bindingVersion" to "0.5.0",
+            ),
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = BindingLocation.OPERATION,
+                    content = emptyMap<String, Any?>(),
+                    bindingVersion = "0.5.0",
+                    schemaFields = mapOf(
+                        "groupId" to groupId,
+                        "clientId" to clientId,
+                    ),
+                ),
             ),
         )
+
+        val bundled = assertIs<BindingInterface.BindingInline>(
+            bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+        ).binding
+
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["clientId"]).schema.type)
+        assertSame(groupId, bundled.protocolBindings.single().schemaFields["groupId"])
+        assertSame(clientId, bundled.protocolBindings.single().schemaFields["clientId"])
+    }
+
+    private fun kafkaBinding(content: Map<String, Any?>): Binding {
+        val key = schemaReference("key-schemas.yaml#/AccountKey", type = "object")
         return Binding(
             content = content,
             kafkaKeySchema = key,
@@ -88,4 +117,12 @@ class BindingBundlerTest {
             ),
         )
     }
+
+    private fun schemaReference(ref: String, type: String = "string") =
+        SchemaInterface.SchemaReference(
+            Reference(
+                ref = ref,
+                model = Schema(type = type),
+            ),
+        )
 }

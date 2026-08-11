@@ -82,6 +82,15 @@ operations:
       - $ref: "#/channels/lifecycleEvents/messages/accountUpdated"
       - $ref: "#/channels/lifecycleEvents/messages/auditEvent"
       - $ref: "#/channels/lifecycleEvents/messages/treeUpdated"
+    bindings:
+      kafka:
+        groupId:
+          description: Institution that owns the account.
+          type: string
+        clientId:
+          description: Account identifier within the institution.
+          type: string
+        bindingVersion: 0.5.0
   consumeLifecycleEvents:
     action: receive
     channel:
