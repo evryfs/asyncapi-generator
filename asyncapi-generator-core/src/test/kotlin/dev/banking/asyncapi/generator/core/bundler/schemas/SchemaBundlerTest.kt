@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -15,7 +16,10 @@ class SchemaBundlerTest {
 
     @Test
     fun `bundle keeps an unvisited component schema reference and bundles its model`() {
-        val bindingReference = Reference("#/components/schemaBindings/kafka")
+        val bindingReference = Reference(
+            "#/components/schemaBindings/kafka",
+            model = Binding(content = emptyMap()),
+        )
         val schema = Schema(
             type = "object",
             bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
@@ -34,7 +38,10 @@ class SchemaBundlerTest {
 
     @Test
     fun `bundle inlines an unvisited non-component schema reference`() {
-        val bindingReference = Reference("#/components/schemaBindings/kafka")
+        val bindingReference = Reference(
+            "#/components/schemaBindings/kafka",
+            model = Binding(content = emptyMap()),
+        )
         val schema = Schema(
             type = "object",
             bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
