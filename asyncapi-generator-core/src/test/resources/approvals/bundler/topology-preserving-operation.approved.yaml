@@ -1,30 +1,30 @@
-asyncapi: "3.0.0"
+asyncapi: 3.0.0
 info:
-  title: "Topology-Preserving Operation"
-  version: "1.0.0"
+  title: Topology-Preserving Operation
+  version: 1.0.0
 servers:
   kafka:
-    host: "order.kafka.local:9092"
-    protocol: "kafka"
+    host: order.kafka.local:9092
+    protocol: kafka
 channels:
   orders:
-    address: "orders"
+    address: orders
     messages:
       orderCreated:
         payload:
-          type: "object"
+          type: object
           required:
-            - "orderId"
+            - orderId
           properties:
             orderId:
-              type: "string"
-        name: "OrderCreated"
-        title: "Order Created Message"
+              type: string
+        name: OrderCreated
+        title: Order Created Message
     servers:
       - $ref: "#/servers/kafka"
 operations:
   sendOrder:
-    action: "send"
+    action: send
     channel:
       $ref: "#/channels/orders"
     messages:
