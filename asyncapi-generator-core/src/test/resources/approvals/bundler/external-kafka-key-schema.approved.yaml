@@ -1,0 +1,119 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Update API
+  version: 1.0.0
+channels:
+  myAccountUpdated:
+    address: "my.accounts.{environment}.updated.v1"
+    messages:
+      myAccountUpdated:
+        headers:
+          type: object
+          required:
+            - X-EXAMPLE-CORRELATION-ID
+          properties:
+            X-EXAMPLE-CORRELATION-ID:
+              description: Identifier used to correlate related messages.
+              type: string
+            X-EXAMPLE-SOURCE-SYSTEM:
+              description: Optional name of the system that produced the message.
+              type: string
+        payload:
+          description: Details about an account update.
+          type: object
+          required:
+            - accountId
+          properties:
+            accountId:
+              description: Identifier of the updated account.
+              type: string
+        name: MyAccountUpdated
+        bindings:
+          kafka:
+            key:
+              description: Identifies an account within an institution.
+              type: object
+              required:
+                - institutionId
+                - accountId
+              properties:
+                institutionId:
+                  description: Institution that owns the account.
+                  type: string
+                accountId:
+                  description: Account identifier within the institution.
+                  type: string
+            bindingVersion: 0.5.0
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+operations:
+  publishMyAccountUpdates:
+    action: send
+    channel:
+      $ref: "#/channels/myAccountUpdated"
+  consumeMyAccountUpdates:
+    action: receive
+    channel:
+      $ref: "#/channels/myAccountUpdated"
+components:
+  schemas:
+    MessageHeaders:
+      type: object
+      required:
+        - X-EXAMPLE-CORRELATION-ID
+      properties:
+        X-EXAMPLE-CORRELATION-ID:
+          description: Identifier used to correlate related messages.
+          type: string
+        X-EXAMPLE-SOURCE-SYSTEM:
+          description: Optional name of the system that produced the message.
+          type: string
+    MyAccountUpdatedPayload:
+      description: Details about an account update.
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          description: Identifier of the updated account.
+          type: string
+  messages:
+    MyAccountUpdated:
+      headers:
+        type: object
+        required:
+          - X-EXAMPLE-CORRELATION-ID
+        properties:
+          X-EXAMPLE-CORRELATION-ID:
+            description: Identifier used to correlate related messages.
+            type: string
+          X-EXAMPLE-SOURCE-SYSTEM:
+            description: Optional name of the system that produced the message.
+            type: string
+      payload:
+        description: Details about an account update.
+        type: object
+        required:
+          - accountId
+        properties:
+          accountId:
+            description: Identifier of the updated account.
+            type: string
+      name: MyAccountUpdated
+      bindings:
+        kafka:
+          key:
+            description: Identifies an account within an institution.
+            type: object
+            required:
+              - institutionId
+              - accountId
+            properties:
+              institutionId:
+                description: Institution that owns the account.
+                type: string
+              accountId:
+                description: Account identifier within the institution.
+                type: string
+          bindingVersion: 0.5.0

@@ -135,6 +135,31 @@ class BundledDocumentApprovalTest {
     }
 
     @Test
+    fun `bundles an external Kafka message key schema`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "generator/spring-kafka/single-message.yaml",
+                scenario = "external-kafka-key-schema",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val message = assertIs<MessageInterface.MessageInline>(components.messages?.get("MyAccountUpdated")).message
+        val kafkaBinding = assertIs<BindingInterface.BindingInline>(message.bindings?.get("kafka")).binding
+        val keySchema = assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
+        assertEquals("object", keySchema.schema.type)
+        assertEquals(setOf("institutionId", "accountId"), keySchema.schema.properties?.keys)
+
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("key-schemas.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "external-kafka-key-schema",
+        )
+    }
+
+    @Test
     fun `bundles reusable objects from an external component catalog`() {
         val bundledFile =
             bundleToTemporaryFile(
