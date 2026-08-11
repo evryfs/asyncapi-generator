@@ -53,12 +53,12 @@ internal object AsyncApiRegistry {
             .stringQuotingChecker(ValuePreservingStringQuotingChecker)
             .build()
     ).apply {
-        setSerializationInclusion(JsonInclude.Include.NON_NULL)
+        setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
     }
 
     private val jsonMapper: ObjectMapper =
         ObjectMapper()
-            .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
     private object ValuePreservingStringQuotingChecker : StringQuotingChecker() {
         private val default = Default.instance()
