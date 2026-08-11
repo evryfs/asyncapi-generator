@@ -1,0 +1,104 @@
+asyncapi: 3.0.0
+info:
+  title: Bundled Document Interoperability
+  version: 1.0.0
+servers:
+  kafka:
+    host: kafka.scram.local:9092
+    protocol: kafka
+    description: SCRAM-based Kafka cluster
+    tags:
+      - name: shared
+        description: Shared server tag used across environments
+      - name: scram
+        description: SCRAM-based Kafka cluster
+channels:
+  lifecycleEvents:
+    address: account.lifecycle.events
+    messages:
+      accountUpdated:
+        headers:
+          type: object
+          required:
+            - X-EXAMPLE-CORRELATION-ID
+          properties:
+            X-EXAMPLE-CORRELATION-ID:
+              description: Identifier used to correlate related messages.
+              type: string
+            X-EXAMPLE-SOURCE-SYSTEM:
+              description: Optional name of the system that produced the message.
+              type: string
+        payload:
+          description: Details about an account update.
+          type: object
+          required:
+            - accountId
+          properties:
+            accountId:
+              description: Identifier of the updated account.
+              type: string
+        name: MyAccountUpdated
+        bindings:
+          kafka:
+            key:
+              description: Identifies an account within an institution.
+              type: object
+              required:
+                - institutionId
+                - accountId
+              properties:
+                institutionId:
+                  description: Institution that owns the account.
+                  type: string
+                accountId:
+                  description: Account identifier within the institution.
+                  type: string
+            bindingVersion: 0.5.0
+      auditEvent:
+        payload:
+          type: object
+          required:
+            - eventId
+          properties:
+            eventId:
+              type: string
+        correlationId:
+          location: $message.header#/traceId
+        name: AuditEvent
+        traits:
+          - contentType: application/json
+      treeUpdated:
+        payload:
+          $ref: "#/components/schemas/ParentNode"
+        name: TreeUpdated
+    servers:
+      - $ref: "#/servers/kafka"
+operations:
+  publishLifecycleEvents:
+    action: send
+    channel:
+      $ref: "#/channels/lifecycleEvents"
+    messages:
+      - $ref: "#/channels/lifecycleEvents/messages/accountUpdated"
+      - $ref: "#/channels/lifecycleEvents/messages/auditEvent"
+      - $ref: "#/channels/lifecycleEvents/messages/treeUpdated"
+  consumeLifecycleEvents:
+    action: receive
+    channel:
+      $ref: "#/channels/lifecycleEvents"
+components:
+  schemas:
+    ParentNode:
+      type: object
+      required:
+        - child
+      properties:
+        child:
+          $ref: "#/components/schemas/ChildNode"
+    ChildNode:
+      type: object
+      required:
+        - parent
+      properties:
+        parent:
+          $ref: "#/components/schemas/ParentNode"

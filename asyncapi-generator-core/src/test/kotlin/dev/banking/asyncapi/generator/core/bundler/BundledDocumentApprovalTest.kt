@@ -160,6 +160,55 @@ class BundledDocumentApprovalTest {
     }
 
     @Test
+    fun `bundles a representative document for external tool interoperability`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/interoperability/main.yaml",
+                scenario = "interoperability-contract",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val channel = assertIs<ChannelInterface.ChannelInline>(bundledDocument.channels?.get("lifecycleEvents")).channel
+        assertEquals("#/servers/kafka", channel.servers?.single()?.ref)
+        assertEquals(setOf("accountUpdated", "auditEvent", "treeUpdated"), channel.messages?.keys)
+
+        val publish =
+            assertIs<OperationInterface.OperationInline>(
+                bundledDocument.operations?.get("publishLifecycleEvents"),
+            ).operation
+        assertEquals("#/channels/lifecycleEvents", publish.channel?.ref)
+        assertEquals(
+            listOf(
+                "#/channels/lifecycleEvents/messages/accountUpdated",
+                "#/channels/lifecycleEvents/messages/auditEvent",
+                "#/channels/lifecycleEvents/messages/treeUpdated",
+            ),
+            publish.messages?.map { it.ref },
+        )
+
+        val accountUpdated = assertIs<MessageInterface.MessageInline>(channel.messages?.get("accountUpdated")).message
+        val kafkaBinding = assertIs<BindingInterface.BindingInline>(accountUpdated.bindings?.get("kafka")).binding
+        assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
+
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        assertEquals(setOf("ParentNode", "ChildNode"), components.schemas?.keys)
+
+        val bundledText = bundledFile.readText()
+        val externalReferences =
+            Regex("""${'$'}ref:\s*[\"']?([^\"'\s]+)""")
+                .findAll(bundledText)
+                .map { it.groupValues[1] }
+                .filterNot { it.startsWith("#") }
+                .toList()
+        assertEquals(emptyList(), externalReferences)
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "interoperability-contract",
+        )
+    }
+
+    @Test
     fun `bundles reusable objects from an external component catalog`() {
         val bundledFile =
             bundleToTemporaryFile(
