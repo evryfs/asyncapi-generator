@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaBundler
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.references.isExternalReference
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 
@@ -40,11 +41,15 @@ internal class BindingBundler {
     private fun bundleBinding(binding: Binding, context: BundlingContext): Binding {
         val bundledContent = binding.protocolBindings.fold(binding.content) { content, protocolBinding ->
             protocolBinding.schemaFields.entries.fold(content) { currentContent, (fieldName, schema) ->
-                currentContent.withBundledSchema(
-                    protocol = protocolBinding.protocol,
-                    fieldName = fieldName,
-                    schema = schemaBundler.bundle(schema, context),
-                )
+                if (currentContent.schemaField(protocolBinding.protocol, fieldName).containsExternalReference()) {
+                    currentContent.withBundledSchema(
+                        protocol = protocolBinding.protocol,
+                        fieldName = fieldName,
+                        schema = schemaBundler.bundle(schema, context),
+                    )
+                } else {
+                    currentContent
+                }
             }
         }
         if (bundledContent === binding.content) return binding
@@ -69,4 +74,23 @@ internal class BindingBundler {
             else -> this
         }
     }
+
+    private fun Map<String, Any?>.schemaField(protocol: String, fieldName: String): Any? {
+        val protocolContent = get(protocol) as? Map<*, *>
+        return if (protocolContent?.containsKey(fieldName) == true) {
+            protocolContent[fieldName]
+        } else {
+            get(fieldName)
+        }
+    }
+
+    private fun Any?.containsExternalReference(): Boolean =
+        when (this) {
+            is Map<*, *> ->
+                (get("\$ref") as? String)?.isExternalReference() == true ||
+                    values.any { it.containsExternalReference() }
+
+            is List<*> -> any { it.containsExternalReference() }
+            else -> false
+        }
 }

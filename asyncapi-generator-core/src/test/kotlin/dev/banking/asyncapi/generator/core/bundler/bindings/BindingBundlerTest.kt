@@ -101,6 +101,34 @@ class BindingBundlerTest {
         assertSame(clientId, bundled.protocolBindings.single().schemaFields["clientId"])
     }
 
+    @Test
+    fun `preserves already self-contained Kafka operation schema fields`() {
+        val binding = Binding(
+            content = mapOf(
+                "groupId" to true,
+                "clientId" to mapOf("type" to "string"),
+            ),
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = BindingLocation.OPERATION,
+                    content = emptyMap<String, Any?>(),
+                    bindingVersion = null,
+                    schemaFields = mapOf(
+                        "groupId" to SchemaInterface.BooleanSchema(true),
+                        "clientId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+                ),
+            ),
+        )
+
+        val bundled = assertIs<BindingInterface.BindingInline>(
+            bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+        ).binding
+
+        assertSame(binding, bundled)
+    }
+
     private fun kafkaBinding(content: Map<String, Any?>): Binding {
         val key = schemaReference("key-schemas.yaml#/AccountKey", type = "object")
         return Binding(
