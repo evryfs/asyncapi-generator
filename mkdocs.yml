@@ -16,21 +16,23 @@ plugins:
 
 nav:
   - Home: index.md
-  - Examples:
-      - Bundled documents: bundler/examples.md
   - Reference:
+      - Bundled document examples: bundler/examples.md
       - Parser contract: parser/parser-contract.md
       - Validation rules: validator/rules.md
       - YAML output: serializers/yaml-output.md
   - Explanation:
-      - Parser architecture: parser/architecture.md
-      - Validator architecture: validator/architecture.md
-      - Bundler strategy: bundler/bundler_strategy.md
-      - Generator strategy: generator/generator_strategy.md
-      - Schema validation library evaluation: validator/schema_validation_library_evaluation.md
-  - Contributing:
-      - Documentation: contributing/documentation.md
-      - Parser documentation: parser/README.md
-      - Changing the parser: parser/changing-the-parser.md
-      - Validator documentation: validator/README.md
-      - Adding a validation rule: validator/adding-validation-rule.md
+      - Purpose and scope: explanation/purpose-and-scope.md
+  - Maintainer documentation:
+      - Architecture:
+          - Parser: parser/architecture.md
+          - Validator: validator/architecture.md
+          - Bundler: bundler/bundler_strategy.md
+          - Generator: generator/generator_strategy.md
+          - Schema validation library evaluation: validator/schema_validation_library_evaluation.md
+      - Change procedures:
+          - Documentation: contributing/documentation.md
+          - Parser documentation: parser/README.md
+          - Changing the parser: parser/changing-the-parser.md
+          - Validator documentation: validator/README.md
+          - Adding a validation rule: validator/adding-validation-rule.md
