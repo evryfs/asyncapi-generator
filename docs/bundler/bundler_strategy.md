@@ -31,6 +31,11 @@ in `Reference.model` and marks the reference for inline serialization. This
 makes the referenced object available in the bundled model without requiring
 the generator or document writer to load another file.
 
+Schema-valued protocol binding fields follow the schema traversal policy. For
+example, external schemas used by Kafka `key`, `groupId`, and `clientId` fields
+are serialized into the binding so the bundled document remains independent of
+the source schema file.
+
 ## Schema references and cycles
 
 Schema references have a narrower policy because schemas can be recursive:

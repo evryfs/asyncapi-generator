@@ -1,28 +1,28 @@
-asyncapi: "3.0.0"
+asyncapi: 3.0.0
 info:
-  title: "Mutually recursive external schema bundling"
-  version: "1.0.0"
+  title: Mutually recursive external schema bundling
+  version: 1.0.0
 channels:
   relationshipEvents:
-    address: "relationship.events"
+    address: relationship.events
     messages:
       relationshipUpdated:
         payload:
           $ref: "#/components/schemas/ParentNode"
-        name: "RelationshipUpdated"
+        name: RelationshipUpdated
 components:
   schemas:
     ParentNode:
-      type: "object"
+      type: object
       required:
-        - "child"
+        - child
       properties:
         child:
           $ref: "#/components/schemas/ChildNode"
     ChildNode:
-      type: "object"
+      type: object
       required:
-        - "parent"
+        - parent
       properties:
         parent:
           $ref: "#/components/schemas/ParentNode"

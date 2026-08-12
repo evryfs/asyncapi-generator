@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.servers
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
@@ -14,7 +15,10 @@ class ServerBundlerTest {
 
     @Test
     fun `bundleServers bundles and inlines an unvisited server reference`() {
-        val bindingReference = Reference("#/components/serverBindings/kafka")
+        val bindingReference = Reference(
+            "#/components/serverBindings/kafka",
+            model = Binding(content = emptyMap()),
+        )
         val server = Server(
             host = "kafka.example.com",
             protocol = "kafka",

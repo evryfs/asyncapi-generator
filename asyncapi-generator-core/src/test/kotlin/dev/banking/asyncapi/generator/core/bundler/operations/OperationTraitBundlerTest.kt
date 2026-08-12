@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
@@ -16,7 +17,10 @@ class OperationTraitBundlerTest {
 
     @Test
     fun `bundle bundles and inlines an unvisited operation trait reference`() {
-        val bindingReference = Reference("#/components/operationBindings/kafka")
+        val bindingReference = Reference(
+            "#/components/operationBindings/kafka",
+            model = Binding(content = emptyMap()),
+        )
         val trait = OperationTrait(
             bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
         )

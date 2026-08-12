@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: Bundled Document Interoperability
+  version: 1.0.0
+servers:
+  kafka:
+    $ref: '../../multi/asyncapi_multifile_example_main.yaml#/servers/scram-connections'
+channels:
+  lifecycleEvents:
+    address: account.lifecycle.events
+    servers:
+      - $ref: '#/servers/kafka'
+    messages:
+      accountUpdated:
+        $ref: '../../../generator/spring-kafka/single-message.yaml#/components/messages/MyAccountUpdated'
+      auditEvent:
+        $ref: '../external-component-catalog/catalog.yaml#/components/messages/AuditEvent'
+      treeUpdated:
+        name: TreeUpdated
+        payload:
+          $ref: '../../recursive-external-mutual/schemas.yaml#/components/schemas/ParentNode'
+operations:
+  publishLifecycleEvents:
+    action: send
+    channel:
+      $ref: '#/channels/lifecycleEvents'
+    bindings:
+      kafka:
+        groupId:
+          $ref: '../../../generator/spring-kafka/key-schemas.yaml#/myAccountKey/properties/institutionId'
+        clientId:
+          $ref: '../../../generator/spring-kafka/key-schemas.yaml#/myAccountKey/properties/accountId'
+        bindingVersion: 0.5.0
+    messages:
+      - $ref: '#/channels/lifecycleEvents/messages/accountUpdated'
+      - $ref: '#/channels/lifecycleEvents/messages/auditEvent'
+      - $ref: '#/channels/lifecycleEvents/messages/treeUpdated'
+  consumeLifecycleEvents:
+    action: receive
+    channel:
+      $ref: '#/channels/lifecycleEvents'

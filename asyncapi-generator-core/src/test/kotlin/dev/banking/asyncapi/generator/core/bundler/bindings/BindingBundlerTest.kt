@@ -1,0 +1,156 @@
+package dev.banking.asyncapi.generator.core.bundler.bindings
+
+import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
+import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
+import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
+
+class BindingBundlerTest {
+
+    private val bundler = BindingBundler()
+
+    @Test
+    fun `bundles an external Kafka key schema in an inline protocol binding`() {
+        val binding = kafkaBinding(
+            content = mapOf(
+                "key" to mapOf("\$ref" to "key-schemas.yaml#/AccountKey"),
+                "bindingVersion" to "0.5.0",
+            ),
+        )
+
+        val bundled = assertIs<BindingInterface.BindingInline>(
+            bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+        ).binding
+
+        val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
+        val bundledKey = assertIs<SchemaInterface.SchemaInline>(bundled.content["key"])
+        assertEquals("object", bundledKey.schema.type)
+        assertSame(originalKey, bundled.kafkaKeySchema)
+        assertSame(originalKey, bundled.protocolBindings.single().schemaFields["key"])
+        assertEquals(
+            mapOf("\$ref" to "key-schemas.yaml#/AccountKey"),
+            assertIs<Map<*, *>>(bundled.protocolBindings.single().content)["key"],
+        )
+    }
+
+    @Test
+    fun `bundles an external Kafka key schema in a referenced component binding`() {
+        val binding = kafkaBinding(
+            content = mapOf(
+                "kafka" to mapOf(
+                    "key" to mapOf("\$ref" to "key-schemas.yaml#/AccountKey"),
+                    "bindingVersion" to "0.5.0",
+                ),
+            ),
+        )
+        val reference = Reference("bindings.yaml#/AccountBinding", model = binding)
+        val bindingReference = BindingInterface.BindingReference(reference)
+
+        val bundled = bundler.bundle(bindingReference, BundlingContext.empty())
+
+        assertSame(bindingReference, bundled)
+        assertTrue(reference.inline)
+        val bundledBinding = assertIs<Binding>(reference.model)
+        val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
+        val bundledKafka = assertIs<Map<*, *>>(bundledBinding.content["kafka"])
+        val bundledKey = assertIs<SchemaInterface.SchemaInline>(bundledKafka["key"])
+        assertEquals("object", bundledKey.schema.type)
+        assertSame(originalKey, bundledBinding.kafkaKeySchema)
+    }
+
+    @Test
+    fun `bundles external Kafka operation schema fields`() {
+        val groupId = schemaReference("group-id.yaml#/GroupId")
+        val clientId = schemaReference("client-id.yaml#/ClientId")
+        val binding = Binding(
+            content = mapOf(
+                "groupId" to mapOf("\$ref" to "group-id.yaml#/GroupId"),
+                "clientId" to mapOf("\$ref" to "client-id.yaml#/ClientId"),
+                "bindingVersion" to "0.5.0",
+            ),
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = BindingLocation.OPERATION,
+                    content = emptyMap<String, Any?>(),
+                    bindingVersion = "0.5.0",
+                    schemaFields = mapOf(
+                        "groupId" to groupId,
+                        "clientId" to clientId,
+                    ),
+                ),
+            ),
+        )
+
+        val bundled = assertIs<BindingInterface.BindingInline>(
+            bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+        ).binding
+
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
+        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["clientId"]).schema.type)
+        assertSame(groupId, bundled.protocolBindings.single().schemaFields["groupId"])
+        assertSame(clientId, bundled.protocolBindings.single().schemaFields["clientId"])
+    }
+
+    @Test
+    fun `preserves already self-contained Kafka operation schema fields`() {
+        val binding = Binding(
+            content = mapOf(
+                "groupId" to true,
+                "clientId" to mapOf("type" to "string"),
+            ),
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = BindingLocation.OPERATION,
+                    content = emptyMap<String, Any?>(),
+                    bindingVersion = null,
+                    schemaFields = mapOf(
+                        "groupId" to SchemaInterface.BooleanSchema(true),
+                        "clientId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+                ),
+            ),
+        )
+
+        val bundled = assertIs<BindingInterface.BindingInline>(
+            bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+        ).binding
+
+        assertSame(binding, bundled)
+    }
+
+    private fun kafkaBinding(content: Map<String, Any?>): Binding {
+        val key = schemaReference("key-schemas.yaml#/AccountKey", type = "object")
+        return Binding(
+            content = content,
+            kafkaKeySchema = key,
+            protocolBindings = listOf(
+                ProtocolBinding(
+                    protocol = "kafka",
+                    location = BindingLocation.MESSAGE,
+                    content = (content["kafka"] as? Map<*, *>) ?: content,
+                    bindingVersion = "0.5.0",
+                    schemaFields = mapOf("key" to key),
+                ),
+            ),
+        )
+    }
+
+    private fun schemaReference(ref: String, type: String = "string") =
+        SchemaInterface.SchemaReference(
+            Reference(
+                ref = ref,
+                model = Schema(type = type),
+            ),
+        )
+}

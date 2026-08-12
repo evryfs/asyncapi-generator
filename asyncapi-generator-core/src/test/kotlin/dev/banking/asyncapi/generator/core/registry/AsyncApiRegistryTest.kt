@@ -60,6 +60,9 @@ class AsyncApiRegistryTest {
                     "x-leading-gt" to ">leading-indicator",
                     "x-leading-trailing-whitespace" to "  whitespace preserved  ",
                     "x-quoted-both-sides" to "\"quoted\"",
+                    "x-yaml-word" to "on",
+                    "x-yaml-date" to "2026-08-03",
+                    "x-yaml-timestamp" to "2026-08-03T12:34:56Z",
                     "x-string-list" to listOf("true", "123", "null", "|field", ">field", "'field", "\"field"),
                 ),
             ),
@@ -83,6 +86,12 @@ class AsyncApiRegistryTest {
         assertTrue(
             yamlText.contains("description: |"),
         )
+        assertTrue(yamlText.contains("asyncapi: 3.0.0"))
+        assertTrue(yamlText.contains("title: Value preservation"))
+        assertTrue(yamlText.contains("version: \"123\""))
+        assertTrue(yamlText.contains("x-yaml-word: \"on\""))
+        assertTrue(yamlText.contains("x-yaml-date: \"2026-08-03\""))
+        assertTrue(yamlText.contains("x-yaml-timestamp: \"2026-08-03T12:34:56Z\""))
 
         val root = AsyncApiRegistry.read(yamlFile, context)
         val rootObject = root.expectObject()
@@ -94,6 +103,9 @@ class AsyncApiRegistryTest {
         assertEquals("\"quoted\"", info.required("x-quoted-both-sides").expect<String>())
         assertEquals("|leading-indicator", info.required("x-leading-pipe").expect<String>())
         assertEquals(">leading-indicator", info.required("x-leading-gt").expect<String>())
+        assertEquals("on", info.required("x-yaml-word").expect<String>())
+        assertEquals("2026-08-03", info.required("x-yaml-date").expect<String>())
+        assertEquals("2026-08-03T12:34:56Z", info.required("x-yaml-timestamp").expect<String>())
 
         val schemaType = rootObject
             .required("components")
