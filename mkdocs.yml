@@ -17,6 +17,7 @@ plugins:
 nav:
   - Home: index.md
   - Reference:
+      - Supported capabilities: reference/supported-capabilities.md
       - Bundled document examples: bundler/examples.md
       - Parser contract: parser/parser-contract.md
       - Validation rules: validator/rules.md

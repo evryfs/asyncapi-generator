@@ -19,6 +19,8 @@ Maven, Gradle, and CLI usage.
 
 - Read the [project purpose and scope](explanation/purpose-and-scope.md) to
   understand what the generator owns and deliberately leaves to applications.
+- Check the [supported capabilities](reference/supported-capabilities.md) before
+  choosing a generation workflow.
 - Inspect [bundled document examples](bundler/examples.md) with verified source
   and output documents.
 - Use the [validation rule reference](validator/rules.md) to interpret validator
