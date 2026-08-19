@@ -38,8 +38,8 @@ import org.springframework.validation.annotation.Validated
  *         payload: MyAccountUpdatedPayload,
  *         receivedTopic: String,
  *         receivedKey: MyAccountKey,
- *         X_EXAMPLE_CORRELATION_ID: String,
- *         X_EXAMPLE_SOURCE_SYSTEM: String?,
+ *         xExampleCorrelationId: String,
+ *         xExampleSourceSystem: String?,
  *     ) {
  *         // Process the message.
  *     }
@@ -76,8 +76,8 @@ interface MyAccountUpdatedConsumer {
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
      * @param [receivedKey] Identifies an account within an institution.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      */
     fun listenMyAccountUpdated(
         @Payload
@@ -92,8 +92,8 @@ interface MyAccountUpdatedConsumer {
         receivedKey: MyAccountKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ) = Unit
 }

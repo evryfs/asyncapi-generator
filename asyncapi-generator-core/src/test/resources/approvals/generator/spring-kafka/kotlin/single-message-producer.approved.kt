@@ -39,15 +39,15 @@ import org.springframework.validation.annotation.Validated
  *     override fun sendMyAccountUpdated(
  *         payload: MyAccountUpdatedPayload,
  *         messageKey: MyAccountKey,
- *         X_EXAMPLE_CORRELATION_ID: String,
- *         X_EXAMPLE_SOURCE_SYSTEM: String?,
+ *         xExampleCorrelationId: String,
+ *         xExampleSourceSystem: String?,
  *     ): CompletableFuture<RecordMetadata> {
  *         val message =
  *             MessageBuilder.withPayload(payload)
  *                 .setHeader(KafkaHeaders.TOPIC, topicAddress)
  *                 .setHeader(KafkaHeaders.KEY, messageKey)
- *                 .setHeader("X-EXAMPLE-CORRELATION-ID", X_EXAMPLE_CORRELATION_ID)
- *                 .setHeader("X-EXAMPLE-SOURCE-SYSTEM", X_EXAMPLE_SOURCE_SYSTEM)
+ *                 .setHeader("X-EXAMPLE-CORRELATION-ID", xExampleCorrelationId)
+ *                 .setHeader("X-EXAMPLE-SOURCE-SYSTEM", xExampleSourceSystem)
  *                 .build()
  *
  *         return kafkaTemplate.send(message)
@@ -84,8 +84,8 @@ interface MyAccountUpdatedProducer {
      *
      * @param [payload] Details about an account update.
      * @param [messageKey] Identifies an account within an institution.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -98,9 +98,9 @@ interface MyAccountUpdatedProducer {
         messageKey: MyAccountKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(

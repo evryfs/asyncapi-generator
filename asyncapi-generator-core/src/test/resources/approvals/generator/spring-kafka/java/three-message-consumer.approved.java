@@ -78,14 +78,14 @@ public interface MyAccountLifecycleConsumer {
      *
      * @param payload Details about a newly created account.
      * @param receivedTopic Kafka topic from which the record was received.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      */
     default void listenMyAccountCreated(
         @Payload @Valid MyAccountCreatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
     }
 
@@ -99,15 +99,15 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about an account update.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Numeric identifier of the updated account.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      */
     default void listenMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true) @Min(1L) @Max(9999999999L) @NotNull Long receivedKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
     }
 
@@ -121,15 +121,15 @@ public interface MyAccountLifecycleConsumer {
      * @param payload Details about a closed account.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Identifies a particular account closure.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      */
     default void listenMyAccountClosed(
         @Payload @Valid MyAccountClosedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true) @Valid @NotNull MyAccountClosureKey receivedKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
     }
 }

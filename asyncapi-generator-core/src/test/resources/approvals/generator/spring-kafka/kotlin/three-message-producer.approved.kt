@@ -62,8 +62,8 @@ interface MyAccountLifecycleProducer {
      * overrides this method.
      *
      * @param [payload] Details about a newly created account.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -73,9 +73,9 @@ interface MyAccountLifecycleProducer {
         payload: MyAccountCreatedPayload,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(
@@ -92,8 +92,8 @@ interface MyAccountLifecycleProducer {
      *
      * @param [payload] Details about an account update.
      * @param [messageKey] Numeric identifier of the updated account.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -107,9 +107,9 @@ interface MyAccountLifecycleProducer {
         messageKey: Long,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(
@@ -126,8 +126,8 @@ interface MyAccountLifecycleProducer {
      *
      * @param [payload] Details about a closed account.
      * @param [messageKey] Identifies a particular account closure.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -140,9 +140,9 @@ interface MyAccountLifecycleProducer {
         messageKey: MyAccountClosureKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(

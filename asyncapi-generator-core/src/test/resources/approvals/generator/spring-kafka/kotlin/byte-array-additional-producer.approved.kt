@@ -46,8 +46,8 @@ import org.springframework.validation.annotation.Validated
  *     override fun sendMyAccountUpdatedByteArray(
  *         payload: ByteArray,
  *         messageKey: MyAccountKey,
- *         X_EXAMPLE_CORRELATION_ID: String,
- *         X_EXAMPLE_SOURCE_SYSTEM: String?,
+ *         xExampleCorrelationId: String,
+ *         xExampleSourceSystem: String?,
  *     ): CompletableFuture<RecordMetadata> {
  *         val record = ProducerRecord<MyAccountKey, ByteArray>(
  *             topicAddress,
@@ -88,8 +88,8 @@ interface MyAccountUpdatedProducer {
      *
      * @param [payload] Details about an account update.
      * @param [messageKey] Identifies an account within an institution.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -102,9 +102,9 @@ interface MyAccountUpdatedProducer {
         messageKey: MyAccountKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(
@@ -124,8 +124,8 @@ interface MyAccountUpdatedProducer {
      *   The generated contract does not serialize or validate the byte content.
      *   A compatible serializer such as ByteArraySerializer is application-owned.
      * @param [messageKey] Identifies an account within an institution.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      * @return Future completed with [RecordMetadata] after a successful producer send.
      *   The generated default completes exceptionally until this method is overridden.
      */
@@ -137,9 +137,9 @@ interface MyAccountUpdatedProducer {
         messageKey: MyAccountKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ): CompletableFuture<RecordMetadata> =
         CompletableFuture.failedFuture(
             UnsupportedOperationException(
