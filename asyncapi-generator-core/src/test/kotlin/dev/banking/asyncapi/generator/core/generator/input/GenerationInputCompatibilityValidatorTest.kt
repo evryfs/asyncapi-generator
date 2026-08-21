@@ -186,6 +186,63 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `rejects unhandled native format when only one format has a generation task`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = mapOf("Account" to Schema(type = "object")),
+                            multiFormatSchemas =
+                                mapOf(
+                                    "AvroPayload" to nativeAvroSchema(),
+                                    "ProtobufPayload" to nativeProtobufSchema(),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels = emptyList(),
+                        ),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                GenerationTask.NativeAvroArtifacts(
+                                    generateSpecificRecords = false,
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("ProtobufPayload"))
+        assertTrue(error.message!!.contains("application/vnd.google.protobuf;version=3"))
+    }
+
+    @Test
+    fun `allows mixed formats when both have generation tasks`() {
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = mapOf("Account" to Schema(type = "object")),
+                    multiFormatSchemas =
+                        mapOf(
+                            "AvroPayload" to nativeAvroSchema(),
+                            "ProtobufPayload" to nativeProtobufSchema(),
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.NativeAvroArtifacts(
+                            generateSpecificRecords = false,
+                        ),
+                        GenerationTask.NativeProtobufArtifacts(),
+                    ),
+                ),
+        )
+    }
+
+    @Test
     fun `allows native Avro model package matching the schema namespace`() {
         validator.validate(
             generationInput =
