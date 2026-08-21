@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.TopicParamete
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
@@ -283,7 +284,5 @@ class JavaSpringKafkaModelFactory(
         )
     }
 
-    private fun String.toJavaStringLiteral(): String =
-        replace("\\", "\\\\")
-            .replace("\"", "\\\"")
+    private fun String.toJavaStringLiteral(): String = SourceLiteralEscaper.forJava(this)
 }
