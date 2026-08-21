@@ -16,21 +16,36 @@ plugins:
 
 nav:
   - Home: index.md
-  - Examples:
-      - Bundled documents: bundler/examples.md
+  - Tutorials:
+      - Getting started: tutorials/getting-started.md
+  - How-to:
+      - Maven: how-to/maven.md
+      - Gradle: how-to/gradle.md
+      - CLI: how-to/cli.md
+      - Load an AsyncAPI document: how-to/load-asyncapi-document.md
+      - Generate Kotlin models: how-to/generate-kotlin-models.md
+      - Generate Spring Kafka clients: how-to/generate-spring-kafka-clients.md
+      - Generate Avro schemas: how-to/generate-avro-schemas.md
+      - Generate Protobuf schemas: how-to/generate-protobuf-schemas.md
+      - Generate JSON schemas: how-to/generate-json-schemas.md
+      - Bundle multi-file documents: how-to/bundle-multi-file-documents.md
   - Reference:
-      - Parser contract: parser/parser-contract.md
-      - Validation rules: validator/rules.md
-      - YAML output: serializers/yaml-output.md
+      - Reader contract: reference/reader-contract.md
+      - Parser contract: reference/parser-contract.md
+      - Validation rules: reference/validation-rules.md
+      - Generator configuration: reference/generator-configuration.md
+      - YAML output: reference/yaml-output.md
   - Explanation:
-      - Parser architecture: parser/architecture.md
-      - Validator architecture: validator/architecture.md
-      - Bundler strategy: bundler/bundler_strategy.md
-      - Generator strategy: generator/generator_strategy.md
-      - Schema validation library evaluation: validator/schema_validation_library_evaluation.md
+      - Architecture overview: explanation/architecture.md
+      - Reader: explanation/reader.md
+      - Parser: explanation/parser.md
+      - Validator: explanation/validator.md
+      - Bundler: explanation/bundler.md
+      - Generator: explanation/generator.md
+      - Schema formats: explanation/schema-formats.md
   - Contributing:
+      - Development setup: contributing/development-setup.md
+      - Adding a validation rule: contributing/adding-validation-rule.md
+      - Changing the parser: contributing/changing-the-parser.md
       - Documentation: contributing/documentation.md
-      - Parser documentation: parser/README.md
-      - Changing the parser: parser/changing-the-parser.md
-      - Validator documentation: validator/README.md
-      - Adding a validation rule: validator/adding-validation-rule.md
+  - Coverage: coverage/index.md
