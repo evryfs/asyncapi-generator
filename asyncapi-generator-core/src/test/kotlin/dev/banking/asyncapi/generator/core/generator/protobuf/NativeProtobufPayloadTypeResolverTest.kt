@@ -177,6 +177,40 @@ class NativeProtobufPayloadTypeResolverTest {
         )
     }
 
+    @Test
+    fun `resolve rejects nested messages that match payload name`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedNativeProtobufPayloadType> {
+                resolver.resolve(
+                    protobufMessage(
+                        schema =
+                            """
+                            syntax = "proto3";
+
+                            package com.example.protobuf;
+
+                            option java_multiple_files = true;
+
+                            message Envelope {
+                              message UserCreated {
+                                string user_id = 1;
+                              }
+                            }
+                            """.trimIndent(),
+                    ),
+                )
+            }
+
+        assertEquals(
+            """
+            Native Protobuf payload 'UserCreated' cannot be used as a generated client type.
+            The payload uses schemaFormat 'application/vnd.google.protobuf;version=3'.
+            Reason: Protobuf client APIs require a top-level message named 'UserCreated'.
+            """.trimIndent(),
+            error.message?.trim(),
+        )
+    }
+
     private fun protobufMessage(schema: String): AnalyzedMultiFormatMessage =
         AnalyzedMultiFormatMessage(
             messageName = "UserCreated",
