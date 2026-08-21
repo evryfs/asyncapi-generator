@@ -24,24 +24,29 @@ object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val collectedSchemas = mutableMapOf<String, Schema>()
+        val allComponentSchemas = mutableMapOf<String, Schema>()
         val collectedMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
         componentNode?.schemas?.forEach { (name, schemaInterface) ->
             val schemaName = MapperUtil.toPascalCase(name)
             when (schemaInterface) {
-                is SchemaInterface.SchemaInline ->
+                is SchemaInterface.SchemaInline -> {
+                    allComponentSchemas[schemaName] = schemaInterface.schema
                     if (!usageIndex.isHeaderOnly(schemaName)) {
                         collectedSchemas[schemaName] = schemaInterface.schema
                     }
+                }
                 is SchemaInterface.MultiFormatSchemaInline ->
                     collectedMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
                 is SchemaInterface.SchemaReference ->
                     when (val model = schemaInterface.reference.model) {
-                        is Schema ->
+                        is Schema -> {
+                            allComponentSchemas[schemaName] = model
                             if (!usageIndex.isHeaderOnly(schemaName)) {
                                 collectedSchemas[schemaName] = model
                             }
+                        }
                         is MultiFormatSchema -> collectedMultiFormatSchemas[schemaName] = model
                         else -> Unit
                     }
@@ -66,6 +71,7 @@ object AsyncApiSchemaLoader {
         }
         return LoadedSchemas(
             schemas = collectedSchemas,
+            allComponentSchemas = allComponentSchemas,
             multiFormatSchemas = collectedMultiFormatSchemas,
         )
     }

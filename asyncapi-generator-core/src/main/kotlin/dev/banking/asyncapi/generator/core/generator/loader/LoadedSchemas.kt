@@ -6,5 +6,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 /** Schema categories collected from an AsyncAPI document for generation. */
 data class LoadedSchemas(
     val schemas: Map<String, Schema>,
+    val allComponentSchemas: Map<String, Schema> = schemas,
     val multiFormatSchemas: Map<String, MultiFormatSchema>,
 )
