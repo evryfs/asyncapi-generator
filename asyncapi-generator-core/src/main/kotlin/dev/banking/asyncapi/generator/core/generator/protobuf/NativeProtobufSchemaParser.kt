@@ -40,7 +40,7 @@ class NativeProtobufSchemaParser {
 
         for (line in content.lines()) {
             if (depth == 0 && TOP_LEVEL_MESSAGE_REGEX.containsMatchIn(line)) {
-                val name = TOP_LEVEL_MESSAGE_REGEX.find(line)!!.groupValues[1]
+                val name = requireNotNull(TOP_LEVEL_MESSAGE_REGEX.find(line)).groupValues[1]
                 names.add(name)
                 if (line.contains('{')) {
                     depth = 1

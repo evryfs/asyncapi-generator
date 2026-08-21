@@ -16,10 +16,7 @@ enum class ClientType(
             value: String?,
             path: String,
         ): ClientType {
-            if (value == null) {
-                throw IllegalArgumentException("$path is required")
-            }
-
+            requireNotNull(value) { "$path is required" }
             return entries.firstOrNull { it.configurationValue == value }
                 ?: throw IllegalArgumentException(
                     "Invalid $path '$value'. Supported values: ${supportedConfigurationValues.joinToString(", ")}",

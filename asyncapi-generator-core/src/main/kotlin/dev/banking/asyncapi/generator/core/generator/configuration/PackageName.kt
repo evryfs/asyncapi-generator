@@ -14,15 +14,8 @@ value class PackageName private constructor(
             value: String,
             path: String,
         ): PackageName {
-            if (value.isBlank()) {
-                throw IllegalArgumentException("$path cannot be empty")
-            }
-
-            if (!pattern.matches(value)) {
-                throw IllegalArgumentException(
-                    "$path must be a dot-separated package name, for example com.example.model",
-                )
-            }
+            require(value.isNotBlank()) { "$path cannot be empty" }
+            require(pattern.matches(value)) { "$path must be a dot-separated package name, for example com.example.model" }
 
             return PackageName(value)
         }
