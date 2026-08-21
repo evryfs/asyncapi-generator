@@ -8,7 +8,15 @@ import java.nio.charset.CodingErrorAction.REPORT
 import java.nio.charset.CharacterCodingException
 import java.nio.charset.StandardCharsets.UTF_8
 
-/** Resource limits shared by the YAML and JSON reader implementations. */
+/**
+ * Resource limits shared by the YAML and JSON reader implementations.
+ *
+ * @property maxDocumentBytes maximum file size in bytes
+ * @property maxDocumentCharacters maximum content length in characters
+ * @property maxNestingDepth maximum object/array nesting depth
+ * @property maxAliasesForCollections maximum YAML alias references per collection
+ * @property maxNumberCharacters maximum length of a numeric token
+ */
 internal data class DocumentReaderLimits(
     val maxDocumentBytes: Int,
     val maxDocumentCharacters: Int,

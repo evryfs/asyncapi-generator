@@ -9,7 +9,15 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import kotlin.reflect.typeOf
 
 /**
- * Represents one parser input node together with its source path and context.
+ * Wraps a [DocumentNode] with its source path, navigation address, and parser context.
+ *
+ * Provides type-safe navigation via [expectObject], [expectArray], and [expect].
+ *
+ * @param name display path of this node (e.g., `root.channels.userEvents`)
+ * @param node the underlying document value
+ * @param address collision-safe identity within the source document
+ * @param context shared parser context for registration and diagnostics
+ * @param profile AsyncAPI version profile for member policy enforcement, or null for default
  */
 internal class ParserNode(
     val name: String,
@@ -38,7 +46,6 @@ internal class ParserNode(
     fun withProfile(profile: AsyncApiParserProfile): ParserNode =
         ParserNode(name, node, address, context, profile)
 
-    /** Requires this value to be an object and exposes object navigation. */
     fun expectObject(): ParserObjectNode =
         ParserObjectNode(
             parserNode = this,
@@ -51,7 +58,6 @@ internal class ParserNode(
                 ),
         )
 
-    /** Requires this value to be an array and exposes array navigation. */
     fun expectArray(): ParserArrayNode =
         ParserArrayNode(
             parserNode = this,
@@ -73,6 +79,5 @@ internal class ParserNode(
             context = context,
         ) as T
 
-    /** Converts this source-located node to plain maps, lists, scalars, or null. */
     fun toPlainValue(): Any? = node.toValue()
 }

@@ -3,7 +3,12 @@ package dev.banking.asyncapi.generator.core.parser.node
 import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
 import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 
-/** Collision-safe identity of one document node within one registered source. */
+/**
+ * Collision-safe identity of one document node within one registered source.
+ *
+ * @property sourceId identifies the source document this node belongs to
+ * @property segments ordered path segments from root to this node
+ */
 internal data class NodeAddress(
     val sourceId: String,
     val segments: List<NodeAddressSegment>,
@@ -42,9 +47,11 @@ internal data class NodeAddress(
     }
 }
 
-/** Typed path segment used by [NodeAddress] identity. */
+/** A single segment in a [NodeAddress] path — either a named member or a numeric index. */
 internal sealed interface NodeAddressSegment {
+    /** An object member identified by its key name. */
     data class Member(val name: String) : NodeAddressSegment
 
+    /** An array element identified by its zero-based index. */
     data class Index(val index: Int) : NodeAddressSegment
 }

@@ -18,6 +18,12 @@ import java.nio.charset.StandardCharsets.UTF_8
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0
 
+/**
+ * Mutable context shared across the parser, external loader, and validator stages.
+ *
+ * Tracks source files, model registrations, resource budgets, and validation warnings
+ * for a single document load. A new context is created for each call to [AsyncApiDocumentLoader.load].
+ */
 internal class AsyncApiContext internal constructor(
     loadResourceLimits: ParserLoadResourceLimits,
 ) {

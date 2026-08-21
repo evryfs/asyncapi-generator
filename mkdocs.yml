@@ -48,4 +48,5 @@ nav:
       - Adding a validation rule: contributing/adding-validation-rule.md
       - Changing the parser: contributing/changing-the-parser.md
       - Documentation: contributing/documentation.md
+      - KDoc style guide: contributing/kdoc-style-guide.md
   - Coverage: coverage/index.md
