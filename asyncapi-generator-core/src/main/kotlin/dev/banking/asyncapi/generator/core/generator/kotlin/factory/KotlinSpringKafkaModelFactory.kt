@@ -15,6 +15,7 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayl
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
 
 class KotlinSpringKafkaModelFactory(
@@ -256,8 +257,5 @@ class KotlinSpringKafkaModelFactory(
         )
     }
 
-    private fun String.toKotlinStringLiteral(): String =
-        replace("\\", "\\\\")
-            .replace("\"", "\\\"")
-            .replace("${'$'}", "\\${'$'}")
+    private fun String.toKotlinStringLiteral(): String = SourceLiteralEscaper.forKotlin(this)
 }
