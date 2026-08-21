@@ -204,6 +204,44 @@ class JsonSchemaGeneratorTest {
     }
 
     @Test
+    fun `includes header-only schemas in JSON Schema output`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "CommonHeaders" to
+                            Schema(
+                                type = "object",
+                                properties =
+                                    mapOf(
+                                        "requestId" to
+                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
+                            ),
+                        "GenericMessagePayload" to
+                            Schema(
+                                type = "object",
+                                properties =
+                                    mapOf(
+                                        "itemId" to
+                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        assertEquals(
+            setOf(
+                "com/example/schema/CommonHeaders.schema.json",
+                "com/example/schema/GenericMessagePayload.schema.json",
+            ),
+            result.artifacts.map { it.relativePath }.toSet(),
+        )
+    }
+
+    @Test
     fun `rejects invalid native Draft 07 root values`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.InvalidJsonSchema> {

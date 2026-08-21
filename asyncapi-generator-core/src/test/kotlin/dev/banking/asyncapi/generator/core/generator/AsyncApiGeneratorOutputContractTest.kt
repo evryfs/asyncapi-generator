@@ -253,7 +253,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = externalNativeSchemaAssetsDocument(),
+            asyncApiDocument = externalNativeAvroSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -360,7 +360,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = externalNativeSchemaAssetsDocument(),
+            asyncApiDocument = externalNativeProtobufSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -529,9 +529,14 @@ class AsyncApiGeneratorOutputContractTest {
             File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
         )
 
-    private fun externalNativeSchemaAssetsDocument() =
+    private fun externalNativeAvroSchemaAssetsDocument() =
         bundlerFixtures.bundledDocument(
-            File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml"),
+            File("src/test/resources/generator/native-assets/asyncapi_external_native_avro_schema_assets.yaml"),
+        )
+
+    private fun externalNativeProtobufSchemaAssetsDocument() =
+        bundlerFixtures.bundledDocument(
+            File("src/test/resources/generator/native-assets/asyncapi_external_native_protobuf_schema_assets.yaml"),
         )
 
     private fun documentWithAsyncApiAndInvalidNativeAvroSchemas(): AsyncApiDocument =
