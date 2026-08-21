@@ -138,6 +138,30 @@ class JsonSchemaGenerator(
         }
 
         normalizeSchemaInterface(schemaNode.get("items"), schema.items)
+        schema.tupleItems?.let { tupleItems ->
+            val tupleArray = objectMapper.createArrayNode()
+            tupleItems.forEach { element ->
+                when (element) {
+                    is SchemaInterface.SchemaInline -> {
+                        val elementNode = objectMapper.valueToTree<ObjectNode>(element.schema)
+                        normalizeAsyncApiSchemaNode(elementNode, element.schema)
+                        tupleArray.add(elementNode)
+                    }
+                    is SchemaInterface.SchemaReference -> {
+                        val refNode = objectMapper.createObjectNode()
+                        refNode.put($$"$ref", element.reference.ref)
+                        tupleArray.add(refNode)
+                    }
+                    is SchemaInterface.BooleanSchema -> {
+                        tupleArray.add(element.value)
+                    }
+                    else -> {
+                        tupleArray.add(objectMapper.createObjectNode())
+                    }
+                }
+            }
+            schemaNode.set<JsonNode>("items", tupleArray)
+        }
         normalizeSchemaInterface(schemaNode.get("additionalItems"), schema.additionalItems)
         normalizeSchemaInterface(schemaNode.get("contains"), schema.contains)
         normalizeSchemaMap(schemaNode.get("properties"), schema.properties)

@@ -48,14 +48,14 @@ import org.springframework.validation.annotation.Validated;
  *     public CompletableFuture<RecordMetadata> sendMyAccountUpdated(
  *             MyAccountUpdatedPayload payload,
  *             MyAccountKey messageKey,
- *             String X_EXAMPLE_CORRELATION_ID,
- *             String X_EXAMPLE_SOURCE_SYSTEM
+ *             String xExampleCorrelationId,
+ *             String xExampleSourceSystem
  *     ) {
  *         var message = MessageBuilder.withPayload(payload)
  *                 .setHeader(KafkaHeaders.TOPIC, topicAddress)
  *                 .setHeader(KafkaHeaders.KEY, messageKey)
- *                 .setHeader("X-EXAMPLE-CORRELATION-ID", X_EXAMPLE_CORRELATION_ID)
- *                 .setHeader("X-EXAMPLE-SOURCE-SYSTEM", X_EXAMPLE_SOURCE_SYSTEM)
+ *                 .setHeader("X-EXAMPLE-CORRELATION-ID", xExampleCorrelationId)
+ *                 .setHeader("X-EXAMPLE-SOURCE-SYSTEM", xExampleSourceSystem)
  *                 .build();
  *
  *         return kafkaTemplate.send(message)
@@ -95,16 +95,16 @@ public interface MyAccountUpdatedProducer {
      *
      * @param payload Details about an account update.
      * @param messageKey Identifies an account within an institution.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Valid @NotNull MyAccountKey messageKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(

@@ -73,8 +73,8 @@ interface MyAccountLifecycleConsumer {
      *
      * @param [payload] Details about a newly created account.
      * @param [receivedTopic] Kafka topic from which the record was received.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      */
     fun listenMyAccountCreated(
         @Payload
@@ -85,9 +85,9 @@ interface MyAccountLifecycleConsumer {
         receivedTopic: String,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ) = Unit
 
     /**
@@ -100,8 +100,8 @@ interface MyAccountLifecycleConsumer {
      * @param [payload] Details about an account update.
      * @param [receivedTopic] Kafka topic from which the record was received.
      * @param [receivedKey] Numeric identifier of the updated account.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      */
     fun listenMyAccountUpdated(
         @Payload
@@ -117,9 +117,9 @@ interface MyAccountLifecycleConsumer {
         receivedKey: Long,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ) = Unit
 
     /**
@@ -132,8 +132,8 @@ interface MyAccountLifecycleConsumer {
      * @param [payload] Details about a closed account.
      * @param [receivedTopic] Kafka topic from which the record was received.
      * @param [receivedKey] Identifies a particular account closure.
-     * @param [X_EXAMPLE_CORRELATION_ID] Identifier used to correlate related messages.
-     * @param [X_EXAMPLE_SOURCE_SYSTEM] Optional name of the system that produced the message.
+     * @param [xExampleCorrelationId] Identifier used to correlate related messages.
+     * @param [xExampleSourceSystem] Optional name of the system that produced the message.
      */
     fun listenMyAccountClosed(
         @Payload
@@ -148,8 +148,8 @@ interface MyAccountLifecycleConsumer {
         receivedKey: MyAccountClosureKey,
 
         @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)
-        X_EXAMPLE_CORRELATION_ID: String,
+        xExampleCorrelationId: String,
         @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false)
-        X_EXAMPLE_SOURCE_SYSTEM: String? = null,
+        xExampleSourceSystem: String? = null,
     ) = Unit
 }

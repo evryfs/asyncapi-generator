@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -122,6 +123,122 @@ class JsonSchemaGeneratorTest {
         val artifact = result.artifacts.single()
         assertEquals("com/example/schema/AcceptedValue.schema.json", artifact.relativePath)
         assertEquals("true${System.lineSeparator()}", artifact.content)
+    }
+
+    @Test
+    fun `renders tuple-form items as a JSON Schema array`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "TupleArray" to
+                            Schema(
+                                type = "array",
+                                tupleItems =
+                                    listOf(
+                                        SchemaInterface.SchemaInline(Schema(type = "string")),
+                                        SchemaInterface.SchemaInline(Schema(type = "integer")),
+                                    ),
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        val schema = objectMapper.readTree(result.artifacts.single().content)
+        assertEquals("array", schema.path("type").asText())
+        assertTrue(schema.path("items").isArray)
+        assertEquals(2, schema.path("items").size())
+        assertEquals("string", schema.path("items").get(0).path("type").asText())
+        assertEquals("integer", schema.path("items").get(1).path("type").asText())
+    }
+
+    @Test
+    fun `renders tuple-form items with additionalItems`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "TupleWithAdditional" to
+                            Schema(
+                                type = "array",
+                                tupleItems =
+                                    listOf(
+                                        SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
+                                additionalItems =
+                                    SchemaInterface.SchemaInline(Schema(type = "boolean")),
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        val schema = objectMapper.readTree(result.artifacts.single().content)
+        assertTrue(schema.path("items").isArray)
+        assertEquals(1, schema.path("items").size())
+        assertEquals("string", schema.path("items").get(0).path("type").asText())
+        assertEquals("boolean", schema.path("additionalItems").path("type").asText())
+    }
+
+    @Test
+    fun `preserves single-schema items alongside tuple-form`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "SingleItems" to
+                            Schema(
+                                type = "array",
+                                items =
+                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        val schema = objectMapper.readTree(result.artifacts.single().content)
+        assertTrue(schema.path("items").isObject)
+        assertEquals("string", schema.path("items").path("type").asText())
+    }
+
+    @Test
+    fun `includes header-only schemas in JSON Schema output`() {
+        val result =
+            generator.render(
+                schemas =
+                    mapOf(
+                        "CommonHeaders" to
+                            Schema(
+                                type = "object",
+                                properties =
+                                    mapOf(
+                                        "requestId" to
+                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
+                            ),
+                        "GenericMessagePayload" to
+                            Schema(
+                                type = "object",
+                                properties =
+                                    mapOf(
+                                        "itemId" to
+                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
+                            ),
+                    ),
+                multiFormatSchemas = emptyMap(),
+                packageName = "com.example.schema",
+            )
+
+        assertEquals(
+            setOf(
+                "com/example/schema/CommonHeaders.schema.json",
+                "com/example/schema/GenericMessagePayload.schema.json",
+            ),
+            result.artifacts.map { it.relativePath }.toSet(),
+        )
     }
 
     @Test

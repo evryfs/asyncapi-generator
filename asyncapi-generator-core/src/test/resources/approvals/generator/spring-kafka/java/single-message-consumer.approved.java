@@ -39,8 +39,8 @@ import org.springframework.validation.annotation.Validated;
  *             MyAccountUpdatedPayload payload,
  *             String receivedTopic,
  *             MyAccountKey receivedKey,
- *             String X_EXAMPLE_CORRELATION_ID,
- *             String X_EXAMPLE_SOURCE_SYSTEM
+ *             String xExampleCorrelationId,
+ *             String xExampleSourceSystem
  *     ) {
  *         // Process the message.
  *     }
@@ -80,15 +80,15 @@ public interface MyAccountUpdatedConsumer {
      * @param payload Details about an account update.
      * @param receivedTopic Kafka topic from which the record was received.
      * @param receivedKey Identifies an account within an institution.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      */
     default void listenMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Header(name = KafkaHeaders.RECEIVED_TOPIC, required = true) @NotNull String receivedTopic,
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = true) @Valid @NotNull MyAccountKey receivedKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
     }
 }

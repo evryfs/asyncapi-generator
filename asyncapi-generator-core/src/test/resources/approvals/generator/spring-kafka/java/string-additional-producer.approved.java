@@ -55,8 +55,8 @@ import org.springframework.validation.annotation.Validated;
  *     public CompletableFuture<RecordMetadata> sendMyAccountUpdatedString(
  *             String payload,
  *             MyAccountKey messageKey,
- *             String X_EXAMPLE_CORRELATION_ID,
- *             String X_EXAMPLE_SOURCE_SYSTEM
+ *             String xExampleCorrelationId,
+ *             String xExampleSourceSystem
  *     ) {
  *         var record = new ProducerRecord<MyAccountKey, String>(
  *                 topicAddress,
@@ -100,16 +100,16 @@ public interface MyAccountUpdatedProducer {
      *
      * @param payload Details about an account update.
      * @param messageKey Identifies an account within an institution.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Valid @NotNull MyAccountKey messageKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(
@@ -130,16 +130,16 @@ public interface MyAccountUpdatedProducer {
      * The generated contract does not serialize or validate the text.
      * Encoding and serializer configuration are application-owned; StringSerializer uses UTF-8 by default.
      * @param messageKey Identifies an account within an institution.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountUpdatedString(
         @Payload String payload,
         @Valid @NotNull MyAccountKey messageKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(

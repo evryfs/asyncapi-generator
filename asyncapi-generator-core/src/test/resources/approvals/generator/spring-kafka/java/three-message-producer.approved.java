@@ -67,15 +67,15 @@ public interface MyAccountLifecycleProducer {
      * overrides this method.
      *
      * @param payload Details about a newly created account.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountCreated(
         @Payload @Valid MyAccountCreatedPayload payload,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(
@@ -93,16 +93,16 @@ public interface MyAccountLifecycleProducer {
      *
      * @param payload Details about an account update.
      * @param messageKey Numeric identifier of the updated account.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountUpdated(
         @Payload @Valid MyAccountUpdatedPayload payload,
         @Min(1L) @Max(9999999999L) @NotNull Long messageKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(
@@ -120,16 +120,16 @@ public interface MyAccountLifecycleProducer {
      *
      * @param payload Details about a closed account.
      * @param messageKey Identifies a particular account closure.
-     * @param X_EXAMPLE_CORRELATION_ID Identifier used to correlate related messages.
-     * @param X_EXAMPLE_SOURCE_SYSTEM Optional name of the system that produced the message.
+     * @param xExampleCorrelationId Identifier used to correlate related messages.
+     * @param xExampleSourceSystem Optional name of the system that produced the message.
      * @return future completed with {@link RecordMetadata} after a successful producer send;
      *   the generated default completes exceptionally until this method is overridden
      */
     default CompletableFuture<RecordMetadata> sendMyAccountClosed(
         @Payload @Valid MyAccountClosedPayload payload,
         @Valid @NotNull MyAccountClosureKey messageKey,
-        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String X_EXAMPLE_CORRELATION_ID,
-        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String X_EXAMPLE_SOURCE_SYSTEM
+        @Header(name = "X-EXAMPLE-CORRELATION-ID", required = true) @NotNull String xExampleCorrelationId,
+        @Header(name = "X-EXAMPLE-SOURCE-SYSTEM", required = false) @Nullable String xExampleSourceSystem
     ) {
         return CompletableFuture.failedFuture(
             new UnsupportedOperationException(

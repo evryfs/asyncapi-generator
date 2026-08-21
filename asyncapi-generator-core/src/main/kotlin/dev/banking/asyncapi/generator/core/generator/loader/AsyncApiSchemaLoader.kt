@@ -18,30 +18,39 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val collectedSchemas = mutableMapOf<String, Schema>()
+        val allComponentSchemas = mutableMapOf<String, Schema>()
         val collectedMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
+        val originalNamesByGenerated = mutableMapOf<String, MutableList<String>>()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
         componentNode?.schemas?.forEach { (name, schemaInterface) ->
             val schemaName = MapperUtil.toPascalCase(name)
+            originalNamesByGenerated.getOrPut(schemaName) { mutableListOf() }.add(name)
+            detectSchemaNameCollision(originalNamesByGenerated)
             when (schemaInterface) {
-                is SchemaInterface.SchemaInline ->
+                is SchemaInterface.SchemaInline -> {
+                    allComponentSchemas[schemaName] = schemaInterface.schema
                     if (!usageIndex.isHeaderOnly(schemaName)) {
                         collectedSchemas[schemaName] = schemaInterface.schema
                     }
+                }
                 is SchemaInterface.MultiFormatSchemaInline ->
                     collectedMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
                 is SchemaInterface.SchemaReference ->
                     when (val model = schemaInterface.reference.model) {
-                        is Schema ->
+                        is Schema -> {
+                            allComponentSchemas[schemaName] = model
                             if (!usageIndex.isHeaderOnly(schemaName)) {
                                 collectedSchemas[schemaName] = model
                             }
+                        }
                         is MultiFormatSchema -> collectedMultiFormatSchemas[schemaName] = model
                         else -> Unit
                     }
@@ -66,6 +75,7 @@ object AsyncApiSchemaLoader {
         }
         return LoadedSchemas(
             schemas = collectedSchemas,
+            allComponentSchemas = allComponentSchemas,
             multiFormatSchemas = collectedMultiFormatSchemas,
         )
     }
@@ -203,4 +213,15 @@ object AsyncApiSchemaLoader {
         message: Message,
         messageKey: String,
     ): String = MessageNameResolver.resolve(message, messageKey)
+
+    private fun detectSchemaNameCollision(originalNamesByGenerated: Map<String, List<String>>) {
+        for ((generatedName, originalNames) in originalNamesByGenerated) {
+            if (originalNames.size > 1) {
+                throw SchemaNameCollision(
+                    originalNames = originalNames.distinct(),
+                    generatedName = generatedName,
+                )
+            }
+        }
+    }
 }

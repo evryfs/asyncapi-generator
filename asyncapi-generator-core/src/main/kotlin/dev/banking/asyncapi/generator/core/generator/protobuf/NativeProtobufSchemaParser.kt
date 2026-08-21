@@ -18,7 +18,6 @@ class NativeProtobufSchemaParser {
     private val protoPackageRegex = Regex("""(?m)^\s*package\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*;""")
     private val javaPackageRegex = Regex("""(?m)^\s*option\s+java_package\s*=\s*"([^"]+)"\s*;""")
     private val javaMultipleFilesRegex = Regex("""(?m)^\s*option\s+java_multiple_files\s*=\s*(true|false)\s*;""")
-    private val messageRegex = Regex("""(?m)^\s*message\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{""")
 
     fun parse(
         payloadName: String,
@@ -31,8 +30,36 @@ class NativeProtobufSchemaParser {
             protoPackageName = protoPackageRegex.find(content)?.groupValues?.get(1),
             javaPackageName = javaPackageRegex.find(content)?.groupValues?.get(1),
             javaMultipleFiles = javaMultipleFilesRegex.find(content)?.groupValues?.get(1)?.toBooleanStrict(),
-            messageNames = messageRegex.findAll(content).map { match -> match.groupValues[1] }.toList(),
+            messageNames = extractTopLevelMessageNames(content),
         )
+    }
+
+    /**
+     * Finds top-level message declarations by tracking brace depth line by line.
+     * A message is top-level when its `message Name {` declaration appears at brace depth 0.
+     */
+    private fun extractTopLevelMessageNames(content: String): List<String> {
+        val names = mutableListOf<String>()
+        var depth = 0
+
+        for (line in content.lines()) {
+            if (depth == 0 && TOP_LEVEL_MESSAGE_REGEX.containsMatchIn(line)) {
+                val name = TOP_LEVEL_MESSAGE_REGEX.find(line)!!.groupValues[1]
+                names.add(name)
+                if (line.contains('{')) {
+                    depth = 1
+                    continue
+                }
+            }
+            for (c in line) {
+                when (c) {
+                    '{' -> depth++
+                    '}' -> if (depth > 0) depth--
+                }
+            }
+        }
+
+        return names
     }
 
     private fun schemaContent(
@@ -56,6 +83,10 @@ class NativeProtobufSchemaParser {
         }
 
         return content
+    }
+
+    private companion object {
+        val TOP_LEVEL_MESSAGE_REGEX = Regex("""^\s*message\s+([A-Za-z_][A-Za-z0-9_]*)\s*\{""")
     }
 }
 

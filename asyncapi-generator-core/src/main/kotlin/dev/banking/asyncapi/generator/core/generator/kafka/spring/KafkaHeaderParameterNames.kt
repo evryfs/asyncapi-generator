@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKafkaHeaderName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KafkaHeaderParameterNameCollision
 
-/** Converts Kafka wire-header names into source identifiers shared by Java and Kotlin output. */
+/** Converts Kafka wire-header names into camelCase source identifiers shared by Java and Kotlin output. */
 internal object KafkaHeaderParameterNames {
-    private val invalidIdentifierCharacters = Regex("[^A-Za-z0-9_]+")
 
     private val reservedIdentifiers =
         setOf(
@@ -155,8 +155,8 @@ internal object KafkaHeaderParameterNames {
             )
         }
 
-        val normalized = wireName.replace(invalidIdentifierCharacters, "_")
-        if (normalized.all { character -> character == '_' }) {
+        val normalized = MapperUtil.toCamelCase(wireName)
+        if (normalized.isEmpty()) {
             throw InvalidKafkaHeaderName(
                 headerContractName = headerContractName,
                 wireName = wireName,

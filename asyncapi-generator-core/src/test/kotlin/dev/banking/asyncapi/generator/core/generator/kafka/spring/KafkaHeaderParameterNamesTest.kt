@@ -9,7 +9,7 @@ import kotlin.test.assertTrue
 
 class KafkaHeaderParameterNamesTest {
     @Test
-    fun `preserves casing while replacing wire-name separators`() {
+    fun `converts wire names to camelCase`() {
         val parameterNames =
             KafkaHeaderParameterNames.resolve(
                 headerContractName = "ExampleHeaders",
@@ -23,9 +23,9 @@ class KafkaHeaderParameterNamesTest {
 
         assertEquals(
             mapOf(
-                "X-EXAMPLE-DATA-OWNER-ID" to "X_EXAMPLE_DATA_OWNER_ID",
-                "Signature" to "Signature",
-                "trace.parent value" to "trace_parent_value",
+                "X-EXAMPLE-DATA-OWNER-ID" to "xExampleDataOwnerId",
+                "Signature" to "signature",
+                "trace.parent value" to "traceParentValue",
             ),
             parameterNames,
         )
@@ -41,7 +41,7 @@ class KafkaHeaderParameterNamesTest {
 
         assertEquals(
             mapOf(
-                "1ST-HEADER" to "_1ST_HEADER",
+                "1ST-HEADER" to "_1STHeader",
                 "class" to "class_",
                 "when" to "when_",
             ),
@@ -74,8 +74,51 @@ class KafkaHeaderParameterNamesTest {
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "['X-EXAMPLE-ID', 'X_EXAMPLE_ID'] -> 'X_EXAMPLE_ID'",
+                "['X-EXAMPLE-ID', 'X_EXAMPLE_ID'] -> 'xExampleId'",
             ),
+        )
+    }
+
+    @Test
+    fun `converts kebab-case wire names to camelCase`() {
+        val parameterNames =
+            KafkaHeaderParameterNames.resolve(
+                headerContractName = "ExampleHeaders",
+                wireNames = listOf("x-my-kafka-header"),
+            )
+
+        assertEquals(
+            mapOf("x-my-kafka-header" to "xMyKafkaHeader"),
+            parameterNames,
+        )
+    }
+
+    @Test
+    fun `rejects collision when different wire names produce the same camelCase`() {
+        val exception =
+            assertFailsWith<KafkaHeaderParameterNameCollision> {
+                KafkaHeaderParameterNames.resolve(
+                    headerContractName = "ExampleHeaders",
+                    wireNames = listOf("Content-Type", "content_type"),
+                )
+            }
+
+        assertTrue(
+            exception.message.orEmpty().contains("contentType"),
+        )
+    }
+
+    @Test
+    fun `converts underscored wire names to camelCase`() {
+        val parameterNames =
+            KafkaHeaderParameterNames.resolve(
+                headerContractName = "ExampleHeaders",
+                wireNames = listOf("x_my_header"),
+            )
+
+        assertEquals(
+            mapOf("x_my_header" to "xMyHeader"),
+            parameterNames,
         )
     }
 }

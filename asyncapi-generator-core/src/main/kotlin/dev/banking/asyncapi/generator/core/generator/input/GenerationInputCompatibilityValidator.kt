@@ -31,6 +31,10 @@ class GenerationInputCompatibilityValidator(
             generationPlan.tasks.any { task -> task is GenerationTask.NativeAvroArtifacts }
         val hasNativeProtobuf =
             generationPlan.tasks.any { task -> task is GenerationTask.NativeProtobufArtifacts }
+        val hasJsonSchema =
+            generationPlan.tasks.any { task -> task is GenerationTask.JsonSchemaArtifacts }
+        val hasSpringKafka =
+            generationPlan.tasks.any { task -> task is GenerationTask.SpringKafkaClient }
 
         generationPlan.tasks.forEach { task ->
             when (task) {
@@ -92,6 +96,14 @@ class GenerationInputCompatibilityValidator(
                 -> Unit
             }
         }
+
+        rejectUnhandledExplicitFormats(
+            generationInput = generationInput,
+            hasNativeAvro = hasNativeAvro,
+            hasNativeProtobuf = hasNativeProtobuf,
+            hasJsonSchema = hasJsonSchema,
+            hasSpringKafka = hasSpringKafka,
+        )
     }
 
     private fun requireNativeSchema(
@@ -225,6 +237,30 @@ class GenerationInputCompatibilityValidator(
             output = output,
             payloadName = firstMessage.payloadName,
             schemaFormat = firstMessage.schema.schemaFormat,
+        )
+    }
+
+    private fun rejectUnhandledExplicitFormats(
+        generationInput: GenerationInput,
+        hasNativeAvro: Boolean,
+        hasNativeProtobuf: Boolean,
+        hasJsonSchema: Boolean,
+        hasSpringKafka: Boolean,
+    ) {
+        val firstUnhandled =
+            generationInput.multiFormatSchemas.entries.firstOrNull { (_, schema) ->
+                when {
+                    schema.format.isNativeAvro -> hasNativeAvro || hasSpringKafka
+                    schema.format.isNativeProtobuf -> hasNativeProtobuf || hasSpringKafka
+                    schema.format.isJsonSchemaDraft07 -> hasJsonSchema
+                    else -> false
+                }.not()
+            } ?: return
+
+        throw UnsupportedPayloadSchemaFormat(
+            output = "Generation",
+            payloadName = firstUnhandled.key,
+            schemaFormat = firstUnhandled.value.schemaFormat,
         )
     }
 }
