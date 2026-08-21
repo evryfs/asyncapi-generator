@@ -4,6 +4,7 @@
 ![Release](https://img.shields.io/github/actions/workflow/status/evryfs/asyncapi-generator/release.yml?branch=main&label=release)
 ![Maven Central](https://img.shields.io/maven-central/v/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin)
 ![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.x-purple)
+![Coverage](https://img.shields.io/badge/coverage-report-blue)
 ![License](https://img.shields.io/github/license/evryfs/asyncapi-generator)
 ![Beta](https://img.shields.io/badge/status-beta-yellow)
 
