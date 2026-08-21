@@ -1,0 +1,18 @@
+asyncapi: '3.0.0'
+info:
+  title: External Native Avro Schema Assets Generator Test API
+  version: '1.0.0'
+channels:
+  userEvents:
+    address: user.events
+    messages:
+      userCreatedAvro:
+        name: UserCreatedAvro
+        payload:
+          $ref: '#/components/schemas/UserCreatedAvro'
+components:
+  schemas:
+    UserCreatedAvro:
+      schemaFormat: application/vnd.apache.avro+json;version=1.9.0
+      schema:
+        $ref: user-created.avsc
