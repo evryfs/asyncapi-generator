@@ -1,11 +1,14 @@
 # asyncapi-generator
 
-![Build](https://img.shields.io/github/actions/workflow/status/evryfs/asyncapi-generator/ci.yml?branch=main)
+![Build](https://img.shields.io/github/actions/workflow/status/evryfs/asyncapi-generator/build.yml?branch=main&label=build)
+![Release](https://img.shields.io/github/actions/workflow/status/evryfs/asyncapi-generator/release.yml?branch=main&label=release)
 ![Maven Central](https://img.shields.io/maven-central/v/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin)
+![AsyncAPI](https://img.shields.io/badge/AsyncAPI-3.x-purple)
 ![License](https://img.shields.io/github/license/evryfs/asyncapi-generator)
 ![Beta](https://img.shields.io/badge/status-beta-yellow)
 
-Generate Kotlin and Java models, Spring Kafka clients, Avro schemas, Protobuf artifacts, and JSON schemas from AsyncAPI 3 specifications.
+Generate code and schemas from [AsyncAPI](https://www.asyncapi.com/) 3 specifications.
+Kotlin and Java models, Spring Kafka clients, Avro schemas, Protobuf artifacts, and JSON schemas.
 
 ## Installation
 
