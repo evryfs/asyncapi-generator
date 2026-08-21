@@ -6,8 +6,10 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class MessageTraitBundlerTest {
 
@@ -27,11 +29,10 @@ class MessageTraitBundlerTest {
 
         val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(traitInterface)
-        assertThat(traitReference.inline).isTrue()
-        assertThat(traitReference.model).isInstanceOf(MessageTrait::class.java)
-        assertThat((traitReference.model as MessageTrait).bindings).containsKey("kafka")
-        assertThat(bindingReference.inline).isTrue()
+        assertSame(traitInterface, bundled)
+        assertTrue(traitReference.inline)
+        assertIs<MessageTrait>(traitReference.model)
+        assertTrue((traitReference.model as MessageTrait).bindings!!.containsKey("kafka"))
+        assertTrue(bindingReference.inline)
     }
-
 }

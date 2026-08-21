@@ -9,8 +9,10 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ComponentBundlerTest {
 
@@ -35,9 +37,9 @@ class ComponentBundlerTest {
 
         bundler.bundleComponent(component, BundlingContext.empty())
 
-        assertThat(correlationIdReference.inline).isTrue()
-        assertThat(parameterReference.inline).isTrue()
-        assertThat(serverVariableReference.inline).isTrue()
+        assertTrue(correlationIdReference.inline)
+        assertTrue(parameterReference.inline)
+        assertTrue(serverVariableReference.inline)
     }
 
     @Test
@@ -51,10 +53,9 @@ class ComponentBundlerTest {
 
         val bundled = bundler.bundleComponents(componentInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(componentInterface)
-        assertThat(componentReference.inline).isTrue()
-        assertThat(componentReference.model).isInstanceOf(Component::class.java)
-        assertThat(schemaReference.inline).isTrue()
+        assertSame(componentInterface, bundled)
+        assertTrue(componentReference.inline)
+        assertIs<Component>(componentReference.model)
+        assertTrue(schemaReference.inline)
     }
-
 }

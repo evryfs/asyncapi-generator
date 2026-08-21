@@ -6,8 +6,9 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ServerBundlerTest {
 
@@ -29,11 +30,12 @@ class ServerBundlerTest {
 
         val bundled = bundler.bundleServers(mapOf("production" to serverInterface), BundlingContext.empty())
 
-        assertThat(bundled).containsEntry("production", serverInterface)
-        assertThat(serverReference.inline).isTrue()
-        assertThat(serverReference.model)
-            .isEqualTo(server.copy(bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference))))
-        assertThat(bindingReference.inline).isTrue()
+        assertTrue(bundled!!.containsKey("production"))
+        assertTrue(serverReference.inline)
+        assertEquals(
+            server.copy(bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference))),
+            serverReference.model,
+        )
+        assertTrue(bindingReference.inline)
     }
-
 }

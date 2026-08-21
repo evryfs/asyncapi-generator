@@ -113,30 +113,24 @@ object GeneratorConfigurationFactory {
     private fun validate(request: GeneratorConfigurationRequest) {
         validateProfileConfiguration(request)
 
-        if (request.models?.annotation != null && request.models.packageName == null) {
-            throw IllegalArgumentException("models.packageName is required when models.annotation is configured")
+        require(request.models?.annotation == null || request.models.packageName != null) {
+            "models.packageName is required when models.annotation is configured"
         }
 
-        if (request.models != null && request.models.packageName == null) {
-            throw IllegalArgumentException("models.packageName is required when models are configured")
+        require(request.models == null || request.models.packageName != null) {
+            "models.packageName is required when models are configured"
         }
 
-        if (request.schemas.avroProjection != null && request.schemas.avroProjection.packageName == null) {
-            throw IllegalArgumentException(
-                "schemas.avroProjection.packageName is required when schemas.avroProjection is configured",
-            )
+        require(request.schemas.avroProjection == null || request.schemas.avroProjection.packageName != null) {
+            "schemas.avroProjection.packageName is required when schemas.avroProjection is configured"
         }
 
-        if (request.clients.kafka != null && request.clients.kafka.packageName == null) {
-            throw IllegalArgumentException(
-                "clients.kafka.packageName is required when clients.kafka is configured",
-            )
+        require(request.clients.kafka == null || request.clients.kafka.packageName != null) {
+            "clients.kafka.packageName is required when clients.kafka is configured"
         }
 
-        if (request.clients.quarkusKafka != null && request.clients.quarkusKafka.packageName == null) {
-            throw IllegalArgumentException(
-                "clients.quarkusKafka.packageName is required when clients.quarkusKafka is configured",
-            )
+        require(request.clients.quarkusKafka == null || request.clients.quarkusKafka.packageName != null) {
+            "clients.quarkusKafka.packageName is required when clients.quarkusKafka is configured"
         }
 
         validatePackageName(
@@ -173,16 +167,12 @@ object GeneratorConfigurationFactory {
         request: GeneratorConfigurationRequest,
         configuration: GeneratorConfiguration,
     ) {
-        if (request.schemaPackageName != null && configuration.schemas.isEmpty()) {
-            throw IllegalArgumentException(
-                "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models",
-            )
+        require(request.schemaPackageName == null || configuration.schemas.isNotEmpty()) {
+            "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models"
         }
-        if (!configuration.hasConfiguredOutputs()) {
-            throw IllegalArgumentException(
-                "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
-                    "schemaPackage with a schema generator, or outputFile.",
-            )
+        require(configuration.hasConfiguredOutputs()) {
+            "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
+                "schemaPackage with a schema generator, or outputFile."
         }
     }
 
@@ -190,52 +180,36 @@ object GeneratorConfigurationFactory {
         when (request.generatorName.profile) {
             is GeneratorProfile.Source -> Unit
             is GeneratorProfile.Schema -> {
-                if (request.models != null) {
-                    throw IllegalArgumentException(
-                        "models cannot be configured when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                require(request.models == null) {
+                    "models cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
-                if (request.clients != GeneratorConfigurationRequest.Clients()) {
-                    throw IllegalArgumentException(
-                        "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                require(request.clients == GeneratorConfigurationRequest.Clients()) {
+                    "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
-                if (request.schemas != GeneratorConfigurationRequest.Schemas()) {
-                    throw IllegalArgumentException(
-                        "schema generation options cannot be configured when generatorName is " +
-                            request.generatorName.configurationValue +
-                            "; the generator name already selects the schema type",
-                    )
+                require(request.schemas == GeneratorConfigurationRequest.Schemas()) {
+                    "schema generation options cannot be configured when generatorName is " +
+                        request.generatorName.configurationValue +
+                        "; the generator name already selects the schema type"
                 }
-                if (request.schemaPackageName == null) {
-                    throw IllegalArgumentException(
-                        "schemaPackage is required when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                requireNotNull(request.schemaPackageName) {
+                    "schemaPackage is required when generatorName is ${request.generatorName.configurationValue}"
                 }
             }
             is GeneratorProfile.Document -> {
-                if (request.outputFile == null) {
-                    throw IllegalArgumentException(
-                        "outputFile is required when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                requireNotNull(request.outputFile) {
+                    "outputFile is required when generatorName is ${request.generatorName.configurationValue}"
                 }
-                if (request.models != null) {
-                    throw IllegalArgumentException(
-                        "models cannot be configured when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                require(request.models == null) {
+                    "models cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
-                if (
-                    request.schemaPackageName != null ||
-                    request.schemas != GeneratorConfigurationRequest.Schemas()
+                require(
+                    request.schemaPackageName == null &&
+                    request.schemas == GeneratorConfigurationRequest.Schemas(),
                 ) {
-                    throw IllegalArgumentException(
-                        "schemas cannot be configured when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                    "schemas cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
-                if (request.clients != GeneratorConfigurationRequest.Clients()) {
-                    throw IllegalArgumentException(
-                        "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}",
-                    )
+                require(request.clients == GeneratorConfigurationRequest.Clients()) {
+                    "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
             }
         }
@@ -245,18 +219,11 @@ object GeneratorConfigurationFactory {
         path: String,
         value: String?,
     ) {
-        if (value == null) {
-            return
-        }
+        if (value == null) return
 
-        if (value.isBlank()) {
-            throw IllegalArgumentException("$path cannot be empty")
-        }
-
-        if (!packageNamePattern.matches(value)) {
-            throw IllegalArgumentException(
-                "$path must be a dot-separated package name, for example com.example.model",
-            )
+        require(value.isNotBlank()) { "$path cannot be empty" }
+        require(packageNamePattern.matches(value)) {
+            "$path must be a dot-separated package name, for example com.example.model"
         }
     }
 
@@ -264,35 +231,32 @@ object GeneratorConfigurationFactory {
         path: String,
         value: String?,
     ): String =
-        value ?: throw IllegalArgumentException("$path is required")
+        requireNotNull(value) { "$path is required" }
 
     private fun requiredClientModelPackageName(
         path: String,
         configuredModelPackageName: String?,
         modelsPackageName: String?,
     ): String =
-        configuredModelPackageName ?: modelsPackageName
-            ?: throw IllegalArgumentException(
-                "$path is required when models.packageName is not configured",
-            )
+        requireNotNull(configuredModelPackageName ?: modelsPackageName) {
+            "$path is required when models.packageName is not configured"
+        }
 
     private fun resolveModelAnnotation(
         request: GeneratorConfigurationRequest,
         modelType: ModelType?,
     ): QualifiedTypeName? {
         val annotation = request.models?.annotation ?: return null
-        if (
-            modelType !in
-            setOf(
-                ModelType.KOTLIN_DATA_CLASS,
-                ModelType.JAVA_CLASS,
-                ModelType.JAVA_RECORD,
-            )
+        require(
+            modelType in
+                setOf(
+                    ModelType.KOTLIN_DATA_CLASS,
+                    ModelType.JAVA_CLASS,
+                    ModelType.JAVA_RECORD,
+                ),
         ) {
-            throw IllegalArgumentException(
-                "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
-                "and java-record model types",
-            )
+            "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
+                "and java-record model types"
         }
 
         return QualifiedTypeName.fromConfigurationValue(
