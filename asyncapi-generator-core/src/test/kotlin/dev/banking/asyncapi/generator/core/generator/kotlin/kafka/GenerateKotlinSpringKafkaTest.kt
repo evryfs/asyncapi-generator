@@ -238,7 +238,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
     @Test
     fun `should generate spring kafka client with external native avro payload type`() {
-        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_avro_schema_assets.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
 
@@ -296,7 +296,7 @@ class GenerateKotlinSpringKafkaTest : AbstractKotlinGeneratorClass() {
 
     @Test
     fun `should generate spring kafka client with external native protobuf payload type`() {
-        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_schema_assets.yaml")
+        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_protobuf_schema_assets.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
 
