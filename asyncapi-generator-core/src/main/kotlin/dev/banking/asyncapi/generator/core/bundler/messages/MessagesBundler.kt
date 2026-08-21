@@ -13,9 +13,6 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
 /**
  * Bundles message objects and references.
- *
- * Expected behavior is covered by:
- * - `MessagesBundlerTest`
  */
 internal class MessagesBundler {
 

@@ -13,9 +13,6 @@ import java.io.File
 
 /**
  * Planned generator work item.
- *
- * Expected behavior is covered by:
- * - `GenerationPlannerTest`
  */
 sealed interface GenerationTask {
     data class DocumentArtifact(

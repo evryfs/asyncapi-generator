@@ -9,10 +9,6 @@ import java.io.StringWriter
 
 /**
  * Renders Java interface model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `JavaModelArtifactGeneratorTest`
- * - `JavaModelApprovalTest`
  */
 class JavaInterfaceGenerator {
     private val mustacheFactory = DefaultMustacheFactory("java")

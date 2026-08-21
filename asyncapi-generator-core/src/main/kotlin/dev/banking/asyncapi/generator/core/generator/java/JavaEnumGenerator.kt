@@ -9,10 +9,6 @@ import java.io.StringWriter
 
 /**
  * Renders Java enum model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `JavaModelArtifactGeneratorTest`
- * - `JavaModelApprovalTest`
  */
 class JavaEnumGenerator {
     private val mustacheFactory = DefaultMustacheFactory("java")

@@ -11,10 +11,6 @@ import java.io.StringWriter
 
 /**
  * Renders Kotlin data class model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `KotlinDataClassGeneratorTest`
- * - `KotlinModelApprovalTest`
  */
 class KotlinDataClassGenerator(
     val packageName: String,

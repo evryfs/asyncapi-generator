@@ -15,9 +15,6 @@ import kotlin.reflect.KProperty0
 
 /**
  * Tracks parsed model instances back to parser paths and source locations.
- *
- * Expected behavior is covered by:
- * - `AsyncApiParserTest`
  */
 internal class ModelRepository(
     private val sourceRepository: SourceRepository,

@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Client technology selected by user-facing generator configuration.
- *
- * Expected behavior is covered by:
- * - `ClientTypeTest`
  */
 enum class ClientType(
     val configurationValue: String,

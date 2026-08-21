@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.model.info.Info
 
 /**
  * Bundles info metadata references.
- *
- * Expected behavior is covered by:
- * - `InfoBundlerTest`
  */
 internal class InfoBundler {
 

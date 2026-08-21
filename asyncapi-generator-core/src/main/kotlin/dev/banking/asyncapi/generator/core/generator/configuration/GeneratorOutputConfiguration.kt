@@ -4,10 +4,6 @@ import java.io.File
 
 /**
  * Output directories used by generated source and resource artifacts.
- *
- * Expected behavior is covered by:
- * - `GenerationPlannerTest`
- * - `AsyncApiGeneratorOutputContractTest`
  */
 data class GeneratorOutputConfiguration(
     val sourceOutputDirectory: File,
@@ -18,10 +14,6 @@ data class GeneratorOutputConfiguration(
 
 /**
  * Bundled AsyncAPI document output selected by the generator profile.
- *
- * Expected behavior is covered by:
- * - `GenerationPlannerTest`
- * - `AsyncApiGeneratorOutputContractTest`
  */
 data class DocumentOutput(
     val file: File,

@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 
 /**
  * Generator implementation selected by user-facing configuration.
- *
- * Expected behavior is covered by:
- * - `GeneratorNameTest`
  */
 enum class GeneratorName(
     val configurationValue: String,

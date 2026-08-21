@@ -17,9 +17,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 /**
  * Validates a parsed [AsyncApiDocument] and returns validation results.
- *
- * Expected behavior is covered by:
- * - `AsyncApiValidatorTest`
  */
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,

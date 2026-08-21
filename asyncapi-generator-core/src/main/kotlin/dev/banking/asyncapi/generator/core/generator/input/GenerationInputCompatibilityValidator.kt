@@ -13,9 +13,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 
 /**
  * Validates that planned generator outputs can consume the prepared generator input.
- *
- * Expected behavior is covered by:
- * - `GenerationInputCompatibilityValidatorTest`
  */
 class GenerationInputCompatibilityValidator(
     private val nativeAvroSchemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),

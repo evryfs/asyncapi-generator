@@ -4,9 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Assembles core generator configuration from frontend-neutral requests.
- *
- * Expected behavior is covered by:
- * - `GeneratorConfigurationFactoryTest`
  */
 object GeneratorConfigurationFactory {
     private val packageNamePattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")

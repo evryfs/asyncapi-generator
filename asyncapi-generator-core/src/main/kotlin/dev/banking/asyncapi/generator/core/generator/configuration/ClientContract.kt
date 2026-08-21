@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Generated client contract shape selected by user-facing generator configuration.
- *
- * Expected behavior is covered by:
- * - `ClientContractTest`
  */
 enum class ClientContract(
     val configurationValue: String,

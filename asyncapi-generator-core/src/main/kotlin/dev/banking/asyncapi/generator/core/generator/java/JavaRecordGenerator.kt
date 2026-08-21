@@ -11,10 +11,6 @@ import java.io.StringWriter
 
 /**
  * Renders Java class model items as Java record source artifacts.
- *
- * Expected behavior is covered by:
- * - `JavaModelArtifactGeneratorTest`
- * - `JavaModelApprovalTest`
  */
 class JavaRecordGenerator(
     val packageName: String,

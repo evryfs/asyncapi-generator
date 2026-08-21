@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Serialized AsyncAPI document format selected by a document-only generator profile.
- *
- * Expected behavior is covered by:
- * - `DocumentFormatTest`
  */
 enum class DocumentFormat(
     val configurationValue: String,

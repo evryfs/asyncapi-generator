@@ -8,10 +8,6 @@ import java.io.File
  *
  * CLI, Maven, and Gradle map their public configuration surfaces into this
  * request before core generator configuration is assembled.
- *
- * Expected behavior is covered by:
- * - `GeneratorConfigurationFactoryTest`
- * - `GeneratorConfigurationRequestTest`
  */
 data class GeneratorConfigurationRequest(
     val generatorName: GeneratorName,

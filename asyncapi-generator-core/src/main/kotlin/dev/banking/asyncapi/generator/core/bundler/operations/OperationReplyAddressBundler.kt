@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 
 /**
  * Bundles operation reply address objects and references.
- *
- * Expected behavior is covered by:
- * - `OperationReplyAddressBundlerTest`
  */
 internal class OperationReplyAddressBundler {
     fun bundleMap(

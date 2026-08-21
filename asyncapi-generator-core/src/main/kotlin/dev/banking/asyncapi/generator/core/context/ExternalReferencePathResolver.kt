@@ -7,9 +7,6 @@ import java.io.File
 /**
  * Resolves external reference document paths against the source file that owns
  * the reference.
- *
- * Expected behavior is covered by:
- * - `SchemaParserTest`
  */
 internal class ExternalReferencePathResolver {
     data class ResolvedReference(

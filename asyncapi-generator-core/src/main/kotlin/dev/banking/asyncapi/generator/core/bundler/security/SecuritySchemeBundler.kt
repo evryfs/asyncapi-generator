@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 
 /**
  * Bundles security scheme objects and references.
- *
- * Expected behavior is covered by:
- * - `SecuritySchemeBundlerTest`
  */
 internal class SecuritySchemeBundler {
     fun bundleMap(

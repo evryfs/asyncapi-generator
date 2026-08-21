@@ -5,9 +5,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * The default model type depends on the selected source generator and is
  * therefore applied when the complete generator configuration is resolved.
- *
- * Expected behavior is covered by:
- * - `ModelTypeTest`
  */
 enum class ModelType(
     val configurationValue: String,

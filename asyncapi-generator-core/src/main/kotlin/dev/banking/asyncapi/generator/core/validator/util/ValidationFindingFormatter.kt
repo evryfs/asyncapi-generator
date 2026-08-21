@@ -6,8 +6,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 /**
  * Formats validation findings for exceptions and logs.
  *
- * Expected behavior is covered by:
- * - `ValidationReportTest`
  * - validator package tests
  */
 internal object ValidationFindingFormatter {

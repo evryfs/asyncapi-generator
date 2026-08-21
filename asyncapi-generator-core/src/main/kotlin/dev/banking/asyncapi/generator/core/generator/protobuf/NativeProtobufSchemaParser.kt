@@ -9,10 +9,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
  * The generator does not compile `.proto` files directly, but it needs stable
  * access to the package, Java package, Java file mode, and top-level message
  * declarations before generated Kafka APIs can reference Protobuf types.
- *
- * Expected behavior is covered by:
- * - `NativeProtobufGeneratorTest`
- * - `NativeProtobufPayloadTypeResolverTest`
  */
 class NativeProtobufSchemaParser {
     private val protoPackageRegex = Regex("""(?m)^\s*package\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*;""")

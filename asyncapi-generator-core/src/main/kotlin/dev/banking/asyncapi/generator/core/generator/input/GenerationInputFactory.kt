@@ -8,9 +8,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 
 /**
  * Prepares AsyncAPI documents for generator model creation.
- *
- * Expected behavior is covered by:
- * - `GenerationInputFactoryTest`
  */
 class GenerationInputFactory(
     private val schemaNormalizer: SchemaNormalizer = SchemaNormalizer(),

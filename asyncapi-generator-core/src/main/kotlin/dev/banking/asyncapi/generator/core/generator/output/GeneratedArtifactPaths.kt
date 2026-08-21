@@ -5,9 +5,6 @@ package dev.banking.asyncapi.generator.core.generator.output
  *
  * Dot-separated namespaces, such as JVM packages and Avro namespaces, are
  * converted into directory segments before appending the generated file name.
- *
- * Expected behavior is covered by:
- * - `GeneratedArtifactPathsTest`
  */
 object GeneratedArtifactPaths {
     fun fromNamespace(

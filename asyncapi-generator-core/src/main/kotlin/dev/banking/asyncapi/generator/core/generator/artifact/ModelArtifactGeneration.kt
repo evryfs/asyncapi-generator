@@ -13,9 +13,6 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.
- *
- * Expected behavior is covered by:
- * - `ModelArtifactGenerationTest`
  */
 class ModelArtifactGeneration(
     private val kotlinModelPreparer: KotlinModelPreparer = KotlinModelPreparer(),

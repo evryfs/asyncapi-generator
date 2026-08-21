@@ -14,10 +14,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * [schemas] contains the normalized and analyzed view used by source generators.
  * [declaredSchemas] retains the contract view used by schema artifact generators
  * that must preserve JSON Schema semantics.
- *
- * Expected behavior is covered by:
- * - `GenerationInputTest`
- * - `GenerationInputFactoryTest`
  */
 data class GenerationInput(
     val schemas: Map<String, Schema>,

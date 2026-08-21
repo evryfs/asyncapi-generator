@@ -19,10 +19,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 /**
  * Renders AsyncAPI Schema Objects and native Draft 07 schemas as standalone
  * JSON Schema artifacts.
- *
- * Expected behavior is covered by:
- * - `JsonSchemaGeneratorTest`
- * - `JsonSchemaApprovalTest`
  */
 class JsonSchemaGenerator(
     private val objectMapper: ObjectMapper =

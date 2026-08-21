@@ -3,9 +3,6 @@ package dev.banking.asyncapi.generator.core.generator.output
 /**
  * Result of a generator run before rooted artifacts and explicit bundled
  * documents are written to disk.
- *
- * Expected behavior is covered by:
- * - `GenerationOutputContractTest`
  */
 data class GenerationResult(
     val artifacts: List<GeneratedArtifact>,

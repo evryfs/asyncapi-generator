@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Validated package name used by generated source and schema artifacts.
- *
- * Expected behavior is covered by:
- * - `PackageNameTest`
  */
 @JvmInline
 value class PackageName private constructor(

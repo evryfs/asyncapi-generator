@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Validated fully qualified source type name supplied by generator configuration.
- *
- * Expected behavior is covered by:
- * - `QualifiedTypeNameTest`
  */
 @JvmInline
 value class QualifiedTypeName private constructor(

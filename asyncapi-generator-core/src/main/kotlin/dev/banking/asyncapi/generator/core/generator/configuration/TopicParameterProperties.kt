@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Spring property names used to resolve parameters in generated Kafka topic addresses.
- *
- * Expected behavior is covered by:
- * - `TopicParameterPropertiesTest`
  */
 @ConsistentCopyVisibility
 data class TopicParameterProperties private constructor(

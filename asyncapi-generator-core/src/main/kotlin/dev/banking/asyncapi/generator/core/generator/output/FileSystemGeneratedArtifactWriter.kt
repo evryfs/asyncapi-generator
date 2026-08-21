@@ -17,9 +17,6 @@ import java.nio.file.Files
  * replaced atomically. This prevents partial writes from leaving an
  * inconsistent output directory and ensures stale files from previous runs are
  * removed.
- *
- * Expected behavior is covered by:
- * - `GeneratedArtifactWriterTest`
  */
 class FileSystemGeneratedArtifactWriter(
     private val sourceOutputDirectory: File,

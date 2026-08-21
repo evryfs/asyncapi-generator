@@ -20,9 +20,6 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 
 /**
  * Coordinates generator input preparation, planning, rendering, and artifact writing.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorOutputContractTest`
  */
 class AsyncApiGenerator {
     private val generationInputFactory = GenerationInputFactory()

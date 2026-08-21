@@ -8,10 +8,6 @@ import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants
  * The parser can use this type to distinguish JSON-compatible AsyncAPI schema objects
  * from native schema formats such as Avro and Protobuf before generation decides which
  * outputs can consume each payload format.
- *
- * Expected behavior is covered by:
- * - `SchemaFormatTest`
- * - `SchemaParserMultiFormatTest`
  */
 enum class SchemaFormat(
     val value: String,

@@ -5,9 +5,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * Schema type inference is performed when the complete generator configuration
  * and parsed AsyncAPI contract are available.
- *
- * Expected behavior is covered by:
- * - `SchemaTypeTest`
  */
 enum class SchemaType(
     val configurationValue: String,
