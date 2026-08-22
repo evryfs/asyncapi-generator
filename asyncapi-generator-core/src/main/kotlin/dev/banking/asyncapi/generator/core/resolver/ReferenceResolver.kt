@@ -46,6 +46,11 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.util.Collections
 import java.util.IdentityHashMap
 
+/**
+ * Resolves references and validates they point to the correct target type.
+ *
+ * Follows reference chains, checks category consistency, and reports unresolved or mismatched targets.
+ */
 internal class ReferenceResolver(
     private val asyncApiContext: AsyncApiContext,
 ) {
