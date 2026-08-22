@@ -100,7 +100,3 @@ Compatibility validation determines whether the requested outputs can consume th
 - **Errors surface early.** Invalid input is rejected at the earliest stage that can detect it.
 - **Output is deterministic.** Given the same input and configuration, the generator produces identical output.
 - **Stages are independently testable.** Each stage has its own test suite that exercises its contract without depending on other stages.
-
-## Architecture decision
-
-For the full architectural context, see the [architecture decision record](../../.local/ddd-architecture-analysis.md).
