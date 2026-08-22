@@ -20,6 +20,8 @@ Interprets the document tree as AsyncAPI structures. Builds a typed domain model
 
 Checks the parsed model for semantic correctness. Reports errors (must fix) and warnings (should review). Never modifies the model. See [Validator](validator.md).
 
+The validator has two stages: semantic validation and generation compatibility validation. See [Validation boundary](../contributing/validation-boundary.md).
+
 ### 4. Bundler
 
 Resolves external references and produces a self-contained document. Useful for distribution, archival, and tools that need a single-file input. See [Bundler](bundler.md).
