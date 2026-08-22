@@ -49,7 +49,7 @@ internal object ParserNodeFactory {
         location: SourceLocation,
         context: AsyncApiContext,
     ) {
-        context.registerSourceLocation(address, location)
+        context.sourceTracking.registerLocation(address, location)
 
         when (node) {
             is DocumentObject -> node.members.forEach { (name, member) ->

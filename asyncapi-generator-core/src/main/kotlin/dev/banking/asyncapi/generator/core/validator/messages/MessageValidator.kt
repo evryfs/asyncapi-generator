@@ -57,7 +57,7 @@ internal class MessageValidator(
             results.error(
                 MESSAGE_CONTENT_TYPE_FORMAT,
                 "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::contentType),
             )
         }
     }
@@ -91,7 +91,7 @@ internal class MessageValidator(
                         MESSAGE_HEADER_FORMAT_UNSUPPORTED,
                         "$contextString Header '$headerName' uses a Multi Format Schema, which is not validated " +
                             "in message headers.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::headers),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::headers),
                     )
                 }
         }

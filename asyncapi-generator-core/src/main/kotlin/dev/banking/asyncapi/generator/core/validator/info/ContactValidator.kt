@@ -20,7 +20,7 @@ internal class ContactValidator(
                 results.error(
                     CONTACT_URL_FORMAT,
                     "$contextString 'url' field must be a valid absolute URL.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }
@@ -30,7 +30,7 @@ internal class ContactValidator(
                 results.error(
                     CONTACT_EMAIL_FORMAT,
                     "$contextString 'email' field must be a valid email address.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::email),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::email),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#contactObject",
                 )
             }

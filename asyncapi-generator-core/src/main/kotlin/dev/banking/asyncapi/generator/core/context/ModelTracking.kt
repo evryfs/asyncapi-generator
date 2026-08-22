@@ -4,17 +4,16 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
-import dev.banking.asyncapi.generator.core.repository.SourceRepository
 import kotlin.reflect.KProperty0
 
 /**
  * Tracks model registrations, source locations, field metadata, and reference lookups.
  *
- * @param sourceRepository shared source repository for cross-referencing models with source locations
+ * @param sourceTracking shared source tracking for cross-referencing models with source locations
  */
-internal class ModelTracking(sourceRepository: SourceRepository) {
+internal class ModelTracking(sourceTracking: SourceTracking) {
 
-    val repository = ModelRepository(sourceRepository)
+    val repository = ModelRepository(sourceTracking.repository)
 
     fun register(
         model: Any,
@@ -50,4 +49,7 @@ internal class ModelTracking(sourceRepository: SourceRepository) {
         repository.getFieldValue(model, fieldName)
 
     fun findReference(reference: Reference): Any? = repository.findByReference(reference)
+
+    fun getReferenceOrigin(reference: Reference): ModelRepository.ReferenceOrigin? =
+        repository.getReferenceOrigin(reference)
 }

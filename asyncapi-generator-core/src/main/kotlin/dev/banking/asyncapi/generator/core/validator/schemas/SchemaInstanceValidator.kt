@@ -55,7 +55,7 @@ internal class SchemaInstanceValidator(
         path: String,
         visited: MutableSet<Visit>,
     ): Evaluation =
-        asyncApiContext.findReference(reference)?.let { target ->
+        asyncApiContext.modelTracking.findReference(reference)?.let { target ->
             evaluate(target, value, path, visited)
         } ?: Evaluation()
 

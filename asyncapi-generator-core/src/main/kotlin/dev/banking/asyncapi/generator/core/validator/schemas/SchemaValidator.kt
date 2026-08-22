@@ -182,11 +182,11 @@ internal class SchemaValidator(
         Collections.newSetFromMap(IdentityHashMap())
 
     private fun validateKeywords(node: Any, contextString: String, results: ValidationCollector) {
-        asyncApiContext.getFieldNames(node).forEach { keyword ->
+        asyncApiContext.modelTracking.getFieldNames(node).forEach { keyword ->
             val classification = SchemaKeywordPolicy.classify(keyword)
             val severity = classification.severity ?: return@forEach
             val explanation = classification.explanation ?: return@forEach
-            val sourceLocation = asyncApiContext.getSourceLocation(node, keyword)
+            val sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, keyword)
             val message = "$contextString Schema Object keyword '$keyword' $explanation"
             val rule: ValidationRule =
                 if (classification.category == SchemaKeywordCategory.IGNORED_ANNOTATION) {
@@ -216,15 +216,15 @@ internal class SchemaValidator(
     }
 
     private fun validateKeywordRepresentations(node: Schema, contextString: String, results: ValidationCollector) {
-        if ("items" in asyncApiContext.getFieldNames(node)) {
-            val items = asyncApiContext.getFieldValue(node, "items")
+        if ("items" in asyncApiContext.modelTracking.getFieldNames(node)) {
+            val items = asyncApiContext.modelTracking.getFieldValue(node, "items")
             when {
                 node.tupleItems != null ->
                     results.error(
                         SCHEMA_ITEMS_REPRESENTATION,
                         "$contextString uses tuple-form 'items', which is valid Draft 7 but cannot be represented " +
                             "safely by the Java and Kotlin generators. Use a single Schema Object in 'items'.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
                         doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
                     )
 
@@ -233,7 +233,7 @@ internal class SchemaValidator(
                         SCHEMA_ITEMS_REPRESENTATION,
                         "$contextString uses 'items: false', which cannot be represented safely by the Java and " +
                             "Kotlin collection types.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
                         doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
                     )
 
@@ -241,7 +241,7 @@ internal class SchemaValidator(
                     results.error(
                         SCHEMA_ITEMS_REPRESENTATION,
                         "$contextString Schema Object keyword 'items' must contain a Schema Object or a boolean schema.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, "items"),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
                         doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
                     )
             }
@@ -250,13 +250,13 @@ internal class SchemaValidator(
     }
 
     private fun validateDialect(node: Schema, contextString: String, results: ValidationCollector) {
-        if ("\$schema" !in asyncApiContext.getFieldNames(node)) return
+        if ("\$schema" !in asyncApiContext.modelTracking.getFieldNames(node)) return
         val dialect = node.schema
         if (dialect == null) {
             results.error(
                 SCHEMA_DIALECT,
                 "$contextString Schema Object keyword '\$schema' must contain a schema dialect URI.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, "\$schema"),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "\$schema"),
                 doc = "https://json-schema.org/draft-07/schema",
             )
             return
@@ -267,7 +267,7 @@ internal class SchemaValidator(
             SCHEMA_DIALECT,
             "$contextString declares schema dialect '$dialect', but the generator supports AsyncAPI 3.0 Schema " +
                 "Object semantics based on JSON Schema Draft 7. Remove '\$schema' or declare the Draft 7 dialect.",
-            sourceLocation = asyncApiContext.getSourceLocation(node, "\$schema"),
+            sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "\$schema"),
             doc = "https://json-schema.org/draft-07/schema",
         )
     }
@@ -275,11 +275,11 @@ internal class SchemaValidator(
     private fun validateType(node: Schema, contextString: String, results: ValidationCollector) {
         val type = node.type
         if (type == null) {
-            if ("type" in asyncApiContext.getFieldNames(node)) {
+            if ("type" in asyncApiContext.modelTracking.getFieldNames(node)) {
                 results.error(
                     SCHEMA_TYPE,
                     "$contextString Schema 'type' field must be a string or an array of strings. Found: null",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, "type"),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "type"),
                     doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                 )
             }
@@ -293,7 +293,7 @@ internal class SchemaValidator(
                     results.error(
                         SCHEMA_TYPE,
                         "$contextString type '$type' is not valid. Must be one of: ${allowedTypes.joinToString()}",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
@@ -304,7 +304,7 @@ internal class SchemaValidator(
                     results.error(
                         SCHEMA_TYPE_ARRAY_NONEMPTY,
                         "$contextString 'type' array must contain at least one type.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
@@ -313,7 +313,7 @@ internal class SchemaValidator(
                     results.error(
                         SCHEMA_TYPE,
                         "$contextString all elements in 'type' array must be strings. Found non-string elements.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
@@ -323,7 +323,7 @@ internal class SchemaValidator(
                         SCHEMA_TYPE,
                         "$contextString types ${invalidTypes.joinToString()} are not valid. Must be one " +
                             "of: ${allowedTypes.joinToString()}",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
@@ -331,7 +331,7 @@ internal class SchemaValidator(
                     results.error(
                         SCHEMA_TYPE_ARRAY_UNIQUE,
                         "$contextString 'type' array must contain unique values.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                         doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                     )
                 }
@@ -342,7 +342,7 @@ internal class SchemaValidator(
                 results.error(
                     SCHEMA_TYPE,
                     "$contextString 'type' field must be a string or an array of strings. Found: $invalidType",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     doc = "https://www.learnjsonschema.com/draft7/validation/type/",
                 )
             }
@@ -355,7 +355,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_ENUM_EMPTY,
                 "$contextString 'enum' must be a non-empty array of unique values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
                 doc = "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
@@ -363,7 +363,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_ENUM_UNIQUE,
                 "$contextString 'enum' contains duplicate values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
                 doc = "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
@@ -372,7 +372,7 @@ internal class SchemaValidator(
                 SCHEMA_UNTYPED_ENUM,
                 "$contextString has an enum without 'type' that contains non-string values. The generator can " +
                     "infer only an all-string enum safely; declare the intended type explicitly.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
             )
         }
     }
@@ -385,7 +385,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_CONST_TYPE,
                 "$schemaName 'const' value '$const' does not match declared type '$type'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::const),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::const),
                 doc = "https://www.learnjsonschema.com/draft7/validation/const/",
             )
         }
@@ -417,7 +417,7 @@ internal class SchemaValidator(
                 results.error(
                     SCHEMA_MULTIPLE_OF,
                     "$contextString 'multipleOf' must be greater than zero.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::multipleOf),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::multipleOf),
                     doc = "https://www.learnjsonschema.com/draft7/validation/multipleof/",
                 )
             }
@@ -462,7 +462,7 @@ internal class SchemaValidator(
                 SCHEMA_PATTERN,
                 "$contextString 'pattern' cannot be compiled by the Java regular-expression engine used by " +
                     "generated Jakarta Validation constraints: ${ex.description}.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::pattern),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::pattern),
             )
         }
     }
@@ -521,7 +521,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_REQUIRED_UNIQUE,
                 "$contextString 'required' contains duplicate property names.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::required),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::required),
                 doc = "https://www.learnjsonschema.com/draft7/validation/required/",
             )
         }
@@ -531,7 +531,7 @@ internal class SchemaValidator(
                 SCHEMA_REQUIRED_UNDECLARED,
                 "$contextString lists required properties $missing that are not declared in this object or its " +
                     "'allOf' composition. Define them explicitly, otherwise generation may fail.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::required),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::required),
                 doc = "https://www.learnjsonschema.com/draft7/validation/required/",
             )
         }
@@ -540,7 +540,7 @@ internal class SchemaValidator(
     private fun validateDependencies(node: Schema, contextString: String, results: ValidationCollector) {
         node.dependencies?.forEach { (propertyName, dependency) ->
             val propertyNames = dependency as? List<*> ?: return@forEach
-            val location = asyncApiContext.getSourceLocation(dependency)
+            val location = asyncApiContext.modelTracking.getSourceLocation(dependency)
             val duplicateIndex = propertyNames.indices.firstOrNull { index ->
                 propertyNames.subList(0, index).contains(propertyNames[index])
             }
@@ -548,7 +548,7 @@ internal class SchemaValidator(
                 results.error(
                     SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
                     "$contextString dependency '$propertyName' contains duplicate property names.",
-                    sourceLocation = asyncApiContext.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
                     doc = JSON_SCHEMA_DEPENDENCIES_DOC,
                 )
             }
@@ -563,7 +563,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_DEFAULT_TYPE,
                 "$contextString default value '$default' does not match declared type '$type'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
             )
         }
     }
@@ -574,7 +574,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_DISCRIMINATOR_REQUIRED,
                 "$contextString discriminator property '$discriminator' must be listed in 'required'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::discriminator),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
             )
         }
@@ -582,7 +582,7 @@ internal class SchemaValidator(
             results.error(
                 SCHEMA_DISCRIMINATOR_PROPERTY,
                 "$contextString discriminator property '$discriminator' must exist in 'properties'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::discriminator),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::discriminator),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
             )
         }
@@ -613,7 +613,7 @@ internal class SchemaValidator(
             results.error(
                 rule,
                 "$contextString '$keyword' must be a non-negative integer. Found: $value.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, keyword),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, keyword),
                 doc = "https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.6",
             )
             return null
@@ -638,7 +638,7 @@ internal class SchemaValidator(
                 rule,
                 "$contextString '$lowerKeyword' ($lower) cannot be greater than '$upperKeyword' ($upper) " +
                     "because the generator would emit contradictory constraints.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, lowerKeyword),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, lowerKeyword),
             )
         }
     }
