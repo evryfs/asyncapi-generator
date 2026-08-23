@@ -8,19 +8,12 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
 /**
- * Filesystem-backed writer for generated artifacts.
+ * Writes generated artifacts to the filesystem, preserving outputs from earlier executions.
  *
  * Source artifacts are written under [sourceOutputDirectory]. Java source
  * artifacts are written under [javaSourceOutputDirectory]. Resource and schema
  * artifacts are written under [resourceOutputDirectory]. Bundled documents are
  * written to their explicitly configured files.
- *
- * All artifacts are staged in sibling temporary files before any destination is
- * changed. Staging uses the same parent directory as the destination to maximize
- * the chance of atomic move support. After staging, files with unchanged content
- * are skipped to preserve modification timestamps and avoid unnecessary
- * recompilation. Remaining files are committed individually using atomic move
- * when supported, falling back to non-atomic replacement otherwise.
  *
  * The writer guarantees:
  * - Atomic per-file replacement when the filesystem supports it.
@@ -31,7 +24,13 @@ import java.nio.file.StandardCopyOption
  * - Temporary files are cleaned after normal success and failure.
  *
  * Abnormal process termination may leave sibling temporary files with the
- * `.asyncapi-generator-` prefix. The build tool's clean lifecycle removes them.
+ * `.asyncapi-generator-` prefix. Build-tool clean removes them when the
+ * destination is under a cleaned build directory. Bundled documents targeting
+ * arbitrary locations outside build output may require manual cleanup.
+ *
+ * @param sourceOutputDirectory root directory for Kotlin and general source artifacts
+ * @param resourceOutputDirectory root directory for resource and schema artifacts
+ * @param javaSourceOutputDirectory root directory for Java source artifacts
  */
 class FileSystemGeneratedArtifactWriter(
     private val sourceOutputDirectory: File,
@@ -46,6 +45,7 @@ class FileSystemGeneratedArtifactWriter(
         rejectOutputCollisions(outputs)
 
         val stagedFiles = mutableListOf<StagedFile>()
+        var primaryFailure: Exception? = null
         try {
             for (output in outputs) {
                 stagedFiles.add(stageFile(output))
@@ -55,8 +55,11 @@ class FileSystemGeneratedArtifactWriter(
             for (staged in toCommit) {
                 commitFile(staged)
             }
+        } catch (ex: Exception) {
+            primaryFailure = ex
+            throw ex
         } finally {
-            cleanupTempFiles(stagedFiles)
+            cleanupTempFiles(stagedFiles, primaryFailure)
         }
     }
 
@@ -91,21 +94,23 @@ class FileSystemGeneratedArtifactWriter(
 
     private fun stageFile(output: ResolvedOutput): StagedFile {
         val destination = output.file.toPath().toAbsolutePath().normalize()
-        Files.createDirectories(destination.parent)
-
-        val tempFile = Files.createTempFile(
-            destination.parent,
-            ".asyncapi-generator-",
-            ".tmp",
-        )
+        var tempFile: java.nio.file.Path? = null
 
         try {
+            Files.createDirectories(destination.parent)
+            tempFile = Files.createTempFile(
+                destination.parent,
+                ".asyncapi-generator-",
+                ".tmp",
+            )
             Files.writeString(tempFile, output.content)
         } catch (ex: Exception) {
-            try {
-                Files.deleteIfExists(tempFile)
-            } catch (cleanupEx: Exception) {
-                ex.addSuppressed(cleanupEx)
+            if (tempFile != null) {
+                try {
+                    Files.deleteIfExists(tempFile)
+                } catch (cleanupEx: Exception) {
+                    ex.addSuppressed(cleanupEx)
+                }
             }
             throw IOException(
                 "Failed to stage artifact '${output.description}' to '${destination}'",
@@ -122,12 +127,21 @@ class FileSystemGeneratedArtifactWriter(
 
         while (iterator.hasNext()) {
             val staged = iterator.next()
-            if (Files.exists(staged.destination) && Files.mismatch(staged.tempFile, staged.destination) == -1L) {
+            val unchanged = try {
+                Files.exists(staged.destination) && Files.mismatch(staged.tempFile, staged.destination) == -1L
+            } catch (ex: IOException) {
+                throw IOException(
+                    "Failed to compare staged file with destination for '${staged.description}'",
+                    ex,
+                )
+            }
+
+            if (unchanged) {
                 try {
                     Files.delete(staged.tempFile)
                 } catch (ex: IOException) {
                     throw IOException(
-                        "Failed to clean unchanged staged file '${staged.tempFile}' for '${staged.description}'",
+                        "Failed to clean unchanged staged file for '${staged.description}'",
                         ex,
                     )
                 }
@@ -169,13 +183,26 @@ class FileSystemGeneratedArtifactWriter(
         }
     }
 
-    private fun cleanupTempFiles(stagedFiles: List<StagedFile>) {
+    private fun cleanupTempFiles(stagedFiles: List<StagedFile>, primaryFailure: Exception?) {
+        var cleanupFailure: IOException? = null
         for (staged in stagedFiles) {
             try {
                 Files.deleteIfExists(staged.tempFile)
-            } catch (ex: IOException) {
-                // Cleanup failure should not hide the original failure.
+            } catch (ex: Exception) {
+                if (primaryFailure != null) {
+                    primaryFailure.addSuppressed(ex)
+                } else if (cleanupFailure == null) {
+                    cleanupFailure = IOException(
+                        "Failed to clean temporary file for '${staged.description}'",
+                        ex,
+                    )
+                } else {
+                    cleanupFailure.addSuppressed(ex)
+                }
             }
+        }
+        if (cleanupFailure != null) {
+            throw cleanupFailure
         }
     }
 
