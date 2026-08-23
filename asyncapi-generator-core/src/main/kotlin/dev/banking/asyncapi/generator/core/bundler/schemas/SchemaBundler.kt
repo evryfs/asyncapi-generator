@@ -54,8 +54,11 @@ internal class SchemaBundler {
         context: BundlingContext,
     ): SchemaInterface {
         val reference = schemaInterface.reference
-        val keepAsReference = isComponentSchemaRef(reference.ref)
         val referencedModel = reference.requireModel<Any>()
+        if (referencedModel is SchemaInterface.BooleanSchema) {
+            return referencedModel
+        }
+        val keepAsReference = isComponentSchemaRef(reference.ref)
 
         if (shouldPromote(reference, referencedModel, context)) {
             return bundlePromotedReference(reference, referencedModel, context)
@@ -87,8 +90,6 @@ internal class SchemaBundler {
                     }
                 is MultiFormatSchema ->
                     ReferenceBundler.inlineIfUnvisited(reference, context)
-                is SchemaInterface.BooleanSchema ->
-                    ReferenceBundler.inlineIfUnvisited(reference, context)
                 else ->
                     throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
             }
@@ -109,8 +110,6 @@ internal class SchemaBundler {
                 )
             is MultiFormatSchema ->
                 SchemaInterface.MultiFormatSchemaInline(referencedModel)
-            is SchemaInterface.BooleanSchema ->
-                referencedModel
             else ->
                 throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
         }
@@ -173,7 +172,6 @@ internal class SchemaBundler {
         when (this) {
             is Schema -> SchemaInterface.SchemaInline(this)
             is MultiFormatSchema -> SchemaInterface.MultiFormatSchemaInline(this)
-            is SchemaInterface.BooleanSchema -> this
             else -> throw IllegalArgumentException("Schema reference resolved to unsupported model")
         }
 

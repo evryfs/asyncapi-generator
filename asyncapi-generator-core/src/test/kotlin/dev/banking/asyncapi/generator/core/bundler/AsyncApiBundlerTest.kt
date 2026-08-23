@@ -6,10 +6,12 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
+import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
@@ -100,6 +102,33 @@ class AsyncApiBundlerTest {
             assertTrue(outputFile.readText().contains("pathname"))
             assertFalse(outputFile.readText().contains("pathName"))
         }
+    }
+
+    @Test
+    fun `bundling serializes a referenced Boolean schema as a YAML literal`(
+        @TempDir tempDir: Path,
+    ) {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Boolean schema API", version = "1.0.0"),
+            components = ComponentInterface.ComponentInline(
+                Component(
+                    schemas = mapOf(
+                        "Nothing" to SchemaInterface.SchemaReference(schemaReference),
+                    ),
+                ),
+            ),
+        )
+        val bundled = bundler.bundle(document)
+        val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
+
+        AsyncApiRegistry.writeYaml(yamlFile, bundled)
+
+        val yaml = yamlFile.readText()
+        assertTrue(yaml.contains("Nothing: false"))
+        assertFalse(yaml.contains("modelForSerialization"))
     }
 
     @Test

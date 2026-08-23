@@ -105,29 +105,28 @@ class SchemaBundlerTest {
     }
 
     @Test
-    fun `bundle keeps a component reference resolving to a true Boolean schema`() {
+    fun `bundle resolves a component reference to a true Boolean schema`() {
         val booleanSchema = SchemaInterface.BooleanSchema(true)
         val schemaReference = Reference("#/components/schemas/Anything", model = booleanSchema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertSame(schemaInterface, bundled)
-        assertTrue(schemaReference.inline)
-        assertSame(booleanSchema, schemaReference.model)
+        assertSame(booleanSchema, bundled)
+        assertFalse(schemaReference.inline)
     }
 
     @Test
-    fun `bundle keeps a component reference resolving to a false Boolean schema`() {
+    fun `bundle resolves a component reference to a false Boolean schema`() {
         val booleanSchema = SchemaInterface.BooleanSchema(false)
         val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertSame(schemaInterface, bundled)
-        assertTrue(schemaReference.inline)
-        assertEquals(SchemaInterface.BooleanSchema(false), schemaReference.model)
+        assertSame(booleanSchema, bundled)
+        assertEquals(SchemaInterface.BooleanSchema(false), bundled)
+        assertFalse(schemaReference.inline)
     }
 
     @Test
