@@ -116,7 +116,15 @@ class AsyncApiBundlerTest {
             components = ComponentInterface.ComponentInline(
                 Component(
                     schemas = mapOf(
-                        "Nothing" to SchemaInterface.SchemaReference(schemaReference),
+                        "Nothing" to booleanSchema,
+                        "Wrapper" to SchemaInterface.SchemaInline(
+                            Schema(
+                                type = "object",
+                                properties = mapOf(
+                                    "denied" to SchemaInterface.SchemaReference(schemaReference),
+                                ),
+                            ),
+                        ),
                     ),
                 ),
             ),
@@ -127,7 +135,7 @@ class AsyncApiBundlerTest {
         AsyncApiRegistry.writeYaml(yamlFile, bundled)
 
         val yaml = yamlFile.readText()
-        assertTrue(yaml.contains("Nothing: false"))
+        assertTrue(yaml.contains("denied: false"))
         assertFalse(yaml.contains("modelForSerialization"))
     }
 
