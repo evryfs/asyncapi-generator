@@ -307,4 +307,185 @@ class GeneratedArtifactWriterTest {
         assertEquals("source model", sourceOutputDirectory.resolve("com/example/User.java").readText())
         assertEquals("native model", javaSourceOutputDirectory.resolve("com/example/User.java").readText())
     }
+
+    @Test
+    fun `filesystem writer creates missing output directories on first run`() {
+        val sourceOutputDirectory = tempDir.resolve("missing/sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("missing/resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        assertTrue(sourceOutputDirectory.exists())
+        assertEquals(
+            "data class User(val id: String)",
+            sourceOutputDirectory.resolve("com/example/User.kt").readText(),
+        )
+    }
+
+    @Test
+    fun `filesystem writer preserves artifacts from earlier executions`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/ContractA.kt",
+                    content = "data class ContractA(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/ContractB.kt",
+                    content = "data class ContractB(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals(
+            "data class ContractA(val id: String)",
+            sourceOutputDirectory.resolve("com/example/ContractA.kt").readText(),
+        )
+        assertEquals(
+            "data class ContractB(val id: String)",
+            sourceOutputDirectory.resolve("com/example/ContractB.kt").readText(),
+        )
+    }
+
+    @Test
+    fun `filesystem writer preserves unrelated files`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        sourceOutputDirectory.mkdirs()
+        sourceOutputDirectory.resolve("unrelated.txt").writeText("keep me")
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals("keep me", sourceOutputDirectory.resolve("unrelated.txt").readText())
+        assertEquals(
+            "data class User(val id: String)",
+            sourceOutputDirectory.resolve("com/example/User.kt").readText(),
+        )
+    }
+
+    @Test
+    fun `filesystem writer replaces existing file when content changes`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String, val name: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals(
+            "data class User(val id: String, val name: String)",
+            sourceOutputDirectory.resolve("com/example/User.kt").readText(),
+        )
+    }
+
+    @Test
+    fun `filesystem writer preserves timestamp when content is identical`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        val file = sourceOutputDirectory.resolve("com/example/User.kt")
+        val originalTimestamp = file.lastModified()
+
+        Thread.sleep(50) // Ensure timestamp would differ if file is rewritten
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedArtifact(
+                    relativePath = "com/example/User.kt",
+                    content = "data class User(val id: String)",
+                    kind = GeneratedArtifactKind.SOURCE,
+                ),
+            ),
+        )
+
+        assertEquals(originalTimestamp, file.lastModified())
+    }
+
+    @Test
+    fun `filesystem writer bundles documents through same staging path`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val documentFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+        val writer = FileSystemGeneratedArtifactWriter(sourceOutputDirectory, resourceOutputDirectory)
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedDocumentArtifact(
+                    file = documentFile,
+                    content = "asyncapi: 3.0.0\n",
+                ),
+            ),
+        )
+
+        assertEquals("asyncapi: 3.0.0\n", documentFile.readText())
+
+        writer.write(
+            GenerationResult.of(
+                GeneratedDocumentArtifact(
+                    file = documentFile,
+                    content = "asyncapi: 3.0.0\ninfo:\n  title: Updated\n",
+                ),
+            ),
+        )
+
+        assertEquals("asyncapi: 3.0.0\ninfo:\n  title: Updated\n", documentFile.readText())
+    }
 }
