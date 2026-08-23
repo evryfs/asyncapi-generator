@@ -87,6 +87,8 @@ internal class SchemaBundler {
                     }
                 is MultiFormatSchema ->
                     ReferenceBundler.inlineIfUnvisited(reference, context)
+                is SchemaInterface.BooleanSchema ->
+                    ReferenceBundler.inlineIfUnvisited(reference, context)
                 else ->
                     throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
             }
@@ -107,6 +109,8 @@ internal class SchemaBundler {
                 )
             is MultiFormatSchema ->
                 SchemaInterface.MultiFormatSchemaInline(referencedModel)
+            is SchemaInterface.BooleanSchema ->
+                referencedModel
             else ->
                 throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
         }
@@ -169,6 +173,7 @@ internal class SchemaBundler {
         when (this) {
             is Schema -> SchemaInterface.SchemaInline(this)
             is MultiFormatSchema -> SchemaInterface.MultiFormatSchemaInline(this)
+            is SchemaInterface.BooleanSchema -> this
             else -> throw IllegalArgumentException("Schema reference resolved to unsupported model")
         }
 

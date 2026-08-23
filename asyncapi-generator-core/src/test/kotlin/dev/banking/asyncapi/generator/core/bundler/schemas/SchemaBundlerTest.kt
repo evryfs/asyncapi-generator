@@ -104,6 +104,58 @@ class SchemaBundlerTest {
         assertFalse(schemaReference.inline)
     }
 
+    @Test
+    fun `bundle keeps a component reference resolving to a true Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(true)
+        val schemaReference = Reference("#/components/schemas/Anything", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(schemaInterface, bundled)
+        assertTrue(schemaReference.inline)
+        assertSame(booleanSchema, schemaReference.model)
+    }
+
+    @Test
+    fun `bundle keeps a component reference resolving to a false Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(schemaInterface, bundled)
+        assertTrue(schemaReference.inline)
+        assertEquals(SchemaInterface.BooleanSchema(false), schemaReference.model)
+    }
+
+    @Test
+    fun `bundle inlines an already visited external reference resolving to a true Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(true)
+        val schemaReference = Reference("schemas.yaml#/shared/Anything", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+        val context = BundlingContext.empty().enter(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, context)
+
+        assertSame(booleanSchema, bundled)
+        assertFalse(schemaReference.inline)
+    }
+
+    @Test
+    fun `bundle inlines an external reference resolving to a false Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("schemas.yaml#/shared/Nothing", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(booleanSchema, bundled)
+        assertEquals(SchemaInterface.BooleanSchema(false), bundled)
+        assertFalse(schemaReference.inline)
+    }
+
     private fun nativeAvroSchema(): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
