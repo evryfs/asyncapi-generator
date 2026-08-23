@@ -13,3 +13,5 @@ assert aProducerDir.exists() : "Expected inherited producer configuration for co
 assert aConsumerDir.exists() : "Expected inherited consumer configuration for contract A"
 assert bProducerDir.exists() : "Expected inherited producer configuration for contract B"
 assert !bConsumerDir.exists() : "Did not expect disabled consumer generation for contract B"
+
+true

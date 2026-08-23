@@ -23,3 +23,5 @@ assert producer.text.contains("payload: MyReferencedSchema")
 
 assert consumer.isFile() : "Expected the consumer contract to be generated"
 assert consumer.text.contains("payload: MyReferencedSchema")
+
+true

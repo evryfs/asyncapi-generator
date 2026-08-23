@@ -133,6 +133,7 @@
                         <goal>verify</goal>
                     </goals>
                     <streamLogs>true</streamLogs>
+                    <postBuildHookScript>verify</postBuildHookScript>
                 </configuration>
                 <executions>
                     <execution>

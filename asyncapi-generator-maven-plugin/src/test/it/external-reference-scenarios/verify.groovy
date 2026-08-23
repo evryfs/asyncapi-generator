@@ -82,3 +82,5 @@ def classes = new File(basedir, "target/classes")
         "com/example/references/client/consumer/${channelName}Consumer.class",
     ).isFile() : "Expected ${channelName}Consumer to compile"
 }
+
+true
