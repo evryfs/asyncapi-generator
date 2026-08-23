@@ -144,6 +144,24 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate writes bundled document containing native Avro without translating generation input`() {
+        val outputFile = tempDir.resolve("bundled/native-avro.yaml").toFile()
+
+        generator.generate(
+            asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+            generatorConfiguration =
+                documentGeneratorConfiguration(
+                    outputFile = outputFile,
+                    format = DocumentFormat.YAML,
+                ),
+        )
+
+        assertTrue(outputFile.exists())
+        assertTrue(outputFile.readText().contains("application/vnd.apache.avro+json;version=1.9.0"))
+        assertTrue(outputFile.readText().contains("UserCreated"))
+    }
+
+    @Test
     fun `late native Avro rendering failure leaves earlier outputs unwritten`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()

@@ -37,12 +37,19 @@ class AsyncApiGenerator {
         asyncApiDocument: AsyncApiDocument,
         generatorConfiguration: GeneratorConfiguration,
     ) {
-        val generationInput = generationInputFactory.create(asyncApiDocument)
         val generationPlan = generationPlanner.plan(generatorConfiguration)
-        generationInputCompatibilityValidator.validate(
-            generationInput = generationInput,
-            generationPlan = generationPlan,
-        )
+        val documentTasks = generationPlan.tasks.filterIsInstance<GenerationTask.DocumentArtifact>()
+        val result =
+            if (documentTasks.size == generationPlan.tasks.size) {
+                renderDocumentArtifacts(documentTasks, asyncApiDocument)
+            } else {
+                val generationInput = generationInputFactory.create(asyncApiDocument)
+                generationInputCompatibilityValidator.validate(
+                    generationInput = generationInput,
+                    generationPlan = generationPlan,
+                )
+                renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
+            }
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
@@ -50,9 +57,20 @@ class AsyncApiGenerator {
                 javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
             )
 
-        val result = renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
         artifactWriter.write(result)
     }
+
+    private fun renderDocumentArtifacts(
+        tasks: List<GenerationTask.DocumentArtifact>,
+        asyncApiDocument: AsyncApiDocument,
+    ): GenerationResult =
+        tasks.fold(GenerationResult.Empty) { result, task ->
+            result +
+                documentArtifactGeneration.render(
+                    task = task,
+                    asyncApiDocument = asyncApiDocument,
+                )
+        }
 
     private fun renderArtifacts(
         tasks: List<GenerationTask>,
