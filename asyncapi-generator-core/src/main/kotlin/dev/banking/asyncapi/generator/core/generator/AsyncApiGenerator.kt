@@ -16,6 +16,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NoArtifactsGenerated
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedGenerationCapability
 
 /**
@@ -50,6 +51,9 @@ class AsyncApiGenerator {
                 )
                 renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
             }
+        if (result.isEmpty()) {
+            throw NoArtifactsGenerated()
+        }
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,

@@ -35,6 +35,10 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class NoArtifactsGenerated : AsyncApiGeneratorException(
+        "Generation completed without producing any artifacts.",
+    )
+
     class InvalidEnum(
         schemaName: String,
         literal: String,

@@ -162,6 +162,92 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate rejects model-only plan when scalar schema produces no artifacts`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
+                generator.generate(
+                    asyncApiDocument = documentWithScalarSchema(),
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation completed without producing any artifacts"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `generate rejects spring kafka client plan when document has no channels`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
+                generator.generate(
+                    asyncApiDocument = documentWithoutChannels(),
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            clients =
+                                listOf(
+                                    ClientGeneration.Kafka(
+                                        packageName = "com.example.kafka",
+                                        modelPackageName = "com.example.model",
+                                        springKafka = ClientGeneration.SpringKafka(),
+                                    ),
+                                ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation completed without producing any artifacts"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
+    fun `generate allows empty model task when bundled document produces an artifact`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
+        val sourceConfiguration =
+            generatorConfiguration(
+                sourceOutputDirectory = sourceOutputDirectory,
+                resourceOutputDirectory = resourceOutputDirectory,
+                models = ModelGeneration.Enabled(packageName = "com.example.model"),
+            )
+        val configuration =
+            sourceConfiguration.copy(
+                output =
+                    sourceConfiguration.output.copy(
+                        document =
+                            DocumentOutput(
+                                file = documentOutputFile,
+                                format = DocumentFormat.YAML,
+                            ),
+                    ),
+            )
+
+        generator.generate(
+            asyncApiDocument = documentWithScalarSchema(),
+            generatorConfiguration = configuration,
+        )
+
+        assertTrue(documentOutputFile.exists())
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
     fun `late native Avro rendering failure leaves earlier outputs unwritten`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
@@ -591,6 +677,27 @@ class AsyncApiGeneratorOutputContractTest {
                             ),
                     ),
                 ),
+        )
+
+    private fun documentWithScalarSchema(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Scalar schema", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            mapOf(
+                                "Status" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                            ),
+                    ),
+                ),
+        )
+
+    private fun documentWithoutChannels(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "No channels", version = "1.0.0"),
         )
 
     private fun generatorConfiguration(
