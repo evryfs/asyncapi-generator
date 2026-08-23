@@ -39,14 +39,27 @@ assertContracts(
     "ExternalChannelMessageV1Payload",
 )
 
-// Two messages sharing one external payload model.
-assertModel("SharedPayload", "val sharedValue: String")
-assertContracts("SharedPayloadEvents", "SharedPayloadCreatedV1", "SharedPayload")
-assertContracts("SharedPayloadEvents", "SharedPayloadUpdatedV1", "SharedPayload")
-assert modelPackage
-    .listFiles()
-    .count { file -> file.name == "SharedPayload.kt" } == 1 :
-    "Expected a shared external payload to produce exactly one model"
+// Raw external schema fragments are materialized as message-owned payload models.
+assertModel(
+    "SharedPayloadCreatedV1Payload",
+    "val sharedValue: String",
+)
+assertContracts(
+    "SharedPayloadEvents",
+    "SharedPayloadCreatedV1",
+    "SharedPayloadCreatedV1Payload",
+)
+assertModel(
+    "SharedPayloadUpdatedV1Payload",
+    "val sharedValue: String",
+)
+assertContracts(
+    "SharedPayloadEvents",
+    "SharedPayloadUpdatedV1",
+    "SharedPayloadUpdatedV1Payload",
+)
+assert !new File(modelPackage, "SharedPayload.kt").exists() :
+    "Did not expect a shared component model for raw external schema fragments"
 
 // A recursive external payload must retain its self-reference and compile.
 assertModel("RecursiveNodePayload", "val children: List<RecursiveNodePayload>? = null")
@@ -57,7 +70,8 @@ def classes = new File(basedir, "target/classes")
     "RawMessageV1Payload",
     "DirectPayloadV1Payload",
     "ExternalChannelMessageV1Payload",
-    "SharedPayload",
+    "SharedPayloadCreatedV1Payload",
+    "SharedPayloadUpdatedV1Payload",
     "RecursiveNodePayload",
 ].each { modelName ->
     assert new File(
