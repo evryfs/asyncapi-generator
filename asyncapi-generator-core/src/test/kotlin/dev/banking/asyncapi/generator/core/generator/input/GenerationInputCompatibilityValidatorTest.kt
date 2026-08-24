@@ -512,7 +512,7 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `allows native avro multi format messages for spring kafka client generation`() {
+    fun `allows native Avro declarations used by spring kafka client messages`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
             generationPlan =
@@ -529,7 +529,7 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `allows native protobuf multi format messages for spring kafka client generation`() {
+    fun `allows native Protobuf declarations used by spring kafka client messages`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeProtobufSchema()),
             generationPlan =
@@ -540,6 +540,184 @@ class GenerationInputCompatibilityValidatorTest {
                             clientPackage = "com.example.kafka",
                             modelPackage = "com.example.model",
                         ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `rejects unrelated native Protobuf declaration with active spring kafka generation`() {
+        val usedAvroSchema = nativeAvroSchema()
+        val unrelatedProtobufSchema = nativeProtobufSchema()
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        linkedMapOf(
+                                            "UserCreated" to usedAvroSchema,
+                                            "AuditRecorded" to unrelatedProtobufSchema,
+                                        ),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "userEvents",
+                                        topic = "users",
+                                        messages = emptyList(),
+                                        multiFormatMessages =
+                                            listOf(
+                                                AnalyzedMultiFormatMessage(
+                                                    messageName = "UserCreated",
+                                                    payloadName = "UserCreated",
+                                                    schema = usedAvroSchema,
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'AuditRecorded'"))
+        assertTrue(error.message!!.contains("application/vnd.google.protobuf;version=3"))
+    }
+
+    @Test
+    fun `rejects unrelated native Avro declaration with active spring kafka generation`() {
+        val usedProtobufSchema = nativeProtobufSchema()
+        val unrelatedAvroSchema = nativeAvroSchema()
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        linkedMapOf(
+                                            "UserCreated" to usedProtobufSchema,
+                                            "AuditRecorded" to unrelatedAvroSchema,
+                                        ),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "userEvents",
+                                        topic = "users",
+                                        messages = emptyList(),
+                                        multiFormatMessages =
+                                            listOf(
+                                                AnalyzedMultiFormatMessage(
+                                                    messageName = "UserCreated",
+                                                    payloadName = "UserCreated",
+                                                    schema = usedProtobufSchema,
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'AuditRecorded'"))
+        assertTrue(error.message!!.contains("application/vnd.apache.avro+json;version=1.9.0"))
+    }
+
+    @Test
+    fun `disabled spring kafka generation does not handle a native declaration`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                springKafkaTask(
+                                    generateProducers = false,
+                                    generateConsumers = false,
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'UserCreated'"))
+    }
+
+    @Test
+    fun `disabled spring kafka generation does not reject Draft 07 message handled by JSON Schema task`() {
+        validator.validate(
+            generationInput =
+                generationInputWithMultiFormatMessage(
+                    MultiFormatSchema(
+                        schemaFormat = "application/schema+json;version=draft-07",
+                        schema = mapOf("type" to "object"),
+                    ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        springKafkaTask(
+                            generateProducers = false,
+                            generateConsumers = false,
+                        ),
+                        GenerationTask.JsonSchemaArtifacts(
+                            packageName = "com.example.schema",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `native artifact task handles declaration unrelated to active spring kafka message`() {
+        val usedAvroSchema = nativeAvroSchema()
+        val unrelatedProtobufSchema = nativeProtobufSchema()
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = emptyMap(),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                linkedMapOf(
+                                    "UserCreated" to usedAvroSchema,
+                                    "AuditRecorded" to unrelatedProtobufSchema,
+                                ),
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels =
+                        listOf(
+                            AnalyzedChannel(
+                                channelName = "userEvents",
+                                topic = "users",
+                                messages = emptyList(),
+                                multiFormatMessages =
+                                    listOf(
+                                        AnalyzedMultiFormatMessage(
+                                            messageName = "UserCreated",
+                                            payloadName = "UserCreated",
+                                            schema = usedAvroSchema,
+                                        ),
+                                    ),
+                            ),
+                        ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        springKafkaTask(),
+                        GenerationTask.NativeProtobufArtifacts(),
                     ),
                 ),
         )
@@ -675,6 +853,10 @@ class GenerationInputCompatibilityValidatorTest {
     private fun generationInputWithMultiFormatMessage(schema: MultiFormatSchema): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas = mapOf("UserCreated" to schema),
+                ),
             polymorphicRelationships = emptyMap(),
             channels =
                 listOf(
@@ -692,6 +874,18 @@ class GenerationInputCompatibilityValidatorTest {
                             ),
                     ),
                 ),
+        )
+
+    private fun springKafkaTask(
+        generateProducers: Boolean = true,
+        generateConsumers: Boolean = true,
+    ): GenerationTask.SpringKafkaClient =
+        GenerationTask.SpringKafkaClient(
+            language = SourceLanguage.KOTLIN,
+            clientPackage = "com.example.kafka",
+            modelPackage = "com.example.model",
+            generateProducers = generateProducers,
+            generateConsumers = generateConsumers,
         )
 
     private fun nativeAvroSchema(
