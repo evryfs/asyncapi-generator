@@ -238,6 +238,22 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    internal class UnsupportedSourceSchemaFeature(
+        output: String,
+        rootSchemaName: String,
+        schemaPath: String,
+        feature: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output cannot represent schema '$rootSchemaName'.")
+                appendLine("Incompatible schema path: $schemaPath")
+                appendLine("Incompatible feature: $feature.")
+                appendLine("Use a compatible schema shape for this output, or remove the output from generator configuration.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class MissingSchemaGenerationInput(
         output: String,
         supportedInput: String,
