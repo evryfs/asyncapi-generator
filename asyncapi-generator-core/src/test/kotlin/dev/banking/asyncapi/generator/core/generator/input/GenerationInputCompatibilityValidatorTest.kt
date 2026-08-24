@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -136,7 +137,10 @@ class GenerationInputCompatibilityValidatorTest {
             generationInput =
                 GenerationInput(
                     schemas = mapOf("Account" to Schema(type = "object")),
-                    multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                        ),
                     polymorphicRelationships = emptyMap(),
                     channels = emptyList(),
                 ),
@@ -162,7 +166,10 @@ class GenerationInputCompatibilityValidatorTest {
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("Account" to Schema(type = "object")),
-                            multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
+                                ),
                             polymorphicRelationships = emptyMap(),
                             channels = emptyList(),
                         ),
@@ -193,10 +200,13 @@ class GenerationInputCompatibilityValidatorTest {
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("Account" to Schema(type = "object")),
-                            multiFormatSchemas =
-                                mapOf(
-                                    "AvroPayload" to nativeAvroSchema(),
-                                    "ProtobufPayload" to nativeProtobufSchema(),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        mapOf(
+                                            "AvroPayload" to nativeAvroSchema(),
+                                            "ProtobufPayload" to nativeProtobufSchema(),
+                                        ),
                                 ),
                             polymorphicRelationships = emptyMap(),
                             channels = emptyList(),
@@ -222,10 +232,13 @@ class GenerationInputCompatibilityValidatorTest {
             generationInput =
                 GenerationInput(
                     schemas = mapOf("Account" to Schema(type = "object")),
-                    multiFormatSchemas =
-                        mapOf(
-                            "AvroPayload" to nativeAvroSchema(),
-                            "ProtobufPayload" to nativeProtobufSchema(),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                mapOf(
+                                    "AvroPayload" to nativeAvroSchema(),
+                                    "ProtobufPayload" to nativeProtobufSchema(),
+                                ),
                         ),
                     polymorphicRelationships = emptyMap(),
                     channels = emptyList(),
@@ -361,12 +374,15 @@ class GenerationInputCompatibilityValidatorTest {
             generationInput =
                 GenerationInput(
                     schemas = mapOf("UserCreated" to Schema(type = "object")),
-                    multiFormatSchemas =
-                        mapOf(
-                            "UserUpdated" to
-                                MultiFormatSchema(
-                                    schemaFormat = "application/schema+json;version=draft-07",
-                                    schema = mapOf("type" to "object"),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                mapOf(
+                                    "UserUpdated" to
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/schema+json;version=draft-07",
+                                            schema = mapOf("type" to "object"),
+                                        ),
                                 ),
                         ),
                     polymorphicRelationships = emptyMap(),
@@ -416,12 +432,15 @@ class GenerationInputCompatibilityValidatorTest {
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("UserCreated" to Schema(type = "object")),
-                            multiFormatSchemas =
-                                mapOf(
-                                    "UserUpdated" to
-                                        MultiFormatSchema(
-                                            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
-                                            schema = mapOf("type" to "record"),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        mapOf(
+                                            "UserUpdated" to
+                                                MultiFormatSchema(
+                                                    schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+                                                    schema = mapOf("type" to "record"),
+                                                ),
                                         ),
                                 ),
                             polymorphicRelationships = emptyMap(),
@@ -619,7 +638,10 @@ class GenerationInputCompatibilityValidatorTest {
     ): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas = mapOf("UserCreated" to nativeAvroSchema(namespace)),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas = mapOf("UserCreated" to nativeAvroSchema(namespace)),
+                ),
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
         )

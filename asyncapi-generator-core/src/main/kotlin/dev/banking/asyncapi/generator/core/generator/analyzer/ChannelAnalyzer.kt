@@ -71,6 +71,7 @@ class ChannelAnalyzer {
                             messageId = messageId,
                         ),
                     )
+                is ResolvedMessagePayload.Boolean -> Unit
                 null ->
                     if (message.payload == null) {
                         analyzedMessages.add(

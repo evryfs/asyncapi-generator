@@ -30,8 +30,10 @@ class AsyncApiSchemaLoaderTest {
             )
         )
         val doc = docWithComponents(components)
-        val loaded = AsyncApiSchemaLoader.load(doc).schemas
-        assertTrue(loaded.containsKey("User"))
+        val loaded = AsyncApiSchemaLoader.load(doc)
+
+        assertTrue(loaded.schemas.containsKey("User"))
+        assertTrue(loaded.schemaDeclarations.asyncApiSchemas.containsKey("User"))
     }
 
     @Test
@@ -46,8 +48,10 @@ class AsyncApiSchemaLoaderTest {
             )
         )
         val doc = docWithComponents(components)
-        val loaded = AsyncApiSchemaLoader.load(doc).schemas
-        assertTrue(loaded.containsKey("UserSignedUpPayload"))
+        val loaded = AsyncApiSchemaLoader.load(doc)
+
+        assertTrue(loaded.schemas.containsKey("UserSignedUpPayload"))
+        assertTrue(loaded.schemaDeclarations.asyncApiSchemas.containsKey("UserSignedUpPayload"))
     }
 
     @Test
@@ -90,9 +94,10 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(document).schemas
+        val loaded = AsyncApiSchemaLoader.load(document)
 
-        assertSame(payloadSchema, loaded["BillingAccountCreatedV1Payload"])
+        assertSame(payloadSchema, loaded.schemas["BillingAccountCreatedV1Payload"])
+        assertSame(payloadSchema, loaded.schemaDeclarations.asyncApiSchemas["BillingAccountCreatedV1Payload"])
     }
 
     @Test
@@ -258,12 +263,20 @@ class AsyncApiSchemaLoaderTest {
     }
 
     @Test
-    fun `should load explicit multi format schemas separately from asyncapi schemas`() {
+    fun `should retain all supported component schema declaration forms`() {
         val avroSchema = nativeAvroSchema()
         val components = Component(
             schemas = mapOf(
                 "Task" to SchemaInterface.SchemaInline(Schema(type = "object")),
                 "UserCreated" to SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                "AllowAnything" to SchemaInterface.BooleanSchema(true),
+                "DenyAnything" to
+                    SchemaInterface.SchemaReference(
+                        Reference(
+                            ref = "./schemas.yaml#/DenyAnything",
+                            model = SchemaInterface.BooleanSchema(false),
+                        ),
+                    ),
             ),
         )
         val doc = docWithComponents(components)
@@ -272,8 +285,16 @@ class AsyncApiSchemaLoaderTest {
 
         assertTrue(loaded.schemas.containsKey("Task"))
         assertFalse(loaded.schemas.containsKey("UserCreated"))
-        assertSame(avroSchema, loaded.multiFormatSchemas["UserCreated"])
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, loaded.multiFormatSchemas["UserCreated"]?.format)
+        assertFalse(loaded.schemas.containsKey("AllowAnything"))
+        assertFalse(loaded.schemas.containsKey("DenyAnything"))
+        assertTrue(loaded.schemaDeclarations.asyncApiSchemas.containsKey("Task"))
+        assertSame(avroSchema, loaded.schemaDeclarations.multiFormatSchemas["UserCreated"])
+        assertEquals(
+            SchemaFormat.AVRO_1_9_0_JSON,
+            loaded.schemaDeclarations.multiFormatSchemas["UserCreated"]?.format,
+        )
+        assertEquals(true, loaded.schemaDeclarations.booleanSchemas["AllowAnything"])
+        assertEquals(false, loaded.schemaDeclarations.booleanSchemas["DenyAnything"])
     }
 
     @Test
@@ -290,7 +311,7 @@ class AsyncApiSchemaLoaderTest {
         )
         val doc = docWithComponents(components)
 
-        val loadedMultiFormatSchemas = AsyncApiSchemaLoader.load(doc).multiFormatSchemas
+        val loadedMultiFormatSchemas = AsyncApiSchemaLoader.load(doc).schemaDeclarations.multiFormatSchemas
 
         assertSame(avroSchema, loadedMultiFormatSchemas["UserSignedUpPayload"])
     }
@@ -333,9 +354,99 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(document).multiFormatSchemas
+        val loaded = AsyncApiSchemaLoader.load(document).schemaDeclarations.multiFormatSchemas
 
         assertSame(avroSchema, loaded["UserSignedUp"])
+    }
+
+    @Test
+    fun `should retain inline and externally referenced Boolean message payloads`() {
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "permissionChecked" to
+                            MessageInterface.MessageInline(
+                                Message(payload = SchemaInterface.BooleanSchema(false)),
+                            ),
+                    ),
+            )
+        val document =
+            docWithComponents(components).copy(
+                channels =
+                    mapOf(
+                        "externalEvents" to
+                            ChannelInterface.ChannelInline(
+                                Channel(
+                                    messages =
+                                        mapOf(
+                                            "externalEvent" to
+                                                MessageInterface.MessageInline(
+                                                    Message(
+                                                        payload =
+                                                            SchemaInterface.SchemaReference(
+                                                                Reference(
+                                                                    ref = "./schemas.yaml#/AllowExternal",
+                                                                    model = SchemaInterface.BooleanSchema(true),
+                                                                ),
+                                                            ),
+                                                    ),
+                                                ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(document)
+
+        assertEquals(false, loaded.schemaDeclarations.booleanSchemas["PermissionCheckedPayload"])
+        assertEquals(true, loaded.schemaDeclarations.booleanSchemas["AllowExternal"])
+        assertFalse(loaded.schemas.containsKey("PermissionCheckedPayload"))
+        assertFalse(loaded.schemas.containsKey("AllowExternal"))
+    }
+
+    @Test
+    fun `should retain header-only components as declarations but not source-model schemas`() {
+        val headerSchema = Schema(type = "object")
+        val components =
+            Component(
+                schemas =
+                    mapOf(
+                        "MessageHeaders" to SchemaInterface.SchemaInline(headerSchema),
+                    ),
+            )
+        val document =
+            docWithComponents(components).copy(
+                channels =
+                    mapOf(
+                        "events" to
+                            ChannelInterface.ChannelInline(
+                                Channel(
+                                    messages =
+                                        mapOf(
+                                            "event" to
+                                                MessageInterface.MessageInline(
+                                                    Message(
+                                                        headers =
+                                                            SchemaInterface.SchemaReference(
+                                                                Reference(
+                                                                    ref = "#/components/schemas/MessageHeaders",
+                                                                    model = headerSchema,
+                                                                ),
+                                                            ),
+                                                    ),
+                                                ),
+                                        ),
+                                ),
+                            ),
+                    ),
+            )
+
+        val loaded = AsyncApiSchemaLoader.load(document)
+
+        assertSame(headerSchema, loaded.schemaDeclarations.asyncApiSchemas["MessageHeaders"])
+        assertFalse(loaded.schemas.containsKey("MessageHeaders"))
     }
 
     private fun docWithComponents(component: Component): AsyncApiDocument {

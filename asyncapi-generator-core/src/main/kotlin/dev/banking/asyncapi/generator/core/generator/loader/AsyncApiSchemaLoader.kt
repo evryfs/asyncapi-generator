@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.MessagePayloadReso
 import dev.banking.asyncapi.generator.core.generator.analyzer.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -25,8 +26,9 @@ object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val collectedSchemas = mutableMapOf<String, Schema>()
-        val allComponentSchemas = mutableMapOf<String, Schema>()
-        val collectedMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
+        val declaredAsyncApiSchemas = mutableMapOf<String, Schema>()
+        val declaredMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
+        val declaredBooleanSchemas = mutableMapOf<String, Boolean>()
         val originalNamesByGenerated = mutableMapOf<String, MutableList<String>>()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
@@ -36,35 +38,40 @@ object AsyncApiSchemaLoader {
             detectSchemaNameCollision(originalNamesByGenerated)
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline -> {
-                    allComponentSchemas[schemaName] = schemaInterface.schema
+                    declaredAsyncApiSchemas[schemaName] = schemaInterface.schema
                     if (!usageIndex.isHeaderOnly(schemaName)) {
                         collectedSchemas[schemaName] = schemaInterface.schema
                     }
                 }
                 is SchemaInterface.MultiFormatSchemaInline ->
-                    collectedMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
+                    declaredMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
                 is SchemaInterface.SchemaReference ->
                     when (val model = schemaInterface.reference.model) {
                         is Schema -> {
-                            allComponentSchemas[schemaName] = model
+                            declaredAsyncApiSchemas[schemaName] = model
                             if (!usageIndex.isHeaderOnly(schemaName)) {
                                 collectedSchemas[schemaName] = model
                             }
                         }
-                        is MultiFormatSchema -> collectedMultiFormatSchemas[schemaName] = model
+                        is MultiFormatSchema -> declaredMultiFormatSchemas[schemaName] = model
+                        is SchemaInterface.BooleanSchema -> declaredBooleanSchemas[schemaName] = model.value
                         else -> Unit
                     }
-                is SchemaInterface.BooleanSchema -> Unit
+                is SchemaInterface.BooleanSchema -> declaredBooleanSchemas[schemaName] = schemaInterface.value
             }
         }
 
         collectMessages(asyncApiDocument, componentNode).forEach { (messageKey, messageInterface) ->
             val message = MessagePayloadResolver.resolveMessage(messageInterface) ?: return@forEach
             when (val payload = MessagePayloadResolver.resolvePayload(message, messageKey)) {
-                is ResolvedMessagePayload.AsyncApi ->
+                is ResolvedMessagePayload.AsyncApi -> {
                     collectedSchemas.putIfAbsent(payload.typeName, payload.schema)
+                    declaredAsyncApiSchemas.putIfAbsent(payload.typeName, payload.schema)
+                }
                 is ResolvedMessagePayload.MultiFormat ->
-                    collectedMultiFormatSchemas.putIfAbsent(payload.typeName, payload.schema)
+                    declaredMultiFormatSchemas.putIfAbsent(payload.typeName, payload.schema)
+                is ResolvedMessagePayload.Boolean ->
+                    declaredBooleanSchemas.putIfAbsent(payload.typeName, payload.value)
                 null -> Unit
             }
             collectKafkaKeySchema(
@@ -75,8 +82,12 @@ object AsyncApiSchemaLoader {
         }
         return LoadedSchemas(
             schemas = collectedSchemas,
-            allComponentSchemas = allComponentSchemas,
-            multiFormatSchemas = collectedMultiFormatSchemas,
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    asyncApiSchemas = declaredAsyncApiSchemas,
+                    multiFormatSchemas = declaredMultiFormatSchemas,
+                    booleanSchemas = declaredBooleanSchemas,
+                ),
         )
     }
 

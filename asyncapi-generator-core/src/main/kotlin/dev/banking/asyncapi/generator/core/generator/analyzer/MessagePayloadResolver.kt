@@ -45,6 +45,11 @@ internal object MessagePayloadResolver {
                             typeName = typeName,
                             schema = model,
                         )
+                    is SchemaInterface.BooleanSchema ->
+                        ResolvedMessagePayload.Boolean(
+                            typeName = typeName,
+                            value = model.value,
+                        )
                     else -> null
                 }
             }
@@ -53,7 +58,12 @@ internal object MessagePayloadResolver {
                     typeName = inlinePayloadTypeName,
                     schema = payload.multiFormatSchema,
                 )
-            else -> null
+            is SchemaInterface.BooleanSchema ->
+                ResolvedMessagePayload.Boolean(
+                    typeName = inlinePayloadTypeName,
+                    value = payload.value,
+                )
+            null -> null
         }
     }
 }
@@ -69,5 +79,10 @@ internal sealed interface ResolvedMessagePayload {
     data class MultiFormat(
         override val typeName: String,
         val schema: MultiFormatSchema,
+    ) : ResolvedMessagePayload
+
+    data class Boolean(
+        override val typeName: String,
+        val value: kotlin.Boolean,
     ) : ResolvedMessagePayload
 }

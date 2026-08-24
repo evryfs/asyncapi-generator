@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -78,9 +79,12 @@ internal class GenerationInputFixtures {
     fun generationInputWithNativeAvroSchema(): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas =
-                mapOf(
-                    "UserCreated" to nativeAvroUserCreatedSchema(namespace = "com.example.avro"),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas =
+                        mapOf(
+                            "UserCreated" to nativeAvroUserCreatedSchema(namespace = "com.example.avro"),
+                        ),
                 ),
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
@@ -91,7 +95,10 @@ internal class GenerationInputFixtures {
         val nativeSchema = nativeAvroUserCreatedSchema(namespace = "com.example.avro")
         return GenerationInput(
             schemas = mapOf("UserCreatedKey" to keySchema),
-            multiFormatSchemas = mapOf("UserCreated" to nativeSchema),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas = mapOf("UserCreated" to nativeSchema),
+                ),
             polymorphicRelationships = emptyMap(),
             channels =
                 listOf(
@@ -116,9 +123,12 @@ internal class GenerationInputFixtures {
     fun generationInputWithNativeProtobufSchema(): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas =
-                mapOf(
-                    "UserCreated" to nativeProtobufUserCreatedSchema(),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas =
+                        mapOf(
+                            "UserCreated" to nativeProtobufUserCreatedSchema(),
+                        ),
                 ),
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
@@ -127,9 +137,12 @@ internal class GenerationInputFixtures {
     fun generationInputWithNativeProtobufJavaMessageSchema(): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas =
-                mapOf(
-                    "UserCreated" to nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas =
+                        mapOf(
+                            "UserCreated" to nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+                        ),
                 ),
             polymorphicRelationships = emptyMap(),
             channels = emptyList(),
@@ -200,19 +213,22 @@ internal class GenerationInputFixtures {
     fun generationInputWithNativeJsonSchema(): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
-            multiFormatSchemas =
-                mapOf(
-                    "MyAccount" to
-                        MultiFormatSchema(
-                            schemaFormat = "application/schema+json;version=draft-07",
-                            schema =
-                                linkedMapOf(
-                                    "type" to "object",
-                                    "properties" to
-                                        mapOf(
-                                            "address" to
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas =
+                        mapOf(
+                            "MyAccount" to
+                                MultiFormatSchema(
+                                    schemaFormat = "application/schema+json;version=draft-07",
+                                    schema =
+                                        linkedMapOf(
+                                            "type" to "object",
+                                            "properties" to
                                                 mapOf(
-                                                    $$"$ref" to "#/components/schemas/Address",
+                                                    "address" to
+                                                        mapOf(
+                                                            $$"$ref" to "#/components/schemas/Address",
+                                                        ),
                                                 ),
                                         ),
                                 ),

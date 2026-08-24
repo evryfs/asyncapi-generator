@@ -276,6 +276,31 @@ class ChannelAnalyzerTest {
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)
     }
 
+    @Test
+    fun `should omit Boolean payload messages from generated client contracts`() {
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "permissionChecked" to
+                            MessageInterface.MessageInline(
+                                Message(payload = SchemaInterface.BooleanSchema(true)),
+                            ),
+                    ),
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("permissions" to ChannelInterface.ChannelInline(channel)),
+            )
+
+        val analyzed = analyzer.analyze(document).single()
+
+        assertTrue(analyzed.messages.isEmpty())
+        assertTrue(analyzed.multiFormatMessages.isEmpty())
+    }
+
     private fun nativeAvroSchema(): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
