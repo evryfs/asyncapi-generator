@@ -26,7 +26,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
-        val collectedSchemas = mutableMapOf<String, Schema>()
+        val sourceModels = SourceModelRegistry()
         val contractDeclarations = ContractDeclarationRegistry()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
@@ -45,7 +45,12 @@ object AsyncApiSchemaLoader {
                         origin = origin,
                     )
                     if (!usageIndex.isHeaderOnly(schemaName)) {
-                        collectedSchemas[schemaName] = schemaInterface.schema
+                        sourceModels.register(
+                            generatedName = schemaName,
+                            schema = schemaInterface.schema,
+                            identity = ContractDeclarationIdentity.ComponentSchema(name),
+                            origin = origin,
+                        )
                     }
                 }
                 is SchemaInterface.MultiFormatSchemaInline -> {
@@ -72,7 +77,12 @@ object AsyncApiSchemaLoader {
                                 origin = origin,
                             )
                             if (!usageIndex.isHeaderOnly(schemaName)) {
-                                collectedSchemas[schemaName] = model
+                                sourceModels.register(
+                                    generatedName = schemaName,
+                                    schema = model,
+                                    identity = ContractDeclarationIdentity.ComponentSchema(name),
+                                    origin = origin,
+                                )
                             }
                         }
                         is MultiFormatSchema ->
@@ -107,12 +117,18 @@ object AsyncApiSchemaLoader {
             val declarationIdentity = payloadDeclarationIdentity(collectedMessage, message)
             when (val payload = MessagePayloadResolver.resolvePayload(message, collectedMessage.messageKey)) {
                 is ResolvedMessagePayload.AsyncApi -> {
+                    val origin = payloadOrigin(collectedMessage.origin, message)
                     contractDeclarations.register(
                         generatedName = payload.typeName,
                         declaration = ContractDeclaration.AsyncApi(payload.schema, declarationIdentity),
-                        origin = payloadOrigin(collectedMessage.origin, message),
+                        origin = origin,
                     )
-                    collectedSchemas.putIfAbsent(payload.typeName, payload.schema)
+                    sourceModels.register(
+                        generatedName = payload.typeName,
+                        schema = payload.schema,
+                        identity = declarationIdentity,
+                        origin = origin,
+                    )
                 }
                 is ResolvedMessagePayload.MultiFormat -> {
                     contractDeclarations.register(
@@ -131,13 +147,13 @@ object AsyncApiSchemaLoader {
                 null -> Unit
             }
             collectKafkaKeySchema(
-                messageKey = collectedMessage.messageKey,
+                collectedMessage = collectedMessage,
                 message = message,
-                collectedSchemas = collectedSchemas,
+                sourceModels = sourceModels,
             )
         }
         return LoadedSchemas(
-            schemas = collectedSchemas,
+            schemas = sourceModels.schemas,
             schemaDeclarations =
                 SchemaDeclarationCatalog(
                     asyncApiSchemas = contractDeclarations.asyncApiSchemas,
@@ -369,24 +385,80 @@ object AsyncApiSchemaLoader {
     }
 
     private fun collectKafkaKeySchema(
-        messageKey: String,
+        collectedMessage: CollectedMessage,
         message: Message,
-        collectedSchemas: MutableMap<String, Schema>,
+        sourceModels: SourceModelRegistry,
     ) {
         val keySchema = message.kafkaKeySchema() ?: return
         val keyModel =
             KafkaKeySchemaResolver.resolveObjectModelOrNull(
-                messageName = messageBaseName(message, messageKey),
+                messageName = messageBaseName(message, collectedMessage.messageKey),
                 schema = keySchema,
             ) ?: return
 
-        collectedSchemas.putIfAbsent(keyModel.name, keyModel.schema)
+        sourceModels.register(
+            generatedName = keyModel.name,
+            schema = keyModel.schema,
+            identity = kafkaKeyDeclarationIdentity(collectedMessage, keySchema),
+            origin = kafkaKeyOrigin(collectedMessage.origin, keySchema),
+        )
     }
+
+    private fun kafkaKeyDeclarationIdentity(
+        collectedMessage: CollectedMessage,
+        keySchema: SchemaInterface,
+    ): ContractDeclarationIdentity? {
+        val keyReference = (keySchema as? SchemaInterface.SchemaReference)?.reference
+        if (keyReference != null) {
+            val componentSchemaName = keyReference.localComponentName("schemas")
+            return if (
+                componentSchemaName != null &&
+                collectedMessage.payloadIdentity !is ContractDeclarationIdentity.ReferencedMessagePayload
+            ) {
+                ContractDeclarationIdentity.ComponentSchema(componentSchemaName)
+            } else {
+                ContractDeclarationIdentity.ReferenceTarget(keyReference.sourceId, keyReference.ref)
+            }
+        }
+        return when (val messageIdentity = collectedMessage.payloadIdentity) {
+            is ContractDeclarationIdentity.ComponentMessagePayload ->
+                ContractDeclarationIdentity.ComponentMessageKafkaKey(messageIdentity.name)
+            is ContractDeclarationIdentity.ReferencedMessagePayload ->
+                ContractDeclarationIdentity.ReferencedMessageKafkaKey(messageIdentity.sourceId, messageIdentity.ref)
+            else -> null
+        }
+    }
+
+    private fun kafkaKeyOrigin(
+        messageOrigin: String,
+        keySchema: SchemaInterface,
+    ): String =
+        when (keySchema) {
+            is SchemaInterface.SchemaReference ->
+                "$messageOrigin.bindings.kafka.key (reference '${keySchema.reference.ref}')"
+            else -> "$messageOrigin.bindings.kafka.key"
+        }
 
     private fun messageBaseName(
         message: Message,
         messageKey: String,
     ): String = MessageNameResolver.resolve(message, messageKey)
+
+    private class SourceModelRegistry {
+        val schemas: MutableMap<String, Schema> = mutableMapOf()
+        private val owners = mutableMapOf<String, ContractDeclarationOwner>()
+
+        fun register(
+            generatedName: String,
+            schema: Schema,
+            identity: ContractDeclarationIdentity?,
+            origin: String,
+        ) {
+            val declaration = ContractDeclaration.AsyncApi(schema, identity)
+            if (!claimSchemaName(generatedName, declaration, origin, owners)) return
+            schemas[generatedName] = schema
+        }
+    }
 
     private class ContractDeclarationRegistry {
         val asyncApiSchemas: MutableMap<String, Schema> = mutableMapOf()
@@ -399,25 +471,35 @@ object AsyncApiSchemaLoader {
             declaration: ContractDeclaration,
             origin: String,
         ) {
-            val existingOwner = owners[generatedName]
-            if (existingOwner != null) {
-                if (!existingOwner.declaration.hasSameIdentity(declaration)) {
-                    throw SchemaNameCollision(
-                        generatedName = generatedName,
-                        firstOrigin = existingOwner.origin,
-                        conflictingOrigin = origin,
-                    )
-                }
-                return
-            }
-
-            owners[generatedName] = ContractDeclarationOwner(declaration, origin)
+            if (!claimSchemaName(generatedName, declaration, origin, owners)) return
             when (declaration) {
                 is ContractDeclaration.AsyncApi -> asyncApiSchemas[generatedName] = declaration.schema
                 is ContractDeclaration.MultiFormat -> multiFormatSchemas[generatedName] = declaration.schema
                 is ContractDeclaration.BooleanSchema -> booleanSchemas[generatedName] = declaration.value
             }
         }
+    }
+
+    private fun claimSchemaName(
+        generatedName: String,
+        declaration: ContractDeclaration,
+        origin: String,
+        owners: MutableMap<String, ContractDeclarationOwner>,
+    ): Boolean {
+        val existingOwner = owners[generatedName]
+        if (existingOwner != null) {
+            if (!existingOwner.declaration.hasSameIdentity(declaration)) {
+                throw SchemaNameCollision(
+                    generatedName = generatedName,
+                    firstOrigin = existingOwner.origin,
+                    conflictingOrigin = origin,
+                )
+            }
+            return false
+        }
+
+        owners[generatedName] = ContractDeclarationOwner(declaration, origin)
+        return true
     }
 
     private data class ContractDeclarationOwner(
@@ -464,6 +546,15 @@ object AsyncApiSchemaLoader {
         ) : ContractDeclarationIdentity
 
         data class ReferencedMessagePayload(
+            val sourceId: String?,
+            val ref: String,
+        ) : ContractDeclarationIdentity
+
+        data class ComponentMessageKafkaKey(
+            val name: String,
+        ) : ContractDeclarationIdentity
+
+        data class ReferencedMessageKafkaKey(
             val sourceId: String?,
             val ref: String,
         ) : ContractDeclarationIdentity

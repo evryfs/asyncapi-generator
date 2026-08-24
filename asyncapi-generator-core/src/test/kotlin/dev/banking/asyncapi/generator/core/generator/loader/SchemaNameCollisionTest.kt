@@ -1,6 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.loader
 
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
@@ -467,6 +469,133 @@ class SchemaNameCollisionTest {
     }
 
     @Test
+    fun `rejects a Kafka key model colliding with a component source model`() {
+        val error =
+            assertFailsWith<SchemaNameCollision> {
+                AsyncApiSchemaLoader.load(
+                    documentWith(
+                        schemas =
+                            mapOf(
+                                "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                            ),
+                        messages =
+                            mapOf(
+                                "account" to
+                                    kafkaKeyMessage(
+                                        name = "Account",
+                                        keySchema = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("AccountKey"))
+        assertTrue(error.message!!.contains("components.schemas['account-key']"))
+        assertTrue(error.message!!.contains("components.messages['account'].bindings.kafka.key"))
+    }
+
+    @Test
+    fun `rejects a Kafka key model colliding with a payload source model`() {
+        val error =
+            assertFailsWith<SchemaNameCollision> {
+                AsyncApiSchemaLoader.load(
+                    documentWith(
+                        messages =
+                            linkedMapOf(
+                                "accountPayload" to
+                                    inlineMessage(
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "./payloads.yaml#/AccountKey",
+                                                model = Schema(type = "object"),
+                                            ),
+                                        ),
+                                    ),
+                                "account" to
+                                    kafkaKeyMessage(
+                                        name = "Account",
+                                        keySchema = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("AccountKey"))
+        assertTrue(error.message!!.contains("components.messages['accountPayload'].payload"))
+        assertTrue(error.message!!.contains("components.messages['account'].bindings.kafka.key"))
+    }
+
+    @Test
+    fun `rejects distinct Kafka key source models with the same generated name`() {
+        val error =
+            assertFailsWith<SchemaNameCollision> {
+                AsyncApiSchemaLoader.load(
+                    documentWith(
+                        messages =
+                            linkedMapOf(
+                                "firstEvent" to
+                                    kafkaKeyMessage(
+                                        name = "FirstEvent",
+                                        keySchema =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = "object", title = "Shared key"),
+                                            ),
+                                    ),
+                                "secondEvent" to
+                                    kafkaKeyMessage(
+                                        name = "SecondEvent",
+                                        keySchema =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = "object", title = "Shared key"),
+                                            ),
+                                    ),
+                            ),
+                    ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("SharedKey"))
+        assertTrue(error.message!!.contains("components.messages['firstEvent'].bindings.kafka.key"))
+        assertTrue(error.message!!.contains("components.messages['secondEvent'].bindings.kafka.key"))
+    }
+
+    @Test
+    fun `allows a Kafka key reference to its component source model`() {
+        val componentSchema = Schema(type = "object")
+        val separatelyResolvedKeySchema = Schema(type = "object")
+        assertNotSame(componentSchema, separatelyResolvedKeySchema)
+
+        val loaded =
+            AsyncApiSchemaLoader.load(
+                documentWith(
+                    schemas =
+                        mapOf(
+                            "AccountKey" to SchemaInterface.SchemaInline(componentSchema),
+                        ),
+                    messages =
+                        mapOf(
+                            "account" to
+                                kafkaKeyMessage(
+                                    name = "Account",
+                                    keySchema =
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "#/components/schemas/AccountKey",
+                                                model = separatelyResolvedKeySchema,
+                                            ),
+                                        ),
+                                ),
+                        ),
+                ),
+            )
+
+        assertSame(componentSchema, loaded.schemas["AccountKey"])
+        assertSame(componentSchema, loaded.schemaDeclarations.asyncApiSchemas["AccountKey"])
+    }
+
+    @Test
     fun `preserves declaration order for valid contracts`() {
         val loaded =
             AsyncApiSchemaLoader.load(
@@ -518,6 +647,26 @@ class SchemaNameCollisionTest {
             Message(
                 name = name,
                 payload = payload,
+            ),
+        )
+
+    private fun kafkaKeyMessage(
+        name: String,
+        keySchema: SchemaInterface,
+    ): MessageInterface =
+        MessageInterface.MessageInline(
+            Message(
+                name = name,
+                bindings =
+                    mapOf(
+                        "kafka" to
+                            BindingInterface.BindingInline(
+                                Binding(
+                                    content = emptyMap(),
+                                    kafkaKeySchema = keySchema,
+                                ),
+                            ),
+                    ),
             ),
         )
 

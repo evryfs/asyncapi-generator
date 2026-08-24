@@ -15,6 +15,8 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.bindings.Binding
+import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
@@ -349,6 +351,67 @@ class AsyncApiGeneratorOutputContractTest {
         assertFalse(sourceOutputDirectory.exists())
         assertFalse(resourceOutputDirectory.exists())
         assertFalse(documentOutputFile.exists())
+    }
+
+    @Test
+    fun `schema name collision during input loading creates no output directories`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info(title = "Schema collision", version = "1.0.0"),
+                components =
+                    ComponentInterface.ComponentInline(
+                        Component(
+                            schemas =
+                                mapOf(
+                                    "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                                ),
+                            messages =
+                                mapOf(
+                                    "account" to
+                                        MessageInterface.MessageInline(
+                                            Message(
+                                                name = "Account",
+                                                bindings =
+                                                    mapOf(
+                                                        "kafka" to
+                                                            BindingInterface.BindingInline(
+                                                                Binding(
+                                                                    content = emptyMap(),
+                                                                    kafkaKeySchema =
+                                                                        SchemaInterface.SchemaInline(
+                                                                            Schema(type = "object"),
+                                                                        ),
+                                                                ),
+                                                            ),
+                                                    ),
+                                            ),
+                                        ),
+                                ),
+                        ),
+                    ),
+            )
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.SchemaNameCollision> {
+                generator.generate(
+                    asyncApiDocument = document,
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("AccountKey"))
+        assertTrue(error.message!!.contains("components.schemas['account-key']"))
+        assertTrue(error.message!!.contains("components.messages['account'].bindings.kafka.key"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
     }
 
     @Test
