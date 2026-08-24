@@ -366,14 +366,16 @@ sealed class AsyncApiGeneratorException(
         )
 
     class SchemaNameCollision(
-        originalNames: List<String>,
         generatedName: String,
+        firstOrigin: String,
+        conflictingOrigin: String,
     ) : AsyncApiGeneratorException(
             buildString {
                 appendLine()
-                appendLine("Component schemas collapse to the same generated name '$generatedName'.")
-                appendLine("Colliding schema names: ${originalNames.joinToString(", ") { "'$it'" }}")
-                appendLine("Rename the schemas so each produces a distinct type name.")
+                appendLine("Distinct schema declarations resolve to generated name '$generatedName'.")
+                appendLine("First declaration: $firstOrigin")
+                appendLine("Conflicting declaration: $conflictingOrigin")
+                appendLine("Rename one declaration, or share a single declaration through a reference.")
                 appendLine()
             }.trimEnd(),
         )
