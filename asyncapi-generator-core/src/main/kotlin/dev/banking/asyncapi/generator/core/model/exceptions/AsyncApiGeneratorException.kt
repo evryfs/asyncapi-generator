@@ -158,6 +158,18 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class SpringKafkaClientChannelWithoutAddress(
+        channelName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine("The AsyncAPI channel has no address.")
+                appendLine("Declare channels.$channelName.address before generating client contracts.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class SpringKafkaClientContractNameCollision(
         channelNames: List<String>,
         generatedBaseName: String,

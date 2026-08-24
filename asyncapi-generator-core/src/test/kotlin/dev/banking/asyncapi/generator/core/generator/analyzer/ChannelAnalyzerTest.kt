@@ -17,11 +17,43 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ChannelAnalyzerTest {
 
     private val analyzer = ChannelAnalyzer()
+
+    @Test
+    fun `should preserve missing channel address`() {
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(Channel())),
+            )
+
+        val analyzed = analyzer.analyze(document).single()
+
+        assertNull(analyzed.topic)
+    }
+
+    @Test
+    fun `should preserve explicit channel address`() {
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels =
+                    mapOf(
+                        "accountEvents" to ChannelInterface.ChannelInline(Channel(address = "account.events.v1")),
+                    ),
+            )
+
+        val analyzed = analyzer.analyze(document).single()
+
+        assertEquals("account.events.v1", analyzed.topic)
+    }
 
     @Test
     fun `should analyze channel contracts independently of operations`() {

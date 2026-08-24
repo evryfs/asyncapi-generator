@@ -280,6 +280,36 @@ class AsyncApiGeneratorOutputContractTest {
     }
 
     @Test
+    fun `generate rejects spring kafka channel without address before creating output directories`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress> {
+                generator.generate(
+                    asyncApiDocument = documentWithInlineMessagePayload(),
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            clients =
+                                listOf(
+                                    ClientGeneration.Kafka(
+                                        packageName = "com.example.kafka",
+                                        modelPackageName = "com.example.model",
+                                        springKafka = ClientGeneration.SpringKafka(),
+                                    ),
+                                ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Declare channels.accountEvents.address"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
+    }
+
+    @Test
     fun `generate allows empty model task when bundled document produces an artifact`() {
         val sourceOutputDirectory = tempDir.resolve("sources").toFile()
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
