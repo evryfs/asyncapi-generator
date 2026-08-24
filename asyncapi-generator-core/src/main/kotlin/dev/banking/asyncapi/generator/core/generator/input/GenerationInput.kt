@@ -22,9 +22,6 @@ data class GenerationInput(
     val polymorphicRelationships: Map<String, List<String>>,
     val channels: List<AnalyzedChannel>,
 ) {
-    val declaredSchemas: Map<String, Schema>
-        get() = schemaDeclarations.asyncApiSchemas
-
     val multiFormatSchemas: Map<String, MultiFormatSchema>
         get() = schemaDeclarations.multiFormatSchemas
 

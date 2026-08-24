@@ -169,20 +169,21 @@ class GenerationInputCompatibilityValidator(
                 output = "JSON Schema generation",
                 payloadName = incompatibleSchema.key,
                 inputFormat = "schemaFormat '${incompatibleSchema.value.schemaFormat}'",
-                supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+                supportedInput = "AsyncAPI Schema Objects, Boolean schemas, and native JSON Schema Draft 07 schemas",
             )
         }
 
         if (
-            generationInput.declaredSchemas.isNotEmpty() ||
-            generationInput.multiFormatSchemas.isNotEmpty()
+            generationInput.schemaDeclarations.asyncApiSchemas.isNotEmpty() ||
+            generationInput.schemaDeclarations.multiFormatSchemas.isNotEmpty() ||
+            generationInput.schemaDeclarations.booleanSchemas.isNotEmpty()
         ) {
             return
         }
 
         throw MissingSchemaGenerationInput(
             output = "JSON Schema generation",
-            supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+            supportedInput = "AsyncAPI Schema Objects, Boolean schemas, and native JSON Schema Draft 07 schemas",
         )
     }
 

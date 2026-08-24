@@ -60,7 +60,7 @@ class GenerationInputTest {
                 channels = emptyList(),
             )
 
-        assertSame(declaredSchema, input.declaredSchemas["Declared"])
+        assertSame(declaredSchema, input.schemaDeclarations.asyncApiSchemas["Declared"])
         assertSame(multiFormatSchema, input.multiFormatSchemas["Native"])
         assertEquals(mapOf("Allowed" to true), input.schemaDeclarations.booleanSchemas)
     }

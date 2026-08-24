@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.jsonschema
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -24,8 +25,7 @@ class JsonSchemaGeneratorTest {
 
         val result =
             generator.render(
-                schemas = input.declaredSchemas,
-                multiFormatSchemas = input.multiFormatSchemas,
+                schemaDeclarations = input.schemaDeclarations,
                 packageName = "com.example.schema",
             )
 
@@ -67,8 +67,7 @@ class JsonSchemaGeneratorTest {
 
         val result =
             generator.render(
-                schemas = input.declaredSchemas,
-                multiFormatSchemas = input.multiFormatSchemas,
+                schemaDeclarations = input.schemaDeclarations,
                 packageName = "com.example.schema",
             )
 
@@ -86,16 +85,18 @@ class JsonSchemaGeneratorTest {
     fun `preserves explicit null const from AsyncAPI Schema Objects`() {
         val result =
             generator.render(
-                schemas =
-                    mapOf(
-                        "NullValue" to
-                            Schema(
-                                type = "null",
-                                const = null,
-                                constSet = true,
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        asyncApiSchemas =
+                            mapOf(
+                                "NullValue" to
+                                    Schema(
+                                        type = "null",
+                                        const = null,
+                                        constSet = true,
+                                    ),
                             ),
                     ),
-                multiFormatSchemas = emptyMap(),
                 packageName = "com.example.schema",
             )
 
@@ -108,13 +109,15 @@ class JsonSchemaGeneratorTest {
     fun `preserves native Draft 07 boolean schemas`() {
         val result =
             generator.render(
-                schemas = emptyMap(),
-                multiFormatSchemas =
-                    mapOf(
-                        "AcceptedValue" to
-                            MultiFormatSchema(
-                                schemaFormat = "application/schema+yaml;version=draft-07",
-                                schema = true,
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        multiFormatSchemas =
+                            mapOf(
+                                "AcceptedValue" to
+                                    MultiFormatSchema(
+                                        schemaFormat = "application/schema+yaml;version=draft-07",
+                                        schema = true,
+                                    ),
                             ),
                     ),
                 packageName = "com.example.schema",
@@ -126,22 +129,50 @@ class JsonSchemaGeneratorTest {
     }
 
     @Test
+    fun `renders Boolean declarations as exact scalar schemas`() {
+        val result =
+            generator.render(
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        booleanSchemas =
+                            linkedMapOf(
+                                "Denied" to false,
+                                "Allowed" to true,
+                            ),
+                    ),
+                packageName = "com.example.schema",
+            )
+
+        assertEquals(
+            listOf(
+                "com/example/schema/Allowed.schema.json",
+                "com/example/schema/Denied.schema.json",
+            ),
+            result.artifacts.map { artifact -> artifact.relativePath },
+        )
+        assertEquals("true${System.lineSeparator()}", result.artifacts[0].content)
+        assertEquals("false${System.lineSeparator()}", result.artifacts[1].content)
+    }
+
+    @Test
     fun `renders tuple-form items as a JSON Schema array`() {
         val result =
             generator.render(
-                schemas =
-                    mapOf(
-                        "TupleArray" to
-                            Schema(
-                                type = "array",
-                                tupleItems =
-                                    listOf(
-                                        SchemaInterface.SchemaInline(Schema(type = "string")),
-                                        SchemaInterface.SchemaInline(Schema(type = "integer")),
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        asyncApiSchemas =
+                            mapOf(
+                                "TupleArray" to
+                                    Schema(
+                                        type = "array",
+                                        tupleItems =
+                                            listOf(
+                                                SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                SchemaInterface.SchemaInline(Schema(type = "integer")),
+                                            ),
                                     ),
                             ),
                     ),
-                multiFormatSchemas = emptyMap(),
                 packageName = "com.example.schema",
             )
 
@@ -157,20 +188,22 @@ class JsonSchemaGeneratorTest {
     fun `renders tuple-form items with additionalItems`() {
         val result =
             generator.render(
-                schemas =
-                    mapOf(
-                        "TupleWithAdditional" to
-                            Schema(
-                                type = "array",
-                                tupleItems =
-                                    listOf(
-                                        SchemaInterface.SchemaInline(Schema(type = "string")),
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        asyncApiSchemas =
+                            mapOf(
+                                "TupleWithAdditional" to
+                                    Schema(
+                                        type = "array",
+                                        tupleItems =
+                                            listOf(
+                                                SchemaInterface.SchemaInline(Schema(type = "string")),
+                                            ),
+                                        additionalItems =
+                                            SchemaInterface.SchemaInline(Schema(type = "boolean")),
                                     ),
-                                additionalItems =
-                                    SchemaInterface.SchemaInline(Schema(type = "boolean")),
                             ),
                     ),
-                multiFormatSchemas = emptyMap(),
                 packageName = "com.example.schema",
             )
 
@@ -185,16 +218,18 @@ class JsonSchemaGeneratorTest {
     fun `preserves single-schema items alongside tuple-form`() {
         val result =
             generator.render(
-                schemas =
-                    mapOf(
-                        "SingleItems" to
-                            Schema(
-                                type = "array",
-                                items =
-                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        asyncApiSchemas =
+                            mapOf(
+                                "SingleItems" to
+                                    Schema(
+                                        type = "array",
+                                        items =
+                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    ),
                             ),
                     ),
-                multiFormatSchemas = emptyMap(),
                 packageName = "com.example.schema",
             )
 
@@ -207,28 +242,30 @@ class JsonSchemaGeneratorTest {
     fun `includes header-only schemas in JSON Schema output`() {
         val result =
             generator.render(
-                schemas =
-                    mapOf(
-                        "CommonHeaders" to
-                            Schema(
-                                type = "object",
-                                properties =
-                                    mapOf(
-                                        "requestId" to
-                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        asyncApiSchemas =
+                            mapOf(
+                                "CommonHeaders" to
+                                    Schema(
+                                        type = "object",
+                                        properties =
+                                            mapOf(
+                                                "requestId" to
+                                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                                            ),
                                     ),
-                            ),
-                        "GenericMessagePayload" to
-                            Schema(
-                                type = "object",
-                                properties =
-                                    mapOf(
-                                        "itemId" to
-                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                "GenericMessagePayload" to
+                                    Schema(
+                                        type = "object",
+                                        properties =
+                                            mapOf(
+                                                "itemId" to
+                                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                                            ),
                                     ),
                             ),
                     ),
-                multiFormatSchemas = emptyMap(),
                 packageName = "com.example.schema",
             )
 
@@ -246,13 +283,15 @@ class JsonSchemaGeneratorTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.InvalidJsonSchema> {
                 generator.render(
-                    schemas = emptyMap(),
-                    multiFormatSchemas =
-                        mapOf(
-                            "MyAccount" to
-                                MultiFormatSchema(
-                                    schemaFormat = "application/schema+json;version=draft-07",
-                                    schema = "type: object",
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                mapOf(
+                                    "MyAccount" to
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/schema+json;version=draft-07",
+                                            schema = "type: object",
+                                        ),
                                 ),
                         ),
                     packageName = "com.example.schema",
@@ -260,5 +299,85 @@ class JsonSchemaGeneratorTest {
             }
 
         assertTrue(error.message!!.contains("Draft 07 schema content must be an object or a boolean schema"))
+    }
+
+    @Test
+    fun `rejects duplicate AsyncAPI and native schema artifact names`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.InvalidJsonSchema> {
+                generator.render(
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            asyncApiSchemas = mapOf("Shared" to Schema(type = "object")),
+                            multiFormatSchemas =
+                                mapOf(
+                                    "Shared" to
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/schema+json;version=draft-07",
+                                            schema = mapOf("type" to "object"),
+                                        ),
+                                ),
+                        ),
+                    packageName = "com.example.schema",
+                )
+            }
+
+        assertTrue(error.message!!.contains("JSON Schema generation failed for payload 'Shared'"))
+        assertTrue(
+            error.message!!.contains(
+                "Both an AsyncAPI Schema Object and a native JSON Schema use this generated artifact name.",
+            ),
+        )
+    }
+
+    @Test
+    fun `rejects duplicate AsyncAPI and Boolean schema artifact names`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.InvalidJsonSchema> {
+                generator.render(
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            asyncApiSchemas = mapOf("Shared" to Schema(type = "object")),
+                            booleanSchemas = mapOf("Shared" to true),
+                        ),
+                    packageName = "com.example.schema",
+                )
+            }
+
+        assertTrue(error.message!!.contains("JSON Schema generation failed for payload 'Shared'"))
+        assertTrue(
+            error.message!!.contains(
+                "Both an AsyncAPI Schema Object and a Boolean schema use this generated artifact name.",
+            ),
+        )
+    }
+
+    @Test
+    fun `rejects duplicate native and Boolean schema artifact names`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.InvalidJsonSchema> {
+                generator.render(
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                mapOf(
+                                    "Shared" to
+                                        MultiFormatSchema(
+                                            schemaFormat = "application/schema+json;version=draft-07",
+                                            schema = mapOf("type" to "object"),
+                                        ),
+                                ),
+                            booleanSchemas = mapOf("Shared" to false),
+                        ),
+                    packageName = "com.example.schema",
+                )
+            }
+
+        assertTrue(error.message!!.contains("JSON Schema generation failed for payload 'Shared'"))
+        assertTrue(
+            error.message!!.contains(
+                "Both a native JSON Schema and a Boolean schema use this generated artifact name.",
+            ),
+        )
     }
 }

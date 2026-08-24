@@ -16,8 +16,7 @@ class JsonSchemaArtifactGeneration(
         generationInput: GenerationInput,
     ): GenerationResult =
         jsonSchemaGenerator.render(
-            schemas = generationInput.declaredSchemas,
-            multiFormatSchemas = generationInput.multiFormatSchemas,
+            schemaDeclarations = generationInput.schemaDeclarations,
             packageName = task.packageName,
         )
 }

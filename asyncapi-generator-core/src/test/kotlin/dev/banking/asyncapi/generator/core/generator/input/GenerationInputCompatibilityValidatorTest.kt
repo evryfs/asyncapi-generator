@@ -256,6 +256,30 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `allows Boolean-only input for JSON Schema generation`() {
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = emptyMap(),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            booleanSchemas = mapOf("Allowed" to true),
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.JsonSchemaArtifacts(
+                            packageName = "com.example.schema",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
     fun `allows native Avro model package matching the schema namespace`() {
         validator.validate(
             generationInput =
@@ -370,12 +394,14 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows AsyncAPI and native Draft 07 schemas for JSON Schema generation`() {
+        val userCreatedSchema = Schema(type = "object")
         validator.validate(
             generationInput =
                 GenerationInput(
-                    schemas = mapOf("UserCreated" to Schema(type = "object")),
+                    schemas = mapOf("UserCreated" to userCreatedSchema),
                     schemaDeclarations =
                         SchemaDeclarationCatalog(
+                            asyncApiSchemas = mapOf("UserCreated" to userCreatedSchema),
                             multiFormatSchemas =
                                 mapOf(
                                     "UserUpdated" to
@@ -419,7 +445,7 @@ class GenerationInputCompatibilityValidatorTest {
         assertTrue(error.message!!.contains("JSON Schema generation cannot consume payload 'UserCreated'"))
         assertTrue(
             error.message!!.contains(
-                "Supported input: AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas.",
+                "Supported input: AsyncAPI Schema Objects, Boolean schemas, and native JSON Schema Draft 07 schemas.",
             ),
         )
     }
