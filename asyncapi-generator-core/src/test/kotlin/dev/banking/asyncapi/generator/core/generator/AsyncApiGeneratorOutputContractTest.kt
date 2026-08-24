@@ -15,10 +15,14 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.channels.Channel
+import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.messages.Message
+import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -26,6 +30,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.nio.file.Path
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -87,15 +92,9 @@ class AsyncApiGeneratorOutputContractTest {
         generator.generate(
             asyncApiDocument = bundledDocument(),
             generatorConfiguration =
-                GeneratorConfiguration(
-                    profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
-                    output =
-                        GeneratorOutputConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            javaSourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
-                        ),
-                    schemas = listOf(SchemaGeneration.JsonSchema(packageName = "com.example.jsonschema")),
+                jsonSchemaGeneratorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
                 ),
         )
 
@@ -104,6 +103,70 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
         assertTrue(schemaArtifact.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
         assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json").exists())
+    }
+
+    @Test
+    fun `generate writes inline message payload as a standalone JSON Schema artifact`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = documentWithInlineMessagePayload(),
+            generatorConfiguration =
+                jsonSchemaGeneratorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+        )
+
+        val schemaArtifact =
+            resourceOutputDirectory.resolve("com/example/jsonschema/AccountUpdatedPayload.schema.json")
+        assertTrue(schemaArtifact.exists())
+        assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
+        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/AccountUpdatedPayload.schema.json").exists())
+    }
+
+    @Test
+    fun `generate names resolved external payload artifact from the final reference fragment`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = resolvedExternalMessagePayloadDocument(),
+            generatorConfiguration =
+                jsonSchemaGeneratorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+        )
+
+        val schemaArtifact =
+            resourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json")
+        assertTrue(schemaArtifact.exists())
+        assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
+        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json").exists())
+    }
+
+    @Test
+    fun `generate writes component Boolean schemas as exact scalar artifacts`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = documentWithBooleanComponents(),
+            generatorConfiguration =
+                jsonSchemaGeneratorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+        )
+
+        val allowedArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/AllowAnything.schema.json")
+        val deniedArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/DenyAnything.schema.json")
+        assertEquals("true${System.lineSeparator()}", allowedArtifact.readText())
+        assertEquals("false${System.lineSeparator()}", deniedArtifact.readText())
+        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/AllowAnything.schema.json").exists())
+        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/DenyAnything.schema.json").exists())
     }
 
     @Test
@@ -698,6 +761,69 @@ class AsyncApiGeneratorOutputContractTest {
         AsyncApiDocument(
             asyncapi = "3.0.0",
             info = Info(title = "No channels", version = "1.0.0"),
+        )
+
+    private fun documentWithInlineMessagePayload(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Inline payload", version = "1.0.0"),
+            channels =
+                mapOf(
+                    "accountEvents" to
+                        ChannelInterface.ChannelInline(
+                            Channel(
+                                messages =
+                                    mapOf(
+                                        "accountUpdated" to
+                                            MessageInterface.MessageInline(
+                                                Message(
+                                                    name = "AccountUpdated",
+                                                    payload =
+                                                        SchemaInterface.SchemaInline(
+                                                            Schema(type = "object"),
+                                                        ),
+                                                ),
+                                            ),
+                                    ),
+                            ),
+                        ),
+                ),
+        )
+
+    private fun resolvedExternalMessagePayloadDocument(): AsyncApiDocument =
+        bundlerFixtures.bundledDocument(
+            File("src/test/resources/generator/external-message-payload/main.yaml"),
+        )
+
+    private fun documentWithBooleanComponents(): AsyncApiDocument =
+        AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Boolean schemas", version = "1.0.0"),
+            components =
+                ComponentInterface.ComponentInline(
+                    Component(
+                        schemas =
+                            linkedMapOf(
+                                "AllowAnything" to SchemaInterface.BooleanSchema(true),
+                                "DenyAnything" to SchemaInterface.BooleanSchema(false),
+                            ),
+                    ),
+                ),
+        )
+
+    private fun jsonSchemaGeneratorConfiguration(
+        sourceOutputDirectory: File,
+        resourceOutputDirectory: File,
+    ): GeneratorConfiguration =
+        GeneratorConfiguration(
+            profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
+            output =
+                GeneratorOutputConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    javaSourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+            schemas = listOf(SchemaGeneration.JsonSchema(packageName = "com.example.jsonschema")),
         )
 
     private fun generatorConfiguration(
