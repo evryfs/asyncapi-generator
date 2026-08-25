@@ -15,8 +15,7 @@ class JsonSchemaApprovalTest {
         val generated =
             generator
                 .render(
-                    schemas = input.declaredSchemas,
-                    multiFormatSchemas = input.multiFormatSchemas,
+                    schemaDeclarations = input.schemaDeclarations,
                     packageName = "com.example.schema",
                 ).artifacts
                 .single { artifact -> artifact.relativePath.endsWith("MyAccount.schema.json") }
