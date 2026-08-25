@@ -4,6 +4,7 @@ info:
   version: 1.0.0
 channels:
   user.raw-events:
+    address: user.raw-events
     messages:
       RawEvent:
         name: Raw Event

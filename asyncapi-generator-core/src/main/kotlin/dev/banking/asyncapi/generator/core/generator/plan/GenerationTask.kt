@@ -44,10 +44,6 @@ sealed interface GenerationTask {
         val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     ) : GenerationTask
 
-    data class QuarkusKafkaClient(
-        val language: SourceLanguage,
-    ) : GenerationTask
-
     data class AvroSchemaArtifacts(
         val packageName: String,
     ) : GenerationTask

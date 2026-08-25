@@ -12,81 +12,153 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
-        val collectedSchemas = mutableMapOf<String, Schema>()
-        val declaredAsyncApiSchemas = mutableMapOf<String, Schema>()
-        val declaredMultiFormatSchemas = mutableMapOf<String, MultiFormatSchema>()
-        val declaredBooleanSchemas = mutableMapOf<String, Boolean>()
-        val originalNamesByGenerated = mutableMapOf<String, MutableList<String>>()
+        val sourceModels = SourceModelRegistry()
+        val contractDeclarations = ContractDeclarationRegistry()
         val componentNode = resolveComponent(asyncApiDocument.components)
         val usageIndex = collectSchemaUsage(asyncApiDocument)
         componentNode?.schemas?.forEach { (name, schemaInterface) ->
             val schemaName = MapperUtil.toPascalCase(name)
-            originalNamesByGenerated.getOrPut(schemaName) { mutableListOf() }.add(name)
-            detectSchemaNameCollision(originalNamesByGenerated)
+            val origin = "component schema components.schemas['$name']"
             when (schemaInterface) {
                 is SchemaInterface.SchemaInline -> {
-                    declaredAsyncApiSchemas[schemaName] = schemaInterface.schema
+                    contractDeclarations.register(
+                        generatedName = schemaName,
+                        declaration =
+                            ContractDeclaration.AsyncApi(
+                                schema = schemaInterface.schema,
+                                identity = ContractDeclarationIdentity.ComponentSchema(name),
+                            ),
+                        origin = origin,
+                    )
                     if (!usageIndex.isHeaderOnly(schemaName)) {
-                        collectedSchemas[schemaName] = schemaInterface.schema
+                        sourceModels.register(
+                            generatedName = schemaName,
+                            schema = schemaInterface.schema,
+                            identity = ContractDeclarationIdentity.ComponentSchema(name),
+                            origin = origin,
+                        )
                     }
                 }
-                is SchemaInterface.MultiFormatSchemaInline ->
-                    declaredMultiFormatSchemas[schemaName] = schemaInterface.multiFormatSchema
+                is SchemaInterface.MultiFormatSchemaInline -> {
+                    contractDeclarations.register(
+                        generatedName = schemaName,
+                        declaration =
+                            ContractDeclaration.MultiFormat(
+                                schema = schemaInterface.multiFormatSchema,
+                                identity = ContractDeclarationIdentity.ComponentSchema(name),
+                            ),
+                        origin = origin,
+                    )
+                }
                 is SchemaInterface.SchemaReference ->
                     when (val model = schemaInterface.reference.model) {
                         is Schema -> {
-                            declaredAsyncApiSchemas[schemaName] = model
+                            contractDeclarations.register(
+                                generatedName = schemaName,
+                                declaration =
+                                    ContractDeclaration.AsyncApi(
+                                        schema = model,
+                                        identity = ContractDeclarationIdentity.ComponentSchema(name),
+                                    ),
+                                origin = origin,
+                            )
                             if (!usageIndex.isHeaderOnly(schemaName)) {
-                                collectedSchemas[schemaName] = model
+                                sourceModels.register(
+                                    generatedName = schemaName,
+                                    schema = model,
+                                    identity = ContractDeclarationIdentity.ComponentSchema(name),
+                                    origin = origin,
+                                )
                             }
                         }
-                        is MultiFormatSchema -> declaredMultiFormatSchemas[schemaName] = model
-                        is SchemaInterface.BooleanSchema -> declaredBooleanSchemas[schemaName] = model.value
+                        is MultiFormatSchema ->
+                            contractDeclarations.register(
+                                generatedName = schemaName,
+                                declaration =
+                                    ContractDeclaration.MultiFormat(
+                                        schema = model,
+                                        identity = ContractDeclarationIdentity.ComponentSchema(name),
+                                    ),
+                                origin = origin,
+                            )
+                        is SchemaInterface.BooleanSchema ->
+                            contractDeclarations.register(
+                                generatedName = schemaName,
+                                declaration = ContractDeclaration.BooleanSchema(model.value),
+                                origin = origin,
+                            )
                         else -> Unit
                     }
-                is SchemaInterface.BooleanSchema -> declaredBooleanSchemas[schemaName] = schemaInterface.value
+                is SchemaInterface.BooleanSchema ->
+                    contractDeclarations.register(
+                        generatedName = schemaName,
+                        declaration = ContractDeclaration.BooleanSchema(schemaInterface.value),
+                        origin = origin,
+                    )
             }
         }
 
-        collectMessages(asyncApiDocument, componentNode).forEach { (messageKey, messageInterface) ->
-            val message = MessagePayloadResolver.resolveMessage(messageInterface) ?: return@forEach
-            when (val payload = MessagePayloadResolver.resolvePayload(message, messageKey)) {
+        collectMessages(asyncApiDocument, componentNode).forEach { collectedMessage ->
+            val message = MessagePayloadResolver.resolveMessage(collectedMessage.message) ?: return@forEach
+            val declarationIdentity = payloadDeclarationIdentity(collectedMessage, message)
+            when (val payload = MessagePayloadResolver.resolvePayload(message, collectedMessage.messageKey)) {
                 is ResolvedMessagePayload.AsyncApi -> {
-                    collectedSchemas.putIfAbsent(payload.typeName, payload.schema)
-                    declaredAsyncApiSchemas.putIfAbsent(payload.typeName, payload.schema)
+                    val origin = payloadOrigin(collectedMessage.origin, message)
+                    contractDeclarations.register(
+                        generatedName = payload.typeName,
+                        declaration = ContractDeclaration.AsyncApi(payload.schema, declarationIdentity),
+                        origin = origin,
+                    )
+                    sourceModels.register(
+                        generatedName = payload.typeName,
+                        schema = payload.schema,
+                        identity = declarationIdentity,
+                        origin = origin,
+                    )
                 }
-                is ResolvedMessagePayload.MultiFormat ->
-                    declaredMultiFormatSchemas.putIfAbsent(payload.typeName, payload.schema)
-                is ResolvedMessagePayload.Boolean ->
-                    declaredBooleanSchemas.putIfAbsent(payload.typeName, payload.value)
+                is ResolvedMessagePayload.MultiFormat -> {
+                    contractDeclarations.register(
+                        generatedName = payload.typeName,
+                        declaration = ContractDeclaration.MultiFormat(payload.schema, declarationIdentity),
+                        origin = payloadOrigin(collectedMessage.origin, message),
+                    )
+                }
+                is ResolvedMessagePayload.Boolean -> {
+                    contractDeclarations.register(
+                        generatedName = payload.typeName,
+                        declaration = ContractDeclaration.BooleanSchema(payload.value),
+                        origin = payloadOrigin(collectedMessage.origin, message),
+                    )
+                }
                 null -> Unit
             }
             collectKafkaKeySchema(
-                messageKey = messageKey,
+                collectedMessage = collectedMessage,
                 message = message,
-                collectedSchemas = collectedSchemas,
+                sourceModels = sourceModels,
             )
         }
         return LoadedSchemas(
-            schemas = collectedSchemas,
+            schemas = sourceModels.schemas,
             schemaDeclarations =
                 SchemaDeclarationCatalog(
-                    asyncApiSchemas = declaredAsyncApiSchemas,
-                    multiFormatSchemas = declaredMultiFormatSchemas,
-                    booleanSchemas = declaredBooleanSchemas,
+                    asyncApiSchemas = contractDeclarations.asyncApiSchemas,
+                    multiFormatSchemas = contractDeclarations.multiFormatSchemas,
+                    booleanSchemas = contractDeclarations.booleanSchemas,
                 ),
         )
     }
@@ -101,21 +173,128 @@ object AsyncApiSchemaLoader {
     private fun collectMessages(
         asyncApiDocument: AsyncApiDocument,
         component: Component?,
-    ): List<Pair<String, MessageInterface>> =
+    ): List<CollectedMessage> =
         buildList {
-            component?.messages?.forEach { (messageKey, messageInterface) ->
-                add(messageKey to messageInterface)
+            val componentMessages = component?.messages.orEmpty()
+            componentMessages.forEach { (messageKey, messageInterface) ->
+                add(
+                    CollectedMessage(
+                        messageKey = messageKey,
+                        message = messageInterface,
+                        origin = "components.messages['$messageKey']",
+                        payloadIdentity = componentMessagePayloadIdentity(messageKey, componentMessages),
+                    ),
+                )
             }
-            asyncApiDocument.channels?.values?.forEach { channelInterface ->
+            asyncApiDocument.channels?.forEach { (channelKey, channelInterface) ->
+                val externalChannel =
+                    channelInterface is ChannelInterface.ChannelReference &&
+                        channelInterface.reference.ref.parseReference().isExternal
                 val channel =
                     when (channelInterface) {
                         is ChannelInterface.ChannelInline -> channelInterface.channel
                         is ChannelInterface.ChannelReference -> channelInterface.reference.model as? Channel
                     } ?: return@forEach
                 channel.messages?.forEach { (messageKey, messageInterface) ->
-                    add(messageKey to messageInterface)
+                    add(
+                        CollectedMessage(
+                            messageKey = messageKey,
+                            message = messageInterface,
+                            origin = "channels['$channelKey'].messages['$messageKey']",
+                            payloadIdentity =
+                                messagePayloadIdentity(
+                                    messageInterface = messageInterface,
+                                    externalContext = externalChannel,
+                                    componentMessages = componentMessages,
+                                ),
+                        ),
+                    )
                 }
             }
+        }
+
+    private data class CollectedMessage(
+        val messageKey: String,
+        val message: MessageInterface,
+        val origin: String,
+        val payloadIdentity: ContractDeclarationIdentity?,
+    )
+
+    private fun messagePayloadIdentity(
+        messageInterface: MessageInterface,
+        externalContext: Boolean,
+        componentMessages: Map<String, MessageInterface>,
+    ): ContractDeclarationIdentity? =
+        when (messageInterface) {
+            is MessageInterface.MessageInline -> null
+            is MessageInterface.MessageReference -> {
+                val reference = messageInterface.reference
+                val componentMessageName = reference.localComponentName("messages")
+                if (!externalContext && componentMessageName != null) {
+                    componentMessagePayloadIdentity(componentMessageName, componentMessages)
+                } else {
+                    ContractDeclarationIdentity.ReferencedMessagePayload(reference.sourceId, reference.ref)
+                }
+            }
+        }
+
+    private fun componentMessagePayloadIdentity(
+        messageName: String,
+        componentMessages: Map<String, MessageInterface>,
+        visitedNames: Set<String> = emptySet(),
+    ): ContractDeclarationIdentity {
+        val immediateIdentity = ContractDeclarationIdentity.ComponentMessagePayload(messageName)
+        if (messageName in visitedNames) return immediateIdentity
+        val messageReference =
+            (componentMessages[messageName] as? MessageInterface.MessageReference)?.reference
+                ?: return immediateIdentity
+        val referencedComponentName = messageReference.localComponentName("messages")
+            ?: return ContractDeclarationIdentity.ReferencedMessagePayload(
+                messageReference.sourceId,
+                messageReference.ref,
+            )
+        return componentMessagePayloadIdentity(
+            messageName = referencedComponentName,
+            componentMessages = componentMessages,
+            visitedNames = visitedNames + messageName,
+        )
+    }
+
+    private fun payloadDeclarationIdentity(
+        collectedMessage: CollectedMessage,
+        message: Message,
+    ): ContractDeclarationIdentity? {
+        val payloadReference = (message.payload as? SchemaInterface.SchemaReference)?.reference
+            ?: return collectedMessage.payloadIdentity
+        val componentSchemaName = payloadReference.localComponentName("schemas")
+        return if (
+            componentSchemaName != null &&
+            collectedMessage.payloadIdentity !is ContractDeclarationIdentity.ReferencedMessagePayload
+        ) {
+            ContractDeclarationIdentity.ComponentSchema(componentSchemaName)
+        } else {
+            ContractDeclarationIdentity.ReferenceTarget(payloadReference.sourceId, payloadReference.ref)
+        }
+    }
+
+    private fun Reference.localComponentName(category: String): String? {
+        val parsedReference = runCatching { ref.parseReference() }.getOrNull() ?: return null
+        if (parsedReference.isExternal) return null
+        val segments = parsedReference.pointerSegments()
+        return segments
+            .takeIf { it.size == 3 && it[0] == "components" && it[1] == category }
+            ?.get(2)
+            ?.takeIf(String::isNotBlank)
+    }
+
+    private fun payloadOrigin(
+        messageOrigin: String,
+        message: Message,
+    ): String =
+        when (val payload = message.payload) {
+            is SchemaInterface.SchemaReference ->
+                "$messageOrigin.payload (reference '${payload.reference.ref}')"
+            else -> "$messageOrigin.payload"
         }
 
     private data class SchemaUsageIndex(
@@ -206,33 +385,183 @@ object AsyncApiSchemaLoader {
     }
 
     private fun collectKafkaKeySchema(
-        messageKey: String,
+        collectedMessage: CollectedMessage,
         message: Message,
-        collectedSchemas: MutableMap<String, Schema>,
+        sourceModels: SourceModelRegistry,
     ) {
         val keySchema = message.kafkaKeySchema() ?: return
         val keyModel =
             KafkaKeySchemaResolver.resolveObjectModelOrNull(
-                messageName = messageBaseName(message, messageKey),
+                messageName = messageBaseName(message, collectedMessage.messageKey),
                 schema = keySchema,
             ) ?: return
 
-        collectedSchemas.putIfAbsent(keyModel.name, keyModel.schema)
+        sourceModels.register(
+            generatedName = keyModel.name,
+            schema = keyModel.schema,
+            identity = kafkaKeyDeclarationIdentity(collectedMessage, keySchema),
+            origin = kafkaKeyOrigin(collectedMessage.origin, keySchema),
+        )
     }
+
+    private fun kafkaKeyDeclarationIdentity(
+        collectedMessage: CollectedMessage,
+        keySchema: SchemaInterface,
+    ): ContractDeclarationIdentity? {
+        val keyReference = (keySchema as? SchemaInterface.SchemaReference)?.reference
+        if (keyReference != null) {
+            val componentSchemaName = keyReference.localComponentName("schemas")
+            return if (
+                componentSchemaName != null &&
+                collectedMessage.payloadIdentity !is ContractDeclarationIdentity.ReferencedMessagePayload
+            ) {
+                ContractDeclarationIdentity.ComponentSchema(componentSchemaName)
+            } else {
+                ContractDeclarationIdentity.ReferenceTarget(keyReference.sourceId, keyReference.ref)
+            }
+        }
+        return when (val messageIdentity = collectedMessage.payloadIdentity) {
+            is ContractDeclarationIdentity.ComponentMessagePayload ->
+                ContractDeclarationIdentity.ComponentMessageKafkaKey(messageIdentity.name)
+            is ContractDeclarationIdentity.ReferencedMessagePayload ->
+                ContractDeclarationIdentity.ReferencedMessageKafkaKey(messageIdentity.sourceId, messageIdentity.ref)
+            else -> null
+        }
+    }
+
+    private fun kafkaKeyOrigin(
+        messageOrigin: String,
+        keySchema: SchemaInterface,
+    ): String =
+        when (keySchema) {
+            is SchemaInterface.SchemaReference ->
+                "$messageOrigin.bindings.kafka.key (reference '${keySchema.reference.ref}')"
+            else -> "$messageOrigin.bindings.kafka.key"
+        }
 
     private fun messageBaseName(
         message: Message,
         messageKey: String,
     ): String = MessageNameResolver.resolve(message, messageKey)
 
-    private fun detectSchemaNameCollision(originalNamesByGenerated: Map<String, List<String>>) {
-        for ((generatedName, originalNames) in originalNamesByGenerated) {
-            if (originalNames.size > 1) {
-                throw SchemaNameCollision(
-                    originalNames = originalNames.distinct(),
-                    generatedName = generatedName,
-                )
+    private class SourceModelRegistry {
+        val schemas: MutableMap<String, Schema> = mutableMapOf()
+        private val owners = mutableMapOf<String, ContractDeclarationOwner>()
+
+        fun register(
+            generatedName: String,
+            schema: Schema,
+            identity: ContractDeclarationIdentity?,
+            origin: String,
+        ) {
+            val declaration = ContractDeclaration.AsyncApi(schema, identity)
+            if (!claimSchemaName(generatedName, declaration, origin, owners)) return
+            schemas[generatedName] = schema
+        }
+    }
+
+    private class ContractDeclarationRegistry {
+        val asyncApiSchemas: MutableMap<String, Schema> = mutableMapOf()
+        val multiFormatSchemas: MutableMap<String, MultiFormatSchema> = mutableMapOf()
+        val booleanSchemas: MutableMap<String, Boolean> = mutableMapOf()
+        private val owners = mutableMapOf<String, ContractDeclarationOwner>()
+
+        fun register(
+            generatedName: String,
+            declaration: ContractDeclaration,
+            origin: String,
+        ) {
+            if (!claimSchemaName(generatedName, declaration, origin, owners)) return
+            when (declaration) {
+                is ContractDeclaration.AsyncApi -> asyncApiSchemas[generatedName] = declaration.schema
+                is ContractDeclaration.MultiFormat -> multiFormatSchemas[generatedName] = declaration.schema
+                is ContractDeclaration.BooleanSchema -> booleanSchemas[generatedName] = declaration.value
             }
         }
+    }
+
+    private fun claimSchemaName(
+        generatedName: String,
+        declaration: ContractDeclaration,
+        origin: String,
+        owners: MutableMap<String, ContractDeclarationOwner>,
+    ): Boolean {
+        val existingOwner = owners[generatedName]
+        if (existingOwner != null) {
+            if (!existingOwner.declaration.hasSameIdentity(declaration)) {
+                throw SchemaNameCollision(
+                    generatedName = generatedName,
+                    firstOrigin = existingOwner.origin,
+                    conflictingOrigin = origin,
+                )
+            }
+            return false
+        }
+
+        owners[generatedName] = ContractDeclarationOwner(declaration, origin)
+        return true
+    }
+
+    private data class ContractDeclarationOwner(
+        val declaration: ContractDeclaration,
+        val origin: String,
+    )
+
+    private sealed interface ContractDeclaration {
+        fun hasSameIdentity(other: ContractDeclaration): Boolean
+
+        class AsyncApi(
+            val schema: Schema,
+            val identity: ContractDeclarationIdentity?,
+        ) : ContractDeclaration {
+            override fun hasSameIdentity(other: ContractDeclaration): Boolean =
+                other is AsyncApi &&
+                    (identity != null && identity == other.identity || schema === other.schema)
+        }
+
+        class MultiFormat(
+            val schema: MultiFormatSchema,
+            val identity: ContractDeclarationIdentity?,
+        ) : ContractDeclaration {
+            override fun hasSameIdentity(other: ContractDeclaration): Boolean =
+                other is MultiFormat &&
+                    (identity != null && identity == other.identity || schema === other.schema)
+        }
+
+        class BooleanSchema(
+            val value: Boolean,
+        ) : ContractDeclaration {
+            override fun hasSameIdentity(other: ContractDeclaration): Boolean =
+                other is BooleanSchema && value == other.value
+        }
+    }
+
+    private sealed interface ContractDeclarationIdentity {
+        data class ComponentSchema(
+            val name: String,
+        ) : ContractDeclarationIdentity
+
+        data class ComponentMessagePayload(
+            val name: String,
+        ) : ContractDeclarationIdentity
+
+        data class ReferencedMessagePayload(
+            val sourceId: String?,
+            val ref: String,
+        ) : ContractDeclarationIdentity
+
+        data class ComponentMessageKafkaKey(
+            val name: String,
+        ) : ContractDeclarationIdentity
+
+        data class ReferencedMessageKafkaKey(
+            val sourceId: String?,
+            val ref: String,
+        ) : ContractDeclarationIdentity
+
+        data class ReferenceTarget(
+            val sourceId: String?,
+            val ref: String,
+        ) : ContractDeclarationIdentity
     }
 }

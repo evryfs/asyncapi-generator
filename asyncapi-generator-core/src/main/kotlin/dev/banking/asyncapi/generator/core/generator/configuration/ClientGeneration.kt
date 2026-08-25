@@ -33,9 +33,4 @@ sealed interface ClientGeneration {
     data class Consumer(
         val enabled: Boolean = true,
     )
-
-    data class QuarkusKafka(
-        val packageName: String,
-        val modelPackageName: String,
-    ) : ClientGeneration
 }

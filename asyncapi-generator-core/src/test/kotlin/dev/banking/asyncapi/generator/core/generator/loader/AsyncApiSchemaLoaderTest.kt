@@ -227,9 +227,10 @@ class AsyncApiSchemaLoaderTest {
                     ),
             )
 
-        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components)).schemas
+        val loaded = AsyncApiSchemaLoader.load(docWithComponents(components))
 
-        assertSame(keySchema, loaded["AccountUpdatedKey"])
+        assertSame(keySchema, loaded.schemas["AccountUpdatedKey"])
+        assertFalse(loaded.schemaDeclarations.asyncApiSchemas.containsKey("AccountUpdatedKey"))
     }
 
     @Test
