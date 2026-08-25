@@ -26,7 +26,6 @@ abstract class AbstractKotlinGeneratorClass {
         schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
-        generateQuarkusKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
@@ -62,14 +61,6 @@ abstract class AbstractKotlinGeneratorClass {
                                     packageName = effectiveClientPackage,
                                     modelPackageName = modelPackage,
                                     springKafka = ClientGeneration.SpringKafka(),
-                                ),
-                            )
-                        }
-                        if (generateQuarkusKafkaClient) {
-                            add(
-                                ClientGeneration.QuarkusKafka(
-                                    packageName = effectiveClientPackage,
-                                    modelPackageName = modelPackage,
                                 ),
                             )
                         }

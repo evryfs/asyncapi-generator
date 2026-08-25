@@ -8,7 +8,6 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeAvroModelPackageMismatch
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedGenerationCapability
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -108,8 +107,6 @@ class GenerationInputCompatibilityValidator(
                 }
                 is GenerationTask.JsonSchemaArtifacts ->
                     requireJsonSchema(generationInput)
-                is GenerationTask.QuarkusKafkaClient ->
-                    throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
                 is GenerationTask.KafkaKeyModelArtifacts ->
                     SourceSchemaCompatibilityValidator.validate(
                         output = "Kafka key model generation",
