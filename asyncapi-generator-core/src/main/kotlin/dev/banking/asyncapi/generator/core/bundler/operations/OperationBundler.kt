@@ -11,9 +11,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 
 /**
  * Bundles operation objects and references.
- *
- * Expected behavior is covered by:
- * - `OperationBundlerTest`
  */
 internal class OperationBundler {
 

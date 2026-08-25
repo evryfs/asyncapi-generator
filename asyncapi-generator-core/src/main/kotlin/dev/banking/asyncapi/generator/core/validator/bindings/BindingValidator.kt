@@ -58,7 +58,7 @@ internal class BindingValidator(
             results.error(
                 BINDING_PROTOCOL_TYPE,
                 "$bindingName '${binding.protocol}' binding must be an object with string property names.",
-                sourceLocation = asyncApiContext.getSourceLocation(binding),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(binding),
             )
             return
         }

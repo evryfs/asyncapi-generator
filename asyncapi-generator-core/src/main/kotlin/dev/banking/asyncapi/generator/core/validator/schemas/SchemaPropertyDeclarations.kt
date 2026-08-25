@@ -44,7 +44,7 @@ internal class SchemaPropertyDeclarations(
         visited: MutableSet<Any>,
     ) {
         if (!visited.add(reference)) return
-        when (val target = asyncApiContext.findReference(reference)) {
+        when (val target = asyncApiContext.modelTracking.findReference(reference)) {
             is Schema -> collectSchema(target, declarations, visited)
             is Reference -> collectReference(target, declarations, visited)
             is SchemaInterface -> collectInterface(target, declarations, visited)

@@ -43,7 +43,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
-                sourceLocation = asyncApiContext.getSourceLocation(model),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serversObject",
             )
         }
@@ -73,7 +73,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_HOST_REQUIRED,
                 "$contextString must define a non-empty 'host'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         } else if (host.contains("://")) {
@@ -81,7 +81,7 @@ internal class ServerValidator(
                 SERVER_HOST_CONTAINS_PROTOCOL,
                 "$contextString host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
                     "(e.g. api.example.com) as protocol is defined separately.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
             )
         }
         val definedVars = node.variables?.keys ?: emptySet()
@@ -96,7 +96,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_VARIABLE_UNDEFINED,
                 "$contextString host uses variables $missingHostVars which are not defined in 'variables'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::host),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
@@ -105,7 +105,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_VARIABLE_UNDEFINED,
                 "$contextString pathname uses variables $missingPathVars which are not defined in 'variables'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::pathname),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::pathname),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
@@ -117,7 +117,7 @@ internal class ServerValidator(
             results.error(
                 SERVER_PROTOCOL_REQUIRED,
                 "$contextString must define the 'protocol' it supports.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::protocol),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::protocol),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }

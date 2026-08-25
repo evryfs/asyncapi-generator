@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.model
 
 /**
  * Source language used by resolved generation tasks.
- *
- * Expected behavior is covered by:
- * - `SourceLanguageTest`
  */
 enum class SourceLanguage(
     val configurationValue: String,

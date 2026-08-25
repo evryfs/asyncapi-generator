@@ -69,7 +69,7 @@ class ValidationReportTest {
     fun `reporter throws errors rendered from source locations`() {
         val context = AsyncApiContext()
         val file = File("streetlights.yaml")
-        context.registerSource(
+        context.sourceTracking.registerSource(
             file,
             """
             asyncapi: 2.6.0
@@ -84,7 +84,7 @@ class ValidationReportTest {
             line = 1,
             column = 1,
         )
-        context.registerSourceLocation(sourceLocation.path, sourceLocation)
+        context.sourceTracking.registerLocation(sourceLocation.path, sourceLocation)
         val collector = ValidationCollector()
         collector.error(DOCUMENT_ID_FORMAT, "Unsupported AsyncAPI version.", sourceLocation)
         val report = collector.report()

@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidJsonSchema
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -17,12 +18,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
- * Renders AsyncAPI Schema Objects and native Draft 07 schemas as standalone
- * JSON Schema artifacts.
- *
- * Expected behavior is covered by:
- * - `JsonSchemaGeneratorTest`
- * - `JsonSchemaApprovalTest`
+ * Renders supported contract declarations as standalone Draft 07 JSON Schema artifacts.
  */
 class JsonSchemaGenerator(
     private val objectMapper: ObjectMapper =
@@ -36,17 +32,32 @@ class JsonSchemaGenerator(
             .build(),
 ) {
     fun render(
-        schemas: Map<String, Schema>,
-        multiFormatSchemas: Map<String, MultiFormatSchema>,
+        schemaDeclarations: SchemaDeclarationCatalog,
         packageName: String,
     ): GenerationResult {
+        val schemas = schemaDeclarations.asyncApiSchemas
         val nativeJsonSchemas =
-            multiFormatSchemas.filterValues { schema -> schema.format.isJsonSchemaDraft07 }
-        val duplicateName = schemas.keys.intersect(nativeJsonSchemas.keys).firstOrNull()
-        if (duplicateName != null) {
+            schemaDeclarations.multiFormatSchemas.filterValues { schema -> schema.format.isJsonSchemaDraft07 }
+        val booleanSchemas = schemaDeclarations.booleanSchemas
+        val asyncApiNativeDuplicate = schemas.keys.intersect(nativeJsonSchemas.keys).minOrNull()
+        if (asyncApiNativeDuplicate != null) {
             throw InvalidJsonSchema(
-                payloadName = duplicateName,
+                payloadName = asyncApiNativeDuplicate,
                 reason = "Both an AsyncAPI Schema Object and a native JSON Schema use this generated artifact name.",
+            )
+        }
+        val asyncApiBooleanDuplicate = schemas.keys.intersect(booleanSchemas.keys).minOrNull()
+        if (asyncApiBooleanDuplicate != null) {
+            throw InvalidJsonSchema(
+                payloadName = asyncApiBooleanDuplicate,
+                reason = "Both an AsyncAPI Schema Object and a Boolean schema use this generated artifact name.",
+            )
+        }
+        val nativeBooleanDuplicate = nativeJsonSchemas.keys.intersect(booleanSchemas.keys).minOrNull()
+        if (nativeBooleanDuplicate != null) {
+            throw InvalidJsonSchema(
+                payloadName = nativeBooleanDuplicate,
+                reason = "Both a native JSON Schema and a Boolean schema use this generated artifact name.",
             )
         }
 
@@ -70,6 +81,17 @@ class JsonSchemaGenerator(
                             schemaArtifact(
                                 schemaName = schemaName,
                                 schemaNode = renderNativeJsonSchema(schemaName, schema),
+                                packageName = packageName,
+                            ),
+                        )
+                    }
+                booleanSchemas.entries
+                    .sortedBy(Map.Entry<String, Boolean>::key)
+                    .forEach { (schemaName, schema) ->
+                        add(
+                            schemaArtifact(
+                                schemaName = schemaName,
+                                schemaNode = objectMapper.nodeFactory.booleanNode(schema),
                                 packageName = packageName,
                             ),
                         )

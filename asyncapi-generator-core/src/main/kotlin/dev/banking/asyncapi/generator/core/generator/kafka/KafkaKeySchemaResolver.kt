@@ -11,11 +11,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Resolves Kafka binding key schemas independently of generated client language.
- *
- * Expected behavior is covered by:
- * - `KafkaKeySchemaResolverTest`
- * - `KafkaKeyContractResolverTest`
- * - `AsyncApiSchemaLoaderTest`
  */
 internal object KafkaKeySchemaResolver {
     fun resolve(

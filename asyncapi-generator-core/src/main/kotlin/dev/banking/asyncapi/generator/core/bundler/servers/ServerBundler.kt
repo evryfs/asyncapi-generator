@@ -11,9 +11,6 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 
 /**
  * Bundles server objects and references.
- *
- * Expected behavior is covered by:
- * - `ServerBundlerTest`
  */
 internal class ServerBundler {
 

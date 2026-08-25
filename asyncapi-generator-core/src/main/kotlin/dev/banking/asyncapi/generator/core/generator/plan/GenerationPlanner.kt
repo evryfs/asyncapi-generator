@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
 
 /**
  * Creates an ordered generation plan from generator options.
- *
- * Expected behavior is covered by:
- * - `GenerationPlannerTest`
  */
 class GenerationPlanner {
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
@@ -72,8 +69,6 @@ class GenerationPlanner {
                                 )
                             }
                         }
-                        is ClientGeneration.QuarkusKafka ->
-                            add(GenerationTask.QuarkusKafkaClient(configuration.requireSourceLanguage()))
                     }
                 }
 

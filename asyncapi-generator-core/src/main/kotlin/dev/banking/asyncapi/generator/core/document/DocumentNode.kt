@@ -76,7 +76,6 @@ internal class DocumentArray(
     val elements: List<DocumentNode> =
         Collections.unmodifiableList(ArrayList(elements))
 
-    /** Returns the element at [index]. */
     operator fun get(index: Int): DocumentNode = elements[index]
 }
 

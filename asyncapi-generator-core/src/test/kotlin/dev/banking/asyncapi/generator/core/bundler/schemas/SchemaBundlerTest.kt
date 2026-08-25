@@ -7,8 +7,12 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class SchemaBundlerTest {
 
@@ -29,11 +33,11 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(schemaInterface)
-        assertThat(schemaReference.inline).isTrue()
-        assertThat(schemaReference.model).isInstanceOf(Schema::class.java)
-        assertThat((schemaReference.model as Schema).bindings).containsKey("kafka")
-        assertThat(bindingReference.inline).isTrue()
+        assertSame(schemaInterface, bundled)
+        assertTrue(schemaReference.inline)
+        assertIs<Schema>(schemaReference.model)
+        assertTrue((schemaReference.model as Schema).bindings!!.containsKey("kafka"))
+        assertTrue(bindingReference.inline)
     }
 
     @Test
@@ -51,10 +55,10 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertThat(bundled).isInstanceOf(SchemaInterface.SchemaInline::class.java)
-        assertThat((bundled as SchemaInterface.SchemaInline).schema.bindings).containsKey("kafka")
-        assertThat(schemaReference.inline).isFalse()
-        assertThat(bindingReference.inline).isTrue()
+        assertIs<SchemaInterface.SchemaInline>(bundled)
+        assertTrue((bundled as SchemaInterface.SchemaInline).schema.bindings!!.containsKey("kafka"))
+        assertFalse(schemaReference.inline)
+        assertTrue(bindingReference.inline)
     }
 
     @Test
@@ -71,8 +75,8 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, context)
 
-        assertThat(bundled).isSameAs(schemaInterface)
-        assertThat(context.schemaPromotions.schemas()).isEmpty()
+        assertSame(schemaInterface, bundled)
+        assertTrue(context.schemaPromotions.schemas().isEmpty())
     }
 
     @Test
@@ -83,9 +87,9 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(schemaInterface)
-        assertThat(schemaReference.inline).isTrue()
-        assertThat(schemaReference.model).isSameAs(schema)
+        assertSame(schemaInterface, bundled)
+        assertTrue(schemaReference.inline)
+        assertSame(schema, schemaReference.model)
     }
 
     @Test
@@ -96,8 +100,59 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertThat(bundled).isEqualTo(SchemaInterface.MultiFormatSchemaInline(schema))
-        assertThat(schemaReference.inline).isFalse()
+        assertEquals(SchemaInterface.MultiFormatSchemaInline(schema), bundled)
+        assertFalse(schemaReference.inline)
+    }
+
+    @Test
+    fun `bundle resolves a component reference to a true Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(true)
+        val schemaReference = Reference("#/components/schemas/Anything", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(booleanSchema, bundled)
+        assertFalse(schemaReference.inline)
+    }
+
+    @Test
+    fun `bundle resolves a component reference to a false Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(booleanSchema, bundled)
+        assertEquals(SchemaInterface.BooleanSchema(false), bundled)
+        assertFalse(schemaReference.inline)
+    }
+
+    @Test
+    fun `bundle inlines an already visited external reference resolving to a true Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(true)
+        val schemaReference = Reference("schemas.yaml#/shared/Anything", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+        val context = BundlingContext.empty().enter(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, context)
+
+        assertSame(booleanSchema, bundled)
+        assertFalse(schemaReference.inline)
+    }
+
+    @Test
+    fun `bundle inlines an external reference resolving to a false Boolean schema`() {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("schemas.yaml#/shared/Nothing", model = booleanSchema)
+        val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
+
+        val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
+
+        assertSame(booleanSchema, bundled)
+        assertEquals(SchemaInterface.BooleanSchema(false), bundled)
+        assertFalse(schemaReference.inline)
     }
 
     private fun nativeAvroSchema(): MultiFormatSchema =

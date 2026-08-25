@@ -9,10 +9,6 @@ import java.io.StringWriter
 
 /**
  * Renders Kotlin enum model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `KotlinModelArtifactGeneratorTest`
- * - `KotlinModelApprovalTest`
  */
 class KotlinEnumGenerator {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")

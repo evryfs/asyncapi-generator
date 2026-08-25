@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
@@ -12,20 +13,18 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * AsyncAPI document. It does not contain rendered artifacts or write targets.
  *
  * [schemas] contains the normalized and analyzed view used by source generators.
- * [declaredSchemas] retains the contract view used by schema artifact generators
- * that must preserve JSON Schema semantics.
- *
- * Expected behavior is covered by:
- * - `GenerationInputTest`
- * - `GenerationInputFactoryTest`
+ * [schemaDeclarations] retains the contract view used by schema artifact
+ * generators that must preserve JSON Schema semantics.
  */
 data class GenerationInput(
     val schemas: Map<String, Schema>,
-    val declaredSchemas: Map<String, Schema> = schemas,
-    val multiFormatSchemas: Map<String, MultiFormatSchema> = emptyMap(),
+    val schemaDeclarations: SchemaDeclarationCatalog = SchemaDeclarationCatalog(asyncApiSchemas = schemas),
     val polymorphicRelationships: Map<String, List<String>>,
     val channels: List<AnalyzedChannel>,
 ) {
+    val multiFormatSchemas: Map<String, MultiFormatSchema>
+        get() = schemaDeclarations.multiFormatSchemas
+
     val schemaContext: GeneratorContext = GeneratorContext(schemas)
 
     fun schemaContextWith(additionalSchemas: Map<String, Schema>): GeneratorContext =

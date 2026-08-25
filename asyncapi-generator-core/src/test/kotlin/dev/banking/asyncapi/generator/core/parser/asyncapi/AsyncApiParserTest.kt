@@ -172,21 +172,21 @@ class AsyncApiParserTest {
             "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"
         val simpleStringSchema = assertIs<Schema>(context.modelRepository.getModelsByPath()[schemaPath])
 
-        val schemaLocation = assertNotNull(context.getSourceLocation(simpleStringSchema))
+        val schemaLocation = assertNotNull(context.modelTracking.getSourceLocation(simpleStringSchema))
         assertEquals("asyncapi_kafka_single_file_example.yaml", schemaLocation.file.name)
         assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString", schemaLocation.path)
         assertEquals(415, schemaLocation.line)
         assertTrue(schemaLocation.column > 0)
 
         val titleLocation = assertNotNull(
-            context.getSourceLocation(simpleStringSchema, simpleStringSchema::title)
+            context.modelTracking.getSourceLocation(simpleStringSchema, simpleStringSchema::title)
         )
         assertEquals("asyncapi_kafka_single_file_example.yaml", titleLocation.file.name)
         assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString.title", titleLocation.path)
         assertEquals(416, titleLocation.line)
         assertTrue(titleLocation.column > 0)
-        assertEquals(417, context.getLine(simpleStringSchema, simpleStringSchema::description))
-        assertEquals(418, context.getLine(simpleStringSchema, simpleStringSchema::type))
+        assertEquals(417, context.modelTracking.getLine(simpleStringSchema, simpleStringSchema::description))
+        assertEquals(418, context.modelTracking.getLine(simpleStringSchema, simpleStringSchema::type))
     }
 
     @Test

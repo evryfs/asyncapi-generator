@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInter
 
 /**
  * Bundles correlation ID objects and references.
- *
- * Expected behavior is covered by:
- * - `CorrelationIdBundlerTest`
  */
 internal class CorrelationIdBundler {
     fun bundleMap(

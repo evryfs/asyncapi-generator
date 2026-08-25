@@ -15,3 +15,5 @@ assert !aSchemaDir.exists() : "Did not expect schema directory for contract A"
 assert !bClientDir.exists() : "Did not expect client directory for contract B (no springKafka client)"
 assert !bModelDir.exists() : "Did not expect source models from the schema-only contract B execution"
 assert bSchemaDir.exists() : "Expected schema directory for contract B (per-execution schema profile)"
+
+true

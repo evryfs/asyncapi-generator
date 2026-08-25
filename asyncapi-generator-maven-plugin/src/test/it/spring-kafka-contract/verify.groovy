@@ -38,3 +38,5 @@ def auditConsumer = new File(basedir, "target/generated-sources/asyncapi/com/exa
 assert auditConsumer.exists() : "Expected a consumer for the receive-only auditEvents channel"
 assert auditConsumer.text.contains("fun listenAuditRecorded(") :
     "Expected the receive-only channel message in the consumer contract"
+
+true

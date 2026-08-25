@@ -6,10 +6,6 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
 /**
  * Renders Java model items into a generation result before writing them.
- *
- * Expected behavior is covered by:
- * - `JavaGeneratorTest`
- * - `JavaModelApprovalTest`
  */
 class JavaGenerator(
     private val packageName: String,

@@ -12,9 +12,6 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 
 /**
  * Bundles channel objects and references.
- *
- * Expected behavior is covered by:
- * - `ChannelBundlerTest`
  */
 internal class ChannelBundler {
 

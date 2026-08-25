@@ -8,9 +8,6 @@ import java.nio.file.Path
  * [GeneratedArtifact] keeps rooted output content together with the relative
  * path and artifact kind that a writer can later use to persist it. Bundled
  * documents use [GeneratedDocumentArtifact] because they target explicit files.
- *
- * Expected behavior is covered by:
- * - `GenerationOutputContractTest`
  */
 data class GeneratedArtifact(
     val relativePath: String,

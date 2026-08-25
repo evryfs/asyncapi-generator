@@ -13,9 +13,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  * The bundler stage resolves already-registered references into the model shape
  * expected by generator stages. It does not read files, parse YAML or JSON,
  * validate AsyncAPI semantics, or generate code.
- *
- * Expected behavior is covered by:
- * - `AsyncApiBundlerTest`
  */
 class AsyncApiBundler {
 

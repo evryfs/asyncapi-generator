@@ -12,9 +12,6 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 
 /**
  * Bundles message trait objects and references.
- *
- * Expected behavior is covered by:
- * - `MessageTraitBundlerTest`
  */
 internal class MessageTraitBundler {
 

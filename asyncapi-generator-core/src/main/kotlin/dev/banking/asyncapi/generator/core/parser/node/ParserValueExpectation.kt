@@ -16,8 +16,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
 
+/**
+ * Extracts typed values from [DocumentNode] trees, producing clear diagnostics on type mismatches.
+ */
 internal object ParserValueExpectation {
 
+    /** Extracts a value of the expected type from the node, or throws a diagnostic. */
     internal fun expect(
         node: DocumentNode,
         expectedType: KType,
@@ -93,6 +97,7 @@ internal object ParserValueExpectation {
             ?: unexpectedType(node, expectedType, address, context)
     }
 
+    /** Throws a diagnostic for an unexpected node type at the given address. */
     internal fun unexpectedType(
         node: DocumentNode,
         expectedType: KType,

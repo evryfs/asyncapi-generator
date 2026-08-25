@@ -73,7 +73,7 @@ internal class BindingParser(
             ref = reference,
             referenceCategoryKey = BINDING,
         )
-        asyncApiContext.registerBindingReferenceOrigin(model, location, protocol)
+        asyncApiContext.bindingRegistry.register(model, location, protocol)
         asyncApiContext.register(model, parserNode)
         return BindingInterface.BindingReference(
             model,

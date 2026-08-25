@@ -2,12 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Optional annotations applied to generated client contracts and their payload parameters.
- *
- * Expected behavior is covered by:
- * - `GeneratorConfigurationFactoryTest`
- * - `GenerationPlannerTest`
- * - `SpringKafkaClientGenerationTest`
- * - `AsyncApiGeneratorMojoTest`
  */
 data class ClientValidationAnnotations(
     val clientContract: QualifiedTypeName? = null,

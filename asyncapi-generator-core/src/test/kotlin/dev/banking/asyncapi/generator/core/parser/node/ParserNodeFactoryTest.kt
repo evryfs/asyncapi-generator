@@ -68,7 +68,7 @@ class ParserNodeFactoryTest {
         assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
         assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
         assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
-        assertEquals(file, context.findFileById("source_map"))
+        assertEquals(file, context.sourceTracking.findFileById("source_map"))
     }
 
     @Test

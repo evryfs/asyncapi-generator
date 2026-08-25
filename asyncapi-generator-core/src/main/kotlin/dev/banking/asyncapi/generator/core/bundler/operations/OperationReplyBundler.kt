@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 
 /**
  * Bundles operation reply objects and references.
- *
- * Expected behavior is covered by:
- * - `OperationReplyBundlerTest`
  */
 internal class OperationReplyBundler {
 

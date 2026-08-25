@@ -4,9 +4,6 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
 
 /**
  * Structured validation diagnostic produced by the validator stage.
- *
- * Expected behavior is covered by:
- * - `ValidationReportTest`
  */
 data class ValidationFinding(
     val code: String,

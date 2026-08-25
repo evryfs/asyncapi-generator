@@ -36,6 +36,7 @@ data class Schema(
     val contentEncoding: String? = null,
     val contentMediaType: String? = null,
 
+    @get:JsonIgnore
     val items: SchemaInterface? = null,
 
     /**
@@ -83,4 +84,8 @@ data class Schema(
     val externalDocs: ExternalDocInterface? = null,
     val bindings: Map<String, BindingInterface>? = null,
     @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
-)
+) {
+    @get:JsonProperty("items")
+    private val serializedItems: Any?
+        get() = tupleItems ?: items
+}

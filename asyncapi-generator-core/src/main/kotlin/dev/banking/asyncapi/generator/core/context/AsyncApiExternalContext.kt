@@ -1,10 +1,12 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.parseReference
+import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
@@ -14,8 +16,35 @@ import java.io.File
 import java.io.IOException
 import java.net.URISyntaxException
 
+/**
+ * Handles loading and parsing of external document references.
+ *
+ * @param sourceTracking source file tracking for resolving file references
+ * @param modelTracking model tracking for source locations and reference origins
+ * @param warningCollector collector for external validation warnings
+ * @param registerExternalDocument registers an external document with the resource budget
+ * @param registerReferenceTarget registers a reference target with the resource budget
+ * @param withinExternalReference executes a block within an external reference scope
+ * @param createParser factory for creating a new parser instance
+ * @param createValidator factory for creating a new validator instance
+ * @param createReporter factory for creating a new validation reporter instance
+ * @param createFragmentProcessor factory for creating a new fragment processor instance
+ * @param createDiagnosticException factory for creating parser diagnostic exceptions
+ * @param readDocument reads and parses a document file into a parser node
+ */
 internal class AsyncApiExternalContext(
-    val context: AsyncApiContext,
+    private val sourceTracking: SourceTracking,
+    private val modelTracking: ModelTracking,
+    private val warningCollector: ValidationWarningCollector,
+    private val registerExternalDocument: (File, SourceLocation) -> Unit,
+    private val registerReferenceTarget: (File, String, SourceLocation) -> Unit,
+    private val withinExternalReference: (SourceLocation, () -> Unit) -> Unit,
+    private val createParser: () -> AsyncApiParser,
+    private val createValidator: () -> AsyncApiValidator,
+    private val createReporter: () -> ValidationReporter,
+    private val createFragmentProcessor: () -> ExternalFragmentProcessor,
+    private val createDiagnosticException: (ParserDiagnostic) -> AsyncApiParseException,
+    private val readDocument: (File) -> ParserNode,
 ) {
     private data class FragmentIdentity(
         val file: String,
@@ -32,11 +61,11 @@ internal class AsyncApiExternalContext(
     private var fragmentLoadDepth = 0
 
     fun loadExternal(reference: Reference) {
-        val referenceOrigin = context.modelRepository.getReferenceOrigin(reference)
+        val referenceOrigin = modelTracking.getReferenceOrigin(reference)
         val sourceFile =
             referenceOrigin?.file
-                ?: reference.sourceId?.let(context::findFileById)
-                ?: context.getCurrentFile()
+                ?: reference.sourceId?.let(sourceTracking::findFileById)
+                ?: sourceTracking.getCurrentFile()
         val resolved = try {
             resolveReference(reference, sourceFile)
         } catch (exception: URISyntaxException) {
@@ -56,7 +85,7 @@ internal class AsyncApiExternalContext(
         val referenceLocation = referenceLocation(reference)
         val documentKey =
             try {
-                context.registerExternalDocument(externalFile, referenceLocation)
+                registerExternalDocument(externalFile, referenceLocation)
                 externalFile.canonicalPath
             } catch (exception: IOException) {
                 throw missingDocument(reference, externalFile)
@@ -64,13 +93,13 @@ internal class AsyncApiExternalContext(
                 throw missingDocument(reference, externalFile)
             }
         val rootNode = documents.getOrPut(documentKey) {
-            AsyncApiRegistry.read(externalFile, context)
+            readDocument(externalFile)
         }
         try {
-            context.registerReferenceTarget(
-                file = externalFile,
-                pointer = resolved.pointer.toString(),
-                location = referenceLocation,
+            registerReferenceTarget(
+                externalFile,
+                resolved.pointer.toString(),
+                referenceLocation,
             )
         } catch (exception: IOException) {
             throw missingDocument(reference, externalFile)
@@ -84,12 +113,12 @@ internal class AsyncApiExternalContext(
                 throw missingTarget(reference)
             }
             if (!loadedDocuments.add(documentKey)) return
-            context.withinExternalReference(referenceLocation) {
-                val parser = AsyncApiParser(context)
+            withinExternalReference(referenceLocation) {
+                val parser = createParser()
                 val parsed = parser.parse(rootNode)
-                val result = AsyncApiValidator(context).validate(parsed)
-                ValidationReporter(context).throwErrors(result)
-                context.collectExternalValidationWarnings(result.warnings)
+                val result = createValidator().validate(parsed)
+                createReporter().throwErrors(result)
+                warningCollector.collect(result.warnings)
             }
         } else {
             val parserProfile = referenceOrigin?.parserProfile
@@ -103,7 +132,7 @@ internal class AsyncApiExternalContext(
                 parserProfile = parserProfile?.name.orEmpty(),
             )
             if (!loadedFragments.add(fragmentIdentity)) return
-            context.withinExternalReference(referenceLocation) {
+            withinExternalReference(referenceLocation) {
                 parseFragment(target, reference)
             }
         }
@@ -116,7 +145,7 @@ internal class AsyncApiExternalContext(
         var parsed = false
         fragmentLoadDepth++
         try {
-            pendingFragmentValidations += ExternalFragmentProcessor(context).parseAndDeferValidation(
+            pendingFragmentValidations += createFragmentProcessor().parseAndDeferValidation(
                 target = target,
                 reference = reference,
             )
@@ -183,12 +212,11 @@ internal class AsyncApiExternalContext(
 
     private fun parserFailure(
         diagnostic: ParserDiagnostic,
-    ): AsyncApiParseException =
-        AsyncApiParseException.ParserDiagnosticFailure(diagnostic, context)
+    ): AsyncApiParseException = createDiagnosticException(diagnostic)
 
     private fun referenceLocation(reference: Reference) =
         requireNotNull(
-            context.getSourceLocation(reference, $$"$ref")
-                ?: context.getSourceLocation(reference),
+            modelTracking.getSourceLocation(reference, $$"$ref")
+                ?: modelTracking.getSourceLocation(reference),
         ) { "Reference '${reference.ref}' was not registered with a source location" }
 }

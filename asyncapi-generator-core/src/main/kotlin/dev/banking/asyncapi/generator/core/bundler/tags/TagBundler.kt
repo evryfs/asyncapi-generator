@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
 /**
  * Bundles tag objects and references.
- *
- * Expected behavior is covered by:
- * - `TagBundlerTest`
  */
 internal class TagBundler {
     fun bundleMap(tags: Map<String, TagInterface>?, context: BundlingContext): Map<String, TagInterface>? =

@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Generated client contract shape selected by user-facing generator configuration.
- *
- * Expected behavior is covered by:
- * - `ClientContractTest`
  */
 enum class ClientContract(
     val configurationValue: String,
@@ -19,10 +16,7 @@ enum class ClientContract(
             value: String?,
             path: String,
         ): ClientContract {
-            if (value == null) {
-                throw IllegalArgumentException("$path is required")
-            }
-
+            requireNotNull(value) { "$path is required" }
             return entries.firstOrNull { it.configurationValue == value }
                 ?: throw IllegalArgumentException(
                     "Invalid $path '$value'. Supported values: ${supportedConfigurationValues.joinToString(", ")}",

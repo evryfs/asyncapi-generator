@@ -36,7 +36,7 @@ internal class CorrelationIdValidator(
             results.error(
                 CORRELATION_LOCATION_REQUIRED,
                 "$contextString 'location' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
             )
             return
         }
@@ -44,7 +44,7 @@ internal class CorrelationIdValidator(
             results.error(
                 CORRELATION_LOCATION_FORMAT,
                 "$contextString 'location' ('$location') does not follow valid runtime expression.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#correlationIdObject",
             )
         }

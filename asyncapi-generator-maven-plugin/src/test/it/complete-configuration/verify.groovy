@@ -22,7 +22,10 @@ assert consumer.isFile() : "Expected consumer generation to be enabled"
 assert producer.text.contains("@Validated")
 assert producer.text.contains("@Valid")
 assert producer.text.contains("fun sendAccountUpdatedV1(")
-assert producer.text.contains("X_EXAMPLE_CORRELATION_ID")
+assert producer.text.contains(
+    '@Header(name = "X-EXAMPLE-CORRELATION-ID", required = true)',
+)
+assert producer.text.contains("xExampleCorrelationId: String")
 assert producer.text.contains('account.\\${kafka.environment}.events.v1')
 assert consumer.text.contains("fun listenAccountUpdatedV1(")
 
@@ -135,3 +138,5 @@ assert new File(
     compiledClasses,
     "com/example/complete/protobuf/AccountSnapshot.class",
 ).isFile() : "Expected the generated Protobuf message to compile"
+
+true

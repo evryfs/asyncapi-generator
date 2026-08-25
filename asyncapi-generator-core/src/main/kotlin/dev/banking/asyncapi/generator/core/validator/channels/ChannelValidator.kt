@@ -60,7 +60,7 @@ internal class ChannelValidator(
             results.error(
                 CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
                 "$contextString address must not contain query parameters or fragments. Use bindings for that.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::address),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
@@ -73,7 +73,7 @@ internal class ChannelValidator(
             results.error(
                 CHANNEL_PARAMETER_UNDEFINED,
                 "$contextString address uses parameters $missingDefinitions which are not defined in channel parameters map.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::address),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::address),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
@@ -91,7 +91,7 @@ internal class ChannelValidator(
             results.error(
                 CHANNEL_PARAMETER_UNUSED,
                 "$contextString defines 'parameters', but its address contains no channel address expressions.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::parameters),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::parameters),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
             return
@@ -101,7 +101,7 @@ internal class ChannelValidator(
             results.error(
                 CHANNEL_PARAMETER_UNUSED,
                 "$contextString defines parameters $unusedDefinitions which are not used in its channel address.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::parameters),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::parameters),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }

@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 
 /**
  * Prepares Java model items from analyzed generator input.
- *
- * Expected behavior is covered by:
- * - `JavaModelPreparerTest`
  */
 class JavaModelPreparer {
     fun prepare(

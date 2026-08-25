@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 
 /**
  * Bundles external documentation objects and references.
- *
- * Expected behavior is covered by:
- * - `ExternalDocsBundlerTest`
  */
 internal class ExternalDocsBundler {
     fun bundleMap(

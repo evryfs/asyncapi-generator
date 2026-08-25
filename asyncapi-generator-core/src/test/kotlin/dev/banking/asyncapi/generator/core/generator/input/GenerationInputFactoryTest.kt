@@ -21,6 +21,9 @@ class GenerationInputFactoryTest {
         assertTrue(input.schemas.containsKey("Status"))
         assertEquals(listOf("Root"), input.polymorphicRelationships["External"])
         assertSame(input.schemas["Root"], input.schemaContext.findSchemaByName("Root"))
+        assertTrue(input.schemaDeclarations.asyncApiSchemas.containsKey("Root"))
+        assertTrue(input.schemaDeclarations.asyncApiSchemas.containsKey("UserCreatedPayload"))
+        assertFalse(input.schemaDeclarations.asyncApiSchemas.containsKey("External"))
 
         val channel = input.channels.single()
         assertEquals("userEvents", channel.channelName)
@@ -35,5 +38,6 @@ class GenerationInputFactoryTest {
 
         assertFalse(input.schemas.containsKey("UserCreated"))
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, input.multiFormatSchemas["UserCreated"]?.format)
+        assertSame(input.schemaDeclarations.multiFormatSchemas, input.multiFormatSchemas)
     }
 }

@@ -1,8 +1,10 @@
 package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 
 class BundlingContextTest {
 
@@ -12,7 +14,7 @@ class BundlingContextTest {
 
         val context = BundlingContext.empty()
 
-        assertThat(context.hasVisited(reference)).isFalse()
+        assertFalse(context.hasVisited(reference))
     }
 
     @Test
@@ -22,9 +24,9 @@ class BundlingContextTest {
 
         val next = original.enter(reference)
 
-        assertThat(next).isNotSameAs(original)
-        assertThat(original.hasVisited(reference)).isFalse()
-        assertThat(next.hasVisited(reference)).isTrue()
+        assertNotSame(original, next)
+        assertFalse(original.hasVisited(reference))
+        assertTrue(next.hasVisited(reference))
     }
 
     @Test
@@ -34,7 +36,7 @@ class BundlingContextTest {
 
         val context = BundlingContext.empty().enter(first)
 
-        assertThat(context.hasVisited(first)).isTrue()
-        assertThat(context.hasVisited(second)).isFalse()
+        assertTrue(context.hasVisited(first))
+        assertFalse(context.hasVisited(second))
     }
 }

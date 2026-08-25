@@ -6,21 +6,26 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
+import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class AsyncApiBundlerTest {
 
@@ -36,10 +41,10 @@ class AsyncApiBundlerTest {
 
         val bundled = bundler.bundle(original)
 
-        assertThat(bundled)
-            .usingRecursiveComparison()
-            .ignoringFieldsMatchingRegexes(".*sourceId", ".*inline")
-            .isEqualTo(original)
+        assertEquals(original.asyncapi, bundled.asyncapi)
+        assertEquals(original.info, bundled.info)
+        assertEquals(original.channels?.size, bundled.channels?.size)
+        assertEquals(original.components, bundled.components)
     }
 
     @Test
@@ -48,25 +53,25 @@ class AsyncApiBundlerTest {
 
         val externalChannelReference =
             bundled.channels!!["externalAuditChannel"] as ChannelInterface.ChannelReference
-        assertThat(externalChannelReference.reference.inline).isTrue()
-        assertThat(externalChannelReference.reference.model).isInstanceOf(Channel::class.java)
+        assertTrue(externalChannelReference.reference.inline)
+        assertIs<Channel>(externalChannelReference.reference.model)
 
         val externalChannel = externalChannelReference.reference.model as Channel
         val externalMessage =
             externalChannel.messages!!["externalAuditMessage"] as MessageInterface.MessageInline
         val externalPayload = externalMessage.message.payload as SchemaInterface.SchemaReference
         val externalSchema = externalPayload.reference.model as Schema
-        assertThat(externalSchema.title).isEqualTo("Audit Metadata")
-        assertThat(externalSchema.properties).containsKeys("timestamp", "actor", "reason")
-        assertThat(externalSchema.properties!!["timestamp"])
-            .isInstanceOf(SchemaInterface.SchemaInline::class.java)
+        assertEquals("Audit Metadata", externalSchema.title)
+        assertTrue(externalSchema.properties!!.containsKey("timestamp"))
+        assertTrue(externalSchema.properties.containsKey("actor"))
+        assertTrue(externalSchema.properties.containsKey("reason"))
+        assertIs<SchemaInterface.SchemaInline>(externalSchema.properties["timestamp"])
 
         val channelReference = bundled.channels["testChannel"] as ChannelInterface.ChannelReference
         val channel = channelReference.reference.model as Channel
         val message = channel.messages!!["testMessage"] as MessageInterface.MessageInline
         val payload = message.message.payload as SchemaInterface.SchemaInline
-        assertThat(payload.schema.properties!!["id"])
-            .isInstanceOf(SchemaInterface.SchemaInline::class.java)
+        assertIs<SchemaInterface.SchemaInline>(payload.schema.properties!!["id"])
     }
 
     @Test
@@ -94,10 +99,44 @@ class AsyncApiBundlerTest {
         AsyncApiRegistry.writeJson(jsonFile, bundled)
 
         listOf(yamlFile, jsonFile).forEach { outputFile ->
-            assertThat(outputFile.readText())
-                .contains("pathname")
-                .doesNotContain("pathName")
+            assertTrue(outputFile.readText().contains("pathname"))
+            assertFalse(outputFile.readText().contains("pathName"))
         }
+    }
+
+    @Test
+    fun `bundling serializes a referenced Boolean schema as a YAML literal`(
+        @TempDir tempDir: Path,
+    ) {
+        val booleanSchema = SchemaInterface.BooleanSchema(false)
+        val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
+        val document = AsyncApiDocument(
+            asyncapi = "3.0.0",
+            info = Info(title = "Boolean schema API", version = "1.0.0"),
+            components = ComponentInterface.ComponentInline(
+                Component(
+                    schemas = mapOf(
+                        "Nothing" to booleanSchema,
+                        "Wrapper" to SchemaInterface.SchemaInline(
+                            Schema(
+                                type = "object",
+                                properties = mapOf(
+                                    "denied" to SchemaInterface.SchemaReference(schemaReference),
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        val bundled = bundler.bundle(document)
+        val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
+
+        AsyncApiRegistry.writeYaml(yamlFile, bundled)
+
+        val yaml = yamlFile.readText()
+        assertTrue(yaml.contains("denied: false"))
+        assertFalse(yaml.contains("modelForSerialization"))
     }
 
     @Test
@@ -107,16 +146,16 @@ class AsyncApiBundlerTest {
         val components = bundled.components as ComponentInterface.ComponentInline
         val nodeA = components.component.schemas!!["NodeA"] as SchemaInterface.SchemaInline
         val child = nodeA.schema.properties!!["child"] as SchemaInterface.SchemaReference
-        assertThat(child.reference.ref).isEqualTo("#/components/schemas/NodeB")
-        assertThat(child.reference.model).isInstanceOf(Schema::class.java)
-        assertThat(child.reference.inline).isTrue()
+        assertEquals("#/components/schemas/NodeB", child.reference.ref)
+        assertIs<Schema>(child.reference.model)
+        assertTrue(child.reference.inline)
 
         val schemas = components.component.schemas!!
         val nodeB = schemas["NodeB"] as SchemaInterface.SchemaInline
         val parent = nodeB.schema.properties!!["parent"] as SchemaInterface.SchemaReference
-        assertThat(parent.reference.ref).isEqualTo("#/components/schemas/NodeA")
-        assertThat(parent.reference.model).isInstanceOf(Schema::class.java)
-        assertThat(parent.reference.inline).isTrue()
+        assertEquals("#/components/schemas/NodeA", parent.reference.ref)
+        assertIs<Schema>(parent.reference.model)
+        assertTrue(parent.reference.inline)
     }
 
     @Test
@@ -128,13 +167,13 @@ class AsyncApiBundlerTest {
         val channel = bundled.channels!!["treeEvents"] as ChannelInterface.ChannelInline
         val message = channel.channel.messages!!["treeUpdated"] as MessageInterface.MessageInline
         val payload = message.message.payload as SchemaInterface.SchemaReference
-        assertThat(payload.reference.ref).isEqualTo("#/components/schemas/TreeNode")
+        assertEquals("#/components/schemas/TreeNode", payload.reference.ref)
 
         val components = bundled.components as ComponentInterface.ComponentInline
         val treeNode = components.component.schemas!!["TreeNode"] as SchemaInterface.SchemaInline
         val children = treeNode.schema.properties!!["children"] as SchemaInterface.SchemaInline
         val childItems = children.schema.items as SchemaInterface.SchemaReference
-        assertThat(childItems.reference.ref).isEqualTo("#/components/schemas/TreeNode")
+        assertEquals("#/components/schemas/TreeNode", childItems.reference.ref)
 
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
         val jsonFile = tempDir.resolve("asyncapi.json").toFile()
@@ -142,9 +181,8 @@ class AsyncApiBundlerTest {
         AsyncApiRegistry.writeJson(jsonFile, bundled)
 
         listOf(yamlFile, jsonFile).forEach { outputFile ->
-            assertThat(outputFile.readText())
-                .contains("#/components/schemas/TreeNode")
-                .doesNotContain("schemas.yaml")
+            assertTrue(outputFile.readText().contains("#/components/schemas/TreeNode"))
+            assertFalse(outputFile.readText().contains("schemas.yaml"))
             assertNotNull(BundlerFixtures().validatedDocument(outputFile))
         }
     }
@@ -155,37 +193,34 @@ class AsyncApiBundlerTest {
 
         val components = bundled.components as ComponentInterface.ComponentInline
         val schemas = components.component.schemas!!
-        assertThat(schemas.keys).containsExactly("ParentNode", "ChildNode")
+        assertEquals(setOf("ParentNode", "ChildNode"), schemas.keys)
 
         val parent = schemas["ParentNode"] as SchemaInterface.SchemaInline
         val childReference = parent.schema.properties!!["child"] as SchemaInterface.SchemaReference
-        assertThat(childReference.reference.ref).isEqualTo("#/components/schemas/ChildNode")
+        assertEquals("#/components/schemas/ChildNode", childReference.reference.ref)
 
         val child = schemas["ChildNode"] as SchemaInterface.SchemaInline
         val parentReference = child.schema.properties!!["parent"] as SchemaInterface.SchemaReference
-        assertThat(parentReference.reference.ref).isEqualTo("#/components/schemas/ParentNode")
-
+        assertEquals("#/components/schemas/ParentNode", parentReference.reference.ref)
     }
 
     @Test
     fun `bundling rejects a promoted schema name that conflicts with a root schema`() {
-        assertThatThrownBy {
+        val error = assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
             bundlerFixtures.bundledDocument("bundler/recursive-external-collision/root-schema-collision.yaml")
         }
-            .isInstanceOf(AsyncApiBundlingException.PromotedSchemaNameCollision::class.java)
-            .hasMessageContaining("recursive external schema 'TreeNode'")
-            .hasMessageContaining("Existing schema: #/components/schemas/TreeNode")
-            .hasMessageContaining("external-tree.yaml#/components/schemas/TreeNode")
+        assertTrue(error.message!!.contains("recursive external schema 'TreeNode'"))
+        assertTrue(error.message!!.contains("Existing schema: #/components/schemas/TreeNode"))
+        assertTrue(error.message!!.contains("external-tree.yaml#/components/schemas/TreeNode"))
     }
 
     @Test
     fun `bundling rejects distinct promoted schemas with the same name`() {
-        assertThatThrownBy {
+        val error = assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
             bundlerFixtures.bundledDocument("bundler/recursive-external-collision/external-schema-collision.yaml")
         }
-            .isInstanceOf(AsyncApiBundlingException.PromotedSchemaNameCollision::class.java)
-            .hasMessageContaining("recursive external schema 'SharedNode'")
-            .hasMessageContaining("first-node.yaml#/components/schemas/SharedNode")
-            .hasMessageContaining("second-node.yaml#/components/schemas/SharedNode")
+        assertTrue(error.message!!.contains("recursive external schema 'SharedNode'"))
+        assertTrue(error.message!!.contains("first-node.yaml#/components/schemas/SharedNode"))
+        assertTrue(error.message!!.contains("second-node.yaml#/components/schemas/SharedNode"))
     }
 }

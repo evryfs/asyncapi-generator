@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
  * Renders planned Avro schema artifacts before writing them.
- *
- * Expected behavior is covered by:
- * - `AvroSchemaArtifactGenerationTest`
  */
 class AvroSchemaArtifactGeneration {
     fun render(

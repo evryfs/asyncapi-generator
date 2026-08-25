@@ -6,8 +6,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 /**
  * Formats validation findings for exceptions and logs.
  *
- * Expected behavior is covered by:
- * - `ValidationReportTest`
  * - validator package tests
  */
 internal object ValidationFindingFormatter {
@@ -34,8 +32,8 @@ internal object ValidationFindingFormatter {
         finding: ValidationFinding,
         asyncApiContext: AsyncApiContext,
     ): String {
-        finding.sourceLocation?.let { return asyncApiContext.sourceSnippet(it) }
-        finding.path?.let { return asyncApiContext.pathSnippet(it) }
+        finding.sourceLocation?.let { return asyncApiContext.sourceTracking.sourceSnippet(it) }
+        finding.path?.let { return asyncApiContext.sourceTracking.pathSnippet(it) }
         return "(no source location available)"
     }
 }

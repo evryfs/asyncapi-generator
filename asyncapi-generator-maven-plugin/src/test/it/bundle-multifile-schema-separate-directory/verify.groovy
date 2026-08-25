@@ -10,3 +10,5 @@ assert !content.contains("defaultSet:") : "Did not expect internal technical fie
 
 def generatedDir = new File(basedir, "target/generated-sources/asyncapi")
 assert !generatedDir.exists() : "Did not expect any generated code when no packages are set"
+
+true

@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Validated fully qualified source type name supplied by generator configuration.
- *
- * Expected behavior is covered by:
- * - `QualifiedTypeNameTest`
  */
 @JvmInline
 value class QualifiedTypeName private constructor(
@@ -20,15 +17,8 @@ value class QualifiedTypeName private constructor(
             value: String,
             path: String,
         ): QualifiedTypeName {
-            if (value.isBlank()) {
-                throw IllegalArgumentException("$path cannot be empty")
-            }
-
-            if (!pattern.matches(value)) {
-                throw IllegalArgumentException(
-                    "$path must be a fully qualified type name, for example com.example.GeneratedPayload",
-                )
-            }
+            require(value.isNotBlank()) { "$path cannot be empty" }
+            require(pattern.matches(value)) { "$path must be a fully qualified type name, for example com.example.GeneratedPayload" }
 
             return QualifiedTypeName(value)
         }

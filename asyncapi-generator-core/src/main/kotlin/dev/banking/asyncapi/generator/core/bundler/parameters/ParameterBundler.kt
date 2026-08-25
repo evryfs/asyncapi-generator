@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 
 /**
  * Bundles parameter objects and references.
- *
- * Expected behavior is covered by:
- * - `ParameterBundlerTest`
  */
 internal class ParameterBundler {
     fun bundleMap(

@@ -33,6 +33,8 @@ import org.yaml.snakeyaml.reader.ReaderException
  * YAML presentation details such as quote style and block-scalar style must not
  * leak into semantic values. Source locations remain attached to the immutable
  * document nodes produced from the YAML representation graph.
+ *
+ * @param limits resource limits enforced during parsing
  */
 internal class YamlDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,

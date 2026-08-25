@@ -11,9 +11,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Bundles binding objects and references.
- *
- * Expected behavior is covered by:
- * - `BindingBundlerTest`
  */
 internal class BindingBundler {
     private val schemaBundler by lazy { SchemaBundler() }
@@ -25,6 +22,7 @@ internal class BindingBundler {
         bindings?.mapValues { (_, binding) ->
             bundle(binding, context)
         }
+    
     fun bundle(binding: BindingInterface, context: BundlingContext): BindingInterface =
         when (binding) {
             is BindingInterface.BindingInline ->

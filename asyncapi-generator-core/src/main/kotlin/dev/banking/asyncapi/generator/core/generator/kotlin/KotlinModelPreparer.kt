@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 
 /**
  * Prepares Kotlin model items from analyzed generator input.
- *
- * Expected behavior is covered by:
- * - `KotlinModelPreparerTest`
  */
 class KotlinModelPreparer {
     fun prepare(
