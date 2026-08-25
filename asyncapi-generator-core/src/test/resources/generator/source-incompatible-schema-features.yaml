@@ -1,0 +1,23 @@
+asyncapi: 3.0.0
+info:
+  title: Source-incompatible schema features
+  version: 1.0.0
+components:
+  schemas:
+    TupleItems:
+      type: array
+      items:
+        - type: string
+        - type: integer
+    FalseItems:
+      type: array
+      items: false
+    UntypedEnum:
+      enum:
+        - open
+        - 2
+        - true
+        - null
+    EcmaPattern:
+      type: string
+      pattern: '(?<group_name>a)'

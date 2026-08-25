@@ -19,13 +19,11 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_KEYWORD_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
@@ -33,7 +31,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_UNTYPED_ENUM
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -41,8 +38,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.math.BigDecimal
 import java.util.Collections
 import java.util.IdentityHashMap
-import java.util.regex.Pattern
-import java.util.regex.PatternSyntaxException
 
 internal class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
@@ -104,13 +99,11 @@ internal class SchemaValidator(
         val applicableDeclarations = enclosingDeclarations + propertyDeclarations.collect(node)
         validateKeywords(node, contextString, results)
         validateDialect(node, contextString, results)
-        validateKeywordRepresentations(node, contextString, results)
         validateType(node, contextString, results)
         validateEnum(node, contextString, results)
         validateConst(node, contextString, results)
         validateNumericConstraints(node, contextString, results)
         validateStringLength(node, contextString, results)
-        validatePattern(node, contextString, results)
         validateArray(node, contextString, results)
         validateObject(node, applicableDeclarations, contextString, results)
         validateDependencies(node, contextString, results)
@@ -213,40 +206,6 @@ internal class SchemaValidator(
                     )
             }
         }
-    }
-
-    private fun validateKeywordRepresentations(node: Schema, contextString: String, results: ValidationCollector) {
-        if ("items" in asyncApiContext.modelTracking.getFieldNames(node)) {
-            val items = asyncApiContext.modelTracking.getFieldValue(node, "items")
-            when {
-                node.tupleItems != null ->
-                    results.error(
-                        SCHEMA_ITEMS_REPRESENTATION,
-                        "$contextString uses tuple-form 'items', which is valid Draft 7 but cannot be represented " +
-                            "safely by the Java and Kotlin generators. Use a single Schema Object in 'items'.",
-                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
-                        doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
-                    )
-
-                node.items is SchemaInterface.BooleanSchema && !node.items.value ->
-                    results.error(
-                        SCHEMA_ITEMS_REPRESENTATION,
-                        "$contextString uses 'items: false', which cannot be represented safely by the Java and " +
-                            "Kotlin collection types.",
-                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
-                        doc = "https://www.learnjsonschema.com/draft7/applicator/items/",
-                    )
-
-                items !is Map<*, *> && items !is Boolean ->
-                    results.error(
-                        SCHEMA_ITEMS_REPRESENTATION,
-                        "$contextString Schema Object keyword 'items' must contain a Schema Object or a boolean schema.",
-                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "items"),
-                        doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject",
-                    )
-            }
-        }
-
     }
 
     private fun validateDialect(node: Schema, contextString: String, results: ValidationCollector) {
@@ -367,14 +326,6 @@ internal class SchemaValidator(
                 doc = "https://www.learnjsonschema.com/draft7/validation/enum/",
             )
         }
-        if (node.type == null && enum.isNotEmpty() && enum.any { it !is String }) {
-            results.error(
-                SCHEMA_UNTYPED_ENUM,
-                "$contextString has an enum without 'type' that contains non-string values. The generator can " +
-                    "infer only an all-string enum safely; declare the intended type explicitly.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
-            )
-        }
     }
 
     private fun validateConst(node: Schema, schemaName: String, results: ValidationCollector) {
@@ -451,20 +402,6 @@ internal class SchemaValidator(
             contextString,
             results,
         )
-    }
-
-    private fun validatePattern(node: Schema, contextString: String, results: ValidationCollector) {
-        val pattern = node.pattern ?: return
-        try {
-            Pattern.compile(pattern)
-        } catch (ex: PatternSyntaxException) {
-            results.error(
-                SCHEMA_PATTERN,
-                "$contextString 'pattern' cannot be compiled by the Java regular-expression engine used by " +
-                    "generated Jakarta Validation constraints: ${ex.description}.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::pattern),
-            )
-        }
     }
 
     private fun validateArray(node: Schema, contextString: String, results: ValidationCollector) {
