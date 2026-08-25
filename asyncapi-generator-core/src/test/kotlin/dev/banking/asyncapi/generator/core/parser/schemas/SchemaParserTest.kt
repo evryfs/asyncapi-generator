@@ -428,6 +428,31 @@ class SchemaParserTest {
     }
 
     @Test
+    fun `rejects scalar items with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("InvalidItemsScalar")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(42, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidItemsScalar.items",
+            diagnostic.path,
+        )
+        assertEquals("root.components.schemas.InvalidItemsScalar.items", diagnostic.sourceLocation.path)
+    }
+
+    @Test
     fun `rejects a scalar schema dependency with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val document = DocumentReaderRegistry.read(file)

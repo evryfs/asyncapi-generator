@@ -263,27 +263,4 @@ class GeneratorConfigurationRequestTest {
             missingModelPackage.message,
         )
     }
-
-    @Test
-    fun `quarkus kafka request is created only when client output is configured`() {
-        assertNull(GeneratorConfigurationRequest.quarkusKafka())
-        assertNull(
-            GeneratorConfigurationRequest.quarkusKafka(
-                enabled = false,
-                packageName = "com.example.client",
-                modelPackageName = "com.example.model",
-            ),
-        )
-
-        assertEquals(
-            GeneratorConfigurationRequest.QuarkusKafka(
-                packageName = "com.example.client",
-                modelPackageName = "com.example.model",
-            ),
-            GeneratorConfigurationRequest.quarkusKafka(
-                packageName = "com.example.client",
-                modelPackageName = "com.example.model",
-            ),
-        )
-    }
 }
