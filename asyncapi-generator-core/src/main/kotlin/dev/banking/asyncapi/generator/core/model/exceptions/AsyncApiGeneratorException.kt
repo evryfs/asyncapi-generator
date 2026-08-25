@@ -11,17 +11,6 @@ sealed class AsyncApiGeneratorException(
         language: String,
     ) : AsyncApiGeneratorException("The language $language is not supported")
 
-    class UnsupportedGenerationCapability(
-        capability: String,
-    ) : AsyncApiGeneratorException(
-            buildString {
-                appendLine()
-                appendLine("$capability is not implemented.")
-                appendLine("Remove this capability from the generator configuration.")
-                appendLine()
-            }.trimEnd(),
-        )
-
     class GeneratedArtifactCollision(
         destination: String,
         artifacts: List<String>,
@@ -158,6 +147,18 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    class SpringKafkaClientChannelWithoutAddress(
+        channelName: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("Spring Kafka client generation failed for channel '$channelName'.")
+                appendLine("The AsyncAPI channel has no address.")
+                appendLine("Declare channels.$channelName.address before generating client contracts.")
+                appendLine()
+            }.trimEnd(),
+        )
+
     class SpringKafkaClientContractNameCollision(
         channelNames: List<String>,
         generatedBaseName: String,
@@ -222,6 +223,22 @@ sealed class AsyncApiGeneratorException(
                 appendLine()
                 appendLine("$output cannot consume payload '$payloadName' because it uses $inputFormat.")
                 appendLine("Supported input: $supportedInput.")
+                appendLine()
+            }.trimEnd(),
+        )
+
+    internal class UnsupportedSourceSchemaFeature(
+        output: String,
+        rootSchemaName: String,
+        schemaPath: String,
+        feature: String,
+    ) : AsyncApiGeneratorException(
+            buildString {
+                appendLine()
+                appendLine("$output cannot represent schema '$rootSchemaName'.")
+                appendLine("Incompatible schema path: $schemaPath")
+                appendLine("Incompatible feature: $feature.")
+                appendLine("Use a compatible schema shape for this output, or remove the output from generator configuration.")
                 appendLine()
             }.trimEnd(),
         )

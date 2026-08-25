@@ -17,13 +17,11 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ITEMS_REPRESENTATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_KEYWORD_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_PATTERN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
@@ -31,7 +29,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_UNTYPED_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -68,24 +65,17 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `pattern incompatible with generated validation constraint has a source-aware finding`() {
-        val results = validate("validator/schemas/asyncapi_validator_schema_pattern_invalid.yaml")
+    fun `source incompatible Draft 7 constructs pass semantic validation`() {
+        val results = validate("generator/source-incompatible-schema-features.yaml")
 
-        assertEquals(1, results.errors.size)
-        val pattern = results.findings.single { it.code == SCHEMA_PATTERN.code }
-        assertEquals(SCHEMA_PATTERN.code, pattern.code)
-        assertEquals(SCHEMA_PATTERN.severity, pattern.severity)
-        assertEquals(SCHEMA_PATTERN.concern, pattern.concern)
-        assertEquals("asyncapi_validator_schema_pattern_invalid.yaml", pattern.sourceLocation?.file?.name)
-        assertEquals("asyncapi_validator_schema_pattern_invalid.root.components.schemas.InvalidPattern.pattern", pattern.path)
-        assertEquals(9, pattern.line)
+        assertEquals(emptyList(), results.findings)
     }
 
     @Test
     fun `type arrays enum equality and explicit null values use exact semantics`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_invalid.yaml")
 
-        assertEquals(8, results.errors.size)
+        assertEquals(7, results.errors.size)
         val emptyType = results.findings.single {
             it.code == SCHEMA_TYPE_ARRAY_NONEMPTY.code
         }
@@ -156,18 +146,6 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(21, defaultType.line)
 
-        val untypedEnum = results.findings.single {
-            it.code == SCHEMA_UNTYPED_ENUM.code
-        }
-        assertEquals(SCHEMA_UNTYPED_ENUM.code, untypedEnum.code)
-        assertEquals(SCHEMA_UNTYPED_ENUM.severity, untypedEnum.severity)
-        assertEquals(SCHEMA_UNTYPED_ENUM.concern, untypedEnum.concern)
-        assertEquals(
-            "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.UntypedNonStringEnum.enum",
-            untypedEnum.path,
-        )
-        assertEquals(23, untypedEnum.line)
-
         val explicitNullType = results.findings.single {
             it.code == SCHEMA_TYPE.code &&
                 it.path ==
@@ -213,7 +191,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
     fun `recursive schemas and property dependencies produce source-aware findings`() {
         val results = validate("validator/schemas/asyncapi_validator_schema_recursive_invalid.yaml")
 
-        assertEquals(6, results.errors.size)
+        assertEquals(4, results.errors.size)
 
         val propertyType = results.findings.single {
             it.code == SCHEMA_TYPE.code &&
@@ -247,16 +225,6 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals("asyncapi_validator_schema_recursive_invalid.yaml", nestedType.sourceLocation?.file?.name)
         assertEquals(21, nestedType.line)
 
-        val tupleItems = results.findings.single {
-            it.code == SCHEMA_ITEMS_REPRESENTATION.code &&
-            it.path ==
-                "asyncapi_validator_schema_recursive_invalid.root.components.schemas.TupleItems.items"
-        }
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.code, tupleItems.code)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.severity, tupleItems.severity)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.concern, tupleItems.concern)
-        assertEquals(24, tupleItems.line)
-
         val tupleItemType = results.findings.single {
             it.code == SCHEMA_TYPE.code &&
             it.path ==
@@ -266,15 +234,6 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(SCHEMA_TYPE.severity, tupleItemType.severity)
         assertEquals(SCHEMA_TYPE.concern, tupleItemType.concern)
         assertEquals(26, tupleItemType.line)
-
-        val falseItems = results.findings.single {
-            it.code == SCHEMA_ITEMS_REPRESENTATION.code &&
-            it.path == "asyncapi_validator_schema_recursive_invalid.root.components.schemas.FalseItems.items"
-        }
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.code, falseItems.code)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.severity, falseItems.severity)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.concern, falseItems.concern)
-        assertEquals(29, falseItems.line)
     }
 
     @Test
@@ -360,17 +319,6 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, unsupportedNullableReference.severity)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.concern, unsupportedNullableReference.concern)
         assertEquals(35, unsupportedNullableReference.line)
-
-        val tupleKeyword = results.findings.singleOrNull {
-            it.code == SCHEMA_ITEMS_REPRESENTATION.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.TupleItems.items"
-        }
-        assertNotNull(tupleKeyword)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.code, tupleKeyword.code)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.severity, tupleKeyword.severity)
-        assertEquals(SCHEMA_ITEMS_REPRESENTATION.concern, tupleKeyword.concern)
-        assertEquals(39, tupleKeyword.line)
     }
 
     @Test

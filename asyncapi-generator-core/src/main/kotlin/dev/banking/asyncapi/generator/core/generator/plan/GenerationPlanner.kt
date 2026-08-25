@@ -69,8 +69,6 @@ class GenerationPlanner {
                                 )
                             }
                         }
-                        is ClientGeneration.QuarkusKafka ->
-                            add(GenerationTask.QuarkusKafkaClient(configuration.requireSourceLanguage()))
                     }
                 }
 

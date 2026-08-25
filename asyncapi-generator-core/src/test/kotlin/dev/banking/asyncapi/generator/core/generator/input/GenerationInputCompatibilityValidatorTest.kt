@@ -2,17 +2,22 @@ package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
+import java.io.File
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
@@ -44,28 +49,355 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `rejects unsupported quarkus kafka generation`() {
+    fun `model artifacts reject tuple form items`() {
         val error =
-            assertFailsWith<AsyncApiGeneratorException.UnsupportedGenerationCapability> {
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(tupleItems = listOf(inline(Schema(type = "string")))),
+                    task = modelTask(),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Model generation"))
+        assertTrue(error.message!!.contains("tuple-form 'items'"))
+    }
+
+    @Test
+    fun `model artifacts reject false items`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(items = SchemaInterface.BooleanSchema(false)),
+                    task = modelTask(),
+                )
+            }
+
+        assertTrue(error.message!!.contains("'items: false'"))
+    }
+
+    @Test
+    fun `model artifacts reject an untyped enum containing non string values`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(enum = listOf("OPEN", 1)),
+                    task = modelTask(),
+                )
+            }
+
+        assertTrue(error.message!!.contains("enum without 'type'"))
+    }
+
+    @Test
+    fun `model artifacts reject a pattern that Java cannot compile`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(type = "string", pattern = "["),
+                    task = modelTask(),
+                )
+            }
+
+        assertTrue(error.message!!.contains("'pattern' that Java cannot compile"))
+    }
+
+    @Test
+    fun `avro projection rejects tuple form items`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(tupleItems = listOf(inline(Schema(type = "string")))),
+                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Avro projection"))
+        assertTrue(error.message!!.contains("tuple-form 'items'"))
+    }
+
+    @Test
+    fun `avro projection rejects false items`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(items = SchemaInterface.BooleanSchema(false)),
+                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                )
+            }
+
+        assertTrue(error.message!!.contains("'items: false'"))
+    }
+
+    @Test
+    fun `avro projection rejects an untyped enum containing non string values`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validateSchemaTask(
+                    schema = Schema(enum = listOf("OPEN", 1)),
+                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                )
+            }
+
+        assertTrue(error.message!!.contains("enum without 'type'"))
+    }
+
+    @Test
+    fun `avro projection allows a pattern that Java cannot compile`() {
+        validateSchemaTask(
+            schema = Schema(type = "string", pattern = "["),
+            task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+        )
+    }
+
+    @Test
+    fun `kafka key model artifacts validate selected key models only`() {
+        val selectedKey = Schema(type = "object")
+        val unrelatedPayload = Schema(tupleItems = listOf(inline(Schema(type = "string"))))
+
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas =
+                        linkedMapOf(
+                            "UnrelatedPayload" to unrelatedPayload,
+                            "SelectedKey" to selectedKey,
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels =
+                        listOf(
+                            AnalyzedChannel(
+                                channelName = "events",
+                                topic = "events",
+                                messages =
+                                    listOf(
+                                        AnalyzedMessage(
+                                            messageName = "Event",
+                                            payloadTypeName = "UnrelatedPayload",
+                                            schema = unrelatedPayload,
+                                            keySchema = inline(Schema(type = "object", title = "SelectedKey")),
+                                        ),
+                                    ),
+                            ),
+                        ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.KafkaKeyModelArtifacts(
+                            language = SourceLanguage.KOTLIN,
+                            packageName = "com.example.model",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `kafka key model artifacts reject an incompatible selected key model`() {
+        val selectedKey = Schema(items = SchemaInterface.BooleanSchema(false))
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validator.validate(
                     generationInput =
                         GenerationInput(
-                            schemas = emptyMap(),
+                            schemas = mapOf("SelectedKey" to selectedKey),
                             polymorphicRelationships = emptyMap(),
-                            channels = emptyList(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "events",
+                                        topic = "events",
+                                        messages =
+                                            listOf(
+                                                AnalyzedMessage(
+                                                    messageName = "Event",
+                                                    payloadTypeName = null,
+                                                    schema = null,
+                                                    keySchema = inline(Schema(type = "object", title = "SelectedKey")),
+                                                ),
+                                            ),
+                                    ),
+                                ),
                         ),
                     generationPlan =
                         GenerationPlan(
                             listOf(
-                                GenerationTask.QuarkusKafkaClient(
-                                    language = SourceLanguage.KOTLIN,
+                                GenerationTask.KafkaKeyModelArtifacts(
+                                    language = SourceLanguage.JAVA,
+                                    packageName = "com.example.model",
                                 ),
                             ),
                         ),
                 )
             }
 
-        assertTrue(error.message!!.contains("Quarkus Kafka client generation is not implemented"))
+        assertTrue(error.message!!.contains("Kafka key model generation"))
+        assertTrue(error.message!!.contains("schema 'SelectedKey'"))
+    }
+
+    @Test
+    fun `active spring kafka rejects a Java incompatible ordinary message key pattern`() {
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validator.validate(
+                    generationInput =
+                        inputWithMessage(
+                            AnalyzedMessage(
+                                messageName = "Event",
+                                payloadTypeName = "EventPayload",
+                                schema = Schema(type = "object"),
+                                keySchema = inline(Schema(type = "string", pattern = "[")),
+                            ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Spring Kafka client generation"))
+        assertTrue(error.message!!.contains("schema 'Event'"))
+        assertTrue(error.message!!.contains("'pattern' that Java cannot compile"))
+    }
+
+    @Test
+    fun `active spring kafka allows an object key with a nested Java incompatible pattern`() {
+        validator.validate(
+            generationInput =
+                inputWithMessage(
+                    AnalyzedMessage(
+                        messageName = "Event",
+                        payloadTypeName = "EventPayload",
+                        schema = Schema(type = "object"),
+                        keySchema =
+                            inline(
+                                Schema(
+                                    type = "object",
+                                    properties =
+                                        mapOf(
+                                            "value" to inline(Schema(type = "string", pattern = "[")),
+                                        ),
+                                ),
+                            ),
+                    ),
+                ),
+            generationPlan = GenerationPlan(listOf(springKafkaTask())),
+        )
+    }
+
+    @Test
+    fun `active spring kafka rejects a Java incompatible multi format message key pattern`() {
+        val schema = nativeAvroSchema()
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            schemaDeclarations = SchemaDeclarationCatalog(multiFormatSchemas = mapOf("Event" to schema)),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "events",
+                                        topic = "events",
+                                        messages = emptyList(),
+                                        multiFormatMessages =
+                                            listOf(
+                                                AnalyzedMultiFormatMessage(
+                                                    messageName = "Event",
+                                                    payloadName = "Event",
+                                                    schema = schema,
+                                                    keySchema = inline(Schema(type = "string", pattern = "[")),
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("schema 'Event'"))
+    }
+
+    @Test
+    fun `spring kafka key pattern validation does not inspect payload or header patterns`() {
+        validator.validate(
+            generationInput =
+                inputWithMessage(
+                    AnalyzedMessage(
+                        messageName = "Event",
+                        payloadTypeName = "EventPayload",
+                        schema = Schema(type = "string", pattern = "["),
+                        keySchema = inline(Schema(type = "string", pattern = "[a-z]+")),
+                        headers =
+                            AnalyzedMessageHeaders(
+                                properties = mapOf("trace" to inline(Schema(type = "string", pattern = "["))),
+                            ),
+                    ),
+                ),
+            generationPlan = GenerationPlan(listOf(springKafkaTask())),
+        )
+    }
+
+    @Test
+    fun `disabled spring kafka does not validate key patterns`() {
+        validator.validate(
+            generationInput =
+                inputWithMessage(
+                    AnalyzedMessage(
+                        messageName = "Event",
+                        payloadTypeName = "EventPayload",
+                        schema = Schema(type = "object"),
+                        keySchema = inline(Schema(type = "string", pattern = "[")),
+                    ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        springKafkaTask(
+                            generateProducers = false,
+                            generateConsumers = false,
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `document and JSON Schema artifacts allow source incompatible schemas`() {
+        val schema =
+            Schema(
+                tupleItems = listOf(inline(Schema(type = "string"))),
+                pattern = "[",
+            )
+        val input =
+            GenerationInput(
+                schemas = mapOf("Event" to schema),
+                polymorphicRelationships = emptyMap(),
+                channels = emptyList(),
+            )
+
+        validator.validate(
+            generationInput = input,
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.DocumentArtifact(
+                            file = File("asyncapi.yaml"),
+                            format = DocumentFormat.YAML,
+                        ),
+                    ),
+                ),
+        )
+        validator.validate(
+            generationInput = input,
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        GenerationTask.JsonSchemaArtifacts(packageName = "com.example.schema"),
+                    ),
+                ),
+        )
     }
 
     @Test
@@ -512,7 +844,7 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `allows native avro multi format messages for spring kafka client generation`() {
+    fun `allows native Avro declarations used by spring kafka client messages`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
             generationPlan =
@@ -529,7 +861,7 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `allows native protobuf multi format messages for spring kafka client generation`() {
+    fun `allows native Protobuf declarations used by spring kafka client messages`() {
         validator.validate(
             generationInput = generationInputWithMultiFormatMessage(nativeProtobufSchema()),
             generationPlan =
@@ -546,6 +878,184 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
+    fun `rejects unrelated native Protobuf declaration with active spring kafka generation`() {
+        val usedAvroSchema = nativeAvroSchema()
+        val unrelatedProtobufSchema = nativeProtobufSchema()
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        linkedMapOf(
+                                            "UserCreated" to usedAvroSchema,
+                                            "AuditRecorded" to unrelatedProtobufSchema,
+                                        ),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "userEvents",
+                                        topic = "users",
+                                        messages = emptyList(),
+                                        multiFormatMessages =
+                                            listOf(
+                                                AnalyzedMultiFormatMessage(
+                                                    messageName = "UserCreated",
+                                                    payloadName = "UserCreated",
+                                                    schema = usedAvroSchema,
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'AuditRecorded'"))
+        assertTrue(error.message!!.contains("application/vnd.google.protobuf;version=3"))
+    }
+
+    @Test
+    fun `rejects unrelated native Avro declaration with active spring kafka generation`() {
+        val usedProtobufSchema = nativeProtobufSchema()
+        val unrelatedAvroSchema = nativeAvroSchema()
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput =
+                        GenerationInput(
+                            schemas = emptyMap(),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas =
+                                        linkedMapOf(
+                                            "UserCreated" to usedProtobufSchema,
+                                            "AuditRecorded" to unrelatedAvroSchema,
+                                        ),
+                                ),
+                            polymorphicRelationships = emptyMap(),
+                            channels =
+                                listOf(
+                                    AnalyzedChannel(
+                                        channelName = "userEvents",
+                                        topic = "users",
+                                        messages = emptyList(),
+                                        multiFormatMessages =
+                                            listOf(
+                                                AnalyzedMultiFormatMessage(
+                                                    messageName = "UserCreated",
+                                                    payloadName = "UserCreated",
+                                                    schema = usedProtobufSchema,
+                                                ),
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    generationPlan = GenerationPlan(listOf(springKafkaTask())),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'AuditRecorded'"))
+        assertTrue(error.message!!.contains("application/vnd.apache.avro+json;version=1.9.0"))
+    }
+
+    @Test
+    fun `disabled spring kafka generation does not handle a native declaration`() {
+        val error =
+            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
+                validator.validate(
+                    generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
+                    generationPlan =
+                        GenerationPlan(
+                            listOf(
+                                springKafkaTask(
+                                    generateProducers = false,
+                                    generateConsumers = false,
+                                ),
+                            ),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Generation cannot consume payload 'UserCreated'"))
+    }
+
+    @Test
+    fun `disabled spring kafka generation does not reject Draft 07 message handled by JSON Schema task`() {
+        validator.validate(
+            generationInput =
+                generationInputWithMultiFormatMessage(
+                    MultiFormatSchema(
+                        schemaFormat = "application/schema+json;version=draft-07",
+                        schema = mapOf("type" to "object"),
+                    ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        springKafkaTask(
+                            generateProducers = false,
+                            generateConsumers = false,
+                        ),
+                        GenerationTask.JsonSchemaArtifacts(
+                            packageName = "com.example.schema",
+                        ),
+                    ),
+                ),
+        )
+    }
+
+    @Test
+    fun `native artifact task handles declaration unrelated to active spring kafka message`() {
+        val usedAvroSchema = nativeAvroSchema()
+        val unrelatedProtobufSchema = nativeProtobufSchema()
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = emptyMap(),
+                    schemaDeclarations =
+                        SchemaDeclarationCatalog(
+                            multiFormatSchemas =
+                                linkedMapOf(
+                                    "UserCreated" to usedAvroSchema,
+                                    "AuditRecorded" to unrelatedProtobufSchema,
+                                ),
+                        ),
+                    polymorphicRelationships = emptyMap(),
+                    channels =
+                        listOf(
+                            AnalyzedChannel(
+                                channelName = "userEvents",
+                                topic = "users",
+                                messages = emptyList(),
+                                multiFormatMessages =
+                                    listOf(
+                                        AnalyzedMultiFormatMessage(
+                                            messageName = "UserCreated",
+                                            payloadName = "UserCreated",
+                                            schema = usedAvroSchema,
+                                        ),
+                                    ),
+                            ),
+                        ),
+                ),
+            generationPlan =
+                GenerationPlan(
+                    listOf(
+                        springKafkaTask(),
+                        GenerationTask.NativeProtobufArtifacts(),
+                    ),
+                ),
+        )
+    }
+
+    @Test
     fun `rejects unsupported multi format messages for spring kafka client generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
@@ -556,6 +1066,7 @@ class GenerationInputCompatibilityValidatorTest {
                                 schemaFormat = "application/schema+json;version=draft-07",
                                 schema = mapOf("type" to "object"),
                             ),
+                            keySchema = inline(Schema(type = "string", pattern = "[")),
                         ),
                     generationPlan =
                         GenerationPlan(
@@ -672,9 +1183,53 @@ class GenerationInputCompatibilityValidatorTest {
             channels = emptyList(),
         )
 
-    private fun generationInputWithMultiFormatMessage(schema: MultiFormatSchema): GenerationInput =
+    private fun validateSchemaTask(
+        schema: Schema,
+        task: GenerationTask,
+    ) {
+        validator.validate(
+            generationInput =
+                GenerationInput(
+                    schemas = mapOf("Event" to schema),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
+            generationPlan = GenerationPlan(listOf(task)),
+        )
+    }
+
+    private fun modelTask(): GenerationTask.ModelArtifacts =
+        GenerationTask.ModelArtifacts(
+            language = SourceLanguage.KOTLIN,
+            packageName = "com.example.model",
+        )
+
+    private fun inputWithMessage(message: AnalyzedMessage): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
+            polymorphicRelationships = emptyMap(),
+            channels =
+                listOf(
+                    AnalyzedChannel(
+                        channelName = "events",
+                        topic = "events",
+                        messages = listOf(message),
+                    ),
+                ),
+        )
+
+    private fun inline(schema: Schema): SchemaInterface = SchemaInterface.SchemaInline(schema)
+
+    private fun generationInputWithMultiFormatMessage(
+        schema: MultiFormatSchema,
+        keySchema: SchemaInterface? = null,
+    ): GenerationInput =
+        GenerationInput(
+            schemas = emptyMap(),
+            schemaDeclarations =
+                SchemaDeclarationCatalog(
+                    multiFormatSchemas = mapOf("UserCreated" to schema),
+                ),
             polymorphicRelationships = emptyMap(),
             channels =
                 listOf(
@@ -688,10 +1243,23 @@ class GenerationInputCompatibilityValidatorTest {
                                     messageName = "UserCreated",
                                     payloadName = "UserCreated",
                                     schema = schema,
+                                    keySchema = keySchema,
                                 ),
                             ),
                     ),
                 ),
+        )
+
+    private fun springKafkaTask(
+        generateProducers: Boolean = true,
+        generateConsumers: Boolean = true,
+    ): GenerationTask.SpringKafkaClient =
+        GenerationTask.SpringKafkaClient(
+            language = SourceLanguage.KOTLIN,
+            clientPackage = "com.example.kafka",
+            modelPackage = "com.example.model",
+            generateProducers = generateProducers,
+            generateConsumers = generateConsumers,
         )
 
     private fun nativeAvroSchema(

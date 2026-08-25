@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientContractNameCollision
 
@@ -15,6 +16,12 @@ internal object SpringKafkaClientContractValidator {
         if (!task.generateProducers && !task.generateConsumers) {
             return
         }
+
+        channels
+            .firstOrNull { channel -> channel.topic == null }
+            ?.let { channel ->
+                throw SpringKafkaClientChannelWithoutAddress(channel.channelName)
+            }
 
         channels
             .firstOrNull { channel ->
