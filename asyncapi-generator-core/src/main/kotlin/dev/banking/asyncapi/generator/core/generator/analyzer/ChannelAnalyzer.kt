@@ -22,7 +22,7 @@ class ChannelAnalyzer {
 
                 AnalyzedChannel(
                     channelName = name,
-                    topic = channel.address ?: name, // Fallback if address missing
+                    topic = channel.address,
                     messages = resolvedMessages.messages,
                     multiFormatMessages = resolvedMessages.multiFormatMessages,
                 )
@@ -71,6 +71,7 @@ class ChannelAnalyzer {
                             messageId = messageId,
                         ),
                     )
+                is ResolvedMessagePayload.Boolean -> Unit
                 null ->
                     if (message.payload == null) {
                         analyzedMessages.add(

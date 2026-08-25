@@ -37,7 +37,7 @@ internal class InfoValidator(
             results.error(
                 INFO_TITLE_REQUIRED,
                 "$contextString 'title' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::title),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::title),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
@@ -49,7 +49,7 @@ internal class InfoValidator(
             results.error(
                 INFO_VERSION_REQUIRED,
                 "$contextString 'version' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::version),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::version),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
             return
@@ -62,7 +62,7 @@ internal class InfoValidator(
             results.error(
                 INFO_TERMS_OF_SERVICE_FORMAT,
                 "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::termsOfService),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::termsOfService),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }

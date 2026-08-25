@@ -20,3 +20,5 @@ assert new File(classes, "com/example/recursive/java/TreeNode.class").isFile() :
     assert bundled.text.contains("TreeNode:")
     assert !bundled.text.contains("schemas.yaml") : "Expected ${fileName} to contain no external schema reference"
 }
+
+true

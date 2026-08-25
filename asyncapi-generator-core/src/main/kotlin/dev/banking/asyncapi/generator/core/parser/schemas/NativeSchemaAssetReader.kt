@@ -24,8 +24,8 @@ internal class NativeSchemaAssetReader(
         val referenceNode = schemaNode.member("\$ref", referenceMember.value)
         val reference = referenceNode.expect<String>().takeIf { it.isNotBlank() } ?: return null
         val sourceFile =
-            asyncApiContext.findFileById(schemaNode.address.sourceId)
-                ?: asyncApiContext.getCurrentFile()
+            asyncApiContext.sourceTracking.findFileById(schemaNode.address.sourceId)
+                ?: asyncApiContext.sourceTracking.getCurrentFile()
         val file =
             pathResolver.resolve(
                 reference = reference,

@@ -5,6 +5,9 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 
+/**
+ * Resolves a JSON pointer against a parsed document tree to find the target node.
+ */
 internal object ExternalReferenceTargetResolver {
     data class Target(
         val node: ParserNode,

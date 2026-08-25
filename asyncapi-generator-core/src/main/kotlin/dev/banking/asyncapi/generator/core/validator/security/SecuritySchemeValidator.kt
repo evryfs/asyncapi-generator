@@ -74,14 +74,14 @@ internal class SecuritySchemeValidator(
             results.error(
                 SECURITY_TYPE_REQUIRED,
                 "$contextString 'type' field in SecurityScheme is required.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         } else if (type !in validTypes) {
             results.error(
                 SECURITY_TYPE_VALUE,
                 "$contextString invalid type '$type'. Expected one of: ${validTypes.joinToString(", ")}",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::type),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
@@ -92,8 +92,8 @@ internal class SecuritySchemeValidator(
             results.error(
                 SECURITY_NAME_REQUIRED,
                 "$contextString of type 'httpApiKey' requires non-empty 'name'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::name)
-                    ?: asyncApiContext.getSourceLocation(node),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(node),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
@@ -110,15 +110,15 @@ internal class SecuritySchemeValidator(
             results.error(
                 SECURITY_IN_REQUIRED,
                 "$contextString of type '${node.type}' requires a non-empty 'in' field.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::inField)
-                    ?: asyncApiContext.getSourceLocation(node),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::inField)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(node),
             )
         } else if (inField !in validInValues) {
             results.error(
                 SECURITY_IN_VALUE,
                 "$contextString invalid 'in' value '$inField' for type '${node.type}'. " +
                     "Expected one of: ${validInValues.joinToString(", ")}",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::inField),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::inField),
             )
         }
     }
@@ -128,8 +128,8 @@ internal class SecuritySchemeValidator(
             results.error(
                 SECURITY_SCHEME_REQUIRED,
                 "$contextString of type 'http' requires non-empty 'scheme'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::scheme)
-                    ?: asyncApiContext.getSourceLocation(node),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::scheme)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(node),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
             )
         }
@@ -142,8 +142,8 @@ internal class SecuritySchemeValidator(
                 results.error(
                     SECURITY_OPEN_ID_URL_REQUIRED,
                     "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::openIdConnectUrl)
-                        ?: asyncApiContext.getSourceLocation(node),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::openIdConnectUrl)
+                        ?: asyncApiContext.modelTracking.getSourceLocation(node),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                 )
             } else {
@@ -152,7 +152,7 @@ internal class SecuritySchemeValidator(
                         SECURITY_OPEN_ID_URL_FORMAT,
                         "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'. " +
                             "Got '$url'.",
-                        sourceLocation = asyncApiContext.getSourceLocation(node, node::openIdConnectUrl),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::openIdConnectUrl),
                         doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#securitySchemeObject",
                     )
                 }

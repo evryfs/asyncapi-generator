@@ -1,12 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
+import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientContractValidator
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NativeAvroModelPackageMismatch
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedGenerationCapability
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSchemaGenerationInput
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -30,32 +31,52 @@ class GenerationInputCompatibilityValidator(
             generationPlan.tasks.any { task -> task is GenerationTask.NativeProtobufArtifacts }
         val hasJsonSchema =
             generationPlan.tasks.any { task -> task is GenerationTask.JsonSchemaArtifacts }
-        val hasSpringKafka =
-            generationPlan.tasks.any { task -> task is GenerationTask.SpringKafkaClient }
+        val springKafkaHandledNativeSchemaNames =
+            collectSpringKafkaHandledNativeSchemaNames(
+                generationInput = generationInput,
+                generationPlan = generationPlan,
+            )
 
         generationPlan.tasks.forEach { task ->
             when (task) {
-                is GenerationTask.ModelArtifacts ->
+                is GenerationTask.ModelArtifacts -> {
                     rejectMultiFormatSchemas(
                         output = "Model generation",
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                     )
+                    SourceSchemaCompatibilityValidator.validate(
+                        output = "Model generation",
+                        schemas = generationInput.schemas,
+                        checkStructuralModels = true,
+                        checkJavaPatterns = true,
+                    )
+                }
                 is GenerationTask.SpringKafkaClient -> {
                     SpringKafkaClientContractValidator.validate(
                         channels = generationInput.channels,
                         task = task,
                     )
-                    rejectUnsupportedMultiFormatMessages(
-                        output = "Spring Kafka client generation",
-                        generationInput = generationInput,
-                    )
+                    if (task.generateProducers || task.generateConsumers) {
+                        rejectUnsupportedMultiFormatMessages(
+                            output = "Spring Kafka client generation",
+                            generationInput = generationInput,
+                        )
+                        validateSpringKafkaKeyPatterns(generationInput)
+                    }
                 }
-                is GenerationTask.AvroSchemaArtifacts ->
+                is GenerationTask.AvroSchemaArtifacts -> {
                     rejectUnplannedAvroProjectionFormats(
                         multiFormatSchemas = generationInput.multiFormatSchemas,
                         hasNativeAvro = hasNativeAvro,
                         hasNativeProtobuf = hasNativeProtobuf,
                     )
+                    SourceSchemaCompatibilityValidator.validate(
+                        output = "Avro projection",
+                        schemas = generationInput.schemas,
+                        checkStructuralModels = true,
+                        checkJavaPatterns = false,
+                    )
+                }
                 is GenerationTask.NativeAvroArtifacts -> {
                     if (
                         task.generateSpecificRecords ||
@@ -86,10 +107,14 @@ class GenerationInputCompatibilityValidator(
                 }
                 is GenerationTask.JsonSchemaArtifacts ->
                     requireJsonSchema(generationInput)
-                is GenerationTask.QuarkusKafkaClient ->
-                    throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
+                is GenerationTask.KafkaKeyModelArtifacts ->
+                    SourceSchemaCompatibilityValidator.validate(
+                        output = "Kafka key model generation",
+                        schemas = KafkaKeyModelSelector.select(generationInput),
+                        checkStructuralModels = true,
+                        checkJavaPatterns = true,
+                    )
                 is GenerationTask.DocumentArtifact,
-                is GenerationTask.KafkaKeyModelArtifacts,
                 -> Unit
             }
         }
@@ -99,8 +124,33 @@ class GenerationInputCompatibilityValidator(
             hasNativeAvro = hasNativeAvro,
             hasNativeProtobuf = hasNativeProtobuf,
             hasJsonSchema = hasJsonSchema,
-            hasSpringKafka = hasSpringKafka,
+            springKafkaHandledNativeSchemaNames = springKafkaHandledNativeSchemaNames,
         )
+    }
+
+    private fun validateSpringKafkaKeyPatterns(generationInput: GenerationInput) {
+        generationInput.channels.forEach { channel ->
+            channel.messages.forEach { message ->
+                message.keySchema?.let { keySchema ->
+                    val schema = KafkaKeySchemaResolver.resolve(message.messageName, keySchema).schema
+                    SourceSchemaCompatibilityValidator.validateRootJavaPattern(
+                        output = "Spring Kafka client generation",
+                        rootSchemaName = message.messageName,
+                        schema = schema,
+                    )
+                }
+            }
+            channel.multiFormatMessages.forEach { message ->
+                message.keySchema?.let { keySchema ->
+                    val schema = KafkaKeySchemaResolver.resolve(message.messageName, keySchema).schema
+                    SourceSchemaCompatibilityValidator.validateRootJavaPattern(
+                        output = "Spring Kafka client generation",
+                        rootSchemaName = message.messageName,
+                        schema = schema,
+                    )
+                }
+            }
+        }
     }
 
     private fun requireNativeSchema(
@@ -169,20 +219,21 @@ class GenerationInputCompatibilityValidator(
                 output = "JSON Schema generation",
                 payloadName = incompatibleSchema.key,
                 inputFormat = "schemaFormat '${incompatibleSchema.value.schemaFormat}'",
-                supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+                supportedInput = "AsyncAPI Schema Objects, Boolean schemas, and native JSON Schema Draft 07 schemas",
             )
         }
 
         if (
-            generationInput.declaredSchemas.isNotEmpty() ||
-            generationInput.multiFormatSchemas.isNotEmpty()
+            generationInput.schemaDeclarations.asyncApiSchemas.isNotEmpty() ||
+            generationInput.schemaDeclarations.multiFormatSchemas.isNotEmpty() ||
+            generationInput.schemaDeclarations.booleanSchemas.isNotEmpty()
         ) {
             return
         }
 
         throw MissingSchemaGenerationInput(
             output = "JSON Schema generation",
-            supportedInput = "AsyncAPI Schema Objects and native JSON Schema Draft 07 schemas",
+            supportedInput = "AsyncAPI Schema Objects, Boolean schemas, and native JSON Schema Draft 07 schemas",
         )
     }
 
@@ -242,13 +293,15 @@ class GenerationInputCompatibilityValidator(
         hasNativeAvro: Boolean,
         hasNativeProtobuf: Boolean,
         hasJsonSchema: Boolean,
-        hasSpringKafka: Boolean,
+        springKafkaHandledNativeSchemaNames: Set<String>,
     ) {
         val firstUnhandled =
-            generationInput.multiFormatSchemas.entries.firstOrNull { (_, schema) ->
+            generationInput.multiFormatSchemas.entries.firstOrNull { (schemaName, schema) ->
                 when {
-                    schema.format.isNativeAvro -> hasNativeAvro || hasSpringKafka
-                    schema.format.isNativeProtobuf -> hasNativeProtobuf || hasSpringKafka
+                    schema.format.isNativeAvro ->
+                        hasNativeAvro || schemaName in springKafkaHandledNativeSchemaNames
+                    schema.format.isNativeProtobuf ->
+                        hasNativeProtobuf || schemaName in springKafkaHandledNativeSchemaNames
                     schema.format.isJsonSchemaDraft07 -> hasJsonSchema
                     else -> false
                 }.not()
@@ -259,5 +312,24 @@ class GenerationInputCompatibilityValidator(
             payloadName = firstUnhandled.key,
             schemaFormat = firstUnhandled.value.schemaFormat,
         )
+    }
+
+    private fun collectSpringKafkaHandledNativeSchemaNames(
+        generationInput: GenerationInput,
+        generationPlan: GenerationPlan,
+    ): Set<String> {
+        val hasActiveSpringKafka =
+            generationPlan.tasks.any { task ->
+                task is GenerationTask.SpringKafkaClient &&
+                    (task.generateProducers || task.generateConsumers)
+            }
+        if (!hasActiveSpringKafka) return emptySet()
+
+        return generationInput.channels
+            .asSequence()
+            .flatMap { channel -> channel.multiFormatMessages.asSequence() }
+            .filter { message -> message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf }
+            .map { message -> message.payloadName }
+            .toSet()
     }
 }

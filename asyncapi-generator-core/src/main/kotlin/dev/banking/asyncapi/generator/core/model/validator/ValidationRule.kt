@@ -11,7 +11,7 @@ private const val ASYNCAPI_SCHEMA = "$ASYNCAPI_SPEC#schemaObject"
 private const val JSON_SCHEMA = "https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01"
 private const val KAFKA_BINDING = "https://www.asyncapi.com/docs/reference/bindings/kafka"
 private const val PROJECT_RULES =
-    "https://github.com/evryfs/asyncapi-generator/blob/main/docs/validator/rules.md"
+    "https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/validation-rules.md"
 
 /** Stable identity and ownership metadata for a validation rule. */
 enum class ValidationRule(

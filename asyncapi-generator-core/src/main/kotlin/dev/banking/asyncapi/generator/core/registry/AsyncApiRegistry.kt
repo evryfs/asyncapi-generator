@@ -14,6 +14,11 @@ import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.resolver.Resolver
 
+/**
+ * Coordinates document reading, parser-node construction, YAML/JSON serialization, and file writing.
+ *
+ * This is a legacy facade that may be renamed or decomposed in a future pass.
+ */
 internal object AsyncApiRegistry {
 
     fun read(file: File, asyncApiContext: AsyncApiContext): ParserNode =

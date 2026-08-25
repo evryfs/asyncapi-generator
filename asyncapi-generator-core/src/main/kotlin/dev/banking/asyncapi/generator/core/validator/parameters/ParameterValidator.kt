@@ -33,7 +33,7 @@ internal class ParameterValidator(
             results.error(
                 PARAMETER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
-                sourceLocation = asyncApiContext.getSourceLocation(model),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
@@ -59,7 +59,7 @@ internal class ParameterValidator(
             results.error(
                 PARAMETER_ENUM_UNIQUE,
                 "$contextString 'enum' contains duplicate values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
             )
         }
     }
@@ -71,7 +71,7 @@ internal class ParameterValidator(
             results.warn(
                 PARAMETER_DEFAULT_ENUM,
                 "$contextString 'default' value ('$default') is not included in the allowed enum values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
             )
         }
     }
@@ -83,7 +83,7 @@ internal class ParameterValidator(
             results.warn(
                 PARAMETER_EXAMPLES_ENUM,
                 "$contextString 'examples' are not part of the defined enum values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::examples),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::examples),
             )
         }
     }
@@ -95,7 +95,7 @@ internal class ParameterValidator(
                 PARAMETER_LOCATION_FORMAT,
                 $$"$$contextString invalid 'location' expression '$$location'. Must be a valid " +
                     $$"runtime expression (e.g., $message.header#/param).",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parameterObject",
             )
         }

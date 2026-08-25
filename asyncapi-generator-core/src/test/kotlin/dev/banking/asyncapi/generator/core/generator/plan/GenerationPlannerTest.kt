@@ -360,10 +360,6 @@ class GenerationPlannerTest {
                     clients =
                         listOf(
                             kafkaClientGeneration(),
-                            ClientGeneration.QuarkusKafka(
-                                packageName = "com.example.client",
-                                modelPackageName = "com.example.model",
-                            ),
                         ),
                 ),
             )
@@ -375,9 +371,6 @@ class GenerationPlannerTest {
                     packageName = "com.example.model",
                 ),
                 springKafkaClientTask(
-                    language = SourceLanguage.JAVA,
-                ),
-                GenerationTask.QuarkusKafkaClient(
                     language = SourceLanguage.JAVA,
                 ),
             ),

@@ -46,6 +46,11 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.util.Collections
 import java.util.IdentityHashMap
 
+/**
+ * Resolves references and validates they point to the correct target type.
+ *
+ * Follows reference chains, checks category consistency, and reports unresolved or mismatched targets.
+ */
 internal class ReferenceResolver(
     private val asyncApiContext: AsyncApiContext,
 ) {
@@ -61,7 +66,7 @@ internal class ReferenceResolver(
             results.error(
                 REFERENCE_CATEGORY_REQUIRED,
                 "$contextString reference '${reference.ref}' has no concrete target category.",
-                sourceLocation = asyncApiContext.getSourceLocation(reference, reference::ref),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(reference, reference::ref),
             )
             return null
         }
@@ -70,7 +75,7 @@ internal class ReferenceResolver(
                 REFERENCE_CATEGORY_REQUIRED,
                 "$contextString reference '${reference.ref}' was created for category " +
                     "'${reference.referenceCategoryKey}' instead of '$expectedCategory'.",
-                sourceLocation = asyncApiContext.getSourceLocation(reference, reference::ref),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(reference, reference::ref),
             )
             return null
         }
@@ -82,12 +87,12 @@ internal class ReferenceResolver(
             Collections.newSetFromMap(IdentityHashMap())
         var current = reference
         while (chain.add(current)) {
-            val target = asyncApiContext.findReference(current)
+            val target = asyncApiContext.modelTracking.findReference(current)
             if (target == null) {
                 results.error(
                     REFERENCE_UNRESOLVED,
                     "$contextString reference '${current.ref}' could not be resolved",
-                    sourceLocation = asyncApiContext.getSourceLocation(current, current::ref),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(current, current::ref),
                 )
                 return null
             }
@@ -102,7 +107,7 @@ internal class ReferenceResolver(
                         REFERENCE_CATEGORY_REQUIRED,
                         "$contextString reference '${target.ref}' was created for category " +
                             "'${target.referenceCategoryKey}' instead of '$expectedCategory'.",
-                        sourceLocation = asyncApiContext.getSourceLocation(target, target::ref),
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(target, target::ref),
                     )
                     return null
                 }
@@ -114,7 +119,7 @@ internal class ReferenceResolver(
                     targetCategoryRule,
                     "$contextString reference '${reference.ref}' must resolve to ${expectedCategory.displayName}; " +
                         "found ${target::class.simpleName}.",
-                    sourceLocation = asyncApiContext.getSourceLocation(reference, reference::ref),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(reference, reference::ref),
                 )
                 return null
             }

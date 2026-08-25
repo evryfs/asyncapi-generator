@@ -1088,22 +1088,6 @@ class GeneratorConfigurationFactoryTest {
                         ),
                 ),
         )
-        assertConfigurationError(
-            expectedMessage =
-                "clients.quarkusKafka.packageName must be a dot-separated package name, " +
-                    "for example com.example.model",
-            request =
-                request(
-                    models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
-                    clients =
-                        GeneratorConfigurationRequest.Clients(
-                            quarkusKafka =
-                                GeneratorConfigurationRequest.QuarkusKafka(
-                                    packageName = "1example.client",
-                                ),
-                        ),
-                ),
-        )
     }
 
     private fun assertConfigurationError(

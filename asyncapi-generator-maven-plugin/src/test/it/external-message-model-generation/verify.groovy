@@ -50,3 +50,5 @@ assert bundled.isFile() : "Expected the bundled AsyncAPI document"
 assert !bundled.text.contains("messages.yaml#") : "Expected the external message reference to be bundled"
 assert !bundled.text.contains("properties.yaml#") : "Expected the external property reference to be bundled"
 assert !bundled.text.contains("foreign-models.yaml#") : "Expected the foreign schema reference to be bundled"
+
+true

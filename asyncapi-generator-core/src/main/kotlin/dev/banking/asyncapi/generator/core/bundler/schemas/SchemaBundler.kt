@@ -54,8 +54,11 @@ internal class SchemaBundler {
         context: BundlingContext,
     ): SchemaInterface {
         val reference = schemaInterface.reference
-        val keepAsReference = isComponentSchemaRef(reference.ref)
         val referencedModel = reference.requireModel<Any>()
+        if (referencedModel is SchemaInterface.BooleanSchema) {
+            return referencedModel
+        }
+        val keepAsReference = isComponentSchemaRef(reference.ref)
 
         if (shouldPromote(reference, referencedModel, context)) {
             return bundlePromotedReference(reference, referencedModel, context)

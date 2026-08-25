@@ -84,14 +84,14 @@ internal class OperationValidator(
             results.error(
                 OPERATION_ACTION_REQUIRED,
                 "$contextString must define an 'action' field ('send' or 'receive').",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::action),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         } else if (action != "send" && action != "receive") {
             results.error(
                 OPERATION_ACTION_VALUE,
                 "$contextString has invalid action '$action'. Allowed values are 'send' or 'receive'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::action),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::action),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
@@ -114,12 +114,12 @@ internal class OperationValidator(
         if (
             channel != null &&
             rootChannels != null &&
-            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.findReference(channelRef))
+            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.modelTracking.findReference(channelRef))
         ) {
             results.error(
                 OPERATION_CHANNEL_REFERENCE_SCOPE,
                 "$contextString must reference a channel from the root 'channels' object.",
-                sourceLocation = asyncApiContext.getSourceLocation(channelRef, channelRef::ref),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
             )
             return null
         }
@@ -139,12 +139,12 @@ internal class OperationValidator(
             if (
                 target != null &&
                 channel != null &&
-                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.findReference(messageReference))
+                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.modelTracking.findReference(messageReference))
             ) {
                 results.error(
                     OPERATION_MESSAGE_REFERENCE,
                     "$messageContext must reference a message from the operation channel's 'messages' object.",
-                    sourceLocation = asyncApiContext.getSourceLocation(messageReference, messageReference::ref),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(messageReference, messageReference::ref),
                 )
             }
         }

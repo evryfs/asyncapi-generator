@@ -60,13 +60,13 @@ class ExternalReferenceLoadingTest {
         val escapedReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("EscapedReference"),
         ).reference
-        val escapedSchema = assertIs<Schema>(context.findReference(escapedReference))
+        val escapedSchema = assertIs<Schema>(context.modelTracking.findReference(escapedReference))
         assertEquals("escaped pointer target", escapedSchema.description)
 
         val rootReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("RootReference"),
         ).reference
-        val rootSchema = assertIs<Schema>(context.findReference(rootReference))
+        val rootSchema = assertIs<Schema>(context.modelTracking.findReference(rootReference))
         assertEquals("root schema target", rootSchema.description)
 
         val yamlReference = assertIs<SchemaInterface.SchemaReference>(
@@ -75,31 +75,31 @@ class ExternalReferenceLoadingTest {
         val jsonReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("JsonReference"),
         ).reference
-        val yamlSchema = assertIs<Schema>(context.findReference(yamlReference))
-        val jsonSchema = assertIs<Schema>(context.findReference(jsonReference))
+        val yamlSchema = assertIs<Schema>(context.modelTracking.findReference(yamlReference))
+        val jsonSchema = assertIs<Schema>(context.modelTracking.findReference(jsonReference))
         assertEquals(yamlSchema.description, jsonSchema.description)
 
         val encodedReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("EncodedReference"),
         ).reference
-        val encodedSchema = assertIs<Schema>(context.findReference(encodedReference))
+        val encodedSchema = assertIs<Schema>(context.modelTracking.findReference(encodedReference))
         assertEquals("percent encoded URI and pointer", encodedSchema.description)
 
         val booleanReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("BooleanRootReference"),
         ).reference
-        val booleanSchema = assertIs<SchemaInterface.BooleanSchema>(context.findReference(booleanReference))
+        val booleanSchema = assertIs<SchemaInterface.BooleanSchema>(context.modelTracking.findReference(booleanReference))
         assertEquals(true, booleanSchema.value)
 
         val arrayReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("ArrayRootReference"),
         ).reference
-        val arraySchema = assertIs<Schema>(context.findReference(arrayReference))
+        val arraySchema = assertIs<Schema>(context.modelTracking.findReference(arrayReference))
         assertEquals("array root target", arraySchema.description)
 
         fun resolvedType(referenceName: String): String? {
             val reference = assertIs<SchemaInterface.SchemaReference>(schemas.getValue(referenceName)).reference
-            return assertIs<Schema>(context.findReference(reference)).type as? String
+            return assertIs<Schema>(context.modelTracking.findReference(reference)).type as? String
         }
 
         assertEquals("integer", resolvedType("DottedExternalReference"))
@@ -123,13 +123,13 @@ class ExternalReferenceLoadingTest {
         val rightReference = assertIs<SchemaInterface.SchemaReference>(
             schemas.getValue("RightReference"),
         ).reference
-        val left = assertIs<Schema>(context.findReference(leftReference))
-        val right = assertIs<Schema>(context.findReference(rightReference))
+        val left = assertIs<Schema>(context.modelTracking.findReference(leftReference))
+        val right = assertIs<Schema>(context.modelTracking.findReference(rightReference))
         assertEquals("left shared schema", left.description)
         assertEquals("right shared schema", right.description)
 
-        val leftLocation = assertNotNull(context.getSourceLocation(left))
-        val rightLocation = assertNotNull(context.getSourceLocation(right))
+        val leftLocation = assertNotNull(context.modelTracking.getSourceLocation(left))
+        val rightLocation = assertNotNull(context.modelTracking.getSourceLocation(right))
         assertEquals("shared.yaml", leftLocation.file.name)
         assertEquals("shared.yaml", rightLocation.file.name)
         assertNotEquals(leftLocation.file.canonicalPath, rightLocation.file.canonicalPath)
@@ -158,7 +158,7 @@ class ExternalReferenceLoadingTest {
         val message = assertNotNull(
             context.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
         )
-        assertEquals("messages.yaml", context.getSourceLocation(message)?.file?.name)
+        assertEquals("messages.yaml", context.modelTracking.getSourceLocation(message)?.file?.name)
     }
 
     @Test
@@ -186,7 +186,7 @@ class ExternalReferenceLoadingTest {
         assertIs<ExternalDoc>(models["category_fragments.root.externalDoc"])
         assertIs<Tag>(models["category_fragments.root.tag"])
         val binding = assertIs<Binding>(models["category_fragments.root.binding"])
-        assertEquals("category-fragments.yaml", context.getSourceLocation(binding)?.file?.name)
+        assertEquals("category-fragments.yaml", context.modelTracking.getSourceLocation(binding)?.file?.name)
     }
 
     @Test
@@ -204,7 +204,7 @@ class ExternalReferenceLoadingTest {
         assertEquals("kafka", protocolBinding.protocol)
         assertEquals(CHANNEL, protocolBinding.location)
         assertEquals("0.4.0", protocolBinding.bindingVersion)
-        assertEquals("binding-fragments.yaml", context.getSourceLocation(protocolBinding)?.file?.name)
+        assertEquals("binding-fragments.yaml", context.modelTracking.getSourceLocation(protocolBinding)?.file?.name)
     }
 
     @Test
@@ -221,15 +221,15 @@ class ExternalReferenceLoadingTest {
         assertFalse(models.containsKey("heterogeneous_fragments.root.notASchema"))
 
         val first = assertIs<Reference>(models["heterogeneous_fragments.root.firstSchema"])
-        val second = assertIs<Reference>(context.findReference(first))
-        val third = assertIs<Schema>(context.findReference(second))
+        val second = assertIs<Reference>(context.modelTracking.findReference(first))
+        val third = assertIs<Schema>(context.modelTracking.findReference(second))
         assertEquals("End of the same-file reference chain", third.description)
-        assertEquals("heterogeneous-fragments.yaml", context.getSourceLocation(third)?.file?.name)
-        assertEquals("heterogeneous_fragments.root.thirdSchema", context.getSourceLocation(third)?.path)
+        assertEquals("heterogeneous-fragments.yaml", context.modelTracking.getSourceLocation(third)?.file?.name)
+        assertEquals("heterogeneous_fragments.root.thirdSchema", context.modelTracking.getSourceLocation(third)?.path)
 
         val cycleA = assertIs<Reference>(models["heterogeneous_fragments.root.cycleA"])
-        val cycleB = assertIs<Reference>(context.findReference(cycleA))
-        assertSame(cycleA, context.findReference(cycleB))
+        val cycleB = assertIs<Reference>(context.modelTracking.findReference(cycleA))
+        assertSame(cycleA, context.modelTracking.findReference(cycleB))
         assertSame(cycleB, cycleA.model)
         assertSame(cycleA, cycleB.model)
     }
@@ -263,9 +263,9 @@ class ExternalReferenceLoadingTest {
                 "message_root_main.root.components.messages.RootEvent"
             ],
         )
-        val message = assertIs<Message>(context.findReference(reference))
+        val message = assertIs<Message>(context.modelTracking.findReference(reference))
         assertEquals("RootEvent", message.name)
-        assertEquals("message-root.yaml", context.getSourceLocation(message)?.file?.name)
+        assertEquals("message-root.yaml", context.modelTracking.getSourceLocation(message)?.file?.name)
     }
 
     @Test
@@ -280,9 +280,9 @@ class ExternalReferenceLoadingTest {
                 "server_root_main.root.components.servers.RootServer"
             ],
         )
-        val server = assertIs<Server>(context.findReference(reference))
+        val server = assertIs<Server>(context.modelTracking.findReference(reference))
         assertEquals("events.example.com", server.host)
-        assertEquals("server-root.yaml", context.getSourceLocation(server)?.file?.name)
+        assertEquals("server-root.yaml", context.modelTracking.getSourceLocation(server)?.file?.name)
     }
 
     @Test

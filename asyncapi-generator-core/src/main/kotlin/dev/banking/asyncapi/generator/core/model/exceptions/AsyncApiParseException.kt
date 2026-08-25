@@ -34,8 +34,8 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
 
     companion object {
         private fun buildMessage(header: String, path: String, context: AsyncApiContext): String {
-            val snippet = context.pathSnippet(path)
-            val file = context.getCurrentFile()
+            val snippet = context.sourceTracking.pathSnippet(path)
+            val file = context.sourceTracking.getCurrentFile()
             val fileName = file.name ?: "(unknown)"
             return buildString {
                 appendLine(header)

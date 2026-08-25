@@ -7,28 +7,9 @@ import java.nio.ByteBuffer
 import java.nio.charset.CodingErrorAction.REPORT
 import java.nio.charset.StandardCharsets.UTF_8
 
-/** Defaults and test seams for resources consumed by one complete parser load. */
-internal data class ParserLoadResourceLimits(
-    val maxSourceDocuments: Int = 256,
-    val maxReferenceTargets: Int = 4096,
-    val maxExternalReferenceDepth: Int = 64,
-    val maxAggregateSourceBytes: Long = 64L * MEBIBYTE,
-    val maxNativeSchemaAssetBytes: Int = 20 * MEBIBYTE,
-) {
-    init {
-        require(maxSourceDocuments >= 0)
-        require(maxReferenceTargets >= 0)
-        require(maxExternalReferenceDepth >= 0)
-        require(maxAggregateSourceBytes >= 0)
-        require(maxNativeSchemaAssetBytes >= 0)
-    }
-
-    private companion object {
-        const val MEBIBYTE = 1024 * 1024
-    }
-}
-
-/** Mutable accounting owned by exactly one [AsyncApiContext]. */
+/**
+ * Mutable accounting owned by exactly one [AsyncApiContext].
+ */
 internal class ParserLoadResourceBudget(
     private val limits: ParserLoadResourceLimits,
 ) {
@@ -179,9 +160,3 @@ internal class ParserLoadResourceBudget(
         val pointer: String,
     )
 }
-
-internal class ParserLoadResourceLimitExceeded(
-    val limit: ParserLoadResourceLimit,
-    val maximum: Long,
-    val observed: Long,
-) : RuntimeException("Parser load exceeded ${limit.displayName} limit of $maximum: observed $observed")

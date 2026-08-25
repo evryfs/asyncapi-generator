@@ -59,7 +59,7 @@ internal class MessageTraitValidator(
             results.error(
                 MESSAGE_CONTENT_TYPE_FORMAT,
                 "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::contentType),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::contentType),
             )
         }
     }

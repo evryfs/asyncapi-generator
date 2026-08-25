@@ -25,14 +25,14 @@ internal class MessageExampleValidator(
         examples.forEachIndexed { index, example ->
             if (!results.visit(example)) return@forEachIndexed
 
-            val sourceFields = asyncApiContext.getFieldNames(example)
+            val sourceFields = asyncApiContext.modelTracking.getFieldNames(example)
             val containsHeaders = example.headers != null || "headers" in sourceFields
             val containsPayload = example.payload != null || "payload" in sourceFields
             if (!containsHeaders && !containsPayload) {
                 results.error(
                     MESSAGE_EXAMPLE_CONTENT_REQUIRED,
                     "$contextString Example[$index] must contain 'headers', 'payload', or both.",
-                    sourceLocation = asyncApiContext.getSourceLocation(example),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(example),
                 )
             }
 
@@ -54,8 +54,8 @@ internal class MessageExampleValidator(
         index: Int,
         results: ValidationCollector,
     ) {
-        val fieldLocation = asyncApiContext.getSourceLocation(example, field)
-            ?: asyncApiContext.getSourceLocation(example)
+        val fieldLocation = asyncApiContext.modelTracking.getSourceLocation(example, field)
+            ?: asyncApiContext.modelTracking.getSourceLocation(example)
         val basePath = fieldLocation?.path ?: field
         val evaluation = schemaInstanceValidator.validate(schema, value, basePath)
         evaluation.violations.distinct().forEach { violation ->

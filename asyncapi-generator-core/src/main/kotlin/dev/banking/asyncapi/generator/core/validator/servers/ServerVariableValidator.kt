@@ -49,7 +49,7 @@ internal class ServerVariableValidator(
             results.error(
                 SERVER_VARIABLE_ENUM_UNIQUE,
                 "$contextString 'enum' contains duplicate values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::enum),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
             )
         }
     }
@@ -61,7 +61,7 @@ internal class ServerVariableValidator(
             results.warn(
                 SERVER_VARIABLE_DEFAULT_ENUM,
                 "$contextString 'default' ('$default') is not one of the allowed enum values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::default),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
@@ -74,7 +74,7 @@ internal class ServerVariableValidator(
             results.warn(
                 SERVER_VARIABLE_EXAMPLES_ENUM,
                 "$contextString, some 'examples' values are not included in the allowed enum values.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::examples),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::examples),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
