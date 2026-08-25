@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /**
  * Renders planned native Avro artifacts before writing them.
- *
- * Expected behavior is covered by:
- * - `NativeAvroArtifactGenerationTest`
  */
 class NativeAvroArtifactGeneration {
     private val nativeAvroGenerator = NativeAvroGenerator()

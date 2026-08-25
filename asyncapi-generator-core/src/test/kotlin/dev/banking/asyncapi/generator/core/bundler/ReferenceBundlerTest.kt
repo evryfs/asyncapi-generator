@@ -2,8 +2,11 @@ package dev.banking.asyncapi.generator.core.bundler
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ReferenceBundlerTest {
 
@@ -13,7 +16,7 @@ class ReferenceBundlerTest {
 
         ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty())
 
-        assertThat(reference.inline).isTrue()
+        assertTrue(reference.inline)
     }
 
     @Test
@@ -22,7 +25,7 @@ class ReferenceBundlerTest {
 
         ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty().enter(reference))
 
-        assertThat(reference.inline).isFalse()
+        assertFalse(reference.inline)
     }
 
     @Test
@@ -33,13 +36,15 @@ class ReferenceBundlerTest {
         )
 
         ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty()) { server, context ->
-            assertThat(context.hasVisited(reference)).isTrue()
+            assertTrue(context.hasVisited(reference))
             server.copy(description = "Bundled server")
         }
 
-        assertThat(reference.inline).isTrue()
-        assertThat(reference.model)
-            .isEqualTo(Server(host = "kafka.example.com", protocol = "kafka", description = "Bundled server"))
+        assertTrue(reference.inline)
+        assertEquals(
+            Server(host = "kafka.example.com", protocol = "kafka", description = "Bundled server"),
+            reference.model,
+        )
     }
 
     @Test
@@ -54,7 +59,7 @@ class ReferenceBundlerTest {
             server.copy(description = "Should not be applied")
         }
 
-        assertThat(reference.inline).isFalse()
-        assertThat(reference.model).isSameAs(model)
+        assertFalse(reference.inline)
+        assertSame(model, reference.model)
     }
 }

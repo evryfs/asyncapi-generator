@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufGene
 
 /**
  * Renders planned native Protobuf artifacts before writing them.
- *
- * Expected behavior is covered by:
- * - `NativeProtobufArtifactGenerationTest`
  */
 class NativeProtobufArtifactGeneration {
     private val nativeProtobufGenerator = NativeProtobufGenerator()

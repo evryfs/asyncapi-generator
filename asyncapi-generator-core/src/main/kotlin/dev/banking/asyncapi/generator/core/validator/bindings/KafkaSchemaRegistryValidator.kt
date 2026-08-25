@@ -92,8 +92,8 @@ internal class KafkaSchemaRegistryValidator(
                 KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
                 "$contextString Kafka binding '$field' requires 'schemaRegistryUrl' on every applicable " +
                     "Kafka server; missing on ${missingRegistry.joinToString()}.",
-                sourceLocation = asyncApiContext.getSourceLocation(binding, field)
-                    ?: asyncApiContext.getSourceLocation(binding),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(binding, field)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(binding),
             )
         }
     }
@@ -164,7 +164,7 @@ internal class KafkaSchemaRegistryValidator(
         val visited = Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
         var target: Any? = reference
         while (target is Reference && visited.add(target)) {
-            target = target.model ?: asyncApiContext.findReference(target)
+            target = target.model ?: asyncApiContext.modelTracking.findReference(target)
         }
         return target?.takeUnless { it is Reference }
     }

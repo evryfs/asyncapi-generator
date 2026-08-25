@@ -8,8 +8,6 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
  *
  * The Message Object `name` takes precedence when present. The message map key
  * is the stable fallback. Human-readable titles do not affect generated names.
- *
- * Expected behavior is covered by `MessageNameResolverTest`.
  */
 object MessageNameResolver {
     fun resolve(

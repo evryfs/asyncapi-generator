@@ -57,6 +57,11 @@ import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
+/**
+ * Parses external document fragments and defers their validation until all fragments are loaded.
+ *
+ * @param context shared parser context for model registration and validation
+ */
 internal class ExternalFragmentProcessor(
     private val context: AsyncApiContext,
 ) {
@@ -276,7 +281,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseBinding(targetNode: ParserNode, reference: Reference): () -> Unit {
-        val origin = context.getBindingReferenceOrigin(reference)
+        val origin = context.bindingRegistry.getOrigin(reference)
         val parsed: BindingInterface = if (origin?.protocol != null) {
             BindingParser(context).parseProtocol(targetNode, origin.location, origin.protocol)
         } else {
@@ -300,6 +305,6 @@ internal class ExternalFragmentProcessor(
         ReferenceTargetTraversal(context).drain(results)
         val report = results.report()
         ValidationReporter(context).throwErrors(report)
-        context.collectExternalValidationWarnings(report.warnings)
+        context.warningCollector.collect(report.warnings)
     }
 }

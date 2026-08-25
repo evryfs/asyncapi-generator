@@ -5,8 +5,9 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class InfoBundlerTest {
 
@@ -25,10 +26,9 @@ class InfoBundlerTest {
 
         val bundled = bundler.bundle(info, BundlingContext.empty())
 
-        assertThat(bundled.tags).containsExactly(TagInterface.TagReference(tagReference))
-        assertThat(bundled.externalDocs).isEqualTo(ExternalDocInterface.ExternalDocReference(externalDocReference))
-        assertThat(tagReference.inline).isTrue()
-        assertThat(externalDocReference.inline).isTrue()
+        assertEquals(listOf(TagInterface.TagReference(tagReference)), bundled.tags)
+        assertEquals(ExternalDocInterface.ExternalDocReference(externalDocReference), bundled.externalDocs)
+        assertTrue(tagReference.inline)
+        assertTrue(externalDocReference.inline)
     }
-
 }

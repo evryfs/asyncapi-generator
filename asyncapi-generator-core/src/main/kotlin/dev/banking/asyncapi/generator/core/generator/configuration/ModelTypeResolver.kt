@@ -5,9 +5,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 
 /**
  * Resolves model defaults and validates model compatibility for a generator.
- *
- * Expected behavior is covered by:
- * - `ModelTypeResolverTest`
  */
 object ModelTypeResolver {
     fun resolve(

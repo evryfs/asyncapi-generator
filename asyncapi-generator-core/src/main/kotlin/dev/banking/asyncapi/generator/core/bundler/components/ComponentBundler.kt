@@ -24,9 +24,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Bundles component objects and references.
- *
- * Expected behavior is covered by:
- * - `ComponentBundlerTest`
  */
 internal class ComponentBundler {
 

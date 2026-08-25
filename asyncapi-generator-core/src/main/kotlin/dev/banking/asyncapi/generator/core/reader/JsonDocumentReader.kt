@@ -28,6 +28,8 @@ import dev.banking.asyncapi.generator.core.document.appendDocumentMember
  *
  * JSON input must produce the same document tree shape as equivalent YAML
  * input so later stages remain format-independent.
+ *
+ * @param limits resource limits enforced during parsing
  */
 internal class JsonDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,

@@ -278,11 +278,11 @@ internal class KafkaBindingValidator(
     }
 
     private fun location(binding: ProtocolBinding, field: String) =
-        asyncApiContext.getSourceLocation(binding, field)
-            ?: asyncApiContext.getSourceLocation(binding)
+        asyncApiContext.modelTracking.getSourceLocation(binding, field)
+            ?: asyncApiContext.modelTracking.getSourceLocation(binding)
 
     private fun location(sourceModel: Any, binding: ProtocolBinding, field: String) =
-        asyncApiContext.getSourceLocation(sourceModel, field)
+        asyncApiContext.modelTracking.getSourceLocation(sourceModel, field)
             ?: location(binding, "topicConfiguration")
 
     private fun isInteger(value: Any?): Boolean =

@@ -26,7 +26,7 @@ class AsyncApiDocumentLoader {
         val validationResults = AsyncApiValidator(context).validate(document)
 
         ValidationReporter(context).throwErrors(validationResults)
-        val warnings = context.allValidationWarnings(validationResults.warnings)
+        val warnings = context.warningCollector.mergeWith(validationResults.warnings)
         val formattedWarnings =
             if (warnings.isEmpty()) {
                 ""
@@ -41,7 +41,7 @@ class AsyncApiDocumentLoader {
         return AsyncApiDocumentLoadResult(
             document = document,
             warnings = warnings,
-            sourceFiles = context.sourceFiles(),
+            sourceFiles = context.resourceBudget.sourceFiles(),
             formattedWarnings = formattedWarnings,
         )
     }

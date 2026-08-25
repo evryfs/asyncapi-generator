@@ -37,7 +37,7 @@ internal class OperationReplyAddressValidator(
             results.error(
                 OPERATION_REPLY_ADDRESS_REQUIRED,
                 "$contextString 'location' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationReplyAddressObject",
             )
             return
@@ -46,7 +46,7 @@ internal class OperationReplyAddressValidator(
             results.error(
                 OPERATION_REPLY_ADDRESS_FORMAT,
                 "$contextString 'location' ('$location') must be a valid runtime expression.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::location),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
             )
         }
     }

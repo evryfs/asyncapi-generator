@@ -6,8 +6,10 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class ChannelBundlerTest {
 
@@ -25,10 +27,9 @@ class ChannelBundlerTest {
 
         val bundled = bundler.bundle(channelInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(channelInterface)
-        assertThat(channelReference.inline).isTrue()
-        assertThat(channelReference.model).isInstanceOf(Channel::class.java)
-        assertThat(messageReference.inline).isTrue()
+        assertSame(channelInterface, bundled)
+        assertTrue(channelReference.inline)
+        assertIs<Channel>(channelReference.model)
+        assertTrue(messageReference.inline)
     }
-
 }

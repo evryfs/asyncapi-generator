@@ -15,6 +15,10 @@ internal class SpringKafkaChannelContractFactory(
     private val payloadFactory = KafkaPayloadFactory(modelPackage, nativeKafkaPayloadResolver)
 
     fun create(channel: AnalyzedChannel): SpringKafkaChannelContract {
+        val topic =
+            checkNotNull(channel.topic) {
+                "Spring Kafka channel '${channel.channelName}' must have an address after compatibility validation."
+            }
         val messages =
             payloadFactory.create(channel).map { payload ->
                 SpringKafkaMessageContract(
@@ -37,11 +41,11 @@ internal class SpringKafkaChannelContractFactory(
 
         return SpringKafkaChannelContract(
             baseName = MapperUtil.toPascalCase(channel.channelName),
-            topic = channel.topic,
+            topic = topic,
             topicAddress =
                 KafkaTopicAddress.from(
                     channelName = channel.channelName,
-                    value = channel.topic,
+                    value = topic,
                     topicParameterProperties = topicParameterProperties,
                 ),
             messages = messages,

@@ -9,9 +9,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Resolves individual client contract parameters from AsyncAPI message headers.
- *
- * Expected behavior is covered by:
- * - `ChannelAnalyzerTest`
  */
 object MessageHeaderAnalyzer {
     fun analyze(

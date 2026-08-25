@@ -12,9 +12,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * passing bare sets through every bundler. This makes circular-reference
  * handling explicit while object-specific bundlers still control their own
  * traversal rules.
- *
- * Expected behavior is covered by:
- * - `BundlingContextTest`
  */
 internal class BundlingContext private constructor(
     private val visitedReferences: Set<ReferenceIdentity>,

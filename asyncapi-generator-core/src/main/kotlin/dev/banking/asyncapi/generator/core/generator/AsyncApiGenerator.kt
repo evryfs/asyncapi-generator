@@ -16,13 +16,10 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedGenerationCapability
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NoArtifactsGenerated
 
 /**
  * Coordinates generator input preparation, planning, rendering, and artifact writing.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorOutputContractTest`
  */
 class AsyncApiGenerator {
     private val generationInputFactory = GenerationInputFactory()
@@ -40,12 +37,22 @@ class AsyncApiGenerator {
         asyncApiDocument: AsyncApiDocument,
         generatorConfiguration: GeneratorConfiguration,
     ) {
-        val generationInput = generationInputFactory.create(asyncApiDocument)
         val generationPlan = generationPlanner.plan(generatorConfiguration)
-        generationInputCompatibilityValidator.validate(
-            generationInput = generationInput,
-            generationPlan = generationPlan,
-        )
+        val documentTasks = generationPlan.tasks.filterIsInstance<GenerationTask.DocumentArtifact>()
+        val result =
+            if (documentTasks.size == generationPlan.tasks.size) {
+                renderDocumentArtifacts(documentTasks, asyncApiDocument)
+            } else {
+                val generationInput = generationInputFactory.create(asyncApiDocument)
+                generationInputCompatibilityValidator.validate(
+                    generationInput = generationInput,
+                    generationPlan = generationPlan,
+                )
+                renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
+            }
+        if (result.isEmpty()) {
+            throw NoArtifactsGenerated()
+        }
         val artifactWriter =
             FileSystemGeneratedArtifactWriter(
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
@@ -53,9 +60,20 @@ class AsyncApiGenerator {
                 javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
             )
 
-        val result = renderArtifacts(generationPlan.tasks, generationInput, asyncApiDocument)
         artifactWriter.write(result)
     }
+
+    private fun renderDocumentArtifacts(
+        tasks: List<GenerationTask.DocumentArtifact>,
+        asyncApiDocument: AsyncApiDocument,
+    ): GenerationResult =
+        tasks.fold(GenerationResult.Empty) { result, task ->
+            result +
+                documentArtifactGeneration.render(
+                    task = task,
+                    asyncApiDocument = asyncApiDocument,
+                )
+        }
 
     private fun renderArtifacts(
         tasks: List<GenerationTask>,
@@ -92,8 +110,6 @@ class AsyncApiGenerator {
                     task = task,
                     generationInput = generationInput,
                 )
-            is GenerationTask.QuarkusKafkaClient ->
-                throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
             is GenerationTask.NativeAvroArtifacts ->
                 nativeAvroArtifactGeneration.render(
                     task = task,

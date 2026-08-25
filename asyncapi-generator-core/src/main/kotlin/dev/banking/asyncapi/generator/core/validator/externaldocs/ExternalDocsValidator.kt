@@ -33,7 +33,7 @@ internal class ExternalDocsValidator(
             results.error(
                 EXTERNAL_DOC_URL_REQUIRED,
                 "$contextString 'url' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
             )
         } else {
@@ -41,7 +41,7 @@ internal class ExternalDocsValidator(
                 results.error(
                     EXTERNAL_DOC_URL_FORMAT,
                     "ExternalDoc '${contextString}' 'url' must be a valid absolute URL.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::url),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
                 )
             }

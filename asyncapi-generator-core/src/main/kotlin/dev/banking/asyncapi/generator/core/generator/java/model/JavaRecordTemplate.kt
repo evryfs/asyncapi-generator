@@ -2,10 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.java.model
 
 /**
  * Template context for Java record source generation.
- *
- * Expected behavior is covered by:
- * - `JavaModelArtifactGeneratorTest`
- * - `JavaModelApprovalTest`
  */
 data class JavaRecordTemplate(
     val packageName: String,

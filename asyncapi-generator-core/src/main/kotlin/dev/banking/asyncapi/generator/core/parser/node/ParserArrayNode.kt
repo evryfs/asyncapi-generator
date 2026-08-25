@@ -7,6 +7,9 @@ import dev.banking.asyncapi.generator.core.document.DocumentArray
  *
  * This view owns indexed navigation after the source node has been checked by
  * [ParserNode.expectArray].
+ *
+ * @param parserNode the source node this view wraps
+ * @param documentArray the underlying array value
  */
 internal class ParserArrayNode(
     private val parserNode: ParserNode,

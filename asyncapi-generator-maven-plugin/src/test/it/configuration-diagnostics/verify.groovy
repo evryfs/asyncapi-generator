@@ -7,3 +7,5 @@ assert buildLog.text.contains(
 ) : "Expected the generator configuration diagnostic before input-file validation"
 assert !buildLog.text.contains("Input specification not found:") :
     "Configuration should be validated before the AsyncAPI input is read"
+
+true

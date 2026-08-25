@@ -16,6 +16,7 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  */
 internal object ParserNodeFactory {
 
+    /** Creates the root [ParserNode] from a reader-produced [InputDocument]. */
     fun root(
         document: InputDocument,
         context: AsyncApiContext,
@@ -48,7 +49,7 @@ internal object ParserNodeFactory {
         location: SourceLocation,
         context: AsyncApiContext,
     ) {
-        context.registerSourceLocation(address, location)
+        context.sourceTracking.registerLocation(address, location)
 
         when (node) {
             is DocumentObject -> node.members.forEach { (name, member) ->

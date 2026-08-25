@@ -9,3 +9,5 @@ def classpathSchema = new File(
 assert schemaDir.exists() : "Expected resource output directory to exist"
 assert generatedSchema.isFile() : "Expected an Avro schema in the configured output directory"
 assert classpathSchema.isFile() : "Expected the generated Avro schema on the runtime classpath"
+
+true

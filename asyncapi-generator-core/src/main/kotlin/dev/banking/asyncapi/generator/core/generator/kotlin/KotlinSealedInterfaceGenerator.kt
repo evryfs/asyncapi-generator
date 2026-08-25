@@ -9,10 +9,6 @@ import java.io.StringWriter
 
 /**
  * Renders Kotlin sealed interface model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `KotlinModelArtifactGeneratorTest`
- * - `KotlinModelApprovalTest`
  */
 class KotlinSealedInterfaceGenerator {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")

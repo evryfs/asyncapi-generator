@@ -73,7 +73,7 @@ class ModelRepositoryTest {
 
         fun resolvedSchema(referenceName: String): Schema {
             val reference = assertIs<SchemaInterface.SchemaReference>(schemas.getValue(referenceName)).reference
-            return assertIs<Schema>(context.findReference(reference))
+            return assertIs<Schema>(context.modelTracking.findReference(reference))
         }
 
         val dotted = resolvedSchema("DottedReference")
@@ -86,11 +86,11 @@ class ModelRepositoryTest {
         assertEquals("string", resolvedSchema("NumericIndexReference").type)
         assertEquals(
             "identity.root.components.schemas[\"A.properties.x\"]",
-            context.getSourceLocation(dotted)?.path,
+            context.modelTracking.getSourceLocation(dotted)?.path,
         )
         assertEquals(
             "identity.root.components.schemas.A.properties.x",
-            context.getSourceLocation(nested)?.path,
+            context.modelTracking.getSourceLocation(nested)?.path,
         )
 
         val modelsByPath = context.modelRepository.getModelsByPath()

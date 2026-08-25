@@ -76,7 +76,7 @@ internal class OperationReplyValidator(
                 results.error(
                     OPERATION_REPLY_CHANNEL_REQUIRED,
                     "$contextString must define a 'channel' when it defines reply messages.",
-                    sourceLocation = asyncApiContext.getSourceLocation(node, node::messages),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::messages),
                 )
             }
             return null
@@ -86,12 +86,12 @@ internal class OperationReplyValidator(
         if (
             channel != null &&
             rootChannels != null &&
-            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.findReference(channelRef))
+            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.modelTracking.findReference(channelRef))
         ) {
             results.error(
                 OPERATION_REPLY_CHANNEL_REFERENCE,
                 "$contextString must reference a channel from the root 'channels' object.",
-                sourceLocation = asyncApiContext.getSourceLocation(channelRef, channelRef::ref),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
             )
             return null
         }
@@ -108,7 +108,7 @@ internal class OperationReplyValidator(
             results.error(
                 OPERATION_REPLY_CHANNEL_ADDRESS,
                 "$contextString channel must have an unknown address when the reply defines 'address'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::channel),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::channel),
             )
         }
     }
@@ -126,12 +126,12 @@ internal class OperationReplyValidator(
             if (
                 target != null &&
                 channel != null &&
-                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.findReference(messageReference))
+                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.modelTracking.findReference(messageReference))
             ) {
                 results.error(
                     OPERATION_REPLY_MESSAGE_REFERENCE,
                     "$contextString must reference a message from the reply channel's 'messages' object.",
-                    sourceLocation = asyncApiContext.getSourceLocation(messageReference, messageReference::ref),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(messageReference, messageReference::ref),
                 )
             }
         }

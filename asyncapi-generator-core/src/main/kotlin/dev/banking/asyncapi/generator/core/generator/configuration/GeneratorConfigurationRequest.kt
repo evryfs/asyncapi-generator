@@ -8,10 +8,6 @@ import java.io.File
  *
  * CLI, Maven, and Gradle map their public configuration surfaces into this
  * request before core generator configuration is assembled.
- *
- * Expected behavior is covered by:
- * - `GeneratorConfigurationFactoryTest`
- * - `GeneratorConfigurationRequestTest`
  */
 data class GeneratorConfigurationRequest(
     val generatorName: GeneratorName,
@@ -48,7 +44,6 @@ data class GeneratorConfigurationRequest(
 
     data class Clients(
         val kafka: Kafka? = null,
-        val quarkusKafka: QuarkusKafka? = null,
     )
 
     data class Kafka(
@@ -72,11 +67,6 @@ data class GeneratorConfigurationRequest(
 
     data class KafkaConsumer(
         val enabled: Boolean = true,
-    )
-
-    data class QuarkusKafka(
-        val packageName: String? = null,
-        val modelPackageName: String? = null,
     )
 
     companion object {
@@ -260,21 +250,6 @@ data class GeneratorConfigurationRequest(
                     )
             }
         }
-
-        fun quarkusKafka(
-            enabled: Boolean? = null,
-            packageName: String? = null,
-            modelPackageName: String? = null,
-        ): QuarkusKafka? =
-            when {
-                enabled == false -> null
-                enabled == true || packageName != null || modelPackageName != null ->
-                    QuarkusKafka(
-                        packageName = packageName,
-                        modelPackageName = modelPackageName,
-                    )
-                else -> null
-            }
 
         private fun requiredClientPackage(
             value: String?,

@@ -11,9 +11,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 
 /**
  * Bundles operation trait objects and references.
- *
- * Expected behavior is covered by:
- * - `OperationTraitBundlerTest`
  */
 internal class OperationTraitBundler {
 

@@ -14,7 +14,6 @@ internal enum class DocumentFormat(
     JSON(setOf("json"));
 
     companion object {
-        /** Returns the format identified by [file]'s extension, if supported. */
         fun fromFile(file: File): DocumentFormat? {
             val extension = file.extension.lowercase()
             return entries.firstOrNull { extension in it.extensions }

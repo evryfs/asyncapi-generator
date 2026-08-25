@@ -52,6 +52,26 @@ class AsyncApiDocumentLoaderTest {
     }
 
     @Test
+    fun `loads valid source incompatible Draft 7 schema constructs`() {
+        val result = loader.load(TestResources.file("generator/source-incompatible-schema-features.yaml"))
+        val components =
+            (result.document.components as ComponentInterface.ComponentInline).component
+        val schemas = requireNotNull(components.schemas)
+        val tupleItems = (schemas.getValue("TupleItems") as SchemaInterface.SchemaInline).schema
+        val falseItems = (schemas.getValue("FalseItems") as SchemaInterface.SchemaInline).schema
+        val untypedEnum = (schemas.getValue("UntypedEnum") as SchemaInterface.SchemaInline).schema
+        val ecmaPattern = (schemas.getValue("EcmaPattern") as SchemaInterface.SchemaInline).schema
+
+        assertEquals(2, tupleItems.tupleItems?.size)
+        assertEquals(null, tupleItems.items)
+        assertEquals(false, (falseItems.items as SchemaInterface.BooleanSchema).value)
+        assertEquals(listOf("open", 2, true, null), untypedEnum.enum)
+        assertEquals(null, untypedEnum.type)
+        assertEquals("(?<group_name>a)", ecmaPattern.pattern)
+        assertEquals(emptyList(), result.warnings)
+    }
+
+    @Test
     fun `returns every canonical document and native schema source once`() {
         val result = loader.load(
             TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml"),

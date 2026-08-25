@@ -10,10 +10,6 @@ import kotlin.math.min
 
 /**
  * Stores input sources and source locations using parser-stage paths.
- *
- * Expected behavior is covered by:
- * - `ParserNodeFactoryTest`
- * - `AsyncApiRegistryTest`
  */
 internal class SourceRepository {
     data class Source(

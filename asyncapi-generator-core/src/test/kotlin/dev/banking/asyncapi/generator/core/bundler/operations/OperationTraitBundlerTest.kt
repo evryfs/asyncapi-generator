@@ -8,8 +8,11 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class OperationTraitBundlerTest {
 
@@ -29,11 +32,11 @@ class OperationTraitBundlerTest {
 
         val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(traitInterface)
-        assertThat(traitReference.inline).isTrue()
-        assertThat(traitReference.model).isInstanceOf(OperationTrait::class.java)
-        assertThat((traitReference.model as OperationTrait).bindings).containsKey("kafka")
-        assertThat(bindingReference.inline).isTrue()
+        assertSame(traitInterface, bundled)
+        assertTrue(traitReference.inline)
+        assertIs<OperationTrait>(traitReference.model)
+        assertTrue((traitReference.model as OperationTrait).bindings!!.containsKey("kafka"))
+        assertTrue(bindingReference.inline)
     }
 
     @Test
@@ -50,10 +53,9 @@ class OperationTraitBundlerTest {
 
         val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
 
-        assertThat(bundled).isInstanceOf(OperationTraitInterface.OperationTraitInline::class.java)
+        assertIs<OperationTraitInterface.OperationTraitInline>(bundled)
         val bundledTrait = (bundled as OperationTraitInterface.OperationTraitInline).operationTrait
-        assertThat(bundledTrait.security).hasSize(1)
-        assertThat(securityReference.inline).isTrue()
+        assertEquals(1, bundledTrait.security!!.size)
+        assertTrue(securityReference.inline)
     }
-
 }

@@ -5,8 +5,10 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 class OperationReplyBundlerTest {
 
@@ -27,12 +29,11 @@ class OperationReplyBundlerTest {
 
         val bundled = bundler.bundle(replyInterface, BundlingContext.empty())
 
-        assertThat(bundled).isSameAs(replyInterface)
-        assertThat(replyReference.inline).isTrue()
-        assertThat(replyReference.model).isInstanceOf(OperationReply::class.java)
-        assertThat(addressReference.inline).isTrue()
-        assertThat(channelReference.inline).isTrue()
-        assertThat(messageReference.inline).isTrue()
+        assertSame(replyInterface, bundled)
+        assertTrue(replyReference.inline)
+        assertIs<OperationReply>(replyReference.model)
+        assertTrue(addressReference.inline)
+        assertTrue(channelReference.inline)
+        assertTrue(messageReference.inline)
     }
-
 }

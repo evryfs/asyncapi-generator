@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
  *
  * Entry points such as CLI, Maven, and Gradle should translate their public
  * configuration shape into this model before invoking core generator behavior.
- *
- * Expected behavior is covered by:
- * - `GenerationPlannerTest`
  */
 data class GeneratorConfiguration(
     val profile: GeneratorProfile,

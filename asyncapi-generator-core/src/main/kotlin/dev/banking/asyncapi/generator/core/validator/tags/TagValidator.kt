@@ -36,7 +36,7 @@ internal class TagValidator(
             results.error(
                 TAG_NAME_REQUIRED,
                 "$contextString 'name' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::name),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name),
                 doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#tagObject",
             )
         }

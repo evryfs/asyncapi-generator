@@ -258,19 +258,19 @@ class SchemaParserTest {
         val level2 = assertIs<Schema>(models["level2.root.components.schemas.Level2Object"])
 
         assertEquals("I am level 2 deep", level2.description)
-        val mainLocation = assertNotNull(context.getSourceLocation(main))
+        val mainLocation = assertNotNull(context.modelTracking.getSourceLocation(main))
         assertEquals("main.yaml", mainLocation.file.name)
         assertEquals("main.root.components.schemas.MainObject", mainLocation.path)
         assertEquals(7, mainLocation.line)
-        val level2Location = assertNotNull(context.getSourceLocation(level2))
+        val level2Location = assertNotNull(context.modelTracking.getSourceLocation(level2))
         assertEquals("level2.yaml", level2Location.file.name)
         assertEquals(7, level2Location.line)
-        val descriptionLocation = assertNotNull(context.getSourceLocation(level2, level2::description))
+        val descriptionLocation = assertNotNull(context.modelTracking.getSourceLocation(level2, level2::description))
         assertEquals("level2.root.components.schemas.Level2Object.description", descriptionLocation.path)
         assertEquals(9, descriptionLocation.line)
-        assertEquals(9, context.getLine(level2, level2::description))
-        assertTrue(context.pathSnippet(mainLocation.path).contains("main.yaml"))
-        assertTrue(context.pathSnippet(descriptionLocation.path).contains("level2.yaml"))
+        assertEquals(9, context.modelTracking.getLine(level2, level2::description))
+        assertTrue(context.sourceTracking.pathSnippet(mainLocation.path).contains("main.yaml"))
+        assertTrue(context.sourceTracking.pathSnippet(descriptionLocation.path).contains("level2.yaml"))
     }
 
     @Test
@@ -419,12 +419,37 @@ class SchemaParserTest {
         assertEquals("number", assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
         assertEquals(
             listOf(mapOf("type" to "string"), mapOf("type" to "number")),
-            context.getFieldValue(schema, "items"),
+            context.modelTracking.getFieldValue(schema, "items"),
         )
         assertEquals(
             "asyncapi_parser_schema_negative_test.root.components.schemas.TupleItemsSchema.items",
-            context.getSourceLocation(schema, "items")?.path,
+            context.modelTracking.getSourceLocation(schema, "items")?.path,
         )
+    }
+
+    @Test
+    fun `rejects scalar items with a source-aware type diagnostic`() {
+        val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
+        val document = DocumentReaderRegistry.read(file)
+        val schemaNode = ParserNodeFactory.root(document, context)
+            .expectObject().required("components")
+            .expectObject().required("schemas")
+            .expectObject().required("InvalidItemsScalar")
+
+        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+            parser.parseElement(schemaNode)
+        }
+        val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
+
+        assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
+        assertEquals("Map<String, Any?>", diagnostic.expectedType)
+        assertEquals(ParserValueType.NUMBER, diagnostic.actualType)
+        assertEquals(42, diagnostic.actualValue)
+        assertEquals(
+            "asyncapi_parser_schema_negative_test.root.components.schemas.InvalidItemsScalar.items",
+            diagnostic.path,
+        )
+        assertEquals("root.components.schemas.InvalidItemsScalar.items", diagnostic.sourceLocation.path)
     }
 
     @Test

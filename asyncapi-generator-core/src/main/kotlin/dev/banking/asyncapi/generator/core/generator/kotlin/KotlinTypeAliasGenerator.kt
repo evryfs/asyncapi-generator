@@ -9,10 +9,6 @@ import java.io.StringWriter
 
 /**
  * Renders Kotlin type alias model items into source artifacts.
- *
- * Expected behavior is covered by:
- * - `KotlinModelArtifactGeneratorTest`
- * - `KotlinModelApprovalTest`
  */
 class KotlinTypeAliasGenerator {
     private val mustacheFactory = DefaultMustacheFactory("kotlin")

@@ -17,9 +17,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
 /**
  * Validates a parsed [AsyncApiDocument] and returns validation results.
- *
- * Expected behavior is covered by:
- * - `AsyncApiValidatorTest`
  */
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
@@ -70,13 +67,13 @@ internal class AsyncApiValidator(
             results.error(
                 DOCUMENT_ID_FORMAT,
                 "The 'id' field must conform to the URI format (RFC3986). Got '$id'.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::id),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::id),
             )
         } else if (!uri.scheme.equals("urn", ignoreCase = true)) {
             results.warn(
                 DOCUMENT_ID_URN_RECOMMENDED,
                 "It is RECOMMENDED to use a URN for the 'id' field to ensure global uniqueness.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::id),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::id),
             )
         }
     }
@@ -87,7 +84,7 @@ internal class AsyncApiValidator(
             results.error(
                 DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
                 "Invalid 'defaultContentType' format '$contentType'. Expected a MIME type (e.g., 'application/json').",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::defaultContentType),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::defaultContentType),
             )
         }
     }

@@ -8,9 +8,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
  *
  * The original [schemaFormat] string is retained for serialization and bundling,
  * while [format] gives later stages a typed way to distinguish native formats.
- *
- * Expected behavior is covered by:
- * - `SchemaParserMultiFormatTest`
  */
 data class MultiFormatSchema(
     val schemaFormat: String,

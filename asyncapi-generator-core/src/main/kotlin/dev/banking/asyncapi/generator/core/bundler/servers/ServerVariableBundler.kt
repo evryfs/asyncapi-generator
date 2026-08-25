@@ -6,9 +6,6 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 
 /**
  * Bundles server variable objects and references.
- *
- * Expected behavior is covered by:
- * - `ServerVariableBundlerTest`
  */
 internal class ServerVariableBundler {
     fun bundleMap(

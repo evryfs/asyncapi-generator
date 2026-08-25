@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Selects generated object-key models and their schema dependencies.
- *
- * Expected behavior is covered by:
- * - `KafkaKeyModelSelectorTest`
  */
 internal object KafkaKeyModelSelector {
     fun select(input: GenerationInput): Map<String, Schema> {

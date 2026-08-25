@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Client technology selected by user-facing generator configuration.
- *
- * Expected behavior is covered by:
- * - `ClientTypeTest`
  */
 enum class ClientType(
     val configurationValue: String,
@@ -19,10 +16,7 @@ enum class ClientType(
             value: String?,
             path: String,
         ): ClientType {
-            if (value == null) {
-                throw IllegalArgumentException("$path is required")
-            }
-
+            requireNotNull(value) { "$path is required" }
             return entries.firstOrNull { it.configurationValue == value }
                 ?: throw IllegalArgumentException(
                     "Invalid $path '$value'. Supported values: ${supportedConfigurationValues.joinToString(", ")}",

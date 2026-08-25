@@ -12,6 +12,9 @@ import dev.banking.asyncapi.generator.core.parser.version.allowedMembers
  *
  * This view owns member navigation and object-member policy after the source
  * node has been checked by [ParserNode.expectObject].
+ *
+ * @param parserNode the source node this view wraps
+ * @param documentObject the underlying object value
  */
 internal class ParserObjectNode(
     private val parserNode: ParserNode,
@@ -48,6 +51,7 @@ internal class ParserObjectNode(
     fun membersStartingWith(prefix: String): List<ParserNode> =
         members().filter { member -> member.name.startsWith(prefix) }
 
+    /** Throws if the object contains members not in [allowedMembers]. */
     fun expectOnlyMembers(
         objectType: String,
         allowedMembers: Set<String>,

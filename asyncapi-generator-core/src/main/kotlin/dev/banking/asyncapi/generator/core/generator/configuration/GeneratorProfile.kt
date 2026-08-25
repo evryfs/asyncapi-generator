@@ -7,9 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
  *
  * A profile has exactly one responsibility: generate source code, generate
  * schema artifacts, or serialize an AsyncAPI document.
- *
- * Expected behavior is covered by:
- * - `GeneratorProfileTest`
  */
 sealed interface GeneratorProfile {
     data class Source(

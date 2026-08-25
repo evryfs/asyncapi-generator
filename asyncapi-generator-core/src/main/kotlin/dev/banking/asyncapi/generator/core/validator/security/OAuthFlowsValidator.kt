@@ -32,8 +32,8 @@ internal class OAuthFlowsValidator(
             results.error(
                 SECURITY_OAUTH_FLOWS_REQUIRED,
                 "$contextString of type 'oauth2' requires at least one OAuth2 flow.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::flows)
-                    ?: asyncApiContext.getSourceLocation(node),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::flows)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(node),
             )
             return
         }
@@ -114,7 +114,7 @@ internal class OAuthFlowsValidator(
                 results.error(
                     SECURITY_OAUTH_REFRESH_URL_FORMAT,
                     "$contextString 'refreshUrl' must be an absolute URL.",
-                    sourceLocation = asyncApiContext.getSourceLocation(flow, flow::refreshUrl),
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, flow::refreshUrl),
                 )
             }
         }
@@ -133,14 +133,14 @@ internal class OAuthFlowsValidator(
             results.error(
                 requiredRule,
                 "$contextString must define '$fieldName'.",
-                sourceLocation = asyncApiContext.getSourceLocation(flow, fieldName)
-                    ?: asyncApiContext.getSourceLocation(flow),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, fieldName)
+                    ?: asyncApiContext.modelTracking.getSourceLocation(flow),
             )
         } else if (ValidationFormats.absoluteUri(value) == null) {
             results.error(
                 formatRule,
                 "$contextString '$fieldName' must be an absolute URL.",
-                sourceLocation = asyncApiContext.getSourceLocation(flow, fieldName),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, fieldName),
             )
         }
     }
@@ -160,7 +160,7 @@ internal class OAuthFlowsValidator(
             results.error(
                 SECURITY_OAUTH_SCOPE_AVAILABLE,
                 "OAuth2 requested scopes $unknownScopes are not declared by any configured flow.",
-                sourceLocation = asyncApiContext.getSourceLocation(node, node::scopes),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::scopes),
             )
         }
     }
