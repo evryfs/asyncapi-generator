@@ -87,22 +87,6 @@ object GeneratorConfigurationFactory {
                             ),
                         )
                     }
-
-                    request.clients.quarkusKafka?.let { quarkusKafka ->
-                        add(
-                            ClientGeneration.QuarkusKafka(
-                                packageName = requiredPackageName(
-                                    path = "clients.quarkusKafka.packageName",
-                                    value = quarkusKafka.packageName,
-                                ),
-                                modelPackageName = requiredClientModelPackageName(
-                                    path = "clients.quarkusKafka.modelPackageName",
-                                    configuredModelPackageName = quarkusKafka.modelPackageName,
-                                    modelsPackageName = request.models?.packageName,
-                                ),
-                            ),
-                        )
-                    }
                 },
         )
 
@@ -129,10 +113,6 @@ object GeneratorConfigurationFactory {
             "clients.kafka.packageName is required when clients.kafka is configured"
         }
 
-        require(request.clients.quarkusKafka == null || request.clients.quarkusKafka.packageName != null) {
-            "clients.quarkusKafka.packageName is required when clients.quarkusKafka is configured"
-        }
-
         validatePackageName(
             path = "models.packageName",
             value = request.models?.packageName,
@@ -152,14 +132,6 @@ object GeneratorConfigurationFactory {
         validatePackageName(
             path = "clients.kafka.modelPackageName",
             value = request.clients.kafka?.modelPackageName,
-        )
-        validatePackageName(
-            path = "clients.quarkusKafka.packageName",
-            value = request.clients.quarkusKafka?.packageName,
-        )
-        validatePackageName(
-            path = "clients.quarkusKafka.modelPackageName",
-            value = request.clients.quarkusKafka?.modelPackageName,
         )
     }
 
