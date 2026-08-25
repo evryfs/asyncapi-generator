@@ -1,8 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
@@ -14,6 +18,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModel
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
@@ -22,6 +27,7 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -38,6 +44,8 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AsyncApiGeneratorOutputContractTest {
+    private val jsonMapper = ObjectMapper()
+    private val yamlMapper = ObjectMapper(YAMLFactory())
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     private val generationInputFixtures = GenerationInputFixtures()
@@ -105,6 +113,36 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
         assertTrue(schemaArtifact.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
         assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json").exists())
+    }
+
+    @Test
+    fun `generate preserves source incompatible constructs in JSON Schema artifacts`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        generator.generate(
+            asyncApiDocument = sourceIncompatibleSchemaDocument(),
+            generatorConfiguration =
+                jsonSchemaGeneratorConfiguration(
+                    sourceOutputDirectory = sourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
+        )
+
+        val outputDirectory = resourceOutputDirectory.resolve("com/example/jsonschema")
+        val tupleItems = jsonMapper.readTree(outputDirectory.resolve("TupleItems.schema.json"))
+        val falseItems = jsonMapper.readTree(outputDirectory.resolve("FalseItems.schema.json"))
+        val untypedEnum = jsonMapper.readTree(outputDirectory.resolve("UntypedEnum.schema.json"))
+        val ecmaPattern = jsonMapper.readTree(outputDirectory.resolve("EcmaPattern.schema.json"))
+        val expectedEnum = jsonMapper.valueToTree<JsonNode>(listOf("open", 2, true, null))
+
+        assertEquals(2, tupleItems.path("items").size())
+        assertEquals("string", tupleItems.path("items").path(0).path("type").textValue())
+        assertEquals("integer", tupleItems.path("items").path(1).path("type").textValue())
+        assertEquals(false, falseItems.path("items").booleanValue())
+        assertEquals(expectedEnum, untypedEnum.path("enum"))
+        assertEquals("(?<group_name>a)", ecmaPattern.path("pattern").textValue())
+        assertFalse(sourceOutputDirectory.exists())
     }
 
     @Test
@@ -206,6 +244,54 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(outputFile.readText().startsWith("{"))
         assertTrue(outputFile.readText().contains("\"asyncapi\""))
         assertTrue(outputFile.readText().contains("\"components\""))
+    }
+
+    @Test
+    fun `generate preserves source incompatible constructs in bundled YAML`() {
+        val outputFile = tempDir.resolve("bundled/source-incompatible.yaml").toFile()
+
+        generator.generate(
+            asyncApiDocument = sourceIncompatibleSchemaDocument(),
+            generatorConfiguration =
+                documentGeneratorConfiguration(
+                    outputFile = outputFile,
+                    format = DocumentFormat.YAML,
+                ),
+        )
+
+        val schemas = yamlMapper.readTree(outputFile).path("components").path("schemas")
+        val expectedEnum = jsonMapper.valueToTree<JsonNode>(listOf("open", 2, true, null))
+
+        assertEquals(2, schemas.path("TupleItems").path("items").size())
+        assertEquals("string", schemas.path("TupleItems").path("items").path(0).path("type").textValue())
+        assertEquals("integer", schemas.path("TupleItems").path("items").path(1).path("type").textValue())
+        assertEquals(false, schemas.path("FalseItems").path("items").booleanValue())
+        assertEquals(expectedEnum, schemas.path("UntypedEnum").path("enum"))
+        assertEquals("(?<group_name>a)", schemas.path("EcmaPattern").path("pattern").textValue())
+    }
+
+    @Test
+    fun `generate rejects source incompatible models before creating output directories`() {
+        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
+        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+
+        val error =
+            assertFailsWith<UnsupportedSourceSchemaFeature> {
+                generator.generate(
+                    asyncApiDocument = sourceIncompatibleSchemaDocument(),
+                    generatorConfiguration =
+                        generatorConfiguration(
+                            sourceOutputDirectory = sourceOutputDirectory,
+                            resourceOutputDirectory = resourceOutputDirectory,
+                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                        ),
+                )
+            }
+
+        assertTrue(error.message!!.contains("Model generation cannot represent schema 'TupleItems'"))
+        assertTrue(error.message!!.contains("tuple-form 'items'"))
+        assertFalse(sourceOutputDirectory.exists())
+        assertFalse(resourceOutputDirectory.exists())
     }
 
     @Test
@@ -788,6 +874,11 @@ class AsyncApiGeneratorOutputContractTest {
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
         )
+
+    private fun sourceIncompatibleSchemaDocument(): AsyncApiDocument =
+        AsyncApiDocumentLoader()
+            .load(TestResources.file("generator/source-incompatible-schema-features.yaml"))
+            .document
 
     private fun externalNativeAvroSchemaAssetsDocument() =
         bundlerFixtures.bundledDocument(
