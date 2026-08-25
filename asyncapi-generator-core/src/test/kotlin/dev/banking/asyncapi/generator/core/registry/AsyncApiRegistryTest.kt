@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.registry
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -12,6 +14,7 @@ import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AsyncApiRegistryTest {
@@ -121,5 +124,53 @@ class AsyncApiRegistryTest {
 
         val representativeValues = info.required("x-string-list").expect<List<String>>()
         assertEquals(listOf("true", "123", "null", "|field", ">field", "'field", "\"field"), representativeValues)
+    }
+
+    @Test
+    fun `YAML and JSON serialization emit each items representation exactly once`() {
+        val schemas =
+            linkedMapOf(
+                "tuple" to
+                    Schema(
+                        tupleItems =
+                            listOf(
+                                SchemaInterface.SchemaInline(Schema(type = "string")),
+                                SchemaInterface.SchemaInline(Schema(type = "integer")),
+                            ),
+                    ),
+                "single" to
+                    Schema(
+                        items = SchemaInterface.SchemaInline(Schema(type = "string")),
+                    ),
+                "false" to
+                    Schema(
+                        items = SchemaInterface.BooleanSchema(false),
+                    ),
+            )
+
+        val yaml = AsyncApiRegistry.serializeYaml(schemas)
+        val json = AsyncApiRegistry.serializeJson(schemas)
+        val yamlSchemas = ObjectMapper(YAMLFactory()).readTree(yaml)
+        val jsonSchemas = ObjectMapper().readTree(json)
+
+        assertEquals(2, yamlSchemas.path("tuple").path("items").size())
+        assertEquals("string", yamlSchemas.path("tuple").path("items").path(0).path("type").textValue())
+        assertEquals("integer", yamlSchemas.path("tuple").path("items").path(1).path("type").textValue())
+        assertEquals("string", yamlSchemas.path("single").path("items").path("type").textValue())
+        assertEquals(false, yamlSchemas.path("false").path("items").booleanValue())
+        assertEquals(setOf("items"), yamlSchemas.path("tuple").fieldNames().asSequence().toSet())
+        assertEquals(3, Regex("(?m)^\\s*items:").findAll(yaml).count())
+        assertFalse(yaml.contains("tupleItems"))
+        assertFalse(yaml.contains("serializedItems"))
+
+        assertEquals(2, jsonSchemas.path("tuple").path("items").size())
+        assertEquals("string", jsonSchemas.path("tuple").path("items").path(0).path("type").textValue())
+        assertEquals("integer", jsonSchemas.path("tuple").path("items").path(1).path("type").textValue())
+        assertEquals("string", jsonSchemas.path("single").path("items").path("type").textValue())
+        assertEquals(false, jsonSchemas.path("false").path("items").booleanValue())
+        assertEquals(setOf("items"), jsonSchemas.path("tuple").fieldNames().asSequence().toSet())
+        assertEquals(3, Regex("\"items\"\\s*:").findAll(json).count())
+        assertFalse(json.contains("tupleItems"))
+        assertFalse(json.contains("serializedItems"))
     }
 }

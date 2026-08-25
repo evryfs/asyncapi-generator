@@ -32,6 +32,8 @@ Use this rule:
 | Spring Kafka contract has valid method names               | `GenerationInputCompatibilityValidator` | Only applies when Spring Kafka generation is selected |
 | Avro schema has valid structure for Avro projection        | `GenerationInputCompatibilityValidator` | Only applies when Avro projection is selected         |
 
+For example, tuple-form and Boolean `items` are valid JSON Schema contract data, so a source generator that cannot represent them rejects them during generation compatibility validation. A scalar `items` value is a structural representation error and is rejected by the parser before semantic validation.
+
 ### Decision flowchart
 
 1. Does the check apply to every contract the generator accepts, regardless of output target?

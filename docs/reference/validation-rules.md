@@ -81,7 +81,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-REFERENCE-TARGET-CATEGORY` | Reference resolves to mismatched target category. | AsyncAPI reference objects | specification / error |
 | `GEN-SCHEMA-KEYWORD-UNSUPPORTED` | Unsupported Schema keyword for this generator. | Generator behavior | capability / error |
 | `GEN-SCHEMA-ANNOTATION-IGNORED` | Known Schema annotation keyword is ignored by generated runtimes. | Generator behavior | capability / warning |
-| `GEN-SCHEMA-ITEMS-REPRESENTATION` | Tuple-form `items`/`false` cannot be represented. | Generator behavior | capability / error |
+| `GEN-SCHEMA-ITEMS-REPRESENTATION` | Retained legacy identifier; no longer emitted. | Generator behavior | capability / error |
 | `JSONSCHEMA-DEPENDENCY-ARRAY-UNIQUE` | Property dependency array repeats a property name. | JSON Schema Draft 7 | specification / error |
 | `GEN-SCHEMA-DIALECT` | Schema `$schema` is not the supported Draft 7 dialect. | JSON Schema Draft 7 / generator behavior | capability / error |
 | `JSONSCHEMA-TYPE` | Schema `type` is not an exact supported string or array member. | JSON Schema Draft 7 | specification / error |
@@ -89,13 +89,13 @@ This reference records implemented validation rules and their ownership.
 | `JSONSCHEMA-TYPE-ARRAY-UNIQUE` | Type array contains duplicates. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-ENUM-NONEMPTY` | Enum is empty. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-ENUM-UNIQUE` | Enum repeats JSON-equal duplicate values. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-UNTYPED-ENUM` | Untyped enum contains values the generator cannot infer as strings. | Generator behavior | capability / error |
+| `GEN-SCHEMA-UNTYPED-ENUM` | Retained legacy identifier; no longer emitted. | Generator behavior | capability / error |
 | `GEN-SCHEMA-CONST-TYPE` | `const` cannot be represented by generator model type. | Generator behavior | capability / error |
 | `GEN-SCHEMA-NUMERIC-RANGE` | Numeric lower bound is greater than upper bound or invalid. | Generator constraint mapping | capability / error |
 | `JSONSCHEMA-MULTIPLE-OF` | `multipleOf` is not positive. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-STRING-LENGTH` | String length bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
 | `GEN-SCHEMA-STRING-LENGTH-RANGE` | Minimum string length exceeds maximum length. | Generator constraint mapping | capability / error |
-| `GEN-SCHEMA-PATTERN` | Pattern is not supported by Java/Jakarta validation compilation. | Generator behavior | capability / error |
+| `GEN-SCHEMA-PATTERN` | Retained legacy identifier; no longer emitted. | Generator behavior | capability / error |
 | `JSONSCHEMA-ARRAY-SIZE` | Array size bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
 | `GEN-SCHEMA-ARRAY-SIZE-RANGE` | Minimum array size exceeds maximum size. | Generator behavior | capability / error |
 | `JSONSCHEMA-OBJECT-SIZE` | Object size bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
@@ -105,3 +105,5 @@ This reference records implemented validation rules and their ownership.
 | `GEN-SCHEMA-DEFAULT-TYPE` | `default` cannot be represented by declared generator type. | Generator behavior | capability / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not locally required. | AsyncAPI Schema Object | specification / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not locally declared. | AsyncAPI Schema Object | specification / error |
+
+`GEN-SCHEMA-ITEMS-REPRESENTATION`, `GEN-SCHEMA-UNTYPED-ENUM`, and `GEN-SCHEMA-PATTERN` remain public legacy identifiers but are no longer emitted. Output-specific incompatibilities for these schema features are reported by generation compatibility exceptions.

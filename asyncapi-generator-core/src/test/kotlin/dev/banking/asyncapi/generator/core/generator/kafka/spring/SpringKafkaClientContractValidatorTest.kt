@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientContractNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -58,6 +59,61 @@ class SpringKafkaClientContractValidatorTest {
                     ),
                 ),
             task = task(),
+        )
+    }
+
+    @Test
+    fun `rejects a channel without an address when producer generation is enabled`() {
+        val error =
+            assertFailsWith<SpringKafkaClientChannelWithoutAddress> {
+                SpringKafkaClientContractValidator.validate(
+                    channels =
+                        listOf(
+                            channel("auditEvents", topic = null),
+                            channel("paymentEvents", topic = null),
+                        ),
+                    task =
+                        task(
+                            generateProducers = true,
+                            generateConsumers = false,
+                        ),
+                )
+            }
+
+        assertEquals(
+            """
+
+            Spring Kafka client generation failed for channel 'auditEvents'.
+            The AsyncAPI channel has no address.
+            Declare channels.auditEvents.address before generating client contracts.
+            """.trimIndent(),
+            error.message,
+        )
+    }
+
+    @Test
+    fun `rejects a channel without an address when consumer generation is enabled`() {
+        assertFailsWith<SpringKafkaClientChannelWithoutAddress> {
+            SpringKafkaClientContractValidator.validate(
+                channels = listOf(channel("auditEvents", topic = null)),
+                task =
+                    task(
+                        generateProducers = false,
+                        generateConsumers = true,
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun `allows a channel without an address when producer and consumer generation are disabled`() {
+        SpringKafkaClientContractValidator.validate(
+            channels = listOf(channel("auditEvents", topic = null)),
+            task =
+                task(
+                    generateProducers = false,
+                    generateConsumers = false,
+                ),
         )
     }
 
@@ -137,10 +193,13 @@ class SpringKafkaClientContractValidatorTest {
         assertTrue(error.message!!.contains("AccountEventsConsumer"))
     }
 
-    private fun channel(channelName: String): AnalyzedChannel =
+    private fun channel(
+        channelName: String,
+        topic: String? = "$channelName.v1",
+    ): AnalyzedChannel =
         AnalyzedChannel(
             channelName = channelName,
-            topic = "$channelName.v1",
+            topic = topic,
             messages =
                 listOf(
                     AnalyzedMessage(

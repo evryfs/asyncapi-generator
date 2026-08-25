@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -44,7 +45,10 @@ class KafkaKeyModelSelectorTest {
                         "Tenant" to tenantSchema,
                         "Unrelated" to Schema(type = "object"),
                     ),
-                multiFormatSchemas = mapOf("AccountUpdated" to nativeAvroSchema()),
+                schemaDeclarations =
+                    SchemaDeclarationCatalog(
+                        multiFormatSchemas = mapOf("AccountUpdated" to nativeAvroSchema()),
+                    ),
                 polymorphicRelationships = emptyMap(),
                 channels =
                     listOf(

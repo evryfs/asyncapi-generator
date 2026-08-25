@@ -4,3 +4,5 @@ assert bundled.length() > 0 : "Expected bundled/relative-bundled.yaml to be non-
 
 def generatedDir = new File(basedir, "target/generated-sources/asyncapi")
 assert !generatedDir.exists() : "Did not expect any generated code when no packages are set"
+
+true
