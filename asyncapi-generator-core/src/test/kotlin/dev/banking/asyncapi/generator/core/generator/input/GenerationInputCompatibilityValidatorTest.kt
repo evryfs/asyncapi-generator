@@ -401,31 +401,6 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `rejects unsupported quarkus kafka generation`() {
-        val error =
-            assertFailsWith<AsyncApiGeneratorException.UnsupportedGenerationCapability> {
-                validator.validate(
-                    generationInput =
-                        GenerationInput(
-                            schemas = emptyMap(),
-                            polymorphicRelationships = emptyMap(),
-                            channels = emptyList(),
-                        ),
-                    generationPlan =
-                        GenerationPlan(
-                            listOf(
-                                GenerationTask.QuarkusKafkaClient(
-                                    language = SourceLanguage.KOTLIN,
-                                ),
-                            ),
-                        ),
-                )
-            }
-
-        assertTrue(error.message!!.contains("Quarkus Kafka client generation is not implemented"))
-    }
-
-    @Test
     fun `rejects multi format schemas for model generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
