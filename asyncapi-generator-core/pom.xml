@@ -164,6 +164,16 @@
                 <artifactId>kover-maven-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>kover-instrumentation</id>
+                        <goals>
+                            <goal>instrumentation</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Velocity reflectively validates this constants class, and Kover's injected field breaks initialization. -->
+                            <uninstrumentedClasses>org.apache.velocity.runtime.DeprecatedRuntimeConstants</uninstrumentedClasses>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>kover-report</id>
                         <goals>
                             <goal>report-xml</goal>
