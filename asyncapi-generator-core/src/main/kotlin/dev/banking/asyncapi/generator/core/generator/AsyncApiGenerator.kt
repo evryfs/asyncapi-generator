@@ -17,7 +17,6 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NoArtifactsGenerated
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedGenerationCapability
 
 /**
  * Coordinates generator input preparation, planning, rendering, and artifact writing.
@@ -111,8 +110,6 @@ class AsyncApiGenerator {
                     task = task,
                     generationInput = generationInput,
                 )
-            is GenerationTask.QuarkusKafkaClient ->
-                throw UnsupportedGenerationCapability("Quarkus Kafka client generation")
             is GenerationTask.NativeAvroArtifacts ->
                 nativeAvroArtifactGeneration.render(
                     task = task,
