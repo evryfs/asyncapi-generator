@@ -13,7 +13,7 @@ Kotlin and Java models, Spring Kafka clients, Avro schemas, Protobuf artifacts, 
 
 ## Installation
 
-Available as a Maven plugin, Gradle plugin, and CLI tool. See the [usage guide](https://evryfs.github.io/asyncapi-generator/how-to/usage/) for installation instructions.
+Available as a Maven plugin, Gradle plugin, and CLI tool. Start with the [getting started tutorial](https://evryfs.github.io/asyncapi-generator/tutorials/getting-started/).
 
 ## Documentation
 

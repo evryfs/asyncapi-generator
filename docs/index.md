@@ -5,57 +5,59 @@ contracts, Avro schemas, and Protobuf artifacts from AsyncAPI 3 specifications.
 
 ## Quick start
 
-=== "Maven"
+### Maven
 
-    ```xml
-    <plugin>
-        <groupId>dev.banking.asyncapi.generator</groupId>
-        <artifactId>asyncapi-generator-maven-plugin</artifactId>
-        <version>0.0.1</version>
-        <executions>
-            <execution>
-                <id>generate</id>
-                <phase>generate-sources</phase>
-                <goals><goal>generate</goal></goals>
-                <configuration>
-                    <generatorName>kotlin</generatorName>
-                    <inputSpec>src/main/resources/asyncapi.yaml</inputSpec>
-                    <models>
-                        <packageName>com.example.model</packageName>
-                    </models>
-                </configuration>
-            </execution>
-        </executions>
-    </plugin>
-    ```
+```xml
+<plugin>
+    <groupId>dev.banking.asyncapi.generator</groupId>
+    <artifactId>asyncapi-generator-maven-plugin</artifactId>
+    <version>0.3.4-BETA</version>
+    <executions>
+        <execution>
+            <id>generate-kotlin-models</id>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+            <configuration>
+                <generatorName>kotlin</generatorName>
+                <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                <modelPackage>com.example.model</modelPackage>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
 
-=== "Gradle"
+### Gradle
 
-    ```kotlin
-    plugins {
-        id("dev.banking.asyncapi.generator") version "0.0.1"
-    }
+```kotlin
+plugins {
+    id("dev.banking.asyncapi.generator") version "0.3.4-BETA"
+}
 
-    asyncapiGenerate {
-        inputFile.set(file("src/main/resources/asyncapi.yaml"))
-        generatorName.set("kotlin")
-        models {
-            packageName.set("com.example.model")
+asyncApiGenerator {
+    executions {
+        register("models") {
+            generatorName.set("kotlin")
+            inputSpec.set(file("src/main/resources/asyncapi.yaml"))
+            modelPackage.set("com.example.model")
         }
     }
-    ```
+}
+```
 
 ## What it generates
 
-| Generator | Output |
-|-----------|--------|
-| **Kotlin** | Data classes with Jakarta Validation annotations |
-| **Java** | POJOs or records with Jakarta Validation annotations |
-| **Spring Kafka** | Producer and consumer client contracts |
-| **Avro Projection** | `.avsc` schema files from AsyncAPI Schema Objects |
-| **Native Avro** | `.avsc` files and `SpecificRecord` Java sources |
-| **Native Protobuf** | `.proto` files and Java message sources |
-| **JSON Schema** | Standalone Draft 7 `.schema.json` files |
+| Generator           | Output                                               |
+|---------------------|------------------------------------------------------|
+| **Kotlin**          | Data classes with Jakarta Validation annotations     |
+| **Java**            | POJOs or records with Jakarta Validation annotations |
+| **Spring Kafka**    | Producer and consumer client contracts               |
+| **Avro Projection** | `.avsc` schema files from AsyncAPI Schema Objects    |
+| **Native Avro**     | `.avsc` files and `SpecificRecord` Java sources      |
+| **Native Protobuf** | `.proto` files and Java message sources              |
+| **JSON Schema**     | Standalone Draft 7 `.schema.json` files              |
 
 ## Learn more
 
