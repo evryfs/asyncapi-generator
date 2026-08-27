@@ -103,6 +103,73 @@ compatible output activation.
 The `avro-schema` and `protobuf-schema` profiles are different: they require
 `schemaPackage` and emit schemas without runtime model source.
 
+## Spring Kafka client configuration
+
+Spring Kafka contract generation is available with the `java` and `kotlin`
+source profiles. Configure all four required public values:
+
+- `clientPackage`, which activates client-contract output and names its package;
+- `modelPackage`, which names the payload types used by the contracts;
+- `clientConfig.clientType=spring-kafka`; and
+- `clientConfig.clientContract=interface`.
+
+`spring-kafka` is the only supported `clientType`, and `interface` is the only
+supported `clientContract`. Configuring `clientPackage` without `clientConfig`
+is invalid. Configuring `clientConfig` without either package is also invalid.
+
+### Producer and consumer contracts
+
+Producer and consumer contract generation are independently configurable. Both
+default to enabled when their settings are omitted or their configuration
+objects are empty. Set `producer.enabled=false` or `consumer.enabled=false` to
+disable one contract category. Disabling both generates no Spring Kafka
+contracts. The overall run must still plan another artifact, or aggregate
+generation fails because it produced no artifacts.
+
+These settings select generated contract categories. AsyncAPI operation actions
+do not act as producer or consumer generation switches.
+
+`producer.additionalPayloadTypes` adds producer methods for payloads that an
+application has already serialized. It does not replace the producer method for
+the typed model. Supported values are:
+
+| Value | Additional producer method payload |
+|---|---|
+| `byte-array` | A byte-array payload. |
+| `string` | A string payload. |
+
+The values are additive. Configuring both produces the typed-model method plus
+one byte-array method and one string method. Repeated values are de-duplicated.
+
+### Topic properties and validation annotations
+
+`clientConfig.topicParameterProperties` maps an AsyncAPI channel parameter name
+to a Spring property name. For example, `environment` to `kafka.environment`
+causes an `{environment}` channel-address parameter to use the Spring property
+`kafka.environment`. Values are property names without `${...}` placeholder
+syntax. The public shape is a string-to-string map:
+
+```yaml
+environment: kafka.environment
+```
+
+`clientConfig.validationAnnotations` supports two optional fully qualified type
+names:
+
+| Field | Generated annotation target |
+|---|---|
+| `clientContract` | The generated client interface. |
+| `payloadParameter` | Consumer payload parameters and the typed producer payload method. It is not applied to additional byte-array or string producer methods. |
+
+For example, use `org.springframework.validation.annotation.Validated`, not
+`Validated`. The generator adds configured annotations to the contracts; it
+does not configure validation behavior in the application.
+
+The generated clients are interfaces. The application supplies their
+implementations and runtime Spring Kafka wiring. See
+[Generate Spring Kafka clients](../how-to/generate-spring-kafka-clients.md) for
+operational setup and usage.
+
 ## Output directories
 
 The typed core configuration distinguishes its main source directory, Java
@@ -118,4 +185,119 @@ separate file path and is not implicitly placed below `outputDirectory`.
 | CLI      | `./generated/asyncapi`                                                                                 | The CLI writes source and schema files below this directory but does not configure a build tool's source or resource sets.              |
 
 For frontend syntax and build-tool setup, see the [Maven how-to](../how-to/maven.md),
+[Gradle how-to](../how-to/gradle.md), and [CLI how-to](../how-to/cli.md).
+
+## Frontend mapping
+
+The three frontends map the following public concepts to the same typed core
+request. The table shows their actual configuration shapes; it does not expose
+the internal `GeneratorConfigurationRequest` fields.
+
+| Concept                       | Maven XML                                                                                                    | Gradle Kotlin DSL                                                   | CLI                                                    |
+|-------------------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------|
+| Request boundary              | One `<execution><configuration>`                                                                             | One named `executions.register("name")` block                       | One invocation; no execution-name equivalent           |
+| Input specification           | `<inputSpec>...</inputSpec>`                                                                                 | `inputSpec.set(file("..."))`                                        | `--input-spec`, `-i`                                   |
+| Generator profile             | `<generatorName>...</generatorName>`                                                                         | `generatorName.set("...")`                                          | `--generator-name`, `-g`                               |
+| Output directory              | `<outputDirectory>...</outputDirectory>`                                                                     | `outputDirectory.set(...)`                                          | `--output-directory`, `-o`                             |
+| Bundled document file         | `<outputFile>...</outputFile>`                                                                               | `outputFile.set(file("..."))`                                       | `--output-file`                                        |
+| Model package                 | `<modelPackage>...</modelPackage>`                                                                           | `modelPackage.set("...")`                                           | `--model-package`                                      |
+| Model type                    | `<modelConfig><modelType>...</modelType></modelConfig>`                                                      | Per execution: `modelConfig { modelType.set("...") }`               | `--model-type`; no `modelConfig` container             |
+| Model annotation              | `<modelConfig><modelAnnotation>...</modelAnnotation></modelConfig>`                                          | Per execution: `modelConfig { modelAnnotation.set("...") }`         | `--model-annotation`; no `modelConfig` container       |
+| Client package                | `<clientPackage>...</clientPackage>`                                                                         | Per execution: `clientPackage.set("...")`                           | `--client-package`                                     |
+| Client type                   | `<clientConfig><clientType>...</clientType></clientConfig>`                                                  | Shared: `clientConfig { clientType.set("...") }`                    | `--client-type`; no `clientConfig` container           |
+| Client contract               | `<clientConfig><clientContract>...</clientContract></clientConfig>`                                          | Shared: `clientConfig { clientContract.set("...") }`                | `--client-contract`                                    |
+| Producer enablement           | `<producer><enabled>true\|false</enabled></producer>` inside `clientConfig`                                  | Shared: `producer { enabled.set(true\|false) }`                     | `--generate-producer` or `--no-generate-producer`      |
+| Additional producer payloads  | `<producer><additionalPayloadTypes><additionalPayloadType>byte-array</additionalPayloadType></additionalPayloadTypes></producer>` inside `clientConfig` | Shared: `producer { additionalPayloadTypes.set(listOf(...)) }`      | Repeat `--producer-additional-payload-type VALUE`      |
+| Consumer enablement           | `<consumer><enabled>true\|false</enabled></consumer>` inside `clientConfig`                                  | Shared: `consumer { enabled.set(true\|false) }`                     | `--generate-consumer` or `--no-generate-consumer`      |
+| Topic parameter properties    | `<topicParameterProperties><PARAMETER>PROPERTY</PARAMETER></topicParameterProperties>` inside `clientConfig` | Shared map: `topicParameterProperties.put("PARAMETER", "PROPERTY")` | Repeat `--topic-parameter-property PARAMETER=PROPERTY` |
+| Client validation annotation  | `<validationAnnotations><clientContract>...</clientContract></validationAnnotations>`                        | Shared: `validationAnnotations { clientContract.set("...") }`       | `--client-contract-validation-annotation`              |
+| Payload validation annotation | `<validationAnnotations><payloadParameter>...</payloadParameter></validationAnnotations>`                    | Shared: `validationAnnotations { payloadParameter.set("...") }`     | `--payload-parameter-validation-annotation`            |
+| Schema package                | `<schemaPackage>...</schemaPackage>`                                                                         | `schemaPackage.set("...")`                                          | `--schema-package`                                     |
+
+Maven fields are scoped to a plugin execution. Maven's normal plugin
+configuration merging can provide shared values outside an execution and let
+execution configuration specialize them.
+
+Gradle places `modelConfig` and package fields on each named execution, but
+places `clientConfig` directly under `asyncApiGenerator` and shares it across
+all client-generating executions. Each execution still maps to a distinct
+generation request.
+
+The CLI has no named-execution, shared-configuration, `modelConfig`, or
+`clientConfig` container equivalent. Its individual flags form one generation
+request per invocation. Repeatable additional-payload and topic-property flags
+assemble the corresponding list and map.
+
+## Equivalent Spring Kafka scenario
+
+The following configurations describe the same request: Kotlin data-class
+models in `com.example.model` and Spring Kafka producer and consumer interfaces
+in `com.example.client`. The model type and producer/consumer settings are
+omitted so their Kotlin and enabled defaults apply. Each frontend uses its own
+default `outputDirectory`.
+
+### Maven
+
+```xml
+<plugin>
+    <groupId>dev.banking.asyncapi.generator</groupId>
+    <artifactId>asyncapi-generator-maven-plugin</artifactId>
+    <version>0.3.4-BETA</version>
+    <executions>
+        <execution>
+            <id>generate-client</id>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+            <configuration>
+                <generatorName>kotlin</generatorName>
+                <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                <modelPackage>com.example.model</modelPackage>
+                <clientPackage>com.example.client</clientPackage>
+                <clientConfig>
+                    <clientType>spring-kafka</clientType>
+                    <clientContract>interface</clientContract>
+                </clientConfig>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+### Gradle Kotlin DSL
+
+```kotlin
+plugins {
+    id("dev.banking.asyncapi.generator") version "0.3.4-BETA"
+}
+
+asyncApiGenerator {
+    clientConfig {
+        clientType.set("spring-kafka")
+        clientContract.set("interface")
+    }
+    executions {
+        register("client") {
+            generatorName.set("kotlin")
+            inputSpec.set(file("src/main/resources/asyncapi.yaml"))
+            modelPackage.set("com.example.model")
+            clientPackage.set("com.example.client")
+        }
+    }
+}
+```
+
+### CLI
+
+```sh
+asyncapi-generator \
+  --input-spec src/main/resources/asyncapi.yaml \
+  --generator-name kotlin \
+  --model-package com.example.model \
+  --client-package com.example.client \
+  --client-type spring-kafka \
+  --client-contract interface
+```
+
+For complete frontend setup and commands, see the [Maven how-to](../how-to/maven.md),
 [Gradle how-to](../how-to/gradle.md), and [CLI how-to](../how-to/cli.md).
