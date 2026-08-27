@@ -100,6 +100,16 @@ path used for emitted native schema files. It does not replace
 For regular data-class, class, or record models, `schemaPackage` is not a
 compatible output activation.
 
+`schemaPackage` changes where native schema artifacts are written; it does not
+rewrite package declarations inside those schemas. Native runtime models have
+additional package requirements:
+
+- For `avro-specific-record`, `modelPackage` must exactly match the `namespace`
+  of every native Avro payload schema. A namespace is therefore required.
+- For `protobuf-message`, `modelPackage` must match `option java_package` when
+  present, otherwise the Protobuf `package`. The schema must declare one of
+  those packages and set `option java_multiple_files = true`.
+
 The `avro-schema` and `protobuf-schema` profiles are different: they require
 `schemaPackage` and emit schemas without runtime model source.
 
@@ -115,16 +125,17 @@ source profiles. Configure all four required public values:
 
 `spring-kafka` is the only supported `clientType`, and `interface` is the only
 supported `clientContract`. Configuring `clientPackage` without `clientConfig`
-is invalid. Configuring `clientConfig` without either package is also invalid.
+is invalid. Maven and CLI client settings also require both package fields.
+Gradle's shared `clientConfig` is applied only to named executions that configure
+`clientPackage`; other executions ignore it.
 
 ### Producer and consumer contracts
 
 Producer and consumer contract generation are independently configurable. Both
 default to enabled when their settings are omitted or their configuration
 objects are empty. Set `producer.enabled=false` or `consumer.enabled=false` to
-disable one contract category. Disabling both generates no Spring Kafka
-contracts. The overall run must still plan another artifact, or aggregate
-generation fails because it produced no artifacts.
+disable one contract category. Disabling both is invalid because Spring Kafka
+client generation requires at least one enabled contract.
 
 These settings select generated contract categories. AsyncAPI operation actions
 do not act as producer or consumer generation switches.
@@ -187,32 +198,109 @@ separate file path and is not implicitly placed below `outputDirectory`.
 For frontend syntax and build-tool setup, see the [Maven how-to](../how-to/maven.md),
 [Gradle how-to](../how-to/gradle.md), and [CLI how-to](../how-to/cli.md).
 
+## Defaults
+
+| Setting                            | Default or omission behavior                                                                                                                      |
+|------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| `inputSpec`                        | No default; required by every frontend.                                                                                                           |
+| `generatorName`                    | No default; required by every frontend.                                                                                                           |
+| `outputDirectory`                  | Maven: `${project.build.directory}/generated-sources/asyncapi`; Gradle: `build/generated/asyncapi/<execution-name>`; CLI: `./generated/asyncapi`. |
+| `outputFile`                       | No document output. It becomes required for `asyncapi-yaml` and `asyncapi-json`.                                                                  |
+| `modelPackage` and `modelConfig`   | No model output when both are omitted. `modelPackage` alone enables models with the profile's default model type.                                 |
+| `modelConfig.modelType`            | `kotlin-data-class` for `kotlin`; `java-class` for `java`.                                                                                        |
+| `modelConfig.modelAnnotation`      | No model annotation.                                                                                                                              |
+| `schemaPackage`                    | No separately packaged schema output. Schema profiles require it; native model types may omit it.                                                 |
+| `clientPackage` and `clientConfig` | No client output. A client-generating request requires both packages, `spring-kafka`, and `interface`.                                            |
+| Producer and consumer              | Both enabled when their settings are omitted or their configuration objects are empty.                                                            |
+| `producer.additionalPayloadTypes`  | Empty; only the typed producer payload method is generated.                                                                                       |
+| `topicParameterProperties`         | Empty map.                                                                                                                                        |
+| `validationAnnotations`            | No generated client or payload validation annotations.                                                                                            |
+
+Omitting optional configuration does not create an implicit output category.
+If no compatible package or `outputFile` activates an output, configuration
+fails instead of completing silently.
+
+## Required combinations and diagnostics
+
+Frontend values are normalized before generation. Some core diagnostics use
+the internal path `models.packageName`; for Maven, Gradle, and CLI users this
+corresponds to the public `modelPackage` field.
+
+| Condition                                      | Required behavior or observable failure                                                                                                                                                                                                |
+|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Missing or unsupported `generatorName`         | Required. Accepted values are exactly those in [Generator profiles](#generator-profiles). Unsupported values are reported with the complete supported-value list.                                                                      |
+| Missing or invalid `inputSpec`                 | Must identify a readable file. The frontend rejects an absent path, directory, unreadable file, or missing file before generation.                                                                                                     |
+| No activated output                            | Fails with `No generator output is configured`; configure `modelPackage`, `clientPackage` with `clientConfig`, `schemaPackage` with a schema profile, or `outputFile`.                                                                 |
+| Invalid output paths                           | An existing `outputDirectory` must be a directory. `outputFile` must not be a directory.                                                                                                                                               |
+| Schema profile without `schemaPackage`         | `schemaPackage` is required for `avro-schema`, `protobuf-schema`, and `json-schema`. Model and client configuration are rejected for these profiles.                                                                                   |
+| Document profile without `outputFile`          | `outputFile` is required for `asyncapi-yaml` and `asyncapi-json`. Model, client, and schema configuration are rejected.                                                                                                                |
+| `schemaPackage` with a regular source model    | Rejected. On source profiles it is supported only with `avro-specific-record` or `protobuf-message`.                                                                                                                                   |
+| Invalid package name                           | `modelPackage`, `clientPackage`, and `schemaPackage` must be dot-separated identifiers. Each segment starts with an ASCII letter or underscore and continues with ASCII letters, digits, or underscores. Empty values are rejected.    |
+| `modelConfig` without `modelPackage`           | Rejected with a required `models.packageName` diagnostic. `modelPackage` alone is valid and selects the profile default.                                                                                                               |
+| Unsupported or incompatible `modelType`        | Accepted values are exactly those in [Model types](#model-types). A valid value from the other source profile is rejected with the supported values for the selected `generatorName`.                                                  |
+| Invalid `modelAnnotation`                      | Must be a fully qualified type name and requires `modelPackage`. It is supported only for `kotlin-data-class`, `java-class`, and `java-record`.                                                                                        |
+| Native Avro model package mismatch             | For `avro-specific-record`, every native Avro payload must declare a `namespace` equal to `modelPackage`; the generator cannot override the SpecificRecord package.                                                                    |
+| Native Protobuf model package mismatch         | For `protobuf-message`, `modelPackage` must equal `option java_package`, or the Protobuf `package` when that option is absent. Model generation also requires `option java_multiple_files = true`.                                     |
+| `clientPackage` without usable client settings | Requires `modelPackage`, `clientType=spring-kafka`, and `clientContract=interface`. Maven also requires the `clientConfig` element; CLI requires the corresponding client flags; Gradle reads these values from shared `clientConfig`. |
+| Both producer and consumer disabled            | Rejected: Spring Kafka client generation requires at least one enabled contract.                                                                                                                                                       |
+| Invalid additional producer payload            | `clientConfig.producer.additionalPayloadTypes` accepts only `byte-array` and `string`. Duplicates are removed.                                                                                                                         |
+| Invalid topic property mapping                 | Parameter names and property names must be non-empty. Property names cannot contain whitespace or `$`, `{`, or `}` placeholder syntax.                                                                                                 |
+| Invalid validation annotation                  | `clientConfig.validationAnnotations.clientContract` and `.payloadParameter` must be fully qualified type names.                                                                                                                        |
+| Valid plan with no resulting artifacts         | Aggregate generation fails with `Generation completed without producing any artifacts.` No output directories or partial files are committed.                                                                                          |
+
+### Accepted finite values
+
+| Field                                          | Accepted values                                                                                     |
+|------------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| `generatorName`                                | `java`, `kotlin`, `avro-schema`, `protobuf-schema`, `json-schema`, `asyncapi-yaml`, `asyncapi-json` |
+| `modelConfig.modelType`                        | `kotlin-data-class`, `java-class`, `java-record`, `avro-specific-record`, `protobuf-message`        |
+| `clientConfig.clientType`                      | `spring-kafka`                                                                                      |
+| `clientConfig.clientContract`                  | `interface`                                                                                         |
+| `clientConfig.producer.additionalPayloadTypes` | `byte-array`, `string`                                                                              |
+
+Schema and document formats have no separate frontend selector;
+`generatorName` selects them.
+
+## Configuration boundary
+
+Generator configuration controls planned artifacts, package names, output
+locations, generated contract categories, method variants, and generated
+annotations. It does not configure Kafka brokers, serializers, Spring beans,
+listener containers, consumer groups, retries, transactions, or deployment.
+Applications provide that runtime configuration and implement the generated
+Spring Kafka interfaces.
+
+Use the [Maven how-to](../how-to/maven.md),
+[Gradle how-to](../how-to/gradle.md), and [CLI how-to](../how-to/cli.md) for
+frontend setup. See [Schema formats](../explanation/schema-formats.md) for the
+distinction between AsyncAPI Schema Objects and native schema payloads.
+
 ## Frontend mapping
 
 The three frontends map the following public concepts to the same typed core
 request. The table shows their actual configuration shapes; it does not expose
 the internal `GeneratorConfigurationRequest` fields.
 
-| Concept                       | Maven XML                                                                                                    | Gradle Kotlin DSL                                                   | CLI                                                    |
-|-------------------------------|--------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------|
-| Request boundary              | One `<execution><configuration>`                                                                             | One named `executions.register("name")` block                       | One invocation; no execution-name equivalent           |
-| Input specification           | `<inputSpec>...</inputSpec>`                                                                                 | `inputSpec.set(file("..."))`                                        | `--input-spec`, `-i`                                   |
-| Generator profile             | `<generatorName>...</generatorName>`                                                                         | `generatorName.set("...")`                                          | `--generator-name`, `-g`                               |
-| Output directory              | `<outputDirectory>...</outputDirectory>`                                                                     | `outputDirectory.set(...)`                                          | `--output-directory`, `-o`                             |
-| Bundled document file         | `<outputFile>...</outputFile>`                                                                               | `outputFile.set(file("..."))`                                       | `--output-file`                                        |
-| Model package                 | `<modelPackage>...</modelPackage>`                                                                           | `modelPackage.set("...")`                                           | `--model-package`                                      |
-| Model type                    | `<modelConfig><modelType>...</modelType></modelConfig>`                                                      | Per execution: `modelConfig { modelType.set("...") }`               | `--model-type`; no `modelConfig` container             |
-| Model annotation              | `<modelConfig><modelAnnotation>...</modelAnnotation></modelConfig>`                                          | Per execution: `modelConfig { modelAnnotation.set("...") }`         | `--model-annotation`; no `modelConfig` container       |
-| Client package                | `<clientPackage>...</clientPackage>`                                                                         | Per execution: `clientPackage.set("...")`                           | `--client-package`                                     |
-| Client type                   | `<clientConfig><clientType>...</clientType></clientConfig>`                                                  | Shared: `clientConfig { clientType.set("...") }`                    | `--client-type`; no `clientConfig` container           |
-| Client contract               | `<clientConfig><clientContract>...</clientContract></clientConfig>`                                          | Shared: `clientConfig { clientContract.set("...") }`                | `--client-contract`                                    |
-| Producer enablement           | `<producer><enabled>true\|false</enabled></producer>` inside `clientConfig`                                  | Shared: `producer { enabled.set(true\|false) }`                     | `--generate-producer` or `--no-generate-producer`      |
+| Concept                       | Maven XML                                                                                                                                               | Gradle Kotlin DSL                                                   | CLI                                                    |
+|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------|
+| Request boundary              | One `<execution><configuration>`                                                                                                                        | One named `executions.register("name")` block                       | One invocation; no execution-name equivalent           |
+| Input specification           | `<inputSpec>...</inputSpec>`                                                                                                                            | `inputSpec.set(file("..."))`                                        | `--input-spec`, `-i`                                   |
+| Generator profile             | `<generatorName>...</generatorName>`                                                                                                                    | `generatorName.set("...")`                                          | `--generator-name`, `-g`                               |
+| Output directory              | `<outputDirectory>...</outputDirectory>`                                                                                                                | `outputDirectory.set(...)`                                          | `--output-directory`, `-o`                             |
+| Bundled document file         | `<outputFile>...</outputFile>`                                                                                                                          | `outputFile.set(file("..."))`                                       | `--output-file`                                        |
+| Model package                 | `<modelPackage>...</modelPackage>`                                                                                                                      | `modelPackage.set("...")`                                           | `--model-package`                                      |
+| Model type                    | `<modelConfig><modelType>...</modelType></modelConfig>`                                                                                                 | Per execution: `modelConfig { modelType.set("...") }`               | `--model-type`; no `modelConfig` container             |
+| Model annotation              | `<modelConfig><modelAnnotation>...</modelAnnotation></modelConfig>`                                                                                     | Per execution: `modelConfig { modelAnnotation.set("...") }`         | `--model-annotation`; no `modelConfig` container       |
+| Client package                | `<clientPackage>...</clientPackage>`                                                                                                                    | Per execution: `clientPackage.set("...")`                           | `--client-package`                                     |
+| Client type                   | `<clientConfig><clientType>...</clientType></clientConfig>`                                                                                             | Shared: `clientConfig { clientType.set("...") }`                    | `--client-type`; no `clientConfig` container           |
+| Client contract               | `<clientConfig><clientContract>...</clientContract></clientConfig>`                                                                                     | Shared: `clientConfig { clientContract.set("...") }`                | `--client-contract`                                    |
+| Producer enablement           | `<producer><enabled>true\|false</enabled></producer>` inside `clientConfig`                                                                             | Shared: `producer { enabled.set(true\|false) }`                     | `--generate-producer` or `--no-generate-producer`      |
 | Additional producer payloads  | `<producer><additionalPayloadTypes><additionalPayloadType>byte-array</additionalPayloadType></additionalPayloadTypes></producer>` inside `clientConfig` | Shared: `producer { additionalPayloadTypes.set(listOf(...)) }`      | Repeat `--producer-additional-payload-type VALUE`      |
-| Consumer enablement           | `<consumer><enabled>true\|false</enabled></consumer>` inside `clientConfig`                                  | Shared: `consumer { enabled.set(true\|false) }`                     | `--generate-consumer` or `--no-generate-consumer`      |
-| Topic parameter properties    | `<topicParameterProperties><PARAMETER>PROPERTY</PARAMETER></topicParameterProperties>` inside `clientConfig` | Shared map: `topicParameterProperties.put("PARAMETER", "PROPERTY")` | Repeat `--topic-parameter-property PARAMETER=PROPERTY` |
-| Client validation annotation  | `<validationAnnotations><clientContract>...</clientContract></validationAnnotations>`                        | Shared: `validationAnnotations { clientContract.set("...") }`       | `--client-contract-validation-annotation`              |
-| Payload validation annotation | `<validationAnnotations><payloadParameter>...</payloadParameter></validationAnnotations>`                    | Shared: `validationAnnotations { payloadParameter.set("...") }`     | `--payload-parameter-validation-annotation`            |
-| Schema package                | `<schemaPackage>...</schemaPackage>`                                                                         | `schemaPackage.set("...")`                                          | `--schema-package`                                     |
+| Consumer enablement           | `<consumer><enabled>true\|false</enabled></consumer>` inside `clientConfig`                                                                             | Shared: `consumer { enabled.set(true\|false) }`                     | `--generate-consumer` or `--no-generate-consumer`      |
+| Topic parameter properties    | `<topicParameterProperties><PARAMETER>PROPERTY</PARAMETER></topicParameterProperties>` inside `clientConfig`                                            | Shared map: `topicParameterProperties.put("PARAMETER", "PROPERTY")` | Repeat `--topic-parameter-property PARAMETER=PROPERTY` |
+| Client validation annotation  | `<validationAnnotations><clientContract>...</clientContract></validationAnnotations>`                                                                   | Shared: `validationAnnotations { clientContract.set("...") }`       | `--client-contract-validation-annotation`              |
+| Payload validation annotation | `<validationAnnotations><payloadParameter>...</payloadParameter></validationAnnotations>`                                                               | Shared: `validationAnnotations { payloadParameter.set("...") }`     | `--payload-parameter-validation-annotation`            |
+| Schema package                | `<schemaPackage>...</schemaPackage>`                                                                                                                    | `schemaPackage.set("...")`                                          | `--schema-package`                                     |
 
 Maven fields are scoped to a plugin execution. Maven's normal plugin
 configuration merging can provide shared values outside an execution and let
