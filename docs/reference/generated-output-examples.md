@@ -115,3 +115,80 @@ implements the consumer callback with `@KafkaListener`, and supplies Spring
 beans, brokers, serializers, listener containers, consumer groups, error
 handling, retries, and transactions. The generated validation annotations also
 require the application to activate the corresponding validation behavior.
+
+## Native Avro schema and SpecificRecord
+
+The
+[`asyncapi_native_avro_spring_kafka_client.yaml`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/generator/asyncapi_native_avro_spring_kafka_client.yaml)
+contract uses a Multi Format Schema Object to embed a native Avro `UserCreated`
+record.
+
+| Configuration value     | Example setting                                          |
+|-------------------------|----------------------------------------------------------|
+| `inputSpec`             | `asyncapi_native_avro_spring_kafka_client.yaml`          |
+| `generatorName`         | `java`                                                   |
+| `modelPackage`          | `com.example.avro`                                       |
+| `modelConfig.modelType` | `avro-specific-record`                                   |
+| `schemaPackage`         | `com.example.avro`                                       |
+
+The generated artifacts are:
+
+- `com/example/avro/UserCreated.avsc`: complete
+  [`approved native Avro schema`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/approvals/generator/native-avro/schema/user-created.approved.avsc);
+- `com/example/avro/UserCreated.java`: complete
+  [`approved SpecificRecord source`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/approvals/generator/native-avro/specific-record/user-created.approved.java).
+
+[`NativeAvroApprovalTest`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/kotlin/dev/banking/asyncapi/generator/core/generator/avro/NativeAvroApprovalTest.kt)
+parses and resolves the linked contract before approving both complete artifacts.
+
+SpecificRecord generation requires a native Avro schema with a `namespace`, and
+`modelPackage` must exactly match that namespace. The runtime model is generated
+Java source even when the Kotlin source profile is selected. The application
+must provide the Avro runtime used by the generated class.
+
+## Avro Projection from an AsyncAPI Schema Object
+
+The
+[`asyncapi_enum_default_value.yaml`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/generator/asyncapi_enum_default_value.yaml)
+contract defines `Task`, `TaskStatus`, and an inline `Priority` enum as AsyncAPI
+Schema Objects rather than native Avro schemas.
+
+| Configuration value | Example setting                     |
+|---------------------|-------------------------------------|
+| `inputSpec`         | `asyncapi_enum_default_value.yaml`  |
+| `generatorName`     | `avro-schema`                       |
+| `schemaPackage`     | `com.example.avro`                  |
+
+The approved artifact is `com/example/avro/Task.avsc`: inspect the complete
+[`approved projected Avro schema`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/approvals/generator/avro/task-schema.approved.avsc).
+[`AvroSchemaApprovalTest`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/kotlin/dev/banking/asyncapi/generator/core/generator/avro/AvroSchemaApprovalTest.kt)
+generates that artifact from the linked contract.
+
+Avro Projection maps supported AsyncAPI Schema Object structure into Avro; it is
+not native Avro passthrough and does not generate SpecificRecord source. Use a
+native Avro Multi Format Schema Object and `avro-specific-record` when the input
+schema and generated Avro runtime model must follow native Avro semantics.
+
+## Native Protobuf schema artifact
+
+The
+[`native-protobuf.yaml`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/examples/generated-output/native-protobuf.yaml)
+contract uses a Multi Format Schema Object to embed a native Protobuf
+`UserCreated` message.
+
+| Configuration value | Example setting          |
+|---------------------|--------------------------|
+| `inputSpec`         | `native-protobuf.yaml`   |
+| `generatorName`     | `protobuf-schema`        |
+| `schemaPackage`     | `com.example.protobuf`   |
+
+The run generates `com/example/protobuf/UserCreated.proto`: inspect the complete
+[`approved native Protobuf schema`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/approvals/generator/native-protobuf/schema/user-created.approved.proto).
+[`NativeProtobufApprovalTest`](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/kotlin/dev/banking/asyncapi/generator/core/generator/protobuf/NativeProtobufApprovalTest.kt)
+parses and resolves the linked contract before approving the complete artifact.
+
+`protobuf-schema` copies native Protobuf schema content without generating Java
+messages or Kotlin DSL source. `schemaPackage` controls the artifact output path;
+it does not rewrite the Protobuf `package`. Runtime message generation instead
+uses a Java or Kotlin source profile with `modelType=protobuf-message` and has
+additional package and `java_multiple_files` input requirements.

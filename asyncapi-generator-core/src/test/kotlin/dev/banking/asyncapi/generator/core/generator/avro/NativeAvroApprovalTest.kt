@@ -1,8 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
-import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
 import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import org.junit.jupiter.api.Test
@@ -10,7 +11,8 @@ import kotlin.test.assertTrue
 
 class NativeAvroApprovalTest {
     private val generator = NativeAvroGenerator()
-    private val fixtures = GenerationInputFixtures()
+    private val bundlerFixtures = BundlerFixtures()
+    private val generationInputFactory = GenerationInputFactory()
 
     @Test
     fun approves_native_avro_schema_artifact() {
@@ -39,7 +41,13 @@ class NativeAvroApprovalTest {
     private fun nativeAvroArtifacts(): List<GeneratedArtifact> =
         generator
             .render(
-                schemas = fixtures.generationInputWithNativeAvroSchema().multiFormatSchemas,
+                schemas =
+                    generationInputFactory
+                        .create(
+                            bundlerFixtures.bundledDocument(
+                                "generator/asyncapi_native_avro_spring_kafka_client.yaml",
+                            ),
+                        ).multiFormatSchemas,
                 generateSpecificRecords = true,
             ).artifacts
 

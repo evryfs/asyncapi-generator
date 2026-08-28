@@ -34,6 +34,7 @@ nav:
       - Parser contract: reference/parser-contract.md
       - Validation rules: reference/validation-rules.md
       - Generator configuration: reference/generator-configuration.md
+      - Generated output examples: reference/generated-output-examples.md
       - YAML output: reference/yaml-output.md
   - Explanation:
       - Architecture overview: explanation/architecture.md
