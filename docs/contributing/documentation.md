@@ -4,6 +4,9 @@ This guide defines how maintainers place, verify, and review project
 documentation. Markdown under `docs/` is the single source of truth for the
 published site.
 
+When preparing a release, follow the
+[release documentation checklist](release-readiness.md) before publication.
+
 ## Choose the page type
 
 Follow Diataxis and give each page one primary reader need.
