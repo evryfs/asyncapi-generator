@@ -6,6 +6,7 @@
 ![AsyncAPI 3.0.x](https://img.shields.io/badge/AsyncAPI-3.0.x-purple)
 ![Coverage](https://img.shields.io/badge/coverage-report-blue)
 ![License](https://img.shields.io/github/license/evryfs/asyncapi-generator)
+![Beta](https://img.shields.io/badge/status-beta-yellow)
 
 `asyncapi-generator` is an independent generator for the
 [supported AsyncAPI 3.0.x profile](https://evryfs.github.io/asyncapi-generator/reference/supported-capabilities/).
@@ -19,14 +20,23 @@ This repository is not the
 
 ## Quick start
 
-With Java 21+, Maven 3.9+, and a small AsyncAPI document at
-`src/main/resources/asyncapi.yaml`, add this plugin execution to `pom.xml`:
+With Java 21+ and a small AsyncAPI document at
+`src/main/resources/asyncapi.yaml`, follow the
+[getting-started tutorial](https://evryfs.github.io/asyncapi-generator/tutorials/getting-started/)
+for the complete example document.
+
+Replace `VERSION` in the build-tool examples with the version shown by the
+[Maven Central badge](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin).
+
+### Maven
+
+With Maven 3.9+, add this plugin execution to `pom.xml`:
 
 ```xml
 <plugin>
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
-    <version>{latest-version}</version>
+    <version>VERSION</version>
     <executions>
         <execution>
             <id>generate-kotlin-models</id>
@@ -44,16 +54,46 @@ With Java 21+, Maven 3.9+, and a small AsyncAPI document at
 </plugin>
 ```
 
-Run generation:
-
 ```shell
 mvn generate-sources
 ```
 
-Generated Kotlin files are written below
-`target/generated-sources/asyncapi/com/example/model` by default. Follow the
-[getting-started tutorial](https://evryfs.github.io/asyncapi-generator/tutorials/getting-started/)
-for a complete contract, generated example, and explanation.
+### Gradle
+
+Add this configuration to `build.gradle.kts`:
+
+```kotlin
+plugins {
+    id("dev.banking.asyncapi.generator") version "VERSION"
+}
+
+asyncApiGenerator {
+    executions {
+        register("models") {
+            generatorName.set("kotlin")
+            inputSpec.set(file("src/main/resources/asyncapi.yaml"))
+            modelPackage.set("com.example.model")
+        }
+    }
+}
+```
+
+```shell
+./gradlew generateModelsAsyncApi
+```
+
+### CLI
+
+Installation and download options are covered by the
+[CLI guide](https://evryfs.github.io/asyncapi-generator/how-to/cli/). After
+installation, run:
+
+```shell
+asyncapi-generator \
+  --input-spec src/main/resources/asyncapi.yaml \
+  --generator-name kotlin \
+  --model-package com.example.model
+```
 
 ## Frontends
 
