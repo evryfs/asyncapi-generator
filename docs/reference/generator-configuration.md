@@ -324,13 +324,19 @@ in `com.example.client`. The model type and producer/consumer settings are
 omitted so their Kotlin and enabled defaults apply. Each frontend uses its own
 default `outputDirectory`.
 
+Replace `VERSION` with the published version shown on the
+[Maven plugin artifact page](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin)
+for Maven or the
+[Gradle plugin release page](https://plugins.gradle.org/plugin/dev.banking.asyncapi.generator)
+for Gradle.
+
 ### Maven
 
 ```xml
 <plugin>
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
-    <version>0.3.4-BETA</version>
+    <version>VERSION</version>
     <executions>
         <execution>
             <id>generate-client</id>
@@ -356,7 +362,7 @@ default `outputDirectory`.
 
 ```kotlin
 plugins {
-    id("dev.banking.asyncapi.generator") version "0.3.4-BETA"
+    id("dev.banking.asyncapi.generator") version "VERSION"
 }
 
 asyncApiGenerator {
