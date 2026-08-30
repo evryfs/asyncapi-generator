@@ -2,11 +2,14 @@
 
 The Gradle plugin configures one task for each named execution.
 
+Replace `VERSION` with the published version shown on the
+[Gradle plugin release page](https://plugins.gradle.org/plugin/dev.banking.asyncapi.generator).
+
 ## Kotlin DSL
 
 ```kotlin
 plugins {
-    id("dev.banking.asyncapi.generator") version "0.3.4-BETA"
+    id("dev.banking.asyncapi.generator") version "VERSION"
 }
 
 asyncApiGenerator {
@@ -24,7 +27,7 @@ asyncApiGenerator {
 
 ```groovy
 plugins {
-    id 'dev.banking.asyncapi.generator' version '0.3.4-BETA'
+    id 'dev.banking.asyncapi.generator' version 'VERSION'
 }
 
 asyncApiGenerator {
