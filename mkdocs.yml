@@ -1,5 +1,5 @@
-site_name: AsyncAPI Generator
-site_description: Documentation for the AsyncAPI Generator project
+site_name: asyncapi-generator
+site_description: Documentation for supported asyncapi-generator workflows
 site_url: https://evryfs.github.io/asyncapi-generator/
 repo_url: https://github.com/evryfs/asyncapi-generator
 repo_name: evryfs/asyncapi-generator
@@ -29,25 +29,32 @@ nav:
       - Generate Protobuf schemas: how-to/generate-protobuf-schemas.md
       - Generate JSON schemas: how-to/generate-json-schemas.md
       - Bundle multi-file documents: how-to/bundle-multi-file-documents.md
+      - Troubleshooting: how-to/troubleshooting.md
   - Reference:
-      - Reader contract: reference/reader-contract.md
-      - Parser contract: reference/parser-contract.md
-      - Validation rules: reference/validation-rules.md
+      - Supported capabilities: reference/supported-capabilities.md
       - Generator configuration: reference/generator-configuration.md
+      - Validation rules: reference/validation-rules.md
       - Generated output examples: reference/generated-output-examples.md
       - YAML output: reference/yaml-output.md
   - Explanation:
-      - Architecture overview: explanation/architecture.md
-      - Reader: explanation/reader.md
-      - Parser: explanation/parser.md
-      - Validator: explanation/validator.md
-      - Bundler: explanation/bundler.md
-      - Generator: explanation/generator.md
+      - Project purpose and scope: explanation/purpose-and-scope.md
+      - How the generation pipeline works: explanation/architecture.md
       - Schema formats: explanation/schema-formats.md
-  - Contributing:
-      - Development setup: contributing/development-setup.md
-      - Adding a validation rule: contributing/adding-validation-rule.md
-      - Changing the parser: contributing/changing-the-parser.md
-      - Documentation: contributing/documentation.md
-      - KDoc style guide: contributing/kdoc-style-guide.md
-  - Coverage: coverage/index.md
+  - Maintainer documentation:
+      - Architecture and contracts:
+          - Reader architecture: explanation/reader.md
+          - Reader contract: reference/reader-contract.md
+          - Parser architecture: explanation/parser.md
+          - Parser contract: reference/parser-contract.md
+          - Validator architecture: explanation/validator.md
+          - Validation boundary: contributing/validation-boundary.md
+          - Bundler strategy: explanation/bundler.md
+          - Generator strategy: explanation/generator.md
+      - Change procedures:
+          - Development setup: contributing/development-setup.md
+          - Adding a validation rule: contributing/adding-validation-rule.md
+          - Changing the parser: contributing/changing-the-parser.md
+          - Documentation: contributing/documentation.md
+          - Release documentation: contributing/release-readiness.md
+          - KDoc style guide: contributing/kdoc-style-guide.md
+      - Coverage: coverage/index.md

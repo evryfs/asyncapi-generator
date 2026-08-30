@@ -43,6 +43,12 @@ components:
 
 ## 2. Configure the generator
 
+Replace `VERSION` with the published version shown on the
+[Maven plugin artifact page](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin)
+for Maven or the
+[Gradle plugin release page](https://plugins.gradle.org/plugin/dev.banking.asyncapi.generator)
+for Gradle.
+
 ### Maven
 
 Add to your `pom.xml`:
@@ -51,7 +57,7 @@ Add to your `pom.xml`:
 <plugin>
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
-    <version>0.3.4-BETA</version>
+    <version>VERSION</version>
     <executions>
         <execution>
             <id>generate-kotlin-models</id>
@@ -75,7 +81,7 @@ Add to your `build.gradle.kts`:
 
 ```kotlin
 plugins {
-    id("dev.banking.asyncapi.generator") version "0.3.4-BETA"
+    id("dev.banking.asyncapi.generator") version "VERSION"
 }
 
 asyncApiGenerator {
