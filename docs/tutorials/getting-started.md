@@ -43,67 +43,75 @@ components:
 
 ## 2. Configure the generator
 
-=== "Maven"
+Replace `VERSION` with the published version shown on the
+[Maven plugin artifact page](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin)
+for Maven or the
+[Gradle plugin release page](https://plugins.gradle.org/plugin/dev.banking.asyncapi.generator)
+for Gradle.
 
-    Add to your `pom.xml`:
+### Maven
 
-    ```xml
-    <plugin>
-        <groupId>dev.banking.asyncapi.generator</groupId>
-        <artifactId>asyncapi-generator-maven-plugin</artifactId>
-        <version>0.0.1</version>
-        <executions>
-            <execution>
-                <id>generate</id>
-                <phase>generate-sources</phase>
-                <goals><goal>generate</goal></goals>
-                <configuration>
-                    <generatorName>kotlin</generatorName>
-                    <inputSpec>src/main/resources/asyncapi.yaml</inputSpec>
-                    <models>
-                        <packageName>com.example.events.model</packageName>
-                    </models>
-                </configuration>
-            </execution>
-        </executions>
-    </plugin>
-    ```
+Add to your `pom.xml`:
 
-=== "Gradle"
+```xml
+<plugin>
+    <groupId>dev.banking.asyncapi.generator</groupId>
+    <artifactId>asyncapi-generator-maven-plugin</artifactId>
+    <version>VERSION</version>
+    <executions>
+        <execution>
+            <id>generate-kotlin-models</id>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+            <configuration>
+                <generatorName>kotlin</generatorName>
+                <inputSpec>${project.basedir}/src/main/resources/asyncapi.yaml</inputSpec>
+                <modelPackage>com.example.events.model</modelPackage>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
 
-    Add to your `build.gradle.kts`:
+### Gradle
 
-    ```kotlin
-    plugins {
-        id("dev.banking.asyncapi.generator") version "0.0.1"
-    }
+Add to your `build.gradle.kts`:
 
-    asyncapiGenerate {
-        inputFile.set(file("src/main/resources/asyncapi.yaml"))
-        generatorName.set("kotlin")
-        models {
-            packageName.set("com.example.events.model")
+```kotlin
+plugins {
+    id("dev.banking.asyncapi.generator") version "VERSION"
+}
+
+asyncApiGenerator {
+    executions {
+        register("models") {
+            generatorName.set("kotlin")
+            inputSpec.set(file("src/main/resources/asyncapi.yaml"))
+            modelPackage.set("com.example.events.model")
         }
     }
-    ```
+}
+```
 
 ## 3. Run the generator
 
-=== "Maven"
+### Maven
 
-    ```sh
-    mvn generate-sources
-    ```
+```sh
+mvn generate-sources
+```
 
-=== "Gradle"
+### Gradle
 
-    ```sh
-    ./gradlew generateAsyncApi
-    ```
+```sh
+./gradlew generateAsyncApi
+```
 
 ## 4. Check the output
 
-The generator creates `UserSignedUp.kt` in `target/generated-sources/asyncapi` (Maven) or `build/generated/asyncapi` (Gradle):
+The generator creates `UserSignedUp.kt` at `target/generated-sources/asyncapi/com/example/events/model/UserSignedUp.kt` with Maven or `build/generated/asyncapi/models/com/example/events/model/UserSignedUp.kt` with Gradle:
 
 ```kotlin
 package com.example.events.model

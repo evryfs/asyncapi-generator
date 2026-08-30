@@ -22,7 +22,7 @@ internal class BindingBundler {
         bindings?.mapValues { (_, binding) ->
             bundle(binding, context)
         }
-    
+
     fun bundle(binding: BindingInterface, context: BundlingContext): BindingInterface =
         when (binding) {
             is BindingInterface.BindingInline ->

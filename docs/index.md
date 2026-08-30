@@ -1,70 +1,38 @@
-# AsyncAPI Generator
+# asyncapi-generator
 
-AsyncAPI Generator creates Kotlin and Java payload models, Spring Kafka client
-contracts, Avro schemas, and Protobuf artifacts from AsyncAPI 3 specifications.
+`asyncapi-generator` turns supported AsyncAPI `3.0.x` contracts into
+deterministic Kotlin and Java models, schema artifacts, Spring Kafka
+interfaces, and self-contained bundled documents. It preserves valid contract
+data and reports when a requested output cannot represent that data safely.
 
-## Quick start
+The implemented parser profile supports AsyncAPI `3.0.x`, including suffixed
+versions such as `3.0.0-rc1`. AsyncAPI `3.1.x` and other specification lines are
+not supported. See [Supported capabilities](reference/supported-capabilities.md)
+for the complete production workflow matrix and current limitations.
 
-=== "Maven"
+## Start here
 
-    ```xml
-    <plugin>
-        <groupId>dev.banking.asyncapi.generator</groupId>
-        <artifactId>asyncapi-generator-maven-plugin</artifactId>
-        <version>0.0.1</version>
-        <executions>
-            <execution>
-                <id>generate</id>
-                <phase>generate-sources</phase>
-                <goals><goal>generate</goal></goals>
-                <configuration>
-                    <generatorName>kotlin</generatorName>
-                    <inputSpec>src/main/resources/asyncapi.yaml</inputSpec>
-                    <models>
-                        <packageName>com.example.model</packageName>
-                    </models>
-                </configuration>
-            </execution>
-        </executions>
-    </plugin>
-    ```
+- Follow [Getting started](tutorials/getting-started.md) for the introductory
+  generation workflow.
+- Configure the [Maven](how-to/maven.md), [Gradle](how-to/gradle.md), or
+  [CLI](how-to/cli.md) frontend.
+- Use [Generator configuration](reference/generator-configuration.md) for
+  accepted values, defaults, and required combinations.
 
-=== "Gradle"
+## Explore the documentation
 
-    ```kotlin
-    plugins {
-        id("dev.banking.asyncapi.generator") version "0.0.1"
-    }
+- [Project purpose and scope](explanation/purpose-and-scope.md) explains the
+  supported-workflow focus and runtime boundaries.
+- [How the generation pipeline works](explanation/architecture.md) explains the
+  stable stages from document reading through artifact writing.
+- [Generated output examples](reference/generated-output-examples.md) links
+  complete fixture-backed models, contracts, and schema artifacts.
+- [Troubleshooting](how-to/troubleshooting.md) maps reported failures to
+  actionable input, configuration, compatibility, and destination checks.
 
-    asyncapiGenerate {
-        inputFile.set(file("src/main/resources/asyncapi.yaml"))
-        generatorName.set("kotlin")
-        models {
-            packageName.set("com.example.model")
-        }
-    }
-    ```
+## Independent project
 
-## What it generates
-
-| Generator | Output |
-|-----------|--------|
-| **Kotlin** | Data classes with Jakarta Validation annotations |
-| **Java** | POJOs or records with Jakarta Validation annotations |
-| **Spring Kafka** | Producer and consumer client contracts |
-| **Avro Projection** | `.avsc` schema files from AsyncAPI Schema Objects |
-| **Native Avro** | `.avsc` files and `SpecificRecord` Java sources |
-| **Native Protobuf** | `.proto` files and Java message sources |
-| **JSON Schema** | Standalone Draft 7 `.schema.json` files |
-
-## Learn more
-
-- [Tutorials](tutorials/getting-started.md) — get started in 5 minutes
-- [How-to guides](how-to/load-asyncapi-document.md) — accomplish specific tasks
-- [Reference](reference/reader-contract.md) — detailed API and contract documentation
-- [Explanation](explanation/architecture.md) — understand the design and architecture
-
-## Suggest an improvement
-
-Use [GitHub Issues](https://github.com/evryfs/asyncapi-generator/issues) to report
-a problem, request a capability, or suggest a documentation improvement.
+This is an independent project, not the
+[official AsyncAPI Generator](https://github.com/asyncapi/generator). The name
+"AsyncAPI" is used descriptively for compatibility with the
+[AsyncAPI specification](https://www.asyncapi.com/docs/reference/specification/v3.0.0).
