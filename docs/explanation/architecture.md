@@ -1,102 +1,113 @@
-# Architecture overview
+# How the generation pipeline works
 
-AsyncAPI Generator processes specifications through a compiler-style pipeline. Each stage has a clear boundary and produces output that the next stage consumes.
+`asyncapi-generator` uses a compiler-style pipeline. The AsyncAPI contract
+provides the input data, configuration selects requested outputs, and each
+stage either produces a complete result for the next stage or reports a
+failure at its own boundary.
 
 ## Pipeline
 
 ```text
-External AsyncAPI source
-          |
-          v
-Reader
-  syntax, normalization, source locations, safety limits
-          |
-          v
-InputDocument
-          |
-          v
-Parser and external reference loading
-          |
-          v
-AsyncApiDocument
-          |
-          v
-Semantic validation
-          |
-          v
-Bundling
-          |
-          v
-Bundled AsyncApiDocument
-          |
-          v
-GenerationInputFactory
-          |
-          v
-GenerationInput
-          |
-          +-------------------------------+
-                                          |
-GeneratorConfiguration                    |
-          |                               |
-          v                               |
-GenerationPlanner                         |
-          |                               |
-          v                               |
-GenerationPlan                            |
-          |                               |
-          +-------------------------------+
-                          |
-                          v
-Generation compatibility validation
-                          |
-                          v
-Target artifact rendering
-                          |
-                          v
-GenerationResult
-                          |
-                          v
-Filesystem artifact writer
+Read YAML or JSON
+        -> parse the supported AsyncAPI model and load local references
+        -> validate contract semantics
+        -> bundle supported references into a self-contained model
+        -> plan outputs and check target compatibility
+        -> render every requested artifact
+        -> preflight destinations and write outputs
 ```
 
-The contract determines what can be generated. Configuration determines what should be generated. Compatibility validation determines whether those two inputs can be combined. Rendering produces target-specific artifacts. The writer persists the artifacts.
+## Read YAML or JSON
 
-Model, schema, and client backends consume `GenerationInput`. Bundled-document rendering preserves and serializes the bundled `AsyncApiDocument` directly. `GenerationPlan` selects both kinds of work.
+The reader accepts UTF-8 `.yaml`, `.yml`, and `.json` files. It converts either
+syntax into the same neutral document representation while retaining source
+locations for objects, members, arrays, and scalar values. Syntax checks and
+safety limits belong here, before AsyncAPI meaning is applied.
 
-## Pipeline stages
+Malformed syntax, unsupported extensions, unreadable files, duplicate keys,
+and resource-limit violations stop the pipeline. See
+[Load an AsyncAPI document](../how-to/load-asyncapi-document.md) for the public
+loading API.
 
-### 1. Reader
+## Parse and load local references
 
-Converts YAML/JSON files into a format-independent document tree with source locations. Enforces resource limits. See [Reader](reader.md).
+The parser interprets the neutral document as the supported AsyncAPI `3.0.x`
+profile and constructs the domain model without coercing malformed values.
+Required members, supported object structure, and runtime value types are
+checked at this boundary.
 
-### 2. Parser
+Internal references and supported local external references are resolved with
+JSON Pointer semantics. Complete external AsyncAPI documents select their own
+supported profile; selected raw fragments inherit the profile of the reference
+that loads them. External native schema assets are loaded when required. HTTP
+and other remote reference schemes are not supported.
 
-Interprets the document tree as AsyncAPI structures. Builds a typed domain model with references, multi-format schemas, and external document tracking. See [Parser](parser.md).
+Parser failures identify the source file, path, line, and column where the
+problem was found.
 
-### 3. Validator
+## Validate contract semantics
 
-Checks the parsed model for semantic correctness. Reports errors (must fix) and warnings (should review). Never modifies the model. See [Validator](validator.md).
+Semantic validation checks the parsed model, including reference integrity and
+supported generator-wide contract rules. It does not rewrite the contract.
+Errors stop the pipeline, while warnings are returned for review without
+preventing generation.
 
-The validator has two stages: semantic validation and generation compatibility validation. See [Validation boundary](../contributing/validation-boundary.md).
+Rules that depend on one requested output target are not applied here. A valid
+contract remains valid contract data even when a later target cannot represent
+it. The [validation rule inventory](../reference/validation-rules.md) lists the
+current validation findings.
 
-### 4. Bundler
+## Bundle the contract
 
-Resolves external references and produces a self-contained document. Useful for distribution, archival, and tools that need a single-file input. See [Bundler](bundler.md).
+Bundling transforms the parsed model into a self-contained document model.
+Supported external objects are inlined, recursive external schemas are
+promoted to local components, and internal references are retained where they
+preserve the contract topology.
 
-### 5. Generator
+Only selected external content enters the bundled model. Unrelated surrounding
+content from a foreign document is not imported. See
+[Bundle multi-file documents](../how-to/bundle-multi-file-documents.md).
 
-Converts the validated model into source code, schema files, and client contracts. Multiple generator capabilities can run in parallel. See [Generator](generator.md).
+## Plan outputs and check compatibility
 
-The generator has two inputs:
-- `GenerationInput` — describes what the contract contains
-- `GenerationPlan` — describes what configuration requested
+Configuration selects a source, schema, or document profile and activates its
+outputs. The generator turns that request into a finite set of work and checks
+whether the bundled contract can be represented by every selected target.
 
-Compatibility validation determines whether the requested outputs can consume the contract.
+This is where target-specific restrictions belong. A compatibility failure is
+reported explicitly instead of dropping contract data or producing an unsafe
+approximation. See [Generator configuration](../reference/generator-configuration.md)
+for valid profiles and combinations.
 
-## Design principles
+## Render every artifact
 
-- **Each stage owns its boundary.** The reader does not interpret AsyncAPI semantics. The parser does not validate business rules. The validator does not modify the model.
-- **Errors surface early.** Invalid input is rejected at the earliest stage that can detect it.
-- **Output is deterministic.** Given the same input and configuration, the generator produces identical output.
-- **Stages are independently testable.** Each stage has its own test suite that exercises its contract without depending on other stages.
+Compatible planned outputs are rendered as source files, schema artifacts,
+Spring Kafka contracts, or bundled documents. Rendering completes before the
+filesystem write stage begins, so a rendering failure does not leave earlier
+rendered artifacts in their destinations.
+
+The [generated output examples](../reference/generated-output-examples.md) link
+complete fixture-backed artifacts for representative workflows.
+
+## Preflight destinations and write outputs
+
+Before writing, the generator resolves each destination and rejects multiple
+artifacts that would target the same normalized path. It then stages rendered
+content and commits it to the configured source, resource, and document
+locations. Destination failures identify the affected artifact and path.
+
+Use [Troubleshooting](../how-to/troubleshooting.md) to identify which boundary
+reported a failure and the configuration or contract input to correct.
+
+## Stable boundaries
+
+- The reader owns syntax, source locations, and safety limits.
+- The parser and external loader own supported structure and local reference
+  resolution.
+- Semantic validation owns contract-wide findings over the parsed model.
+- Bundling owns the self-contained representation.
+- Planning and compatibility checks own requested target restrictions.
+- Rendering owns artifact content; writing owns filesystem destinations.
+
+These boundaries keep public behavior stable without making internal class or
+factory relationships part of the documentation contract.

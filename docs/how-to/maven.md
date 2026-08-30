@@ -1,5 +1,8 @@
 # Maven
 
+Replace `VERSION` with the published version shown on the
+[Maven plugin artifact page](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin).
+
 ## Generate Kotlin models
 
 Add the plugin to your `pom.xml` with one execution for the AsyncAPI document:
@@ -8,7 +11,7 @@ Add the plugin to your `pom.xml` with one execution for the AsyncAPI document:
 <plugin>
     <groupId>dev.banking.asyncapi.generator</groupId>
     <artifactId>asyncapi-generator-maven-plugin</artifactId>
-    <version>0.3.4-BETA</version>
+    <version>VERSION</version>
     <executions>
         <execution>
             <id>generate-kotlin-models</id>
