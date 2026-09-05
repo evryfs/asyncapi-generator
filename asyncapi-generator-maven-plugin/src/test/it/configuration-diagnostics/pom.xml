@@ -11,7 +11,7 @@
             <plugin>
                 <groupId>dev.banking.asyncapi.generator</groupId>
                 <artifactId>asyncapi-generator-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
+                <version>@project.version@</version>
                 <executions>
                     <execution>
                         <id>reject-inactive-configuration</id>

@@ -27,12 +27,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build with Maven and Install Core
-        run: mvn install -pl asyncapi-generator-core,asyncapi-generator-cli,asyncapi-generator-maven-plugin -am --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
-
-      - name: Run Gradle Plugin Tests
-        working-directory: asyncapi-generator-gradle-plugin
-        run: ./gradlew test -PasyncApiGeneratorVersion=1.0-SNAPSHOT
+      - name: Verify repository
+        run: mvn install --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
   documentation:
     runs-on: ubuntu-latest
