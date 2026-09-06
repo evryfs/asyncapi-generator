@@ -12,6 +12,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      cli-version: ${{ steps.cli-version.outputs.version }}
 
     steps:
       - name: Checkout code
@@ -28,7 +30,60 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Verify repository
-        run: mvn install --batch-mode -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+        run: mvn install --batch-mode -Pcli-distribution -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+      - name: Read packaged CLI version
+        id: cli-version
+        run: |
+          version=$(sed -n 's/^version=//p' asyncapi-generator-cli/target/maven-archiver/pom.properties)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Upload CLI distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-distributions
+          path: |
+            asyncapi-generator-cli/target/asyncapi-generator-*-bin.tar.gz
+            asyncapi-generator-cli/target/asyncapi-generator-*-bin.zip
+          if-no-files-found: error
+          compression-level: 0
+
+  cli-distribution:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CLI_VERSION: ${{ needs.build.outputs.cli-version }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Download CLI distributions
+        uses: actions/download-artifact@v5
+        with:
+          name: cli-distributions
+          path: cli-distributions
+
+      - name: Test Unix distribution
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sh .github/scripts/test-cli-distribution.sh "cli-distributions/asyncapi-generator-$CLI_VERSION-bin.tar.gz" "$CLI_VERSION"
+
+      - name: Test Windows distribution
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./.github/scripts/test-cli-distribution.ps1 -Archive "cli-distributions/asyncapi-generator-$env:CLI_VERSION-bin.zip" -Version $env:CLI_VERSION
 
   documentation:
     runs-on: ubuntu-latest
