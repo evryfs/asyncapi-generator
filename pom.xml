@@ -323,6 +323,8 @@
                         <configuration>
                             <publishingServerId>central</publishingServerId>
                             <autoPublish>true</autoPublish>
+                            <waitUntil>published</waitUntil>
+                            <deploymentName>asyncapi-generator-${project.version}</deploymentName>
                         </configuration>
                         <executions>
                             <execution>

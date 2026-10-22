@@ -10,6 +10,15 @@ permissions:
   contents: read
 
 jobs:
+  release-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Test release validation without publishing
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+
   build:
     runs-on: ubuntu-latest
     outputs:
