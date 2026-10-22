@@ -69,6 +69,9 @@ jobs:
       - name: Verify complete repository at release version
         run: mvn -B clean install -Pcli-distribution -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
+      - name: Record CLI archive checksums
+        run: python3 .github/scripts/release_assets.py asyncapi-generator-cli/target "$RELEASE_VERSION" --write
+
       - name: Retain CLI distributions for release smoke tests
         uses: actions/upload-artifact@v4
         with:
@@ -76,6 +79,7 @@ jobs:
           path: |
             asyncapi-generator-cli/target/asyncapi-generator-*-bin.tar.gz
             asyncapi-generator-cli/target/asyncapi-generator-*-bin.zip
+            asyncapi-generator-cli/target/SHA256SUMS
           if-no-files-found: error
           compression-level: 0
 
@@ -215,3 +219,103 @@ jobs:
           cat >> "$GITHUB_STEP_SUMMARY" <<'EOF'
           Gradle Plugin Portal publication failed. Inspect the portal version and approval/upload state before retrying this destination. Activated versions cannot be replaced. Keep successful Central publication jobs completed.
           EOF
+
+  published-artifacts:
+    needs: [prepare, maven-central, gradle-central, gradle-portal]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        destination: [maven, gradle-central, gradle-portal]
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+      SMOKE_DESTINATION: ${{ matrix.destination }}
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - name: Set up JDK 21 without dependency caches
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Resolve and execute published artifacts using empty caches
+        run: sh .github/scripts/test-published-artifacts.sh "$RELEASE_VERSION" "$SMOKE_DESTINATION"
+
+  cli-distributions:
+    needs: [prepare, verify, maven-central, gradle-central, gradle-portal]
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      RELEASE_VERSION: ${{ needs.prepare.outputs.version }}
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v5
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Download verified CLI distributions
+        uses: actions/download-artifact@v5
+        with:
+          name: release-cli-distributions
+          path: release-assets
+
+      - name: Verify archive checksums
+        shell: bash
+        run: python .github/scripts/release_assets.py release-assets "$RELEASE_VERSION"
+
+      - name: Test Unix distribution
+        if: runner.os == 'Linux'
+        shell: bash
+        run: sh .github/scripts/test-cli-distribution.sh "release-assets/asyncapi-generator-$RELEASE_VERSION-bin.tar.gz" "$RELEASE_VERSION"
+
+      - name: Test Windows distribution
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./.github/scripts/test-cli-distribution.ps1 -Archive "release-assets/asyncapi-generator-${env:RELEASE_VERSION}-bin.zip" -Version $env:RELEASE_VERSION
+
+  finalize:
+    needs: [prepare, verify, maven-central, gradle-central, gradle-portal, published-artifacts, cli-distributions]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+      RELEASE_SHA: ${{ needs.prepare.outputs.sha }}
+      RELEASE_ID: ${{ needs.prepare.outputs.release-id }}
+      ASSET_DIRECTORY: release-assets
+    steps:
+      - name: Checkout release commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - name: Download tested CLI distributions
+        uses: actions/download-artifact@v5
+        with:
+          name: release-cli-distributions
+          path: release-assets
+
+      - name: Attach tested assets and publish the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 .github/scripts/finalize_release.py
