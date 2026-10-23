@@ -56,5 +56,6 @@ nav:
           - Changing the parser: contributing/changing-the-parser.md
           - Documentation: contributing/documentation.md
           - Release documentation: contributing/release-readiness.md
+          - Publish a release: contributing/releasing.md
           - KDoc style guide: contributing/kdoc-style-guide.md
       - Coverage: coverage/index.md

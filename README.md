@@ -84,11 +84,13 @@ asyncApiGenerator {
 
 ### CLI
 
-Installation and download options are covered by the
-[CLI guide](https://evryfs.github.io/asyncapi-generator/how-to/cli/). After
-installation, run:
+The [CLI guide](https://evryfs.github.io/asyncapi-generator/how-to/cli/) covers
+portable release archives for Linux, macOS, and Windows, plus direct
+`java -jar` execution from Maven Central. With the distribution's `bin`
+directory on `PATH`, check the version and generate models:
 
 ```shell
+asyncapi-generator --version
 asyncapi-generator \
   --input-spec src/main/resources/asyncapi.yaml \
   --generator-name kotlin \
