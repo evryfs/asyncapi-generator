@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.jvm.toolchain.JavaLanguageVersion
+import org.gradle.api.publish.maven.tasks.PublishToMavenRepository
 
 val asyncApiGeneratorVersion: String by project
 
@@ -89,7 +90,9 @@ signing {
         useInMemoryPgpKeys(signingKey, signingPassword)
         sign(publishing.publications)
     }
-    isRequired = System.getenv("CI") != null
+    setRequired {
+        gradle.taskGraph.allTasks.any { it is PublishToMavenRepository || it.name == "publishPlugins" }
+    }
 }
 
 nexusPublishing {

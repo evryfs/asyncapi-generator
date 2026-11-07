@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.example.smoke</groupId>
+    <artifactId>published-generator-consumer</artifactId>
+    <version>1</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.banking.asyncapi.generator</groupId>
+                <artifactId>asyncapi-generator-maven-plugin</artifactId>
+                <version>${generator.version}</version>
+                <configuration>
+                    <inputSpec>${project.basedir}/api.yaml</inputSpec>
+                    <generatorName>kotlin</generatorName>
+                    <modelPackage>com.example.smoke.model</modelPackage>
+                    <outputDirectory>${project.build.directory}/generated</outputDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

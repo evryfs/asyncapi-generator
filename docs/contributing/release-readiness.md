@@ -9,6 +9,9 @@ Completing the checklist is a release gate, not a claim that the project or a
 particular release is ready for stable use. Keep the project's beta status
 truthful unless a separate decision changes it.
 
+After completing this review, follow [Publish a release](releasing.md) for
+credentials, tag preparation, workflow dispatch, and publication recovery.
+
 ## Confirm release scope and status
 
 - [ ] Define the user-visible behavior and supported capabilities included in
@@ -71,17 +74,17 @@ truthful unless a separate decision changes it.
 
 ## Prepare GitHub release notes
 
-GitHub release notes are the repository's release-note surface. Publishing a
-GitHub release triggers `.github/workflows/release.yml`, so documentation and
-release-note review must finish before the release is published.
+GitHub release notes are the repository's release-note surface. Prepare and
+review the notes in a **draft** release. The manually dispatched Release
+workflow publishes that draft only after publication and smoke tests succeed.
 
 - [ ] Describe user-visible behavior and supported-capability changes.
 - [ ] Identify breaking API or configuration changes.
 - [ ] State retained limitations and intentionally deferred work.
 - [ ] Confirm that artifact and version identity match the release tag.
 - [ ] Link relevant canonical documentation under `docs/`.
-- [ ] Review and approve the complete GitHub release notes before publishing
-      the release.
+- [ ] Review and approve the complete GitHub release notes before dispatching
+      the Release workflow; leave the release as a draft.
 
 ## Run the final repository gate
 
