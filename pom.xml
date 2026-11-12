@@ -296,6 +296,12 @@
 
     <profiles>
         <profile>
+            <id>system-test</id>
+            <modules>
+                <module>asyncapi-generator-system-test</module>
+            </modules>
+        </profile>
+        <profile>
             <id>release</id>
             <build>
                 <plugins>
