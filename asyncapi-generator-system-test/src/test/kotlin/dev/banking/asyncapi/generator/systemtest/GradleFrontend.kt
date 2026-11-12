@@ -16,7 +16,7 @@ internal class GradleFrontend(
     private val environment: SystemTestEnvironment,
     private val runner: ProcessRunner,
 ) {
-    private val dependencies = ConsumerDependencies(environment.kotlinVersion)
+    private val dependencies = ConsumerDependencies(environment.libraries)
 
     /** Generates, compiles, and runs the checks for [scenario]; returns the generated source directory. */
     fun build(scenario: Scenario, projectDirectory: File): File {
@@ -82,14 +82,12 @@ internal class GradleFrontend(
 
     private fun buildScript(config: GenerationConfig): String = """
         |plugins {
-        |    kotlin("jvm") version "${environment.kotlinVersion}"
+        |    kotlin("jvm") version "${environment.libraries.kotlin}"
         |    id("$GENERATOR_GROUP") version "${environment.version}"
         |}
         |
         |dependencies {
-        |    implementation(platform("org.springframework.boot:spring-boot-dependencies:${environment.springBootVersion}"))
         |${dependencyDeclarations()}
-        |    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
         |}
         |
         |java {
@@ -118,11 +116,12 @@ internal class GradleFrontend(
         |""".trimMargin()
 
     private fun dependencyDeclarations(): String =
-        (dependencies.implementation.map { "implementation" to it } + dependencies.test.map { "testImplementation" to it })
-            .joinToString("\n") { (configuration, dependency) ->
-                val coordinates = listOfNotNull(dependency.group, dependency.artifact, dependency.version).joinToString(":")
-                "    $configuration(\"$coordinates\")"
-            }
+        listOf(
+            "implementation" to dependencies.implementation,
+            "testImplementation" to dependencies.test,
+            "testRuntimeOnly" to dependencies.gradleTestRuntime,
+        ).flatMap { (configuration, declared) -> declared.map { "    $configuration(\"$it\")" } }
+            .joinToString("\n")
 
     private fun executionConfiguration(config: GenerationConfig): String = buildList {
         add("generatorName.set(${config.generatorName.kotlinStringLiteral()})")

@@ -13,7 +13,6 @@
 
     <properties>
         <system-test.repository>${project.build.directory}/system-test-repo</system-test.repository>
-        <system-test.spring-boot.version>4.0.1</system-test.spring-boot.version>
         <system-test.gradle.version>9.5.1</system-test.gradle.version>
         <system-test.process-timeout-seconds>600</system-test.process-timeout-seconds>
         <maven.install.skip>true</maven.install.skip>
@@ -152,7 +151,10 @@
                         <system-test.user-repository>${settings.localRepository}</system-test.user-repository>
                         <system-test.maven-home>${maven.home}</system-test.maven-home>
                         <system-test.kotlin.version>${kotlin.version}</system-test.kotlin.version>
-                        <system-test.spring-boot.version>${system-test.spring-boot.version}</system-test.spring-boot.version>
+                        <system-test.spring-kafka.version>${spring-kafka.version}</system-test.spring-kafka.version>
+                        <system-test.jakarta-validation.version>${jakarta-validation.version}</system-test.jakarta-validation.version>
+                        <system-test.jackson-annotations.version>${jackson-annotations.version}</system-test.jackson-annotations.version>
+                        <system-test.junit.version>${junit.jupiter.version}</system-test.junit.version>
                         <system-test.gradle.version>${system-test.gradle.version}</system-test.gradle.version>
                         <system-test.gradle-wrapper>${project.basedir}/../asyncapi-generator-gradle-plugin</system-test.gradle-wrapper>
                         <system-test.scenarios>${project.basedir}/src/test/scenarios</system-test.scenarios>

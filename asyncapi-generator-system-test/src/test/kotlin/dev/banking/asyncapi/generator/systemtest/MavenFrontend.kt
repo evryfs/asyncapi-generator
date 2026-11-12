@@ -16,7 +16,7 @@ internal class MavenFrontend(
     private val environment: SystemTestEnvironment,
     private val runner: ProcessRunner,
 ) {
-    private val dependencies = ConsumerDependencies(environment.kotlinVersion)
+    private val dependencies = ConsumerDependencies(environment.libraries)
 
     /** Generates, compiles, and runs the checks for [scenario]; returns the generated source directory. */
     fun build(scenario: Scenario, projectDirectory: File): File {
@@ -52,17 +52,6 @@ internal class MavenFrontend(
         |        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         |        <maven.compiler.release>21</maven.compiler.release>
         |    </properties>
-        |    <dependencyManagement>
-        |        <dependencies>
-        |            <dependency>
-        |                <groupId>org.springframework.boot</groupId>
-        |                <artifactId>spring-boot-dependencies</artifactId>
-        |                <version>${environment.springBootVersion}</version>
-        |                <type>pom</type>
-        |                <scope>import</scope>
-        |            </dependency>
-        |        </dependencies>
-        |    </dependencyManagement>
         |    <dependencies>
         |${dependencyElements()}
         |    </dependencies>
@@ -89,7 +78,7 @@ internal class MavenFrontend(
         |            <plugin>
         |                <groupId>org.jetbrains.kotlin</groupId>
         |                <artifactId>kotlin-maven-plugin</artifactId>
-        |                <version>${environment.kotlinVersion}</version>
+        |                <version>${environment.libraries.kotlin}</version>
         |                <configuration>
         |                    <jvmTarget>21</jvmTarget>
         |                </configuration>
@@ -120,7 +109,7 @@ internal class MavenFrontend(
                     append("        <dependency>")
                     append("<groupId>${dependency.group}</groupId>")
                     append("<artifactId>${dependency.artifact}</artifactId>")
-                    dependency.version?.let { append("<version>$it</version>") }
+                    append("<version>${dependency.version}</version>")
                     scope?.let { append("<scope>$it</scope>") }
                     append("</dependency>")
                 }

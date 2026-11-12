@@ -15,19 +15,21 @@ mvn test -pl asyncapi-generator-core
 
 The `asyncapi-generator-system-test` module runs every scenario through the
 packaged CLI, a real Maven build, and a real Gradle build. The Maven and Gradle
-builds compile the generated code against Spring Boot and run the scenario's
-checks; all three frontends must produce identical output. The module is only
-built with the `system-test` profile and is never published.
+builds compile the generated code against the library versions declared in
+the root `pom.xml` (Spring Kafka, Jakarta Validation, Jackson annotations,
+Kotlin) and run the scenario's checks; all three frontends must produce
+identical output. The module is only built with the `system-test` profile and
+is never published.
 
 ```bash
 mvn verify -Psystem-test -pl asyncapi-generator-system-test -am
 ```
 
 Add `-Dinvoker.skip=true` to skip the Maven plugin's own integration tests while
-iterating. Override versions for a compatibility check with:
+iterating. Override versions for a compatibility check with, for example:
 
 ```bash
--Dsystem-test.spring-boot.version=<version>
+-Dspring-kafka.version=<version>
 -Dsystem-test.gradle.version=<version>
 ```
 

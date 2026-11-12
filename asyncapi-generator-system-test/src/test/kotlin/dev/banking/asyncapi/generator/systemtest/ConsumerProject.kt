@@ -3,33 +3,40 @@ package dev.banking.asyncapi.generator.systemtest
 import java.io.File
 
 /**
- * A dependency of a consumer build; the version comes from the Spring Boot BOM when null.
+ * A dependency of a consumer build.
  *
  * @property group Maven group id.
  * @property artifact Maven artifact id.
- * @property version Explicit version, or null when the BOM manages it.
+ * @property version Version, taken from the project's shared [LibraryVersions].
  */
 internal data class Dependency(
     val group: String,
     val artifact: String,
-    val version: String? = null,
-)
+    val version: String,
+) {
+    override fun toString(): String = "$group:$artifact:$version"
+}
 
 /**
  * Libraries a consumer of generated Kotlin Spring Kafka code needs to compile it and run its checks.
  *
- * @param kotlinVersion Version for Kotlin artifacts the BOM does not manage.
+ * @param versions Project-wide library versions.
  */
-internal class ConsumerDependencies(kotlinVersion: String) {
+internal class ConsumerDependencies(versions: LibraryVersions) {
     val implementation: List<Dependency> = listOf(
-        Dependency("org.jetbrains.kotlin", "kotlin-stdlib"),
-        Dependency("org.springframework.kafka", "spring-kafka"),
-        Dependency("jakarta.validation", "jakarta.validation-api"),
-        Dependency("com.fasterxml.jackson.core", "jackson-annotations"),
+        Dependency("org.jetbrains.kotlin", "kotlin-stdlib", versions.kotlin),
+        Dependency("org.springframework.kafka", "spring-kafka", versions.springKafka),
+        Dependency("jakarta.validation", "jakarta.validation-api", versions.jakartaValidation),
+        Dependency("com.fasterxml.jackson.core", "jackson-annotations", versions.jacksonAnnotations),
     )
     val test: List<Dependency> = listOf(
-        Dependency("org.jetbrains.kotlin", "kotlin-test-junit5", kotlinVersion),
-        Dependency("org.junit.jupiter", "junit-jupiter"),
+        Dependency("org.jetbrains.kotlin", "kotlin-test-junit5", versions.kotlin),
+        Dependency("org.junit.jupiter", "junit-jupiter", versions.junit),
+    )
+
+    /** JUnit launcher Gradle needs at test runtime; JUnit 6 versions it together with Jupiter. */
+    val gradleTestRuntime: List<Dependency> = listOf(
+        Dependency("org.junit.platform", "junit-platform-launcher", versions.junit),
     )
 }
 

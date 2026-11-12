@@ -13,8 +13,8 @@ import java.time.Duration
  * @property repository Isolated local repository holding the staged frontends.
  * @property userRepository The developer's local repository, used read-only as a download cache.
  * @property mavenHome Maven installation that runs Maven consumer builds.
- * @property kotlinVersion Kotlin version used by consumer builds.
- * @property springBootVersion Spring Boot BOM version that consumer builds compile against.
+ * @property libraries Versions of the libraries consumer builds compile generated code against,
+ *   taken from the project's root pom so the whole project shares one set.
  * @property gradleVersion Gradle version that consumer builds run on.
  * @property gradleWrapperSource Directory holding the `gradlew` scripts and wrapper jar to copy.
  * @property scenarios Directory holding scenario specs and checks.
@@ -26,8 +26,7 @@ internal data class SystemTestEnvironment(
     val repository: File,
     val userRepository: File,
     val mavenHome: File,
-    val kotlinVersion: String,
-    val springBootVersion: String,
+    val libraries: LibraryVersions,
     val gradleVersion: String,
     val gradleWrapperSource: File,
     val scenarios: File,
@@ -50,8 +49,13 @@ internal data class SystemTestEnvironment(
                 repository = File(property("repository")),
                 userRepository = File(property("user-repository")),
                 mavenHome = File(property("maven-home")),
-                kotlinVersion = property("kotlin.version"),
-                springBootVersion = property("spring-boot.version"),
+                libraries = LibraryVersions(
+                    kotlin = property("kotlin.version"),
+                    springKafka = property("spring-kafka.version"),
+                    jakartaValidation = property("jakarta-validation.version"),
+                    jacksonAnnotations = property("jackson-annotations.version"),
+                    junit = property("junit.version"),
+                ),
                 gradleVersion = property("gradle.version"),
                 gradleWrapperSource = File(property("gradle-wrapper")),
                 scenarios = File(property("scenarios")),
@@ -65,3 +69,20 @@ internal data class SystemTestEnvironment(
                 ?: error("Missing system property 'system-test.$name'. Run with: mvn verify -Psystem-test")
     }
 }
+
+/**
+ * Library versions shared by the whole project, as declared in the root pom.
+ *
+ * @property kotlin Kotlin standard library and test library version.
+ * @property springKafka Spring Kafka version; brings Spring Messaging, Spring Context, and Kafka clients.
+ * @property jakartaValidation Jakarta Validation API version.
+ * @property jacksonAnnotations Jackson annotations version (minor-only since Jackson 2.20).
+ * @property junit JUnit version for the scenario checks.
+ */
+internal data class LibraryVersions(
+    val kotlin: String,
+    val springKafka: String,
+    val jakartaValidation: String,
+    val jacksonAnnotations: String,
+    val junit: String,
+)

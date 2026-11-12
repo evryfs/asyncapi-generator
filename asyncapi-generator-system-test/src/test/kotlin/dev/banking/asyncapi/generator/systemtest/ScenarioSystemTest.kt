@@ -8,8 +8,8 @@ import org.junit.jupiter.api.TestFactory
 /**
  * Runs every scenario through the CLI, the Maven plugin, and the Gradle plugin.
  *
- * Maven and Gradle builds compile the generated code against the configured
- * Spring Boot BOM and run the scenario's checks; a failing check fails the build.
+ * Maven and Gradle builds compile the generated code against the project's
+ * shared library versions and run the scenario's checks; a failing check fails the build.
  * All three frontends must then have produced identical output.
  */
 class ScenarioSystemTest {
