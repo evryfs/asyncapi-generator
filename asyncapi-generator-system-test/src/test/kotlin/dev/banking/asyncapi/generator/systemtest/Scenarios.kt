@@ -3,8 +3,18 @@ package dev.banking.asyncapi.generator.systemtest
 private const val VALIDATED = "org.springframework.validation.annotation.Validated"
 private const val VALID = "jakarta.validation.Valid"
 
-/** Every scenario exercised end to end by [ScenarioSystemTest]. */
-internal val scenarios: List<Scenario> = listOf(
+/**
+ * Every scenario exercised end to end by [ScenarioSystemTest].
+ *
+ * Set `-Dsystem-test.only=<name>,<name>` to run only some of them while developing.
+ */
+internal val scenarios: List<Scenario>
+    get() {
+        val selected = System.getProperty("system-test.only")?.split(",")?.map(String::trim)
+        return allScenarios.filter { selected == null || it.name in selected }
+    }
+
+private val allScenarios: List<Scenario> = listOf(
     Scenario(
         name = "spring-kafka-contract",
         executions = listOf(
@@ -219,13 +229,93 @@ internal val scenarios: List<Scenario> = listOf(
         libraries = setOf(Library.SPRING_KAFKA, Library.AVRO),
     ),
     Scenario(
-        name = "configuration-diagnostics",
+        name = "shared-client-config",
         executions = listOf(
-            Execution(id = "no-output", generatorName = "kotlin"),
+            Execution(
+                id = "client",
+                generatorName = "kotlin",
+                modelPackage = "com.example.shared.model",
+                clientPackage = "com.example.shared.client",
+            ),
+            Execution(id = "models", generatorName = "kotlin", modelPackage = "com.example.models"),
+            Execution(id = "schemas", generatorName = "avro-schema", schemaPackage = "com.example.schemas"),
         ),
-        expectedFailure = ExpectedFailure(
-            message = "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
-                "schemaPackage with a schema generator, or outputFile.",
+        client = ClientConfig(),
+        sharedClientConfig = true,
+        libraries = setOf(Library.SPRING_KAFKA),
+        expectedWarnings = listOf("unused-client-config"),
+        knownIssues = mapOf(
+            "Maven generates, compiles, and passes checks" to
+                "Maven rejects shared clientConfig on executions without clientPackage instead of warning",
+            "CLI generates" to "the CLI rejects client options without clientPackage instead of warning",
+            "all frontends generate identical output" to "Maven and the CLI reject shared clientConfig",
+            "every frontend warns 'unused-client-config'" to "unused clientConfig is ignored without a warning",
         ),
     ),
+    diagnostic(
+        name = "missing-output",
+        execution = Execution(id = "no-output", generatorName = "kotlin"),
+        expected = ExpectedFailure(
+            messages = listOf(
+                "No generator output is configured. Configure modelPackage, clientPackage with clientConfig, " +
+                    "schemaPackage with a schema generator, or outputFile.",
+            ),
+        ),
+    ),
+    diagnostic(
+        name = "missing-input-spec",
+        execution = Execution(id = "missing-input", generatorName = "kotlin", inputSpec = "missing.yaml"),
+        expected = ExpectedFailure(
+            messages = listOf("missing.yaml", "does not exist"),
+            absent = listOf("No generator output is configured"),
+        ),
+        knownIssues = mapOf(
+            "Maven fails with the expected diagnostic" to
+                "Maven validates the configuration before checking that inputSpec exists",
+        ) + gradleFailures("Gradle reports 'Unable to read input document' instead of saying the file does not exist"),
+    ),
+    diagnostic(
+        name = "unknown-generator",
+        execution = Execution(id = "unknown-generator", generatorName = "cobol", modelPackage = "com.example.model"),
+        expected = ExpectedFailure(messages = listOf("cobol", "asyncapi-json")),
+    ),
+    diagnostic(
+        name = "unknown-model-type",
+        execution = Execution(
+            id = "unknown-model-type",
+            generatorName = "kotlin",
+            modelPackage = "com.example.model",
+            modelType = "punch-card",
+        ),
+        expected = ExpectedFailure(messages = listOf("punch-card", "protobuf-message")),
+    ),
+    diagnostic(
+        name = "client-package-without-client-config",
+        execution = Execution(
+            id = "client-without-config",
+            generatorName = "kotlin",
+            modelPackage = "com.example.model",
+            clientPackage = "com.example.client",
+        ),
+        expected = ExpectedFailure(messages = listOf("clientConfig is required when clientPackage is configured")),
+        knownIssues = gradleFailures("Gradle reports 'clientConfig.clientType is required' without naming clientPackage"),
+    ),
+)
+
+/** The same known issue for the failure test of both Gradle DSLs. */
+private fun gradleFailures(issue: String): Map<String, String> =
+    listOf("Gradle", "Gradle Groovy DSL").associate { "$it fails with the expected diagnostic" to issue }
+
+/** A configuration mistake every frontend must reject; all diagnostics share one valid contract. */
+private fun diagnostic(
+    name: String,
+    execution: Execution,
+    expected: ExpectedFailure,
+    knownIssues: Map<String, String> = emptyMap(),
+) = Scenario(
+    name = "diagnostics-$name",
+    files = "configuration-diagnostics",
+    executions = listOf(execution),
+    expectedFailure = expected,
+    knownIssues = knownIssues,
 )

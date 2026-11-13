@@ -60,8 +60,9 @@ internal class MavenFrontend(
         |                <groupId>dev.banking.asyncapi.generator</groupId>
         |                <artifactId>asyncapi-generator-maven-plugin</artifactId>
         |                <version>${environment.version}</version>
+        |${pluginConfiguration(scenario)}
         |                <executions>
-        |${scenario.executions.joinToString("\n") { execution(it, scenario.client) }}
+        |${scenario.executions.joinToString("\n") { execution(it, scenario.client.takeUnless { scenario.sharedClientConfig }) }}
         |                </executions>
         |            </plugin>
         |            <plugin>
@@ -104,6 +105,14 @@ internal class MavenFrontend(
                 }
             }
 
+    /** Plugin-level configuration, which Maven merges into every execution. */
+    private fun pluginConfiguration(scenario: Scenario): String {
+        val client = scenario.client?.takeIf { scenario.sharedClientConfig } ?: return ""
+        return (listOf("<configuration>") + clientConfiguration(client).map { "    $it" } + "</configuration>")
+            .joinToString("\n") { "                $it" }
+    }
+
+    /** Execution-level configuration; [client] only reaches executions with a client package. */
     private fun execution(execution: Execution, client: ClientConfig?): String = buildList {
         add("<execution>")
         add("    <id>${execution.id.xmlEscaped()}</id>")

@@ -11,22 +11,40 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 /**
- * Runs every scenario through the Maven plugin, the Gradle plugin, and the CLI.
+ * Runs every scenario through the Maven plugin, the Gradle plugin (Kotlin and Groovy DSL), and the CLI.
  *
- * Maven and Gradle builds compile the generated code against the project's
+ * Maven and Gradle Kotlin DSL builds compile the generated code against the project's
  * shared library versions and run the scenario's checks; a failing check fails the build.
- * All three frontends must then have produced identical output, and code generated
- * from a bundled document must match code generated from the original contract.
- * Scenarios with an [ExpectedFailure] instead require every frontend to report it.
+ * The Groovy DSL build and the CLI only generate. All frontends must then have produced
+ * identical output, and code generated from a bundled document must match code generated
+ * from the original contract. Scenarios with an [ExpectedFailure] instead require every
+ * frontend to report it.
  */
 class ScenarioSystemTest {
     private val environment = SystemTestEnvironment.current
     private val runner = ProcessRunner(environment.processTimeout)
     private val cli = CliFrontend(environment, runner)
-    private val frontends: Map<String, (Scenario, File) -> FrontendRun> = linkedMapOf(
-        "Maven" to MavenFrontend(environment, runner)::run,
-        "Gradle" to GradleFrontend(environment, runner)::run,
-        "CLI" to cli::run,
+    private val frontends = listOf(
+        Frontend("Maven", "maven", buildsConsumer = true, MavenFrontend(environment, runner)::run),
+        Frontend("Gradle", "gradle", buildsConsumer = true, GradleFrontend(environment, runner)::run),
+        Frontend(
+            "Gradle Groovy DSL",
+            "gradle-groovy",
+            buildsConsumer = false,
+            GradleFrontend(environment, runner, GradleDsl.GROOVY, listOf("generateAsyncApi"))::run,
+        ),
+        Frontend("CLI", "cli", buildsConsumer = false, cli::run),
+    )
+
+    /**
+     * @property directory Work subdirectory of a scenario for this frontend.
+     * @property buildsConsumer Whether [run] also compiles the output and runs the scenario checks.
+     */
+    private class Frontend(
+        val name: String,
+        val directory: String,
+        val buildsConsumer: Boolean,
+        val run: (Scenario, File) -> FrontendRun,
     )
 
     @TestFactory
@@ -35,6 +53,8 @@ class ScenarioSystemTest {
         val tests = scenario.expectedFailure
             ?.let { failure -> failureTests(scenario, failure, work) }
             ?: successTests(scenario, work)
+        val unmatched = scenario.knownIssues.keys - tests.map(DynamicTest::getDisplayName).toSet()
+        check(unmatched.isEmpty()) { "Scenario ${scenario.name} lists known issues for tests it does not have: $unmatched" }
         dynamicContainer(scenario.name, tests.map { it.withKnownIssue(scenario) })
     }
 
@@ -51,17 +71,28 @@ class ScenarioSystemTest {
 
     private fun successTests(scenario: Scenario, work: File): List<DynamicTest> {
         val runs = linkedMapOf<String, FrontendRun>()
-        val frontendTests = frontends.map { (name, run) ->
-            dynamicTest("$name generates${if (name == "CLI") "" else ", compiles, and passes checks"}") {
-                val frontendRun = run(scenario, work.resolve(name.lowercase()))
-                frontendRun.result.assertSuccess(name)
+        val frontendTests = frontends.map { frontend ->
+            val verb = if (frontend.buildsConsumer) "generates, compiles, and passes checks" else "generates"
+            dynamicTest("${frontend.name} $verb") {
+                val frontendRun = frontend.run(scenario, work.resolve(frontend.directory))
+                frontendRun.result.assertSuccess(frontend.name)
                 assertNoArtifactsWithoutPackages(scenario, frontendRun)
-                runs[name] = frontendRun
+                runs[frontend.name] = frontendRun
             }
         }
+        fun allRuns(): Map<String, FrontendRun> {
+            check(runs.size == frontends.size) { "Skipped: a frontend failed to generate (succeeded: ${runs.keys})" }
+            return runs
+        }
         val identicalOutput = dynamicTest("all frontends generate identical output") {
-            check(runs.size == frontends.size) { "Skipped: a frontend failed to generate (${runs.keys})" }
-            assertSameOutput(runs.mapValues { (_, run) -> GeneratedOutput.read(run) })
+            assertSameOutput(allRuns().mapValues { (_, run) -> GeneratedOutput.read(run) })
+        }
+        val warnings = scenario.expectedWarnings.map { warning ->
+            dynamicTest("every frontend warns '$warning'") {
+                allRuns().forEach { (name, run) ->
+                    assertTrue(warning in run.result.output, "$name output lacks '$warning'. Full log: ${run.result.log}")
+                }
+            }
         }
         val roundTrips = scenario.executions
             .filter { it.outputFile != null && it.generatesArtifacts }
@@ -70,18 +101,21 @@ class ScenarioSystemTest {
                     assertBundleRoundTrip(scenario, execution, work.resolve("round-trip/${execution.id}"))
                 }
             }
-        return frontendTests + identicalOutput + roundTrips
+        return frontendTests + identicalOutput + warnings + roundTrips
     }
 
     private fun failureTests(scenario: Scenario, failure: ExpectedFailure, work: File): List<DynamicTest> =
-        frontends.map { (name, run) ->
+        frontends.map { frontend ->
+            val name = frontend.name
             dynamicTest("$name fails with the expected diagnostic") {
-                val result = run(scenario, work.resolve(name.lowercase())).result
+                val result = frontend.run(scenario, work.resolve(frontend.directory)).result
                 assertNotEquals(0, result.exitCode, "$name was expected to fail. Full log: ${result.log}")
-                assertTrue(
-                    failure.message in result.output,
-                    "$name output lacks '${failure.message}'. Full log: ${result.log}\n${result.tail()}",
-                )
+                failure.messages.forEach { message ->
+                    assertTrue(
+                        message in result.output,
+                        "$name output lacks '$message'. Full log: ${result.log}\n${result.tail()}",
+                    )
+                }
                 failure.absent.forEach { text ->
                     assertFalse(text in result.output, "$name output contains '$text'. Full log: ${result.log}")
                 }
@@ -100,7 +134,7 @@ class ScenarioSystemTest {
             outputDirectory = "original",
             outputFile = bundleName,
         )
-        cli.generate(original, scenario.client, project).assertSuccess("Generating from the original contract")
+        cli.generate(original, scenario.client, project, scenario.sharedClientConfig).assertSuccess("Generating from the original contract")
         project.resolve(bundleName).copyTo(project.resolve(ConsumerProject.SPEC_DIRECTORY).resolve(bundleName))
 
         val fromBundle = execution.copy(
@@ -109,7 +143,7 @@ class ScenarioSystemTest {
             outputDirectory = "from-bundle",
             outputFile = null,
         )
-        cli.generate(fromBundle, scenario.client, project).assertSuccess("Generating from the bundled document")
+        cli.generate(fromBundle, scenario.client, project, scenario.sharedClientConfig).assertSuccess("Generating from the bundled document")
 
         assertSameOutput(
             linkedMapOf(

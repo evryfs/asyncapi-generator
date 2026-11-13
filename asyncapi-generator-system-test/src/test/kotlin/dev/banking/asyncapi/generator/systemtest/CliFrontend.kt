@@ -21,15 +21,25 @@ internal class CliFrontend(
         ConsumerProject.prepare(scenario, environment, projectDirectory)
         var result: ProcessResult? = null
         for (execution in scenario.executions) {
-            result = generate(execution, scenario.client, projectDirectory)
+            result = generate(execution, scenario.client, projectDirectory, scenario.sharedClientConfig)
             if (result.exitCode != 0) break
         }
         return FrontendRun.of(scenario, projectDirectory, checkNotNull(result)) { DEFAULT_OUTPUT_DIRECTORY }
     }
 
-    /** Runs one execution in an existing [projectDirectory] without checking the exit code. */
-    fun generate(execution: Execution, client: ClientConfig?, projectDirectory: File): ProcessResult {
-        val command = listOf(javaExecutable(), "-jar", environment.cliJar.path) + arguments(execution, client)
+    /**
+     * Runs one execution in an existing [projectDirectory] without checking the exit code.
+     *
+     * @param sharedClient Pass [client] even when the execution has no client package.
+     */
+    fun generate(
+        execution: Execution,
+        client: ClientConfig?,
+        projectDirectory: File,
+        sharedClient: Boolean = false,
+    ): ProcessResult {
+        val command = listOf(javaExecutable(), "-jar", environment.cliJar.path) +
+            arguments(execution, client?.takeIf { sharedClient || execution.clientPackage != null })
         return runner.run(command, projectDirectory, projectDirectory.resolve("logs/${execution.id}.log"))
     }
 
@@ -43,7 +53,7 @@ internal class CliFrontend(
         execution.schemaPackage?.let { add("--schema-package"); add(it) }
         execution.modelType?.let { add("--model-type"); add(it) }
         execution.modelAnnotation?.let { add("--model-annotation"); add(it) }
-        client?.takeIf { execution.clientPackage != null }?.let { addAll(clientArguments(it)) }
+        client?.let { addAll(clientArguments(it)) }
     }
 
     private fun clientArguments(client: ClientConfig): List<String> = buildList {
