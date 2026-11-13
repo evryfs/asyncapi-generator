@@ -35,6 +35,9 @@ iterating. Override versions for a compatibility check with, for example:
 -Dsystem-test.gradle.version=<version>
 ```
 
+CI runs the system tests on JDK 21 and 25 with Gradle 9.5.1, and on JDK 21 with
+Gradle 8.14.3, the oldest Gradle line that is tested.
+
 Consumer projects, generated output, and build logs are kept under
 `asyncapi-generator-system-test/target/system-test-work/<scenario>/` for
 inspection after a failure.

@@ -252,6 +252,39 @@ private val allScenarios: List<Scenario> = listOf(
             "every frontend warns 'unused-client-config'" to "unused clientConfig is ignored without a warning",
         ),
     ),
+    Scenario(
+        name = "java-client",
+        executions = listOf(
+            Execution(
+                id = "java-client",
+                generatorName = "java",
+                modelPackage = "com.example.java.model",
+                clientPackage = "com.example.java.client",
+            ),
+            Execution(
+                id = "java-protobuf",
+                generatorName = "java",
+                inputSpec = "native-protobuf.yaml",
+                modelPackage = "com.example.java.protobuf",
+                modelType = "protobuf-message",
+            ),
+        ),
+        client = ClientConfig(),
+        libraries = setOf(Library.SPRING_KAFKA, Library.PROTOBUF),
+    ),
+    Scenario(
+        name = "producer-only",
+        executions = listOf(
+            Execution(
+                id = "producer",
+                generatorName = "kotlin",
+                modelPackage = "com.example.producer.model",
+                clientPackage = "com.example.producer.client",
+            ),
+        ),
+        client = ClientConfig(consumerEnabled = false),
+        libraries = setOf(Library.SPRING_KAFKA),
+    ),
     diagnostic(
         name = "missing-output",
         execution = Execution(id = "no-output", generatorName = "kotlin"),
@@ -290,6 +323,24 @@ private val allScenarios: List<Scenario> = listOf(
         expected = ExpectedFailure(messages = listOf("punch-card", "protobuf-message")),
     ),
     diagnostic(
+        name = "document-without-output-file",
+        execution = Execution(id = "document", generatorName = "asyncapi-yaml"),
+        expected = ExpectedFailure(messages = listOf("outputFile is required when generatorName is asyncapi-yaml")),
+    ),
+    diagnostic(
+        name = "unqualified-validation-annotation",
+        execution = Execution(
+            id = "unqualified-annotation",
+            generatorName = "kotlin",
+            modelPackage = "com.example.model",
+            clientPackage = "com.example.client",
+        ),
+        client = ClientConfig(clientContractValidationAnnotation = "Validated"),
+        expected = ExpectedFailure(
+            messages = listOf("validationAnnotations.clientContract must be a fully qualified type name"),
+        ),
+    ),
+    diagnostic(
         name = "client-package-without-client-config",
         execution = Execution(
             id = "client-without-config",
@@ -311,11 +362,13 @@ private fun diagnostic(
     name: String,
     execution: Execution,
     expected: ExpectedFailure,
+    client: ClientConfig? = null,
     knownIssues: Map<String, String> = emptyMap(),
 ) = Scenario(
     name = "diagnostics-$name",
     files = "configuration-diagnostics",
     executions = listOf(execution),
+    client = client,
     expectedFailure = expected,
     knownIssues = knownIssues,
 )

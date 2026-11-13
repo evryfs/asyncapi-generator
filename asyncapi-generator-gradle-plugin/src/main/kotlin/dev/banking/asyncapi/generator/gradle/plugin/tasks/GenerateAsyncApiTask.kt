@@ -33,6 +33,7 @@ import org.gradle.work.DisableCachingByDefault
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 @DisableCachingByDefault(because = "Code generation output is not yet configured for the Gradle build cache")
 abstract class GenerateAsyncApiTask : DefaultTask() {

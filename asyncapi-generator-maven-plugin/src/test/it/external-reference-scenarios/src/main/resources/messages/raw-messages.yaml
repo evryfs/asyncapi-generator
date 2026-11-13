@@ -1,5 +1,0 @@
-RawMessageV1:
-  name: RawMessageV1
-  contentType: application/json
-  payload:
-    $ref: "../schemas/raw-message-payloads.yaml#/RawMessageV1Payload"

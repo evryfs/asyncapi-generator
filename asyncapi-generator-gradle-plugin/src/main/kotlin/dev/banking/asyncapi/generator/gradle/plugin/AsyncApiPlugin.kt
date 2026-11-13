@@ -11,6 +11,7 @@ import org.gradle.kotlin.dsl.register
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class AsyncApiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
