@@ -16,10 +16,8 @@ internal class MavenFrontend(
     private val environment: SystemTestEnvironment,
     private val runner: ProcessRunner,
 ) {
-    private val dependencies = ConsumerDependencies(environment.libraries)
-
-    /** Generates, compiles, and runs the checks for [scenario]; returns the generated source directory. */
-    fun build(scenario: Scenario, projectDirectory: File): File {
+    /** Generates, compiles, and runs the checks for [scenario] without checking the exit code. */
+    fun run(scenario: Scenario, projectDirectory: File): FrontendRun {
         ConsumerProject.prepare(scenario, environment, projectDirectory)
         projectDirectory.resolve("pom.xml").writeText(pom(scenario))
         projectDirectory.resolve("settings.xml").writeText(settings())
@@ -32,13 +30,13 @@ internal class MavenFrontend(
             "-Dmaven.repo.local=${environment.repository.path}",
             "verify",
         )
-        runner.runSuccessfully(
+        val result = runner.run(
             command,
             projectDirectory,
             projectDirectory.resolve("build.log"),
             environment.buildToolEnvironment,
         )
-        return projectDirectory.resolve("target/generated-sources/asyncapi")
+        return FrontendRun.of(scenario, projectDirectory, result) { DEFAULT_OUTPUT_DIRECTORY }
     }
 
     private fun pom(scenario: Scenario): String = """
@@ -53,7 +51,7 @@ internal class MavenFrontend(
         |        <maven.compiler.release>21</maven.compiler.release>
         |    </properties>
         |    <dependencies>
-        |${dependencyElements()}
+        |${dependencyElements(ConsumerDependencies(environment.libraries, scenario.libraries))}
         |    </dependencies>
         |    <build>
         |        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
@@ -63,17 +61,8 @@ internal class MavenFrontend(
         |                <artifactId>asyncapi-generator-maven-plugin</artifactId>
         |                <version>${environment.version}</version>
         |                <executions>
-        |                    <execution>
-        |                        <id>asyncapi</id>
-        |                        <goals>
-        |                            <goal>generate</goal>
-        |                        </goals>
-        |                        <configuration>
-        |${executionConfiguration(scenario.config)}
-        |                        </configuration>
-        |                    </execution>
+        |${scenario.executions.joinToString("\n") { execution(it, scenario.client) }}
         |                </executions>
-        |${scenario.config.client?.let { clientConfiguration(it) }.orEmpty()}
         |            </plugin>
         |            <plugin>
         |                <groupId>org.jetbrains.kotlin</groupId>
@@ -102,7 +91,7 @@ internal class MavenFrontend(
         |</project>
         |""".trimMargin()
 
-    private fun dependencyElements(): String =
+    private fun dependencyElements(dependencies: ConsumerDependencies): String =
         (dependencies.implementation.map { it to null } + dependencies.test.map { it to "test" })
             .joinToString("\n") { (dependency, scope) ->
                 buildString {
@@ -115,22 +104,34 @@ internal class MavenFrontend(
                 }
             }
 
-    private fun executionConfiguration(config: GenerationConfig): String = buildList {
-        add(element("inputSpec", "\${project.basedir}/${ConsumerProject.inputSpecPath(config)}"))
-        add(element("generatorName", config.generatorName))
-        config.modelPackage?.let { add(element("modelPackage", it)) }
-        config.clientPackage?.let { add(element("clientPackage", it)) }
-        config.schemaPackage?.let { add(element("schemaPackage", it)) }
-        if (config.modelType != null || config.modelAnnotation != null) {
+    private fun execution(execution: Execution, client: ClientConfig?): String = buildList {
+        add("<execution>")
+        add("    <id>${execution.id.xmlEscaped()}</id>")
+        add("    <goals><goal>generate</goal></goals>")
+        add("    <configuration>")
+        executionConfiguration(execution).forEach { add("        $it") }
+        client?.takeIf { execution.clientPackage != null }?.let { clientConfiguration(it).forEach { line -> add("        $line") } }
+        add("    </configuration>")
+        add("</execution>")
+    }.joinToString("\n") { "                    $it" }
+
+    private fun executionConfiguration(execution: Execution): List<String> = buildList {
+        add(element("inputSpec", "\${project.basedir}/${ConsumerProject.inputSpecPath(execution)}"))
+        add(element("generatorName", execution.generatorName))
+        execution.outputDirectory?.let { add(element("outputDirectory", it)) }
+        execution.outputFile?.let { add(element("outputFile", it)) }
+        execution.modelPackage?.let { add(element("modelPackage", it)) }
+        execution.clientPackage?.let { add(element("clientPackage", it)) }
+        execution.schemaPackage?.let { add(element("schemaPackage", it)) }
+        if (execution.modelType != null || execution.modelAnnotation != null) {
             add("<modelConfig>")
-            config.modelType?.let { add(element("modelType", it)) }
-            config.modelAnnotation?.let { add(element("modelAnnotation", it)) }
+            execution.modelType?.let { add(element("modelType", it)) }
+            execution.modelAnnotation?.let { add(element("modelAnnotation", it)) }
             add("</modelConfig>")
         }
-    }.joinToString("\n") { "                            $it" }
+    }
 
-    private fun clientConfiguration(client: ClientConfig): String = buildList {
-        add("<configuration>")
+    private fun clientConfiguration(client: ClientConfig): List<String> = buildList {
         add("<clientConfig>")
         add(element("clientType", client.clientType))
         add(element("clientContract", client.clientContract))
@@ -157,8 +158,7 @@ internal class MavenFrontend(
             add("</validationAnnotations>")
         }
         add("</clientConfig>")
-        add("</configuration>")
-    }.joinToString("\n") { "                $it" }
+    }
 
     private fun element(name: String, value: String): String = "<$name>${value.xmlEscaped()}</$name>"
 
@@ -189,4 +189,9 @@ internal class MavenFrontend(
         |    </activeProfiles>
         |</settings>
         |""".trimMargin()
+
+    private companion object {
+        /** The Maven plugin's default `outputDirectory`. */
+        const val DEFAULT_OUTPUT_DIRECTORY = "target/generated-sources/asyncapi"
+    }
 }

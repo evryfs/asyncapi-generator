@@ -1,0 +1,37 @@
+asyncapi: 3.0.0
+info:
+  title: External Reference Scenarios
+  version: 1.0.0
+channels:
+  rawMessageEvents:
+    address: examples.raw-message.v1
+    messages:
+      rawMessageV1:
+        $ref: "./messages/raw-messages.yaml#/RawMessageV1"
+  directPayloadEvents:
+    address: examples.direct-payload.v1
+    messages:
+      directPayloadV1:
+        name: DirectPayloadV1
+        payload:
+          $ref: "./schemas/direct-payloads.yaml#/DirectPayloadV1Payload"
+  externalChannelEvents:
+    $ref: "./channels/external-channels.yaml#/externalChannelDefinition"
+  sharedPayloadEvents:
+    address: examples.shared-payload.v1
+    messages:
+      sharedPayloadCreatedV1:
+        name: SharedPayloadCreatedV1
+        payload:
+          $ref: "./schemas/shared-payloads.yaml#/SharedPayload"
+      sharedPayloadUpdatedV1:
+        name: SharedPayloadUpdatedV1
+        payload:
+          $ref: "./schemas/shared-payloads.yaml#/SharedPayload"
+  recursiveNodeEvents:
+    address: examples.recursive-node.v1
+    messages:
+      recursiveNodeV1:
+        name: RecursiveNodeV1
+        payload:
+          $ref: "./schemas/recursive-nodes.yaml#/components/schemas/RecursiveNodePayload"

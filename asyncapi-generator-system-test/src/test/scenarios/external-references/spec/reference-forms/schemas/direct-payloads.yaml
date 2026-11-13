@@ -1,0 +1,7 @@
+DirectPayloadV1Payload:
+  type: object
+  required:
+    - directValue
+  properties:
+    directValue:
+      type: integer

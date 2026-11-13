@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Spring Kafka Contract External Reference IT
+  version: 1.0.0
+operations:
+  receiveAuditRecorded:
+    action: send
+    channel:
+      $ref: "#/channels/auditEvents"
+    messages:
+      - $ref: "#/channels/auditEvents/messages/AuditRecorded"
+channels:
+  auditEvents:
+    address: audit.{environment}.events.v1
+    parameters:
+      environment:
+        description: Deployment environment included in the topic address.
+    messages:
+      AuditRecorded:
+        $ref: 'data/message_MyMessageUpdated.yaml#/components/messages/AuditRecorded'

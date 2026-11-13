@@ -1,0 +1,7 @@
+SharedPayload:
+  type: object
+  required:
+    - sharedValue
+  properties:
+    sharedValue:
+      type: string

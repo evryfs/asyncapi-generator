@@ -1,0 +1,5 @@
+ExternalChannelMessageV1:
+  name: ExternalChannelMessageV1
+  contentType: application/json
+  payload:
+    $ref: "../schemas/external-channel-payloads.yaml#/ExternalChannelMessageV1Payload"

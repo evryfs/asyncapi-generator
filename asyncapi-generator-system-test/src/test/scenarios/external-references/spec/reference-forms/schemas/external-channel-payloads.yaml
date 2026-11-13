@@ -1,0 +1,7 @@
+ExternalChannelMessageV1Payload:
+  type: object
+  required:
+    - externalValue
+  properties:
+    externalValue:
+      type: boolean

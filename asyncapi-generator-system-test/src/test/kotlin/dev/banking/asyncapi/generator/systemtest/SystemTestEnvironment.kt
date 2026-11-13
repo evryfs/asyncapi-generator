@@ -18,6 +18,7 @@ import java.time.Duration
  * @property gradleVersion Gradle version that consumer builds run on.
  * @property gradleWrapperSource Directory holding the `gradlew` scripts and wrapper jar to copy.
  * @property scenarios Directory holding scenario specs and checks.
+ * @property checkSupport Kotlin helpers copied next to every scenario's checks.
  * @property workDirectory Scratch directory for consumer projects, output, and logs.
  * @property processTimeout Upper bound for a single CLI, Maven, or Gradle process.
  */
@@ -30,6 +31,7 @@ internal data class SystemTestEnvironment(
     val gradleVersion: String,
     val gradleWrapperSource: File,
     val scenarios: File,
+    val checkSupport: File,
     val workDirectory: File,
     val processTimeout: Duration,
 ) {
@@ -55,10 +57,14 @@ internal data class SystemTestEnvironment(
                     jakartaValidation = property("jakarta-validation.version"),
                     jacksonAnnotations = property("jackson-annotations.version"),
                     junit = property("junit.version"),
+                    jackson = property("jackson.version"),
+                    avro = property("avro.version"),
+                    protobuf = property("protobuf.version"),
                 ),
                 gradleVersion = property("gradle.version"),
                 gradleWrapperSource = File(property("gradle-wrapper")),
                 scenarios = File(property("scenarios")),
+                checkSupport = File(property("check-support")),
                 workDirectory = File(property("work")),
                 processTimeout = Duration.ofSeconds(property("process-timeout-seconds").toLong()),
             )
@@ -78,6 +84,9 @@ internal data class SystemTestEnvironment(
  * @property jakartaValidation Jakarta Validation API version.
  * @property jacksonAnnotations Jackson annotations version (minor-only since Jackson 2.20).
  * @property junit JUnit version for the scenario checks.
+ * @property jackson Jackson version the checks use to read documents and schemas.
+ * @property avro Apache Avro version for generated SpecificRecords.
+ * @property protobuf Protobuf Java and Kotlin runtime version for generated messages.
  */
 internal data class LibraryVersions(
     val kotlin: String,
@@ -85,4 +94,7 @@ internal data class LibraryVersions(
     val jakartaValidation: String,
     val jacksonAnnotations: String,
     val junit: String,
+    val jackson: String,
+    val avro: String,
+    val protobuf: String,
 )

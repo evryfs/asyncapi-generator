@@ -16,6 +16,17 @@ internal data class ProcessResult(
 ) {
     val output: String
         get() = log.readText()
+
+    /** The last [lines] lines of the log, for assertion messages. */
+    fun tail(lines: Int = 60): String =
+        log.takeIf(File::isFile)?.readLines()?.takeLast(lines)?.joinToString("\n").orEmpty()
+
+    /** Fails with the log tail unless the process exited with code 0. */
+    fun assertSuccess(description: String) {
+        if (exitCode != 0) {
+            throw AssertionError("$description failed with exit code $exitCode. Full log: $log\n${tail()}")
+        }
+    }
 }
 
 /**
@@ -45,26 +56,8 @@ internal class ProcessRunner(private val timeout: Duration) {
         if (!process.waitFor(timeout.toSeconds(), TimeUnit.SECONDS)) {
             process.descendants().forEach(ProcessHandle::destroyForcibly)
             process.destroyForcibly()
-            throw AssertionError("Timed out after $timeout: ${command.joinToString(" ")}\n${tail(log)}")
+            throw AssertionError("Timed out after $timeout: ${command.joinToString(" ")}\nFull log: $log")
         }
         return ProcessResult(process.exitValue(), log)
     }
-
-    fun runSuccessfully(
-        command: List<String>,
-        workingDirectory: File,
-        log: File,
-        environment: Map<String, String> = emptyMap(),
-    ): ProcessResult {
-        val result = run(command, workingDirectory, log, environment)
-        if (result.exitCode != 0) {
-            throw AssertionError(
-                "Exit code ${result.exitCode}: ${command.joinToString(" ")}\nFull log: $log\n${tail(log)}",
-            )
-        }
-        return result
-    }
-
-    private fun tail(log: File, lines: Int = 60): String =
-        log.takeIf(File::isFile)?.readLines()?.takeLast(lines)?.joinToString("\n").orEmpty()
 }

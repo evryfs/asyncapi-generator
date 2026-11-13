@@ -1,0 +1,13 @@
+components:
+  schemas:
+    TreeNode:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/TreeNode'

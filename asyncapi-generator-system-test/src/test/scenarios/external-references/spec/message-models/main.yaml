@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: My Account Event Contract
+  version: 1.0.0
+channels:
+  myAccountCreated:
+    address: my.account.created.v1
+    messages:
+      myAccountCreatedV1:
+        $ref: "./messages.yaml#/components/messages/MyAccountCreatedV1"
+  myAccountReviewed:
+    address: my.account.reviewed.v1
+    messages:
+      myAccountReviewedV1:
+        $ref: "./messages.yaml#/components/messages/MyAccountReviewedV1"

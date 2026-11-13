@@ -16,26 +16,24 @@ internal class GradleFrontend(
     private val environment: SystemTestEnvironment,
     private val runner: ProcessRunner,
 ) {
-    private val dependencies = ConsumerDependencies(environment.libraries)
-
-    /** Generates, compiles, and runs the checks for [scenario]; returns the generated source directory. */
-    fun build(scenario: Scenario, projectDirectory: File): File {
+    /** Generates, compiles, and runs the checks for [scenario] without checking the exit code. */
+    fun run(scenario: Scenario, projectDirectory: File): FrontendRun {
         ConsumerProject.prepare(scenario, environment, projectDirectory)
         installWrapper(projectDirectory)
         projectDirectory.resolve("settings.gradle.kts").writeText(settings(scenario))
-        projectDirectory.resolve("build.gradle.kts").writeText(buildScript(scenario.config))
+        projectDirectory.resolve("build.gradle.kts").writeText(buildScript(scenario))
         projectDirectory.resolve("gradle.properties").writeText(
             "org.gradle.daemon.idletimeout=600000\norg.gradle.console=plain\n",
         )
 
         val command = listOf(projectDirectory.resolve("gradlew").path, "build", "--stacktrace")
-        runner.runSuccessfully(
+        val result = runner.run(
             command,
             projectDirectory,
             projectDirectory.resolve("build.log"),
             environment.buildToolEnvironment,
         )
-        return projectDirectory.resolve("build/generated/asyncapi/$EXECUTION_NAME")
+        return FrontendRun.of(scenario, projectDirectory, result) { "build/generated/asyncapi/${it.id}" }
     }
 
     private fun installWrapper(projectDirectory: File) {
@@ -80,14 +78,14 @@ internal class GradleFrontend(
             |""".trimMargin()
     }
 
-    private fun buildScript(config: GenerationConfig): String = """
+    private fun buildScript(scenario: Scenario): String = """
         |plugins {
         |    kotlin("jvm") version "${environment.libraries.kotlin}"
         |    id("$GENERATOR_GROUP") version "${environment.version}"
         |}
         |
         |dependencies {
-        |${dependencyDeclarations()}
+        |${dependencyDeclarations(ConsumerDependencies(environment.libraries, scenario.libraries))}
         |}
         |
         |java {
@@ -106,16 +104,14 @@ internal class GradleFrontend(
         |}
         |
         |asyncApiGenerator {
-        |${config.client?.let(::clientConfiguration).orEmpty()}
+        |${scenario.client?.let(::clientConfiguration).orEmpty()}
         |    executions {
-        |        register("$EXECUTION_NAME") {
-        |${executionConfiguration(config)}
-        |        }
+        |${scenario.executions.joinToString("\n", transform = ::execution)}
         |    }
         |}
         |""".trimMargin()
 
-    private fun dependencyDeclarations(): String =
+    private fun dependencyDeclarations(dependencies: ConsumerDependencies): String =
         listOf(
             "implementation" to dependencies.implementation,
             "testImplementation" to dependencies.test,
@@ -123,19 +119,25 @@ internal class GradleFrontend(
         ).flatMap { (configuration, declared) -> declared.map { "    $configuration(\"$it\")" } }
             .joinToString("\n")
 
-    private fun executionConfiguration(config: GenerationConfig): String = buildList {
-        add("generatorName.set(${config.generatorName.kotlinStringLiteral()})")
-        add("inputSpec.set(file(${ConsumerProject.inputSpecPath(config).kotlinStringLiteral()}))")
-        config.modelPackage?.let { add("modelPackage.set(${it.kotlinStringLiteral()})") }
-        config.clientPackage?.let { add("clientPackage.set(${it.kotlinStringLiteral()})") }
-        config.schemaPackage?.let { add("schemaPackage.set(${it.kotlinStringLiteral()})") }
-        if (config.modelType != null || config.modelAnnotation != null) {
-            add("modelConfig {")
-            config.modelType?.let { add("    modelType.set(${it.kotlinStringLiteral()})") }
-            config.modelAnnotation?.let { add("    modelAnnotation.set(${it.kotlinStringLiteral()})") }
-            add("}")
+    private fun execution(execution: Execution): String = buildList {
+        add("register(${execution.id.kotlinStringLiteral()}) {")
+        add("    generatorName.set(${execution.generatorName.kotlinStringLiteral()})")
+        add("    inputSpec.set(file(${ConsumerProject.inputSpecPath(execution).kotlinStringLiteral()}))")
+        execution.outputDirectory?.let {
+            add("    outputDirectory.set(layout.projectDirectory.dir(${it.kotlinStringLiteral()}))")
         }
-    }.joinToString("\n") { "            $it" }
+        execution.outputFile?.let { add("    outputFile.set(layout.projectDirectory.file(${it.kotlinStringLiteral()}))") }
+        execution.modelPackage?.let { add("    modelPackage.set(${it.kotlinStringLiteral()})") }
+        execution.clientPackage?.let { add("    clientPackage.set(${it.kotlinStringLiteral()})") }
+        execution.schemaPackage?.let { add("    schemaPackage.set(${it.kotlinStringLiteral()})") }
+        if (execution.modelType != null || execution.modelAnnotation != null) {
+            add("    modelConfig {")
+            execution.modelType?.let { add("        modelType.set(${it.kotlinStringLiteral()})") }
+            execution.modelAnnotation?.let { add("        modelAnnotation.set(${it.kotlinStringLiteral()})") }
+            add("    }")
+        }
+        add("}")
+    }.joinToString("\n") { "        $it" }
 
     private fun clientConfiguration(client: ClientConfig): String = buildList {
         add("clientConfig {")
@@ -165,6 +167,5 @@ internal class GradleFrontend(
 
     private companion object {
         const val GENERATOR_GROUP = "dev.banking.asyncapi.generator"
-        const val EXECUTION_NAME = "asyncapi"
     }
 }

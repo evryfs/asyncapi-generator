@@ -1,0 +1,7 @@
+RawMessageV1Payload:
+  type: object
+  required:
+    - rawValue
+  properties:
+    rawValue:
+      type: string

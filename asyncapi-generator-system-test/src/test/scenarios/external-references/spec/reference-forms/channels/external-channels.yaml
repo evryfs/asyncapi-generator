@@ -1,0 +1,5 @@
+externalChannelDefinition:
+  address: examples.external-channel.v1
+  messages:
+    externalChannelMessageV1:
+      $ref: "../messages/external-channel-messages.yaml#/ExternalChannelMessageV1"

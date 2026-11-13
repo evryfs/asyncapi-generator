@@ -155,9 +155,13 @@
                         <system-test.jakarta-validation.version>${jakarta-validation.version}</system-test.jakarta-validation.version>
                         <system-test.jackson-annotations.version>${jackson-annotations.version}</system-test.jackson-annotations.version>
                         <system-test.junit.version>${junit.jupiter.version}</system-test.junit.version>
+                        <system-test.jackson.version>${jackson.version}</system-test.jackson.version>
+                        <system-test.avro.version>${avro.version}</system-test.avro.version>
+                        <system-test.protobuf.version>${protobuf.java.version}</system-test.protobuf.version>
                         <system-test.gradle.version>${system-test.gradle.version}</system-test.gradle.version>
                         <system-test.gradle-wrapper>${project.basedir}/../asyncapi-generator-gradle-plugin</system-test.gradle-wrapper>
                         <system-test.scenarios>${project.basedir}/src/test/scenarios</system-test.scenarios>
+                        <system-test.check-support>${project.basedir}/src/test/check-support</system-test.check-support>
                         <system-test.work>${project.build.directory}/system-test-work</system-test.work>
                         <system-test.process-timeout-seconds>${system-test.process-timeout-seconds}</system-test.process-timeout-seconds>
                     </systemPropertyVariables>
