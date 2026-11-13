@@ -18,6 +18,7 @@ internal data class CliGeneratorConfigurationRequest(
     val schemaPackage: String? = null,
     val modelConfig: CliModelConfiguration? = null,
     val clientConfig: CliClientConfiguration? = null,
+    val suppressedWarnings: List<String> = emptyList(),
 )
 
 /**
@@ -55,6 +56,7 @@ internal object CliGeneratorConfigurationMapper {
                         clientPackage = request.clientPackage,
                         modelPackage = request.modelPackage,
                     ) ?: GeneratorConfigurationRequest.Clients(),
+                suppressedWarnings = request.suppressedWarnings,
             ),
         )
     }

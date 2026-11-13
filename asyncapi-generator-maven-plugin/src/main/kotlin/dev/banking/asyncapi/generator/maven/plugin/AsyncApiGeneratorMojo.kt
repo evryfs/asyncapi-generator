@@ -50,6 +50,10 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter
     private var clientConfig: MavenClientConfiguration? = null
 
+    /** Configuration warning ids to silence, for example `unused-client-config`. */
+    @Parameter
+    private var suppressedWarnings: List<String>? = null
+
     private val loader = AsyncApiDocumentLoader()
     private val bundler = AsyncApiBundler()
     private val generator = AsyncApiGenerator()
@@ -57,8 +61,9 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     override fun execute() {
         try {
             log.info("asyncapi-generator-maven-plugin started")
+            loader.requireInputFile(inputSpec)
             val generatorConfiguration = generatorConfiguration()
-            validateInputSpecification()
+            generatorConfiguration.warnings.forEach { warning -> log.warn(warning.message) }
             val loaded = loader.load(inputSpec)
             if (loaded.warnings.isNotEmpty()) {
                 log.warn(loaded.formatWarnings().trimEnd())
@@ -87,18 +92,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 schemaPackage = schemaPackage,
                 modelConfig = modelConfig,
                 clientConfig = clientConfig,
+                suppressedWarnings = suppressedWarnings.orEmpty(),
             ),
         )
-
-    private fun validateInputSpecification() {
-        if (!inputSpec.exists()) {
-            throw MojoExecutionException("Input specification not found: $inputSpec")
-        }
-        if (!inputSpec.isFile) {
-            throw MojoExecutionException("Input specification must be a file: $inputSpec")
-        }
-        if (!inputSpec.canRead()) {
-            throw MojoExecutionException("Input specification is not readable: $inputSpec")
-        }
-    }
 }

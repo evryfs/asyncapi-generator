@@ -94,6 +94,13 @@ class ScenarioSystemTest {
                 }
             }
         }
+        val absentWarnings = scenario.absentWarnings.map { warning ->
+            dynamicTest("no frontend warns '$warning'") {
+                allRuns().forEach { (name, run) ->
+                    assertFalse(warning in run.result.output, "$name output contains '$warning'. Full log: ${run.result.log}")
+                }
+            }
+        }
         val roundTrips = scenario.executions
             .filter { it.outputFile != null && it.generatesArtifacts }
             .map { execution ->
@@ -101,7 +108,7 @@ class ScenarioSystemTest {
                     assertBundleRoundTrip(scenario, execution, work.resolve("round-trip/${execution.id}"))
                 }
             }
-        return frontendTests + identicalOutput + warnings + roundTrips
+        return frontendTests + identicalOutput + warnings + absentWarnings + roundTrips
     }
 
     private fun failureTests(scenario: Scenario, failure: ExpectedFailure, work: File): List<DynamicTest> =

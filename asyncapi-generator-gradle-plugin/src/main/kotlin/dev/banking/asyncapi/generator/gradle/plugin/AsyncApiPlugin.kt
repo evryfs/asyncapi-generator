@@ -48,6 +48,8 @@ class AsyncApiPlugin : Plugin<Project> {
                     schemaPackage.set(execution.schemaPackage)
                     modelAnnotation.set(execution.modelConfig.modelAnnotation)
                     modelType.set(execution.modelConfig.modelType)
+                    suppressedWarnings.addAll(extension.suppressedWarnings)
+                    suppressedWarnings.addAll(execution.suppressedWarnings)
 
                     clientType.set(extension.clientConfig.clientType)
                     clientContract.set(extension.clientConfig.clientContract)

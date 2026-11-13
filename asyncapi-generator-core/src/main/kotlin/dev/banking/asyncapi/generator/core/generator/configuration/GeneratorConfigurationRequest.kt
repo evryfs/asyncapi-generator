@@ -19,6 +19,7 @@ data class GeneratorConfigurationRequest(
     val models: Models? = null,
     val schemas: Schemas = Schemas(),
     val clients: Clients = Clients(),
+    val suppressedWarnings: List<String> = emptyList(),
 ) {
     data class Models(
         val packageName: String? = null,
@@ -213,8 +214,14 @@ data class GeneratorConfigurationRequest(
                     value = clientContract,
                     path = "clientConfig.clientContract",
                 )
-            val resolvedClientPackage = requiredClientPackage(clientPackage, "clientPackage")
-            val resolvedModelPackage = requiredClientPackage(modelPackage, "modelPackage")
+            val resolvedClientPackage = clientPackage?.let { packageName(it, "clientPackage") }
+            val resolvedModelPackage =
+                when {
+                    modelPackage != null -> packageName(modelPackage, "modelPackage")
+                    resolvedClientPackage != null ->
+                        throw IllegalArgumentException("modelPackage is required when clientPackage is configured")
+                    else -> null
+                }
             val validationAnnotations =
                 ClientValidationAnnotations(
                     clientContract =
@@ -251,14 +258,10 @@ data class GeneratorConfigurationRequest(
             }
         }
 
-        private fun requiredClientPackage(
-            value: String?,
+        private fun packageName(
+            value: String,
             path: String,
-        ): String =
-            PackageName.fromConfigurationValue(
-                value = value ?: throw IllegalArgumentException("$path is required when clientConfig is configured"),
-                path = path,
-            ).value
+        ): String = PackageName.fromConfigurationValue(value = value, path = path).value
 
         private fun String?.toQualifiedTypeName(path: String): QualifiedTypeName? =
             this?.let { value ->

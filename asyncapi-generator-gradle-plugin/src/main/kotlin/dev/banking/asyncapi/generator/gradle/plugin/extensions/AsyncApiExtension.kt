@@ -22,6 +22,9 @@ abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
     val clientConfig: AsyncApiClientConfiguration =
         objects.newInstance(AsyncApiClientConfiguration::class.java)
 
+    /** Configuration warning ids silenced for every execution, for example `unused-client-config`. */
+    val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
+
     val executions: NamedDomainObjectContainer<AsyncApiExecution> =
         objects.domainObjectContainer(AsyncApiExecution::class.java) { executionName ->
             objects.newInstance(AsyncApiExecution::class.java, executionName)
@@ -56,6 +59,9 @@ abstract class AsyncApiExecution @Inject constructor(
     val modelPackage: Property<String> = objects.property(String::class.java)
     val clientPackage: Property<String> = objects.property(String::class.java)
     val schemaPackage: Property<String> = objects.property(String::class.java)
+
+    /** Configuration warning ids silenced for this execution, in addition to the top-level ones. */
+    val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
     val modelConfig: AsyncApiModelConfiguration =
         objects.newInstance(AsyncApiModelConfiguration::class.java)
 
