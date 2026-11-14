@@ -14,19 +14,13 @@ internal object ValidationFindingFormatter {
         title: String,
         findings: List<ValidationFinding>,
         asyncApiContext: AsyncApiContext,
-    ): String = buildString {
-        appendLine(title)
-        appendLine()
-        findings.forEach { finding ->
-            appendLine(">> ${finding.message}")
-            appendLine()
-            appendLine(snippet(finding, asyncApiContext))
-            appendLine()
-            appendLine("See documentation: ${finding.documentation}")
-            appendLine("---------------------------------------------------------------------------------------------------------------------")
-            appendLine()
-        }
-    }
+    ): String =
+        DiagnosticLayout.format(
+            title,
+            findings.map { finding ->
+                DiagnosticLayout.Entry(finding.message, snippet(finding, asyncApiContext), finding.documentation)
+            },
+        )
 
     private fun snippet(
         finding: ValidationFinding,

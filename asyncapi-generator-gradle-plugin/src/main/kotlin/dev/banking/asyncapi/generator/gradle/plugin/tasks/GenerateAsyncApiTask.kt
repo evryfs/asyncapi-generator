@@ -145,7 +145,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     manifest = GeneratedOutputManifest(outputManifest.get().asFile, executionName.get()),
                 ),
             )
-        generatorConfiguration.warnings.forEach { warning -> logger.warn(warning.message) }
+        generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { logger.warn(it.trimEnd()) }
         val loaded = AsyncApiDocumentLoader().load(inputSpec.get().asFile)
         if (loaded.warnings.isNotEmpty()) {
             logger.warn(loaded.formatWarnings().trimEnd())
