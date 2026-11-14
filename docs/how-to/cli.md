@@ -99,15 +99,21 @@ Generated sources are written to `./generated/asyncapi` by default.
 
 ## Generation and output options
 
-| Option                     | Description                                        |
-|----------------------------|----------------------------------------------------|
-| `--input-spec`, `-i`       | AsyncAPI YAML or JSON file (required)              |
-| `--generator-name`, `-g`   | Generator profile (required)                       |
-| `--output-directory`, `-o` | Output directory (default: `./generated/asyncapi`) |
-| `--output-file`            | File for bundled document output                   |
-| `--model-package`          | Package for generated payload models               |
-| `--client-package`         | Package for generated client contracts             |
-| `--schema-package`         | Package for generated schema artifacts             |
+| Option                     | Description                                          |
+|----------------------------|------------------------------------------------------|
+| `--input-spec`, `-i`       | AsyncAPI YAML or JSON file (required)                |
+| `--generator-name`, `-g`   | Generator profile (required)                         |
+| `--output-directory`, `-o` | Output directory (default: `./generated/asyncapi`)   |
+| `--output-file`            | File for bundled document output                     |
+| `--model-package`          | Package for generated payload models                 |
+| `--client-package`         | Package for generated client contracts               |
+| `--schema-package`         | Package for generated schema artifacts               |
+| `--suppress-warning`       | Configuration warning id to silence (repeatable)     |
+| `--protoc`                 | Local `protoc` executable for native Protobuf models |
+
+The CLI writes generated files but never deletes files, including files that a
+previous run generated and the contract no longer produces. Delete or recreate
+the output directory when you need it to contain only the current output.
 
 ## Model options
 
@@ -141,6 +147,36 @@ asyncapi-generator \
   --client-package com.example.client \
   --client-type spring-kafka \
   --client-contract interface
+```
+
+`--client-package` requires the client flags and `--model-package`. Without
+client flags the CLI fails with
+`clientConfig is required when clientPackage is configured`; without a model
+package it fails with
+`modelPackage is required when clientPackage is configured`. Client flags
+without `--client-package` are ignored with the `unused-client-config` warning;
+add `--suppress-warning unused-client-config` to silence it. See
+[Generate Spring Kafka clients](generate-spring-kafka-clients.md).
+
+## Generate native Protobuf models
+
+`--model-type protobuf-message` runs `protoc`. The CLI takes
+`com.google.protobuf:protoc:3.25.5` from the local Maven repository
+(`~/.m2/repository`, or the directory in the `maven.repo.local` system
+property) and otherwise downloads it from Maven Central, verifies its SHA-1
+checksum, and stores it in the local repository. The download uses the JVM
+proxy settings, for example `-Dhttps.proxyHost=...` and
+`-Dhttps.proxyPort=...` on the `java -jar` command line or, for the portable
+launchers, in the `JAVA_TOOL_OPTIONS` environment variable. Without network
+access, point the CLI at a local executable:
+
+```sh
+asyncapi-generator \
+  --input-spec src/main/resources/asyncapi.yaml \
+  --generator-name java \
+  --model-package com.example.events \
+  --model-type protobuf-message \
+  --protoc /opt/protoc/bin/protoc
 ```
 
 ## Generate schemas

@@ -29,7 +29,8 @@ enforces the relationship between the contract and the complete
 [`SimpleTransactionType.kt` approved output](https://github.com/evryfs/asyncapi-generator/blob/main/asyncapi-generator-core/src/test/resources/approvals/generator/kotlin/simple-transaction-model.approved.kt).
 
 Required schema properties become non-null constructor parameters. Optional
-properties become nullable parameters with a `null` default. Formats and
+properties become nullable parameters that default to the schema `default`,
+or to `null` when the schema has none. Formats and
 constraints map to JVM types and Jakarta Validation annotations where supported.
 The generated DTO does not configure a JSON mapper; the application must provide
 JSON serialization support for types such as `UUID`, `BigDecimal`, `LocalDate`,

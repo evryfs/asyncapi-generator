@@ -94,12 +94,16 @@ workflow publishes that draft only after publication and smoke tests succeed.
 java -version
 ```
 
-- [ ] Run the complete repository verification from the repository root with
-      Java 21 active:
+- [ ] Run the complete repository verification, including the system tests,
+      from the repository root with Java 21 active:
 
 ```sh
-mvn -q clean install
+mvn -q clean install -Psystem-test
 ```
 
 - [ ] Resolve every documentation or repository verification failure before
       approving release publication.
+
+The Release workflow's `verify` job repeats this verification, with the
+system tests, at the release version before anything is published; see
+[Publish a release](releasing.md#follow-the-release-gates).
