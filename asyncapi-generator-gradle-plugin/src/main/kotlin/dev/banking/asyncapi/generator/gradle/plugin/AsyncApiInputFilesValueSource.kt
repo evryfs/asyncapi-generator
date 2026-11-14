@@ -10,6 +10,7 @@ import org.gradle.api.provider.ValueSourceParameters
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiInputFilesValueSource :
     ValueSource<List<String>, AsyncApiInputFilesValueSource.Parameters> {

@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class MavenModelConfiguration {
     var modelAnnotation: String? = null
@@ -26,6 +27,7 @@ class MavenModelConfiguration {
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class MavenProducerConfiguration {
     var enabled: Boolean? = null
@@ -37,6 +39,7 @@ class MavenProducerConfiguration {
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class MavenConsumerConfiguration {
     var enabled: Boolean? = null
@@ -47,6 +50,7 @@ class MavenConsumerConfiguration {
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class MavenClientConfiguration {
     var clientType: String? = null
@@ -82,6 +86,7 @@ class MavenClientConfiguration {
  *
  * Expected behavior is covered by:
  * - `AsyncApiGeneratorMojoTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 class MavenValidationAnnotationsConfiguration {
     var clientContract: String? = null

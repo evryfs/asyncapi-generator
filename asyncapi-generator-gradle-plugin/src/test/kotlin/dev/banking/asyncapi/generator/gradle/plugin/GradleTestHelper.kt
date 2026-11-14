@@ -18,12 +18,6 @@ object GradleTestHelper {
             writeText(content.trimIndent())
         }
 
-    fun writeGroovyBuildScript(dir: File, content: String): File =
-        File(dir, "build.gradle").apply {
-            parentFile.mkdirs()
-            writeText(content.trimIndent())
-        }
-
     fun runGradle(dir: File, vararg args: String): BuildResult =
         GradleRunner.create()
             .withProjectDir(dir)
@@ -31,19 +25,4 @@ object GradleTestHelper {
             .withArguments(*args)
             .forwardOutput()
             .build()
-
-    fun runGradleAndFail(dir: File, vararg args: String): BuildResult =
-        GradleRunner.create()
-            .withProjectDir(dir)
-            .withPluginClasspath()
-            .withArguments(*args)
-            .forwardOutput()
-            .buildAndFail()
-
-    fun copyGeneratedOutputToProjectBuild(sourceDir: File) {
-        val targetDir = File("build/asyncapi-generator-gradle-debug")
-        if (targetDir.exists()) targetDir.deleteRecursively()
-        targetDir.mkdirs()
-        if (sourceDir.exists()) sourceDir.copyRecursively(targetDir, overwrite = true)
-    }
 }

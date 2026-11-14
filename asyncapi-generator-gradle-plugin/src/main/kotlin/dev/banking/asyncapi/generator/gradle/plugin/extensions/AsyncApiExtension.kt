@@ -16,6 +16,7 @@ import javax.inject.Inject
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
     val clientConfig: AsyncApiClientConfiguration =
@@ -40,6 +41,7 @@ abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiExecution @Inject constructor(
     private val executionName: String,
@@ -67,6 +69,7 @@ abstract class AsyncApiExecution @Inject constructor(
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiModelConfiguration @Inject constructor(objects: ObjectFactory) {
     val modelAnnotation: Property<String> = objects.property(String::class.java)
@@ -78,6 +81,7 @@ abstract class AsyncApiModelConfiguration @Inject constructor(objects: ObjectFac
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiClientConfiguration @Inject constructor(objects: ObjectFactory) {
     val clientType: Property<String> = objects.property(String::class.java)
@@ -109,6 +113,7 @@ abstract class AsyncApiClientConfiguration @Inject constructor(objects: ObjectFa
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiValidationAnnotationsConfiguration @Inject constructor(objects: ObjectFactory) {
     val clientContract: Property<String> = objects.property(String::class.java)
@@ -120,6 +125,7 @@ abstract class AsyncApiValidationAnnotationsConfiguration @Inject constructor(ob
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiProducerConfiguration @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
@@ -131,6 +137,7 @@ abstract class AsyncApiProducerConfiguration @Inject constructor(objects: Object
  *
  * Expected behavior is covered by:
  * - `AsyncApiPluginTest`
+ * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiConsumerConfiguration @Inject constructor(objects: ObjectFactory) {
     val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
