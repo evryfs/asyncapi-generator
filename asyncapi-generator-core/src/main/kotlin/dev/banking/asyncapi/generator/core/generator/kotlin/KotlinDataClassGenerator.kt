@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
-import com.github.mustachejava.DefaultMustacheFactory
+import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
@@ -15,7 +15,7 @@ import java.io.StringWriter
 class KotlinDataClassGenerator(
     val packageName: String,
 ) {
-    private val mustacheFactory = DefaultMustacheFactory("kotlin")
+    private val mustacheFactory = SourceMustacheFactory("kotlin")
 
     private val importMapper = ImportMapper(packageName)
 

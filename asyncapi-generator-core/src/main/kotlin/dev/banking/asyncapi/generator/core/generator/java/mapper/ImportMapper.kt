@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.java.mapper
 
 import dev.banking.asyncapi.generator.core.generator.java.model.PropertyModel
+import dev.banking.asyncapi.generator.core.generator.util.GenericTypeArguments
 import dev.banking.asyncapi.generator.core.generator.util.TypeConstants.JAVA_BUILTINS
 
 class ImportMapper(
@@ -79,7 +80,7 @@ class ImportMapper(
         if (raw.startsWith("Map<") && raw.endsWith(">")) {
             imports += "java.util.Map"
             val content = raw.removePrefix("Map<").removeSuffix(">")
-            val parts = content.split(",")
+            val parts = GenericTypeArguments.split(content)
             if (parts.size >= 2) {
                 parts.forEach { part ->
                     collectImports(part, currentClassName, imports)

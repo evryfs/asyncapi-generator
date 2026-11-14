@@ -244,7 +244,9 @@ class GenerateKafkaExampleTest : AbstractJavaGeneratorClass() {
         val enumClass = extractClassBody(generated)
         val expected = """
               public enum CustomerType implements Serializable {
+                  @JsonProperty("private")
                   PRIVATE,
+                  @JsonProperty("corporate")
                   CORPORATE,
               }
               """.trimIndent()

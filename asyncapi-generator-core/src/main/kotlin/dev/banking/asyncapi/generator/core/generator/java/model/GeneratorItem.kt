@@ -21,8 +21,16 @@ sealed interface GeneratorItem {
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-        val values: List<String>,
-    ) : GeneratorItem
+        val values: List<EnumConstantModel>,
+    ) : GeneratorItem {
+        val hasJsonValues: Boolean get() = values.any { it.jsonValue != null }
+    }
+
+    /** @property jsonValue Wire value as an escaped Java string literal body; null when it equals [name]. */
+    data class EnumConstantModel(
+        val name: String,
+        val jsonValue: String?,
+    )
 
     data class InterfaceModel(
         override val name: String,

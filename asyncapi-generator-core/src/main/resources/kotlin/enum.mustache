@@ -1,8 +1,14 @@
 package {{packageName}}
 
+{{#hasJsonValues}}
+import com.fasterxml.jackson.annotation.JsonProperty
+
+{{/hasJsonValues}}
 enum class {{name}} {
 {{#values}}
-    {{{.}}},
+{{#jsonValue}}
+    @JsonProperty("{{{jsonValue}}}")
+{{/jsonValue}}
+    {{{name}}},
 {{/values}}
 }
-

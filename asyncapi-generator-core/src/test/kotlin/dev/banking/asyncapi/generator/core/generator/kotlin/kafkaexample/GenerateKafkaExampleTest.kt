@@ -51,7 +51,9 @@ class GenerateKafkaExampleTest : AbstractKotlinGeneratorClass() {
         val enumClass = extractElement(generated)
         val expected = """
            enum class CustomerType {
+               @JsonProperty("private")
                PRIVATE,
+               @JsonProperty("corporate")
                CORPORATE,
            }
            """.trimIndent()

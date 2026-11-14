@@ -4,9 +4,11 @@ import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedType
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
+import dev.banking.asyncapi.generator.core.generator.model.UnionSubtypes
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 class KotlinGeneratorModelFactory(
@@ -35,13 +37,25 @@ class KotlinGeneratorModelFactory(
                     name = name,
                     packageName = packageName,
                     description = description,
-                    values = enumLiteralNormalizer.normalize(name, schema.enum),
+                    values = enumLiteralNormalizer.normalize(name, schema.enum).map { constant ->
+                        GeneratorItem.EnumConstantModel(
+                            name = constant.name,
+                            jsonValue = constant.jsonValue?.let(SourceLiteralEscaper::forKotlin),
+                        )
+                    },
                 )
             isUnionType ->
                 GeneratorItem.SealedInterfaceModel(
                     name = name,
                     packageName = packageName,
                     description = description,
+                    discriminator = schema.discriminator?.let(SourceLiteralEscaper::forKotlin),
+                    subTypes = UnionSubtypes.of(schema, context).map { subtype ->
+                        GeneratorItem.SealedInterfaceModel.SubType(
+                            name = SourceLiteralEscaper.forKotlin(subtype.name),
+                            type = subtype.type,
+                        )
+                    },
                 )
             isOpenPayload ->
                 GeneratorItem.TypeAliasModel(
