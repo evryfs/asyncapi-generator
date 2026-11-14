@@ -88,7 +88,7 @@ class ConditionalNormalizer {
                         thenProperty = thenProperty,
                         elseProperty = elseProperty,
                     )
-                else -> thenProperty ?: elseProperty!!
+                else -> checkNotNull(thenProperty ?: elseProperty) { "Property $propertyName is missing on every branch" }
             }
         }
     }

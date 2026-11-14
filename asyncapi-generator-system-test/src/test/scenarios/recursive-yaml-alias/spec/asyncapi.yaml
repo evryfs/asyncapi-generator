@@ -1,0 +1,10 @@
+asyncapi: 3.0.0
+info:
+  title: Recursive YAML alias
+  version: 1.0.0
+components:
+  schemas:
+    Node: &node
+      type: object
+      properties:
+        next: *node
