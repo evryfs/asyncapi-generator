@@ -17,8 +17,10 @@ class AvroEnumTest : AbstractAvroGeneratorClass() {
 
         assertTrue(content.isNotEmpty())
 
-        assertTrue(content.contains("\"type\": [\"null\", \"com.example.avro.TaskStatus\"]"), "TaskStatus reference missing")
-        assertTrue(content.contains("\"type\": [\"null\", \"com.example.avro.Priority\"]"), "Priority reference missing")
+        // Fields with an enum default list the enum first, because a union's default matches its first branch.
+        assertTrue(content.contains("\"type\": [\"com.example.avro.TaskStatus\", \"null\"]"), "TaskStatus reference missing")
+        assertTrue(content.contains("\"default\": \"IN_PROGRESS\""), "TaskStatus default missing")
+        assertTrue(content.contains("\"type\": [\"com.example.avro.Priority\", \"null\"]"), "Priority reference missing")
 
         val statusFile = File("target/generated-resources/asyncapi/com/example/avro/TaskStatus.avsc")
         assertTrue(statusFile.exists(), "TaskStatus.avsc missing")

@@ -1,0 +1,53 @@
+asyncapi: 3.0.0
+info:
+  title: Avro schemas
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountChanged:
+        payload:
+          $ref: '#/components/schemas/AccountChanged'
+components:
+  schemas:
+    AccountChanged:
+      type: object
+      description: "A description with \"quotes\", a backslash \\ and a\nline break."
+      required:
+        - id
+      properties:
+        id:
+          type: string
+        tier:
+          $ref: '#/components/schemas/Tier'
+        note:
+          type: string
+          default: "say \"hi\""
+        retries:
+          type: integer
+          default: 3
+        limits:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+              format: int64
+        tags:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        audit:
+          $ref: '#/components/schemas/auditMetadata'
+    Tier:
+      type: string
+      enum: [gold, silver]
+      default: silver
+    auditMetadata:
+      type: object
+      properties:
+        actor:
+          type: string
