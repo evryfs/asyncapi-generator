@@ -31,7 +31,6 @@ private val allScenarios: List<Scenario> = listOf(
             clientContractValidationAnnotation = VALIDATED,
             payloadParameterValidationAnnotation = VALID,
         ),
-        libraries = setOf(Library.SPRING_KAFKA),
     ),
     Scenario(
         name = "bundling",
@@ -113,7 +112,6 @@ private val allScenarios: List<Scenario> = listOf(
             clientContractValidationAnnotation = VALIDATED,
             payloadParameterValidationAnnotation = VALID,
         ),
-        libraries = setOf(Library.SPRING_KAFKA),
     ),
     Scenario(
         name = "complete-configuration",
@@ -186,7 +184,6 @@ private val allScenarios: List<Scenario> = listOf(
             clientContractValidationAnnotation = VALIDATED,
             payloadParameterValidationAnnotation = VALID,
         ),
-        libraries = setOf(Library.SPRING_KAFKA, Library.AVRO, Library.PROTOBUF),
     ),
     Scenario(
         name = "output-locations",
@@ -218,7 +215,6 @@ private val allScenarios: List<Scenario> = listOf(
             ),
         ),
         client = ClientConfig(),
-        libraries = setOf(Library.SPRING_KAFKA, Library.AVRO),
     ),
     Scenario(
         name = "shared-client-config",
@@ -234,12 +230,10 @@ private val allScenarios: List<Scenario> = listOf(
         ),
         client = ClientConfig(),
         sharedClientConfig = true,
-        libraries = setOf(Library.SPRING_KAFKA),
         expectedWarnings = listOf("unused-client-config"),
     ),
     Scenario(
         name = "suppressed-warnings",
-        files = "shared-client-config",
         executions = listOf(
             Execution(
                 id = "client",
@@ -262,7 +256,6 @@ private val allScenarios: List<Scenario> = listOf(
         ),
         client = ClientConfig(),
         sharedClientConfig = true,
-        libraries = setOf(Library.SPRING_KAFKA),
         absentWarnings = listOf("unused-client-config"),
     ),
     Scenario(
@@ -277,7 +270,6 @@ private val allScenarios: List<Scenario> = listOf(
         executions = listOf(
             Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avroschemas"),
         ),
-        libraries = setOf(Library.AVRO),
     ),
     Scenario(
         name = "java-client",
@@ -297,7 +289,6 @@ private val allScenarios: List<Scenario> = listOf(
             ),
         ),
         client = ClientConfig(),
-        libraries = setOf(Library.SPRING_KAFKA, Library.PROTOBUF),
     ),
     Scenario(
         name = "producer-only",
@@ -310,7 +301,6 @@ private val allScenarios: List<Scenario> = listOf(
             ),
         ),
         client = ClientConfig(consumerEnabled = false),
-        libraries = setOf(Library.SPRING_KAFKA),
     ),
     diagnostic(
         name = "missing-output",
@@ -379,7 +369,6 @@ private val allScenarios: List<Scenario> = listOf(
     ),
     Scenario(
         name = "diagnostics-invalid-avro-name",
-        files = "invalid-avro-name",
         executions = listOf(Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avro")),
         expectedFailure = ExpectedFailure(messages = listOf("'account-id'", "not a valid Avro name")),
     ),
@@ -403,7 +392,6 @@ private val allScenarios: List<Scenario> = listOf(
 private fun invalidContract(name: String, expected: ExpectedFailure): Scenario =
     Scenario(
         name = "diagnostics-$name",
-        files = name,
         executions = listOf(Execution(id = name, generatorName = "kotlin", modelPackage = "com.example.model")),
         expectedFailure = expected,
     )
@@ -417,7 +405,6 @@ private fun diagnostic(
     knownIssues: Map<String, String> = emptyMap(),
 ) = Scenario(
     name = "diagnostics-$name",
-    files = "configuration-diagnostics",
     executions = listOf(execution),
     client = client,
     expectedFailure = expected,

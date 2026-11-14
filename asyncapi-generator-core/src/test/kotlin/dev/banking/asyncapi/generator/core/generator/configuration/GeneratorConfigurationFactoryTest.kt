@@ -703,7 +703,11 @@ class GeneratorConfigurationFactoryTest {
 
         assertTrue(configuration.clients.isEmpty())
         assertEquals(listOf(ConfigurationWarningId.UNUSED_CLIENT_CONFIG), configuration.warnings.map { it.id })
-        assertTrue("unused-client-config" in configuration.warnings.single().message)
+        val warning = configuration.warnings.single()
+        assertTrue("unused-client-config" in warning.message)
+        val printed = configuration.formatWarnings()
+        assertTrue(">> ${warning.message}" in printed, printed)
+        assertTrue("See documentation: ${warning.documentation}" in printed, printed)
     }
 
     @Test

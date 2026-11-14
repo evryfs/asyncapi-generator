@@ -40,6 +40,23 @@ internal data class SystemTestEnvironment(
             "dev/banking/asyncapi/generator/asyncapi-generator-cli/$version/asyncapi-generator-cli-$version.jar",
         )
 
+    /**
+     * Versions the scenario build files refer to, by name: Maven reads `${<name>.version}`
+     * and Gradle reads the `libs` version catalog.
+     */
+    val buildFileVersions: Map<String, String>
+        get() = mapOf(
+            "asyncapi-generator" to version,
+            "kotlin" to libraries.kotlin,
+            "spring-kafka" to libraries.springKafka,
+            "jakarta-validation" to libraries.jakartaValidation,
+            "jackson-annotations" to libraries.jacksonAnnotations,
+            "junit" to libraries.junit,
+            "jackson" to libraries.jackson,
+            "avro" to libraries.avro,
+            "protobuf" to libraries.protobuf,
+        )
+
     /** Runs consumer builds on the same JDK as the system tests, regardless of the caller's shell. */
     val buildToolEnvironment: Map<String, String>
         get() = mapOf("JAVA_HOME" to System.getProperty("java.home"))

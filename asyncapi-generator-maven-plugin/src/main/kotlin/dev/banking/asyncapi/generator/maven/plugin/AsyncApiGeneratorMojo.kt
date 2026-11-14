@@ -89,7 +89,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             log.info("asyncapi-generator-maven-plugin started")
             loader.requireInputFile(inputSpec)
             val generatorConfiguration = generatorConfiguration()
-            generatorConfiguration.warnings.forEach { warning -> log.warn(warning.message) }
+            generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { log.warn(it.trimEnd()) }
             val loaded = loader.load(inputSpec)
             if (loaded.warnings.isNotEmpty()) {
                 log.warn(loaded.formatWarnings().trimEnd())

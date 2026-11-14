@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.validator.util.DiagnosticLayout
 
 /**
  * Typed core configuration consumed by generator planning and generation.
@@ -18,6 +19,17 @@ data class GeneratorConfiguration(
 ) {
     val sourceLanguage: SourceLanguage?
         get() = (profile as? GeneratorProfile.Source)?.language
+
+    /** [warnings] in the layout of contract validation warnings, or an empty string when there are none. */
+    fun formatWarnings(): String =
+        if (warnings.isEmpty()) {
+            ""
+        } else {
+            DiagnosticLayout.format(
+                title = "Configuration has ${warnings.size} warning(s):",
+                entries = warnings.map { DiagnosticLayout.Entry(it.message, snippet = null, it.documentation) },
+            )
+        }
 
     fun hasConfiguredOutputs(): Boolean =
         output.document != null ||

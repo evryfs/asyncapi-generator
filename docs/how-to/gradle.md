@@ -5,6 +5,9 @@ The Gradle plugin configures one task for each named execution.
 Replace `VERSION` with the published version shown on the
 [Gradle plugin release page](https://plugins.gradle.org/plugin/dev.banking.asyncapi.generator).
 
+For complete, tested builds in both DSLs, see the `gradle/` folder of each
+[system-test scenario](https://github.com/evryfs/asyncapi-generator/tree/main/asyncapi-generator-system-test/src/test/scenarios); every scenario is built with this plugin in CI.
+
 ## Requirements
 
 The plugin is compiled for Java 21, so Gradle must run on Java 21 or later.
