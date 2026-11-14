@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import java.io.File
 
 /**
@@ -19,6 +20,7 @@ internal data class GradleGeneratorConfigurationRequest(
     val modelConfig: GradleModelConfiguration? = null,
     val clientConfig: GradleClientConfiguration? = null,
     val suppressedWarnings: List<String> = emptyList(),
+    val manifest: GeneratedOutputManifest? = null,
 )
 
 /**
@@ -57,6 +59,7 @@ internal object GradleGeneratorConfigurationMapper {
                         modelPackage = request.modelPackage,
                     ) ?: GeneratorConfigurationRequest.Clients(),
                 suppressedWarnings = request.suppressedWarnings,
+                manifest = request.manifest,
             ),
         )
     }

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
@@ -20,6 +21,7 @@ import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
@@ -110,6 +112,14 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:Input
     abstract val suppressedWarnings: ListProperty<String>
 
+    /** Shared by all executions of the project; records generated files so stale ones are removed. */
+    @get:Internal
+    abstract val outputManifest: RegularFileProperty
+
+    /** The execution name, which owns this task's entries in [outputManifest]. */
+    @get:Internal
+    abstract val executionName: Property<String>
+
     @TaskAction
     fun generate() {
         logger.lifecycle("AsyncAPI generation '${name}' started")
@@ -126,6 +136,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     modelConfig = modelConfiguration(),
                     clientConfig = clientConfiguration(),
                     suppressedWarnings = suppressedWarnings.get().distinct(),
+                    manifest = GeneratedOutputManifest(outputManifest.get().asFile, executionName.get()),
                 ),
             )
         generatorConfiguration.warnings.forEach { warning -> logger.warn(warning.message) }

@@ -34,6 +34,7 @@ object GeneratorConfigurationFactory {
                     sourceOutputDirectory = request.sourceOutputDirectory,
                     javaSourceOutputDirectory = request.javaSourceOutputDirectory,
                     resourceOutputDirectory = request.resourceOutputDirectory,
+                    manifest = request.manifest,
                     document =
                         request.outputFile?.let { outputFile ->
                             DocumentOutput(

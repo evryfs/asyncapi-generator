@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import java.io.File
 
 /**
@@ -10,6 +11,7 @@ data class GeneratorOutputConfiguration(
     val resourceOutputDirectory: File,
     val javaSourceOutputDirectory: File = sourceOutputDirectory,
     val document: DocumentOutput? = null,
+    val manifest: GeneratedOutputManifest? = null,
 )
 
 /**

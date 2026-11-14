@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import java.io.File
 
 /**
@@ -20,6 +21,7 @@ data class GeneratorConfigurationRequest(
     val schemas: Schemas = Schemas(),
     val clients: Clients = Clients(),
     val suppressedWarnings: List<String> = emptyList(),
+    val manifest: GeneratedOutputManifest? = null,
 ) {
     data class Models(
         val packageName: String? = null,

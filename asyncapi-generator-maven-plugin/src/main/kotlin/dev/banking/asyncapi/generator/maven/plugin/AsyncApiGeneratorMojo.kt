@@ -2,8 +2,10 @@ package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.apache.maven.plugin.AbstractMojo
+import org.apache.maven.plugin.MojoExecution
 import org.apache.maven.plugin.MojoExecutionException
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
@@ -19,6 +21,9 @@ import java.io.File
 class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(defaultValue = "\${project}", readonly = true)
     private lateinit var project: MavenProject
+
+    @Parameter(defaultValue = "\${mojoExecution}", readonly = true)
+    private var mojoExecution: MojoExecution? = null
 
     @Parameter(property = "generatorName", required = true)
     private var generatorName: String? = null
@@ -93,6 +98,16 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 modelConfig = modelConfig,
                 clientConfig = clientConfig,
                 suppressedWarnings = suppressedWarnings.orEmpty(),
+                manifest = outputManifest(),
             ),
         )
+
+    /** One manifest per project, shared by all executions, so executions writing to one directory cooperate. */
+    private fun outputManifest(): GeneratedOutputManifest? =
+        mojoExecution?.executionId?.let { executionId ->
+            GeneratedOutputManifest(
+                file = File(project.build.directory, "asyncapi-generator/output-manifest.txt"),
+                owner = executionId,
+            )
+        }
 }

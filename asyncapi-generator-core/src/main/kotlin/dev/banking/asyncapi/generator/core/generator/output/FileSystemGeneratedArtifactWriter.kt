@@ -20,7 +20,8 @@ import java.nio.file.StandardCopyOption
  * - Best-effort replacement otherwise.
  * - No transaction covering the complete set of generated files.
  * - Existing unrelated files are never removed.
- * - Output from earlier executions is preserved.
+ * - Output from earlier executions is preserved. With a [manifest], files this execution generated
+ *   before but no longer generates are removed, unless another execution still generates them.
  * - Temporary files are cleaned after normal success and failure.
  *
  * Abnormal process termination may leave sibling temporary files with the
@@ -31,11 +32,13 @@ import java.nio.file.StandardCopyOption
  * @param sourceOutputDirectory root directory for Kotlin and general source artifacts
  * @param resourceOutputDirectory root directory for resource and schema artifacts
  * @param javaSourceOutputDirectory root directory for Java source artifacts
+ * @param manifest records generated files across runs; without it, stale files are kept
  */
 class FileSystemGeneratedArtifactWriter(
     private val sourceOutputDirectory: File,
     private val resourceOutputDirectory: File,
     private val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    private val manifest: GeneratedOutputManifest? = null,
 ) : GeneratedArtifactWriter {
 
     override fun write(result: GenerationResult) {
@@ -55,6 +58,7 @@ class FileSystemGeneratedArtifactWriter(
             for (staged in toCommit) {
                 commitFile(staged)
             }
+            manifest?.update(result.artifacts.map(::outputFile))
         } catch (ex: Exception) {
             primaryFailure = ex
             throw ex
