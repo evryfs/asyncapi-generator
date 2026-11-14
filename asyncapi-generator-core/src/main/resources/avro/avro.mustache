@@ -10,8 +10,8 @@
     {
       "name": "{{name}}",
       "type": {{{jsonType}}}{{#doc}},
-      "doc": "{{{.}}}"{{/doc}}{{#hasDefaultNull}},
-      "default": null{{/hasDefaultNull}}
+      "doc": "{{{.}}}"{{/doc}}{{#defaultJson}},
+      "default": {{{.}}}{{/defaultJson}}
     }{{^last}},{{/last}}
     {{/fields}}
   ]

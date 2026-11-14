@@ -5,113 +5,69 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
+/**
+ * Maps JSON Schema types to Avro type JSON.
+ *
+ * Named schemas are referenced by their full name, `<namespace>.<SchemaName>`, which is the
+ * name their own `.avsc` file declares. Arrays and maps map their items and values recursively.
+ */
 class AvroTypeMapper(
     val packageName: String,
 ) {
-    fun getTitleFromReference(ref: SchemaInterface.SchemaReference): String {
-        val childName = ref.reference.ref.substringAfterLast('/')
-        return "$packageName.${MapperUtil.toPascalCase(childName)}"
-    }
-
     fun mapToAvroType(schema: Schema?, isOptional: Boolean, refName: String? = null): String {
+        val type = requiredType(schema, refName)
+        if (!isOptional) return type
+        // Avro unions cannot nest, so an optional union gets "null" as its first branch.
+        return if (type.startsWith("[")) "[\"null\", ${type.removePrefix("[")}" else "[\"null\", $type]"
+    }
+
+    /** The Avro type of a field that must hold a value; [refName] names a referenced schema. */
+    fun requiredType(schema: Schema?, refName: String? = null): String {
         if (schema != null && !schema.oneOf.isNullOrEmpty()) {
-            val unionTypes = schema.oneOf.mapNotNull { ref ->
-                if (ref is SchemaInterface.SchemaReference)
-                    "\"${getTitleFromReference(ref)}\""
-                else null
-            }
-
-            if (unionTypes.isNotEmpty()) {
-                return if (isOptional) {
-                    val combined = mutableListOf("\"null\"")
-                    combined.addAll(unionTypes)
-                    combined.joinToString(", ", "[", "]")
-                } else {
-                    unionTypes.joinToString(", ", "[", "]")
-                }
-            }
+            val unionTypes = schema.oneOf.filterIsInstance<SchemaInterface.SchemaReference>().map(::namedType)
+            if (unionTypes.isNotEmpty()) return unionTypes.joinToString(", ", "[", "]")
         }
+        if (refName != null) return namedType(refName)
+        if (schema == null) return "\"string\""
 
-        if (refName != null) {
-            val pascalName = MapperUtil.toPascalCase(refName)
-            val fullName = "\"$packageName.$pascalName\""
-            return if (isOptional) "[\"null\", $fullName]" else fullName
-        }
-
-        if (schema == null)
-            return "\"string\""
-
-        val finalType = if (schema.type.getPrimaryType() == "integer" && schema.format == "int64")
-            "\"long\""
-        else if (schema.type.getPrimaryType() == "array")
-            "{\"type\": \"array\", \"items\": ${resolveArrayItemsType(schema)}}"
-        else if (schema.type.getPrimaryType() == "object")
-            "{\"type\": \"map\", \"values\": ${resolveMapValuesType(schema)}}"
-        else
-            resolveBaseType(schema)
-        return if (isOptional) {
-            "[\"null\", $finalType]"
-        } else {
-            finalType
-        }
-    }
-
-    private fun resolveArrayItemsType(schema: Schema): String {
-        try {
-            val defaultSchema = "\"string\""
-            if (schema.items == null)
-                return defaultSchema
-            if (schema.items is SchemaInterface.SchemaInline && schema.items.schema.type.getPrimaryType() != null)
-                return resolveBaseType(schema.items.schema)
-                    ?: defaultSchema
-            else if (schema.items is SchemaInterface.SchemaReference)
-                return "\"${getTitleFromReference(schema.items)}\""
-            return defaultSchema
-        } catch (e: Exception) {
-            throw RuntimeException("Error while resolving map values $schema")
-        }
-    }
-
-    private fun resolveMapValuesType(schema: Schema): String {
-        try {
-            val defaultSchema = "\"string\""
-            if (schema.additionalProperties == null)
-                return defaultSchema
-            else if (schema.additionalProperties is SchemaInterface.SchemaInline)
-                return resolveBaseType(schema.additionalProperties.schema)
-                    ?: defaultSchema
-            else if (schema.additionalProperties is SchemaInterface.SchemaReference)
-                return "\"${getTitleFromReference(schema.additionalProperties)}\""
-            return defaultSchema
-        } catch (e: Exception) {
-            throw RuntimeException("Error while resolving map values $schema")
-        }
-    }
-
-    private fun resolveBaseType(schema: Schema): String {
         return when (schema.type.getPrimaryType()) {
-            "string" -> {
+            "array" -> "{\"type\": \"array\", \"items\": ${elementType(schema.items)}}"
+            "object" -> "{\"type\": \"map\", \"values\": ${elementType(schema.additionalProperties)}}"
+            else -> baseType(schema)
+        }
+    }
+
+    private fun elementType(element: SchemaInterface?): String =
+        when (element) {
+            is SchemaInterface.SchemaReference -> namedType(element)
+            is SchemaInterface.SchemaInline -> requiredType(element.schema)
+            else -> "\"string\""
+        }
+
+    private fun namedType(reference: SchemaInterface.SchemaReference): String =
+        namedType(reference.reference.ref.substringAfterLast('/'))
+
+    /** Schema names reach the generator in PascalCase, which is also the record name in its own file. */
+    private fun namedType(schemaName: String): String = "\"$packageName.${MapperUtil.toPascalCase(schemaName)}\""
+
+    private fun baseType(schema: Schema): String =
+        when (schema.type.getPrimaryType()) {
+            "string" ->
                 when (schema.format) {
                     "uuid" -> "{\"type\": \"string\", \"logicalType\": \"uuid\"}"
                     "date" -> "{\"type\": \"int\", \"logicalType\": \"date\"}"
                     "date-time" -> "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"
                     else -> "\"string\""
                 }
-            }
-
-            "integer" -> {
-                if (schema.format == "date") "{\"type\": \"int\", \"logicalType\": \"date\"}"
-                else "\"int\""
-            }
-
+            "integer" ->
+                when (schema.format) {
+                    "date" -> "{\"type\": \"int\", \"logicalType\": \"date\"}"
+                    "int64" -> "\"long\""
+                    else -> "\"int\""
+                }
+            // Always double: narrowing an existing double field to float breaks registered schemas.
             "number" -> "\"double\""
             "boolean" -> "\"boolean\""
-            "long" -> {
-                if (schema.format == "date-time") "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"
-                else "\"long\""
-            }
-
             else -> "\"string\""
         }
-    }
 }

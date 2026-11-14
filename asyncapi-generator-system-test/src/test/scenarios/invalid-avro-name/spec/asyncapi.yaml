@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid Avro name
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountChanged:
+        payload:
+          $ref: '#/components/schemas/AccountChanged'
+components:
+  schemas:
+    AccountChanged:
+      type: object
+      properties:
+        account-id:
+          type: string
