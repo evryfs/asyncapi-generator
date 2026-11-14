@@ -17,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -36,9 +37,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertSame
 
 class ExternalReferenceLoadingTest {
     @TempDir
@@ -208,7 +209,7 @@ class ExternalReferenceLoadingTest {
     }
 
     @Test
-    fun `isolates selected fragments and resolves same-file reference chains and cycles`() {
+    fun `isolates selected fragments and resolves same-file reference chains`() {
         val file = TestResources.file("parser/references/external/external-fragment-isolation-main.yaml")
         val document = DocumentReaderRegistry.read(file)
         val root = ParserNodeFactory.root(document, context)
@@ -226,12 +227,16 @@ class ExternalReferenceLoadingTest {
         assertEquals("End of the same-file reference chain", third.description)
         assertEquals("heterogeneous-fragments.yaml", context.modelTracking.getSourceLocation(third)?.file?.name)
         assertEquals("heterogeneous_fragments.root.thirdSchema", context.modelTracking.getSourceLocation(third)?.path)
+    }
 
-        val cycleA = assertIs<Reference>(models["heterogeneous_fragments.root.cycleA"])
-        val cycleB = assertIs<Reference>(context.modelTracking.findReference(cycleA))
-        assertSame(cycleA, context.modelTracking.findReference(cycleB))
-        assertSame(cycleB, cycleA.model)
-        assertSame(cycleA, cycleB.model)
+    @Test
+    fun `rejects a same-file reference cycle in an external fragment`() {
+        val file = TestResources.file("parser/references/external/external-fragment-cycle-main.yaml")
+        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(file), context)
+
+        val error = assertFailsWith<AsyncApiValidateException.ValidateError> { documentParser.parse(root) }
+
+        assertTrue("cycle" in error.message.orEmpty(), error.message)
     }
 
     @Test
@@ -520,7 +525,8 @@ class ExternalReferenceLoadingTest {
         )
         val cyclicRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), cyclicContext)
 
-        AsyncApiParser(cyclicContext).parse(cyclicRoot)
+        val cycle = assertFailsWith<AsyncApiValidateException.ValidateError> { AsyncApiParser(cyclicContext).parse(cyclicRoot) }
+        assertTrue("cycle" in cycle.message.orEmpty(), cycle.message)
     }
 
     @Test

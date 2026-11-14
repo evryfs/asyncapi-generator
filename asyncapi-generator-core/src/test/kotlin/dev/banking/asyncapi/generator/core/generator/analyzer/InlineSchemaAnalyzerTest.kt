@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class InlineSchemaAnalyzerTest {
@@ -71,5 +72,66 @@ class InlineSchemaAnalyzerTest {
 
         // Assert
         assertTrue(result.containsKey("Tags"), "Array items 'tags' should be promoted to singular 'Tag'")
+    }
+
+    @Test
+    fun `analyze shares one name between identical inline schemas`() {
+        val address = Schema(type = "object", properties = mapOf("street" to SchemaInterface.SchemaInline(Schema(type = "string"))))
+        val input = mapOf(
+            "Customer" to Schema(type = "object", properties = mapOf("address" to SchemaInterface.SchemaInline(address))),
+            "Supplier" to Schema(type = "object", properties = mapOf("address" to SchemaInterface.SchemaInline(address))),
+        )
+
+        val result = analyzer.analyze(input)
+
+        assertEquals(address, result["Address"])
+    }
+
+    @Test
+    fun `analyze rejects different inline schemas that would get the same name`() {
+        fun withAddress(field: String) = Schema(
+            type = "object",
+            properties = mapOf(
+                "address" to SchemaInterface.SchemaInline(
+                    Schema(type = "object", properties = mapOf(field to SchemaInterface.SchemaInline(Schema(type = "string")))),
+                ),
+            ),
+        )
+        val input = mapOf("Customer" to withAddress("street"), "Supplier" to withAddress("zip"))
+
+        val failure = assertFailsWith<IllegalArgumentException> { analyzer.analyze(input) }
+
+        val message = failure.message.orEmpty()
+        assertTrue("'Address'" in message, message)
+        assertTrue("components.schemas.Customer.properties.address" in message, message)
+        assertTrue("components.schemas.Supplier.properties.address" in message, message)
+    }
+
+    @Test
+    fun `analyze rejects an inline schema that would replace a component schema`() {
+        val input = mapOf(
+            "Address" to Schema(type = "object", properties = mapOf("street" to SchemaInterface.SchemaInline(Schema(type = "string")))),
+            "Customer" to Schema(
+                type = "object",
+                properties = mapOf(
+                    "address" to SchemaInterface.SchemaInline(
+                        Schema(type = "object", properties = mapOf("zip" to SchemaInterface.SchemaInline(Schema(type = "integer")))),
+                    ),
+                ),
+            ),
+        )
+
+        assertFailsWith<IllegalArgumentException> { analyzer.analyze(input) }
+    }
+
+    @Test
+    fun `analyze names inline items of a named array after the array`() {
+        val item = Schema(type = "object", properties = mapOf("id" to SchemaInterface.SchemaInline(Schema(type = "string"))))
+        val input = mapOf("OrderList" to Schema(type = "array", items = SchemaInterface.SchemaInline(item)))
+
+        val result = analyzer.analyze(input)
+
+        assertEquals(item, result["OrderListItem"])
+        assertEquals("array", result["OrderList"]?.type)
     }
 }

@@ -6,89 +6,135 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
+/**
+ * Promotes inline object and enum schemas to named schemas, so every generated type has a name.
+ *
+ * A promoted schema is named after its `title`, or else after the property that holds it.
+ * Inline schemas that describe the same type share one name, even when usage-site details such
+ * as `default`, `const` or `description` differ; the last one seen is kept, as before. Two schemas
+ * of different types that would get the same name fail, because generating both under one name
+ * would silently drop one of them.
+ * Items of a named array schema are named `<Array>Item`, so they never replace the array.
+ */
 class InlineSchemaAnalyzer {
 
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
-        val schemasWithPromotions = schemas.toMutableMap()
-        val namesToProcess = schemasWithPromotions.keys.toMutableList()
-        val processedSet = mutableSetOf<String>()
-
-        while (namesToProcess.isNotEmpty()) {
-            val schemaName = namesToProcess.removeFirst()
-            if (schemaName in processedSet) continue
-            processedSet.add(schemaName)
-
-            val originalSchema = schemasWithPromotions[schemaName] ?: continue
-            val modifiedSchema = replaceInlineWithRefs(originalSchema, schemaName, schemasWithPromotions, namesToProcess)
-
+        val promotion = Promotion(schemas)
+        while (promotion.namesToProcess.isNotEmpty()) {
+            val schemaName = promotion.namesToProcess.removeFirst()
+            if (!promotion.processed.add(schemaName)) continue
+            val originalSchema = promotion.schemas[schemaName] ?: continue
+            val modifiedSchema =
+                promotion.replaceInlineWithRefs(
+                    schema = originalSchema,
+                    nameHint = schemaName,
+                    owner = schemaName,
+                    location = promotion.locations.getValue(schemaName),
+                )
             if (modifiedSchema != originalSchema) {
-                schemasWithPromotions[schemaName] = modifiedSchema
+                promotion.schemas[schemaName] = modifiedSchema
             }
         }
-        return schemasWithPromotions
+        return promotion.schemas
     }
 
-    private fun replaceInlineWithRefs(
-        schema: Schema,
-        currentNameHint: String,
-        schemas: MutableMap<String, Schema>,
-        namesToProcess: MutableList<String>
-    ): Schema {
-        var modifiedSchema = schema
-        schema.properties?.let { props ->
-            val newProps = props.mapValues { (propName, propSchema) ->
-                promoteIfNeeded(propSchema, propName, schemas, namesToProcess)
-            }
-            if (newProps != props) {
-                modifiedSchema = modifiedSchema.copy(properties = newProps)
-            }
-        }
-        schema.items?.let { items ->
-            val newItems = promoteIfNeeded(items, currentNameHint, schemas, namesToProcess)
-            if (newItems != items) {
-                modifiedSchema = modifiedSchema.copy(items = newItems)
-            }
-        }
-        schema.additionalProperties?.let { additional ->
-            val valueNameHint = currentNameHint + "Value"
-            val newAdditional = promoteIfNeeded(additional, valueNameHint, schemas, namesToProcess)
-            if (newAdditional != additional) {
-                modifiedSchema = modifiedSchema.copy(additionalProperties = newAdditional)
-            }
-        }
+    private class Promotion(initial: Map<String, Schema>) {
+        val schemas = initial.toMutableMap()
+        val namesToProcess = initial.keys.toMutableList()
+        val processed = mutableSetOf<String>()
 
-        return modifiedSchema
-    }
+        /** Where each named schema comes from, for collision messages. */
+        val locations = initial.keys.associateWith { "components.schemas.$it" }.toMutableMap()
 
-    private fun promoteIfNeeded(
-        schemaInterface: SchemaInterface,
-        nameHint: String,
-        schemas: MutableMap<String, Schema>,
-        namesToProcess: MutableList<String>
-    ): SchemaInterface {
-        if (schemaInterface !is SchemaInterface.SchemaInline) {
-            return schemaInterface
+        fun replaceInlineWithRefs(
+            schema: Schema,
+            nameHint: String,
+            owner: String,
+            location: String,
+        ): Schema {
+            var modifiedSchema = schema
+            schema.properties?.let { props ->
+                val newProps = props.mapValues { (propName, propSchema) ->
+                    promoteIfNeeded(propSchema, propName, owner, "$location.properties.$propName")
+                }
+                if (newProps != props) {
+                    modifiedSchema = modifiedSchema.copy(properties = newProps)
+                }
+            }
+            schema.items?.let { items ->
+                val itemsHint = if (MapperUtil.toPascalCase(nameHint) == owner) "${owner}Item" else nameHint
+                val newItems = promoteIfNeeded(items, itemsHint, owner, "$location.items")
+                if (newItems != items) {
+                    modifiedSchema = modifiedSchema.copy(items = newItems)
+                }
+            }
+            schema.additionalProperties?.let { additional ->
+                val newAdditional =
+                    promoteIfNeeded(additional, nameHint + "Value", owner, "$location.additionalProperties")
+                if (newAdditional != additional) {
+                    modifiedSchema = modifiedSchema.copy(additionalProperties = newAdditional)
+                }
+            }
+            return modifiedSchema
         }
 
-        val inlineSchema = schemaInterface.schema
-        val processedInlineSchema = replaceInlineWithRefs(inlineSchema, nameHint, schemas, namesToProcess)
-
-        val isInlineObject = processedInlineSchema.type.getPrimaryType() == "object" && !processedInlineSchema.properties.isNullOrEmpty()
-        val isInlineEnum = processedInlineSchema.type.getPrimaryType() == "string" && !processedInlineSchema.enum.isNullOrEmpty()
-
-        if (isInlineObject || isInlineEnum) {
-            val newSchemaName = processedInlineSchema.title?.takeIf { it.isNotBlank() }
-                ?.let { MapperUtil.toPascalCase(it) }
-                ?: MapperUtil.toPascalCase(nameHint)
-
-            if (!schemas.containsKey(newSchemaName)) {
-                namesToProcess.add(newSchemaName)
+        private fun promoteIfNeeded(
+            schemaInterface: SchemaInterface,
+            nameHint: String,
+            owner: String,
+            location: String,
+        ): SchemaInterface {
+            if (schemaInterface !is SchemaInterface.SchemaInline) {
+                return schemaInterface
             }
-            schemas[newSchemaName] = processedInlineSchema
 
+            val processedInlineSchema = replaceInlineWithRefs(schemaInterface.schema, nameHint, owner, location)
+            val primaryType = processedInlineSchema.type.getPrimaryType()
+            val isInlineObject = primaryType == "object" && !processedInlineSchema.properties.isNullOrEmpty()
+            val isInlineEnum = primaryType == "string" && !processedInlineSchema.enum.isNullOrEmpty()
+            if (!isInlineObject && !isInlineEnum) {
+                return SchemaInterface.SchemaInline(processedInlineSchema)
+            }
+
+            val newSchemaName =
+                processedInlineSchema.title?.takeIf { it.isNotBlank() }?.let { MapperUtil.toPascalCase(it) }
+                    ?: MapperUtil.toPascalCase(nameHint)
+            val existing = schemas[newSchemaName]
+            when {
+                existing == null -> {
+                    schemas[newSchemaName] = processedInlineSchema
+                    locations[newSchemaName] = location
+                    namesToProcess.add(newSchemaName)
+                }
+                typeShape(existing) == typeShape(processedInlineSchema) ->
+                    schemas[newSchemaName] = processedInlineSchema
+                else -> throw IllegalArgumentException(
+                    "Inline schema at $location would be generated as '$newSchemaName', which is already " +
+                        "used by the different schema at ${locations[newSchemaName]}. Give one of them a " +
+                        "distinct title, or define it once under components.schemas and reference it.",
+                )
+            }
             val newReference = Reference(ref = "#/components/schemas/$newSchemaName", model = processedInlineSchema)
             return SchemaInterface.SchemaReference(reference = newReference)
         }
-        return SchemaInterface.SchemaInline(processedInlineSchema)
+
+        /** What the generated type depends on: its kind, values, and the shapes of its members. */
+        private fun typeShape(schema: Schema): List<Any?> =
+            listOf(
+                schema.type.getPrimaryType(),
+                schema.format,
+                schema.enum,
+                schema.required?.toSet(),
+                schema.properties?.mapValues { (_, property) -> typeShape(property) },
+                schema.items?.let(::typeShape),
+                schema.additionalProperties?.let(::typeShape),
+            )
+
+        private fun typeShape(schema: SchemaInterface): Any? =
+            when (schema) {
+                is SchemaInterface.SchemaInline -> typeShape(schema.schema)
+                is SchemaInterface.SchemaReference -> schema.reference.ref
+                else -> schema
+            }
     }
 }

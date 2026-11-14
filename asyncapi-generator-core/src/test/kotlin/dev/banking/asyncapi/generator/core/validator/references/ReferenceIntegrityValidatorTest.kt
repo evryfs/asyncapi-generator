@@ -5,12 +5,14 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CATEGORY_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CYCLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_TARGET_CATEGORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NAME_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
 
@@ -31,10 +33,13 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
-    fun `terminates reference cycles without duplicating findings or rejecting resolvable edges`() {
+    fun `reports a reference cycle once`() {
         val report = validate("validator/references/asyncapi_validator_reference_cycle.yaml")
 
-        assertEquals(emptyList(), report.findings)
+        val cycle = report.findings.single()
+        assertEquals(REFERENCE_CYCLE.code, cycle.code)
+        assertTrue("#/components/messages/first" in cycle.message, cycle.message)
+        assertTrue("#/components/messages/second" in cycle.message, cycle.message)
     }
 
     @Test
