@@ -32,7 +32,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
-        val result = generator.render(listOf(channel))
+        val result = generator.emit(listOf(channel))
         val content =
             result.artifacts.single {
                 it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.kt"
@@ -99,7 +99,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
-        val result = generator.render(listOf(channel))
+        val result = generator.emit(listOf(channel))
         val producerContent =
             result.artifacts.single {
                 it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.kt"

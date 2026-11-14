@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaSpringKafkaModelFactory
+import dev.banking.asyncapi.generator.core.generator.ir.ClientEmitter
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
@@ -16,7 +17,7 @@ class JavaSpringKafkaGenerator(
     generateConsumers: Boolean = true,
     topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
-) {
+) : ClientEmitter {
     private val modelFactory =
         JavaSpringKafkaModelFactory(
             clientPackage = clientPackage,
@@ -30,14 +31,13 @@ class JavaSpringKafkaGenerator(
     private val producerGenerator = JavaSpringKafkaProducerGenerator()
     private val consumerGenerator = JavaSpringKafkaConsumerGenerator()
 
-    fun render(channels: List<AnalyzedChannel>): GenerationResult =
+    override fun emit(channels: List<AnalyzedChannel>): GenerationResult =
         GenerationResult(
             channels.flatMap { channel ->
                 modelFactory.create(channel).map { item ->
                     when (item) {
                         is GeneratorItem.KafkaProducerClass -> producerGenerator.render(item)
                         is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.render(item)
-                        else -> error("Unexpected Java Spring Kafka model: ${item::class.simpleName}")
                     }
                 }
             },

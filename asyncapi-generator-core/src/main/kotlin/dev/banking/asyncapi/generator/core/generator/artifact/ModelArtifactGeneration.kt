@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.java.JavaGenerator
-import dev.banking.asyncapi.generator.core.generator.java.JavaModelPreparer
+import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinitionFactory
+import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
-import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinGenerator
-import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelPreparer
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
@@ -15,45 +15,19 @@ import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCat
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.
  */
-class ModelArtifactGeneration(
-    private val kotlinModelPreparer: KotlinModelPreparer = KotlinModelPreparer(),
-    private val javaModelPreparer: JavaModelPreparer = JavaModelPreparer(),
-) {
+class ModelArtifactGeneration {
     fun renderModelArtifacts(
         task: GenerationTask.ModelArtifacts,
         generationInput: GenerationInput,
-    ): GenerationResult =
-        when (task.language) {
-            KOTLIN -> {
-                val generationModel =
-                    kotlinModelPreparer.prepare(
-                        input = generationInput,
-                        packageName = task.packageName,
-                        annotation = task.annotation,
-                    )
-                val generator =
-                    KotlinGenerator(
-                        packageName = task.packageName,
-                        generationModel = generationModel,
-                    )
-                generator.render()
-            }
-            JAVA -> {
-                val generationModel =
-                    javaModelPreparer.prepare(
-                        input = generationInput,
-                        packageName = task.packageName,
-                        annotation = task.annotation,
-                    )
-                val generator =
-                    JavaGenerator(
-                        packageName = task.packageName,
-                        generationModel = generationModel,
-                        javaModelType = task.javaModelType,
-                    )
-                generator.render()
-            }
-        }
+    ): GenerationResult {
+        val models =
+            ModelDefinitionFactory(
+                input = generationInput,
+                packageName = task.packageName,
+                annotation = task.annotation,
+            ).create()
+        return emitterFor(task).emit(models)
+    }
 
     fun renderKafkaKeyModelArtifacts(
         task: GenerationTask.KafkaKeyModelArtifacts,
@@ -75,4 +49,10 @@ class ModelArtifactGeneration(
                 ),
         )
     }
+
+    private fun emitterFor(task: GenerationTask.ModelArtifacts): ModelEmitter =
+        when (task.language) {
+            KOTLIN -> KotlinModelEmitter()
+            JAVA -> JavaModelEmitter(task.javaModelType)
+        }
 }
