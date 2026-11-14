@@ -51,12 +51,15 @@ sealed class DocumentReadException(
         file = file,
     )
 
+    /** @param reason What is wrong, when the reader knows it better than the underlying parser error. */
     class MalformedDocument(
         file: File,
         cause: Throwable,
         location: SourceLocation? = null,
+        reason: String? = null,
     ) : DocumentReadException(
-        message = "Malformed input document${locationSuffix(location)}: ${file.absolutePath}",
+        message = "Malformed input document${locationSuffix(location)}${reason?.let { " ($it)" }.orEmpty()}: " +
+            file.absolutePath,
         file = file,
         location = location,
         cause = cause,

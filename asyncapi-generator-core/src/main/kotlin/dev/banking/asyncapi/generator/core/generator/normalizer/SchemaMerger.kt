@@ -18,7 +18,10 @@ class SchemaMerger {
         val mergedProperties =
             allPropKeys
                 .associateWith { key ->
-                    mergeSchemaInterface(baseProps[key], overrideProps[key])!!
+                    // Every key comes from one of the two sides, so the merge always has a property.
+                    checkNotNull(mergeSchemaInterface(baseProps[key], overrideProps[key])) {
+                        "Property $key is missing on both sides of the merge"
+                    }
                 }.ifEmpty { null }
         val lowerBound = strictestLowerBound(base, override)
         val upperBound = strictestUpperBound(base, override)

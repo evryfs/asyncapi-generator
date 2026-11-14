@@ -340,6 +340,29 @@ class YamlDocumentReaderTest {
     }
 
     @Test
+    fun `rejects an alias that contains itself`() {
+        val file = TestResources.file("reader/yaml/invalid-root.yaml")
+        val source = DocumentSource(
+            id = "recursive-alias",
+            file = file,
+            content =
+                """
+                loop: &loop
+                  type: object
+                  properties:
+                    self: *loop
+                """.trimIndent(),
+            format = DocumentFormat.YAML,
+        )
+
+        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
+            YamlDocumentReader().read(source)
+        }
+        assertTrue("Recursive YAML alias" in failure.message.orEmpty(), failure.message)
+        assertTrue(failure.location?.path.orEmpty().endsWith("self"), failure.location?.path)
+    }
+
+    @Test
     fun `returns linked map preserving input order`() {
         val file = TestResources.file("reader/yaml/order-preservation.yaml")
         val source = DocumentSource(
