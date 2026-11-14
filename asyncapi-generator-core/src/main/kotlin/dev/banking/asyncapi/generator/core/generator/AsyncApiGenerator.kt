@@ -58,6 +58,7 @@ class AsyncApiGenerator {
                 sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
                 resourceOutputDirectory = generatorConfiguration.output.resourceOutputDirectory,
                 javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
+                manifest = generatorConfiguration.output.manifest,
             )
 
         artifactWriter.write(result)
