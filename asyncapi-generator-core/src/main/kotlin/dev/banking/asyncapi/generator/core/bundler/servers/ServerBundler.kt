@@ -33,13 +33,12 @@ internal class ServerBundler {
                     )
 
                 is ServerInterface.ServerReference -> {
-                    ReferenceBundler.bundleReferencedModel<Server>(
+                    serverInterface.copy(reference = ReferenceBundler.bundleReferencedModel<Server>(
                         reference = serverInterface.reference,
                         context = context,
                     ) { server, nextContext ->
                         bundleServer(server, nextContext)
-                    }
-                    serverInterface
+                    })
                 }
             }
         }

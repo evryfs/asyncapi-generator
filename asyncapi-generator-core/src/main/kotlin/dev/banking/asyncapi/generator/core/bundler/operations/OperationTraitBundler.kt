@@ -35,13 +35,12 @@ internal class OperationTraitBundler {
                     bundleTrait(traitInterface.operationTrait, context)
                 )
             is OperationTraitInterface.OperationTraitReference -> {
-                ReferenceBundler.bundleReferencedModel<OperationTrait>(
+                traitInterface.copy(reference = ReferenceBundler.bundleReferencedModel<OperationTrait>(
                     reference = traitInterface.reference,
                     context = context,
                 ) { trait, nextContext ->
                     bundleTrait(trait, nextContext)
-                }
-                traitInterface
+                })
             }
         }
 

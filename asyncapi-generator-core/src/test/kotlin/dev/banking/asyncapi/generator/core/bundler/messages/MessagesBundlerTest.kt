@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class MessagesBundlerTest {
@@ -26,11 +25,13 @@ class MessagesBundlerTest {
         val messageReference = Reference("#/components/messages/userUpdated", model = message)
         val messageInterface = MessageInterface.MessageReference(messageReference)
 
-        val bundled = bundler.bundle(messageInterface, BundlingContext.empty())
+        val bundled = assertIs<MessageInterface.MessageReference>(
+            bundler.bundle(messageInterface, BundlingContext.empty()),
+        )
 
-        assertSame(messageInterface, bundled)
-        assertTrue(messageReference.inline)
-        assertIs<Message>(messageReference.model)
-        assertFalse(((messageReference.model as Message).payload as SchemaInterface.SchemaReference).reference.inline)
+        assertTrue(bundled.reference.inline)
+        val bundledMessage = assertIs<Message>(bundled.reference.model)
+        assertFalse(assertIs<SchemaInterface.SchemaReference>(bundledMessage.payload).reference.inline)
+        assertFalse(messageReference.inline, "the input reference is not changed")
     }
 }

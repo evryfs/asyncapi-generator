@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import org.junit.jupiter.api.Test
 import kotlin.test.assertIs
-import kotlin.test.assertSame
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ChannelBundlerTest {
@@ -25,11 +25,15 @@ class ChannelBundlerTest {
         val channelReference = Reference("#/channels/userUpdated", model = channel)
         val channelInterface = ChannelInterface.ChannelReference(channelReference)
 
-        val bundled = bundler.bundle(channelInterface, BundlingContext.empty())
+        val bundled = assertIs<ChannelInterface.ChannelReference>(
+            bundler.bundle(channelInterface, BundlingContext.empty()),
+        )
 
-        assertSame(channelInterface, bundled)
-        assertTrue(channelReference.inline)
-        assertIs<Channel>(channelReference.model)
-        assertTrue(messageReference.inline)
+        assertTrue(bundled.reference.inline)
+        val bundledChannel = assertIs<Channel>(bundled.reference.model)
+        val bundledMessage = assertIs<MessageInterface.MessageReference>(bundledChannel.messages!!["userUpdated"])
+        assertTrue(bundledMessage.reference.inline)
+        assertFalse(channelReference.inline, "the input reference is not changed")
+        assertFalse(messageReference.inline, "the input reference is not changed")
     }
 }

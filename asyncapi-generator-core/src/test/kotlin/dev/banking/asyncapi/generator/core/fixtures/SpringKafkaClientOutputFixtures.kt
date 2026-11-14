@@ -40,7 +40,7 @@ internal class SpringKafkaClientOutputFixtures(
         javaModelType: JavaModelType = JavaModelType.CLASS,
     ): GeneratedSpringKafkaContracts {
         generator.generate(
-            asyncApiDocument = bundlerFixtures.bundledDocument(contractPath),
+            bundled = bundlerFixtures.bundledDocument(contractPath),
             generatorConfiguration =
                 GeneratorConfiguration(
                     profile = GeneratorProfile.Source(language),

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.schemas
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
+import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -76,12 +77,14 @@ internal class SchemaBundler {
             // A component schema of the root document: the bundle keeps the `$ref`, and the component
             // itself is bundled with the root components.
             when (referencedModel) {
-                is Schema -> reference.model = bundleSchema(referencedModel, context.enter(reference))
-                is MultiFormatSchema -> Unit
+                is Schema ->
+                    return schemaInterface.copy(
+                        reference = reference.withModel(bundleSchema(referencedModel, context.enter(reference))),
+                    )
+                is MultiFormatSchema -> return schemaInterface
                 else ->
                     throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
             }
-            return schemaInterface
         }
 
         return when (referencedModel) {

@@ -67,7 +67,7 @@ abstract class AbstractKotlinGeneratorClass {
                     },
             )
         generator.generate(
-            asyncApiDocument = bundled,
+            bundled = bundled,
             generatorConfiguration = generatorConfiguration,
         )
         return loadGeneratedClassContent(codegenOutputDirectory, generated, modelPackage)

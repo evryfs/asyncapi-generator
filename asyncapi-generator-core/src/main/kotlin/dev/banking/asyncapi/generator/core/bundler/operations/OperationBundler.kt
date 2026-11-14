@@ -37,13 +37,12 @@ internal class OperationBundler {
                 )
 
             is OperationInterface.OperationReference -> {
-                ReferenceBundler.bundleReferencedModel<Operation>(
+                operationInterface.copy(reference = ReferenceBundler.bundleReferencedModel<Operation>(
                     reference = operationInterface.reference,
                     context = context,
                 ) { operation, nextContext ->
                     bundleOperation(operation, nextContext)
-                }
-                operationInterface
+                })
             }
         }
     fun bundleOperation(operation: Operation, context: BundlingContext): Operation {

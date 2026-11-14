@@ -145,7 +145,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             logger.warn(loaded.formatWarnings().trimEnd())
         }
 
-        val bundled = AsyncApiBundler().bundle(loaded.document)
+        val bundled = AsyncApiBundler().bundle(loaded)
         AsyncApiGenerator().generate(bundled, generatorConfiguration)
 
         logger.lifecycle("AsyncAPI generation '${name}' completed")

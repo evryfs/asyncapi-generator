@@ -22,7 +22,7 @@ class NativeProtobufApprovalTest {
                         .create(
                             bundlerFixtures.bundledDocument(
                                 "examples/generated-output/native-protobuf.yaml",
-                            ),
+                            ).document,
                         ).multiFormatSchemas,
                 )
                 .artifacts

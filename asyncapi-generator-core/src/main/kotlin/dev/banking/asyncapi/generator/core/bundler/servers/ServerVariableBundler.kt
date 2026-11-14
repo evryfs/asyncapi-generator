@@ -21,8 +21,7 @@ internal class ServerVariableBundler {
                 variable
             }
             is ServerVariableInterface.ServerVariableReference -> {
-                ReferenceBundler.inlineIfUnvisited(variable.reference, context)
-                variable
+                variable.copy(reference = ReferenceBundler.inlineIfUnvisited(variable.reference, context))
             }
         }
 }

@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertSame
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OperationTraitBundlerTest {
@@ -30,13 +30,15 @@ class OperationTraitBundlerTest {
         val traitReference = Reference("#/components/operationTraits/audit", model = trait)
         val traitInterface = OperationTraitInterface.OperationTraitReference(traitReference)
 
-        val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
+        val bundled = assertIs<OperationTraitInterface.OperationTraitReference>(
+            bundler.bundle(traitInterface, BundlingContext.empty()),
+        )
 
-        assertSame(traitInterface, bundled)
-        assertTrue(traitReference.inline)
-        assertIs<OperationTrait>(traitReference.model)
-        assertTrue((traitReference.model as OperationTrait).bindings!!.containsKey("kafka"))
-        assertTrue(bindingReference.inline)
+        assertTrue(bundled.reference.inline)
+        val bundledTrait = assertIs<OperationTrait>(bundled.reference.model)
+        assertTrue(assertIs<BindingInterface.BindingReference>(bundledTrait.bindings!!["kafka"]).reference.inline)
+        assertFalse(traitReference.inline, "the input reference is not changed")
+        assertFalse(bindingReference.inline, "the input reference is not changed")
     }
 
     @Test
@@ -56,6 +58,7 @@ class OperationTraitBundlerTest {
         assertIs<OperationTraitInterface.OperationTraitInline>(bundled)
         val bundledTrait = (bundled as OperationTraitInterface.OperationTraitInline).operationTrait
         assertEquals(1, bundledTrait.security!!.size)
-        assertTrue(securityReference.inline)
+        assertTrue(assertIs<SecuritySchemeInterface.SecuritySchemeReference>(bundledTrait.security!!.single()).reference.inline)
+        assertFalse(securityReference.inline, "the input reference is not changed")
     }
 }
