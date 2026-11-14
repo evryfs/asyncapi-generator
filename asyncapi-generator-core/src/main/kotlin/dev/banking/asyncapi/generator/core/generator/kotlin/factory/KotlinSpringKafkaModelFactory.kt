@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
 
-class KotlinSpringKafkaModelFactory(
+internal class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
     modelPackage: String,
     private val generateProducers: Boolean = true,

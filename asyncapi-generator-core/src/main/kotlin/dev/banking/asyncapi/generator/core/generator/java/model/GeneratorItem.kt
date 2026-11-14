@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java.model
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 
-sealed interface GeneratorItem {
+internal sealed interface GeneratorItem {
     val name: String
     val packageName: String
     val description: List<String>

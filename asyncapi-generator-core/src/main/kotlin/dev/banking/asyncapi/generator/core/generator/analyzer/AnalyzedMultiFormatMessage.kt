@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * These payloads are kept separate from [AnalyzedMessage] because they should not
  * be normalized or generated as JSON-compatible model schemas.
  */
-data class AnalyzedMultiFormatMessage(
+internal data class AnalyzedMultiFormatMessage(
     val messageName: String,
     val payloadName: String,
     val schema: MultiFormatSchema,

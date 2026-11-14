@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinSpring
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
-class KotlinSpringKafkaGenerator(
+internal class KotlinSpringKafkaGenerator(
     clientPackage: String,
     modelPackage: String,
     generateProducers: Boolean = true,

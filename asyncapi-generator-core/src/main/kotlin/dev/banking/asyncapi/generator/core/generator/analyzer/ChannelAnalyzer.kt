@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 
-class ChannelAnalyzer {
+internal class ChannelAnalyzer {
     fun analyze(document: AsyncApiDocument): List<AnalyzedChannel> {
         val channels = document.channels ?: return emptyList()
 

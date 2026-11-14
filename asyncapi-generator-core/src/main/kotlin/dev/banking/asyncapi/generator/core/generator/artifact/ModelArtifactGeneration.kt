@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCat
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.
  */
-class ModelArtifactGeneration {
+internal class ModelArtifactGeneration {
     fun renderModelArtifacts(
         task: GenerationTask.ModelArtifacts,
         generationInput: GenerationInput,

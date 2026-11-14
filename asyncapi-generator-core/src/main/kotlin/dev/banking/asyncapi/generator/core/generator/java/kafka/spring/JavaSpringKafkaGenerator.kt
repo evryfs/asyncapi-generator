@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.ir.ClientEmitter
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
-class JavaSpringKafkaGenerator(
+internal class JavaSpringKafkaGenerator(
     clientPackage: String,
     modelPackage: String,
     generateProducers: Boolean = true,

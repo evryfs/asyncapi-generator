@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-class ReferenceAnalyzer {
+internal class ReferenceAnalyzer {
 
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val discoveredSchemas = schemas.toMutableMap()

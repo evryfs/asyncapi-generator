@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * @property multiFormatSchemas Multi Format Schema Object declarations by generated name
  * @property booleanSchemas Boolean schema declarations by generated name
  */
-data class SchemaDeclarationCatalog(
+internal data class SchemaDeclarationCatalog(
     val asyncApiSchemas: Map<String, Schema> = emptyMap(),
     val multiFormatSchemas: Map<String, MultiFormatSchema> = emptyMap(),
     val booleanSchemas: Map<String, Boolean> = emptyMap(),

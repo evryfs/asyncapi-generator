@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
-class SchemaAnalyzer {
+internal class SchemaAnalyzer {
 
     private val referenceAnalyzer = ReferenceAnalyzer()
     private val enumTypeAnalyzer = EnumTypeAnalyzer()

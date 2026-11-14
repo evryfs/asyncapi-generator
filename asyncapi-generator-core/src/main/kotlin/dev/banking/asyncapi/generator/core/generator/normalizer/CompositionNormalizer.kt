@@ -14,7 +14,7 @@ import java.util.IdentityHashMap
  * items, and map values are traversed recursively, with schema identity used
  * to terminate recursive compositions.
  */
-class CompositionNormalizer {
+internal class CompositionNormalizer {
     private val schemaMerger = SchemaMerger()
 
     fun normalize(schemas: Map<String, Schema>): Map<String, Schema> =
