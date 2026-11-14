@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
 import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -34,14 +35,11 @@ class PropertyFactory(
         val isNullable = !isRequiredByParent || isExplicitlyNullableFromSchema
 
         val annotations = mutableListOf<String>()
-        if (identifier != propertyName) {
-            annotations.add("@field:JsonProperty(\"$propertyName\")")
-        }
+        val wireName = propertyName.takeIf { it != identifier }?.let(SourceLiteralEscaper::forKotlin)
+        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(finalPropSchema, wireName, "@field:JsonProperty")
+        if (wireName != null) jsonProperty?.let(annotations::add)
         annotations.addAll(constraintMapper.buildAnnotations(finalPropSchema))
-        mergeJsonPropertyAnnotations(annotations)
-        JsonPropertyAccessAnnotationMapper.annotationFor(finalPropSchema)?.let { accessAnnotation ->
-            mergeJsonPropertyAnnotations(annotations, accessAnnotation)
-        }
+        if (wireName == null) jsonProperty?.let(annotations::add)
 
         if (validationDetector.needsCascadedValidation(baseKotlinType)) {
             annotations.add("@field:Valid")
@@ -61,36 +59,6 @@ class PropertyFactory(
             defaultValue = defaultValue,
             annotations = annotations,
         )
-    }
-
-    private fun mergeJsonPropertyAnnotations(
-        annotations: MutableList<String>,
-        additionalAnnotation: String? = null,
-    ) {
-        val jsonPropertyPrefix = "@field:JsonProperty"
-        val existingIndex = annotations.indexOfFirst { it.startsWith(jsonPropertyPrefix) }
-        if (existingIndex == -1) {
-            additionalAnnotation?.let { annotations.add(it) }
-            return
-        }
-
-        val existing = annotations[existingIndex]
-        val valueMatch = Regex("""value\s*=\s*"([^"]+)""").find(existing)
-        val accessMatch = Regex("""access\s*=\s*(\S+)""").find(existing)
-
-        val value = valueMatch?.groupValues?.get(1)
-        val access = accessMatch?.groupValues?.get(1)
-            ?: additionalAnnotation?.let { Regex("""access\s*=\s*(\S+)""").find(it)?.groupValues?.get(1) }
-
-        val parts = mutableListOf<String>()
-        value?.let { parts.add("value = \"$it\"") }
-        access?.let { parts.add("access = $it") }
-
-        annotations[existingIndex] = if (parts.isEmpty()) {
-            existing
-        } else {
-            "$jsonPropertyPrefix(${parts.joinToString(", ")})"
-        }
     }
 
     private fun resolveTypeAndSchema(

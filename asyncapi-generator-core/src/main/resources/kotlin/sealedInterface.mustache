@@ -1,3 +1,21 @@
 package {{packageName}}
 
+{{#discriminator}}
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
+
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "{{discriminator}}",
+    visible = true,
+)
+{{#hasSubTypes}}
+@JsonSubTypes(
+{{#subTypes}}
+    JsonSubTypes.Type(value = {{type}}::class, name = "{{name}}"),
+{{/subTypes}}
+)
+{{/hasSubTypes}}
+{{/discriminator}}
 sealed interface {{interfaceName}}

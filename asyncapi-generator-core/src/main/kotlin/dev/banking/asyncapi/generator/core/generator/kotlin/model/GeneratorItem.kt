@@ -29,14 +29,34 @@ sealed interface GeneratorItem {
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-        val values: List<String>,
-    ) : GeneratorItem
+        val values: List<EnumConstantModel>,
+    ) : GeneratorItem {
+        val hasJsonValues: Boolean get() = values.any { it.jsonValue != null }
+    }
 
+    /** @property jsonValue Wire value as an escaped Kotlin string literal body; null when it equals [name]. */
+    data class EnumConstantModel(
+        val name: String,
+        val jsonValue: String?,
+    )
+
+    /**
+     * @property discriminator Discriminator property, escaped for a string literal; null without one.
+     * @property subTypes Members Jackson chooses between by [discriminator].
+     */
     data class SealedInterfaceModel(
         override val name: String,
         override val packageName: String,
         override val description: List<String>,
-    ) : GeneratorItem
+        val discriminator: String? = null,
+        val subTypes: List<SubType> = emptyList(),
+    ) : GeneratorItem {
+        /** @property name Discriminator value, escaped for a string literal. */
+        data class SubType(
+            val name: String,
+            val type: String,
+        )
+    }
 
     data class KafkaConsumerInterface(
         override val name: String,

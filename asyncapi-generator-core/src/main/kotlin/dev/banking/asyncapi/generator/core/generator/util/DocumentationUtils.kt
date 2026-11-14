@@ -26,6 +26,7 @@ object DocumentationUtils {
                 }
             }
             .filter { it.isNotBlank() }
+            .map(::escapeKotlinComment)
     }
 
     fun toJavaDocLines(raw: String?): List<String> {
@@ -39,7 +40,14 @@ object DocumentationUtils {
             }
             .filter { it.isNotBlank() }
             .map { stripMarkdownPrefixes(it) }
+            .map(::escapeJavaComment)
     }
+
+    /** Keeps text inside a Javadoc comment: `*` + `/` would end the comment early. */
+    private fun escapeJavaComment(line: String): String = line.replace("*/", "*&#47;")
+
+    /** Kotlin block comments nest, so an opening `/` + `*` in a KDoc line must not start a new one either. */
+    private fun escapeKotlinComment(line: String): String = escapeJavaComment(line).replace("/*", "&#47;*")
 
 
     fun toAvroDocLines(raw: String?): String? {

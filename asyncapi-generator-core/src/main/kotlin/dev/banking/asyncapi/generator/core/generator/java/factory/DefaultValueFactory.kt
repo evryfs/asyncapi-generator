@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.java.factory
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
@@ -22,7 +23,7 @@ class DefaultValueFactory(private val context: GeneratorContext) {
         val isEnum = schemaForJavaType?.enum?.isNotEmpty() == true
 
         return if (isEnum) {
-            "$baseJavaType.${defaultVal.uppercase().replace("-", "_")}"
+            "$baseJavaType.${EnumLiteralNormalizer.constantName(defaultVal) ?: defaultVal}"
         } else {
             when (schema.type.getPrimaryType()) {
                 "boolean" -> defaultVal

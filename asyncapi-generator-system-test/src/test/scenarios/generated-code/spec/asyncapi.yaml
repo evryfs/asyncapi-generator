@@ -1,0 +1,78 @@
+asyncapi: 3.0.0
+info:
+  title: Generated code correctness
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountChanged:
+        payload:
+          $ref: '#/components/schemas/AccountChanged'
+components:
+  schemas:
+    AccountChanged:
+      type: object
+      description: "Text that would break comments: */ and /* and has \"quotes\" and $dollar."
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/AccountStatus'
+        tier:
+          type: string
+          enum: [gold, silver]
+          default: silver
+        limits:
+          type: object
+          additionalProperties:
+            type: object
+            additionalProperties:
+              type: integer
+        account-id:
+          type: string
+          readOnly: true
+        note:
+          type: string
+          default: "say \"hi\" to $name"
+        ratio:
+          type: number
+          default: 1
+        marker:
+          $ref: '#/components/schemas/Marker'
+        shape:
+          $ref: '#/components/schemas/Shape'
+    AccountStatus:
+      type: string
+      enum: [in-progress, closed, 2fa-required]
+    Marker:
+      type: object
+      description: Any JSON object; the contract does not describe its fields.
+    Shape:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+      discriminator: kind
+      oneOf:
+        - $ref: '#/components/schemas/Circle'
+        - $ref: '#/components/schemas/Square'
+    Circle:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          const: circle
+        radius:
+          type: number
+    Square:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          const: square
+        side:
+          type: number

@@ -40,12 +40,16 @@ internal class ConsumerDependencies(versions: LibraryVersions, libraries: Set<Li
         }
     }
 
-    /** Test libraries; Jackson reads bundled documents and schemas in the checks. */
+    /**
+     * Test libraries. Jackson reads bundled documents and schemas in the checks, and serializes
+     * generated models the way a consumer does; Kotlin data classes need its Kotlin module.
+     */
     val test: List<Dependency> = listOf(
         Dependency("org.jetbrains.kotlin", "kotlin-test-junit5", versions.kotlin),
         Dependency("org.junit.jupiter", "junit-jupiter", versions.junit),
         Dependency("com.fasterxml.jackson.core", "jackson-databind", versions.jackson),
         Dependency("com.fasterxml.jackson.dataformat", "jackson-dataformat-yaml", versions.jackson),
+        Dependency("com.fasterxml.jackson.module", "jackson-module-kotlin", versions.jackson),
     )
 
     /** JUnit launcher Gradle needs at test runtime; JUnit 6 versions it together with Jupiter. */

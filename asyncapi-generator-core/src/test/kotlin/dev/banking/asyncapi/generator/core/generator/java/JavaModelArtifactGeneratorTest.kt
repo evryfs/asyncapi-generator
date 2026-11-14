@@ -99,7 +99,7 @@ class JavaModelArtifactGeneratorTest {
                 name = "Status",
                 packageName = "com.example.model",
                 description = emptyList(),
-                values = listOf("ACTIVE", "INACTIVE"),
+                values = listOf("ACTIVE", "INACTIVE").map { GeneratorItem.EnumConstantModel(name = it, jsonValue = null) },
             )
 
         val artifact = generator.render(enumModel)

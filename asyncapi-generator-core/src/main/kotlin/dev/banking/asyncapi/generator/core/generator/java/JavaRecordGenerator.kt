@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
-import com.github.mustachejava.DefaultMustacheFactory
+import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.java.mapper.ImportMapper
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaRecordTemplate
@@ -15,7 +15,7 @@ import java.io.StringWriter
 class JavaRecordGenerator(
     val packageName: String,
 ) {
-    private val mustacheFactory = DefaultMustacheFactory("java")
+    private val mustacheFactory = SourceMustacheFactory("java")
     private val importMapper = ImportMapper(packageName)
 
     fun render(model: GeneratorItem.ClassModel): GeneratedArtifact {

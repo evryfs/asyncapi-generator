@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.mapper
 
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.PropertyModel
+import dev.banking.asyncapi.generator.core.generator.util.GenericTypeArguments
 import dev.banking.asyncapi.generator.core.generator.util.TypeConstants.JAVA_BUILTINS
 import dev.banking.asyncapi.generator.core.generator.util.TypeConstants.KOTLIN_BUILTINS
 
@@ -29,9 +30,11 @@ class ImportMapper(
                     trimmedAnn.startsWith("@field:DecimalMax") -> imports += "jakarta.validation.constraints.DecimalMax"
                     trimmedAnn.startsWith("@field:Email") -> imports += "jakarta.validation.constraints.Email"
                     trimmedAnn.startsWith("@field:Valid") -> imports += "jakarta.validation.Valid"
-                    trimmedAnn.startsWith("@JsonProperty") -> {
+                    trimmedAnn.startsWith("@JsonProperty") || trimmedAnn.startsWith("@field:JsonProperty") -> {
                         imports += "com.fasterxml.jackson.annotation.JsonProperty"
-                        imports += "com.fasterxml.jackson.annotation.JsonProperty.Access"
+                        if ("Access." in trimmedAnn) {
+                            imports += "com.fasterxml.jackson.annotation.JsonProperty.Access"
+                        }
                     }
                 }
             }
@@ -66,7 +69,7 @@ class ImportMapper(
         }
         if (raw.startsWith("Map<") && raw.endsWith(">")) {
             val content = raw.removePrefix("Map<").removeSuffix(">")
-            val parts = content.split(",")
+            val parts = GenericTypeArguments.split(content)
             if (parts.size >= 2) {
                 parts.forEach { part ->
                     collectImports(part, currentClassName, imports) // Recurse!

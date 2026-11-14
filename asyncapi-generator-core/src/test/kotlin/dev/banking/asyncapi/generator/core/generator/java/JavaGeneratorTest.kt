@@ -32,7 +32,7 @@ class JavaGeneratorTest {
                     name = "Status",
                     packageName = "com.example.model",
                     description = emptyList(),
-                    values = listOf("ACTIVE", "INACTIVE"),
+                    values = listOf("ACTIVE", "INACTIVE").map { GeneratorItem.EnumConstantModel(name = it, jsonValue = null) },
                 ),
                 GeneratorItem.InterfaceModel(
                     name = "Command",

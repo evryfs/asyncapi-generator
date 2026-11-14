@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
-import com.github.mustachejava.DefaultMustacheFactory
+import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
@@ -11,7 +11,7 @@ import java.io.StringWriter
  * Renders Kotlin type alias model items into source artifacts.
  */
 class KotlinTypeAliasGenerator {
-    private val mustacheFactory = DefaultMustacheFactory("kotlin")
+    private val mustacheFactory = SourceMustacheFactory("kotlin")
 
     fun render(model: GeneratorItem.TypeAliasModel): GeneratedArtifact {
         val template = mustacheFactory.compile("typeAlias.mustache")

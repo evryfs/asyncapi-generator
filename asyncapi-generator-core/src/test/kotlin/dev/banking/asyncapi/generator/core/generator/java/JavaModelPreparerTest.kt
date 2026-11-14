@@ -35,6 +35,6 @@ class JavaModelPreparerTest {
 
         val status = items.filterIsInstance<GeneratorItem.EnumModel>().single()
         assertEquals("com.example.model", status.packageName)
-        assertEquals(listOf("ACTIVE", "INACTIVE"), status.values)
+        assertEquals(listOf("ACTIVE", "INACTIVE"), status.values.map { it.name })
     }
 }
