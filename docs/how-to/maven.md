@@ -4,6 +4,9 @@ Replace `VERSION` with the published version shown on the
 [Maven plugin artifact page](https://central.sonatype.com/artifact/dev.banking.asyncapi.generator/asyncapi-generator-maven-plugin).
 The plugin requires Java 21. It is built against and tested with Maven 3.9.
 
+For complete, tested builds, see the `maven/pom.xml` of each
+[system-test scenario](https://github.com/evryfs/asyncapi-generator/tree/main/asyncapi-generator-system-test/src/test/scenarios); every scenario is built with this plugin in CI.
+
 ## Generate Kotlin models
 
 Add the plugin to your `pom.xml` with one execution for the AsyncAPI document:

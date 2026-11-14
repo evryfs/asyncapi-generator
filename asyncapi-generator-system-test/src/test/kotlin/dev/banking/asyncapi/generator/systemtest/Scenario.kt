@@ -5,20 +5,24 @@ import java.io.File
 /**
  * Contracts plus generator executions, exercised end to end by every frontend.
  *
- * On disk a scenario is `src/test/scenarios/<name>/` with these optional parts:
+ * On disk a scenario is `src/test/scenarios/<name>/` with these parts:
  * - `spec/`: AsyncAPI documents and everything they reference.
- * - `main/`: hand-written consumer sources, copied to the consumer's `src/main/`.
- * - `checks/`: Kotlin tests, copied to the consumer's `src/test/kotlin/`,
+ * - `maven/pom.xml`: the Maven consumer build, configuring the Maven plugin.
+ * - `gradle/build.gradle.kts` and `gradle/build.gradle`: the Gradle consumer build in
+ *   the Kotlin and Groovy DSL, configuring the Gradle plugin.
+ * - `main/` (optional): hand-written consumer sources, copied to the consumer's `src/main/`.
+ * - `checks/` (optional): Kotlin tests, copied to the consumer's `src/test/kotlin/`,
  *   compiled against the generated code, and run there.
  *
+ * The build files are the Maven and Gradle configuration under test. [executions] and
+ * [client] describe the same configuration for the CLI, and must stay in line with
+ * the build files; every frontend has to generate identical output.
+ *
  * @property name Unique scenario name; also names its work directory and consumer projects.
- * @property files Directory under the scenarios root holding the parts; scenarios may share one.
- * @property executions Generator executions, run in order.
- * @property client Client configuration for the executions that set a client package.
- * @property sharedClientConfig Configure [client] once for every execution, the way a build
- *   shares it: Maven at plugin level, the CLI on every invocation. Otherwise only executions with a
- *   client package get it. Gradle only supports the shared form.
- * @property libraries Libraries the consumer builds add on top of the base set.
+ * @property executions Generator executions, run in order; the build files use the same ids.
+ * @property client CLI client options, passed to the executions that set a client package.
+ * @property sharedClientConfig Pass [client] to every CLI execution, the way the build files
+ *   configure it once for every execution.
  * @property expectedWarnings Text every frontend must print while generating successfully.
  * @property absentWarnings Text no frontend may print while generating successfully.
  * @property expectedFailure When set, every frontend must fail with this diagnostic.
@@ -28,11 +32,9 @@ import java.io.File
  */
 internal data class Scenario(
     val name: String,
-    val files: String = name,
     val executions: List<Execution>,
     val client: ClientConfig? = null,
     val sharedClientConfig: Boolean = false,
-    val libraries: Set<Library> = emptySet(),
     val expectedWarnings: List<String> = emptyList(),
     val absentWarnings: List<String> = emptyList(),
     val expectedFailure: ExpectedFailure? = null,
@@ -48,7 +50,7 @@ internal data class Scenario(
         }
     }
 
-    fun directory(environment: SystemTestEnvironment): File = environment.scenarios.resolve(files)
+    fun directory(environment: SystemTestEnvironment): File = environment.scenarios.resolve(name)
 
     fun specDirectory(environment: SystemTestEnvironment): File? = part(environment, "spec")
 
@@ -58,20 +60,6 @@ internal data class Scenario(
 
     private fun part(environment: SystemTestEnvironment, name: String): File? =
         directory(environment).resolve(name).takeIf(File::isDirectory)
-}
-
-/**
- * Optional libraries a scenario's consumer builds need for its generated code or checks.
- */
-internal enum class Library {
-    /** Spring Kafka, for generated client contracts and `@Validated`. */
-    SPRING_KAFKA,
-
-    /** Apache Avro, for generated SpecificRecords and parsing `.avsc` schemas. */
-    AVRO,
-
-    /** Protobuf Java and Kotlin runtimes, for generated messages and Kotlin DSLs. */
-    PROTOBUF,
 }
 
 /**

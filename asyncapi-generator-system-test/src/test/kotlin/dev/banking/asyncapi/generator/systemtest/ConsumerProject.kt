@@ -2,62 +2,6 @@ package dev.banking.asyncapi.generator.systemtest
 
 import java.io.File
 
-/**
- * A dependency of a consumer build.
- *
- * @property group Maven group id.
- * @property artifact Maven artifact id.
- * @property version Version, taken from the project's shared [LibraryVersions].
- */
-internal data class Dependency(
-    val group: String,
-    val artifact: String,
-    val version: String,
-) {
-    override fun toString(): String = "$group:$artifact:$version"
-}
-
-/**
- * Libraries a consumer build needs to compile the generated code and run the scenario checks.
- *
- * @param versions Project-wide library versions.
- * @param libraries Optional libraries the scenario asks for.
- */
-internal class ConsumerDependencies(versions: LibraryVersions, libraries: Set<Library>) {
-    val implementation: List<Dependency> = buildList {
-        add(Dependency("org.jetbrains.kotlin", "kotlin-stdlib", versions.kotlin))
-        add(Dependency("jakarta.validation", "jakarta.validation-api", versions.jakartaValidation))
-        add(Dependency("com.fasterxml.jackson.core", "jackson-annotations", versions.jacksonAnnotations))
-        if (Library.SPRING_KAFKA in libraries) {
-            add(Dependency("org.springframework.kafka", "spring-kafka", versions.springKafka))
-        }
-        if (Library.AVRO in libraries) {
-            add(Dependency("org.apache.avro", "avro", versions.avro))
-        }
-        if (Library.PROTOBUF in libraries) {
-            add(Dependency("com.google.protobuf", "protobuf-java", versions.protobuf))
-            add(Dependency("com.google.protobuf", "protobuf-kotlin", versions.protobuf))
-        }
-    }
-
-    /**
-     * Test libraries. Jackson reads bundled documents and schemas in the checks, and serializes
-     * generated models the way a consumer does; Kotlin data classes need its Kotlin module.
-     */
-    val test: List<Dependency> = listOf(
-        Dependency("org.jetbrains.kotlin", "kotlin-test-junit5", versions.kotlin),
-        Dependency("org.junit.jupiter", "junit-jupiter", versions.junit),
-        Dependency("com.fasterxml.jackson.core", "jackson-databind", versions.jackson),
-        Dependency("com.fasterxml.jackson.dataformat", "jackson-dataformat-yaml", versions.jackson),
-        Dependency("com.fasterxml.jackson.module", "jackson-module-kotlin", versions.jackson),
-    )
-
-    /** JUnit launcher Gradle needs at test runtime; JUnit 6 versions it together with Jupiter. */
-    val gradleTestRuntime: List<Dependency> = listOf(
-        Dependency("org.junit.platform", "junit-platform-launcher", versions.junit),
-    )
-}
-
 /** Layout shared by the CLI working directory and the Maven and Gradle consumer projects. */
 internal object ConsumerProject {
     const val SPEC_DIRECTORY = "src/main/asyncapi"
@@ -80,8 +24,12 @@ internal object ConsumerProject {
 
     fun inputSpecPath(execution: Execution): String = "$SPEC_DIRECTORY/${execution.inputSpec}"
 
-    /** Project name derived from the scenario, safe for Maven artifact ids and Gradle project names. */
-    fun projectName(scenario: Scenario): String = "system-test-${scenario.name}"
+    /** Copies the scenario's build file at [path] into [projectDirectory] under its own name. */
+    fun copyBuildFile(scenario: Scenario, environment: SystemTestEnvironment, path: String, projectDirectory: File) {
+        val source = scenario.directory(environment).resolve(path)
+        check(source.isFile) { "Scenario ${scenario.name} has no build file $source" }
+        source.copyTo(projectDirectory.resolve(source.name))
+    }
 }
 
 /**
@@ -114,9 +62,3 @@ internal data class FrontendRun(
         )
     }
 }
-
-internal fun String.xmlEscaped(): String =
-    replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;")
-
-internal fun String.kotlinStringLiteral(): String =
-    "\"" + replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""

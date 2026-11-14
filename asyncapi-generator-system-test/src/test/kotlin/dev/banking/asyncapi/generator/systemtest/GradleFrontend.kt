@@ -3,7 +3,11 @@ package dev.banking.asyncapi.generator.systemtest
 import java.io.File
 
 /**
- * Builds a real Gradle consumer project that applies the staged Gradle plugin.
+ * Builds a real Gradle consumer project from the scenario's `gradle/build.gradle.kts`
+ * or, for the Groovy DSL, `gradle/build.gradle`.
+ *
+ * The build file refers to plugins and libraries through the `libs` version catalog,
+ * written from [SystemTestEnvironment.buildFileVersions].
  *
  * The project gets its own wrapper pinned to [SystemTestEnvironment.gradleVersion],
  * so the Gradle version matrix needs no other change. Only the staged repository
@@ -31,8 +35,9 @@ internal class GradleFrontend(
     fun prepare(scenario: Scenario, projectDirectory: File) {
         ConsumerProject.prepare(scenario, environment, projectDirectory)
         installWrapper(projectDirectory)
-        projectDirectory.resolve(dsl.fileName("settings.gradle")).writeText(settings(scenario))
-        projectDirectory.resolve(dsl.fileName("build.gradle")).writeText(buildScript(scenario))
+        projectDirectory.resolve(dsl.settingsFile).writeText(settings(scenario))
+        ConsumerProject.copyBuildFile(scenario, environment, "gradle/${dsl.buildFile}", projectDirectory)
+        projectDirectory.resolve("gradle/libs.versions.toml").writeText(versionCatalog())
         projectDirectory.resolve("gradle.properties").writeText(
             "org.gradle.daemon.idletimeout=600000\norg.gradle.console=plain\n",
         )
@@ -85,96 +90,36 @@ internal class GradleFrontend(
             |    }
             |}
             |
-            |rootProject.name = ${dsl.literal(ConsumerProject.projectName(scenario))}
+            |rootProject.name = ${dsl.literal(scenario.name)}
             |""".trimMargin()
     }
 
-    private fun buildScript(scenario: Scenario): String = """
-        |plugins {
-        |    id(${dsl.literal("org.jetbrains.kotlin.jvm")}) version ${dsl.literal(environment.libraries.kotlin)}
-        |    id(${dsl.literal(GENERATOR_GROUP)}) version ${dsl.literal(environment.version)}
-        |}
-        |
-        |dependencies {
-        |${dependencyDeclarations(ConsumerDependencies(environment.libraries, scenario.libraries))}
-        |}
-        |
-        |java {
-        |    sourceCompatibility = JavaVersion.VERSION_21
-        |    targetCompatibility = JavaVersion.VERSION_21
-        |}
-        |
-        |kotlin {
-        |    compilerOptions {
-        |        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
-        |    }
-        |}
-        |
-        |${dsl.testTasks} {
-        |    useJUnitPlatform()
-        |}
-        |
-        |asyncApiGenerator {
-        |${scenario.client?.let(::clientConfiguration).orEmpty()}
-        |    executions {
-        |${scenario.executions.joinToString("\n", transform = ::execution)}
-        |    }
-        |}
-        |""".trimMargin()
-
-    private fun dependencyDeclarations(dependencies: ConsumerDependencies): String =
-        listOf(
-            "implementation" to dependencies.implementation,
-            "testImplementation" to dependencies.test,
-            "testRuntimeOnly" to dependencies.gradleTestRuntime,
-        ).flatMap { (configuration, declared) -> declared.map { "    $configuration(${dsl.literal(it.toString())})" } }
-            .joinToString("\n")
-
-    private fun execution(execution: Execution): String = buildList {
-        add("register(${dsl.literal(execution.id)}) {")
-        add("    generatorName.set(${dsl.literal(execution.generatorName)})")
-        add("    inputSpec.set(file(${dsl.literal(ConsumerProject.inputSpecPath(execution))}))")
-        execution.outputDirectory?.let {
-            add("    outputDirectory.set(layout.projectDirectory.dir(${dsl.literal(it)}))")
-        }
-        execution.outputFile?.let { add("    outputFile.set(layout.projectDirectory.file(${dsl.literal(it)}))") }
-        execution.modelPackage?.let { add("    modelPackage.set(${dsl.literal(it)})") }
-        execution.clientPackage?.let { add("    clientPackage.set(${dsl.literal(it)})") }
-        execution.schemaPackage?.let { add("    schemaPackage.set(${dsl.literal(it)})") }
-        if (execution.modelType != null || execution.modelAnnotation != null) {
-            add("    modelConfig {")
-            execution.modelType?.let { add("        modelType.set(${dsl.literal(it)})") }
-            execution.modelAnnotation?.let { add("        modelAnnotation.set(${dsl.literal(it)})") }
-            add("    }")
-        }
-        execution.suppressedWarnings.forEach { add("    suppressedWarnings.add(${dsl.literal(it)})") }
-        add("}")
-    }.joinToString("\n") { "        $it" }
-
-    private fun clientConfiguration(client: ClientConfig): String = buildList {
-        add("clientConfig {")
-        add("    clientType.set(${dsl.literal(client.clientType)})")
-        add("    clientContract.set(${dsl.literal(client.clientContract)})")
-        add("    producer {")
-        add("        enabled.set(${client.producerEnabled})")
-        if (client.producerAdditionalPayloadTypes.isNotEmpty()) {
-            add("        additionalPayloadTypes.set(${dsl.list(client.producerAdditionalPayloadTypes)})")
-        }
-        add("    }")
-        add("    consumer {")
-        add("        enabled.set(${client.consumerEnabled})")
-        add("    }")
-        client.topicParameterProperties.forEach { (parameter, property) ->
-            add("    topicParameterProperties.put(${dsl.literal(parameter)}, ${dsl.literal(property)})")
-        }
-        if (client.clientContractValidationAnnotation != null || client.payloadParameterValidationAnnotation != null) {
-            add("    validationAnnotations {")
-            client.clientContractValidationAnnotation?.let { add("        clientContract.set(${dsl.literal(it)})") }
-            client.payloadParameterValidationAnnotation?.let { add("        payloadParameter.set(${dsl.literal(it)})") }
-            add("    }")
-        }
-        add("}")
-    }.joinToString("\n") { "    $it" }
+    private fun versionCatalog(): String {
+        val versions = environment.buildFileVersions.entries.joinToString("\n") { (name, version) -> "$name = \"$version\"" }
+        return """
+            |[versions]
+            |$versions
+            |
+            |[libraries]
+            |kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+            |kotlin-test-junit5 = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
+            |jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta-validation" }
+            |jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jackson-annotations" }
+            |jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+            |jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+            |jackson-module-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+            |spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
+            |avro = { module = "org.apache.avro:avro", version.ref = "avro" }
+            |protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
+            |protobuf-kotlin = { module = "com.google.protobuf:protobuf-kotlin", version.ref = "protobuf" }
+            |junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+            |junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junit" }
+            |
+            |[plugins]
+            |kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+            |asyncapi-generator = { id = "$GENERATOR_GROUP", version.ref = "asyncapi-generator" }
+            |""".trimMargin()
+    }
 
     private companion object {
         const val GENERATOR_GROUP = "dev.banking.asyncapi.generator"
@@ -182,24 +127,14 @@ internal class GradleFrontend(
 }
 
 /** Build script language of a Gradle consumer project. */
-internal enum class GradleDsl(private val extension: String, val testTasks: String) {
-    KOTLIN(".kts", "tasks.withType<Test>()"),
-    GROOVY("", "tasks.withType(Test)"),
+internal enum class GradleDsl(val buildFile: String, val settingsFile: String) {
+    KOTLIN("build.gradle.kts", "settings.gradle.kts"),
+    GROOVY("build.gradle", "settings.gradle"),
     ;
-
-    fun fileName(baseName: String): String = baseName + extension
 
     /** A string literal that the script uses verbatim, without interpolation. */
     fun literal(value: String): String = when (this) {
-        KOTLIN -> value.kotlinStringLiteral()
+        KOTLIN -> "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\$") + "\""
         GROOVY -> "'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'"
-    }
-
-    fun list(values: List<String>): String {
-        val literals = values.joinToString { literal(it) }
-        return when (this) {
-            KOTLIN -> "listOf($literals)"
-            GROOVY -> "[$literals]"
-        }
     }
 }

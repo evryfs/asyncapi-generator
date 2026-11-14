@@ -22,7 +22,7 @@ class GradleIncrementalBuildSystemTest {
         val project = environment.workDirectory.resolve(SCENARIO.name)
         gradle.prepare(SCENARIO, project)
         val generatedUser = project.resolve("build/generated/asyncapi/models/com/example/incremental/User.kt")
-        val referencedFile = project.resolve("${ConsumerProject.SPEC_DIRECTORY}/schema-fragment/properties.yaml")
+        val referencedFile = project.resolve("${ConsumerProject.SPEC_DIRECTORY}/properties.yaml")
 
         build(project, "first").also { output ->
             assertTrue(output.ran(TASK), "the first build generates")
@@ -58,12 +58,11 @@ class GradleIncrementalBuildSystemTest {
 
         val SCENARIO = Scenario(
             name = "gradle-incremental-build",
-            files = "bundling",
             executions = listOf(
                 Execution(
                     id = "models",
                     generatorName = "kotlin",
-                    inputSpec = "schema-fragment/main.yaml",
+                    inputSpec = "main.yaml",
                     modelPackage = "com.example.incremental",
                 ),
             ),

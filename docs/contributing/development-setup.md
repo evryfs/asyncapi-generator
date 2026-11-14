@@ -49,23 +49,31 @@ inspection after a failure.
 
 ### Adding a scenario
 
-1. Create `asyncapi-generator-system-test/src/test/scenarios/<name>/spec/` with
-   the AsyncAPI documents and every file they reference. Put hand-written
-   consumer sources the generated code needs (such as a custom model
-   annotation) under `<name>/main/`.
-2. Optionally add Kotlin tests under `<name>/checks/`. They are compiled against
+Each scenario is a folder under
+`asyncapi-generator-system-test/src/test/scenarios/`; the
+[scenario overview](https://github.com/evryfs/asyncapi-generator/tree/main/asyncapi-generator-system-test/src/test/scenarios)
+lists them and describes the layout.
+
+1. Create `<name>/spec/` with the AsyncAPI documents and every file they
+   reference. Put hand-written consumer sources the generated code needs (such
+   as a custom model annotation) under `<name>/main/`.
+2. Write the builds: `<name>/maven/pom.xml`, `<name>/gradle/build.gradle.kts`,
+   and `<name>/gradle/build.gradle`. Copy them from a similar scenario. They
+   take versions from `${<name>.version}` properties (Maven) and the `libs`
+   version catalog (Gradle), which the system tests provide, and they declare
+   only the libraries the scenario needs (Spring Kafka, Avro, Protobuf).
+3. Optionally add Kotlin tests under `<name>/checks/`. They are compiled against
    the generated code inside each consumer build, so assert behavior: call
    generated methods, serialize payloads, inspect annotations by reflection.
    Helpers in `src/test/check-support/` read bundled documents and classpath
    resources.
-3. Register the scenario in `Scenarios.kt` with one or more executions, the
-   client settings, and the extra libraries it needs (Spring Kafka, Avro,
-   Protobuf). Set `sharedClientConfig` to configure the client settings once
-   for every execution, `expectedWarnings` for warnings every frontend must
-   print, `absentWarnings` for warnings no frontend may print, or
-   `expectedFailure` for a diagnostic every frontend must report.
-   Scenarios can share files through `files`; the configuration diagnostics
-   all use one contract.
+4. Register the scenario in `Scenarios.kt` with the same executions and client
+   settings as the build files; the CLI runs from these, and all frontends must
+   generate identical output. Set `sharedClientConfig` when the build files
+   configure the client settings once for every execution, `expectedWarnings`
+   for warnings every frontend must print, `absentWarnings` for warnings no
+   frontend may print, or `expectedFailure` for a diagnostic every frontend
+   must report.
 
 Besides the checks, every scenario asserts that the frontends generate
 identical output, that executions without a package write no code, and that

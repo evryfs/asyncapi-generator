@@ -1,0 +1,63 @@
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.asyncapi.generator)
+}
+
+dependencies {
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.jakarta.validation.api)
+    implementation(libs.jackson.annotations)
+    implementation(libs.spring.kafka)
+    implementation(libs.protobuf.java)
+    implementation(libs.protobuf.kotlin)
+    testImplementation(libs.kotlin.test.junit5)
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.jackson.databind)
+    testImplementation(libs.jackson.dataformat.yaml)
+    testImplementation(libs.jackson.module.kotlin)
+    testRuntimeOnly(libs.junit.platform.launcher)
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    }
+}
+
+tasks.withType<Test>() {
+    useJUnitPlatform()
+}
+
+asyncApiGenerator {
+    clientConfig {
+        clientType = "spring-kafka"
+        clientContract = "interface"
+        producer {
+            enabled = true
+        }
+        consumer {
+            enabled = true
+        }
+    }
+    executions {
+        register("java-client") {
+            generatorName = "java"
+            inputSpec = file("src/main/asyncapi/asyncapi.yaml")
+            modelPackage = "com.example.java.model"
+            clientPackage = "com.example.java.client"
+        }
+        register("java-protobuf") {
+            generatorName = "java"
+            inputSpec = file("src/main/asyncapi/native-protobuf.yaml")
+            modelPackage = "com.example.java.protobuf"
+            modelConfig {
+                modelType = "protobuf-message"
+            }
+        }
+    }
+}
