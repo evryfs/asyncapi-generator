@@ -143,8 +143,11 @@ class GenerateSettingsObjectTest : AbstractJavaGeneratorClass() {
         val classBody = extractClassBody(generated)
         val expected = """
               public enum Mode implements Serializable {
+                  @JsonProperty("fast")
                   FAST,
+                  @JsonProperty("safe")
                   SAFE,
+                  @JsonProperty("debug")
                   DEBUG,
               }
               """.trimIndent()

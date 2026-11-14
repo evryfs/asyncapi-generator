@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.java.mapper
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
@@ -32,8 +33,14 @@ class JavaTypeMapper(val context: GeneratorContext) {
         }
     }
 
+    /**
+     * The generated type of a referenced schema. An open object schema gets no class in Java
+     * (Kotlin aliases it to `Any`), so references to it are `Object`.
+     */
     fun typeNameFromRef(reference: Reference): String {
         val raw = reference.ref.substringAfterLast("/")
+        val target = context.findSchemaByName(raw) ?: reference.model as? Schema
+        if (target?.isOpenPayload() == true) return "Object"
         return MapperUtil.toPascalCase(raw)
     }
 

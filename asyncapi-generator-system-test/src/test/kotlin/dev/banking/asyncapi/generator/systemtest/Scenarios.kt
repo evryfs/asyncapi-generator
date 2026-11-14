@@ -266,6 +266,13 @@ private val allScenarios: List<Scenario> = listOf(
         absentWarnings = listOf("unused-client-config"),
     ),
     Scenario(
+        name = "generated-code",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.codegen.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.codegen.java"),
+        ),
+    ),
+    Scenario(
         name = "java-client",
         executions = listOf(
             Execution(

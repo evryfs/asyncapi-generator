@@ -11,35 +11,39 @@ class EnumLiteralNormalizerTest {
     private val normalizer = EnumLiteralNormalizer("com.example.model")
 
     @Test
-    fun `normalizes supported enum literals`() {
+    fun `maps values to upper case constants and keeps differing wire values`() {
         assertEquals(
-            listOf("OPEN", "CLOSED", "PENDING"),
-            normalizer.normalize("Status", listOf("OPEN", "closed", "PENDING")),
+            listOf(
+                EnumConstant("OPEN", jsonValue = null),
+                EnumConstant("CLOSED", jsonValue = "closed"),
+                EnumConstant("IN_PROGRESS", jsonValue = "in-progress"),
+                EnumConstant("_2FA", jsonValue = "2fa"),
+            ),
+            normalizer.normalize("Status", listOf("OPEN", "closed", "in-progress", "2fa")),
         )
     }
 
     @Test
-    fun `rejects an invalid normalized identifier`() {
+    fun `rejects a value that leaves no identifier`() {
         val exception =
             assertThrows<InvalidEnum> {
-                normalizer.normalize("Status", listOf("SECOND_VALUE?"))
+                normalizer.normalize("Status", listOf("--"))
             }
 
         assertTrue(exception.message!!.contains("Status"))
-        assertTrue(exception.message!!.contains("SECOND_VALUE?"))
-        assertTrue(exception.message!!.contains("[A-Z_][A-Z0-9_]*"))
+        assertTrue(exception.message!!.contains("'--'"))
     }
 
     @Test
     fun `rejects literals that collide after normalization`() {
         val exception =
             assertThrows<EnumLiteralCollision> {
-                normalizer.normalize("Status", listOf("OPEN", "open"))
+                normalizer.normalize("Status", listOf("in-progress", "IN_PROGRESS"))
             }
 
         assertTrue(exception.message!!.contains("Status"))
-        assertTrue(exception.message!!.contains("'OPEN'"))
-        assertTrue(exception.message!!.contains("'open'"))
-        assertTrue(exception.message!!.contains("-> 'OPEN'"))
+        assertTrue(exception.message!!.contains("'in-progress'"))
+        assertTrue(exception.message!!.contains("'IN_PROGRESS'"))
+        assertTrue(exception.message!!.contains("-> 'IN_PROGRESS'"))
     }
 }

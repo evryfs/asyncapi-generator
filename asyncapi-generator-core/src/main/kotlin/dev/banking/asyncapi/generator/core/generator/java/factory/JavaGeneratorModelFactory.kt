@@ -4,9 +4,11 @@ import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedType
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
+import dev.banking.asyncapi.generator.core.generator.model.UnionSubtypes
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -36,44 +38,17 @@ class JavaGeneratorModelFactory(
                     name = name,
                     packageName = packageName,
                     description = description,
-                    values = enumLiteralNormalizer.normalize(name, schema.enum),
+                    values = enumLiteralNormalizer.normalize(name, schema.enum).map { constant ->
+                        GeneratorItem.EnumConstantModel(
+                            name = constant.name,
+                            jsonValue = constant.jsonValue?.let(SourceLiteralEscaper::forJava),
+                        )
+                    },
                 )
             isUnionType -> {
                 val discriminatorPropertyName = schema.discriminator
-
                 val subTypes =
-                    (schema.oneOf ?: schema.anyOf ?: emptyList())
-                        .mapNotNull { ref ->
-                            if (ref is SchemaInterface.SchemaReference) {
-                                val childSchemaName = ref.reference.ref.substringAfterLast('/')
-                                val childSchema = context.findSchemaByName(childSchemaName)
-
-                                // Attempt to find the discriminator value in the child schema
-                                val discriminatorValue =
-                                    childSchema
-                                        ?.properties
-                                        ?.get(discriminatorPropertyName)
-                                        ?.let {
-                                            when (it) {
-                                                is SchemaInterface.SchemaInline ->
-                                                    it.schema.const?.toString()
-                                                        ?: it.schema.enum
-                                                            ?.firstOrNull()
-                                                            ?.toString()
-                                                else -> null
-                                            }
-                                        }?.removeSurrounding("\"")
-
-                                if (discriminatorValue != null) {
-                                    GeneratorItem.InterfaceModel.SubType(name = discriminatorValue, type = childSchemaName)
-                                } else {
-                                    // Fallback if discriminator value not found, use schema name
-                                    GeneratorItem.InterfaceModel.SubType(name = childSchemaName, type = childSchemaName)
-                                }
-                            } else {
-                                null // Non-reference schemas for oneOf are not directly supported as subtypes here
-                            }
-                        }
+                    UnionSubtypes.of(schema, context).map { GeneratorItem.InterfaceModel.SubType(name = it.name, type = it.type) }
 
                 GeneratorItem.InterfaceModel(
                     name = name,
