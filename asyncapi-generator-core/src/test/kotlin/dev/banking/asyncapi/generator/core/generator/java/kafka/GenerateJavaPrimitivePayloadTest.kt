@@ -32,7 +32,7 @@ class GenerateJavaPrimitivePayloadTest {
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
-        val result = generator.render(listOf(channel))
+        val result = generator.emit(listOf(channel))
         val consumerContent =
             result.artifacts.single {
                 it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.java"
@@ -105,7 +105,7 @@ class GenerateJavaPrimitivePayloadTest {
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
-        val result = generator.render(listOf(channel))
+        val result = generator.emit(listOf(channel))
         val producerContent =
             result.artifacts.single {
                 it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.java"

@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.ir.ClientEmitter
 import dev.banking.asyncapi.generator.core.generator.kotlin.factory.KotlinSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
@@ -16,7 +17,7 @@ class KotlinSpringKafkaGenerator(
     generateConsumers: Boolean = true,
     topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
-) {
+) : ClientEmitter {
     private val modelFactory =
         KotlinSpringKafkaModelFactory(
             clientPackage = clientPackage,
@@ -30,14 +31,13 @@ class KotlinSpringKafkaGenerator(
     private val producerGenerator = KotlinSpringKafkaProducerGenerator()
     private val consumerGenerator = KotlinSpringKafkaConsumerGenerator()
 
-    fun render(channels: List<AnalyzedChannel>): GenerationResult =
+    override fun emit(channels: List<AnalyzedChannel>): GenerationResult =
         GenerationResult(
             channels.flatMap { channel ->
                 modelFactory.create(channel).map { item ->
                     when (item) {
                         is GeneratorItem.KafkaProducerClass -> producerGenerator.render(item)
                         is GeneratorItem.KafkaConsumerInterface -> consumerGenerator.render(item)
-                        else -> error("Unexpected Kotlin Spring Kafka model: ${item::class.simpleName}")
                     }
                 }
             },
