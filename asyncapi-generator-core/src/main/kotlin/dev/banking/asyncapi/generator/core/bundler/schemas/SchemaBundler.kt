@@ -73,23 +73,11 @@ internal class SchemaBundler {
         }
 
         if (keepAsReference) {
+            // A component schema of the root document: the bundle keeps the `$ref`, and the component
+            // itself is bundled with the root components.
             when (referencedModel) {
-                is Schema ->
-                    ReferenceBundler.bundleReferencedModel<Schema>(
-                        reference = reference,
-                        context = context,
-                    ) { schema, nextContext ->
-                        bundleSchema(
-                            schema = schema,
-                            context = if (reference.ref.isExternalReference()) {
-                                context.enterExternalSchema(reference)
-                            } else {
-                                nextContext
-                            },
-                        )
-                    }
-                is MultiFormatSchema ->
-                    ReferenceBundler.inlineIfUnvisited(reference, context)
+                is Schema -> reference.model = bundleSchema(referencedModel, context.enter(reference))
+                is MultiFormatSchema -> Unit
                 else ->
                     throw IllegalArgumentException("Schema reference ${reference.ref} resolved to unsupported model")
             }
@@ -120,8 +108,8 @@ internal class SchemaBundler {
         referencedModel: Any,
         context: BundlingContext,
     ): Boolean =
-        (reference.ref.isExternalReference() || context.externalSchemaScope) &&
-            context.schemaRecursion.isRecursive(referencedModel)
+        (reference.ref.isExternalReference() || context.externalDocumentScope) &&
+            (context.schemaRecursion.isRecursive(referencedModel) || isComponentSchemaRef(reference.ref))
 
     private fun bundlePromotedReference(
         reference: Reference,
@@ -162,11 +150,20 @@ internal class SchemaBundler {
         return SchemaInterface.SchemaReference(
             Reference(
                 ref = componentSchemaReference(entry.name),
-                model = entry.model,
+                // The bundled schema, so generation sees what the bundled document contains; a recursive
+                // schema still being bundled has no bundled form yet and points at its source model.
+                model = entry.bundledSchema?.bundledModel() ?: entry.model,
                 referenceCategoryKey = reference.referenceCategoryKey ?: ReferenceCategoryKey.SCHEMA,
             ),
         )
     }
+
+    private fun SchemaInterface.bundledModel(): Any? =
+        when (this) {
+            is SchemaInterface.SchemaInline -> schema
+            is SchemaInterface.MultiFormatSchemaInline -> multiFormatSchema
+            else -> null
+        }
 
     private fun Any.toInlineSchemaInterface(): SchemaInterface =
         when (this) {

@@ -18,25 +18,9 @@ channels:
     messages:
       accountUpdated:
         headers:
-          type: object
-          required:
-            - X-EXAMPLE-CORRELATION-ID
-          properties:
-            X-EXAMPLE-CORRELATION-ID:
-              description: Identifier used to correlate related messages.
-              type: string
-            X-EXAMPLE-SOURCE-SYSTEM:
-              description: Optional name of the system that produced the message.
-              type: string
+          $ref: "#/components/schemas/MessageHeaders"
         payload:
-          description: Details about an account update.
-          type: object
-          required:
-            - accountId
-          properties:
-            accountId:
-              description: Identifier of the updated account.
-              type: string
+          $ref: "#/components/schemas/MyAccountUpdatedPayload"
         name: MyAccountUpdated
         bindings:
           kafka:
@@ -97,6 +81,26 @@ operations:
       $ref: "#/channels/lifecycleEvents"
 components:
   schemas:
+    MessageHeaders:
+      type: object
+      required:
+        - X-EXAMPLE-CORRELATION-ID
+      properties:
+        X-EXAMPLE-CORRELATION-ID:
+          description: Identifier used to correlate related messages.
+          type: string
+        X-EXAMPLE-SOURCE-SYSTEM:
+          description: Optional name of the system that produced the message.
+          type: string
+    MyAccountUpdatedPayload:
+      description: Details about an account update.
+      type: object
+      required:
+        - accountId
+      properties:
+        accountId:
+          description: Identifier of the updated account.
+          type: string
     ParentNode:
       type: object
       required:

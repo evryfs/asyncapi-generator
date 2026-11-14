@@ -114,10 +114,6 @@ private val allScenarios: List<Scenario> = listOf(
             payloadParameterValidationAnnotation = VALID,
         ),
         libraries = setOf(Library.SPRING_KAFKA),
-        knownIssues = mapOf(
-            "code generated from the bundled document of 'message-models' matches the original" to
-                "bundling renames external component schemas (MyAccountDetails becomes Details)",
-        ),
     ),
     Scenario(
         name = "complete-configuration",
@@ -191,10 +187,6 @@ private val allScenarios: List<Scenario> = listOf(
             payloadParameterValidationAnnotation = VALID,
         ),
         libraries = setOf(Library.SPRING_KAFKA, Library.AVRO, Library.PROTOBUF),
-        knownIssues = mapOf(
-            "code generated from the bundled document of 'kotlin-client' matches the original" to
-                "the bundled document fails generation: an inlined message payload collides with its component schema",
-        ),
     ),
     Scenario(
         name = "output-locations",

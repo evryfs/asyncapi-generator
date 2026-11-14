@@ -12,12 +12,7 @@ channels:
     messages:
       orderCreated:
         payload:
-          type: object
-          required:
-            - orderId
-          properties:
-            orderId:
-              type: string
+          $ref: "#/components/schemas/OrderPayload"
         name: OrderCreated
         title: Order Created Message
     servers:
@@ -29,3 +24,12 @@ operations:
       $ref: "#/channels/orders"
     messages:
       - $ref: "#/channels/orders/messages/orderCreated"
+components:
+  schemas:
+    OrderPayload:
+      type: object
+      required:
+        - orderId
+      properties:
+        orderId:
+          type: string

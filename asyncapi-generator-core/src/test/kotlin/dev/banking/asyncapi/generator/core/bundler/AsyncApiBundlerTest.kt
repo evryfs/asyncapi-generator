@@ -148,14 +148,14 @@ class AsyncApiBundlerTest {
         val child = nodeA.schema.properties!!["child"] as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/NodeB", child.reference.ref)
         assertIs<Schema>(child.reference.model)
-        assertTrue(child.reference.inline)
+        assertFalse(child.reference.inline, "a root component schema reference keeps its \$ref")
 
         val schemas = components.component.schemas!!
         val nodeB = schemas["NodeB"] as SchemaInterface.SchemaInline
         val parent = nodeB.schema.properties!!["parent"] as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/NodeA", parent.reference.ref)
         assertIs<Schema>(parent.reference.model)
-        assertTrue(parent.reference.inline)
+        assertFalse(parent.reference.inline, "a root component schema reference keeps its \$ref")
     }
 
     @Test

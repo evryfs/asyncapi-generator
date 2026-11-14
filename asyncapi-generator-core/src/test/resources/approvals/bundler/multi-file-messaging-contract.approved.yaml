@@ -53,91 +53,64 @@ channels:
     messages:
       auditMessage:
         payload:
-          title: Audit Metadata
-          description: Metadata about changes to user records
-          type: object
-          required:
-            - timestamp
-            - actor
-          properties:
-            timestamp:
-              description: When the change was made
-              type: string
-              format: date-time
-            actor:
-              description: Who made the change
-              type: string
-            reason:
-              description: Optional reason for the change
-              type: string
+          $ref: "#/components/schemas/auditMetadata"
         name: auditMessage
   externalAuditChannel:
     address: external.audit
     messages:
       externalAuditMessage:
         payload:
-          title: Audit Metadata
-          description: Metadata about changes to user records
-          type: object
-          required:
-            - timestamp
-            - actor
-          properties:
-            timestamp:
-              description: When the change was made
-              type: string
-              format: date-time
-            actor:
-              description: Who made the change
-              type: string
-            reason:
-              description: Optional reason for the change
-              type: string
+          $ref: "#/components/schemas/auditMetadata"
         name: ExternalAuditMessage
     description: External audit events channel defined in shared file
 components:
+  schemas:
+    auditMetadata:
+      title: Audit Metadata
+      description: Metadata about changes to user records
+      type: object
+      required:
+        - timestamp
+        - actor
+      properties:
+        timestamp:
+          description: When the change was made
+          type: string
+          format: date-time
+        actor:
+          description: Who made the change
+          type: string
+        reason:
+          description: Optional reason for the change
+          type: string
+    validKotlinUserSchema:
+      title: Valid User Schema
+      description: Represents a user with valid fields
+      type: object
+      required:
+        - id
+        - username
+      properties:
+        id:
+          description: The unique identifier of the user
+          type: integer
+        username:
+          description: Username between 3 and 20 characters
+          type: string
+          maxLength: 20
+          minLength: 3
+        active:
+          description: Whether the user is active
+          type: boolean
+        email:
+          description: Optional email address
+          type: string
   messages:
     testMessage:
       payload:
-        title: Valid User Schema
-        description: Represents a user with valid fields
-        type: object
-        required:
-          - id
-          - username
-        properties:
-          id:
-            description: The unique identifier of the user
-            type: integer
-          username:
-            description: Username between 3 and 20 characters
-            type: string
-            maxLength: 20
-            minLength: 3
-          active:
-            description: Whether the user is active
-            type: boolean
-          email:
-            description: Optional email address
-            type: string
+        $ref: "#/components/schemas/validKotlinUserSchema"
       name: testMessage
     auditMessage:
       payload:
-        title: Audit Metadata
-        description: Metadata about changes to user records
-        type: object
-        required:
-          - timestamp
-          - actor
-        properties:
-          timestamp:
-            description: When the change was made
-            type: string
-            format: date-time
-          actor:
-            description: Who made the change
-            type: string
-          reason:
-            description: Optional reason for the change
-            type: string
+        $ref: "#/components/schemas/auditMetadata"
       name: auditMessage

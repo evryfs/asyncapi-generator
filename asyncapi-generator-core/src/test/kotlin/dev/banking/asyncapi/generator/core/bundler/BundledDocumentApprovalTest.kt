@@ -87,7 +87,7 @@ class BundledDocumentApprovalTest {
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components)
         val schemas = assertNotNull(components.component.schemas)
-        assertEquals(setOf("LocalEnvelope"), schemas.keys)
+        assertEquals(setOf("LocalEnvelope", "SelectedPayload"), schemas.keys)
         assertIs<SchemaInterface.SchemaInline>(schemas["LocalEnvelope"])
 
         val bundledText = bundledFile.readText()
@@ -202,7 +202,7 @@ class BundledDocumentApprovalTest {
         assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
 
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
-        assertEquals(setOf("ParentNode", "ChildNode"), components.schemas?.keys)
+        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "ParentNode", "ChildNode"), components.schemas?.keys)
 
         val bundledText = bundledFile.readText()
         val externalReferences =
