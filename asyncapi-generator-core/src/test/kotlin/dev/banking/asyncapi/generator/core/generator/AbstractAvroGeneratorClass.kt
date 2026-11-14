@@ -38,7 +38,7 @@ abstract class AbstractAvroGeneratorClass {
             )
 
         generator.generate(
-            asyncApiDocument = bundled,
+            bundled = bundled,
             generatorConfiguration = generatorConfiguration,
         )
 

@@ -17,8 +17,7 @@ internal class OperationReplyAddressBundler {
         when (address) {
             is OperationReplyAddressInterface.OperationReplyAddressInline -> address
             is OperationReplyAddressInterface.OperationReplyAddressReference -> {
-                ReferenceBundler.inlineIfUnvisited(address.reference, context)
-                address
+                address.copy(reference = ReferenceBundler.inlineIfUnvisited(address.reference, context))
             }
         }
 }

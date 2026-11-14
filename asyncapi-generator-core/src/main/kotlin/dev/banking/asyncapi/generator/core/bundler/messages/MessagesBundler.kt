@@ -34,13 +34,12 @@ internal class MessagesBundler {
                 )
             }
             is MessageInterface.MessageReference -> {
-                ReferenceBundler.bundleReferencedModel<Message>(
+                message.copy(reference = ReferenceBundler.bundleReferencedModel<Message>(
                     reference = message.reference,
                     context = context,
                 ) { messageModel, nextContext ->
                     bundleMessage(messageModel, nextContext)
-                }
-                message
+                })
             }
         }
 

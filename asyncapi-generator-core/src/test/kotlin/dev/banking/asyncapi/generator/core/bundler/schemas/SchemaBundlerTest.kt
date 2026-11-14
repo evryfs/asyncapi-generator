@@ -33,11 +33,13 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
-        assertSame(schemaInterface, bundled)
-        assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
-        assertIs<Schema>(schemaReference.model)
-        assertTrue((schemaReference.model as Schema).bindings!!.containsKey("kafka"))
-        assertTrue(bindingReference.inline)
+        val bundledReference = assertIs<SchemaInterface.SchemaReference>(bundled).reference
+        assertFalse(bundledReference.inline, "a component schema reference keeps its \$ref")
+        val bundledSchema = assertIs<Schema>(bundledReference.model)
+        val bundledBinding = assertIs<BindingInterface.BindingReference>(bundledSchema.bindings!!["kafka"])
+        assertTrue(bundledBinding.reference.inline)
+        assertFalse(bindingReference.inline, "the input reference is not changed")
+        assertSame(schema, schemaReference.model, "the input reference model is not changed")
     }
 
     @Test
@@ -56,9 +58,11 @@ class SchemaBundlerTest {
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
         assertIs<SchemaInterface.SchemaInline>(bundled)
-        assertTrue((bundled as SchemaInterface.SchemaInline).schema.bindings!!.containsKey("kafka"))
+        assertTrue(bundled.schema.bindings!!.containsKey("kafka"))
         assertFalse(schemaReference.inline)
-        assertTrue(bindingReference.inline)
+        val bundledBinding = assertIs<BindingInterface.BindingReference>(bundled.schema.bindings!!["kafka"])
+        assertTrue(bundledBinding.reference.inline)
+        assertFalse(bindingReference.inline, "the input reference is not changed")
     }
 
     @Test
@@ -75,7 +79,7 @@ class SchemaBundlerTest {
 
         val bundled = bundler.bundle(schemaInterface, context)
 
-        assertSame(schemaInterface, bundled)
+        assertEquals(schemaInterface, bundled)
         assertTrue(context.schemaPromotions.schemas().isEmpty())
     }
 

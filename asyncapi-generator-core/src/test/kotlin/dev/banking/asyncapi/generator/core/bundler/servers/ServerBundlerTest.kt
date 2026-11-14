@@ -7,7 +7,8 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ServerBundlerTest {
@@ -30,12 +31,11 @@ class ServerBundlerTest {
 
         val bundled = bundler.bundleServers(mapOf("production" to serverInterface), BundlingContext.empty())
 
-        assertTrue(bundled!!.containsKey("production"))
-        assertTrue(serverReference.inline)
-        assertEquals(
-            server.copy(bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference))),
-            serverReference.model,
-        )
-        assertTrue(bindingReference.inline)
+        val bundledServer = assertIs<ServerInterface.ServerReference>(bundled!!["production"])
+        assertTrue(bundledServer.reference.inline)
+        val bundledModel = assertIs<Server>(bundledServer.reference.model)
+        assertTrue(assertIs<BindingInterface.BindingReference>(bundledModel.bindings!!["kafka"]).reference.inline)
+        assertFalse(serverReference.inline, "the input reference is not changed")
+        assertFalse(bindingReference.inline, "the input reference is not changed")
     }
 }

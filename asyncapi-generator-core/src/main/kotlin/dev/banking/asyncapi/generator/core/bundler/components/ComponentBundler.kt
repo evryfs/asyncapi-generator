@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.components
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
+import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.channels.ChannelBundler
 import dev.banking.asyncapi.generator.core.bundler.correlations.CorrelationIdBundler
@@ -55,13 +56,12 @@ internal class ComponentBundler {
                 )
 
             is ComponentInterface.ComponentReference -> {
-                ReferenceBundler.bundleReferencedModel<Component>(
+                components.copy(reference = ReferenceBundler.bundleReferencedModel<Component>(
                     reference = components.reference,
                     context = context,
                 ) { component, nextContext ->
                     bundleComponent(component, nextContext)
-                }
-                components
+                })
             }
         }
     }
@@ -136,10 +136,9 @@ internal class ComponentBundler {
 
             is ComponentInterface.ComponentReference -> {
                 val component = components.reference.requireModel<Component>()
-                components.reference.model = component.copy(
-                    schemas = component.schemas.orEmpty() + schemas,
+                components.copy(
+                    reference = components.reference.withModel(component.copy(schemas = component.schemas.orEmpty() + schemas)),
                 )
-                components
             }
         }
     }
