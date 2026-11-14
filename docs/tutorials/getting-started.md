@@ -1,11 +1,14 @@
 # Getting started
 
-This tutorial walks you through generating Kotlin data classes from an AsyncAPI specification in under 5 minutes.
+This tutorial walks you through generating Kotlin data classes from an AsyncAPI specification.
 
 ## Prerequisites
 
 - Java 21 or later
-- Maven 3.9+ or Gradle 8+
+- Maven 3.9 or later, or Gradle. The project's CI tests the Gradle plugin with
+  Gradle 9.5.1 only; see [Gradle requirements](../how-to/gradle.md#requirements).
+- A Kotlin project, with `jakarta.validation:jakarta.validation-api` on the
+  compile classpath for the generated validation annotations
 
 ## 1. Create an AsyncAPI specification
 
@@ -116,17 +119,39 @@ The generator creates `UserSignedUp.kt` at `target/generated-sources/asyncapi/co
 ```kotlin
 package com.example.events.model
 
+import jakarta.validation.constraints.Email
 import java.time.OffsetDateTime
 
+/**
+ * UserSignedUp model
+ *
+ * @param [userId]
+ *
+ * @param [email]
+ *
+ * @param [createdAt]
+ *
+ */
 data class UserSignedUp(
+
     val userId: String,
+
+    @field:Email
     val email: String,
-    val createdAt: OffsetDateTime? = null,
-)
+
+    val createdAt: OffsetDateTime? = null
+) {
+}
 ```
+
+Required properties are non-null, optional properties default to `null`, and
+`format: email` adds a Jakarta Validation constraint. The build compiles the
+generated class together with your own sources; with Maven run
+`mvn compile`, with Gradle `./gradlew compileKotlin`.
 
 ## Next steps
 
+- [Generate Kotlin and Java models](../how-to/generate-kotlin-models.md)
 - [Generate Spring Kafka clients](../how-to/generate-spring-kafka-clients.md)
 - [Generate Avro schemas](../how-to/generate-avro-schemas.md)
 - [Bundle multi-file documents](../how-to/bundle-multi-file-documents.md)

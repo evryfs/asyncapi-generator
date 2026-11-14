@@ -8,14 +8,27 @@ failure at its own boundary.
 ## Pipeline
 
 ```text
-Read YAML or JSON
-        -> parse the supported AsyncAPI model and load local references
-        -> validate contract semantics
+check the input file and the configuration
+        -> load: read YAML or JSON, parse the supported AsyncAPI model,
+           load local references, validate contract semantics
         -> bundle supported references into a self-contained model
-        -> plan outputs and check target compatibility
-        -> render every requested artifact
-        -> preflight destinations and write outputs
+        -> generate: plan outputs, check target compatibility,
+           render every requested artifact
+        -> preflight destinations, write outputs, remove stale files
 ```
+
+The three phases are typed. Loading produces a validated document, bundling
+turns only such a document into a bundled document, and generation accepts
+only a bundled document. A later phase therefore cannot receive input that
+skipped an earlier one. Maven, Gradle, and the CLI run the same phases in the
+same order; they differ only in how they collect configuration, resolve
+`protoc`, and register outputs with a build.
+
+Every frontend checks first that the input file exists, so a missing file is
+always the first reported problem. Generation configuration is then validated
+before generation starts. Gradle also reads the contract while configuring
+the build to discover the files it references, so in Gradle a contract error
+can be reported before a configuration error.
 
 ## Read YAML or JSON
 
@@ -25,8 +38,8 @@ locations for objects, members, arrays, and scalar values. Syntax checks and
 safety limits belong here, before AsyncAPI meaning is applied.
 
 Malformed syntax, unsupported extensions, unreadable files, duplicate keys,
-and resource-limit violations stop the pipeline. See
-[Load an AsyncAPI document](../how-to/load-asyncapi-document.md) for the public
+recursive YAML aliases, and resource-limit violations stop the pipeline. See
+[Use the core library](../how-to/load-asyncapi-document.md) for the public
 loading API.
 
 ## Parse and load local references
@@ -47,8 +60,9 @@ problem was found.
 
 ## Validate contract semantics
 
-Semantic validation checks the parsed model, including reference integrity and
-supported generator-wide contract rules. It does not rewrite the contract.
+Semantic validation checks the parsed model, including reference integrity,
+reference chains that never reach an object, and supported generator-wide
+contract rules. It does not rewrite the contract.
 Errors stop the pipeline, while warnings are returned for review without
 preventing generation.
 
@@ -59,10 +73,13 @@ current validation findings.
 
 ## Bundle the contract
 
-Bundling transforms the parsed model into a self-contained document model.
-Supported external objects are inlined, recursive external schemas are
-promoted to local components, and internal references are retained where they
-preserve the contract topology.
+Bundling transforms the validated model into a self-contained document model
+without reading files or changing the loaded model. Supported external objects
+are inlined. References to the root document's component schemas are kept,
+and component schemas and recursive schemas from other files are promoted to
+the bundle's components under their own names. Because schema names survive
+bundling, code generated from a bundled document equals code generated from
+the original files.
 
 Only selected external content enters the bundled model. Unrelated surrounding
 content from a foreign document is not imported. See
@@ -86,6 +103,13 @@ Spring Kafka contracts, or bundled documents. Rendering completes before the
 filesystem write stage begins, so a rendering failure does not leave earlier
 rendered artifacts in their destinations.
 
+Kotlin and Java models are rendered from one language-neutral model of the
+payload types. Decisions that affect the JSON wire format, such as enum
+values, property names, and polymorphic type names, are made once in that
+model; the Kotlin and Java emitters only choose syntax. Both languages
+therefore serialize the same payloads in the same way. Spring Kafka contracts
+follow the same split.
+
 The [generated output examples](../reference/generated-output-examples.md) link
 complete fixture-backed artifacts for representative workflows.
 
@@ -94,7 +118,13 @@ complete fixture-backed artifacts for representative workflows.
 Before writing, the generator resolves each destination and rejects multiple
 artifacts that would target the same normalized path. It then stages rendered
 content and commits it to the configured source, resource, and document
-locations. Destination failures identify the affected artifact and path.
+locations. Files whose content is unchanged are left untouched. Destination
+failures identify the affected artifact and path.
+
+Maven and Gradle then remove files that the same execution generated before
+but no longer generates, using a manifest of generated files per project.
+Files the generator did not write are never removed. See
+[Stale generated files](../reference/generator-configuration.md#stale-generated-files).
 
 Use [Troubleshooting](../how-to/troubleshooting.md) to identify which boundary
 reported a failure and the configuration or contract input to correct.
@@ -105,9 +135,16 @@ reported a failure and the configuration or contract input to correct.
 - The parser and external loader own supported structure and local reference
   resolution.
 - Semantic validation owns contract-wide findings over the parsed model.
-- Bundling owns the self-contained representation.
+- Bundling owns the self-contained representation and is a pure
+  transformation.
 - Planning and compatibility checks own requested target restrictions.
-- Rendering owns artifact content; writing owns filesystem destinations.
+- The language-neutral model owns generated types and their wire format;
+  emitters own language syntax.
+- Rendering owns artifact content; writing owns filesystem destinations and
+  stale-file removal.
+
+Maintainers can find the internal structure in
+[Bundler strategy](bundler.md) and [Generator strategy](generator.md).
 
 These boundaries keep public behavior stable without making internal class or
 factory relationships part of the documentation contract.

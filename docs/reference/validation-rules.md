@@ -79,6 +79,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-REFERENCE-UNRESOLVED` | Reference cannot resolve. | AsyncAPI reference objects | specification / error |
 | `GEN-REFERENCE-CATEGORY-REQUIRED` | Parsed reference is missing required concrete category. | Parser and generator contract | capability / error |
 | `AAS3-REFERENCE-TARGET-CATEGORY` | Reference resolves to mismatched target category. | AsyncAPI reference objects | specification / error |
+| `AAS3-REFERENCE-CYCLE` | A chain of references only points at other references and never reaches an object, for example `A -> B -> A`. | AsyncAPI reference objects | specification / error |
 | `GEN-SCHEMA-KEYWORD-UNSUPPORTED` | Unsupported Schema keyword for this generator. | Generator behavior | capability / error |
 | `GEN-SCHEMA-ANNOTATION-IGNORED` | Known Schema annotation keyword is ignored by generated runtimes. | Generator behavior | capability / warning |
 | `GEN-SCHEMA-ITEMS-REPRESENTATION` | Retained legacy identifier; no longer emitted. | Generator behavior | capability / error |
