@@ -77,7 +77,7 @@ class GenerateJavaSpringKafkaConfigurationTest {
                 generateProducers = generateProducers,
                 generateConsumers = generateConsumers,
             )
-        return generator.render(listOf(channel))
+        return generator.emit(listOf(channel))
     }
 
     private val producerContract = "com/example/kafka/producer/EventsProducer.java"

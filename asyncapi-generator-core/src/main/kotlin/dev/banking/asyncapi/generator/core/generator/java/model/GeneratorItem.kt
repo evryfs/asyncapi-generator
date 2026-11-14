@@ -7,44 +7,6 @@ sealed interface GeneratorItem {
     val packageName: String
     val description: List<String>
 
-    data class ClassModel(
-        override val name: String,
-        override val packageName: String,
-        override val description: List<String>,
-        val properties: List<PropertyModel>,
-        val implementsInterfaces: List<String> = emptyList(),
-        val classAnnotations: List<String> = emptyList(),
-        val classAnnotationImports: List<String> = emptyList(),
-    ) : GeneratorItem
-
-    data class EnumModel(
-        override val name: String,
-        override val packageName: String,
-        override val description: List<String>,
-        val values: List<EnumConstantModel>,
-    ) : GeneratorItem {
-        val hasJsonValues: Boolean get() = values.any { it.jsonValue != null }
-    }
-
-    /** @property jsonValue Wire value as an escaped Java string literal body; null when it equals [name]. */
-    data class EnumConstantModel(
-        val name: String,
-        val jsonValue: String?,
-    )
-
-    data class InterfaceModel(
-        override val name: String,
-        override val packageName: String,
-        override val description: List<String>,
-        val discriminator: String? = null,
-        val subTypes: List<SubType> = emptyList(),
-    ) : GeneratorItem {
-        data class SubType(
-            val name: String,
-            val type: String,
-        )
-    }
-
     data class KafkaConsumerInterface(
         override val name: String,
         override val packageName: String,
