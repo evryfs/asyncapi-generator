@@ -1,0 +1,25 @@
+asyncapi: 3.0.0
+info:
+  title: Shared Client Configuration
+  version: 1.0.0
+channels:
+  somethingUpdated:
+    address: shared.client.config.v1
+    messages:
+      SomethingUpdated:
+        $ref: '#/components/messages/SomethingUpdated'
+components:
+  messages:
+    SomethingUpdated:
+      name: SomethingUpdated
+      title: SomethingUpdated
+      payload:
+        $ref: '#/components/schemas/SomethingUpdatedEvent'
+  schemas:
+    SomethingUpdatedEvent:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id

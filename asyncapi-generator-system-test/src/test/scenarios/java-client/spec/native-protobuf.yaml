@@ -1,0 +1,20 @@
+asyncapi: '3.0.0'
+info:
+  title: Java Native Protobuf
+  version: '1.0.0'
+components:
+  schemas:
+    AccountSnapshot:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3";
+
+        package com.example.java.protobuf;
+
+        option java_package = "com.example.java.protobuf";
+        option java_multiple_files = true;
+
+        message AccountSnapshot {
+          string account_id = 1;
+          optional string display_name = 2;
+        }
