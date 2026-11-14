@@ -367,7 +367,30 @@ private val allScenarios: List<Scenario> = listOf(
         ),
         expected = ExpectedFailure(messages = listOf("clientConfig is required when clientPackage is configured")),
     ),
+    invalidContract(
+        name = "reference-cycle",
+        expected = ExpectedFailure(messages = listOf("form a cycle", "#/components/messages/accountEvent")),
+    ),
+    invalidContract(
+        name = "inline-name-collision",
+        expected = ExpectedFailure(
+            messages = listOf(
+                "'Address'",
+                "components.schemas.Customer.properties.address",
+                "components.schemas.Supplier.properties.address",
+            ),
+        ),
+    ),
 )
+
+/** A contract every frontend must reject with a clear diagnostic instead of hanging or generating wrong code. */
+private fun invalidContract(name: String, expected: ExpectedFailure): Scenario =
+    Scenario(
+        name = "diagnostics-$name",
+        files = name,
+        executions = listOf(Execution(id = name, generatorName = "kotlin", modelPackage = "com.example.model")),
+        expectedFailure = expected,
+    )
 
 /** A configuration mistake every frontend must reject; all diagnostics share one valid contract. */
 private fun diagnostic(

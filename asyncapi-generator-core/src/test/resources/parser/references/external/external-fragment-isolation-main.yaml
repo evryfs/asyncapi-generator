@@ -8,5 +8,3 @@ components:
       $ref: './heterogeneous-fragments.yaml#/selectedSchema'
     Chained:
       $ref: './heterogeneous-fragments.yaml#/firstSchema'
-    Cyclic:
-      $ref: './heterogeneous-fragments.yaml#/cycleA'

@@ -1,0 +1,32 @@
+asyncapi: 3.0.0
+info:
+  title: Inline name collision
+  version: 1.0.0
+channels:
+  parties:
+    address: parties
+    messages:
+      customer:
+        payload:
+          $ref: '#/components/schemas/Customer'
+      supplier:
+        payload:
+          $ref: '#/components/schemas/Supplier'
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        address:
+          type: object
+          properties:
+            street:
+              type: string
+    Supplier:
+      type: object
+      properties:
+        address:
+          type: object
+          properties:
+            postalCode:
+              type: integer

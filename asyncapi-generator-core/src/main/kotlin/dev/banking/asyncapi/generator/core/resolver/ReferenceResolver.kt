@@ -39,6 +39,7 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CATEGORY_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CYCLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_TARGET_CATEGORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
@@ -85,8 +86,10 @@ internal class ReferenceResolver(
 
         val chain: MutableSet<Reference> =
             Collections.newSetFromMap(IdentityHashMap())
+        val path = mutableListOf<Reference>()
         var current = reference
         while (chain.add(current)) {
+            path += current
             val target = asyncApiContext.modelTracking.findReference(current)
             if (target == null) {
                 results.error(
@@ -100,6 +103,14 @@ internal class ReferenceResolver(
             if (target is Reference) {
                 results.process(target)
                 if (target in chain) {
+                    val cycleStart = path.indexOfFirst { it === target }
+                    val cycle = (path.drop(cycleStart).map { it.ref } + target.ref).joinToString(" -> ")
+                    results.error(
+                        REFERENCE_CYCLE,
+                        "$contextString reference '${reference.ref}' never reaches ${expectedCategory.displayName}: " +
+                            "its references form a cycle ($cycle).",
+                        sourceLocation = asyncApiContext.modelTracking.getSourceLocation(reference, reference::ref),
+                    )
                     return null
                 }
                 if (target.referenceCategoryKey != expectedCategory) {
