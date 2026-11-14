@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -56,6 +57,6 @@ class ComponentBundlerTest {
         assertSame(componentInterface, bundled)
         assertTrue(componentReference.inline)
         assertIs<Component>(componentReference.model)
-        assertTrue(schemaReference.inline)
+        assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
     }
 }

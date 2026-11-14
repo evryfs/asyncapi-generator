@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
@@ -30,6 +31,6 @@ class MessagesBundlerTest {
         assertSame(messageInterface, bundled)
         assertTrue(messageReference.inline)
         assertIs<Message>(messageReference.model)
-        assertTrue(((messageReference.model as Message).payload as SchemaInterface.SchemaReference).reference.inline)
+        assertFalse(((messageReference.model as Message).payload as SchemaInterface.SchemaReference).reference.inline)
     }
 }
