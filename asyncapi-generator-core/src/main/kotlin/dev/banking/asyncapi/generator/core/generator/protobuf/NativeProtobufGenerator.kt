@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
-import com.github.os72.protocjar.Protoc
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
@@ -20,7 +19,8 @@ import java.nio.file.Path
  * optional Java or Kotlin model APIs.
  */
 class NativeProtobufGenerator(
-    private val protocVersion: String = DEFAULT_PROTOC_VERSION,
+    private val protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
+    private val protocVersion: String = ProtocProvider.DEFAULT_VERSION,
 ) {
     private val schemaParser = NativeProtobufSchemaParser()
 
@@ -92,21 +92,19 @@ class NativeProtobufGenerator(
             Files.writeString(sourceSchemaFile, parsedSchema.protobufSchema.content.trimEnd() + System.lineSeparator())
             val compilerArguments =
                 buildList {
-                    add("-v$protocVersion")
                     add("--proto_path=${sourceDirectory.toAbsolutePath()}")
                     add("--java_out=${destinationDirectory.toAbsolutePath()}")
                     kotlinDestinationDirectory?.let { add("--kotlin_out=${it.toAbsolutePath()}") }
                     add(sourceSchemaFile.fileName.toString())
                 }
-            val exitCode =
-                Protoc.runProtoc(compilerArguments.toTypedArray())
+            val (exitCode, output) = runProtoc(compilerArguments, workspaceDirectory)
 
             if (exitCode != 0) {
                 throw NativeProtobufModelGenerationFailed(
                     payloadName = parsedSchema.payloadName,
                     schemaFormat = parsedSchema.schema.schemaFormat,
                     modelType = models.modelType.configurationValue,
-                    reason = "protoc exited with status code $exitCode.",
+                    reason = "protoc exited with status code $exitCode: ${output.trim()}",
                 )
             }
 
@@ -125,6 +123,17 @@ class NativeProtobufGenerator(
         } finally {
             workspaceDirectory.toFile().deleteRecursively()
         }
+    }
+
+    /** Runs protoc in [workingDirectory]; returns its exit code and combined output. */
+    private fun runProtoc(arguments: List<String>, workingDirectory: Path): Pair<Int, String> {
+        val process =
+            ProcessBuilder(listOf(protocProvider.protoc(protocVersion).toString()) + arguments)
+                .directory(workingDirectory.resolve("schemas").toFile())
+                .redirectErrorStream(true)
+                .start()
+        val output = process.inputStream.bufferedReader().readText()
+        return process.waitFor() to output
     }
 
     private fun validateModelGenerationSupport(
@@ -204,10 +213,6 @@ class NativeProtobufGenerator(
             modelType = models.modelType.configurationValue,
             reason = exception.message ?: exception::class.simpleName.orEmpty(),
         )
-
-    private companion object {
-        const val DEFAULT_PROTOC_VERSION = "3.25.5"
-    }
 }
 
 private data class ParsedNativeProtobufSchema(

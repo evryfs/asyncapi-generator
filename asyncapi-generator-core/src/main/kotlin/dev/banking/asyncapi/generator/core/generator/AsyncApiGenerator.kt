@@ -16,13 +16,20 @@ import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedA
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
+import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NoArtifactsGenerated
 
 /**
  * Coordinates generator input preparation, planning, rendering, and artifact writing.
+ *
+ * @param protocProvider Supplies `protoc` for native Protobuf model generation; frontends pass one
+ *   that resolves it through their build tool's repositories.
  */
-class AsyncApiGenerator {
+class AsyncApiGenerator(
+    protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
+) {
     private val generationInputFactory = GenerationInputFactory()
     private val generationInputCompatibilityValidator = GenerationInputCompatibilityValidator()
     private val generationPlanner = GenerationPlanner()
@@ -31,7 +38,7 @@ class AsyncApiGenerator {
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
     private val jsonSchemaArtifactGeneration = JsonSchemaArtifactGeneration()
     private val nativeAvroArtifactGeneration = NativeAvroArtifactGeneration()
-    private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration()
+    private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration(protocProvider)
     private val springKafkaClientGeneration = SpringKafkaClientGeneration()
 
     fun generate(

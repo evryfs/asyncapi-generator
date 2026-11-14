@@ -3,14 +3,20 @@ package dev.banking.asyncapi.generator.maven.plugin
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
+import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
+import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecution
 import org.apache.maven.plugin.MojoExecutionException
+import org.apache.maven.plugins.annotations.Component
 import org.apache.maven.plugins.annotations.LifecyclePhase
 import org.apache.maven.plugins.annotations.Mojo
 import org.apache.maven.plugins.annotations.Parameter
 import org.apache.maven.project.MavenProject
+import org.eclipse.aether.RepositorySystem
+import org.eclipse.aether.RepositorySystemSession
+import org.eclipse.aether.repository.RemoteRepository
 import java.io.File
 
 @Mojo(
@@ -24,6 +30,22 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
 
     @Parameter(defaultValue = "\${mojoExecution}", readonly = true)
     private var mojoExecution: MojoExecution? = null
+
+    @Component
+    private var repositorySystem: RepositorySystem? = null
+
+    @Parameter(defaultValue = "\${repositorySystemSession}", readonly = true)
+    private var repositorySession: RepositorySystemSession? = null
+
+    @Parameter(defaultValue = "\${project.remoteProjectRepositories}", readonly = true)
+    private var remoteRepositories: List<RemoteRepository>? = null
+
+    /**
+     * A local `protoc` executable for native Protobuf models. By default `com.google.protobuf:protoc`
+     * is resolved from the project's repositories.
+     */
+    @Parameter(property = "asyncapi.protocExecutable")
+    private var protocExecutable: File? = null
 
     @Parameter(property = "generatorName", required = true)
     private var generatorName: String? = null
@@ -61,7 +83,6 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
 
     private val loader = AsyncApiDocumentLoader()
     private val bundler = AsyncApiBundler()
-    private val generator = AsyncApiGenerator()
 
     override fun execute() {
         try {
@@ -74,7 +95,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 log.warn(loaded.formatWarnings().trimEnd())
             }
             val bundled = bundler.bundle(loaded)
-            generator.generate(bundled, generatorConfiguration)
+            AsyncApiGenerator(protocProvider()).generate(bundled, generatorConfiguration)
             MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
             log.info("asyncapi-generator-maven-plugin completed successfully")
         } catch (e: MojoExecutionException) {
@@ -110,4 +131,15 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 owner = executionId,
             )
         }
+
+    private fun protocProvider(): ProtocProvider {
+        protocExecutable?.let { return MavenRepositoryProtocProvider(override = it.toPath()) }
+        val system = repositorySystem
+        val session = repositorySession
+        return if (system != null && session != null) {
+            MavenProtocProvider(system, session, remoteRepositories.orEmpty())
+        } else {
+            MavenRepositoryProtocProvider()
+        }
+    }
 }

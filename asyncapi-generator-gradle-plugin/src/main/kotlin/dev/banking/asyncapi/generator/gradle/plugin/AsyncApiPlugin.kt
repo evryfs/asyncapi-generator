@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.gradle.plugin
 
+import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocPlatform
+import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.gradle.plugin.extensions.AsyncApiExtension
 import dev.banking.asyncapi.generator.gradle.plugin.tasks.GenerateAsyncApiTask
 import org.gradle.api.Plugin
@@ -27,6 +29,18 @@ class AsyncApiPlugin : Plugin<Project> {
                 description = "Generates every configured AsyncAPI execution."
             }
         val outputRegistrar = GradleGeneratedOutputRegistrar(project)
+        val protocConfiguration =
+            project.configurations.register("asyncApiProtoc") {
+                isCanBeConsumed = false
+                description = "The protoc compiler for native Protobuf models."
+                defaultDependencies {
+                    add(
+                        project.dependencies.create(
+                            "com.google.protobuf:protoc:${ProtocProvider.DEFAULT_VERSION}:${ProtocPlatform.classifier()}@exe",
+                        ),
+                    )
+                }
+            }
 
         extension.executions.all {
             val execution = this
@@ -51,6 +65,16 @@ class AsyncApiPlugin : Plugin<Project> {
                     suppressedWarnings.addAll(extension.suppressedWarnings)
                     outputManifest.set(project.layout.buildDirectory.file("asyncapi-generator/output-manifest.txt"))
                     executionName.set(execution.name)
+                    // Resolved only for executions that run protoc, so others never need to download it.
+                    protoc.from(
+                        execution.modelConfig.modelType.map { modelType ->
+                            when {
+                                modelType != PROTOBUF_MESSAGE -> emptyList<Any>()
+                                extension.protocExecutable.isPresent -> listOf(extension.protocExecutable)
+                                else -> listOf(protocConfiguration)
+                            }
+                        }.orElse(emptyList()),
+                    )
                     suppressedWarnings.addAll(execution.suppressedWarnings)
 
                     clientType.set(extension.clientConfig.clientType)
@@ -80,6 +104,10 @@ class AsyncApiPlugin : Plugin<Project> {
             }
             outputRegistrar.register(executionTask)
         }
+    }
+
+    private companion object {
+        const val PROTOBUF_MESSAGE = "protobuf-message"
     }
 
     private fun executionTaskName(executionName: String): String =
