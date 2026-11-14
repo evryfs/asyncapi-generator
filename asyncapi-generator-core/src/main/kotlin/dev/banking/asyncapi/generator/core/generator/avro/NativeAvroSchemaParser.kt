@@ -8,7 +8,7 @@ import org.apache.avro.Schema
 /**
  * Parses native Avro `schemaFormat` payloads into Apache Avro schemas.
  */
-class NativeAvroSchemaParser(
+internal class NativeAvroSchemaParser(
     private val objectMapper: ObjectMapper = ObjectMapper(),
 ) {
     fun parse(

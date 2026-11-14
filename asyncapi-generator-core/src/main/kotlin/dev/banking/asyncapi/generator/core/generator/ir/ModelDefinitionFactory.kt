@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  *
  * Schemas that need no generated type of their own, such as scalar aliases, yield nothing.
  */
-class ModelDefinitionFactory(
+internal class ModelDefinitionFactory(
     private val input: GenerationInput,
     private val packageName: String,
     private val annotation: QualifiedTypeName? = null,

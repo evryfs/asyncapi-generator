@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaCha
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 
-class JavaSpringKafkaModelFactory(
+internal class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
     modelPackage: String,
     private val generateProducers: Boolean = true,

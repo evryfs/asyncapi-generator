@@ -10,7 +10,7 @@ import org.apache.avro.Schema
  * Native Avro message payloads should use the package declared by the Avro
  * namespace, not the AsyncAPI JSON model package.
  */
-class NativeAvroPayloadTypeResolver(
+internal class NativeAvroPayloadTypeResolver(
     private val schemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
 ) {
     fun resolve(message: AnalyzedMultiFormatMessage): NativeAvroPayloadType? {
@@ -41,7 +41,7 @@ class NativeAvroPayloadTypeResolver(
             type == Schema.Type.FIXED
 }
 
-data class NativeAvroPayloadType(
+internal data class NativeAvroPayloadType(
     val typeName: String,
     val packageName: String?,
     val importName: String?,

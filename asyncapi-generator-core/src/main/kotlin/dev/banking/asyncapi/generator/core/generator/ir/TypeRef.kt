@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.ir
 /**
  * The type of a generated property, independent of the source language it is rendered in.
  */
-sealed interface TypeRef {
+internal sealed interface TypeRef {
     /** A built-in value type. */
     enum class Scalar : TypeRef {
         STRING,
@@ -50,7 +50,7 @@ sealed interface TypeRef {
  * A list cascades into its element, a map into its value unless that value nests another map.
  * A collection nested in a list or map counts as a model.
  */
-val TypeRef.cascadesValidation: Boolean
+internal val TypeRef.cascadesValidation: Boolean
     get() =
         when (this) {
             is TypeRef.ListOf -> element.holdsModel()

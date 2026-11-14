@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * @property schemas source-model schemas
  * @property schemaDeclarations supported contract schema declarations
  */
-data class LoadedSchemas(
+internal data class LoadedSchemas(
     val schemas: Map<String, Schema>,
     val schemaDeclarations: SchemaDeclarationCatalog,
 )

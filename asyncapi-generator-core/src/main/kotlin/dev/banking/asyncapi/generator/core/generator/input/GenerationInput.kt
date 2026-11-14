@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  * [schemaDeclarations] retains the contract view used by schema artifact
  * generators that must preserve JSON Schema semantics.
  */
-data class GenerationInput(
+internal data class GenerationInput(
     val schemas: Map<String, Schema>,
     val schemaDeclarations: SchemaDeclarationCatalog = SchemaDeclarationCatalog(asyncApiSchemas = schemas),
     val polymorphicRelationships: Map<String, List<String>>,

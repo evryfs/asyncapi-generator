@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Named schemas are referenced by their full name, `<namespace>.<SchemaName>`, which is the
  * name their own `.avsc` file declares. Arrays and maps map their items and values recursively.
  */
-class AvroTypeMapper(
+internal class AvroTypeMapper(
     val packageName: String,
 ) {
     fun mapToAvroType(schema: Schema?, isOptional: Boolean, refName: String? = null): String {

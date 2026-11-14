@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
  * client generation currently requires `option java_multiple_files = true` so
  * top-level messages can be referenced directly by generated Kafka APIs.
  */
-class NativeProtobufPayloadTypeResolver(
+internal class NativeProtobufPayloadTypeResolver(
     private val schemaParser: NativeProtobufSchemaParser = NativeProtobufSchemaParser(),
 ) {
     fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType? {
@@ -60,7 +60,7 @@ class NativeProtobufPayloadTypeResolver(
         )
 }
 
-data class NativeProtobufPayloadType(
+internal data class NativeProtobufPayloadType(
     val typeName: String,
     val packageName: String,
     val importName: String,

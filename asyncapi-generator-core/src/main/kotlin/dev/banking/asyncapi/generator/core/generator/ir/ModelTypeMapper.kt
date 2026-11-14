@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Decides the [TypeRef] of a property schema: which scalar, collection, or generated model
  * represents it in generated source.
  */
-class ModelTypeMapper(
+internal class ModelTypeMapper(
     private val context: GeneratorContext,
 ) {
     /**

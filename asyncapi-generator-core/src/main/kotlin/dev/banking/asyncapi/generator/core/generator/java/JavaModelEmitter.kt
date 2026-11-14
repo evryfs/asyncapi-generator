@@ -31,7 +31,7 @@ import java.io.StringWriter
  *
  * Java has no type alias, so an open object gets no source and references to it are `Object`.
  */
-class JavaModelEmitter(
+internal class JavaModelEmitter(
     private val javaModelType: JavaModelType = JavaModelType.CLASS,
 ) : ModelEmitter {
     private val mustacheFactory = SourceMustacheFactory("java")
