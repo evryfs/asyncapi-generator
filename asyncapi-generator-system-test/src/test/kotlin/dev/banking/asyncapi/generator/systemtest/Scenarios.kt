@@ -273,6 +273,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "avro-schemas",
+        executions = listOf(
+            Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avroschemas"),
+        ),
+        libraries = setOf(Library.AVRO),
+    ),
+    Scenario(
         name = "java-client",
         executions = listOf(
             Execution(
@@ -369,6 +376,12 @@ private val allScenarios: List<Scenario> = listOf(
     invalidContract(
         name = "reference-cycle",
         expected = ExpectedFailure(messages = listOf("form a cycle", "#/components/messages/accountEvent")),
+    ),
+    Scenario(
+        name = "diagnostics-invalid-avro-name",
+        files = "invalid-avro-name",
+        executions = listOf(Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avro")),
+        expectedFailure = ExpectedFailure(messages = listOf("'account-id'", "not a valid Avro name")),
     ),
     invalidContract(
         name = "recursive-yaml-alias",

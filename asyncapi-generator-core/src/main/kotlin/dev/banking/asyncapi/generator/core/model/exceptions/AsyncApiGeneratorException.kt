@@ -24,6 +24,16 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    /** A name Avro rejects; renaming it silently would change a schema that may already be registered. */
+    class InvalidAvroName(
+        val kind: String,
+        val avroName: String,
+        val location: String,
+    ) : AsyncApiGeneratorException(
+            "Avro schema generation failed: $kind '$avroName' in $location is not a valid Avro name. " +
+                "Avro names must match [A-Za-z_][A-Za-z0-9_]*. Rename it in the contract.",
+        )
+
     class NoArtifactsGenerated : AsyncApiGeneratorException(
         "Generation completed without producing any artifacts.",
     )

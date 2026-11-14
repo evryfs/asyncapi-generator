@@ -10,13 +10,13 @@
     },
     {
       "name": "status",
-      "type": ["null", "com.example.avro.TaskStatus"],
-      "default": null
+      "type": ["com.example.avro.TaskStatus", "null"],
+      "default": "IN_PROGRESS"
     },
     {
       "name": "priority",
-      "type": ["null", "com.example.avro.Priority"],
-      "default": null
+      "type": ["com.example.avro.Priority", "null"],
+      "default": "MEDIUM"
     }
   ]
 }
