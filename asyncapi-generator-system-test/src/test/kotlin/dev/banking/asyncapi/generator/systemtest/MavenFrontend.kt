@@ -18,26 +18,32 @@ internal class MavenFrontend(
 ) {
     /** Generates, compiles, and runs the checks for [scenario] without checking the exit code. */
     fun run(scenario: Scenario, projectDirectory: File): FrontendRun {
+        prepare(scenario, projectDirectory)
+        val result = mvn(projectDirectory, listOf("verify"), "build.log")
+        return FrontendRun.of(scenario, projectDirectory, result) { DEFAULT_OUTPUT_DIRECTORY }
+    }
+
+    /** Writes a fresh consumer project for [scenario] into [projectDirectory]. */
+    fun prepare(scenario: Scenario, projectDirectory: File) {
         ConsumerProject.prepare(scenario, environment, projectDirectory)
         projectDirectory.resolve("pom.xml").writeText(pom(scenario))
         projectDirectory.resolve("settings.xml").writeText(settings())
+    }
 
-        val command = listOf(
-            environment.mavenHome.resolve("bin/mvn").path,
-            "--batch-mode",
-            "--no-transfer-progress",
-            "--settings", "settings.xml",
-            "-Dmaven.repo.local=${environment.repository.path}",
-            "verify",
-        )
-        val result = runner.run(
-            command,
+    /** Runs Maven with [goals] in a prepared project, logging to [logName], without checking the exit code. */
+    fun mvn(projectDirectory: File, goals: List<String>, logName: String): ProcessResult =
+        runner.run(
+            listOf(
+                environment.mavenHome.resolve("bin/mvn").path,
+                "--batch-mode",
+                "--no-transfer-progress",
+                "--settings", "settings.xml",
+                "-Dmaven.repo.local=${environment.repository.path}",
+            ) + goals,
             projectDirectory,
-            projectDirectory.resolve("build.log"),
+            projectDirectory.resolve(logName),
             environment.buildToolEnvironment,
         )
-        return FrontendRun.of(scenario, projectDirectory, result) { DEFAULT_OUTPUT_DIRECTORY }
-    }
 
     private fun pom(scenario: Scenario): String = """
         |<?xml version="1.0" encoding="UTF-8"?>

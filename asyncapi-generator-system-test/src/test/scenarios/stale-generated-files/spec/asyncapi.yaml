@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: Stale generated files
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountOpened:
+        payload:
+          $ref: '#/components/schemas/AccountOpened'
+      # stale:start
+      legacyAccountCreated:
+        payload:
+          $ref: '#/components/schemas/LegacyAccountCreated'
+      # stale:end
+components:
+  schemas:
+    AccountOpened:
+      type: object
+      properties:
+        accountId:
+          type: string
+    # stale:start
+    LegacyAccountCreated:
+      type: object
+      properties:
+        legacyId:
+          type: string
+    # stale:end

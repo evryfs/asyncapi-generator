@@ -49,6 +49,8 @@ class AsyncApiPlugin : Plugin<Project> {
                     modelAnnotation.set(execution.modelConfig.modelAnnotation)
                     modelType.set(execution.modelConfig.modelType)
                     suppressedWarnings.addAll(extension.suppressedWarnings)
+                    outputManifest.set(project.layout.buildDirectory.file("asyncapi-generator/output-manifest.txt"))
+                    executionName.set(execution.name)
                     suppressedWarnings.addAll(execution.suppressedWarnings)
 
                     clientType.set(extension.clientConfig.clientType)
