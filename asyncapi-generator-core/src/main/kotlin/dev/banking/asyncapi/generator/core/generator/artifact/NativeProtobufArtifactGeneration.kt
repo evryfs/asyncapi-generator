@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 /**
  * Renders planned native Protobuf artifacts before writing them.
  */
-class NativeProtobufArtifactGeneration(
+internal class NativeProtobufArtifactGeneration(
     protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
 ) {
     private val nativeProtobufGenerator = NativeProtobufGenerator(protocProvider)

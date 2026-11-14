@@ -20,7 +20,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 /**
  * Renders supported contract declarations as standalone Draft 07 JSON Schema artifacts.
  */
-class JsonSchemaGenerator(
+internal class JsonSchemaGenerator(
     private val objectMapper: ObjectMapper =
         JsonMapper.builder()
             .defaultPropertyInclusion(

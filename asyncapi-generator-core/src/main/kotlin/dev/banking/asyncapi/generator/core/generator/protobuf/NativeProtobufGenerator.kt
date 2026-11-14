@@ -18,7 +18,7 @@ import java.nio.file.Path
  * Renders native Protobuf `schemaFormat` payloads into `.proto` artifacts and
  * optional Java or Kotlin model APIs.
  */
-class NativeProtobufGenerator(
+internal class NativeProtobufGenerator(
     private val protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
     private val protocVersion: String = ProtocProvider.DEFAULT_VERSION,
 ) {

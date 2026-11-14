@@ -8,7 +8,7 @@ import kotlin.collections.component2
 import kotlin.collections.forEach
 import kotlin.collections.get
 
-object GeneratorPrinter {
+internal object GeneratorPrinter {
 
     fun debugSchemasPrinter(schemas: Map<String, Schema>) {
         schemas.forEach { (name, schema) ->

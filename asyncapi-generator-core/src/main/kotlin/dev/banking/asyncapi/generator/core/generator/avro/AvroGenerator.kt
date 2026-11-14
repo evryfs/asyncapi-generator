@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 /**
  * Renders parsed schemas into Avro schema artifacts before writing them.
  */
-class AvroGenerator(
+internal class AvroGenerator(
     packageName: String,
 ) {
     private val factory = AvroGeneratorModelFactory(packageName)

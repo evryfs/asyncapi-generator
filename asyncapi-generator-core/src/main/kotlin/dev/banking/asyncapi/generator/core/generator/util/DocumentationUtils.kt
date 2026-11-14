@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.util
 
-object DocumentationUtils {
+internal object DocumentationUtils {
 
     private const val WRAP_WIDTH = 120
 

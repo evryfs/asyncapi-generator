@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import java.io.StringWriter
 
-class JavaSpringKafkaConsumerGenerator {
+internal class JavaSpringKafkaConsumerGenerator {
     private val mustacheFactory = SourceMustacheFactory("java")
 
     fun render(model: GeneratorItem.KafkaConsumerInterface): GeneratedArtifact {

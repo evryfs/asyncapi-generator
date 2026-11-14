@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 
 /** Spring-resolvable Kafka topic address used by generated client contracts. */
 @ConsistentCopyVisibility
-data class KafkaTopicAddress private constructor(
+internal data class KafkaTopicAddress private constructor(
     val propertyPlaceholderValue: String,
     val constantName: String,
 ) {

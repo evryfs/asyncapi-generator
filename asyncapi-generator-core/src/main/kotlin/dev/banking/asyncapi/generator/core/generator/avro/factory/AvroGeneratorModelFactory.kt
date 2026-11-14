@@ -19,7 +19,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Names that Avro rejects fail generation, because renaming them would silently change a schema
  * that may already be registered. Text values are JSON-escaped for the `.avsc` templates.
  */
-class AvroGeneratorModelFactory(
+internal class AvroGeneratorModelFactory(
     private val packageName: String,
 ) {
     private val typeMapper = AvroTypeMapper(packageName)

@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 /**
  * Serializes a bundled AsyncAPI document in the configured output format.
  */
-class DocumentArtifactGeneration {
+internal class DocumentArtifactGeneration {
     fun render(
         task: GenerationTask.DocumentArtifact,
         asyncApiDocument: AsyncApiDocument,

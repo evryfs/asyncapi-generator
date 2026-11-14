@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 /**
  * Renders planned JSON Schema artifacts before writing them.
  */
-class JsonSchemaArtifactGeneration(
+internal class JsonSchemaArtifactGeneration(
     private val jsonSchemaGenerator: JsonSchemaGenerator = JsonSchemaGenerator(),
 ) {
     fun render(

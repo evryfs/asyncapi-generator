@@ -12,7 +12,7 @@ import java.io.StringWriter
 /**
  * Renders Avro schema model items into schema artifacts.
  */
-class AvroSchemaGenerator {
+internal class AvroSchemaGenerator {
     private val mustacheFactory = DefaultMustacheFactory("avro")
 
     fun render(schemaItem: AvroSchema): GeneratedArtifact =

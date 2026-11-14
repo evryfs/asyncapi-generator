@@ -29,7 +29,7 @@ import java.io.StringWriter
  * Renders payload models as Kotlin sources: data classes, enums, sealed interfaces for unions,
  * and `Any` type aliases for open objects.
  */
-class KotlinModelEmitter : ModelEmitter {
+internal class KotlinModelEmitter : ModelEmitter {
     private val mustacheFactory = SourceMustacheFactory("kotlin")
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
 

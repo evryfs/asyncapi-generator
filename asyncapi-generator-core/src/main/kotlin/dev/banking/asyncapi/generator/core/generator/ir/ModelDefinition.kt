@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  *
  * @property description Contract description as written, not yet formatted as documentation.
  */
-sealed interface ModelDefinition {
+internal sealed interface ModelDefinition {
     val name: String
     val packageName: String
     val description: String?
@@ -23,7 +23,7 @@ sealed interface ModelDefinition {
  * @property unions Union models this object is a member of.
  * @property annotation Configured annotation for every generated model class.
  */
-data class ObjectModel(
+internal data class ObjectModel(
     override val name: String,
     override val packageName: String,
     override val description: String?,
@@ -32,7 +32,7 @@ data class ObjectModel(
     val annotation: QualifiedTypeName? = null,
 ) : ModelDefinition
 
-data class EnumModel(
+internal data class EnumModel(
     override val name: String,
     override val packageName: String,
     override val description: String?,
@@ -44,7 +44,7 @@ data class EnumModel(
  *
  * @property discriminator Property whose value selects the member; null without one.
  */
-data class UnionModel(
+internal data class UnionModel(
     override val name: String,
     override val packageName: String,
     override val description: String?,
@@ -53,7 +53,7 @@ data class UnionModel(
 ) : ModelDefinition
 
 /** An object without declared properties, which accepts any payload. */
-data class OpenObjectModel(
+internal data class OpenObjectModel(
     override val name: String,
     override val packageName: String,
     override val description: String?,
@@ -68,7 +68,7 @@ data class OpenObjectModel(
  *   nullability, and documentation.
  * @property default Default value from the schema; null without a supported one.
  */
-data class PropertyDefinition(
+internal data class PropertyDefinition(
     val wireName: String,
     val identifier: String,
     val type: TypeRef,
@@ -83,7 +83,7 @@ data class PropertyDefinition(
 }
 
 /** A schema default value. */
-sealed interface DefaultValue {
+internal sealed interface DefaultValue {
     /** A constant of the generated enum [enumName]. */
     data class EnumEntry(
         val enumName: String,

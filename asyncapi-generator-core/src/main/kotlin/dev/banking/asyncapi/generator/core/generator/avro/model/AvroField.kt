@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.avro.model
 
-data class AvroField(
+internal data class AvroField(
     val name: String,
     val doc: String?,
     val jsonType: String, // Pre-calculated JSON structure (e.g. ["null", "string"])

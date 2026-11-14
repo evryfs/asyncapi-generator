@@ -9,7 +9,7 @@ import java.math.BigDecimal
  * generator schema while retaining generator-observable shapes, constraints,
  * and explicit exact-value presence.
  */
-class SchemaMerger {
+internal class SchemaMerger {
     fun merge(base: Schema, override: Schema): Schema {
         val baseProps = base.properties ?: emptyMap()
         val overrideProps = override.properties ?: emptyMap()

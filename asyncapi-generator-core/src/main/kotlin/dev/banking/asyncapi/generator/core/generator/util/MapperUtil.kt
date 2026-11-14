@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.util
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.NON_ALPHANUMERIC
 
-object MapperUtil {
+internal object MapperUtil {
     private val acronymBoundary = Regex("([A-Z]+)([A-Z][a-z])")
     private val wordBoundary = Regex("([a-z0-9])([A-Z])")
 

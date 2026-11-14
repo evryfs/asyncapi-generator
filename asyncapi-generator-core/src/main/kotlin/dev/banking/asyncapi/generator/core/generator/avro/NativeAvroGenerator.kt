@@ -18,7 +18,7 @@ import java.nio.file.Path
 /**
  * Renders native Avro `schemaFormat` payloads into `.avsc` and SpecificRecord artifacts.
  */
-class NativeAvroGenerator(
+internal class NativeAvroGenerator(
     private val objectMapper: ObjectMapper = ObjectMapper(),
     private val schemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(objectMapper),
 ) {

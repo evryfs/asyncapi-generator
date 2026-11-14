@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * JSON Schema does not require an enum to declare a type, so this inference belongs
  * to generation analysis rather than parsing or semantic conformance validation.
  */
-class EnumTypeAnalyzer {
+internal class EnumTypeAnalyzer {
 
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> =
         schemas.mapValues { (_, schema) -> analyzeSchema(schema) }

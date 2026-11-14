@@ -12,7 +12,7 @@ import java.util.Collections
 import java.util.IdentityHashMap
 
 /** Mutable validation state confined to one validator invocation. */
-class ValidationCollector internal constructor() {
+internal class ValidationCollector internal constructor() {
     internal data class PendingReferenceTarget(
         val category: ReferenceCategoryKey,
         val target: Any,

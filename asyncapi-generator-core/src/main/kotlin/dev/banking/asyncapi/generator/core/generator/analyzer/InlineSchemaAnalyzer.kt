@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * would silently drop one of them.
  * Items of a named array schema are named `<Array>Item`, so they never replace the array.
  */
-class InlineSchemaAnalyzer {
+internal class InlineSchemaAnalyzer {
 
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val promotion = Promotion(schemas)

@@ -23,7 +23,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-object AsyncApiSchemaLoader {
+internal object AsyncApiSchemaLoader {
 
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val sourceModels = SourceModelRegistry()

@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 /**
  * Resolves individual client contract parameters from AsyncAPI message headers.
  */
-object MessageHeaderAnalyzer {
+internal object MessageHeaderAnalyzer {
     fun analyze(
         message: Message,
     ): AnalyzedMessageHeaders? {

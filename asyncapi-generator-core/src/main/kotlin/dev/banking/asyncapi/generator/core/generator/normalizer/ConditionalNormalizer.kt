@@ -14,7 +14,7 @@ import java.util.IdentityHashMap
  * open values, and constraints that differ between both branches are omitted
  * rather than applied unconditionally.
  */
-class ConditionalNormalizer {
+internal class ConditionalNormalizer {
     fun normalize(schemas: Map<String, Schema>): Map<String, Schema> =
         schemas.mapValues { (_, schema) ->
             normalizeSchema(

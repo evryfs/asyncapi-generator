@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.java.model
 
-data class JavaClassTemplate(
+internal data class JavaClassTemplate(
     val packageName: String,
     val className: String,
     val classDocLines: List<String>,

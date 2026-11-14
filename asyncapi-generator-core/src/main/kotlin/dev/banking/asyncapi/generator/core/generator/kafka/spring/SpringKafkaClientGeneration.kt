@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 
 /** Dispatches planned Spring Kafka client generation to the client emitter of its language. */
-class SpringKafkaClientGeneration {
+internal class SpringKafkaClientGeneration {
     fun render(
         task: GenerationTask.SpringKafkaClient,
         generationInput: GenerationInput,
