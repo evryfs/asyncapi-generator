@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import dev.banking.asyncapi.generator.core.bundler.BundledAsyncApiDocument
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
@@ -61,7 +62,7 @@ class AsyncApiGeneratorOutputContractTest {
         val bundled = bundledDocument()
 
         generator.generate(
-            asyncApiDocument = bundled,
+            bundled = bundled,
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -81,7 +82,7 @@ class AsyncApiGeneratorOutputContractTest {
         val bundled = bundledDocument()
 
         generator.generate(
-            asyncApiDocument = bundled,
+            bundled = bundled,
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -100,7 +101,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = bundledDocument(),
+            bundled = bundledDocument(),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -121,7 +122,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = sourceIncompatibleSchemaDocument(),
+            bundled = BundledAsyncApiDocument(sourceIncompatibleSchemaDocument()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -151,7 +152,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = documentWithInlineMessagePayload(),
+            bundled = BundledAsyncApiDocument(documentWithInlineMessagePayload()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -172,7 +173,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = resolvedExternalMessagePayloadDocument(),
+            bundled = resolvedExternalMessagePayloadDocument(),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -193,7 +194,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = documentWithBooleanComponents(),
+            bundled = BundledAsyncApiDocument(documentWithBooleanComponents()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -214,7 +215,7 @@ class AsyncApiGeneratorOutputContractTest {
         val outputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
 
         generator.generate(
-            asyncApiDocument = bundledDocument(),
+            bundled = bundledDocument(),
             generatorConfiguration =
                 documentGeneratorConfiguration(
                     outputFile = outputFile,
@@ -232,7 +233,7 @@ class AsyncApiGeneratorOutputContractTest {
         val outputFile = tempDir.resolve("bundled/asyncapi.json").toFile()
 
         generator.generate(
-            asyncApiDocument = bundledDocument(),
+            bundled = bundledDocument(),
             generatorConfiguration =
                 documentGeneratorConfiguration(
                     outputFile = outputFile,
@@ -251,7 +252,7 @@ class AsyncApiGeneratorOutputContractTest {
         val outputFile = tempDir.resolve("bundled/source-incompatible.yaml").toFile()
 
         generator.generate(
-            asyncApiDocument = sourceIncompatibleSchemaDocument(),
+            bundled = BundledAsyncApiDocument(sourceIncompatibleSchemaDocument()),
             generatorConfiguration =
                 documentGeneratorConfiguration(
                     outputFile = outputFile,
@@ -278,7 +279,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 generator.generate(
-                    asyncApiDocument = sourceIncompatibleSchemaDocument(),
+                    bundled = BundledAsyncApiDocument(sourceIncompatibleSchemaDocument()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -299,7 +300,7 @@ class AsyncApiGeneratorOutputContractTest {
         val outputFile = tempDir.resolve("bundled/native-avro.yaml").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
             generatorConfiguration =
                 documentGeneratorConfiguration(
                     outputFile = outputFile,
@@ -320,7 +321,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
                 generator.generate(
-                    asyncApiDocument = documentWithScalarSchema(),
+                    bundled = BundledAsyncApiDocument(documentWithScalarSchema()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -343,7 +344,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
                 generator.generate(
-                    asyncApiDocument = documentWithoutChannels(),
+                    bundled = BundledAsyncApiDocument(documentWithoutChannels()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -373,7 +374,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress> {
                 generator.generate(
-                    asyncApiDocument = documentWithInlineMessagePayload(),
+                    bundled = BundledAsyncApiDocument(documentWithInlineMessagePayload()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -419,7 +420,7 @@ class AsyncApiGeneratorOutputContractTest {
             )
 
         generator.generate(
-            asyncApiDocument = documentWithScalarSchema(),
+            bundled = BundledAsyncApiDocument(documentWithScalarSchema()),
             generatorConfiguration = configuration,
         )
 
@@ -458,7 +459,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.InvalidNativeAvroSchema> {
                 generator.generate(
-                    asyncApiDocument = documentWithAsyncApiAndInvalidNativeAvroSchemas(),
+                    bundled = BundledAsyncApiDocument(documentWithAsyncApiAndInvalidNativeAvroSchemas()),
                     generatorConfiguration = configuration,
                 )
             }
@@ -513,7 +514,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.SchemaNameCollision> {
                 generator.generate(
-                    asyncApiDocument = document,
+                    bundled = BundledAsyncApiDocument(document),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -556,7 +557,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.GeneratedArtifactCollision> {
                 generator.generate(
-                    asyncApiDocument = bundledDocument(),
+                    bundled = bundledDocument(),
                     generatorConfiguration = configuration,
                 )
             }
@@ -575,7 +576,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -599,7 +600,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = externalNativeAvroSchemaAssetsDocument(),
+            bundled = externalNativeAvroSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -626,7 +627,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
                 generator.generate(
-                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+                    bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -656,7 +657,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufComponent(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufComponent()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -678,7 +679,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufJavaMessageComponent(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufJavaMessageComponent()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -706,7 +707,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = externalNativeProtobufSchemaAssetsDocument(),
+            bundled = externalNativeProtobufSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -732,7 +733,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
                 generator.generate(
-                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+                    bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -755,7 +756,7 @@ class AsyncApiGeneratorOutputContractTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
                 generator.generate(
-                    asyncApiDocument = generationInputFixtures.documentWithMultiFormatComponent(),
+                    bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
@@ -776,7 +777,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithMultiFormatMessagePayload(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatMessagePayload()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -803,7 +804,7 @@ class AsyncApiGeneratorOutputContractTest {
         val resourceOutputDirectory = tempDir.resolve("resources").toFile()
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithNativeAvroMessageAndObjectKey(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeAvroMessageAndObjectKey()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -842,7 +843,7 @@ class AsyncApiGeneratorOutputContractTest {
             )
 
         generator.generate(
-            asyncApiDocument = generationInputFixtures.documentWithNativeProtobufMessageAndObjectKey(),
+            bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufMessageAndObjectKey()),
             generatorConfiguration =
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
@@ -974,7 +975,7 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-    private fun resolvedExternalMessagePayloadDocument(): AsyncApiDocument =
+    private fun resolvedExternalMessagePayloadDocument(): BundledAsyncApiDocument =
         bundlerFixtures.bundledDocument(
             File("src/test/resources/generator/external-message-payload/main.yaml"),
         )

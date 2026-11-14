@@ -24,23 +24,24 @@ internal class OperationReplyBundler {
                 )
 
             is OperationReplyInterface.OperationReplyReference -> {
-                ReferenceBundler.bundleReferencedModel<OperationReply>(
+                replyInterface.copy(reference = ReferenceBundler.bundleReferencedModel<OperationReply>(
                     reference = replyInterface.reference,
                     context = context,
                 ) { reply, nextContext ->
                     bundleReply(reply, nextContext)
-                }
-                replyInterface
+                })
             }
         }
 
     private fun bundleReply(reply: OperationReply, context: BundlingContext): OperationReply {
         val bundledAddress = reply.address?.let { operationReplyAddressBundler.bundle(it, context) }
-        reply.channel?.let { ReferenceBundler.inlineIfUnvisited(it, context) }
-        reply.messages?.forEach { ReferenceBundler.inlineIfUnvisited(it, context) }
+        val bundledChannel = reply.channel?.let { ReferenceBundler.inlineIfUnvisited(it, context) }
+        val bundledMessages = reply.messages?.map { ReferenceBundler.inlineIfUnvisited(it, context) }
 
         return reply.copy(
-            address = bundledAddress
+            address = bundledAddress,
+            channel = bundledChannel,
+            messages = bundledMessages,
         )
     }
 }

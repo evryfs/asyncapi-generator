@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import org.junit.jupiter.api.Test
@@ -55,11 +56,14 @@ class BindingBundlerTest {
         val reference = Reference("bindings.yaml#/AccountBinding", model = binding)
         val bindingReference = BindingInterface.BindingReference(reference)
 
-        val bundled = bundler.bundle(bindingReference, BundlingContext.empty())
+        val bundled = assertIs<BindingInterface.BindingReference>(
+            bundler.bundle(bindingReference, BundlingContext.empty()),
+        )
 
-        assertSame(bindingReference, bundled)
-        assertTrue(reference.inline)
-        val bundledBinding = assertIs<Binding>(reference.model)
+        assertTrue(bundled.reference.inline)
+        assertFalse(reference.inline, "the input reference is not changed")
+        assertSame(binding, reference.model, "the input reference model is not changed")
+        val bundledBinding = assertIs<Binding>(bundled.reference.model)
         val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
         val bundledKafka = assertIs<Map<*, *>>(bundledBinding.content["kafka"])
         val bundledKey = assertIs<SchemaInterface.SchemaInline>(bundledKafka["key"])

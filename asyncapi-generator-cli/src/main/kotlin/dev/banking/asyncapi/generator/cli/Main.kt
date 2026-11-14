@@ -80,7 +80,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             reportWarnings(loaded)
 
             val bundler = AsyncApiBundler()
-            val bundledDoc = bundler.bundle(loaded.document)
+            val bundledDoc = bundler.bundle(loaded)
             AsyncApiGenerator().generate(bundledDoc, generatorConfiguration)
         } catch (exception: Exception) {
             throw CliktError(

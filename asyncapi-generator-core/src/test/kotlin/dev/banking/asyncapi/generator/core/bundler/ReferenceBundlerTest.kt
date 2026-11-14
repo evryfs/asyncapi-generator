@@ -14,18 +14,20 @@ class ReferenceBundlerTest {
     fun `inlineIfUnvisited marks an unvisited reference as inline`() {
         val reference = Reference("#/components/externalDocs/api")
 
-        ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty())
+        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty())
 
-        assertTrue(reference.inline)
+        assertTrue(bundled.inline)
+        assertFalse(reference.inline, "the input reference is not changed")
     }
 
     @Test
     fun `inlineIfUnvisited keeps a visited reference unchanged`() {
         val reference = Reference("#/components/externalDocs/api")
 
-        ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty().enter(reference))
+        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty().enter(reference))
 
-        assertFalse(reference.inline)
+        assertSame(reference, bundled)
+        assertFalse(bundled.inline)
     }
 
     @Test
@@ -35,16 +37,18 @@ class ReferenceBundlerTest {
             model = Server(host = "kafka.example.com", protocol = "kafka"),
         )
 
-        ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty()) { server, context ->
+        val bundled = ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty()) { server, context ->
             assertTrue(context.hasVisited(reference))
             server.copy(description = "Bundled server")
         }
 
-        assertTrue(reference.inline)
+        assertTrue(bundled.inline)
         assertEquals(
             Server(host = "kafka.example.com", protocol = "kafka", description = "Bundled server"),
-            reference.model,
+            bundled.model,
         )
+        assertFalse(reference.inline, "the input reference is not changed")
+        assertEquals(Server(host = "kafka.example.com", protocol = "kafka"), reference.model)
     }
 
     @Test
@@ -55,11 +59,12 @@ class ReferenceBundlerTest {
             model = model,
         )
 
-        ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty().enter(reference)) { server, _ ->
+        val bundled = ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty().enter(reference)) { server, _ ->
             server.copy(description = "Should not be applied")
         }
 
-        assertFalse(reference.inline)
-        assertSame(model, reference.model)
+        assertSame(reference, bundled)
+        assertFalse(bundled.inline)
+        assertSame(model, bundled.model)
     }
 }

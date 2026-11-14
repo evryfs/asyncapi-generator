@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
+import dev.banking.asyncapi.generator.core.bundler.BundledAsyncApiDocument
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import java.io.File
@@ -23,9 +24,9 @@ internal class BundlerFixtures(
     fun validatedDocument(file: File): AsyncApiDocument =
         validatorFixtures.validatedDocument(file)
 
-    fun bundledDocument(path: String): AsyncApiDocument =
+    fun bundledDocument(path: String): BundledAsyncApiDocument =
         bundledDocument(TestResources.file(path))
 
-    fun bundledDocument(file: File): AsyncApiDocument =
+    fun bundledDocument(file: File): BundledAsyncApiDocument =
         bundler.bundle(validatedDocument(file))
 }

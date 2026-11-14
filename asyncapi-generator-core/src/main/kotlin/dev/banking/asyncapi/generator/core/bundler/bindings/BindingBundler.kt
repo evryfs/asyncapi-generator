@@ -29,10 +29,9 @@ internal class BindingBundler {
                 BindingInterface.BindingInline(bundleBinding(binding.binding, context))
 
             is BindingInterface.BindingReference -> {
-                ReferenceBundler.bundleReferencedModel<Binding>(binding.reference, context) { model, nextContext ->
+                binding.copy(reference = ReferenceBundler.bundleReferencedModel<Binding>(binding.reference, context) { model, nextContext ->
                     bundleBinding(model, nextContext)
-                }
-                binding
+                })
             }
         }
 

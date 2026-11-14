@@ -37,13 +37,12 @@ internal class MessageTraitBundler {
                     bundleTrait(traitInterface.trait, context)
                 )
             is MessageTraitInterface.ReferenceMessageTrait -> {
-                ReferenceBundler.bundleReferencedModel<MessageTrait>(
+                traitInterface.copy(reference = ReferenceBundler.bundleReferencedModel<MessageTrait>(
                     reference = traitInterface.reference,
                     context = context,
                 ) { trait, nextContext ->
                     bundleTrait(trait, nextContext)
-                }
-                traitInterface
+                })
             }
         }
 

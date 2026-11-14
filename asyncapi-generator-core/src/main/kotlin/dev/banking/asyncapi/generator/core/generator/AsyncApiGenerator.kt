@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator
 
+import dev.banking.asyncapi.generator.core.bundler.BundledAsyncApiDocument
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.DocumentArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.JsonSchemaArtifactGeneration
@@ -34,9 +35,10 @@ class AsyncApiGenerator {
     private val springKafkaClientGeneration = SpringKafkaClientGeneration()
 
     fun generate(
-        asyncApiDocument: AsyncApiDocument,
+        bundled: BundledAsyncApiDocument,
         generatorConfiguration: GeneratorConfiguration,
     ) {
+        val asyncApiDocument = bundled.document
         val generationPlan = generationPlanner.plan(generatorConfiguration)
         val documentTasks = generationPlan.tasks.filterIsInstance<GenerationTask.DocumentArtifact>()
         val result =

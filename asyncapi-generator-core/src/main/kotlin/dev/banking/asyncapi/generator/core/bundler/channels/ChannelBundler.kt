@@ -33,13 +33,12 @@ internal class ChannelBundler {
                     bundleChannel(channelInterface.channel, context)
                 )
             is ChannelInterface.ChannelReference -> {
-                ReferenceBundler.bundleReferencedModel<Channel>(
+                channelInterface.copy(reference = ReferenceBundler.bundleReferencedModel<Channel>(
                     reference = channelInterface.reference,
                     context = context,
                 ) { channel, nextContext ->
                     bundleChannel(channel, nextContext)
-                }
-                channelInterface
+                })
             }
         }
     fun bundleChannel(channel: Channel, context: BundlingContext): Channel {

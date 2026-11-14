@@ -70,7 +70,7 @@ abstract class AbstractJavaGeneratorClass {
                     },
             )
         generator.generate(
-            asyncApiDocument = bundled,
+            bundled = bundled,
             generatorConfiguration = generatorConfiguration,
         )
 

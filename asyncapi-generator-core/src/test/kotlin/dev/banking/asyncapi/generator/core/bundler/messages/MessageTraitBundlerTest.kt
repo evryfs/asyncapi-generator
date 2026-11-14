@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import org.junit.jupiter.api.Test
 import kotlin.test.assertIs
-import kotlin.test.assertSame
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MessageTraitBundlerTest {
@@ -27,12 +27,14 @@ class MessageTraitBundlerTest {
         val traitReference = Reference("#/components/messageTraits/audit", model = trait)
         val traitInterface = MessageTraitInterface.ReferenceMessageTrait(traitReference)
 
-        val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
+        val bundled = assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+            bundler.bundle(traitInterface, BundlingContext.empty()),
+        )
 
-        assertSame(traitInterface, bundled)
-        assertTrue(traitReference.inline)
-        assertIs<MessageTrait>(traitReference.model)
-        assertTrue((traitReference.model as MessageTrait).bindings!!.containsKey("kafka"))
-        assertTrue(bindingReference.inline)
+        assertTrue(bundled.reference.inline)
+        val bundledTrait = assertIs<MessageTrait>(bundled.reference.model)
+        assertTrue(assertIs<BindingInterface.BindingReference>(bundledTrait.bindings!!["kafka"]).reference.inline)
+        assertFalse(traitReference.inline, "the input reference is not changed")
+        assertFalse(bindingReference.inline, "the input reference is not changed")
     }
 }

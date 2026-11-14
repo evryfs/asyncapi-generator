@@ -256,7 +256,7 @@ class BundledDocumentApprovalTest {
     ): File {
         val bundledDocument = bundlerFixtures.bundledDocument(sourcePath)
         val outputFile = tempDir.resolve("$scenario.yaml").toFile()
-        AsyncApiRegistry.writeYaml(outputFile, bundledDocument)
+        AsyncApiRegistry.writeYaml(outputFile, bundledDocument.document)
         return outputFile
     }
 }

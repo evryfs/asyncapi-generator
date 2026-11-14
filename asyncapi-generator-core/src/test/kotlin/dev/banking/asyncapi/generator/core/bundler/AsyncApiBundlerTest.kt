@@ -25,6 +25,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class AsyncApiBundlerTest {
@@ -39,7 +40,7 @@ class AsyncApiBundlerTest {
             TestResources.file("asyncapi_kafka_single_file_example.yaml"),
         )
 
-        val bundled = bundler.bundle(original)
+        val bundled = bundler.bundle(original).document
 
         assertEquals(original.asyncapi, bundled.asyncapi)
         assertEquals(original.info, bundled.info)
@@ -48,8 +49,29 @@ class AsyncApiBundlerTest {
     }
 
     @Test
+    fun `bundling is pure and leaves the loaded document untouched`() {
+        val original = bundlerFixtures.validatedDocument(
+            TestResources.file("bundler/multi/asyncapi_multifile_example_main.yaml"),
+        )
+        val originalYaml = AsyncApiRegistry.serializeYaml(original)
+        val channelReferences = original.channels!!.values
+            .filterIsInstance<ChannelInterface.ChannelReference>()
+            .map { it.reference }
+        val channelModels = channelReferences.map { it.model }
+
+        val first = AsyncApiRegistry.serializeYaml(bundler.bundle(original).document)
+        val second = AsyncApiRegistry.serializeYaml(bundler.bundle(original).document)
+
+        assertEquals(first, second)
+        assertTrue(channelReferences.isNotEmpty())
+        assertTrue(channelReferences.none { it.inline }, "the loaded references are not inlined")
+        channelReferences.zip(channelModels).forEach { (reference, model) -> assertSame(model, reference.model) }
+        assertEquals(originalYaml, AsyncApiRegistry.serializeYaml(original))
+    }
+
+    @Test
     fun `bundling traverses representative multi-file channel, message, and schema references`() {
-        val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml")
+        val bundled = bundlerFixtures.bundledDocument("bundler/multi/asyncapi_multifile_example_main.yaml").document
 
         val externalChannelReference =
             bundled.channels!!["externalAuditChannel"] as ChannelInterface.ChannelReference
@@ -91,7 +113,7 @@ class AsyncApiBundlerTest {
                 ),
             ),
         )
-        val bundled = bundler.bundle(document)
+        val bundled = bundler.bundle(document).document
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
         val jsonFile = tempDir.resolve("asyncapi.json").toFile()
 
@@ -129,7 +151,7 @@ class AsyncApiBundlerTest {
                 ),
             ),
         )
-        val bundled = bundler.bundle(document)
+        val bundled = bundler.bundle(document).document
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
 
         AsyncApiRegistry.writeYaml(yamlFile, bundled)
@@ -141,7 +163,7 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling circular references should not cause stack overflow`() {
-        val bundled = bundlerFixtures.bundledDocument("bundler/circular/asyncapi_bundler_circular.yaml")
+        val bundled = bundlerFixtures.bundledDocument("bundler/circular/asyncapi_bundler_circular.yaml").document
 
         val components = bundled.components as ComponentInterface.ComponentInline
         val nodeA = components.component.schemas!!["NodeA"] as SchemaInterface.SchemaInline
@@ -162,7 +184,7 @@ class AsyncApiBundlerTest {
     fun `bundling promotes a recursive external schema and produces standalone yaml and json`(
         @TempDir tempDir: Path,
     ) {
-        val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external/asyncapi.yaml")
+        val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external/asyncapi.yaml").document
 
         val channel = bundled.channels!!["treeEvents"] as ChannelInterface.ChannelInline
         val message = channel.channel.messages!!["treeUpdated"] as MessageInterface.MessageInline
@@ -189,7 +211,7 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling promotes mutually recursive schemas from an external schema document`() {
-        val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external-mutual/asyncapi.yaml")
+        val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external-mutual/asyncapi.yaml").document
 
         val components = bundled.components as ComponentInterface.ComponentInline
         val schemas = components.component.schemas!!

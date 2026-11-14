@@ -12,7 +12,6 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ComponentBundlerTest {
@@ -36,11 +35,14 @@ class ComponentBundlerTest {
             ),
         )
 
-        bundler.bundleComponent(component, BundlingContext.empty())
+        val bundled = bundler.bundleComponent(component, BundlingContext.empty())
 
-        assertTrue(correlationIdReference.inline)
-        assertTrue(parameterReference.inline)
-        assertTrue(serverVariableReference.inline)
+        assertTrue(assertIs<CorrelationIdInterface.CorrelationIdReference>(bundled.correlationIds!!["user"]).reference.inline)
+        assertTrue(assertIs<ParameterInterface.ParameterReference>(bundled.parameters!!["userId"]).reference.inline)
+        assertTrue(
+            assertIs<ServerVariableInterface.ServerVariableReference>(bundled.serverVariables!!["environment"]).reference.inline,
+        )
+        assertFalse(correlationIdReference.inline, "the input reference is not changed")
     }
 
     @Test
@@ -52,11 +54,14 @@ class ComponentBundlerTest {
         val componentReference = Reference("#/components", model = component)
         val componentInterface = ComponentInterface.ComponentReference(componentReference)
 
-        val bundled = bundler.bundleComponents(componentInterface, BundlingContext.empty())
+        val bundled = assertIs<ComponentInterface.ComponentReference>(
+            bundler.bundleComponents(componentInterface, BundlingContext.empty()),
+        )
 
-        assertSame(componentInterface, bundled)
-        assertTrue(componentReference.inline)
-        assertIs<Component>(componentReference.model)
-        assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
+        assertTrue(bundled.reference.inline)
+        val bundledComponent = assertIs<Component>(bundled.reference.model)
+        val bundledSchema = assertIs<SchemaInterface.SchemaReference>(bundledComponent.schemas!!["User"])
+        assertFalse(bundledSchema.reference.inline, "a component schema reference keeps its \$ref")
+        assertFalse(componentReference.inline, "the input reference is not changed")
     }
 }

@@ -20,8 +20,7 @@ internal class TagBundler {
     fun bundle(tag: TagInterface, context: BundlingContext): TagInterface =
         when (tag) {
             is TagInterface.TagReference -> {
-                ReferenceBundler.inlineIfUnvisited(tag.reference, context)
-                tag
+                tag.copy(reference = ReferenceBundler.inlineIfUnvisited(tag.reference, context))
             }
             else -> tag
         }

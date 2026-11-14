@@ -73,7 +73,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
             if (loaded.warnings.isNotEmpty()) {
                 log.warn(loaded.formatWarnings().trimEnd())
             }
-            val bundled = bundler.bundle(loaded.document)
+            val bundled = bundler.bundle(loaded)
             generator.generate(bundled, generatorConfiguration)
             MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
             log.info("asyncapi-generator-maven-plugin completed successfully")

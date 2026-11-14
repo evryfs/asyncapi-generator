@@ -7,6 +7,8 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class InfoBundlerTest {
@@ -28,7 +30,9 @@ class InfoBundlerTest {
 
         assertEquals(listOf(TagInterface.TagReference(tagReference)), bundled.tags)
         assertEquals(ExternalDocInterface.ExternalDocReference(externalDocReference), bundled.externalDocs)
-        assertTrue(tagReference.inline)
-        assertTrue(externalDocReference.inline)
+        assertTrue(assertIs<TagInterface.TagReference>(bundled.tags!!.single()).reference.inline)
+        assertTrue(assertIs<ExternalDocInterface.ExternalDocReference>(bundled.externalDocs).reference.inline)
+        assertFalse(tagReference.inline, "the input reference is not changed")
+        assertFalse(externalDocReference.inline, "the input reference is not changed")
     }
 }

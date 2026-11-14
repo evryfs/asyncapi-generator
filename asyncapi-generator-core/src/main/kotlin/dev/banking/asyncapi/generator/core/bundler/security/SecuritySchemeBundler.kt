@@ -26,8 +26,7 @@ internal class SecuritySchemeBundler {
     fun bundle(scheme: SecuritySchemeInterface, context: BundlingContext): SecuritySchemeInterface =
         when (scheme) {
             is SecuritySchemeInterface.SecuritySchemeReference -> {
-                ReferenceBundler.inlineIfUnvisited(scheme.reference, context)
-                scheme
+                scheme.copy(reference = ReferenceBundler.inlineIfUnvisited(scheme.reference, context))
             }
             else -> scheme
         }

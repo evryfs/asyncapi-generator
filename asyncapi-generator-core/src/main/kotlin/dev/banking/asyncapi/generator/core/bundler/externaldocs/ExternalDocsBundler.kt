@@ -18,8 +18,7 @@ internal class ExternalDocsBundler {
     fun bundle(externalDoc: ExternalDocInterface, context: BundlingContext): ExternalDocInterface =
         when (externalDoc) {
             is ExternalDocInterface.ExternalDocReference -> {
-                ReferenceBundler.inlineIfUnvisited(externalDoc.reference, context)
-                externalDoc
+                externalDoc.copy(reference = ReferenceBundler.inlineIfUnvisited(externalDoc.reference, context))
             }
             else -> externalDoc
         }

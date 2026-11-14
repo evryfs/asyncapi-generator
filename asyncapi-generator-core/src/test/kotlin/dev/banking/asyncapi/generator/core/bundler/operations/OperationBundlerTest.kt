@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import org.junit.jupiter.api.Test
 import kotlin.test.assertIs
-import kotlin.test.assertSame
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class OperationBundlerTest {
@@ -33,13 +33,17 @@ class OperationBundlerTest {
         val operationReference = Reference("#/operations/sendUserUpdated", model = operation)
         val operationInterface = OperationInterface.OperationReference(operationReference)
 
-        val bundled = bundler.bundle(operationInterface, BundlingContext.empty())
+        val bundled = assertIs<OperationInterface.OperationReference>(
+            bundler.bundle(operationInterface, BundlingContext.empty()),
+        )
 
-        assertSame(operationInterface, bundled)
-        assertTrue(operationReference.inline)
-        assertIs<Operation>(operationReference.model)
-        assertTrue(traitReference.inline)
-        assertTrue(replyReference.inline)
-        assertTrue(replyChannelReference.inline)
+        assertTrue(bundled.reference.inline)
+        val bundledOperation = assertIs<Operation>(bundled.reference.model)
+        assertTrue(assertIs<OperationTraitInterface.OperationTraitReference>(bundledOperation.traits!!.single()).reference.inline)
+        val bundledReply = assertIs<OperationReplyInterface.OperationReplyReference>(bundledOperation.reply)
+        assertTrue(bundledReply.reference.inline)
+        assertTrue(assertIs<OperationReply>(bundledReply.reference.model).channel!!.inline)
+        assertFalse(operationReference.inline, "the input reference is not changed")
+        assertFalse(replyChannelReference.inline, "the input reference is not changed")
     }
 }
