@@ -18,6 +18,7 @@ internal data class GradleGeneratorConfigurationRequest(
     val schemaPackage: String? = null,
     val modelConfig: GradleModelConfiguration? = null,
     val clientConfig: GradleClientConfiguration? = null,
+    val suppressedWarnings: List<String> = emptyList(),
 )
 
 /**
@@ -55,6 +56,7 @@ internal object GradleGeneratorConfigurationMapper {
                         clientPackage = request.clientPackage,
                         modelPackage = request.modelPackage,
                     ) ?: GeneratorConfigurationRequest.Clients(),
+                suppressedWarnings = request.suppressedWarnings,
             ),
         )
     }

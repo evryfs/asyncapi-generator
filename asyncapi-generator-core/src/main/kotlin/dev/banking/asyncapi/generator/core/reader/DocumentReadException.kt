@@ -22,6 +22,20 @@ sealed class DocumentReadException(
     cause: Throwable? = null,
 ) : RuntimeException(message, cause) {
 
+    class MissingDocument(
+        file: File,
+    ) : DocumentReadException(
+        message = "Input document does not exist: ${file.absolutePath}",
+        file = file,
+    )
+
+    class NotAFile(
+        file: File,
+    ) : DocumentReadException(
+        message = "Input document is not a file: ${file.absolutePath}",
+        file = file,
+    )
+
     class EmptyDocument(
         file: File,
     ) : DocumentReadException(

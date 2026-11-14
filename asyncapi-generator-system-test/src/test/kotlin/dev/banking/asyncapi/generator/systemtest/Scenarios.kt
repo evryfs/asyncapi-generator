@@ -244,13 +244,34 @@ private val allScenarios: List<Scenario> = listOf(
         sharedClientConfig = true,
         libraries = setOf(Library.SPRING_KAFKA),
         expectedWarnings = listOf("unused-client-config"),
-        knownIssues = mapOf(
-            "Maven generates, compiles, and passes checks" to
-                "Maven rejects shared clientConfig on executions without clientPackage instead of warning",
-            "CLI generates" to "the CLI rejects client options without clientPackage instead of warning",
-            "all frontends generate identical output" to "Maven and the CLI reject shared clientConfig",
-            "every frontend warns 'unused-client-config'" to "unused clientConfig is ignored without a warning",
+    ),
+    Scenario(
+        name = "suppressed-warnings",
+        files = "shared-client-config",
+        executions = listOf(
+            Execution(
+                id = "client",
+                generatorName = "kotlin",
+                modelPackage = "com.example.shared.model",
+                clientPackage = "com.example.shared.client",
+            ),
+            Execution(
+                id = "models",
+                generatorName = "kotlin",
+                modelPackage = "com.example.models",
+                suppressedWarnings = listOf("unused-client-config"),
+            ),
+            Execution(
+                id = "schemas",
+                generatorName = "avro-schema",
+                schemaPackage = "com.example.schemas",
+                suppressedWarnings = listOf("unused-client-config"),
+            ),
         ),
+        client = ClientConfig(),
+        sharedClientConfig = true,
+        libraries = setOf(Library.SPRING_KAFKA),
+        absentWarnings = listOf("unused-client-config"),
     ),
     Scenario(
         name = "java-client",
@@ -302,10 +323,6 @@ private val allScenarios: List<Scenario> = listOf(
             messages = listOf("missing.yaml", "does not exist"),
             absent = listOf("No generator output is configured"),
         ),
-        knownIssues = mapOf(
-            "Maven fails with the expected diagnostic" to
-                "Maven validates the configuration before checking that inputSpec exists",
-        ) + gradleFailures("Gradle reports 'Unable to read input document' instead of saying the file does not exist"),
     ),
     diagnostic(
         name = "unknown-generator",
@@ -349,13 +366,8 @@ private val allScenarios: List<Scenario> = listOf(
             clientPackage = "com.example.client",
         ),
         expected = ExpectedFailure(messages = listOf("clientConfig is required when clientPackage is configured")),
-        knownIssues = gradleFailures("Gradle reports 'clientConfig.clientType is required' without naming clientPackage"),
     ),
 )
-
-/** The same known issue for the failure test of both Gradle DSLs. */
-private fun gradleFailures(issue: String): Map<String, String> =
-    listOf("Gradle", "Gradle Groovy DSL").associate { "$it fails with the expected diagnostic" to issue }
 
 /** A configuration mistake every frontend must reject; all diagnostics share one valid contract. */
 private fun diagnostic(

@@ -404,31 +404,6 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should fail if kafka spring kafka client is enabled without client package`(@TempDir tempDir: Path) {
-        val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
-        val outputDirectory = tempDir.resolve("generated").toFile()
-        val exception =
-            assertFailsWith<UsageError> {
-                cli.parse(
-                    arrayOf(
-                        "-i", inputFile.absolutePath,
-                        "--output-directory", outputDirectory.absolutePath,
-                        "--model-package", "com.example.cli.model",
-                        "--client-type", "spring-kafka",
-                        "--client-contract", "interface",
-                        "--generator-name", "kotlin",
-                    )
-                )
-            }
-
-        assertTrue(
-            exception.message.orEmpty().contains(
-                "clientPackage is required when clientConfig is configured",
-            ),
-        )
-    }
-
-    @Test
     fun `should fail if schema generator is used without schema package`(@TempDir tempDir: Path) {
         val inputFile = File("src/test/resources/asyncapi_kafka_complex.yaml")
         val outputDirectory = tempDir.resolve("generated").toFile()

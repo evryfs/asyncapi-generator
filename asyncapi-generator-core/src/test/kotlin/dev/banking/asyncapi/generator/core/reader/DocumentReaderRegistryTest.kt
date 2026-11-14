@@ -61,15 +61,24 @@ class DocumentReaderRegistryTest {
     }
 
     @Test
-    fun `normalizes missing file access failures`() {
+    fun `reports a missing file as not existing`() {
         val file = tempDir.resolve("missing.yaml").toFile()
 
-        val failure = assertFailsWith<DocumentReadException.UnreadableDocument> {
+        val failure = assertFailsWith<DocumentReadException.MissingDocument> {
             DocumentReaderRegistry.read(file)
         }
         assertEquals(file, failure.file)
-        assertNotNull(failure.cause)
+        assertTrue("does not exist" in failure.message.orEmpty())
         assertTrue(failure.message.orEmpty().endsWith(file.absolutePath))
+    }
+
+    @Test
+    fun `rejects a directory as input document`() {
+        val directory = tempDir.resolve("contract.yaml").toFile().apply { mkdirs() }
+
+        assertFailsWith<DocumentReadException.NotAFile> {
+            DocumentReaderRegistry.read(directory)
+        }
     }
 
     @Test

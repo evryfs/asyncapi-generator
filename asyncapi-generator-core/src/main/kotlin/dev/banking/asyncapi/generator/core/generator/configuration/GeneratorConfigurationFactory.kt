@@ -8,7 +8,12 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 object GeneratorConfigurationFactory {
     private val packageNamePattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
 
-    fun create(request: GeneratorConfigurationRequest): GeneratorConfiguration {
+    fun create(configuredRequest: GeneratorConfigurationRequest): GeneratorConfiguration {
+        val suppressedWarnings =
+            configuredRequest.suppressedWarnings
+                .map { ConfigurationWarningId.fromConfigurationValue(it, "suppressedWarnings") }
+                .toSet()
+        val (request, warnings) = withoutUnusedClientConfiguration(configuredRequest)
         validate(request)
 
         val profile = request.generatorName.profile
@@ -88,10 +93,34 @@ object GeneratorConfigurationFactory {
                         )
                     }
                 },
+            warnings = warnings.filterNot { it.id in suppressedWarnings },
         )
 
         validateActivatedOutputs(request, configuration)
         return configuration
+    }
+
+    /**
+     * Drops client configuration from an execution without a client package.
+     *
+     * Client configuration is usually shared by all executions of a build, so an
+     * execution that only generates models or schemas legitimately inherits it.
+     * It is ignored there, with a warning so it is never ignored silently.
+     */
+    private fun withoutUnusedClientConfiguration(
+        request: GeneratorConfigurationRequest,
+    ): Pair<GeneratorConfigurationRequest, List<ConfigurationWarning>> {
+        val kafka = request.clients.kafka
+        if (kafka == null || kafka.packageName != null) return request to emptyList()
+        val warning =
+            ConfigurationWarning(
+                id = ConfigurationWarningId.UNUSED_CLIENT_CONFIG,
+                message =
+                    "clientConfig is ignored because clientPackage is not configured, so no client is generated. " +
+                        "Add '${ConfigurationWarningId.UNUSED_CLIENT_CONFIG.configurationValue}' to " +
+                        "suppressedWarnings to silence this warning.",
+            )
+        return request.copy(clients = GeneratorConfigurationRequest.Clients()) to listOf(warning)
     }
 
     private fun validate(request: GeneratorConfigurationRequest) {
@@ -107,10 +136,6 @@ object GeneratorConfigurationFactory {
 
         require(request.schemas.avroProjection == null || request.schemas.avroProjection.packageName != null) {
             "schemas.avroProjection.packageName is required when schemas.avroProjection is configured"
-        }
-
-        require(request.clients.kafka == null || request.clients.kafka.packageName != null) {
-            "clients.kafka.packageName is required when clients.kafka is configured"
         }
 
         validatePackageName(

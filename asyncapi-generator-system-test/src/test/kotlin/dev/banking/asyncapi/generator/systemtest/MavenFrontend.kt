@@ -138,6 +138,11 @@ internal class MavenFrontend(
             execution.modelAnnotation?.let { add(element("modelAnnotation", it)) }
             add("</modelConfig>")
         }
+        if (execution.suppressedWarnings.isNotEmpty()) {
+            add("<suppressedWarnings>")
+            execution.suppressedWarnings.forEach { add("    " + element("warning", it)) }
+            add("</suppressedWarnings>")
+        }
     }
 
     private fun clientConfiguration(client: ClientConfig): List<String> = buildList {

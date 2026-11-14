@@ -18,6 +18,16 @@ import java.io.File
  */
 class AsyncApiDocumentLoader {
 
+    /**
+     * Fails when [file] does not exist or is not a regular file.
+     *
+     * Frontends call this before validating their configuration, so a wrong
+     * input path is reported before anything that depends on it.
+     */
+    fun requireInputFile(file: File) {
+        DocumentReaderRegistry.requireInputFile(file)
+    }
+
     fun load(file: File): AsyncApiDocumentLoadResult {
         val context = AsyncApiContext()
         val inputDocument = DocumentReaderRegistry.read(file)

@@ -53,6 +53,7 @@ internal class CliFrontend(
         execution.schemaPackage?.let { add("--schema-package"); add(it) }
         execution.modelType?.let { add("--model-type"); add(it) }
         execution.modelAnnotation?.let { add("--model-annotation"); add(it) }
+        execution.suppressedWarnings.forEach { add("--suppress-warning"); add(it) }
         client?.let { addAll(clientArguments(it)) }
     }
 

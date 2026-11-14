@@ -107,6 +107,9 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:Optional
     abstract val payloadParameterValidationAnnotation: Property<String>
 
+    @get:Input
+    abstract val suppressedWarnings: ListProperty<String>
+
     @TaskAction
     fun generate() {
         logger.lifecycle("AsyncAPI generation '${name}' started")
@@ -122,8 +125,10 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
                     schemaPackage = schemaPackage.orNull,
                     modelConfig = modelConfiguration(),
                     clientConfig = clientConfiguration(),
+                    suppressedWarnings = suppressedWarnings.get().distinct(),
                 ),
             )
+        generatorConfiguration.warnings.forEach { warning -> logger.warn(warning.message) }
         val loaded = AsyncApiDocumentLoader().load(inputSpec.get().asFile)
         if (loaded.warnings.isNotEmpty()) {
             logger.warn(loaded.formatWarnings().trimEnd())
@@ -145,8 +150,18 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             null
         }
 
+    /** Client configuration is shared by all executions; it counts as configured once any property is set. */
     private fun clientConfiguration(): GradleClientConfiguration? =
-        if (clientPackage.isPresent) {
+        if (
+            clientType.isPresent ||
+            clientContract.isPresent ||
+            producerEnabled.isPresent ||
+            consumerEnabled.isPresent ||
+            producerAdditionalPayloadTypes.orNull.orEmpty().isNotEmpty() ||
+            topicParameterProperties.orNull.orEmpty().isNotEmpty() ||
+            clientContractValidationAnnotation.isPresent ||
+            payloadParameterValidationAnnotation.isPresent
+        ) {
             GradleClientConfiguration(
                 clientType = clientType.orNull,
                 clientContract = clientContract.orNull,

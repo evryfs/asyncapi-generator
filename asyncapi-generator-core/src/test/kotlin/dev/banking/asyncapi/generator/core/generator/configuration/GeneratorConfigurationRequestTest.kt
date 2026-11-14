@@ -234,20 +234,15 @@ class GeneratorConfigurationRequestTest {
     }
 
     @Test
-    fun `clients request requires client and model packages`() {
-        val missingClientPackage =
-            assertFailsWith<IllegalArgumentException> {
-                GeneratorConfigurationRequest.clients(
-                    clientType = "spring-kafka",
-                    clientContract = "interface",
-                    clientPackage = null,
-                    modelPackage = "com.example.model",
-                )
-            }
-        assertEquals(
-            "clientPackage is required when clientConfig is configured",
-            missingClientPackage.message,
-        )
+    fun `clients request requires a model package only for a client package`() {
+        val withoutClientPackage =
+            GeneratorConfigurationRequest.clients(
+                clientType = "spring-kafka",
+                clientContract = "interface",
+                clientPackage = null,
+                modelPackage = null,
+            )
+        assertEquals(null, withoutClientPackage.kafka?.packageName)
 
         val missingModelPackage =
             assertFailsWith<IllegalArgumentException> {
@@ -259,7 +254,7 @@ class GeneratorConfigurationRequestTest {
                 )
             }
         assertEquals(
-            "modelPackage is required when clientConfig is configured",
+            "modelPackage is required when clientPackage is configured",
             missingModelPackage.message,
         )
     }
