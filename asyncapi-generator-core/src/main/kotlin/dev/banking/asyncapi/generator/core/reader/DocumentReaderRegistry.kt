@@ -15,6 +15,7 @@ import java.io.IOException
  */
 internal object DocumentReaderRegistry {
     fun read(file: File): InputDocument {
+        requireInputFile(file)
         val format = DocumentFormat.fromFile(file)
             ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
         val content =
@@ -33,6 +34,12 @@ internal object DocumentReaderRegistry {
                 format = format,
             )
         return read(source)
+    }
+
+    /** Fails with a reader error when [file] does not exist or is not a regular file. */
+    fun requireInputFile(file: File) {
+        if (!file.exists()) throw DocumentReadException.MissingDocument(file)
+        if (!file.isFile) throw DocumentReadException.NotAFile(file)
     }
 
     fun read(source: DocumentSource): InputDocument =

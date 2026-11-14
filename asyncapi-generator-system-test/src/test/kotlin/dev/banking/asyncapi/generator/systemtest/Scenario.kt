@@ -20,6 +20,7 @@ import java.io.File
  *   client package get it. Gradle only supports the shared form.
  * @property libraries Libraries the consumer builds add on top of the base set.
  * @property expectedWarnings Text every frontend must print while generating successfully.
+ * @property absentWarnings Text no frontend may print while generating successfully.
  * @property expectedFailure When set, every frontend must fail with this diagnostic.
  * @property knownIssues Tests of this scenario that fail because of a known bug, by test
  *   display name, with the bug as value. Such a test must keep failing; once the bug is
@@ -33,11 +34,12 @@ internal data class Scenario(
     val sharedClientConfig: Boolean = false,
     val libraries: Set<Library> = emptySet(),
     val expectedWarnings: List<String> = emptyList(),
+    val absentWarnings: List<String> = emptyList(),
     val expectedFailure: ExpectedFailure? = null,
     val knownIssues: Map<String, String> = emptyMap(),
 ) {
     init {
-        require(expectedFailure == null || expectedWarnings.isEmpty()) {
+        require(expectedFailure == null || (expectedWarnings.isEmpty() && absentWarnings.isEmpty())) {
             "Scenario $name cannot expect both a failure and warnings"
         }
         require(executions.isNotEmpty()) { "Scenario $name has no executions" }

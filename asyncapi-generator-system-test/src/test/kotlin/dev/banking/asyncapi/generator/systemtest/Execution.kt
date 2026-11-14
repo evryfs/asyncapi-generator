@@ -18,6 +18,7 @@ package dev.banking.asyncapi.generator.systemtest
  * @property schemaPackage Package for generated schema artifacts.
  * @property modelType Payload model implementation; the profile default when null.
  * @property modelAnnotation Fully qualified annotation added to generated models.
+ * @property suppressedWarnings Configuration warning ids silenced for this execution.
  */
 internal data class Execution(
     val id: String,
@@ -30,6 +31,7 @@ internal data class Execution(
     val schemaPackage: String? = null,
     val modelType: String? = null,
     val modelAnnotation: String? = null,
+    val suppressedWarnings: List<String> = emptyList(),
 ) {
     /** True when the execution asks for generated sources or schemas, not only a bundled document. */
     val generatesArtifacts: Boolean
@@ -39,9 +41,9 @@ internal data class Execution(
 /**
  * Client generation settings, shared by the executions of a scenario that set a client package.
  *
- * Gradle only has them in the extension, for every execution. Maven and the CLI
- * reject them on an execution without a client package, so Maven renders them per
- * execution and the CLI passes them only to client executions.
+ * Gradle only has them in the extension, for every execution. Unless the scenario
+ * shares them, Maven renders them per client execution and the CLI passes them
+ * only to client executions.
  *
  * @property clientType Client technology.
  * @property clientContract Generated client contract shape.

@@ -18,6 +18,7 @@ internal data class MavenGeneratorConfigurationRequest(
     val schemaPackage: String? = null,
     val modelConfig: MavenModelConfiguration? = null,
     val clientConfig: MavenClientConfiguration? = null,
+    val suppressedWarnings: List<String> = emptyList(),
 )
 
 /**
@@ -55,6 +56,7 @@ internal object MavenGeneratorConfigurationMapper {
                         clientPackage = request.clientPackage,
                         modelPackage = request.modelPackage,
                     ) ?: GeneratorConfigurationRequest.Clients(),
+                suppressedWarnings = request.suppressedWarnings,
             ),
         )
     }

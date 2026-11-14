@@ -14,6 +14,7 @@ data class GeneratorConfiguration(
     val models: ModelGeneration = ModelGeneration.Disabled,
     val schemas: List<SchemaGeneration> = emptyList(),
     val clients: List<ClientGeneration> = emptyList(),
+    val warnings: List<ConfigurationWarning> = emptyList(),
 ) {
     val sourceLanguage: SourceLanguage?
         get() = (profile as? GeneratorProfile.Source)?.language

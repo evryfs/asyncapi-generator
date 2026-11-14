@@ -147,6 +147,7 @@ internal class GradleFrontend(
             execution.modelAnnotation?.let { add("        modelAnnotation.set(${dsl.literal(it)})") }
             add("    }")
         }
+        execution.suppressedWarnings.forEach { add("    suppressedWarnings.add(${dsl.literal(it)})") }
         add("}")
     }.joinToString("\n") { "        $it" }
 

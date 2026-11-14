@@ -689,23 +689,41 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `create rejects client type without client package`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                GeneratorConfigurationFactory.create(
-                    request(
-                        clients =
-                            GeneratorConfigurationRequest.Clients(
-                                kafka = GeneratorConfigurationRequest.Kafka(),
-                            ),
-                    ),
-                )
-            }
+    fun `create ignores client configuration without client package and warns`() {
+        val unusedClients = GeneratorConfigurationRequest.Clients(kafka = GeneratorConfigurationRequest.Kafka())
 
-        assertEquals(
-            "clients.kafka.packageName is required when clients.kafka is configured",
-            exception.message,
+        val configuration =
+            GeneratorConfigurationFactory.create(
+                request(
+                    generatorName = GeneratorName.AVRO_SCHEMA,
+                    schemaPackageName = "com.example.schema",
+                    clients = unusedClients,
+                ),
+            )
+
+        assertTrue(configuration.clients.isEmpty())
+        assertEquals(listOf(ConfigurationWarningId.UNUSED_CLIENT_CONFIG), configuration.warnings.map { it.id })
+        assertTrue("unused-client-config" in configuration.warnings.single().message)
+    }
+
+    @Test
+    fun `create omits suppressed warnings and rejects unknown warning ids`() {
+        val unusedClients = GeneratorConfigurationRequest.Clients(kafka = GeneratorConfigurationRequest.Kafka())
+        val modelsRequest = request(
+            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+            clients = unusedClients,
         )
+
+        val suppressed = GeneratorConfigurationFactory.create(
+            modelsRequest.copy(suppressedWarnings = listOf("unused-client-config")),
+        )
+        val unknown = assertFailsWith<IllegalArgumentException> {
+            GeneratorConfigurationFactory.create(modelsRequest.copy(suppressedWarnings = listOf("everything")))
+        }
+
+        assertTrue(suppressed.warnings.isEmpty())
+        assertTrue("everything" in unknown.message.orEmpty())
+        assertTrue("unused-client-config" in unknown.message.orEmpty())
     }
 
     @Test

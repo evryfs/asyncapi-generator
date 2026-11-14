@@ -72,6 +72,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     override fun run() {
         val generatorConfiguration = generatorConfiguration()
+        generatorConfiguration.warnings.forEach { warning -> echo(message = "Warning: ${warning.message}", err = true) }
         echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
 
         try {
@@ -109,6 +110,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     schemaPackage = outputOptions.schemaPackage,
                     modelConfig = modelOptions.toConfiguration(),
                     clientConfig = clientOptions.toConfiguration(),
+                    suppressedWarnings = generationOptions.suppressedWarnings,
                 ),
             )
         } catch (exception: IllegalArgumentException) {

@@ -42,6 +42,11 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
             .map { generatorName -> generatorName.configurationValue to generatorName }
             .toTypedArray(),
     ).required()
+
+    val suppressedWarnings by option(
+        "--suppress-warning",
+        help = "Configuration warning to silence, for example unused-client-config. Repeatable.",
+    ).multiple()
 }
 
 /**
