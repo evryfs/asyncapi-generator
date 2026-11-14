@@ -64,10 +64,10 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Apply release version
-        run: mvn -B org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
+        run: mvn -B -Psystem-test org.codehaus.mojo:versions-maven-plugin:2.16.2:set -DnewVersion="$RELEASE_VERSION" -DgenerateBackupPoms=false
 
-      - name: Verify complete repository at release version
-        run: mvn -B clean install -Pcli-distribution -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      - name: Verify complete repository, including system tests, at release version
+        run: mvn -B clean install -Pcli-distribution,system-test -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
       - name: Record CLI archive checksums
         run: python3 .github/scripts/release_assets.py asyncapi-generator-cli/target "$RELEASE_VERSION" --write
