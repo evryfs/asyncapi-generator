@@ -69,7 +69,6 @@
         <mustache.compiler.version>0.9.14</mustache.compiler.version>
         <avro.version>1.12.1</avro.version>
         <protobuf.java.version>3.25.5</protobuf.java.version>
-        <protoc.jar.version>3.11.4</protoc.jar.version>
         <junit.jupiter.version>6.0.0</junit.jupiter.version>
         <assertj.core.version>3.27.7</assertj.core.version>
         <gson.version>2.13.1</gson.version>
@@ -189,11 +188,6 @@
                 <groupId>com.google.protobuf</groupId>
                 <artifactId>protobuf-kotlin</artifactId>
                 <version>${protobuf.java.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.os72</groupId>
-                <artifactId>protoc-jar</artifactId>
-                <version>${protoc.jar.version}</version>
             </dependency>
 
             <!-- maven core -->

@@ -1,15 +1,16 @@
 package dev.banking.asyncapi.generator.cli
 
+import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
-import com.github.ajalt.clikt.completion.completionOption
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 
@@ -81,7 +82,8 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
             val bundler = AsyncApiBundler()
             val bundledDoc = bundler.bundle(loaded)
-            AsyncApiGenerator().generate(bundledDoc, generatorConfiguration)
+            AsyncApiGenerator(MavenRepositoryProtocProvider(override = generationOptions.protocExecutable?.toPath()))
+                .generate(bundledDoc, generatorConfiguration)
         } catch (exception: Exception) {
             throw CliktError(
                 message = exception.message ?: "AsyncAPI generation failed.",

@@ -22,6 +22,12 @@ abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
     val clientConfig: AsyncApiClientConfiguration =
         objects.newInstance(AsyncApiClientConfiguration::class.java)
 
+    /**
+     * A local `protoc` executable for native Protobuf models. By default `com.google.protobuf:protoc`
+     * is resolved from the project's repositories, and only for executions that generate them.
+     */
+    val protocExecutable: RegularFileProperty = objects.fileProperty()
+
     /** Configuration warning ids silenced for every execution, for example `unused-client-config`. */
     val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
 

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
+import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
 import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
@@ -112,6 +113,11 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
     @get:Input
     abstract val suppressedWarnings: ListProperty<String>
 
+    /** The `protoc` executable; empty unless this execution generates native Protobuf models. */
+    @get:InputFiles
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val protoc: ConfigurableFileCollection
+
     /** Shared by all executions of the project; records generated files so stale ones are removed. */
     @get:Internal
     abstract val outputManifest: RegularFileProperty
@@ -146,7 +152,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
 
         val bundled = AsyncApiBundler().bundle(loaded)
-        AsyncApiGenerator().generate(bundled, generatorConfiguration)
+        AsyncApiGenerator(ProtocProvider { protoc.singleFile.toPath().also { it.toFile().setExecutable(true) } })
+            .generate(bundled, generatorConfiguration)
 
         logger.lifecycle("AsyncAPI generation '${name}' completed")
     }
