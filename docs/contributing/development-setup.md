@@ -17,10 +17,12 @@ The `asyncapi-generator-system-test` module runs every scenario through the
 packaged CLI, a real Maven build, and real Gradle builds with the Kotlin and
 the Groovy DSL. The Maven and Gradle Kotlin DSL builds compile the generated
 code against the library versions declared in the root `pom.xml` (Spring Kafka,
-Jakarta Validation, Jackson annotations, Kotlin) and run the scenario's checks;
-all frontends must produce identical output. A separate test runs repeated
-Gradle builds to cover the configuration cache and up-to-date checks. The module
-is only built with the `system-test` profile and is never published.
+Jakarta Validation, Jackson annotations, Avro, Protobuf, Kotlin) and run the
+scenario's checks; all frontends must produce identical output. Separate tests
+run repeated Gradle builds to cover the configuration cache and up-to-date
+checks, and repeated Maven and Gradle builds to cover the removal of stale
+generated files. The module is only built with the `system-test` profile and
+is never published.
 
 ```bash
 mvn verify -Psystem-test -pl asyncapi-generator-system-test -am
@@ -35,8 +37,11 @@ iterating. Override versions for a compatibility check with, for example:
 -Dsystem-test.gradle.version=<version>
 ```
 
-CI runs the system tests with the project's own JDK and Gradle versions; bump
-them there together with the project.
+CI runs the system tests with the project's own JDK and Gradle versions
+(`system-test.gradle.version` in `asyncapi-generator-system-test/pom.xml`);
+bump them there together with the project. The `system-test` job of the Build
+workflow runs them for pushes to `main` and for pull requests, and the Release workflow
+runs them in its `verify` job before anything is published.
 
 Consumer projects, generated output, and build logs are kept under
 `asyncapi-generator-system-test/target/system-test-work/<scenario>/` for
@@ -57,7 +62,8 @@ inspection after a failure.
    client settings, and the extra libraries it needs (Spring Kafka, Avro,
    Protobuf). Set `sharedClientConfig` to configure the client settings once
    for every execution, `expectedWarnings` for warnings every frontend must
-   print, or `expectedFailure` for a diagnostic every frontend must report.
+   print, `absentWarnings` for warnings no frontend may print, or
+   `expectedFailure` for a diagnostic every frontend must report.
    Scenarios can share files through `files`; the configuration diagnostics
    all use one contract.
 

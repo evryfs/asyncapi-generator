@@ -74,7 +74,7 @@ notes, and records the release commit SHA and draft ID. Later jobs use that SHA.
 | Job | Required result |
 |-----|-----------------|
 | `prepare` | Valid version, existing tag on `main`, and matching draft with notes. |
-| `verify` | Complete Java 21 `clean install` at the release version, including Maven, Gradle, and packaged-JAR tests; CLI archives and checksums retained. |
+| `verify` | Complete Java 21 `clean install` at the release version with the `cli-distribution` and `system-test` profiles, including Maven, Gradle, packaged-JAR, and system tests; CLI archives and checksums retained. |
 | `maven-central` | Parent, core, CLI, and Maven plugin published; Central deployment reaches `PUBLISHED`. |
 | `gradle-central` | Gradle implementation and plugin marker uploaded through Sonatype, then closed and released. |
 | `gradle-portal` | Gradle plugin submitted to Plugin Portal independently of the Sonatype destination. |

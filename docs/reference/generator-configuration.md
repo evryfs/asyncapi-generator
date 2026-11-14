@@ -22,13 +22,14 @@ directories. The internal object shape is not frontend configuration syntax.
 
 | Field             | Requirement                                                                               | Meaning                                                                                                                                                                                                 |
 |-------------------|-------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `inputSpec`       | Required for every run                                                                    | AsyncAPI YAML or JSON input file. This is a frontend input loaded separately from the typed generator configuration.                                                                                    |
+| `inputSpec`       | Required for every run                                                                    | AsyncAPI YAML or JSON input file. It is checked before any other setting, so a missing file is always the first reported problem.                                                                        |
 | `generatorName`   | Required for every run                                                                    | Selects exactly one generator profile. Supported values are listed in [Generator profiles](#generator-profiles).                                                                                        |
 | `outputDirectory` | Always resolved by the frontend                                                           | Base directory for generated source and schema files. Each frontend has its own default; see [Output directories](#output-directories).                                                                 |
 | `outputFile`      | Required for `asyncapi-yaml` and `asyncapi-json`; optional for source and schema profiles | Activates bundled-document output at the specified file. Source and schema profiles serialize this optional output as YAML.                                                                             |
 | `modelPackage`    | Conditional                                                                               | Activates model output for a source profile. It is also required when `modelConfig` or client generation is configured. For native Avro and Protobuf models, it is the generated runtime-model package. |
 | `clientPackage`   | Conditional                                                                               | Activates client-contract output for a source profile when `clientConfig` is also configured.                                                                                                           |
 | `schemaPackage`   | Required for schema profiles; optional for native Avro or Protobuf models                 | Package path for schema artifacts. It is invalid when the selected outputs do not generate schemas.                                                                                                     |
+| `suppressedWarnings` | Optional                                                                               | Configuration warning ids to silence. See [Configuration warnings](#configuration-warnings).                                                                                                           |
 
 `modelConfig` and `clientConfig` refine activated outputs; neither is an output
 category by itself. Model configuration is covered below. Client configuration
@@ -124,10 +125,21 @@ source profiles. Configure all four required public values:
 - `clientConfig.clientContract=interface`.
 
 `spring-kafka` is the only supported `clientType`, and `interface` is the only
-supported `clientContract`. Configuring `clientPackage` without `clientConfig`
-is invalid. Maven and CLI client settings also require both package fields.
-Gradle's shared `clientConfig` is applied only to named executions that configure
-`clientPackage`; other executions ignore it.
+supported `clientContract`. The combinations behave as follows in every
+frontend:
+
+- `clientPackage` without client settings fails with
+  `clientConfig is required when clientPackage is configured`.
+- `clientPackage` without `modelPackage` fails with
+  `modelPackage is required when clientPackage is configured`.
+- Client settings on an execution without `clientPackage` are ignored, and the
+  frontend prints the `unused-client-config` warning described in
+  [Configuration warnings](#configuration-warnings). Incomplete client
+  settings, such as a `clientType` without a `clientContract`, still fail.
+
+Gradle accepts `clientConfig` only directly under `asyncApiGenerator`, where it
+is shared by every execution. Maven accepts `clientConfig` in an execution or
+in the plugin-level configuration, which Maven passes to every execution.
 
 ### Producer and consumer contracts
 
@@ -181,6 +193,28 @@ implementations and runtime Spring Kafka wiring. See
 [Generate Spring Kafka clients](../how-to/generate-spring-kafka-clients.md) for
 operational setup and usage.
 
+## Configuration warnings
+
+A configuration warning reports a setting that is valid but has no effect on
+the execution. Generation continues and the frontend prints the warning.
+Warnings are never dropped silently; to acknowledge one deliberately, list its
+id in `suppressedWarnings`. An unknown id fails with
+`Invalid suppressedWarnings '<id>'` and the list of supported ids.
+
+| Warning id             | Printed when                                                                                      |
+|------------------------|---------------------------------------------------------------------------------------------------|
+| `unused-client-config` | Client settings reach an execution that does not set `clientPackage`, so no client is generated. |
+
+Where to list ids:
+
+- Maven: `<suppressedWarnings><warning>ID</warning></suppressedWarnings>` in an
+  execution's or the plugin's `<configuration>`. Plugin-level configuration
+  reaches every execution through Maven's normal configuration inheritance;
+  when an execution sets its own list, keep every id it needs in that list.
+- Gradle: `suppressedWarnings.add("ID")` on `asyncApiGenerator`, on an
+  execution, or both. An execution silences the union of both lists.
+- CLI: `--suppress-warning ID`, repeated for several ids.
+
 ## Output directories
 
 The typed core configuration distinguishes its main source directory, Java
@@ -197,6 +231,48 @@ separate file path and is not implicitly placed below `outputDirectory`.
 
 For frontend syntax and build-tool setup, see the [Maven how-to](../how-to/maven.md),
 [Gradle how-to](../how-to/gradle.md), and [CLI how-to](../how-to/cli.md).
+
+### Stale generated files
+
+Maven and Gradle record which files each execution generated in one manifest
+per project:
+
+| Frontend | Manifest                                        | Execution identity    |
+|----------|-------------------------------------------------|-----------------------|
+| Maven    | `target/asyncapi-generator/output-manifest.txt` | Plugin execution `id` |
+| Gradle   | `build/asyncapi-generator/output-manifest.txt`  | Execution name        |
+
+After a successful run, a file is deleted when the execution generated it in
+an earlier run, no longer generates it, and no other execution of the same
+project still generates it. Directories left empty by the deletion are removed
+as well. The rules protect other content:
+
+- A file that no execution generated, such as a hand-written source next to
+  generated code, is never deleted.
+- Executions that share an output directory, or generate the same file,
+  cooperate through the shared manifest.
+- The bundled document at `outputFile` is not recorded and is never deleted.
+- An execution that is renamed or removed from the build no longer runs, so
+  its earlier files stay until the build directory is cleaned.
+
+The CLI keeps no manifest and never deletes files. No frontend rewrites a file
+whose content did not change, so its timestamp is preserved.
+
+## Protobuf compiler
+
+Native Protobuf models (`modelConfig.modelType=protobuf-message`) are compiled
+with `protoc` from the Maven artifact `com.google.protobuf:protoc`, version
+`3.25.5`, for the operating system and architecture of the build machine. It
+is resolved only by executions that generate native Protobuf models.
+
+| Frontend | Default resolution                                                                                                                                                                         | Override                                                                                  |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------|
+| Maven    | Maven's repository system with the project's repositories; `settings.xml` mirrors, proxies, and credentials apply.                                                                         | `<protocExecutable>` in the plugin or execution `<configuration>`, or `-Dasyncapi.protocExecutable=PATH`. |
+| Gradle   | The `asyncApiProtoc` configuration, resolved from the project's `repositories`.                                                                                                            | `protocExecutable` on `asyncApiGenerator`.                                                |
+| CLI      | The local Maven repository (`~/.m2/repository`, or the `maven.repo.local` system property); otherwise downloaded from Maven Central with SHA-1 verification, using the JVM proxy settings. | `--protoc PATH`.                                                                          |
+
+An override must point to an existing executable file. Use a `protoc` release
+that matches the Protobuf `3.25.x` Java runtime of the generated messages.
 
 ## Defaults
 
@@ -215,6 +291,8 @@ For frontend syntax and build-tool setup, see the [Maven how-to](../how-to/maven
 | `producer.additionalPayloadTypes`  | Empty; only the typed producer payload method is generated.                                                                                       |
 | `topicParameterProperties`         | Empty map.                                                                                                                                        |
 | `validationAnnotations`            | No generated client or payload validation annotations.                                                                                            |
+| `suppressedWarnings`               | Empty; every configuration warning is printed.                                                                                                    |
+| `protocExecutable` / `--protoc`    | `com.google.protobuf:protoc:3.25.5` resolved by the frontend, only for native Protobuf models.                                                    |
 
 Omitting optional configuration does not create an implicit output category.
 If no compatible package or `outputFile` activates an output, configuration
@@ -229,7 +307,7 @@ corresponds to the public `modelPackage` field.
 | Condition                                      | Required behavior or observable failure                                                                                                                                                                                                |
 |------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Missing or unsupported `generatorName`         | Required. Accepted values are exactly those in [Generator profiles](#generator-profiles). Unsupported values are reported with the complete supported-value list.                                                                      |
-| Missing or invalid `inputSpec`                 | Must identify a readable file. The frontend rejects an absent path, directory, unreadable file, or missing file before generation.                                                                                                     |
+| Missing or invalid `inputSpec`                 | Must identify a readable file. A missing file is reported before any other configuration problem: Maven and Gradle print `Input document does not exist: <path>`; the CLI rejects `--input-spec` with a usage error naming the file. |
 | No activated output                            | Fails with `No generator output is configured`; configure `modelPackage`, `clientPackage` with `clientConfig`, `schemaPackage` with a schema profile, or `outputFile`.                                                                 |
 | Invalid output paths                           | An existing `outputDirectory` must be a directory. `outputFile` must not be a directory.                                                                                                                                               |
 | Schema profile without `schemaPackage`         | `schemaPackage` is required for `avro-schema`, `protobuf-schema`, and `json-schema`. Model and client configuration are rejected for these profiles.                                                                                   |
@@ -241,7 +319,11 @@ corresponds to the public `modelPackage` field.
 | Invalid `modelAnnotation`                      | Must be a fully qualified type name and requires `modelPackage`. It is supported only for `kotlin-data-class`, `java-class`, and `java-record`.                                                                                        |
 | Native Avro model package mismatch             | For `avro-specific-record`, every native Avro payload must declare a `namespace` equal to `modelPackage`; the generator cannot override the SpecificRecord package.                                                                    |
 | Native Protobuf model package mismatch         | For `protobuf-message`, `modelPackage` must equal `option java_package`, or the Protobuf `package` when that option is absent. Model generation also requires `option java_multiple_files = true`.                                     |
-| `clientPackage` without usable client settings | Requires `modelPackage`, `clientType=spring-kafka`, and `clientContract=interface`. Maven also requires the `clientConfig` element; CLI requires the corresponding client flags; Gradle reads these values from shared `clientConfig`. |
+| `clientPackage` without client settings        | Fails with `clientConfig is required when clientPackage is configured`. Maven needs the `clientConfig` element, Gradle the shared `clientConfig` block, and the CLI the client flags.                                                  |
+| `clientPackage` without `modelPackage`         | Fails with `modelPackage is required when clientPackage is configured`.                                                                                                                                                                |
+| Incomplete client settings                     | Whenever client settings are present, `clientType=spring-kafka` and `clientContract=interface` are both required, even on an execution without `clientPackage`.                                                                      |
+| Client settings without `clientPackage`        | Not an error. The settings are ignored and the `unused-client-config` warning is printed unless suppressed.                                                                                                                           |
+| Unknown `suppressedWarnings` id                | Fails with `Invalid suppressedWarnings '<id>'` and the supported ids.                                                                                                                                                                  |
 | Both producer and consumer disabled            | Rejected: Spring Kafka client generation requires at least one enabled contract.                                                                                                                                                       |
 | Invalid additional producer payload            | `clientConfig.producer.additionalPayloadTypes` accepts only `byte-array` and `string`. Duplicates are removed.                                                                                                                         |
 | Invalid topic property mapping                 | Parameter names and property names must be non-empty. Property names cannot contain whitespace or `$`, `{`, or `}` placeholder syntax.                                                                                                 |
@@ -257,6 +339,7 @@ corresponds to the public `modelPackage` field.
 | `clientConfig.clientType`                      | `spring-kafka`                                                                                      |
 | `clientConfig.clientContract`                  | `interface`                                                                                         |
 | `clientConfig.producer.additionalPayloadTypes` | `byte-array`, `string`                                                                              |
+| `suppressedWarnings`                           | `unused-client-config`                                                                              |
 
 Schema and document formats have no separate frontend selector;
 `generatorName` selects them.
@@ -301,15 +384,19 @@ the internal `GeneratorConfigurationRequest` fields.
 | Client validation annotation  | `<validationAnnotations><clientContract>...</clientContract></validationAnnotations>`                                                                   | Shared: `validationAnnotations { clientContract.set("...") }`       | `--client-contract-validation-annotation`              |
 | Payload validation annotation | `<validationAnnotations><payloadParameter>...</payloadParameter></validationAnnotations>`                                                               | Shared: `validationAnnotations { payloadParameter.set("...") }`     | `--payload-parameter-validation-annotation`            |
 | Schema package                | `<schemaPackage>...</schemaPackage>`                                                                                                                    | `schemaPackage.set("...")`                                          | `--schema-package`                                     |
+| Suppressed warnings           | `<suppressedWarnings><warning>...</warning></suppressedWarnings>`                                                                                       | Top level or per execution: `suppressedWarnings.add("...")`         | Repeat `--suppress-warning VALUE`                      |
+| Protobuf compiler override    | `<protocExecutable>...</protocExecutable>`, or `-Dasyncapi.protocExecutable=...`                                                                        | Top level: `protocExecutable.set(file("..."))`                      | `--protoc`                                             |
 
 Maven fields are scoped to a plugin execution. Maven's normal plugin
 configuration merging can provide shared values outside an execution and let
 execution configuration specialize them.
 
 Gradle places `modelConfig` and package fields on each named execution, but
-places `clientConfig` directly under `asyncApiGenerator` and shares it across
-all client-generating executions. Each execution still maps to a distinct
-generation request.
+places `clientConfig` and `protocExecutable` directly under
+`asyncApiGenerator` and shares them across all executions. Executions without
+`clientPackage` ignore the shared `clientConfig` and print the
+`unused-client-config` warning unless it is suppressed. Each execution still
+maps to a distinct generation request.
 
 The CLI has no named-execution, shared-configuration, `modelConfig`, or
 `clientConfig` container equivalent. Its individual flags form one generation

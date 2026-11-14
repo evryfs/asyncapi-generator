@@ -7,10 +7,10 @@ Thank you for your interest in contributing to the AsyncAPI Generator project! W
 1.  **Fork the Repository:** Click the "Fork" button on the top right of the repository page.
 2.  **Clone Your Fork:**
     ```bash
-    git clone https://github.com/YOUR_USERNAME/asyncapi-generator-core.git
-    cd asyncapi-generator-core
+    git clone https://github.com/YOUR_USERNAME/asyncapi-generator.git
+    cd asyncapi-generator
     ```
-3.  **Set Up Environment:** Ensure you have Java 21+ and Maven installed.
+3.  **Set Up Environment:** Ensure you have Java 21+ and Maven 3.9+ installed.
     ```bash
     mvn clean install
     ```
@@ -18,9 +18,11 @@ Thank you for your interest in contributing to the AsyncAPI Generator project! W
 ## Development Workflow
 
 ### Project Structure
-- `asyncapi-generator-core`: The core library containing the parser, model, and generator logic.
-- `asyncapi-generator-cli`: The Command Line Interface wrapper.
-- `asyncapi-generator-maven-plugin`: The Maven plugin integration.
+- `asyncapi-generator-core`: The core library containing the reader, parser, validator, bundler, and generator.
+- `asyncapi-generator-cli`: The Command Line Interface.
+- `asyncapi-generator-maven-plugin`: The Maven plugin.
+- `asyncapi-generator-gradle-plugin`: The Gradle plugin.
+- `asyncapi-generator-system-test`: End-to-end scenarios that run every frontend; built only with the `system-test` profile.
 
 ### Code Style
 - We follow standard Kotlin coding conventions.
@@ -32,6 +34,7 @@ Thank you for your interest in contributing to the AsyncAPI Generator project! W
     ```bash
     mvn test
     ```
+- **System Tests:** See [Development setup](docs/contributing/development-setup.md) for the fast core loop and the end-to-end system tests.
 
 ## How to Contribute
 
