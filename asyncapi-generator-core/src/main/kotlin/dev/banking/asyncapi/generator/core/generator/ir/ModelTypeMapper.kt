@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
+import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
@@ -47,6 +48,25 @@ internal class ModelTypeMapper(
             else -> TypeRef.Scalar.ANY
         }
     }
+
+    /**
+     * The type a reference stands for. A named scalar or array schema generates no type of its own,
+     * so a reference to it becomes that scalar or list; anything else is the generated model.
+     */
+    fun resolveReference(propertyName: String, reference: Reference): TypeRef {
+        val raw = reference.ref.substringAfterLast("/")
+        val target = context.findSchemaByName(raw) ?: reference.model as? Schema
+        if (target == null || !target.isAlias() || !resolvingAliases.add(raw)) return mapReference(reference)
+        return try {
+            map(propertyName, target)
+        } finally {
+            resolvingAliases.remove(raw)
+        }
+    }
+
+    private val resolvingAliases = mutableSetOf<String>()
+
+    private fun Schema.isAlias(): Boolean = isScalarAlias() || (type.getPrimaryType() == "array" && enum.isNullOrEmpty())
 
     /** The generated model a reference points to; marked when it is an open object. */
     fun mapReference(reference: Reference): TypeRef.Named {
@@ -105,7 +125,11 @@ internal class ModelTypeMapper(
                     val referencedSchema = context.findSchemaByName(referenceName)
                     val isPlainString =
                         referencedSchema?.type.getPrimaryType() == "string" && referencedSchema?.enum.isNullOrEmpty()
-                    if (isPlainString) TypeRef.Scalar.STRING else named(MapperUtil.toPascalCase(referenceName))
+                    when {
+                        isPlainString -> TypeRef.Scalar.STRING
+                        referencedSchema?.isAlias() == true -> resolveReference(propertyName, items.reference)
+                        else -> named(MapperUtil.toPascalCase(referenceName))
+                    }
                 }
                 else -> TypeRef.Scalar.ANY
             }
@@ -127,7 +151,7 @@ internal class ModelTypeMapper(
                 null -> TypeRef.Scalar.ANY
                 is SchemaInterface.BooleanSchema -> if (additionalProperties.value) TypeRef.Scalar.ANY else return null
                 is SchemaInterface.SchemaInline -> map(propertyName + "Value", additionalProperties.schema)
-                is SchemaInterface.SchemaReference -> mapReference(additionalProperties.reference)
+                is SchemaInterface.SchemaReference -> resolveReference(propertyName + "Value", additionalProperties.reference)
                 else -> TypeRef.Scalar.ANY
             }
         return TypeRef.MapOf(value)

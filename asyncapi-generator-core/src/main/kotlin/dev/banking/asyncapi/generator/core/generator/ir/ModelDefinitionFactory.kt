@@ -93,8 +93,7 @@ internal class ModelDefinitionFactory(
             is SchemaInterface.SchemaReference -> {
                 val reference = typeMapper.mapReference(propertySchema.reference)
                 val schema = context.findSchemaByName(reference.name)
-                val type = if (schema?.isScalarAlias() == true) typeMapper.map(propertyName, schema) else reference
-                schema to type
+                schema to typeMapper.resolveReference(propertyName, propertySchema.reference)
             }
             is SchemaInterface.BooleanSchema -> null to TypeRef.Scalar.BOOLEAN
             else -> null to TypeRef.Scalar.ANY

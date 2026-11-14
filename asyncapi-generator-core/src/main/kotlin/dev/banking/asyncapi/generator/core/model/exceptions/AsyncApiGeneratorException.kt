@@ -24,6 +24,17 @@ sealed class AsyncApiGeneratorException(
             }.trimEnd(),
         )
 
+    /** Two different inline schemas would be generated under one name, so one of them would be lost. */
+    class InlineSchemaNameCollision(
+        val schemaName: String,
+        val location: String,
+        val existingLocation: String?,
+    ) : AsyncApiGeneratorException(
+            "Inline schema at $location would be generated as '$schemaName', which is already used by the " +
+                "different schema at $existingLocation. Give one of them a distinct title, or define it once " +
+                "under components.schemas and reference it.",
+        )
+
     /** A name Avro rejects; renaming it silently would change a schema that may already be registered. */
     class InvalidAvroName(
         val kind: String,
