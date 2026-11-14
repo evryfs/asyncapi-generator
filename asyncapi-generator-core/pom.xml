@@ -75,10 +75,6 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.github.os72</groupId>
-            <artifactId>protoc-jar</artifactId>
-        </dependency>
 
         <!-- test -->
         <dependency>
