@@ -1,12 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.InlineSchemaAnalyzer
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Test
 
 class InlineSchemaAnalyzerTest {
 
@@ -99,7 +100,7 @@ class InlineSchemaAnalyzerTest {
         )
         val input = mapOf("Customer" to withAddress("street"), "Supplier" to withAddress("zip"))
 
-        val failure = assertFailsWith<IllegalArgumentException> { analyzer.analyze(input) }
+        val failure = assertFailsWith<InlineSchemaNameCollision> { analyzer.analyze(input) }
 
         val message = failure.message.orEmpty()
         assertTrue("'Address'" in message, message)
@@ -121,7 +122,7 @@ class InlineSchemaAnalyzerTest {
             ),
         )
 
-        assertFailsWith<IllegalArgumentException> { analyzer.analyze(input) }
+        assertFailsWith<InlineSchemaNameCollision> { analyzer.analyze(input) }
     }
 
     @Test

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -108,10 +109,10 @@ internal class InlineSchemaAnalyzer {
                 }
                 typeShape(existing) == typeShape(processedInlineSchema) ->
                     schemas[newSchemaName] = processedInlineSchema
-                else -> throw IllegalArgumentException(
-                    "Inline schema at $location would be generated as '$newSchemaName', which is already " +
-                        "used by the different schema at ${locations[newSchemaName]}. Give one of them a " +
-                        "distinct title, or define it once under components.schemas and reference it.",
+                else -> throw InlineSchemaNameCollision(
+                    schemaName = newSchemaName,
+                    location = location,
+                    existingLocation = locations[newSchemaName],
                 )
             }
             val newReference = Reference(ref = "#/components/schemas/$newSchemaName", model = processedInlineSchema)

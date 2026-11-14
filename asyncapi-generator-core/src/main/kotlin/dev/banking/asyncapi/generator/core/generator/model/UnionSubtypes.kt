@@ -34,8 +34,17 @@ internal object UnionSubtypes {
                         context.findSchemaByName(childSchemaName)
                             ?.properties
                             ?.get(property)
-                            ?.let { it as? SchemaInterface.SchemaInline }
-                            ?.schema
+                            ?.let { property ->
+                                // An inline enum may have been promoted to a named enum by now.
+                                when (property) {
+                                    is SchemaInterface.SchemaInline -> property.schema
+                                    // Through a reference only a one-value enum identifies the member;
+                                    // a shared enum of all values does not.
+                                    is SchemaInterface.SchemaReference ->
+                                        (property.reference.model as? Schema)?.takeIf { it.const != null || it.enum?.size == 1 }
+                                    else -> null
+                                }
+                            }
                             ?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
                             ?.removeSurrounding("\"")
                     }

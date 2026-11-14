@@ -28,7 +28,8 @@ class GeneratedCodeTest {
 
     private val message = """
         {"status": "2fa-required", "account-id": "acct-1", "limits": {"daily": {"eur": 5}},
-         "shape": {"kind": "circle", "radius": 2.0}}
+         "shape": {"kind": "circle", "radius": 2.0}, "tags": ["a", "b"], "reference": "ref-1",
+         "payment": {"kind": "transfer", "iban": "NO93"}}
     """
 
     @Test
@@ -39,6 +40,9 @@ class GeneratedCodeTest {
         assertNull(account.accountId, "a read-only property is not read from messages")
         assertEquals(mapOf("daily" to mapOf("eur" to 5)), account.limits)
         assertEquals(2.0, assertIs<KotlinCircle>(account.shape).radius)
+        assertEquals(listOf("a", "b"), account.tags, "a named array schema is used in place")
+        assertEquals("ref-1", account.reference, "a named scalar schema is used in place")
+        assertEquals("NO93", assertIs<com.example.codegen.kotlin.Transfer>(account.payment).iban)
 
         val written = kotlinJson.readTree(kotlinJson.writeValueAsString(account.copy(accountId = "acct-2")))
         assertEquals("2fa-required", written["status"].asText())
@@ -71,6 +75,8 @@ class GeneratedCodeTest {
         assertEquals(mapOf("daily" to mapOf("eur" to 5)), account.limits)
         assertEquals(2.0, assertIs<JavaCircle>(account.shape).radius)
         assertIs<JavaCircle>(javaJson.readValue("""{"kind": "circle"}""", JavaShape::class.java))
+        assertEquals(listOf("a", "b"), account.tags)
+        assertEquals("NO93", assertIs<com.example.codegen.java.Transfer>(account.payment).iban)
 
         account.accountId = "acct-2"
         val written = javaJson.readTree(javaJson.writeValueAsString(account))

@@ -42,6 +42,16 @@ components:
               type: string
         audit:
           $ref: '#/components/schemas/auditMetadata'
+        labels:
+          $ref: '#/components/schemas/Labels'
+        reference:
+          $ref: '#/components/schemas/Reference'
+    Labels:
+      type: array
+      items:
+        type: string
+    Reference:
+      type: string
     Tier:
       type: string
       enum: [gold, silver]

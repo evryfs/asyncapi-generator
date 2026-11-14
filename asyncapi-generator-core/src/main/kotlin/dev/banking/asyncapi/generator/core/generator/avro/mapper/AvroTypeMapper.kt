@@ -27,7 +27,8 @@ internal class AvroTypeMapper(
             val unionTypes = schema.oneOf.filterIsInstance<SchemaInterface.SchemaReference>().map(::namedType)
             if (unionTypes.isNotEmpty()) return unionTypes.joinToString(", ", "[", "]")
         }
-        if (refName != null) return namedType(refName)
+        // A named scalar or array schema has no .avsc of its own, so it is used in place.
+        if (refName != null && (schema == null || !schema.isAlias())) return namedType(refName)
         if (schema == null) return "\"string\""
 
         return when (schema.type.getPrimaryType()) {
@@ -39,10 +40,15 @@ internal class AvroTypeMapper(
 
     private fun elementType(element: SchemaInterface?): String =
         when (element) {
-            is SchemaInterface.SchemaReference -> namedType(element)
+            is SchemaInterface.SchemaReference ->
+                (element.reference.model as? Schema)?.takeIf { it.isAlias() }?.let(::requiredType) ?: namedType(element)
             is SchemaInterface.SchemaInline -> requiredType(element.schema)
             else -> "\"string\""
         }
+
+    private fun Schema.isAlias(): Boolean =
+        enum.isNullOrEmpty() && oneOf.isNullOrEmpty() &&
+            type.getPrimaryType() in setOf("string", "number", "integer", "boolean", "array")
 
     private fun namedType(reference: SchemaInterface.SchemaReference): String =
         namedType(reference.reference.ref.substringAfterLast('/'))

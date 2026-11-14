@@ -42,9 +42,40 @@ components:
           $ref: '#/components/schemas/Marker'
         shape:
           $ref: '#/components/schemas/Shape'
+        tags:
+          $ref: '#/components/schemas/Tags'
+        reference:
+          $ref: '#/components/schemas/Reference'
+        payment:
+          $ref: '#/components/schemas/Payment'
     AccountStatus:
       type: string
       enum: [in-progress, closed, 2fa-required]
+    Tags:
+      type: array
+      items:
+        type: string
+    Reference:
+      type: string
+      maxLength: 35
+    Payment:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+      discriminator: kind
+      oneOf:
+        - $ref: '#/components/schemas/Transfer'
+    Transfer:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [transfer]
+        iban:
+          type: string
     Marker:
       type: object
       description: Any JSON object; the contract does not describe its fields.
