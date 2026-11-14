@@ -8,7 +8,9 @@ components:
       type: object
       properties:
         payload:
-          type: object
-          properties:
-            value:
-              type: string
+          $ref: "#/components/schemas/SelectedPayload"
+    SelectedPayload:
+      type: object
+      properties:
+        value:
+          type: string

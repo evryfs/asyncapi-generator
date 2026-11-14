@@ -5,9 +5,16 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.references.referenceTargetNameOrNull
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import java.util.IdentityHashMap
 
-/** Stores recursive external schemas promoted into the bundled root document. */
+/**
+ * Stores external schemas promoted into the bundled root document under their component name.
+ *
+ * Contracts often copy shared types into several files. An external schema whose name is already
+ * taken by a schema with the same content reuses that schema; one with different content fails,
+ * because one name cannot describe two types.
+ */
 internal class PromotedSchemaRegistry(
     rootSchemas: Map<String, SchemaInterface> = emptyMap(),
 ) {
@@ -55,6 +62,10 @@ internal class PromotedSchemaRegistry(
             ?: throw AsyncApiBundlingException.ExternalSchemaNameUnavailable(reference.ref)
         val origin = reference.origin()
         entriesByName[name]?.let { existing ->
+            if (sameContent(existing.model, model)) {
+                entriesByModel[model] = existing
+                return existing
+            }
             throw AsyncApiBundlingException.PromotedSchemaNameCollision(
                 schemaName = name,
                 existingOrigin = existing.origin,
@@ -93,6 +104,10 @@ internal class PromotedSchemaRegistry(
                     "Promoted schema '${entry.name}' was not bundled"
                 }
             }
+
+    /** Compares the schemas as written, with nested references as their `$ref` text. */
+    private fun sameContent(first: Any, second: Any): Boolean =
+        first === second || AsyncApiRegistry.serializeJson(first) == AsyncApiRegistry.serializeJson(second)
 
     private fun SchemaInterface.modelIdentity(): Any =
         when (this) {

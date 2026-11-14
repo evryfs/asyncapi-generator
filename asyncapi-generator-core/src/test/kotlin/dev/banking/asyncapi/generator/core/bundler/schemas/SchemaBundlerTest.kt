@@ -34,7 +34,7 @@ class SchemaBundlerTest {
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
         assertSame(schemaInterface, bundled)
-        assertTrue(schemaReference.inline)
+        assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
         assertIs<Schema>(schemaReference.model)
         assertTrue((schemaReference.model as Schema).bindings!!.containsKey("kafka"))
         assertTrue(bindingReference.inline)
@@ -88,7 +88,7 @@ class SchemaBundlerTest {
         val bundled = bundler.bundle(schemaInterface, BundlingContext.empty())
 
         assertSame(schemaInterface, bundled)
-        assertTrue(schemaReference.inline)
+        assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
         assertSame(schema, schemaReference.model)
     }
 

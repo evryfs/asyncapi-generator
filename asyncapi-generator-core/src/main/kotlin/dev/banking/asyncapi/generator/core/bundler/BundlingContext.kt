@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.bundler
 import dev.banking.asyncapi.generator.core.bundler.schemas.PromotedSchemaRegistry
 import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaRecursionAnalyzer
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.isExternalReference
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
@@ -17,7 +18,8 @@ internal class BundlingContext private constructor(
     private val visitedReferences: Set<ReferenceIdentity>,
     internal val schemaPromotions: PromotedSchemaRegistry,
     internal val schemaRecursion: SchemaRecursionAnalyzer,
-    internal val externalSchemaScope: Boolean,
+    /** Whether traversal is inside a document other than the root, where `#/...` points into that document. */
+    internal val externalDocumentScope: Boolean,
     private val rootSchemaDefinition: String?,
 ) {
 
@@ -29,13 +31,17 @@ internal class BundlingContext private constructor(
     fun hasVisited(reference: Reference): Boolean =
         ReferenceIdentity(reference.sourceId, reference.ref) in visitedReferences
 
+    /** Follows [reference]; an external reference moves traversal into another document. */
     fun enter(reference: Reference): BundlingContext =
-        copy(visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref))
+        copy(
+            visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref),
+            externalDocumentScope = externalDocumentScope || reference.ref.isExternalReference(),
+        )
 
     internal fun enterExternalSchema(reference: Reference): BundlingContext =
         copy(
             visitedReferences = visitedReferences + ReferenceIdentity(reference.sourceId, reference.ref),
-            externalSchemaScope = true,
+            externalDocumentScope = true,
             rootSchemaDefinition = null,
         )
 
@@ -47,14 +53,14 @@ internal class BundlingContext private constructor(
 
     private fun copy(
         visitedReferences: Set<ReferenceIdentity> = this.visitedReferences,
-        externalSchemaScope: Boolean = this.externalSchemaScope,
+        externalDocumentScope: Boolean = this.externalDocumentScope,
         rootSchemaDefinition: String? = this.rootSchemaDefinition,
     ): BundlingContext =
         BundlingContext(
             visitedReferences = visitedReferences,
             schemaPromotions = schemaPromotions,
             schemaRecursion = schemaRecursion,
-            externalSchemaScope = externalSchemaScope,
+            externalDocumentScope = externalDocumentScope,
             rootSchemaDefinition = rootSchemaDefinition,
         )
 
@@ -66,7 +72,7 @@ internal class BundlingContext private constructor(
                 visitedReferences = emptySet(),
                 schemaPromotions = PromotedSchemaRegistry(rootSchemas),
                 schemaRecursion = SchemaRecursionAnalyzer(),
-                externalSchemaScope = false,
+                externalDocumentScope = false,
                 rootSchemaDefinition = null,
             )
 
