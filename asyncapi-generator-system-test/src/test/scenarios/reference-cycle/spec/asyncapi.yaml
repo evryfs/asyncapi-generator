@@ -1,0 +1,16 @@
+asyncapi: 3.0.0
+info:
+  title: Reference cycle
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountOpened:
+        $ref: '#/components/messages/accountOpened'
+components:
+  messages:
+    accountOpened:
+      $ref: '#/components/messages/accountEvent'
+    accountEvent:
+      $ref: '#/components/messages/accountOpened'
