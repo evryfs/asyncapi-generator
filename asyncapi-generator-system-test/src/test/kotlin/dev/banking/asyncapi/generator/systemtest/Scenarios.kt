@@ -372,6 +372,10 @@ private val allScenarios: List<Scenario> = listOf(
         expected = ExpectedFailure(messages = listOf("form a cycle", "#/components/messages/accountEvent")),
     ),
     invalidContract(
+        name = "recursive-yaml-alias",
+        expected = ExpectedFailure(messages = listOf("Recursive YAML alias", "next")),
+    ),
+    invalidContract(
         name = "inline-name-collision",
         expected = ExpectedFailure(
             messages = listOf(

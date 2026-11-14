@@ -26,6 +26,8 @@ import org.yaml.snakeyaml.nodes.ScalarNode
 import org.yaml.snakeyaml.nodes.SequenceNode
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.reader.ReaderException
+import java.util.Collections
+import java.util.IdentityHashMap
 
 /**
  * Reads YAML input into an [InputDocument].
@@ -88,20 +90,35 @@ internal class YamlDocumentReader(
         )
     }
 
+    /**
+     * @param ancestors YAML nodes on the path from the root to [node]. An alias can point at one of
+     *   its own ancestors, which makes the YAML graph infinite; that is rejected here.
+     */
     private fun parseNode(
         node: Node,
         path: String,
         source: DocumentSource,
+        ancestors: MutableSet<Node> = Collections.newSetFromMap(IdentityHashMap()),
     ): DocumentNode {
         val location = locationOf(source, path, node.startMark)
-        return when (node.nodeId) {
-            NodeId.scalar -> parseScalar(node as ScalarNode, location)
-            NodeId.sequence -> parseSequence(node as SequenceNode, path, source, location)
-            NodeId.mapping -> parseMapping(node as MappingNode, path, source, location)
-            else -> throw malformed(
+        if (!ancestors.add(node)) {
+            throw malformed(
                 location = location,
-                message = "Unsupported YAML node kind '${node.nodeId}'",
+                message = "Recursive YAML alias at $path: the aliased node contains itself",
             )
+        }
+        try {
+            return when (node.nodeId) {
+                NodeId.scalar -> parseScalar(node as ScalarNode, location)
+                NodeId.sequence -> parseSequence(node as SequenceNode, path, source, location, ancestors)
+                NodeId.mapping -> parseMapping(node as MappingNode, path, source, location, ancestors)
+                else -> throw malformed(
+                    location = location,
+                    message = "Unsupported YAML node kind '${node.nodeId}'",
+                )
+            }
+        } finally {
+            ancestors.remove(node)
         }
     }
 
@@ -110,11 +127,12 @@ internal class YamlDocumentReader(
         path: String,
         source: DocumentSource,
         location: SourceLocation,
+        ancestors: MutableSet<Node>,
     ): DocumentArray {
         requireYamlTag(node, Tag.SEQ, location)
         return DocumentArray(
             elements = node.value.mapIndexed { index, child ->
-                parseNode(child, appendDocumentIndex(path, index), source)
+                parseNode(child, appendDocumentIndex(path, index), source, ancestors)
             },
             location = location,
         )
@@ -125,6 +143,7 @@ internal class YamlDocumentReader(
         path: String,
         source: DocumentSource,
         location: SourceLocation,
+        ancestors: MutableSet<Node>,
     ): DocumentObject {
         requireYamlTag(node, Tag.MAP, location)
         val result = linkedMapOf<String, DocumentMember>()
@@ -142,7 +161,7 @@ internal class YamlDocumentReader(
             }
             result[key] = DocumentMember(
                 keyLocation = keyLocation,
-                value = parseNode(tuple.valueNode, keyPath, source),
+                value = parseNode(tuple.valueNode, keyPath, source, ancestors),
             )
         }
         return DocumentObject(result, location)
@@ -261,6 +280,7 @@ internal class YamlDocumentReader(
             file = location.file,
             cause = IllegalArgumentException(message),
             location = location,
+            reason = message,
         )
 
     private fun locationOf(
