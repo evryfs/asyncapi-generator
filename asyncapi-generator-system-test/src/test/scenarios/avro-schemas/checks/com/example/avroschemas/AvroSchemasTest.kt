@@ -27,6 +27,8 @@ class AvroSchemasTest {
         val tags = account.getField("tags").schema().types.last()
         assertEquals(Schema.Type.STRING, tags.elementType.elementType.type)
         assertEquals("com.example.avroschemas.AuditMetadata", account.getField("audit").schema().types.last().fullName)
+        assertEquals(Schema.Type.STRING, account.getField("labels").schema().types.last().elementType.type)
+        assertEquals(Schema.Type.STRING, account.getField("reference").schema().types.last().type)
     }
 
     @Test
