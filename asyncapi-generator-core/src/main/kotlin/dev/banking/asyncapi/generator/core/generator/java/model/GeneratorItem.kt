@@ -106,6 +106,7 @@ internal sealed interface GeneratorItem {
 
     data class HeaderProperty(
         val wireName: String,
+        val wireNameLiteral: String,
         val parameterName: String,
         val typeName: String,
         val description: List<String> = emptyList(),

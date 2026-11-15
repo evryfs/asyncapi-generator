@@ -2,6 +2,12 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
+import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 
@@ -23,28 +29,40 @@ internal class KafkaPayloadFactory(
                 )
             }
 
+    private val typeMapper = ModelTypeMapper(GeneratorContext(emptyMap()))
+
     private fun create(message: AnalyzedMessage): KafkaPayload {
         val javaTypeName = resolveJavaTypeName(message)
         val kotlinTypeName = resolveKotlinTypeName(message)
+        val collectionType = collectionType(message)
         return KafkaPayload(
             messageName = message.messageName,
             javaTypeName = javaTypeName,
             kotlinTypeName = kotlinTypeName,
             payloadDescription = message.schema?.description,
-            javaImportName = modelImport(javaTypeName, JAVA_BUILT_IN_TYPES),
-            kotlinImportName = modelImport(kotlinTypeName, KOTLIN_BUILT_IN_TYPES),
+            javaImportName = modelImport(javaTypeName, JAVA_BUILT_IN_TYPES).takeIf { collectionType == null },
+            kotlinImportName = modelImport(kotlinTypeName, KOTLIN_BUILT_IN_TYPES).takeIf { collectionType == null },
+            javaImports = collectionType?.imports(modelPackage, "", listImport = "java.util.List").orEmpty(),
+            kotlinImports = collectionType?.imports(modelPackage, "").orEmpty(),
             keySchema = message.keySchema,
             headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
         )
     }
 
+    /** The list type of an array payload, which has no generated model of its own; null for any other payload. */
+    private fun collectionType(message: AnalyzedMessage): TypeRef? =
+        message.schema
+            ?.takeIf { it.type.getPrimaryType() == "array" }
+            ?.let { typeMapper.map(message.messageName, it) }
+
     private fun resolveJavaTypeName(message: AnalyzedMessage): String? {
         val schema = message.schema ?: return null
         if (schema.isOpenPayload()) return "Object"
+        collectionType(message)?.let { return JavaModelEmitter.typeName(it) }
 
         return when (schema.type.getPrimaryType()) {
             "string" -> "String"
-            "integer" -> "Integer"
+            "integer" -> JavaModelEmitter.typeName(typeMapper.map(message.messageName, schema))
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
             else -> message.payloadTypeName
@@ -53,9 +71,10 @@ internal class KafkaPayloadFactory(
 
     private fun resolveKotlinTypeName(message: AnalyzedMessage): String? {
         val schema = message.schema ?: return null
+        collectionType(message)?.let { return KotlinModelEmitter.typeName(it) }
         return when (schema.type.getPrimaryType()) {
             "string" -> "String"
-            "integer" -> "Int"
+            "integer" -> KotlinModelEmitter.typeName(typeMapper.map(message.messageName, schema))
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
             else -> message.payloadTypeName

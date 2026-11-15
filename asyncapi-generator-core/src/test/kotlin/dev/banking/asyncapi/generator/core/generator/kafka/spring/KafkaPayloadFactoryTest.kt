@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
@@ -160,4 +162,38 @@ class KafkaPayloadFactoryTest {
             messages = messages,
             multiFormatMessages = multiFormatMessages,
         )
+
+    @Test
+    fun `uses a list of the item type for array payloads and Long for wide integers`() {
+        val payloads =
+            factory.create(
+                channel(
+                    messages =
+                        listOf(
+                            AnalyzedMessage(
+                                messageName = "OrderBatch",
+                                payloadTypeName = "OrderBatchPayload",
+                                schema =
+                                    Schema(
+                                        type = "array",
+                                        items = SchemaInterface.SchemaReference(Reference("#/components/schemas/Order")),
+                                    ),
+                            ),
+                            AnalyzedMessage(
+                                messageName = "Counter",
+                                payloadTypeName = "CounterPayload",
+                                schema = Schema(type = "integer", format = "int64"),
+                            ),
+                        ),
+                ),
+            )
+
+        val batch = payloads[0]
+        assertEquals("List<Order>", batch.javaTypeName)
+        assertEquals("List<Order>", batch.kotlinTypeName)
+        assertTrue("com.example.model.Order" in batch.kotlinImports)
+        assertTrue("java.util.List" in batch.javaImports)
+        assertEquals("Long", payloads[1].javaTypeName)
+        assertEquals("Long", payloads[1].kotlinTypeName)
+    }
 }

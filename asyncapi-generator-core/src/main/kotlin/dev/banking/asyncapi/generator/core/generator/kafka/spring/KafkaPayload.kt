@@ -12,6 +12,8 @@ internal data class KafkaPayload(
     val payloadDescription: String? = null,
     val javaImportName: String? = null,
     val kotlinImportName: String? = null,
+    val javaImports: List<String> = emptyList(),
+    val kotlinImports: List<String> = emptyList(),
     val keySchema: SchemaInterface? = null,
     val headerProperties: List<KafkaHeaderProperty> = emptyList(),
 ) {

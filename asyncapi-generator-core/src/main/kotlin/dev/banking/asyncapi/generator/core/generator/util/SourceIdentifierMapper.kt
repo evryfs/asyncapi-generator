@@ -30,6 +30,8 @@ internal object SourceIdentifierMapper {
         "while", "yield",
     )
 
+    fun isReserved(identifier: String): Boolean = identifier in reservedIdentifiers
+
     fun toIdentifier(wireName: String): String {
         if (validIdentifierRegex.matches(wireName) && wireName !in reservedIdentifiers) {
             return wireName
