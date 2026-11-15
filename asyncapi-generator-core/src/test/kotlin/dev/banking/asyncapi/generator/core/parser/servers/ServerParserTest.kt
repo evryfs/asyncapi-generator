@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -26,7 +26,7 @@ class ServerParserTest {
     @Test
     fun `parses inline and referenced servers with all optional fields`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val serversNode =
             ParserNodeFactory
                 .root(document, context)
@@ -68,7 +68,7 @@ class ServerParserTest {
     @Test
     fun `parse server missing host reports the required member and source`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val serversNode =
             ParserNodeFactory
                 .root(document, context)

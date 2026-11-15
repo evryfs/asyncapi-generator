@@ -1,14 +1,14 @@
 package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentSource
+import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -64,9 +64,9 @@ class ModelRepositoryTest {
                         NumericIndexReference:
                           ${'$'}ref: '#/components/schemas/Tuple/items/0'
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(source), context)
+        val root = ParserNodeFactory.root(SourceReader.read(source), context)
         val document = AsyncApiParser(context).parse(root)
         val components = assertIs<ComponentInterface.ComponentInline>(document.components).component
         val schemas = assertNotNull(components.schemas)

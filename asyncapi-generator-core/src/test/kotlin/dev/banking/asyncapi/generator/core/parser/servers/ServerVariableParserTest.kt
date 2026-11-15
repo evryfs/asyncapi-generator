@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -17,7 +17,7 @@ class ServerVariableParserTest {
     @Test
     fun `parse server variables`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val variablesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -40,7 +40,7 @@ class ServerVariableParserTest {
     @Test
     fun `parses a referenced server variable with its concrete category`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val variablesNode =
             ParserNodeFactory
                 .root(document, context)

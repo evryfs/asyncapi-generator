@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -25,7 +25,7 @@ class ChannelParserTest {
     @Test
     fun `parses channels with references and all optional metadata`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val channelsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -112,7 +112,7 @@ class ChannelParserTest {
     @Test
     fun `parse channels with inline parameters`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val channelsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -173,7 +173,7 @@ class ChannelParserTest {
     @Test
     fun `parse referenced channel`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val channelsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -189,7 +189,7 @@ class ChannelParserTest {
     @Test
     fun `parse channel preserves an explicit null address as unknown`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val channelsNode =
             ParserNodeFactory
                 .root(document, context)

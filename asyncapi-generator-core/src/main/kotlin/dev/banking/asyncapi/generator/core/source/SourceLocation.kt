@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.document
+package dev.banking.asyncapi.generator.core.source
 
 import java.io.File
 

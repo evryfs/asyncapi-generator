@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceLimit
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 /**
  * Result of a resource budget operation.

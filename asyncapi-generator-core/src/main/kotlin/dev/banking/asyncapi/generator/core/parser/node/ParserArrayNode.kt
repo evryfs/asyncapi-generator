@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import dev.banking.asyncapi.generator.core.document.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentArray
 
 /**
  * Array-shaped view of a [ParserNode].

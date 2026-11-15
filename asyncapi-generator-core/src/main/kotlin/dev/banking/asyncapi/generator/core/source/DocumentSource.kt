@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.document
+package dev.banking.asyncapi.generator.core.source
 
 import java.io.File
 
@@ -14,5 +14,5 @@ internal data class DocumentSource(
     val id: String,
     val file: File,
     val content: String,
-    val format: DocumentFormat,
+    val format: InputFormat,
 )

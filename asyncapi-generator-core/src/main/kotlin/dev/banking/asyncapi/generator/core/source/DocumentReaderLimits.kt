@@ -1,7 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException

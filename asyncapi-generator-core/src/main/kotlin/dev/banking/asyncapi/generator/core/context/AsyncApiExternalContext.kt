@@ -1,7 +1,5 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -10,6 +8,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File

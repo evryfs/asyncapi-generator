@@ -29,7 +29,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -52,7 +52,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `loads escaped pointers root schemas and equivalent yaml and json fragments`() {
         val file = TestResources.file("parser/references/external/main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemasNode =
             ParserNodeFactory
                 .root(document, context)
@@ -124,7 +124,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `keeps same named external documents in different directories distinct`() {
         val file = TestResources.file("parser/references/external/main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemasNode =
             ParserNodeFactory
                 .root(document, context)
@@ -161,7 +161,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `dispatches a standalone external fragment using its reference category`() {
         val file = TestResources.file("parser/references/external/message-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
@@ -191,7 +191,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `parses and validates every concrete external fragment category`() {
         val file = TestResources.file("parser/references/external/category-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
         documentParser.parse(root)
@@ -225,7 +225,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `retains protocol and location when loading an external binding fragment`() {
         val file = TestResources.file("parser/references/external/binding-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
         documentParser.parse(root)
@@ -250,7 +250,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `isolates selected fragments and resolves same-file reference chains`() {
         val file = TestResources.file("parser/references/external/external-fragment-isolation-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
         documentParser.parse(root)
@@ -277,7 +277,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `rejects a same-file reference cycle in an external fragment`() {
         val file = TestResources.file("parser/references/external/external-fragment-cycle-main.yaml")
-        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(file), context)
+        val root = ParserNodeFactory.root(SourceReader.read(file), context)
 
         val error = assertFailsWith<AsyncApiValidateException.ValidateError> { documentParser.parse(root) }
 
@@ -287,7 +287,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `reports a missing same-file fragment target at the nested reference`() {
         val file = TestResources.file("parser/references/external/external-fragment-internal-missing-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
         val error =
@@ -305,7 +305,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `loads a whole file containing one message object`() {
         val file = TestResources.file("parser/references/external/message-root-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
@@ -329,7 +329,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `loads a whole file containing one server object`() {
         val file = TestResources.file("parser/references/external/server-root-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
@@ -353,7 +353,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `rejects a whole file message container without an explicit pointer`() {
         val file = TestResources.file("parser/references/external/message-map-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
         val error =
@@ -371,7 +371,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `reports malformed external reference at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -400,7 +400,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `reports missing external document at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -429,7 +429,7 @@ class ExternalReferenceLoadingTest {
     @Test
     fun `reports missing external pointer target at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -476,7 +476,7 @@ class ExternalReferenceLoadingTest {
             AsyncApiContext(
                 ParserLoadResourceLimits(maxSourceDocuments = 1),
             )
-        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+        val root = ParserNodeFactory.root(SourceReader.read(main), limitedContext)
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
@@ -529,7 +529,7 @@ class ExternalReferenceLoadingTest {
             )
         val repeatedRoot =
             ParserNodeFactory.root(
-                DocumentReaderRegistry.read(repeatedMain),
+                SourceReader.read(repeatedMain),
                 repeatedContext,
             )
 
@@ -548,7 +548,7 @@ class ExternalReferenceLoadingTest {
             )
         val distinctRoot =
             ParserNodeFactory.root(
-                DocumentReaderRegistry.read(distinctMain),
+                SourceReader.read(distinctMain),
                 distinctContext,
             )
 
@@ -589,7 +589,7 @@ class ExternalReferenceLoadingTest {
             AsyncApiContext(
                 ParserLoadResourceLimits(maxExternalReferenceDepth = 2),
             )
-        val limitedRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+        val limitedRoot = ParserNodeFactory.root(SourceReader.read(main), limitedContext)
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
@@ -612,7 +612,7 @@ class ExternalReferenceLoadingTest {
                     maxExternalReferenceDepth = 2,
                 ),
             )
-        val cyclicRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), cyclicContext)
+        val cyclicRoot = ParserNodeFactory.root(SourceReader.read(main), cyclicContext)
 
         val cycle =
             assertFailsWith<AsyncApiValidateException.ValidateError> { AsyncApiParser(cyclicContext).parse(cyclicRoot) }
@@ -644,7 +644,7 @@ class ExternalReferenceLoadingTest {
                     maxAggregateSourceBytes = mainBytes + fragmentBytes - 1,
                 ),
             )
-        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
+        val root = ParserNodeFactory.root(SourceReader.read(main), limitedContext)
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {

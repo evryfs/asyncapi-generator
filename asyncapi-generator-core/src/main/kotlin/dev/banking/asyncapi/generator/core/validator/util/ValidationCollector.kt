@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.util
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
@@ -8,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 import java.util.Collections
 import java.util.IdentityHashMap
 

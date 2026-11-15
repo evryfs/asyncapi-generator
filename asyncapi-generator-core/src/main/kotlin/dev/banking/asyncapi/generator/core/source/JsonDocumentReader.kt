@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonFactoryBuilder
@@ -9,19 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.core.JsonToken
 import com.fasterxml.jackson.core.StreamReadConstraints
 import com.fasterxml.jackson.core.exc.StreamConstraintsException
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentMember
-import dev.banking.asyncapi.generator.core.document.DocumentNode
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentNumber
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.DocumentString
-import dev.banking.asyncapi.generator.core.document.InputDocument
-import dev.banking.asyncapi.generator.core.document.SourceLocation
-import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
-import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 
 /**
  * Reads JSON input into an [InputDocument].

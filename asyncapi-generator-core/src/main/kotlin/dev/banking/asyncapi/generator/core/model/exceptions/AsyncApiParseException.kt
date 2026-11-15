@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 sealed class AsyncApiParseException(
     message: String,

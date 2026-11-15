@@ -5,10 +5,10 @@ This reference defines the reader-stage contract in `asyncapi-generator-core`.
 ## Entry point
 
 ```kotlin
-val document = DocumentReaderRegistry.read(file)
+val document = SourceReader.read(file)
 ```
 
-`DocumentReaderRegistry.read(file)` is the reader-stage entry point. It:
+`SourceReader.read(file)` is the reader-stage entry point. It:
 
 1. Detects the format from the file extension (`.yaml`/`.yml` → YAML, `.json` → JSON).
 2. Reads the content within `DocumentReaderLimits.DEFAULT` byte limits.

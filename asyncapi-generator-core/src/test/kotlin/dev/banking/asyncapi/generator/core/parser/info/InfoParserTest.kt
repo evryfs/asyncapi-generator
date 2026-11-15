@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -23,7 +23,7 @@ class InfoParserTest {
     @Test
     fun `parses every info field and extension`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)
@@ -55,7 +55,7 @@ class InfoParserTest {
     @Test
     fun `parse info reports missing title`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)
@@ -79,7 +79,7 @@ class InfoParserTest {
     @Test
     fun `parse info reports missing version`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)
@@ -103,7 +103,7 @@ class InfoParserTest {
     @Test
     fun `parse info reports missing license name`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)
@@ -127,7 +127,7 @@ class InfoParserTest {
     @Test
     fun `parse info preserves nested and null extensions in source order`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)
@@ -157,7 +157,7 @@ class InfoParserTest {
     @Test
     fun `parse info without extensions returns null extensions`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val infoNode =
             ParserNodeFactory
                 .root(document, context)

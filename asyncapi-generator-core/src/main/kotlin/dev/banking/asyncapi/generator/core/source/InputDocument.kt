@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.document
+package dev.banking.asyncapi.generator.core.source
 
 /**
  * Format-independent document produced by the reader stage.

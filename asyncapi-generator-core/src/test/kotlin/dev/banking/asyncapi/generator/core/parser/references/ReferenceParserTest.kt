@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCat
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
@@ -21,7 +21,7 @@ class ReferenceParserTest {
     @Test
     fun `parses one generic reference`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val referenceNode =
             ParserNodeFactory
                 .root(document, context)
@@ -41,7 +41,7 @@ class ReferenceParserTest {
     @Test
     fun `parses a list of generic references`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val referencesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -61,7 +61,7 @@ class ReferenceParserTest {
     @Test
     fun `rejects a generic category when loading an external fragment`() {
         val file = TestResources.file("parser/references/external/category-main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val referenceNode =
             ParserNodeFactory
                 .root(document, context)
@@ -84,7 +84,7 @@ class ReferenceParserTest {
     @Test
     fun `parse reference list reports missing ref at element path`() {
         val file = TestResources.file("parser/references/asyncapi_parser_reference_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val referencesNode =
             ParserNodeFactory
                 .root(document, context)

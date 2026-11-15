@@ -1,7 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -21,7 +19,7 @@ class DocumentReadExceptionTest {
                 id = "empty",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -41,7 +39,7 @@ class DocumentReadExceptionTest {
                 id = "duplicate-key",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -69,7 +67,7 @@ class DocumentReadExceptionTest {
                 id = "malformed",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -93,7 +91,7 @@ class DocumentReadExceptionTest {
                 id = "invalid-root",
                 file = file,
                 content = "12345",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
         val constrainedReader =
             YamlDocumentReader(

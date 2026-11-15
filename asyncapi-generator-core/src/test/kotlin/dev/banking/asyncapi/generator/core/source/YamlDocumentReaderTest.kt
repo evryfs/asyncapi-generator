@@ -1,13 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentNumber
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,7 +18,7 @@ class YamlDocumentReaderTest {
                 id = "semantic-scalars",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
@@ -55,7 +47,7 @@ class YamlDocumentReaderTest {
                 id = "malformed",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -76,7 +68,7 @@ class YamlDocumentReaderTest {
                 id = "invalid-root",
                 file = file,
                 content = "value: \u0001",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -97,7 +89,7 @@ class YamlDocumentReaderTest {
                 id = "multiple-documents",
                 file = file,
                 content = "value: first\n---\nvalue: second\n",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -125,7 +117,7 @@ class YamlDocumentReaderTest {
                     id = "custom-tag",
                     file = file,
                     content = content,
-                    format = DocumentFormat.YAML,
+                    format = InputFormat.YAML,
                 )
 
             val failure =
@@ -159,7 +151,7 @@ class YamlDocumentReaderTest {
                     offValue: off
                     dateValue: 2026-08-03
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val root = assertIs<DocumentObject>(reader.read(source).root)
@@ -183,7 +175,7 @@ class YamlDocumentReaderTest {
                     id = "yaml-number",
                     file = file,
                     content = "value: $value",
-                    format = DocumentFormat.YAML,
+                    format = InputFormat.YAML,
                 )
 
             val failure =
@@ -209,7 +201,7 @@ class YamlDocumentReaderTest {
                 id = "invalid-root",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
         val document = reader.read(source)
 
@@ -228,7 +220,7 @@ class YamlDocumentReaderTest {
                 id = "non-scalar-key",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -250,7 +242,7 @@ class YamlDocumentReaderTest {
                     id = "invalid-root",
                     file = file,
                     content = "  $key: value",
-                    format = DocumentFormat.YAML,
+                    format = InputFormat.YAML,
                 )
 
             val failure =
@@ -279,7 +271,7 @@ class YamlDocumentReaderTest {
                     "42": number-shaped
                     "null": null-shaped
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val root = assertIs<DocumentObject>(reader.read(source).root)
@@ -302,7 +294,7 @@ class YamlDocumentReaderTest {
                     merged:
                       <<: *base
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -331,7 +323,7 @@ class YamlDocumentReaderTest {
                       child:
                         leaf: true
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -361,7 +353,7 @@ class YamlDocumentReaderTest {
                     first: *base
                     second: *base
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -386,7 +378,7 @@ class YamlDocumentReaderTest {
                       properties:
                         self: *loop
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
 
         val failure =
@@ -411,7 +403,7 @@ class YamlDocumentReaderTest {
                 id = "order-preservation",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
         val root = assertIs<DocumentObject>(reader.read(source).root)
 

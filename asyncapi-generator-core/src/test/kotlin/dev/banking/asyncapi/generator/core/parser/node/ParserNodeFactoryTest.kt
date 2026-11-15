@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentSource
+import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -31,9 +31,9 @@ class ParserNodeFactoryTest {
                       tags:
                         - public
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
 
         val root = ParserNodeFactory.root(document, context)
 
@@ -59,9 +59,9 @@ class ParserNodeFactoryTest {
                       tags:
                         - public
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
 
         ParserNodeFactory.root(document, context)
 
@@ -88,9 +88,9 @@ class ParserNodeFactoryTest {
                       tags:
                         - public
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
 
         ParserNodeFactory.root(document, context)
 
@@ -127,9 +127,9 @@ class ParserNodeFactoryTest {
                     items:
                       - numeric index
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val root = ParserNodeFactory.root(DocumentReaderRegistry.read(source), context)
+        val root = ParserNodeFactory.root(SourceReader.read(source), context)
         val rootObject = root.expectObject()
         val dotted = rootObject.required("A.properties.x")
         val bracketed = rootObject.required("bracket[name]")
@@ -173,9 +173,9 @@ class ParserNodeFactoryTest {
                       tags:
                         - public
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val title =
             ParserNodeFactory
                 .root(document, context)

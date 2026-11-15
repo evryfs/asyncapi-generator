@@ -2,9 +2,9 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.context.ExternalReferencePathResolver
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.NativeSchemaAssetReadFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.source.DocumentObject
 import java.io.IOException
 
 /**

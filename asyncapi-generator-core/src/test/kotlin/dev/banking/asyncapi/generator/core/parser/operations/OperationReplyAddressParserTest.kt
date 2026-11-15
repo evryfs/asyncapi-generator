@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -21,7 +21,7 @@ class OperationReplyAddressParserTest {
     @Test
     fun `parses an inline operation reply address`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val addressNode =
             ParserNodeFactory
                 .root(document, context)
@@ -45,7 +45,7 @@ class OperationReplyAddressParserTest {
     @Test
     fun `parses a referenced operation reply address with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val addressNode =
             ParserNodeFactory
                 .root(document, context)
@@ -68,7 +68,7 @@ class OperationReplyAddressParserTest {
     @Test
     fun `parse operation reply address missing location reports the required member and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operation_reply_address_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val addressNode =
             ParserNodeFactory
                 .root(document, context)

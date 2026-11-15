@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -31,7 +31,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse supported AsyncAPI schema format`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -51,7 +51,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse JSON Schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -76,7 +76,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse native Avro schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -103,7 +103,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse native Protobuf schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -129,7 +129,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse external native Avro schema asset as schema text`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -155,7 +155,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse external native Protobuf schema asset as schema text`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -181,7 +181,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse external native schema asset reports unreadable file`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_missing_native_schema_asset.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -235,7 +235,7 @@ class SchemaParserMultiFormatTest {
             )
         val schemaNode =
             ParserNodeFactory
-                .root(DocumentReaderRegistry.read(file), limitedContext)
+                .root(SourceReader.read(file), limitedContext)
                 .expectObject()
                 .required("components")
                 .expectObject()
@@ -275,7 +275,7 @@ class SchemaParserMultiFormatTest {
         val localContext = AsyncApiContext()
         val schemaNode =
             ParserNodeFactory
-                .root(DocumentReaderRegistry.read(file), localContext)
+                .root(SourceReader.read(file), localContext)
                 .expectObject()
                 .required("components")
                 .expectObject()
@@ -321,7 +321,7 @@ class SchemaParserMultiFormatTest {
             )
         val schemasNode =
             ParserNodeFactory
-                .root(DocumentReaderRegistry.read(file), exactContext)
+                .root(SourceReader.read(file), exactContext)
                 .expectObject()
                 .required("components")
                 .expectObject()
@@ -339,7 +339,7 @@ class SchemaParserMultiFormatTest {
             )
         val limitedSchemasNode =
             ParserNodeFactory
-                .root(DocumentReaderRegistry.read(file), limitedContext)
+                .root(SourceReader.read(file), limitedContext)
                 .expectObject()
                 .required("components")
                 .expectObject()
@@ -359,7 +359,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse unknown schema format reports the format and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -392,7 +392,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse non-string schema format reports its expected type and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -424,7 +424,7 @@ class SchemaParserMultiFormatTest {
     @Test
     fun `parse multi-format schema missing schema content reports the required member and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)

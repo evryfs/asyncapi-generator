@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.asyncapi
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
@@ -13,7 +11,9 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentSource
+import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -29,7 +29,7 @@ class AsyncApiParserTest {
     @Test
     fun `parses a complete AsyncAPI document`() {
         val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
         val result = parser.parse(rootNode)
 
@@ -54,11 +54,11 @@ class AsyncApiParserTest {
     @Test
     fun `parses equivalent yaml and json documents into the same model`() {
         val yamlDocument =
-            DocumentReaderRegistry.read(
+            SourceReader.read(
                 TestResources.file("parser/asyncapi/format-independent.yaml"),
             )
         val jsonDocument =
-            DocumentReaderRegistry.read(
+            SourceReader.read(
                 TestResources.file("parser/asyncapi/format-independent.json"),
             )
         // Separate contexts: references carry the unique id of the file they were written in.
@@ -88,7 +88,7 @@ class AsyncApiParserTest {
                           version: 1.0.0
                         unexpected: true
                         """.trimIndent(),
-                    format = DocumentFormat.YAML,
+                    format = InputFormat.YAML,
                 ),
                 DocumentSource(
                     id = "unknown-json",
@@ -101,13 +101,13 @@ class AsyncApiParserTest {
                           "unexpected": true
                         }
                         """.trimIndent(),
-                    format = DocumentFormat.JSON,
+                    format = InputFormat.JSON,
                 ),
             )
 
         sources.forEach { source ->
             val sourceContext = AsyncApiContext()
-            val document = DocumentReaderRegistry.read(source)
+            val document = SourceReader.read(source)
             val root = ParserNodeFactory.root(document, sourceContext)
 
             val error =
@@ -125,7 +125,7 @@ class AsyncApiParserTest {
     @Test
     fun `parsed schema is registered in model repository`() {
         val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
         val asyncApi = parser.parse(rootNode)
         val components = assertIs<ComponentInterface.ComponentInline>(asyncApi.components).component
@@ -169,7 +169,7 @@ class AsyncApiParserTest {
     @Test
     fun `parsed schemas and properties retain their source locations`() {
         val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
         parser.parse(rootNode)
         val schemaPath =
@@ -200,7 +200,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document missing AsyncAPI version reports the required member and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -226,7 +226,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document with boolean AsyncAPI version reports its expected type and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -253,7 +253,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document with malformed specification version reports its source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -279,7 +279,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document distinguishes a known unimplemented specification version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -304,7 +304,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document rejects an unknown future specification version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -328,7 +328,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document rejects an old specification major version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)
@@ -350,7 +350,7 @@ class AsyncApiParserTest {
     @Test
     fun `supported patch and suffixed versions retain their declared value`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val cases =
             ParserNodeFactory
                 .root(document, context)
@@ -368,7 +368,7 @@ class AsyncApiParserTest {
     @Test
     fun `parse document missing info reports the required member and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val rootNode =
             ParserNodeFactory
                 .root(document, context)

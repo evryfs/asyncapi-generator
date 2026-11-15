@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 import kotlin.reflect.KProperty0
 
 /**

@@ -1,15 +1,15 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentNull
+import dev.banking.asyncapi.generator.core.source.DocumentSource
+import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertContains
@@ -33,9 +33,9 @@ class ParserNodeTest {
                     array:
                       - false
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node =
             ParserNodeFactory
                 .root(document, context)
@@ -72,9 +72,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "present: true",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -104,9 +104,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "explicit: null",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         assertNull(node.expectObject().optional("absent"))
@@ -123,9 +123,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "explicit: null",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node =
             ParserNodeFactory
                 .root(document, context)
@@ -160,9 +160,9 @@ class ParserNodeTest {
                     first: true
                     second: false
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val objectDocument = DocumentReaderRegistry.read(objectSource)
+        val objectDocument = SourceReader.read(objectSource)
         val objectNode = ParserNodeFactory.root(objectDocument, objectContext)
 
         val arrayContext = AsyncApiContext()
@@ -175,9 +175,9 @@ class ParserNodeTest {
                     - first
                     - second
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val arrayDocument = DocumentReaderRegistry.read(arraySource)
+        val arrayDocument = SourceReader.read(arraySource)
         val arrayNode = ParserNodeFactory.root(arrayDocument, arrayContext)
 
         assertEquals(
@@ -198,9 +198,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "- value",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -227,9 +227,9 @@ class ParserNodeTest {
                     x-owner: team
                     x-null: null
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val extensions = node.expectObject().membersStartingWith("x-")
@@ -254,9 +254,9 @@ class ParserNodeTest {
                     x-owner: team
                     unknown: false
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -282,9 +282,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "value: true",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -310,9 +310,9 @@ class ParserNodeTest {
                     - label: first
                     - label: 7
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -337,9 +337,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "name: value",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val error =
@@ -364,9 +364,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "- label: null",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         val value = node.expect<List<Map<String, String?>>>()
@@ -389,9 +389,9 @@ class ParserNodeTest {
                       - null
                       - nested: value
                     """.trimIndent(),
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
         val expected =
             mapOf(
@@ -409,9 +409,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "null",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
         assertNull(node.toPlainValue())
@@ -425,9 +425,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "deprecated: \"true\"",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node =
             ParserNodeFactory
                 .root(document, context)
@@ -453,9 +453,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "minLength: \"12\"",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node =
             ParserNodeFactory
                 .root(document, context)
@@ -481,9 +481,9 @@ class ParserNodeTest {
                 id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "version: true",
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             )
-        val document = DocumentReaderRegistry.read(source)
+        val document = SourceReader.read(source)
         val node =
             ParserNodeFactory
                 .root(document, context)

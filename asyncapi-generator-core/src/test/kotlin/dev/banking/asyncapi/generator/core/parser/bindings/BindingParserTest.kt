@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -22,7 +22,7 @@ class BindingParserTest {
     @Test
     fun `parse channel bindings with nested values and references`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val channelBindingsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -80,7 +80,7 @@ class BindingParserTest {
     @Test
     fun `parse message bindings including Kafka key schema`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messageBindingsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -120,7 +120,7 @@ class BindingParserTest {
     @Test
     fun `parses a direct Kafka binding key schema`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val kafkaBindingNode =
             ParserNodeFactory
                 .root(document, context)
@@ -143,7 +143,7 @@ class BindingParserTest {
     @Test
     fun `parse server and operation bindings`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val components =
             ParserNodeFactory
                 .root(document, context)

@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

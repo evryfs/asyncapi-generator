@@ -44,7 +44,7 @@ individual validators are internal to the core module.
 
 ## Reader contract
 
-Inside the loader, `DocumentReaderRegistry` selects a reader by case-insensitive
+Inside the loader, `SourceReader` selects a reader by case-insensitive
 file extension. The registry, its `DocumentSource` overload, and both reader
 implementations are internal; external callers use `AsyncApiDocumentLoader`.
 

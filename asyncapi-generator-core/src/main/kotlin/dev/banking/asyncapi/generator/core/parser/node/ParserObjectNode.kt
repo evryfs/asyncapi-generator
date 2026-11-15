@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.parser.version.allowedMembers
+import dev.banking.asyncapi.generator.core.source.DocumentObject
 
 /**
  * Object-shaped view of a [ParserNode].

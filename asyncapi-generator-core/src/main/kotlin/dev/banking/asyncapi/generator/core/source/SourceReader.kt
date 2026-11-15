@@ -1,8 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.InputDocument
 import java.io.File
 import java.io.IOException
 
@@ -13,11 +10,11 @@ import java.io.IOException
  * input format, creates the `DocumentSource`, and delegates parsing to a
  * format-specific reader.
  */
-internal object DocumentReaderRegistry {
+internal object SourceReader {
     fun read(file: File): InputDocument {
         requireInputFile(file)
         val format =
-            DocumentFormat.fromFile(file)
+            InputFormat.fromFile(file)
                 ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
         val content =
             try {
@@ -45,7 +42,7 @@ internal object DocumentReaderRegistry {
 
     fun read(source: DocumentSource): InputDocument =
         when (source.format) {
-            DocumentFormat.YAML -> YamlDocumentReader().read(source)
-            DocumentFormat.JSON -> JsonDocumentReader().read(source)
+            InputFormat.YAML -> YamlDocumentReader().read(source)
+            InputFormat.JSON -> JsonDocumentReader().read(source)
         }
 }

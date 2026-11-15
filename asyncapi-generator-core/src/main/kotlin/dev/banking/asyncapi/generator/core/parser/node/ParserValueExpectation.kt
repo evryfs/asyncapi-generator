@@ -1,17 +1,17 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentNode
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentNumber
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentString
-import dev.banking.asyncapi.generator.core.document.toValue
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.source.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentBoolean
+import dev.banking.asyncapi.generator.core.source.DocumentNode
+import dev.banking.asyncapi.generator.core.source.DocumentNull
+import dev.banking.asyncapi.generator.core.source.DocumentNumber
+import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.DocumentString
+import dev.banking.asyncapi.generator.core.source.toValue
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf

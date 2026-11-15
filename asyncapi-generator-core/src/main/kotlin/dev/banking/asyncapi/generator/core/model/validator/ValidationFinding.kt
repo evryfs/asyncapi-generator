@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.validator
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 /**
  * Structured validation diagnostic produced by the validator stage.
