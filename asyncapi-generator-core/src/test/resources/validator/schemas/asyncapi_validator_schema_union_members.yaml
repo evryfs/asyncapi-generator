@@ -1,0 +1,38 @@
+asyncapi: 3.0.0
+info:
+  title: Union Members Test
+  version: 1.0.0
+components:
+  schemas:
+    Distinct:
+      oneOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+    Twins:
+      anyOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Lion'
+    Tagged:
+      discriminator: name
+      required: [name]
+      properties:
+        name:
+          type: string
+      oneOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Lion'
+    Cat:
+      type: object
+      properties:
+        whiskers:
+          type: integer
+    Lion:
+      type: object
+      properties:
+        whiskers:
+          type: integer
+    Dog:
+      type: object
+      properties:
+        tail:
+          type: boolean

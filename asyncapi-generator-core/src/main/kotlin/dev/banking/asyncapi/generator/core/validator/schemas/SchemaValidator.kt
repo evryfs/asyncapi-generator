@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
@@ -25,6 +26,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
@@ -156,6 +158,9 @@ internal class SchemaValidator(
         node.ifSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
         node.thenSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
         node.elseSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
+
+        // Members are resolved by the recursion above.
+        validateUnionMembers(node, contextString, results)
     }
 
     private fun validateReference(
@@ -524,6 +529,45 @@ internal class SchemaValidator(
             )
         }
     }
+
+    /**
+     * Without a discriminator, generated code tells union members apart by the property names they
+     * declare, so two members with the same names can never be told apart.
+     */
+    private fun validateUnionMembers(node: Schema, contextString: String, results: ValidationCollector) {
+        if (node.discriminator != null) return
+        val members =
+            (node.oneOf ?: node.anyOf).orEmpty()
+                .filterIsInstance<SchemaInterface.SchemaReference>()
+                .mapNotNull { member ->
+                    (member.reference.model as? Schema)
+                        ?.takeIf { it.type.getPrimaryType() == "object" }
+                        ?.let { member.reference.ref.substringAfterLast('/') to propertyNames(it) }
+                }
+        members
+            .groupBy({ (_, propertyNames) -> propertyNames }, { (name, _) -> name })
+            .values
+            .firstOrNull { it.size > 1 }
+            ?.let { names ->
+                results.warn(
+                    UNION_INDISTINGUISHABLE_MEMBERS,
+                    "$contextString union members ${names.joinToString { "'$it'" }} declare the same property names " +
+                        "and have no discriminator, so a payload cannot be told apart between them. " +
+                        "Add a 'discriminator' or give the members different properties.",
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::oneOf),
+                )
+            }
+    }
+
+    private fun propertyNames(schema: Schema): Set<String> =
+        schema.properties.orEmpty().keys +
+            schema.allOf.orEmpty().flatMap { part ->
+                when (part) {
+                    is SchemaInterface.SchemaInline -> propertyNames(part.schema)
+                    is SchemaInterface.SchemaReference -> (part.reference.model as? Schema)?.let(::propertyNames).orEmpty()
+                    else -> emptySet()
+                }
+            }
 
     private fun validateExternalDocs(node: Schema, contextString: String, results: ValidationCollector) {
         val contextString = "$contextString ExternalDocs"
