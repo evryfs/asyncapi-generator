@@ -127,6 +127,22 @@ class OperationValidatorTest : AbstractValidatorTest() {
     }
 
     @Test
+    fun `enforces root channel ownership for operations and replies reached through references`() {
+        val results = validate("validator/operations/asyncapi_validator_operation_boundaries_ref_invalid.yaml")
+
+        assertEquals(2, results.errors.size)
+        assertEquals(0, results.warnings.size)
+        assertEquals(
+            "asyncapi_validator_operation_boundaries_ref_invalid.root.components.operations.Hidden.channel",
+            results.findings.single { it.code == OPERATION_CHANNEL_REFERENCE_SCOPE.code }.path,
+        )
+        assertEquals(
+            "asyncapi_validator_operation_boundaries_ref_invalid.root.components.replies.HiddenReply.channel",
+            results.findings.single { it.code == OPERATION_REPLY_CHANNEL_REFERENCE.code }.path,
+        )
+    }
+
+    @Test
     fun `validation fails for operation with invalid action`() {
         val document = parse("validator/operations/asyncapi_validator_operations_invalid_action.yaml")
         val validationResults = asyncApiValidator.validate(document)

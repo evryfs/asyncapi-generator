@@ -456,6 +456,10 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     invalidContract(
+        name = "ref-operation-channel-scope",
+        expected = ExpectedFailure(messages = listOf("Operation 'sendHidden'", "root 'channels' object")),
+    ),
+    invalidContract(
         name = "invalid-component-name",
         expected = ExpectedFailure(messages = listOf("Bad name!", "Component messages key")),
     ),

@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.channels.Channel
-import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
@@ -20,7 +19,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
@@ -49,11 +47,10 @@ internal class OperationValidator(
         node: OperationInterface,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>? = null,
     ) {
         when (node) {
             is OperationInterface.OperationInline ->
-                validate(node.operation, contextString, results, rootChannels)
+                validate(node.operation, contextString, results)
 
             is OperationInterface.OperationReference ->
                 referenceResolver.resolve(node.reference, OPERATION, contextString, results)
@@ -64,13 +61,12 @@ internal class OperationValidator(
         node: Operation,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>?,
     ) {
         if (!results.visit(node)) return
         validateAction(node, contextString, results)
-        val channel = validateChannel(node, contextString, results, rootChannels)
+        val channel = validateChannel(node, contextString, results)
         validateMessages(node, contextString, results, channel)
-        validateReply(node, contextString, results, rootChannels)
+        validateReply(node, contextString, results)
         validateTraits(node, contextString, results)
         validateBindings(node, contextString, results)
         validateSecurity(node, contextString, results)
@@ -101,29 +97,15 @@ internal class OperationValidator(
         node: Operation,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>?,
     ): Channel? {
         val channelRef = node.channel ?: return null
-        val channel = referenceResolver.resolve(
+        return referenceResolver.resolve(
             channelRef,
             CHANNEL,
             "$contextString Channel",
             results,
             targetCategoryRule = OPERATION_CHANNEL_TARGET,
         ) as? Channel
-        if (
-            channel != null &&
-            rootChannels != null &&
-            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.modelTracking.findReference(channelRef))
-        ) {
-            results.error(
-                OPERATION_CHANNEL_REFERENCE_SCOPE,
-                "$contextString must reference a channel from the root 'channels' object.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
-            )
-            return null
-        }
-        return channel
     }
 
     private fun validateMessages(
@@ -154,13 +136,12 @@ internal class OperationValidator(
         node: Operation,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>?,
     ) {
         val reply = node.reply ?: return
         val replyContext = "$contextString Reply"
         when (reply) {
             is OperationReplyInterface.OperationReplyInline ->
-                operationReplyValidator.validate(reply.operationReply, replyContext, results, rootChannels)
+                operationReplyValidator.validate(reply.operationReply, replyContext, results)
 
             is OperationReplyInterface.OperationReplyReference ->
                 referenceResolver.resolve(reply.reference, OPERATION_REPLY, replyContext, results)

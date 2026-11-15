@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.channels.Channel
-import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
@@ -11,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
@@ -38,11 +36,10 @@ internal class OperationReplyValidator(
         node: OperationReply,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>? = null,
     ) {
         if (!results.visit(node)) return
         validateAddress(node, contextString, results)
-        val channel = validateChannel(node, contextString, results, rootChannels)
+        val channel = validateChannel(node, contextString, results)
         validateChannelAddress(node, channel, contextString, results)
         validateMessages(node, channel, contextString, results)
     }
@@ -68,7 +65,6 @@ internal class OperationReplyValidator(
         node: OperationReply,
         contextString: String,
         results: ValidationCollector,
-        rootChannels: Map<String, ChannelInterface>?,
     ): Channel? {
         val channelRef = node.channel
         if (channelRef == null) {
@@ -82,20 +78,7 @@ internal class OperationReplyValidator(
             return null
         }
         val contextString = "$contextString Channel"
-        val channel = referenceResolver.resolve(channelRef, CHANNEL, contextString, results) as? Channel
-        if (
-            channel != null &&
-            rootChannels != null &&
-            !OperationReferenceBoundary.containsChannel(rootChannels, asyncApiContext.modelTracking.findReference(channelRef))
-        ) {
-            results.error(
-                OPERATION_REPLY_CHANNEL_REFERENCE,
-                "$contextString must reference a channel from the root 'channels' object.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
-            )
-            return null
-        }
-        return channel
+        return referenceResolver.resolve(channelRef, CHANNEL, contextString, results) as? Channel
     }
 
     private fun validateChannelAddress(

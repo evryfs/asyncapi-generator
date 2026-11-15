@@ -47,7 +47,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-OPERATION-CHANNEL-SCOPE` | Root operation channel is not owned by root `channels`. | AsyncAPI 3.0 Operation Object | specification / error |
 | `AAS3-OPERATION-MESSAGE-REFERENCE` | Operation message is not a valid channel message. | AsyncAPI 3.0 Operation Object | specification / error |
 | `AAS3-REPLY-CHANNEL-REQUIRED` | Reply defines messages without a channel. | AsyncAPI 3.0 Operation Reply Object | specification / error |
-| `AAS3-REPLY-CHANNEL-SCOPE` | Inline root-operation reply channel is not owned by root `channels`. | AsyncAPI 3.0 Operation Reply Object | specification / error |
+| `AAS3-REPLY-CHANNEL-SCOPE` | Root-operation reply channel (inline or `$ref`) is not owned by root `channels`. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-CHANNEL-ADDRESS` | Reply defines an address while its channel has a known address. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-MESSAGE-REFERENCE` | Reply message does not reference a message owned by reply channel. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-ADDRESS-REQUIRED` | Reply defines a message set without `address`. | AsyncAPI 3.0 Operation Reply Object | specification / error |

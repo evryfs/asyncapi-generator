@@ -1,0 +1,36 @@
+asyncapi: 3.0.0
+info:
+  title: Operation by reference outside the root channels
+  version: 1.0.0
+channels:
+  orders:
+    address: orders
+    messages:
+      order:
+        $ref: '#/components/messages/Order'
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+  sendHidden:
+    $ref: '#/components/operations/SendHidden'
+components:
+  channels:
+    hidden:
+      address: hidden
+      messages:
+        order:
+          $ref: '#/components/messages/Order'
+  operations:
+    SendHidden:
+      action: send
+      channel:
+        $ref: '#/components/channels/hidden'
+  messages:
+    Order:
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
