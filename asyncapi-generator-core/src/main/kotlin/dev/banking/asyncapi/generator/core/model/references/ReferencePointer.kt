@@ -57,7 +57,7 @@ internal fun String.parseReference(): ParsedReference {
 internal fun String.componentSchemaNameOrNull(): String? {
     val segments = runCatching { parseReference().pointerSegments() }.getOrNull() ?: return null
     return segments
-        .takeIf { it.size >= 3 && it[0] == "components" && it[1] == "schemas" }
+        .takeIf { it.size == 3 && it[0] == "components" && it[1] == "schemas" }
         ?.get(2)
         ?.takeIf(String::isNotBlank)
 }

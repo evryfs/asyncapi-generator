@@ -1,0 +1,6 @@
+components:
+  schemas:
+    Invoice:
+      type: object
+      properties:
+        amount: { type: number }

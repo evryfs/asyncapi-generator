@@ -1,0 +1,24 @@
+asyncapi: 3.0.0
+info:
+  title: Deep Schema Pointer
+  version: 1.0.0
+channels:
+  invoices:
+    address: invoices
+    messages:
+      invoiceIssued:
+        payload:
+          type: object
+          properties:
+            total:
+              type: number
+            invoice:
+              $ref: "#/components/schemas/Invoice"
+        name: InvoiceIssued
+components:
+  schemas:
+    Invoice:
+      type: object
+      properties:
+        amount:
+          type: number

@@ -325,6 +325,25 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `does not promote a deep pointer into an external component schema under the component name`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/deep-schema-pointer/main.yaml",
+                scenario = "deep-schema-pointer",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val invoice = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["Invoice"])
+        assertEquals(setOf("amount"), invoice.schema.properties?.keys)
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "deep-schema-pointer",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,
