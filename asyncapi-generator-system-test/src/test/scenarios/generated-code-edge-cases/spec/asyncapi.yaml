@@ -1,0 +1,123 @@
+asyncapi: 3.0.0
+info:
+  title: Generated code edge cases
+  version: 1.0.0
+channels:
+  edgeCases:
+    address: edge-cases
+    messages:
+      edgeCase:
+        payload:
+          $ref: '#/components/schemas/EdgeCases'
+  twins:
+    address: twins
+    messages:
+      twin:
+        payload:
+          $ref: '#/components/schemas/Twin'
+components:
+  schemas:
+    EdgeCases:
+      type: object
+      description: Contract content that used to generate code that did not compile or deserialize.
+      properties:
+        day:
+          type: string
+          format: date
+          default: '2024-01-01'
+        moment:
+          type: string
+          format: date-time
+          default: '2024-01-01T10:15:30+01:00'
+        time:
+          type: string
+          format: time
+          default: '10:15:30'
+        id:
+          type: string
+          format: uuid
+          default: 123e4567-e89b-12d3-a456-426614174000
+        heartbeat:
+          $ref: '#/components/schemas/Heartbeat'
+        status:
+          $ref: '#/components/schemas/Status'
+        pet:
+          $ref: '#/components/schemas/Pet'
+        vehicle:
+          $ref: '#/components/schemas/Vehicle'
+    Heartbeat:
+      type: object
+      description: A marker event without fields.
+      additionalProperties: false
+    Status:
+      type: string
+      description: Lifecycle status of the case.
+      enum: [open, closed]
+    Pet:
+      description: A pet, told apart by its kind.
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+      discriminator: kind
+      oneOf:
+        - $ref: '#/components/schemas/cat_pet'
+        - $ref: '#/components/schemas/dog_pet'
+        - $ref: '#/components/schemas/bird_pet'
+    cat_pet:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          const: 'c"at'
+        whiskers:
+          type: integer
+    dog_pet:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          const: dog
+        tail:
+          type: boolean
+    bird_pet:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+        wings:
+          type: integer
+    Vehicle:
+      description: A vehicle, told apart by the properties it has.
+      oneOf:
+        - $ref: '#/components/schemas/car_vehicle'
+        - $ref: '#/components/schemas/boat_vehicle'
+    car_vehicle:
+      type: object
+      properties:
+        wheels:
+          type: integer
+    boat_vehicle:
+      type: object
+      properties:
+        sails:
+          type: integer
+    Twin:
+      description: Two members with the same properties, which no payload can tell apart.
+      oneOf:
+        - $ref: '#/components/schemas/left_twin'
+        - $ref: '#/components/schemas/right_twin'
+    left_twin:
+      type: object
+      properties:
+        size:
+          type: integer
+    right_twin:
+      type: object
+      properties:
+        size:
+          type: integer

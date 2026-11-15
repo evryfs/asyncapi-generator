@@ -386,6 +386,58 @@ private val allScenarios: List<Scenario> = listOf(
             ),
         ),
     ),
+    Scenario(
+        name = "generated-code-edge-cases",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.edgecases.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.edgecases.java"),
+        ),
+        expectedWarnings = listOf("union members 'left_twin', 'right_twin' declare the same property names"),
+    ),
+    Scenario(
+        name = "kafka-payload-types",
+        executions = listOf(
+            Execution(
+                id = "kotlin-client",
+                generatorName = "kotlin",
+                modelPackage = "com.example.payloads.kotlin.model",
+                clientPackage = "com.example.payloads.kotlin.client",
+            ),
+            Execution(
+                id = "java-client",
+                generatorName = "java",
+                modelPackage = "com.example.payloads.java.model",
+                clientPackage = "com.example.payloads.java.client",
+            ),
+        ),
+        client = ClientConfig(),
+    ),
+    Scenario(
+        name = "avro-schema-types",
+        executions = listOf(
+            Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avrotypes"),
+        ),
+    ),
+    Scenario(
+        name = "diagnostics-property-name-collision",
+        executions = listOf(
+            Execution(id = "property-name-collision", generatorName = "kotlin", modelPackage = "com.example.model"),
+        ),
+        expectedFailure = ExpectedFailure(messages = listOf("'Account'", "'account-id'", "'accountId'")),
+    ),
+    Scenario(
+        name = "diagnostics-header-name-collision",
+        executions = listOf(
+            Execution(
+                id = "header-name-collision",
+                generatorName = "kotlin",
+                modelPackage = "com.example.model",
+                clientPackage = "com.example.client",
+            ),
+        ),
+        client = ClientConfig(),
+        expectedFailure = ExpectedFailure(messages = listOf("AccountOpened", "'payload'", "receivedTopic, receivedKey, and messageKey")),
+    ),
 )
 
 /** A contract every frontend must reject with a clear diagnostic instead of hanging or generating wrong code. */

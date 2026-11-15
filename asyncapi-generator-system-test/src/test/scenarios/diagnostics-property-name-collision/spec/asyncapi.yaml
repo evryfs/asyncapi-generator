@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Property name collision
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      account:
+        payload:
+          $ref: '#/components/schemas/Account'
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        account-id:
+          type: string
+        accountId:
+          type: string
