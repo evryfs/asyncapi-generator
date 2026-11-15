@@ -1,60 +1,27 @@
-package dev.banking.asyncapi.generator.core.registry
+package dev.banking.asyncapi.generator.core.bundler
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.util.StringQuotingChecker
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.resolver.Resolver
-import java.io.File
 
 /**
- * Coordinates document reading, parser-node construction, YAML/JSON serialization, and file writing.
+ * Writes an AsyncAPI document, or any part of its model, as YAML or JSON.
  *
- * This is a legacy facade that may be renamed or decomposed in a future pass.
+ * Absent values are left out. In YAML, a string that would read back as another type, such as `"true"`,
+ * `"123"`, or `"on"`, is quoted, so reading the written document gives back the same values.
  */
-internal object AsyncApiRegistry {
-    fun read(
-        file: File,
-        asyncApiContext: AsyncApiContext,
-    ): ParserNode =
-        ParserNodeFactory.root(
-            document = SourceReader.read(file, asyncApiContext.sourceLimits),
-            context = asyncApiContext,
-        )
+internal object AsyncApiDocumentSerializer {
+    fun toYaml(value: Any): String = yamlMapper.writeValueAsString(value)
 
-    fun writeYaml(
-        file: File,
-        obj: Any,
-    ) {
-        val yamlText = serializeYaml(obj)
-        file.parentFile?.mkdirs()
-        file.writeText(yamlText)
-        println("Yaml written to: ${file.absolutePath}")
-    }
-
-    fun writeJson(
-        file: File,
-        obj: Any,
-    ) {
-        val jsonText = serializeJson(obj)
-        file.parentFile?.mkdirs()
-        file.writeText(jsonText)
-        println("Json written to: ${file.absolutePath}")
-    }
-
-    fun serializeYaml(obj: Any): String = yamlMapper.writeValueAsString(obj)
-
-    fun serializeJson(obj: Any): String =
+    fun toJson(value: Any): String =
         jsonMapper
             .writerWithDefaultPrettyPrinter()
-            .writeValueAsString(obj)
+            .writeValueAsString(value)
 
     private val yamlMapper: ObjectMapper =
         ObjectMapper(
@@ -74,6 +41,7 @@ internal object AsyncApiRegistry {
         ObjectMapper()
             .setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL)
 
+    /** Quotes every string value that a YAML reader would otherwise resolve to a non-string type. */
     private object ValuePreservingStringQuotingChecker : StringQuotingChecker() {
         private val default = Default.instance()
         private val resolver = Resolver()

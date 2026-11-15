@@ -4,7 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import java.io.File
 
 /**
@@ -20,7 +21,7 @@ internal class ParserFixtures(
 
     fun root(path: String): ParserNode = root(TestResources.file(path))
 
-    fun root(file: File): ParserNode = AsyncApiRegistry.read(file, context)
+    fun root(file: File): ParserNode = ParserNodeFactory.root(SourceReader.read(file), context)
 
     fun document(path: String): AsyncApiDocument = document(TestResources.file(path))
 

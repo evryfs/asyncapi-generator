@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.source.DocumentObject
 import dev.banking.asyncapi.generator.core.source.SourceBudget
 import dev.banking.asyncapi.generator.core.source.SourceLocation

@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -394,7 +393,7 @@ class BundledDocumentApprovalTest {
     ): File {
         val bundledDocument = bundlerFixtures.bundledDocument(sourcePath)
         val outputFile = tempDir.resolve("$scenario.yaml").toFile()
-        AsyncApiRegistry.writeYaml(outputFile, bundledDocument.document)
+        outputFile.writeText(AsyncApiDocumentSerializer.toYaml(bundledDocument.document))
         return outputFile
     }
 }

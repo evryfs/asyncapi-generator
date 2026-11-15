@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -54,7 +53,7 @@ class AsyncApiBundlerTest {
             bundlerFixtures.validatedDocument(
                 TestResources.file("bundler/multi/asyncapi_multifile_example_main.yaml"),
             )
-        val originalYaml = AsyncApiRegistry.serializeYaml(original)
+        val originalYaml = AsyncApiDocumentSerializer.toYaml(original)
         val channelReferences =
             original.channels!!
                 .values
@@ -62,14 +61,14 @@ class AsyncApiBundlerTest {
                 .map { it.reference }
         val channelModels = channelReferences.map { it.model }
 
-        val first = AsyncApiRegistry.serializeYaml(bundler.bundle(original).document)
-        val second = AsyncApiRegistry.serializeYaml(bundler.bundle(original).document)
+        val first = AsyncApiDocumentSerializer.toYaml(bundler.bundle(original).document)
+        val second = AsyncApiDocumentSerializer.toYaml(bundler.bundle(original).document)
 
         assertEquals(first, second)
         assertTrue(channelReferences.isNotEmpty())
         assertTrue(channelReferences.none { it.inline }, "the loaded references are not inlined")
         channelReferences.zip(channelModels).forEach { (reference, model) -> assertSame(model, reference.model) }
-        assertEquals(originalYaml, AsyncApiRegistry.serializeYaml(original))
+        assertEquals(originalYaml, AsyncApiDocumentSerializer.toYaml(original))
     }
 
     @Test
@@ -123,8 +122,8 @@ class AsyncApiBundlerTest {
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
         val jsonFile = tempDir.resolve("asyncapi.json").toFile()
 
-        AsyncApiRegistry.writeYaml(yamlFile, bundled)
-        AsyncApiRegistry.writeJson(jsonFile, bundled)
+        yamlFile.writeText(AsyncApiDocumentSerializer.toYaml(bundled))
+        jsonFile.writeText(AsyncApiDocumentSerializer.toJson(bundled))
 
         listOf(yamlFile, jsonFile).forEach { outputFile ->
             assertTrue(outputFile.readText().contains("pathname"))
@@ -165,7 +164,7 @@ class AsyncApiBundlerTest {
         val bundled = bundler.bundle(document).document
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
 
-        AsyncApiRegistry.writeYaml(yamlFile, bundled)
+        yamlFile.writeText(AsyncApiDocumentSerializer.toYaml(bundled))
 
         val yaml = yamlFile.readText()
         assertTrue(yaml.contains("denied: false"))
@@ -210,8 +209,8 @@ class AsyncApiBundlerTest {
 
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
         val jsonFile = tempDir.resolve("asyncapi.json").toFile()
-        AsyncApiRegistry.writeYaml(yamlFile, bundled)
-        AsyncApiRegistry.writeJson(jsonFile, bundled)
+        yamlFile.writeText(AsyncApiDocumentSerializer.toYaml(bundled))
+        jsonFile.writeText(AsyncApiDocumentSerializer.toJson(bundled))
 
         listOf(yamlFile, jsonFile).forEach { outputFile ->
             assertTrue(outputFile.readText().contains("#/components/schemas/TreeNode"))

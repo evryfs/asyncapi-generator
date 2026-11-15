@@ -4,12 +4,13 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
 import dev.banking.asyncapi.generator.core.repository.SourceRepository
 import dev.banking.asyncapi.generator.core.source.SourceBudget
 import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceLocation
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
@@ -46,7 +47,7 @@ internal class AsyncApiContext(
             createDiagnosticException = { diagnostic ->
                 AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
             },
-            readDocument = { file -> AsyncApiRegistry.read(file, this) },
+            readDocument = { file -> ParserNodeFactory.root(SourceReader.read(file, sourceLimits), this) },
         )
 
     val sourceRepository: SourceRepository get() = sourceTracking.repository

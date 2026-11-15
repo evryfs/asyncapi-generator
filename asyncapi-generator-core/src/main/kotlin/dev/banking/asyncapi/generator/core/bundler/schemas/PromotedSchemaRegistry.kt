@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
+import dev.banking.asyncapi.generator.core.bundler.AsyncApiDocumentSerializer
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.references.referenceTargetNameOrNull
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import java.util.IdentityHashMap
 
 /**
@@ -116,7 +116,8 @@ internal class PromotedSchemaRegistry(
     private fun sameContent(
         first: Any,
         second: Any,
-    ): Boolean = first === second || AsyncApiRegistry.serializeJson(first) == AsyncApiRegistry.serializeJson(second)
+    ): Boolean =
+        first === second || AsyncApiDocumentSerializer.toJson(first) == AsyncApiDocumentSerializer.toJson(second)
 
     private fun SchemaInterface.modelIdentity(): Any =
         when (this) {
