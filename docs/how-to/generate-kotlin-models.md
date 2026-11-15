@@ -67,7 +67,7 @@ generation, naming both locations; give one a `title` or move it to
 
 | Schema                                   | Kotlin                                                                         | Java                                                              |
 |------------------------------------------|--------------------------------------------------------------------------------|-------------------------------------------------------------------|
-| Object with properties                   | `data class`                                                                   | Class with getters, setters, and constructors, or a record        |
+| Object with properties                   | `data class`; a plain `class` with value equality when it has no properties    | Class with getters, setters, and constructors, or a record        |
 | Required property                        | Non-null constructor parameter                                                 | Field annotated with `@NotNull`                                   |
 | Optional property                        | Nullable parameter with default `null`, or the schema `default`                | Nullable field; schema defaults are not applied                   |
 | String enum                              | `enum class`                                                                   | `enum`                                                            |
@@ -101,14 +101,26 @@ serialized with Jackson:
   `@JsonTypeInfo` on the discriminator property and `@JsonSubTypes` listing the
   members. Each member's type name is the `const`, or else the first `enum`
   value, of its discriminator property; without one, it is the member's schema
-  name.
+  name as written in the contract, even when the generated class name differs
+  (`dog_event` is the class `DogEvent` with the type name `dog_event`).
+- A `oneOf` or `anyOf` without a `discriminator` is annotated with
+  `@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)` and `@JsonSubTypes` listing
+  its object members, so Jackson picks the member whose property names match
+  the payload. Members must therefore declare different property names. When
+  two members declare the same names, generation still succeeds and prints
+  the `ADV-UNION-INDISTINGUISHABLE-MEMBERS` warning, but Jackson fails to read
+  the union at runtime; add a `discriminator` instead.
+- Two properties whose names become the same identifier, such as `account-id`
+  and `accountId`, fail generation and name the schema and both properties.
 
 ### Defaults
 
 Kotlin applies schema `default` values as constructor parameter defaults,
 escaped and typed for the property, for example `val retries: Int? = 3` or
 `val status: AccountStatus? = AccountStatus.OPEN`. Java models ignore schema
-defaults; a property that is absent from the payload is `null`.
+defaults; a property that is absent from the payload is `null`. Defaults of
+`date`, `date-time`, `time`, and `uuid` properties are parsed from the contract
+text, for example `LocalDate.parse("2024-01-01")`.
 
 ### Documentation
 

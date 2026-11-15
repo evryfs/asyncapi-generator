@@ -76,6 +76,11 @@ channel gets one method in each interface:
 - Message headers become `@Header` parameters; required headers are non-null,
   optional headers are nullable. A Kafka key schema becomes the key parameter
   type.
+  A header whose parameter name would be `payload`, `receivedTopic`,
+  `receivedKey`, or `messageKey` fails generation, because the method already
+  declares those parameters.
+- An array payload is typed as a `List` of its item type, and an `integer`
+  payload as `Long` for `format: int64` or bounds outside the 32-bit range.
 - Each interface has a topic constant, such as
   `ACCOUNT_UPDATED_TOPIC_ADDRESS`, holding the channel address.
 

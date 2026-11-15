@@ -64,12 +64,12 @@ application.
 | Reference to another schema                | The full name of that schema, such as `com.example.accounts.avro.AccountStatus`            |
 | `string`                                   | `string`; `format` `uuid` adds logical type `uuid`                                         |
 | `string` with `format` `date` / `date-time` | `int` with logical type `date` / `long` with logical type `timestamp-millis`             |
-| `integer`                                  | `int`, or `long` for `format: int64`                                                       |
+| `integer`                                  | `int`, or `long` for `format: int64` or bounds outside the 32-bit range, as in the models  |
 | `number`                                   | `double`, for every `format`                                                               |
 | `boolean`                                  | `boolean`                                                                                  |
 | `array`                                    | `array`, with item types mapped recursively, including arrays of arrays                    |
 | Object with `additionalProperties`         | `map`, with value types mapped recursively                                                 |
-| `oneOf`                                    | A union of the member types                                                                |
+| `oneOf` or `anyOf`                         | A union of the member types                                                                |
 | `description`                              | `doc`, JSON-escaped                                                                        |
 
 Optional properties become unions with `null`:
