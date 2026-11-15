@@ -42,7 +42,8 @@ internal class OperationReplyParser(
                 OperationReply(
                     address = objectNode.optional("address")?.let(operationReplyAddressParser::parseElement),
                     channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
-                    messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) }
+                    messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

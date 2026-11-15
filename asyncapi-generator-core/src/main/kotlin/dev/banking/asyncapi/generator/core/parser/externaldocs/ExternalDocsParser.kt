@@ -34,7 +34,8 @@ internal class ExternalDocsParser(
         return ExternalDocInterface.ExternalDocInline(
             ExternalDoc(
                 description = objectNode.optional("description")?.expect<String>(),
-                url = objectNode.required("url").expect<String>()
+                url = objectNode.required("url").expect<String>(),
+                extensions = objectNode.extensions(),
             ).also { asyncApiContext.register(it, node) }
         )
     }

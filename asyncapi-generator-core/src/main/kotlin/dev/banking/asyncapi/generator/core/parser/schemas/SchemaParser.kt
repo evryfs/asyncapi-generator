@@ -151,12 +151,7 @@ internal class SchemaParser(
         val externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
         val deprecated = objectNode.optional("deprecated")?.expect<Boolean>()
         val bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SCHEMA_BINDING) }
-        val extensions = objectNode
-            .membersStartingWith("x-")
-            .associateTo(linkedMapOf()) { extension ->
-                extension.name to extension.toPlainValue()
-            }
-            .takeIf { it.isNotEmpty() }
+        val extensions = objectNode.extensions()
 
         val readOnly = objectNode.optional("readOnly")?.expect<Boolean>()
         val writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>()

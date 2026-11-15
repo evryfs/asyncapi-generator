@@ -1,0 +1,7 @@
+components:
+  messages:
+    Created:
+      name: Created
+      x-message: message-value
+      payload:
+        type: string

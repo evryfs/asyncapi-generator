@@ -59,6 +59,7 @@ internal class ChannelParser(
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, CHANNEL_BINDING) },
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

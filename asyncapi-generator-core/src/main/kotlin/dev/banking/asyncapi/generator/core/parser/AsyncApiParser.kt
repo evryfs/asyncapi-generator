@@ -44,6 +44,7 @@ internal class AsyncApiParser(
             channels = rootObject.optional("channels")?.let(channelParser::parseMap),
             operations = rootObject.optional("operations")?.let(operationParser::parseMap),
             components = rootObject.optional("components")?.let(componentParser::parseElement),
+            extensions = rootObject.extensions(),
         ).also { asyncApiContext.register(it, root) }
     }
 }

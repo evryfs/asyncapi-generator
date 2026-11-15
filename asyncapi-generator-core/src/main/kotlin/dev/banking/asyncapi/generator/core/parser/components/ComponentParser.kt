@@ -75,6 +75,7 @@ internal class ComponentParser(
                     bindingParser.parseComponentMap(it, OPERATION)
                 },
                 messageBindings = optional("messageBindings")?.let { bindingParser.parseComponentMap(it, MESSAGE) },
+                extensions = extensions(),
             ).also { asyncApiContext.register(it, node) }
         )
     }

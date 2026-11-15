@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.security
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonProperty
 
 data class SecurityScheme(
@@ -12,4 +13,5 @@ data class SecurityScheme(
     val openIdConnectUrl: String? = null,
     val flows: OAuthFlows? = null,
     val scopes: List<String>? = null,
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

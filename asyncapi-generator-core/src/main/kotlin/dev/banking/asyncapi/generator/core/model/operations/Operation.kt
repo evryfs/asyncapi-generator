@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.operations
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -19,4 +20,5 @@ data class Operation(
     val externalDocs: ExternalDocInterface? = null,
     val reply: OperationReplyInterface? = null,
     val security: List<SecuritySchemeInterface>? = null,
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.messages
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -18,4 +19,5 @@ data class MessageTrait(
     val externalDocs: ExternalDocInterface? = null,
     val bindings: Map<String, BindingInterface>? = null,
     val examples: List<MessageExample>? = null,
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

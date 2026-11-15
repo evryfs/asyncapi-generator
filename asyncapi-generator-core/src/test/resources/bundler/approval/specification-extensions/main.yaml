@@ -1,0 +1,71 @@
+asyncapi: 3.0.0
+x-root: root-value
+info:
+  title: Specification Extensions
+  version: 1.0.0
+  contact:
+    name: Team
+    x-contact: contact-value
+  license:
+    name: Apache-2.0
+    x-license: license-value
+servers:
+  broker:
+    host: broker.example.com:9092
+    protocol: kafka
+    x-server: server-value
+    variables:
+      port:
+        default: '9092'
+        x-server-variable: variable-value
+    tags:
+      - name: infra
+        x-tag: tag-value
+channels:
+  replies:
+    messages:
+      reply:
+        payload:
+          type: string
+  orders:
+    address: 'orders.{region}'
+    x-channel: { owner: orders-team, retries: [1, 2] }
+    parameters:
+      region:
+        enum: [eu, us]
+        x-parameter: parameter-value
+    messages:
+      created:
+        $ref: 'messages.yaml#/components/messages/Created'
+    externalDocs:
+      url: https://example.com/docs
+      x-external-docs: docs-value
+operations:
+  sendOrder:
+    action: send
+    x-operation: operation-value
+    channel:
+      $ref: '#/channels/orders'
+    traits:
+      - x-operation-trait: trait-value
+    reply:
+      x-reply: reply-value
+      address:
+        location: '$message.header#/replyTo'
+        x-reply-address: reply-address-value
+      channel:
+        $ref: '#/channels/replies'
+components:
+  x-components: components-value
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: user
+      x-security-scheme: scheme-value
+  messageTraits:
+    Audited:
+      x-message-trait: message-trait-value
+  correlationIds:
+    traceId:
+      location: '$message.header#/traceId'
+      x-correlation-id: correlation-value

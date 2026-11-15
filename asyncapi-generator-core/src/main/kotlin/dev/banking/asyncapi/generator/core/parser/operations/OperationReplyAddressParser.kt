@@ -34,7 +34,8 @@ internal class OperationReplyAddressParser(
         return OperationReplyAddressInterface.OperationReplyAddressInline(
             OperationReplyAddress(
                 location = objectNode.required("location").expect<String>(),
-                description = objectNode.optional("description")?.expect<String>()
+                description = objectNode.optional("description")?.expect<String>(),
+                extensions = objectNode.extensions(),
             ).also { asyncApiContext.register(it, parserNode) }
         )
     }

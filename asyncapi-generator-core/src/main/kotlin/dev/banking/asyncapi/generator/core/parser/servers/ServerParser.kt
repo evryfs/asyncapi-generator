@@ -57,6 +57,7 @@ internal class ServerParser(
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SERVER_BINDING) },
                     tags = objectNode.optional("tags")?.let(tagParser::parseList),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

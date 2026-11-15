@@ -38,6 +38,7 @@ internal class ServerVariableParser(
                     default = objectNode.optional("default")?.expect<String>(),
                     description = objectNode.optional("description")?.expect<String>(),
                     examples = objectNode.optional("examples")?.expect<List<String>>(),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

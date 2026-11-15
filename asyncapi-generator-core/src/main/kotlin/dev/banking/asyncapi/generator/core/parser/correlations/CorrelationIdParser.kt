@@ -35,6 +35,7 @@ internal class CorrelationIdParser(
             CorrelationId(
                 location = objectNode.required("location").expect<String>(),
                 description = objectNode.optional("description")?.expect<String>(),
+                extensions = objectNode.extensions(),
             ).also { asyncApiContext.register(it, node) }
         )
     }

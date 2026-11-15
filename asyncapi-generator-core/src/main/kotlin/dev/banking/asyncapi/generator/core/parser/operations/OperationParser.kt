@@ -62,6 +62,7 @@ internal class OperationParser(
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     reply = objectNode.optional("reply")?.let(operationReplyParser::parseElement),
                     security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

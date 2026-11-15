@@ -363,6 +363,25 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `keeps specification extensions on every extensible object`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/specification-extensions/main.yaml",
+                scenario = "specification-extensions",
+            )
+
+        val bundledText = bundledFile.readText()
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        assertNotNull(bundledDocument.extensions)
+        assertFalse(bundledText.contains("messages.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "specification-extensions",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,
