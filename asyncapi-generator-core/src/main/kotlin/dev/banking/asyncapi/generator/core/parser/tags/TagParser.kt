@@ -43,6 +43,7 @@ internal class TagParser(
                     name = objectNode.required("name").expect<String>(),
                     description = objectNode.optional("description")?.expect<String>(),
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

@@ -438,6 +438,23 @@ private val allScenarios: List<Scenario> = listOf(
         client = ClientConfig(),
         expectedFailure = ExpectedFailure(messages = listOf("AccountOpened", "'payload'", "receivedTopic, receivedKey, and messageKey")),
     ),
+    Scenario(
+        name = "bundle-round-trip",
+        executions = listOf(
+            Execution(
+                id = "contract",
+                generatorName = "kotlin",
+                outputFile = "bundles/contract.yaml",
+                modelPackage = "com.example.roundtrip.model",
+            ),
+            Execution(
+                id = "tuple-bundle",
+                generatorName = "kotlin",
+                inputSpec = "tuple/asyncapi.yaml",
+                outputFile = "bundles/tuple.yaml",
+            ),
+        ),
+    ),
 )
 
 /** A contract every frontend must reject with a clear diagnostic instead of hanging or generating wrong code. */

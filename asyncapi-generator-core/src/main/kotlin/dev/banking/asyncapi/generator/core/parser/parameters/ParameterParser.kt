@@ -39,6 +39,7 @@ internal class ParameterParser(
                     enum = objectNode.optional("enum")?.expect<List<String>>(),
                     default = objectNode.optional("default")?.expect<String>(),
                     examples = objectNode.optional("examples")?.expect<List<String>>(),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

@@ -1,0 +1,17 @@
+Money:
+  type: object
+  properties:
+    amount:
+      type: number
+    currency:
+      type: string
+components:
+  schemas:
+    Order:
+      type: object
+      properties:
+        total:
+          type: number
+          description: Order total
+        lines:
+          type: integer

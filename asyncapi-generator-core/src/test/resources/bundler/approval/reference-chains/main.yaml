@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: Reference Chains
+  version: 1.0.0
+channels:
+  orders:
+    address: 'orders.{region}'
+    parameters:
+      region:
+        $ref: '#/components/parameters/Region'
+    messages:
+      created:
+        name: Created
+        payload:
+          type: string
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+    tags:
+      - $ref: '#/components/tags/Orders'
+components:
+  parameters:
+    Region:
+      $ref: 'shared.yaml#/components/parameters/Region'
+  tags:
+    Orders:
+      $ref: 'shared.yaml#/components/tags/Orders'

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.components
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
@@ -37,4 +38,5 @@ data class Component(
     val channelBindings: Map<String, BindingInterface>? = null,
     val operationBindings: Map<String, BindingInterface>? = null,
     val messageBindings: Map<String, BindingInterface>? = null,
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

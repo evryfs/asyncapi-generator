@@ -1,0 +1,16 @@
+components:
+  messages:
+    Created:
+      name: Created
+      bindings:
+        kafka:
+          key:
+            $ref: '#/components/schemas/Key'
+          bindingVersion: 0.5.0
+      payload:
+        type: string
+  schemas:
+    Key:
+      type: object
+      properties:
+        orderId: { type: string }

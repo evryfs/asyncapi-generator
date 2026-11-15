@@ -1,0 +1,12 @@
+Outer:
+  type: object
+  properties:
+    leftInner:
+      $ref: '#/Inner'
+Inner:
+  type: object
+  properties:
+    leftValue:
+      type: string
+    next:
+      $ref: '../right/shared.yaml#/Outer'

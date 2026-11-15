@@ -1,0 +1,37 @@
+asyncapi: 3.0.0
+info:
+  title: Reference Chains
+  version: 1.0.0
+channels:
+  orders:
+    address: "orders.{region}"
+    messages:
+      created:
+        payload:
+          type: string
+        name: Created
+    parameters:
+      region:
+        description: Region of the order
+        enum:
+          - eu
+          - us
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: "#/channels/orders"
+    tags:
+      - name: orders
+        description: Order operations
+components:
+  parameters:
+    Region:
+      description: Region of the order
+      enum:
+        - eu
+        - us
+  tags:
+    Orders:
+      name: orders
+      description: Order operations

@@ -109,8 +109,6 @@ internal class SourceRepository {
 
     fun findIdByFile(file: File): String? = sources[file.canonicalFile.absolutePath]?.pathId
 
-    fun findStableIdByPathId(pathId: String): String? = sourcesByPathId[pathId]?.id
-
     fun getAllLocations(): Map<String, SourceLocation> =
         buildMap {
             locationsByAddress.forEach { (address, location) -> put(address.displayPath, location) }

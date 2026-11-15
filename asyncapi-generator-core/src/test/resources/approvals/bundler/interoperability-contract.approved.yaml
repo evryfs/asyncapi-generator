@@ -25,18 +25,7 @@ channels:
         bindings:
           kafka:
             key:
-              description: Identifies an account within an institution.
-              type: object
-              required:
-                - institutionId
-                - accountId
-              properties:
-                institutionId:
-                  description: Institution that owns the account.
-                  type: string
-                accountId:
-                  description: Account identifier within the institution.
-                  type: string
+              $ref: "#/components/schemas/myAccountKey"
             bindingVersion: 0.5.0
       auditEvent:
         payload:
@@ -100,6 +89,19 @@ components:
       properties:
         accountId:
           description: Identifier of the updated account.
+          type: string
+    myAccountKey:
+      description: Identifies an account within an institution.
+      type: object
+      required:
+        - institutionId
+        - accountId
+      properties:
+        institutionId:
+          description: Institution that owns the account.
+          type: string
+        accountId:
+          description: Account identifier within the institution.
           type: string
     ParentNode:
       type: object

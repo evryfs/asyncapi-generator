@@ -51,6 +51,12 @@ internal class ParserObjectNode(
     fun membersStartingWith(prefix: String): List<ParserNode> =
         members().filter { member -> member.name.startsWith(prefix) }
 
+    /** The `x-` specification extensions of this object as plain values, or `null` when it has none. */
+    fun extensions(): Map<String, Any?>? =
+        membersStartingWith("x-")
+            .associateTo(linkedMapOf()) { member -> member.name to member.toPlainValue() }
+            .takeIf { it.isNotEmpty() }
+
     /** Throws if the object contains members not in [allowedMembers]. */
     fun expectOnlyMembers(
         objectType: String,

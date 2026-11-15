@@ -65,6 +65,7 @@ internal class SchemaRecursionAnalyzer {
         patternProperties.orEmpty().values.forEach { yield(it) }
         definitions.orEmpty().values.forEach { yield(it) }
         dependencies.orEmpty().values.filterIsInstance<SchemaInterface>().forEach { yield(it) }
+        tupleItems.orEmpty().forEach { yield(it) }
         allOf.orEmpty().forEach { yield(it) }
         anyOf.orEmpty().forEach { yield(it) }
         oneOf.orEmpty().forEach { yield(it) }

@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaBundler
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.references.isExternalReference
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 
@@ -36,58 +35,40 @@ internal class BindingBundler {
         }
 
     private fun bundleBinding(binding: Binding, context: BundlingContext): Binding {
-        val bundledContent = binding.protocolBindings.fold(binding.content) { content, protocolBinding ->
-            protocolBinding.schemaFields.entries.fold(content) { currentContent, (fieldName, schema) ->
-                if (currentContent.schemaField(protocolBinding.protocol, fieldName).containsExternalReference()) {
-                    currentContent.withBundledSchema(
-                        protocol = protocolBinding.protocol,
-                        fieldName = fieldName,
-                        schema = schemaBundler.bundle(schema, context),
-                    )
-                } else {
-                    currentContent
-                }
+        if (binding.protocolBindings.none { it.schemaFields.isNotEmpty() }) return binding
+        var bundledKafkaKey = binding.kafkaKeySchema
+        var bundledContent = binding.content
+        val bundledProtocolBindings = binding.protocolBindings.map { protocolBinding ->
+            val bundledFields = protocolBinding.schemaFields.mapValues { (_, schema) ->
+                // The message key becomes a generated type, so it keeps the name of its source pointer.
+                val isKey = schema === binding.kafkaKeySchema
+                val bundled =
+                    if (isKey) schemaBundler.bundleBindingField(schema, context) else schemaBundler.bundle(schema, context)
+                if (isKey) bundledKafkaKey = bundled
+                bundled
             }
+            // Raw content is only replaced where bundling changed the schema.
+            val changedFields = bundledFields.filter { (name, bundled) -> bundled != protocolBinding.schemaFields[name] }
+            bundledContent = bundledContent.withBundledFields(protocolBinding.protocol, changedFields)
+            protocolBinding.copy(schemaFields = bundledFields)
         }
-        if (bundledContent === binding.content) return binding
         return binding.copy(
             content = bundledContent,
+            kafkaKeySchema = bundledKafkaKey,
+            protocolBindings = bundledProtocolBindings,
         )
     }
 
-    private fun Map<String, Any?>.withBundledSchema(
+    /** A protocol-keyed binding content holds the fields under the protocol; a single protocol's content holds them directly. */
+    private fun Map<String, Any?>.withBundledFields(
         protocol: String,
-        fieldName: String,
-        schema: SchemaInterface,
+        fields: Map<String, SchemaInterface>,
     ): Map<String, Any?> {
         val protocolContent = get(protocol) as? Map<*, *>
-        return when {
-            protocolContent?.containsKey(fieldName) == true ->
-                this + (protocol to (protocolContent + (fieldName to schema)))
-
-            containsKey(fieldName) ->
-                this + (fieldName to schema)
-
-            else -> this
-        }
-    }
-
-    private fun Map<String, Any?>.schemaField(protocol: String, fieldName: String): Any? {
-        val protocolContent = get(protocol) as? Map<*, *>
-        return if (protocolContent?.containsKey(fieldName) == true) {
-            protocolContent[fieldName]
+        return if (protocolContent != null) {
+            this + (protocol to (protocolContent + fields.filterKeys(protocolContent::containsKey)))
         } else {
-            get(fieldName)
+            this + fields.filterKeys(::containsKey)
         }
     }
-
-    private fun Any?.containsExternalReference(): Boolean =
-        when (this) {
-            is Map<*, *> ->
-                (get("\$ref") as? String)?.isExternalReference() == true ||
-                    values.any { it.containsExternalReference() }
-
-            is List<*> -> any { it.containsExternalReference() }
-            else -> false
-        }
 }

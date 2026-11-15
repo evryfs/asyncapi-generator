@@ -13,13 +13,17 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
  */
 internal object ReferenceBundler {
 
-    /** Returns an inline copy of [reference], or [reference] itself when it is already being visited. */
+    /**
+     * Returns an inline copy of [reference] holding its fully resolved model, or [reference] itself when it
+     * is already being visited. A reference to a component that is itself a reference is followed to the end,
+     * so no inner `$ref` is left in the bundle.
+     */
     fun inlineIfUnvisited(
         reference: Reference,
         context: BundlingContext,
     ): Reference {
         if (context.hasVisited(reference)) return reference
-        return reference.copy().inline()
+        return reference.copy(model = reference.requireModel<Any?>()).inline()
     }
 
     /** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */

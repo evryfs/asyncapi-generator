@@ -61,6 +61,7 @@ internal class MessageParser(
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, MESSAGE_BINDING) },
                     examples = objectNode.optional("examples")?.let(messageExampleParser::parseList),
                     traits = objectNode.optional("traits")?.let(messageTraitParser::parseList),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) },
             )
         }

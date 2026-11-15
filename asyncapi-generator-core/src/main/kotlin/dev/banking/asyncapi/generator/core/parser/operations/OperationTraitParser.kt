@@ -54,6 +54,7 @@ internal class OperationTraitParser(
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION) },
                     security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

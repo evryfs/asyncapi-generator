@@ -61,6 +61,7 @@ internal class MessageTraitParser(
                     externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
                     bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, MESSAGE) },
                     examples = objectNode.optional("examples")?.let(messageExampleParser::parseList),
+                    extensions = objectNode.extensions(),
                 ).also { asyncApiContext.register(it, parserNode) }
             )
         }

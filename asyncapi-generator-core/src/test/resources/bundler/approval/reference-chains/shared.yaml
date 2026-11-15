@@ -1,0 +1,9 @@
+components:
+  parameters:
+    Region:
+      description: Region of the order
+      enum: [eu, us]
+  tags:
+    Orders:
+      name: orders
+      description: Order operations

@@ -57,7 +57,8 @@ internal class SecuritySchemeParser(
                 bearerFormat = bearerFormat,
                 openIdConnectUrl = openIdConnectUrl,
                 flows = flows,
-                scopes = scopes
+                scopes = scopes,
+                extensions = objectNode.extensions(),
             ).also { asyncApiContext.register(it, parserNode) }
         )
     }

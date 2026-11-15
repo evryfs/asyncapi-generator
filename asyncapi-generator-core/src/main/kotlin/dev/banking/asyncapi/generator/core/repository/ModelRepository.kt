@@ -63,7 +63,7 @@ internal class ModelRepository(
 
         if (model is Reference) {
             val sourcePathId = node.address.sourceId
-            model.sourceId = sourceRepository.findStableIdByPathId(sourcePathId) ?: sourcePathId
+            model.sourceId = sourcePathId
             sourceRepository.findFileById(sourcePathId)?.let { sourceFile ->
                 referenceOrigins[model] = ReferenceOrigin(
                     file = sourceFile,

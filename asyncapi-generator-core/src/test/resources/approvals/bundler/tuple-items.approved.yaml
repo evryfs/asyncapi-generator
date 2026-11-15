@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Tuple Items
+  version: 1.0.0
+channels:
+  prices:
+    address: prices
+    messages:
+      priceQuoted:
+        payload:
+          type: array
+          items:
+            - type: object
+              properties:
+                amount:
+                  type: number
+                currency:
+                  type: string
+            - type: string
+        name: PriceQuoted

@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Tuple Items
+  version: 1.0.0
+channels:
+  prices:
+    address: prices
+    messages:
+      priceQuoted:
+        name: PriceQuoted
+        payload:
+          type: array
+          items:
+            - $ref: 'shared.yaml#/Money'
+            - type: string

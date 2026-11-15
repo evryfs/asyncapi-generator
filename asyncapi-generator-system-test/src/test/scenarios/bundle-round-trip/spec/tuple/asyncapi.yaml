@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Tuple Items
+  version: 1.0.0
+channels:
+  quotes:
+    address: quotes
+    messages:
+      quoted:
+        name: Quoted
+        payload:
+          type: array
+          items:
+            - $ref: '../types.yaml#/Money'
+            - type: string
+operations:
+  publishQuote:
+    action: send
+    channel:
+      $ref: '#/channels/quotes'

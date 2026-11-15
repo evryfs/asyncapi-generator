@@ -146,9 +146,10 @@ class BundledDocumentApprovalTest {
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
         val message = assertIs<MessageInterface.MessageInline>(components.messages?.get("MyAccountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(message.bindings?.get("kafka")).binding
-        val keySchema = assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
-        assertEquals("object", keySchema.schema.type)
-        assertEquals(setOf("institutionId", "accountId"), keySchema.schema.properties?.keys)
+        val keySchema = assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
+        assertEquals("#/components/schemas/myAccountKey", keySchema.reference.ref, "the key keeps the name of its pointer")
+        val promotedKey = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["myAccountKey"])
+        assertEquals(setOf("institutionId", "accountId"), promotedKey.schema.properties?.keys)
 
         val bundledText = bundledFile.readText()
         assertFalse(bundledText.contains("key-schemas.yaml"))
@@ -199,10 +200,10 @@ class BundledDocumentApprovalTest {
 
         val accountUpdated = assertIs<MessageInterface.MessageInline>(channel.messages?.get("accountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(accountUpdated.bindings?.get("kafka")).binding
-        assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
+        assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
 
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
-        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "ParentNode", "ChildNode"), components.schemas?.keys)
+        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "myAccountKey", "ParentNode", "ChildNode"), components.schemas?.keys)
 
         val bundledText = bundledFile.readText()
         val externalReferences =
@@ -247,6 +248,137 @@ class BundledDocumentApprovalTest {
         BundlerApprovals.verify(
             generated = bundledText,
             scenario = "external-component-catalog",
+        )
+    }
+
+    @Test
+    fun `keeps reply channel and message references in the bundle`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/reply-channel/main.yaml",
+                scenario = "reply-channel",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val sendRequest =
+            assertIs<OperationInterface.OperationInline>(bundledDocument.operations?.get("sendRequest")).operation
+        val reply = assertIs<OperationReplyInterface.OperationReplyInline>(sendRequest.reply).operationReply
+        assertEquals("#/channels/replies", reply.channel?.ref)
+        assertEquals(listOf("#/channels/replies/messages/reply"), reply.messages?.map { it.ref })
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "reply-channel",
+        )
+    }
+
+    @Test
+    fun `inlines the resolved target of reference chains to external components`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/reference-chains/main.yaml",
+                scenario = "reference-chains",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        assertFalse(bundledFile.readText().contains("shared.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "reference-chains",
+        )
+    }
+
+    @Test
+    fun `bundles binding schemas that reference their own external document`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/external-binding-local-ref/main.yaml",
+                scenario = "external-binding-local-ref",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        assertEquals(setOf("Key"), components.schemas?.keys)
+        assertFalse(bundledFile.readText().contains("messages.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "external-binding-local-ref",
+        )
+    }
+
+    @Test
+    fun `bundles external references inside tuple items`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/tuple-items/main.yaml",
+                scenario = "tuple-items",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        assertFalse(bundledFile.readText().contains("shared.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "tuple-items",
+        )
+    }
+
+    @Test
+    fun `does not promote a deep pointer into an external component schema under the component name`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/deep-schema-pointer/main.yaml",
+                scenario = "deep-schema-pointer",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val invoice = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["Invoice"])
+        assertEquals(setOf("amount"), invoice.schema.properties?.keys)
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "deep-schema-pointer",
+        )
+    }
+
+    @Test
+    fun `keeps references of same named documents in different directories apart`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/same-named-documents/main.yaml",
+                scenario = "same-named-documents",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("shared.yaml"))
+        assertFalse(bundledText.contains("common.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "same-named-documents",
+        )
+    }
+
+    @Test
+    fun `keeps specification extensions on every extensible object`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/specification-extensions/main.yaml",
+                scenario = "specification-extensions",
+            )
+
+        val bundledText = bundledFile.readText()
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        assertNotNull(bundledDocument.extensions)
+        assertFalse(bundledText.contains("messages.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "specification-extensions",
         )
     }
 

@@ -1,0 +1,10 @@
+Outer:
+  type: object
+  properties:
+    inner:
+      $ref: '#/Inner'
+Inner:
+  type: object
+  properties:
+    code:
+      $ref: '../common.yaml#/Code'

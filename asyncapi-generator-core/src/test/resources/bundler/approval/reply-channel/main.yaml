@@ -1,0 +1,40 @@
+asyncapi: 3.0.0
+info:
+  title: Reply Channel
+  version: 1.0.0
+channels:
+  requests:
+    address: requests
+    messages:
+      request:
+        $ref: '#/components/messages/Request'
+  replies:
+    messages:
+      reply:
+        $ref: '#/components/messages/Reply'
+operations:
+  sendRequest:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    messages:
+      - $ref: '#/channels/requests/messages/request'
+    reply:
+      address:
+        location: '$message.header#/replyTo'
+      channel:
+        $ref: '#/channels/replies'
+      messages:
+        - $ref: '#/channels/replies/messages/reply'
+components:
+  messages:
+    Request:
+      payload:
+        type: object
+        properties:
+          id: { type: string }
+    Reply:
+      payload:
+        type: object
+        properties:
+          ok: { type: boolean }

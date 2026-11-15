@@ -33,7 +33,7 @@ internal class InfoParser(
             license = objectNode.optional("license")?.let(::parseLicense),
             tags = objectNode.optional("tags")?.let(tagParser::parseList),
             externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-            extensions = parseExtensions(parserNode),
+            extensions = objectNode.extensions(),
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
@@ -43,7 +43,8 @@ internal class InfoParser(
         return Contact(
             name = objectNode.optional("name")?.expect<String>(),
             url = objectNode.optional("url")?.expect<String>(),
-            email = objectNode.optional("email")?.expect<String>()
+            email = objectNode.optional("email")?.expect<String>(),
+            extensions = objectNode.extensions(),
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
@@ -52,16 +53,8 @@ internal class InfoParser(
         objectNode.expectOnlyMembers(LICENSE)
         return License(
             name = objectNode.required("name").expect<String>(),
-            url = objectNode.optional("url")?.expect<String>()
+            url = objectNode.optional("url")?.expect<String>(),
+            extensions = objectNode.extensions(),
         ).also { asyncApiContext.register(it, parserNode) }
-    }
-
-    private fun parseExtensions(parserNode: ParserNode): Map<String, Any?>? {
-        val extensions = parserNode.expectObject()
-            .membersStartingWith("x-")
-            .associateTo(linkedMapOf()) { member ->
-                member.name to member.toPlainValue()
-            }
-        return extensions.takeIf { it.isNotEmpty() }
     }
 }

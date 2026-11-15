@@ -1,0 +1,12 @@
+Outer:
+  type: object
+  properties:
+    rightInner:
+      $ref: '#/Inner'
+Inner:
+  type: object
+  properties:
+    rightValue:
+      type: string
+    code:
+      $ref: '../common.yaml#/Code'

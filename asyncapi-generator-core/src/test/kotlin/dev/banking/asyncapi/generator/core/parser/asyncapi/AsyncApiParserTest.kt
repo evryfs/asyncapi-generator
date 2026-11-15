@@ -60,11 +60,12 @@ class AsyncApiParserTest {
         val jsonDocument = DocumentReaderRegistry.read(
             TestResources.file("parser/asyncapi/format-independent.json"),
         )
-        val yamlRoot = ParserNodeFactory.root(yamlDocument, context)
-        val jsonRoot = ParserNodeFactory.root(jsonDocument, context)
+        // Separate contexts: references carry the unique id of the file they were written in.
+        val yamlContext = AsyncApiContext()
+        val jsonContext = AsyncApiContext()
 
-        val yaml = parser.parse(yamlRoot)
-        val json = parser.parse(jsonRoot)
+        val yaml = AsyncApiParser(yamlContext).parse(ParserNodeFactory.root(yamlDocument, yamlContext))
+        val json = AsyncApiParser(jsonContext).parse(ParserNodeFactory.root(jsonDocument, jsonContext))
 
         assertEquals("urn:com:example:format-independent", yaml.id)
         assertEquals("application/json", yaml.defaultContentType)

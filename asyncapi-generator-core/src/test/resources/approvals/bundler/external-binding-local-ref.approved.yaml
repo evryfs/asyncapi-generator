@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: External Binding Local Reference
+  version: 1.0.0
+channels:
+  orders:
+    address: orders
+    messages:
+      created:
+        payload:
+          type: string
+        name: Created
+        bindings:
+          kafka:
+            key:
+              $ref: "#/components/schemas/Key"
+            bindingVersion: 0.5.0
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: "#/channels/orders"
+components:
+  schemas:
+    Key:
+      type: object
+      properties:
+        orderId:
+          type: string

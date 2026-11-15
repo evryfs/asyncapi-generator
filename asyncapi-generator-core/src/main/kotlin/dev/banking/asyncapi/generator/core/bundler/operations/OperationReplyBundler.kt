@@ -35,13 +35,8 @@ internal class OperationReplyBundler {
 
     private fun bundleReply(reply: OperationReply, context: BundlingContext): OperationReply {
         val bundledAddress = reply.address?.let { operationReplyAddressBundler.bundle(it, context) }
-        val bundledChannel = reply.channel?.let { ReferenceBundler.inlineIfUnvisited(it, context) }
-        val bundledMessages = reply.messages?.map { ReferenceBundler.inlineIfUnvisited(it, context) }
-
-        return reply.copy(
-            address = bundledAddress,
-            channel = bundledChannel,
-            messages = bundledMessages,
-        )
+        // The reply channel and messages point into root channels, which are bundled themselves; like an
+        // operation's channel and messages they stay references.
+        return reply.copy(address = bundledAddress)
     }
 }

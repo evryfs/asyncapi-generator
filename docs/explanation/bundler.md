@@ -24,13 +24,33 @@ on) walks its part of the model and replaces resolved references:
 
 - A reference to a non-schema object in another file is replaced by the
   bundled object.
+- A reference to a non-schema object follows reference chains to the end: a
+  local reference to a component that is itself an external `$ref` is replaced
+  by the fully resolved object, so no external `$ref` remains.
+- References that point into the root document by position stay references and
+  are not inlined: an operation's `channel` and `messages`, and an operation
+  reply's `channel` and `messages`. Only a reply's `address` is bundled. The
+  targets are root channels, which are bundled themselves.
+- Binding schema fields (such as the Kafka message `key`) are always bundled as
+  schemas, so a local `$ref` inside an external file is promoted or inlined
+  instead of dangling. The bundled model's `kafkaKeySchema` and
+  `protocolBindings` hold the bundled schemas. A message key that is an
+  external reference is promoted to `components.schemas` under the last segment
+  of its pointer (`key-schemas.yaml#/myAccountKey` becomes
+  `#/components/schemas/myAccountKey`), so the generated key type keeps the
+  name it has when generated from the original files.
+- `items` in array form (tuple items) are bundled and take part in recursion
+  analysis like every other child schema.
 - A reference to a component schema of the root document stays a reference
   (`#/components/schemas/<Name>`). The component itself is bundled once with
   the root components.
 - A reference that leaves the root document and reaches a component schema,
   or a recursive schema, is promoted: the schema is added to the bundled
   `components.schemas` under the last segment of its pointer and the reference
-  is rewritten to point there. `PromotedSchemaRegistry` tracks promoted
+  is rewritten to point there. Only a pointer of exactly three segments
+  (`#/components/schemas/<Name>`) names a component schema; a deeper pointer
+  such as `#/components/schemas/Order/properties/total` is an ordinary schema
+  and is inlined. `PromotedSchemaRegistry` tracks promoted
   schemas by model identity and by name. A second schema with the same name
   and the same serialized content reuses the first; different content fails
   with `AsyncApiBundlingException.PromotedSchemaNameCollision`.
@@ -38,6 +58,13 @@ on) walks its part of the model and replaces resolved references:
   references so recursion through inlined schemas terminates;
   `SchemaRecursionAnalyzer` identifies recursive schemas that must be promoted
   instead.
+
+Specification extensions (`x-*`) are part of the model of every extensible
+object and are written to the bundle.
+
+References are identified by the unique id of the file they were written in, so
+same-named files in different directories never share visited or recursion
+state.
 
 Keeping and promoting component schema names is what makes code generated
 from a bundle identical to code generated from the original files: generated
