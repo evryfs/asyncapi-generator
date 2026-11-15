@@ -41,6 +41,19 @@ class GeneratedOutputManifestTest {
         assertFalse(sources.resolve("com/example/Shared.kt").exists(), "removed once no execution generates it")
     }
 
+    @Test
+    fun `never removes the output root or its parents`() {
+        val manifest = GeneratedOutputManifest(manifestFile, "models")
+        val generated = sources.resolve("com/example/Only.kt").apply { parentFile.mkdirs(); writeText("// generated") }
+        manifest.update(listOf(generated), listOf(sources))
+
+        manifest.update(emptyList(), listOf(sources))
+
+        assertFalse(generated.exists())
+        assertFalse(sources.resolve("com").exists(), "empty directories below the root are removed")
+        assertTrue(sources.exists(), "the output root stays even when empty")
+    }
+
     private fun write(owner: String, vararg relativePaths: String) {
         FileSystemGeneratedArtifactWriter(
             sourceOutputDirectory = sources,

@@ -58,7 +58,10 @@ class FileSystemGeneratedArtifactWriter(
             for (staged in toCommit) {
                 commitFile(staged)
             }
-            manifest?.update(result.artifacts.map(::outputFile))
+            manifest?.update(
+                result.artifacts.map(::outputFile),
+                listOf(sourceOutputDirectory, javaSourceOutputDirectory, resourceOutputDirectory),
+            )
         } catch (ex: Exception) {
             primaryFailure = ex
             throw ex
