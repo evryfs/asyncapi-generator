@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ExternalDocsValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test

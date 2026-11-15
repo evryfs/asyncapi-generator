@@ -121,9 +121,7 @@ data class GeneratorConfigurationRequest(
                 else -> null
             }
 
-        fun nativeProtobuf(
-            enabled: Boolean? = null,
-        ): NativeProtobuf? =
+        fun nativeProtobuf(enabled: Boolean? = null): NativeProtobuf? =
             when {
                 enabled == false -> null
                 enabled == true -> NativeProtobuf

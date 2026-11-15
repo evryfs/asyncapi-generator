@@ -11,7 +11,8 @@ internal enum class DocumentFormat(
     val extensions: Set<String>,
 ) {
     YAML(setOf("yaml", "yml")),
-    JSON(setOf("json"));
+    JSON(setOf("json")),
+    ;
 
     companion object {
         fun fromFile(file: File): DocumentFormat? {

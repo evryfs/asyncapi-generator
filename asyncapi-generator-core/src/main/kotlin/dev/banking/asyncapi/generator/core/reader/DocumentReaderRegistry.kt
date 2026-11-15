@@ -16,8 +16,9 @@ import java.io.IOException
 internal object DocumentReaderRegistry {
     fun read(file: File): InputDocument {
         requireInputFile(file)
-        val format = DocumentFormat.fromFile(file)
-            ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
+        val format =
+            DocumentFormat.fromFile(file)
+                ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
         val content =
             try {
                 DocumentReaderLimits.DEFAULT.readContent(file)

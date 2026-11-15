@@ -66,15 +66,16 @@ internal class AsyncApiExternalContext(
             referenceOrigin?.file
                 ?: reference.sourceId?.let(sourceTracking::findFileById)
                 ?: sourceTracking.getCurrentFile()
-        val resolved = try {
-            resolveReference(reference, sourceFile)
-        } catch (exception: URISyntaxException) {
-            throw invalidReference(reference, exception.reason)
-        } catch (exception: IllegalArgumentException) {
-            throw invalidReference(reference, exception.message ?: "invalid reference")
-        } catch (exception: IOException) {
-            throw missingDocument(reference, File(reference.ref.substringBefore('#')))
-        }
+        val resolved =
+            try {
+                resolveReference(reference, sourceFile)
+            } catch (exception: URISyntaxException) {
+                throw invalidReference(reference, exception.reason)
+            } catch (exception: IllegalArgumentException) {
+                throw invalidReference(reference, exception.message ?: "invalid reference")
+            } catch (exception: IOException) {
+                throw missingDocument(reference, File(reference.ref.substringBefore('#')))
+            }
         if (resolved == null) return
 
         val externalFile = resolved.file
@@ -92,9 +93,10 @@ internal class AsyncApiExternalContext(
             } catch (exception: SecurityException) {
                 throw missingDocument(reference, externalFile)
             }
-        val rootNode = documents.getOrPut(documentKey) {
-            readDocument(externalFile)
-        }
+        val rootNode =
+            documents.getOrPut(documentKey) {
+                readDocument(externalFile)
+            }
         try {
             registerReferenceTarget(
                 externalFile,
@@ -123,14 +125,16 @@ internal class AsyncApiExternalContext(
         } else {
             val parserProfile = referenceOrigin?.parserProfile
             val profiledRoot = parserProfile?.let(rootNode::withProfile) ?: rootNode
-            val target = ExternalReferenceTargetResolver.resolve(profiledRoot, resolved.pointer)
-                ?: throw missingTarget(reference)
-            val fragmentIdentity = FragmentIdentity(
-                file = documentKey,
-                pointer = resolved.pointer.toString(),
-                category = reference.referenceCategoryKey?.name.orEmpty(),
-                parserProfile = parserProfile?.name.orEmpty(),
-            )
+            val target =
+                ExternalReferenceTargetResolver.resolve(profiledRoot, resolved.pointer)
+                    ?: throw missingTarget(reference)
+            val fragmentIdentity =
+                FragmentIdentity(
+                    file = documentKey,
+                    pointer = resolved.pointer.toString(),
+                    category = reference.referenceCategoryKey?.name.orEmpty(),
+                    parserProfile = parserProfile?.name.orEmpty(),
+                )
             if (!loadedFragments.add(fragmentIdentity)) return
             withinExternalReference(referenceLocation) {
                 parseFragment(target, reference)
@@ -145,10 +149,11 @@ internal class AsyncApiExternalContext(
         var parsed = false
         fragmentLoadDepth++
         try {
-            pendingFragmentValidations += createFragmentProcessor().parseAndDeferValidation(
-                target = target,
-                reference = reference,
-            )
+            pendingFragmentValidations +=
+                createFragmentProcessor().parseAndDeferValidation(
+                    target = target,
+                    reference = reference,
+                )
             parsed = true
         } finally {
             fragmentLoadDepth--
@@ -181,7 +186,10 @@ internal class AsyncApiExternalContext(
         )
     }
 
-    private fun invalidReference(reference: Reference, reason: String): AsyncApiParseException =
+    private fun invalidReference(
+        reference: Reference,
+        reason: String,
+    ): AsyncApiParseException =
         parserFailure(
             ParserDiagnostic.InvalidReference(
                 reference = reference.ref,
@@ -191,7 +199,10 @@ internal class AsyncApiExternalContext(
             ),
         )
 
-    private fun missingDocument(reference: Reference, file: File): AsyncApiParseException =
+    private fun missingDocument(
+        reference: Reference,
+        file: File,
+    ): AsyncApiParseException =
         parserFailure(
             ParserDiagnostic.ReferenceDocumentNotFound(
                 reference = reference.ref,
@@ -210,9 +221,8 @@ internal class AsyncApiExternalContext(
             ),
         )
 
-    private fun parserFailure(
-        diagnostic: ParserDiagnostic,
-    ): AsyncApiParseException = createDiagnosticException(diagnostic)
+    private fun parserFailure(diagnostic: ParserDiagnostic): AsyncApiParseException =
+        createDiagnosticException(diagnostic)
 
     private fun referenceLocation(reference: Reference) =
         requireNotNull(

@@ -21,7 +21,6 @@ data class Reference(
     @get:JsonIgnore
     var referenceCategoryKey: ReferenceCategoryKey? = null, // The model type expected at the reference target.
 ) {
-
     @get:JsonIgnore
     var inline: Boolean = false // only show 'ref' by default
 
@@ -35,10 +34,12 @@ data class Reference(
 
     override fun equals(other: Any?): Boolean =
         this === other ||
-            other is Reference &&
-            ref == other.ref &&
-            sourceId == other.sourceId &&
-            referenceCategoryKey == other.referenceCategoryKey
+            (
+                other is Reference &&
+                    ref == other.ref &&
+                    sourceId == other.sourceId &&
+                    referenceCategoryKey == other.referenceCategoryKey
+            )
 
     override fun hashCode(): Int = ref.hashCode()
 

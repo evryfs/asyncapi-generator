@@ -20,12 +20,12 @@ class NativeProtobufApprovalTest {
                 .render(
                     generationInputFactory
                         .create(
-                            bundlerFixtures.bundledDocument(
-                                "examples/generated-output/native-protobuf.yaml",
-                            ).document,
+                            bundlerFixtures
+                                .bundledDocument(
+                                    "examples/generated-output/native-protobuf.yaml",
+                                ).document,
                         ).multiFormatSchemas,
-                )
-                .artifacts
+                ).artifacts
                 .single { artifact -> artifact.kind == GeneratedArtifactKind.SCHEMA }
                 .content
 

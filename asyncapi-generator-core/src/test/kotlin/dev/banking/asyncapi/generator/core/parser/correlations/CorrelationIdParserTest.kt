@@ -14,7 +14,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class CorrelationIdParserTest {
-
     private val context = AsyncApiContext()
     private val parser = CorrelationIdParser(context)
 
@@ -22,14 +21,20 @@ class CorrelationIdParserTest {
     fun `parse inline correlation ID`() {
         val file = TestResources.file("parser/correlations/asyncapi_parser_correlationid_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val correlationIdNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("correlationIds")
-            .expectObject().required("MyCorrelationId")
+        val correlationIdNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("correlationIds")
+                .expectObject()
+                .required("MyCorrelationId")
 
-        val result = assertIs<CorrelationIdInterface.CorrelationIdInline>(
-            parser.parseElement(correlationIdNode),
-        ).correlationId
+        val result =
+            assertIs<CorrelationIdInterface.CorrelationIdInline>(
+                parser.parseElement(correlationIdNode),
+            ).correlationId
 
         assertEquals("\$message.header#/correlationId", result.location)
         assertEquals("My custom correlation ID", result.description)
@@ -39,14 +44,20 @@ class CorrelationIdParserTest {
     fun `parse correlation ID reports missing location`() {
         val file = TestResources.file("parser/correlations/asyncapi_parser_correlationid_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val correlationIdNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("correlationIds")
-            .expectObject().required("MissingLocationId")
+        val correlationIdNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("correlationIds")
+                .expectObject()
+                .required("MissingLocationId")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(correlationIdNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(correlationIdNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -59,5 +70,4 @@ class CorrelationIdParserTest {
         assertEquals("root.components.correlationIds.MissingLocationId", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_correlationid_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

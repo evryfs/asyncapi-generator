@@ -22,7 +22,10 @@ class GenerateReferencedPrimitiveTypeTest : AbstractKotlinGeneratorClass() {
             generated.contains("@field:Pattern(regexp = \"^[0-9]{4,35}$\")"),
             "Expected constraints from referenced primitive schema",
         )
-        assertFalse(generated.contains("import $modelPackage.MyField"), "Primitive ref should not import model type MyField")
+        assertFalse(
+            generated.contains("import $modelPackage.MyField"),
+            "Primitive ref should not import model type MyField",
+        )
 
         assertTrue(generated.contains("val myEnum: MyEnum"), "Enum ref should stay named")
         assertTrue(generated.contains("val myObject: MyObject"), "Object ref should stay named")

@@ -10,7 +10,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class ParameterParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ParameterParser(context)
 
@@ -18,10 +17,15 @@ class ParameterParserTest {
     fun `parses every parameter field`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val parametersNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
-            .expectObject().required("lightStatus")
-            .expectObject().required("parameters")
+        val parametersNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("channels")
+                .expectObject()
+                .required("lightStatus")
+                .expectObject()
+                .required("parameters")
 
         val parameters = parser.parseMap(parametersNode)
 

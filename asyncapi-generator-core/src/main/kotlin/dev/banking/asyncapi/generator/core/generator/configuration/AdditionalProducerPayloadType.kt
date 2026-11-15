@@ -18,13 +18,14 @@ enum class AdditionalProducerPayloadType(
             if (values.isNullOrEmpty()) return emptySet()
 
             val configured =
-                values.map { value ->
-                    entries.firstOrNull { it.configurationValue == value }
-                        ?: throw IllegalArgumentException(
-                            "Invalid $path '$value'. Supported values: " +
-                                supportedConfigurationValues.joinToString(", "),
-                        )
-                }.toSet()
+                values
+                    .map { value ->
+                        entries.firstOrNull { it.configurationValue == value }
+                            ?: throw IllegalArgumentException(
+                                "Invalid $path '$value'. Supported values: " +
+                                    supportedConfigurationValues.joinToString(", "),
+                            )
+                    }.toSet()
 
             return entries.filterTo(linkedSetOf()) { it in configured }
         }

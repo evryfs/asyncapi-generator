@@ -54,9 +54,11 @@ class ModelArtifactGenerationTest {
         val content =
             result.artifacts.single { it.relativePath == "com/example/model/User.java" }.content
         assertTrue(content.contains("import com.example.GeneratedPayload;"))
-        assertTrue(content.lineSequence().zipWithNext().any { (annotation, declaration) ->
-            annotation == "@GeneratedPayload" && declaration.startsWith("public class User")
-        })
+        assertTrue(
+            content.lineSequence().zipWithNext().any { (annotation, declaration) ->
+                annotation == "@GeneratedPayload" && declaration.startsWith("public class User")
+            },
+        )
     }
 
     @Test

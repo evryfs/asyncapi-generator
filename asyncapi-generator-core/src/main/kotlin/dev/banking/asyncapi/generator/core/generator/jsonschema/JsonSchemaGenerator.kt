@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.jsonschema
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
-import com.fasterxml.jackson.databind.json.JsonMapper
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
@@ -22,14 +22,14 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  */
 internal class JsonSchemaGenerator(
     private val objectMapper: ObjectMapper =
-        JsonMapper.builder()
+        JsonMapper
+            .builder()
             .defaultPropertyInclusion(
                 JsonInclude.Value.construct(
                     JsonInclude.Include.NON_NULL,
                     JsonInclude.Include.NON_NULL,
                 ),
-            )
-            .build(),
+            ).build(),
 ) {
     fun render(
         schemaDeclarations: SchemaDeclarationCatalog,
@@ -253,7 +253,8 @@ internal class JsonSchemaGenerator(
             return
         }
 
-        schemaNode.get($$"$ref")
+        schemaNode
+            .get($$"$ref")
             ?.takeIf(JsonNode::isTextual)
             ?.asText()
             ?.let(::generatedSchemaReference)

@@ -6,7 +6,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ValidationRuleTest {
-
     @Test
     fun `rule codes are unique and identify their ownership category`() {
         val rules = ValidationRule.entries

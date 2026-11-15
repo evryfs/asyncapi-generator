@@ -45,8 +45,9 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
 
     val protocExecutable by option(
         "--protoc",
-        help = "Local protoc executable for native Protobuf models. By default protoc is taken from the " +
-            "local Maven repository or downloaded from Maven Central.",
+        help =
+            "Local protoc executable for native Protobuf models. By default protoc is taken from the " +
+                "local Maven repository or downloaded from Maven Central.",
     ).file(mustExist = true, canBeDir = false)
 
     val suppressedWarnings by option(

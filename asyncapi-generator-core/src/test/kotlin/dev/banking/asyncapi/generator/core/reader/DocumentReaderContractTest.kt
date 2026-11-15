@@ -20,19 +20,19 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DocumentReaderContractTest {
-
     private val reader = YamlDocumentReader()
     private val jsonReader = JsonDocumentReader()
 
     @Test
     fun `reader preserves references without resolving them`() {
         val file = TestResources.file("reader/yaml/reference-preservation.yaml")
-        val source = DocumentSource(
-            id = "reference-preservation",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "reference-preservation",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
         val components = assertIs<DocumentObject>(root["components"])
@@ -48,12 +48,13 @@ class DocumentReaderContractTest {
     @Test
     fun `reader accepts object roots without validating AsyncAPI semantics`() {
         val file = TestResources.file("reader/yaml/non-asyncapi-object.yaml")
-        val source = DocumentSource(
-            id = "non-asyncapi-object",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "non-asyncapi-object",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
         val root = assertIs<DocumentObject>(reader.read(source).root)
 
         assertTrue(root.members.containsKey("notAsyncApi"))
@@ -63,19 +64,21 @@ class DocumentReaderContractTest {
     @Test
     fun `readers accept scalar roots without applying AsyncAPI rules`() {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val yamlSource = DocumentSource(
-            id = "invalid-root",
-            file = yamlFile,
-            content = "true",
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = yamlFile,
+                content = "true",
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
-        val jsonSource = DocumentSource(
-            id = "invalid-root",
-            file = jsonFile,
-            content = "true",
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = jsonFile,
+                content = "true",
+                format = DocumentFormat.JSON,
+            )
 
         assertEquals(true, assertIs<DocumentBoolean>(reader.read(yamlSource).root).value)
         assertEquals(true, assertIs<DocumentBoolean>(jsonReader.read(jsonSource).root).value)
@@ -84,19 +87,21 @@ class DocumentReaderContractTest {
     @Test
     fun `readers preserve explicit null roots`() {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val yamlSource = DocumentSource(
-            id = "invalid-root",
-            file = yamlFile,
-            content = "null",
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = yamlFile,
+                content = "null",
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
-        val jsonSource = DocumentSource(
-            id = "invalid-root",
-            file = jsonFile,
-            content = "null",
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = jsonFile,
+                content = "null",
+                format = DocumentFormat.JSON,
+            )
 
         assertIs<DocumentNull>(reader.read(yamlSource).root)
         assertIs<DocumentNull>(jsonReader.read(jsonSource).root)
@@ -105,19 +110,21 @@ class DocumentReaderContractTest {
     @Test
     fun `readers accept utf8 bom and crlf input consistently`() {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val yamlSource = DocumentSource(
-            id = "bom-crlf",
-            file = yamlFile,
-            content = "\uFEFFvalue:\r\n  nested: true\r\n",
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "bom-crlf",
+                file = yamlFile,
+                content = "\uFEFFvalue:\r\n  nested: true\r\n",
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
-        val jsonSource = DocumentSource(
-            id = "bom-crlf",
-            file = jsonFile,
-            content = "\uFEFF{\r\n  \"value\": {\r\n    \"nested\": true\r\n  }\r\n}",
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "bom-crlf",
+                file = jsonFile,
+                content = "\uFEFF{\r\n  \"value\": {\r\n    \"nested\": true\r\n  }\r\n}",
+                format = DocumentFormat.JSON,
+            )
 
         val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
         val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)
@@ -133,38 +140,41 @@ class DocumentReaderContractTest {
     @Test
     fun `readers produce equivalent unambiguous source paths`() {
         val escapedMemberName = "quote\"slash\\line\nbreak"
-        val yamlSource = DocumentSource(
-            id = "paths",
-            file = File("paths.yaml").canonicalFile,
-            content =
-                """
-                a:
-                  b:
-                    - nested
-                "a.b":
-                  - literal
-                "quote\"slash\\line\nbreak": escaped
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
-        val jsonSource = DocumentSource(
-            id = "paths",
-            file = File("paths.json").canonicalFile,
-            content =
-                """
-                {
-                  "a": {"b": ["nested"]},
-                  "a.b": ["literal"],
-                  "quote\"slash\\line\nbreak": "escaped"
-                }
-                """.trimIndent(),
-            format = DocumentFormat.JSON,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "paths",
+                file = File("paths.yaml").canonicalFile,
+                content =
+                    """
+                    a:
+                      b:
+                        - nested
+                    "a.b":
+                      - literal
+                    "quote\"slash\\line\nbreak": escaped
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
+        val jsonSource =
+            DocumentSource(
+                id = "paths",
+                file = File("paths.json").canonicalFile,
+                content =
+                    """
+                    {
+                      "a": {"b": ["nested"]},
+                      "a.b": ["literal"],
+                      "quote\"slash\\line\nbreak": "escaped"
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            )
 
-        val roots = listOf(
-            assertIs<DocumentObject>(reader.read(yamlSource).root) to yamlSource,
-            assertIs<DocumentObject>(jsonReader.read(jsonSource).root) to jsonSource,
-        )
+        val roots =
+            listOf(
+                assertIs<DocumentObject>(reader.read(yamlSource).root) to yamlSource,
+                assertIs<DocumentObject>(jsonReader.read(jsonSource).root) to jsonSource,
+            )
 
         roots.forEach { (root, source) ->
             assertEquals(source.id, root.location.sourceId)
@@ -198,29 +208,33 @@ class DocumentReaderContractTest {
     @Test
     fun `readers identify byte and character limits separately`() {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val byteLimitedSource = DocumentSource(
-            id = "byte-limited",
-            file = yamlFile,
-            content = "éé",
-            format = DocumentFormat.YAML,
-        )
-        val characterLimitedSource = DocumentSource(
-            id = "character-limited",
-            file = yamlFile,
-            content = "true",
-            format = DocumentFormat.YAML,
-        )
+        val byteLimitedSource =
+            DocumentSource(
+                id = "byte-limited",
+                file = yamlFile,
+                content = "éé",
+                format = DocumentFormat.YAML,
+            )
+        val characterLimitedSource =
+            DocumentSource(
+                id = "character-limited",
+                file = yamlFile,
+                content = "true",
+                format = DocumentFormat.YAML,
+            )
 
-        val byteFailure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            YamlDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxDocumentBytes = 3),
-            ).read(byteLimitedSource)
-        }
-        val characterFailure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            YamlDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxDocumentCharacters = 3),
-            ).read(characterLimitedSource)
-        }
+        val byteFailure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                YamlDocumentReader(
+                    DocumentReaderLimits.DEFAULT.copy(maxDocumentBytes = 3),
+                ).read(byteLimitedSource)
+            }
+        val characterFailure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                YamlDocumentReader(
+                    DocumentReaderLimits.DEFAULT.copy(maxDocumentCharacters = 3),
+                ).read(characterLimitedSource)
+            }
 
         assertEquals(DocumentResourceLimit.DOCUMENT_BYTES, byteFailure.limit)
         assertEquals(3L, byteFailure.maximum)
@@ -236,19 +250,21 @@ class DocumentReaderContractTest {
                 maxDocumentCharacters = 16,
             )
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val yamlSource = DocumentSource(
-            id = "invalid-root",
-            file = yamlFile,
-            content = "value: 1234567890",
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = yamlFile,
+                content = "value: 1234567890",
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
-        val jsonSource = DocumentSource(
-            id = "invalid-root",
-            file = jsonFile,
-            content = """{"value":1234567890}""",
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = jsonFile,
+                content = """{"value":1234567890}""",
+                format = DocumentFormat.JSON,
+            )
 
         assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             YamlDocumentReader(limits).read(yamlSource)
@@ -261,37 +277,39 @@ class DocumentReaderContractTest {
     @Test
     fun `readers preserve equivalent integer range and decimal precision`() {
         val yamlFile = TestResources.file("reader/yaml/equivalent-document.yaml")
-        val yamlSource = DocumentSource(
-            id = "equivalent-document",
-            file = yamlFile,
-            content =
-                """
-                smallInteger: 42
-                longInteger: 2147483648
-                largeInteger: 9223372036854775808
-                ordinaryDecimal: 12.500
-                preciseDecimal: 0.123456789012345678901234567890
-                hugeDecimal: 10e399
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "equivalent-document",
+                file = yamlFile,
+                content =
+                    """
+                    smallInteger: 42
+                    longInteger: 2147483648
+                    largeInteger: 9223372036854775808
+                    ordinaryDecimal: 12.500
+                    preciseDecimal: 0.123456789012345678901234567890
+                    hugeDecimal: 10e399
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/equivalent-document.json")
-        val jsonSource = DocumentSource(
-            id = "equivalent-document",
-            file = jsonFile,
-            content =
-                """
-                {
-                  "smallInteger": 42,
-                  "longInteger": 2147483648,
-                  "largeInteger": 9223372036854775808,
-                  "ordinaryDecimal": 12.5,
-                  "preciseDecimal": 0.12345678901234567890123456789,
-                  "hugeDecimal": 1e400
-                }
-                """.trimIndent(),
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "equivalent-document",
+                file = jsonFile,
+                content =
+                    """
+                    {
+                      "smallInteger": 42,
+                      "longInteger": 2147483648,
+                      "largeInteger": 9223372036854775808,
+                      "ordinaryDecimal": 12.5,
+                      "preciseDecimal": 0.12345678901234567890123456789,
+                      "hugeDecimal": 1e400
+                    }
+                    """.trimIndent(),
+                format = DocumentFormat.JSON,
+            )
 
         val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
         val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)
@@ -328,19 +346,21 @@ class DocumentReaderContractTest {
     fun `readers enforce the same numeric token limit`() {
         val limits = DocumentReaderLimits.DEFAULT.copy(maxNumberCharacters = 4)
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
-        val yamlSource = DocumentSource(
-            id = "invalid-root",
-            file = yamlFile,
-            content = "12345",
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = yamlFile,
+                content = "12345",
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
-        val jsonSource = DocumentSource(
-            id = "invalid-root",
-            file = jsonFile,
-            content = "12345",
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "invalid-root",
+                file = jsonFile,
+                content = "12345",
+                format = DocumentFormat.JSON,
+            )
 
         assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
             YamlDocumentReader(limits).read(yamlSource)
@@ -353,19 +373,21 @@ class DocumentReaderContractTest {
     @Test
     fun `yaml and json readers produce equivalent document trees`() {
         val yamlFile = TestResources.file("reader/yaml/equivalent-document.yaml")
-        val yamlSource = DocumentSource(
-            id = "equivalent-document",
-            file = yamlFile,
-            content = yamlFile.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val yamlSource =
+            DocumentSource(
+                id = "equivalent-document",
+                file = yamlFile,
+                content = yamlFile.readText(),
+                format = DocumentFormat.YAML,
+            )
         val jsonFile = TestResources.file("reader/json/equivalent-document.json")
-        val jsonSource = DocumentSource(
-            id = "equivalent-document",
-            file = jsonFile,
-            content = jsonFile.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val jsonSource =
+            DocumentSource(
+                id = "equivalent-document",
+                file = jsonFile,
+                content = jsonFile.readText(),
+                format = DocumentFormat.JSON,
+            )
 
         val yamlRoot = assertIs<DocumentObject>(reader.read(yamlSource).root)
         val jsonRoot = assertIs<DocumentObject>(jsonReader.read(jsonSource).root)

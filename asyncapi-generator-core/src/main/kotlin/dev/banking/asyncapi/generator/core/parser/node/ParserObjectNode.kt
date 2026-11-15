@@ -20,18 +20,19 @@ internal class ParserObjectNode(
     private val parserNode: ParserNode,
     private val documentObject: DocumentObject,
 ) {
-
     fun required(memberName: String): ParserNode {
         val memberAddress = parserNode.address.member(memberName)
-        val member = documentObject[memberName]
-            ?: throw AsyncApiParseException.ParserDiagnosticFailure(
-                diagnostic = ParserDiagnostic.MissingRequiredMember(
-                    memberName = memberName,
-                    path = memberAddress.displayPath,
-                    sourceLocation = documentObject.location.copy(path = parserNode.address.documentPath),
-                ),
-                context = parserNode.context,
-            )
+        val member =
+            documentObject[memberName]
+                ?: throw AsyncApiParseException.ParserDiagnosticFailure(
+                    diagnostic =
+                        ParserDiagnostic.MissingRequiredMember(
+                            memberName = memberName,
+                            path = memberAddress.displayPath,
+                            sourceLocation = documentObject.location.copy(path = parserNode.address.documentPath),
+                        ),
+                    context = parserNode.context,
+                )
         return parserNode.member(memberName, member)
     }
 
@@ -63,20 +64,22 @@ internal class ParserObjectNode(
         allowedMembers: Set<String>,
         specificationExtensionsAllowed: Boolean = true,
     ) {
-        val unexpectedMember = documentObject.members.entries.firstOrNull { (memberName, _) ->
-            memberName !in allowedMembers &&
-                !(specificationExtensionsAllowed && memberName.matches(SPECIFICATION_EXTENSION_NAME))
-        } ?: return
+        val unexpectedMember =
+            documentObject.members.entries.firstOrNull { (memberName, _) ->
+                memberName !in allowedMembers &&
+                    !(specificationExtensionsAllowed && memberName.matches(SPECIFICATION_EXTENSION_NAME))
+            } ?: return
         val (memberName, member) = unexpectedMember
         val memberPath = parserNode.address.member(memberName).displayPath
         throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic = ParserDiagnostic.UnexpectedObjectMember(
-                memberName = memberName,
-                objectType = objectType,
-                specificationExtensionsAllowed = specificationExtensionsAllowed,
-                path = memberPath,
-                sourceLocation = member.keyLocation.copy(path = parserNode.address.member(memberName).documentPath),
-            ),
+            diagnostic =
+                ParserDiagnostic.UnexpectedObjectMember(
+                    memberName = memberName,
+                    objectType = objectType,
+                    specificationExtensionsAllowed = specificationExtensionsAllowed,
+                    path = memberPath,
+                    sourceLocation = member.keyLocation.copy(path = parserNode.address.member(memberName).documentPath),
+                ),
             context = parserNode.context,
         )
     }

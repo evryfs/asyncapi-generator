@@ -6,33 +6,34 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class GenerateNullableTypesTest : AbstractKotlinGeneratorClass() {
-
     @Test
     fun generate_nullable_object_with_various_nullable_fields() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_nullable_types.yaml"),
-            generated = "NullableObject.kt",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.nullable",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_nullable_types.yaml"),
+                generated = "NullableObject.kt",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.nullable",
+            )
         val dataClass = extractElement(generated)
 
-        val expected = """
-           data class NullableObject(
+        val expected =
+            """
+            data class NullableObject(
 
-               val requiredString: String,
+                val requiredString: String,
 
-               val optionalString: String? = null,
+                val optionalString: String? = null,
 
-               val nullableStringArray: List<String>? = null,
+                val nullableStringArray: List<String>? = null,
 
-               val stringOrNull: String? = null,
+                val stringOrNull: String? = null,
 
-               val integerOrNull: Int? = null,
+                val integerOrNull: Int? = null,
 
-               val booleanOrNull: Boolean? = null
-           ) {
-           }
-           """.trimIndent()
+                val booleanOrNull: Boolean? = null
+            ) {
+            }
+            """.trimIndent()
 
         assertEquals(expected, dataClass)
     }

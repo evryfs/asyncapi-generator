@@ -17,9 +17,10 @@ import kotlin.test.assertTrue
  * - `AsyncApiGeneratorCli`
  */
 class CliDiagnosticsTest {
-
     @Test
-    fun `should report malformed input without an exception trace`(@TempDir tempDir: Path) {
+    fun `should report malformed input without an exception trace`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-malformed.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
 
@@ -46,7 +47,9 @@ class CliDiagnosticsTest {
     }
 
     @Test
-    fun `should preserve formatted validation errors`(@TempDir tempDir: Path) {
+    fun `should preserve formatted validation errors`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-validation-error.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
 
@@ -70,7 +73,9 @@ class CliDiagnosticsTest {
     }
 
     @Test
-    fun `should accept an arbitrary application version and complete generation`(@TempDir tempDir: Path) {
+    fun `should accept an arbitrary application version and complete generation`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-validation-warning.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
 

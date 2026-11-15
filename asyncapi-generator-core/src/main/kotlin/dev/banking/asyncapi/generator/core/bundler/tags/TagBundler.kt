@@ -8,16 +8,26 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
  * Bundles tag objects and references.
  */
 internal class TagBundler {
-    fun bundleMap(tags: Map<String, TagInterface>?, context: BundlingContext): Map<String, TagInterface>? =
+    fun bundleMap(
+        tags: Map<String, TagInterface>?,
+        context: BundlingContext,
+    ): Map<String, TagInterface>? =
         tags?.mapValues { (_, tag) ->
             bundle(tag, context)
         }
-    fun bundleList(tags: List<TagInterface>?, context: BundlingContext): List<TagInterface>? =
+
+    fun bundleList(
+        tags: List<TagInterface>?,
+        context: BundlingContext,
+    ): List<TagInterface>? =
         tags?.map { tag ->
             bundle(tag, context)
         }
 
-    fun bundle(tag: TagInterface, context: BundlingContext): TagInterface =
+    fun bundle(
+        tag: TagInterface,
+        context: BundlingContext,
+    ): TagInterface =
         when (tag) {
             is TagInterface.TagReference -> {
                 tag.copy(reference = ReferenceBundler.inlineIfUnvisited(tag.reference, context))

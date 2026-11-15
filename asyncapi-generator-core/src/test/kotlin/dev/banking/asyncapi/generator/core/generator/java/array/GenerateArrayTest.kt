@@ -6,17 +6,18 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class GenerateArrayTest : AbstractJavaGeneratorClass() {
-
     @Test
     fun generate_asyncapi_array_primitive_object_ContactPointType_dataClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_array_primitive_object.yaml"),
-            generated = "ContactPointType.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.array",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_array_primitive_object.yaml"),
+                generated = "ContactPointType.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.array",
+            )
         val classBody = extractClassBody(generated)
 
-        val expected = """
+        val expected =
+            """
             public class ContactPointType implements Serializable {
             
                 @Size(min = 3, max = 20)
@@ -134,20 +135,22 @@ class GenerateArrayTest : AbstractJavaGeneratorClass() {
                     return sb.toString();
                 }
             }
-           """.trimIndent()
+            """.trimIndent()
         assertEquals(expected.replace("\r\n", "\n"), classBody.replace("\r\n", "\n"))
     }
 
     @Test
     fun generate_asyncapi_array_primitive_object_CustomerWithContacts_dataClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_array_primitive_object.yaml"),
-            generated = "CustomerWithContacts.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.array",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_array_primitive_object.yaml"),
+                generated = "CustomerWithContacts.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.array",
+            )
         val classBody = extractClassBody(generated)
 
-        val expected = """
+        val expected =
+            """
             public class CustomerWithContacts implements Serializable {
             
                 @NotNull
@@ -287,98 +290,102 @@ class GenerateArrayTest : AbstractJavaGeneratorClass() {
                     return sb.toString();
                 }
             }
-           """.trimIndent()
+            """.trimIndent()
         assertEquals(expected, classBody)
     }
 
     @Test
     fun generate_enum_from_array_items() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_array_inline_enum.yaml"),
-            generated = "Priorities.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.arrayenum",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_array_inline_enum.yaml"),
+                generated = "Priorities.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.arrayenum",
+            )
         val classBody = extractClassBody(generated)
 
-        val expected = """
-               public enum Priorities implements Serializable {
-                   LOW,
-                   MEDIUM,
-                   HIGH,
-               }
-           """.trimIndent()
+        val expected =
+            """
+            public enum Priorities implements Serializable {
+                LOW,
+                MEDIUM,
+                HIGH,
+            }
+            """.trimIndent()
 
         assertEquals(expected, classBody)
     }
 
     @Test
     fun generate_data_class_with_list_of_enums() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_array_inline_enum.yaml"),
-            generated = "ObjectWithArrayOfEnums.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.arrayenum",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_array_inline_enum.yaml"),
+                generated = "ObjectWithArrayOfEnums.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.arrayenum",
+            )
         val classBody = extractClassBody(generated)
-        val expected = """
-               public class ObjectWithArrayOfEnums implements Serializable {
-               
-                   private List<Priorities> priorities;
-               
-                   public ObjectWithArrayOfEnums() {
-                       // Default constructor
-                   }
-               
-                   // All-args constructor
-                   public ObjectWithArrayOfEnums(
-                       List<Priorities> priorities
-                   ) {
-                       this.priorities = priorities;
-                   }
-               
-                   /**
-                    * Get priorities.
-                    * @return List<Priorities>
-                    */
-                   public List<Priorities> getPriorities() {
-                       return priorities;
-                   }
-               
-                   /**
-                    * Set priorities.
-                    * @param priorities
-                    */
-                   public void setPriorities(List<Priorities> priorities) {
-                       this.priorities = priorities;
-                   }
-               
-                   @Override
-                   public boolean equals(Object o) {
-                       if (this == o) return true;
-                       if (o == null || getClass() != o.getClass()) return false;
-                       ObjectWithArrayOfEnums that = (ObjectWithArrayOfEnums) o;
-                       return
-                           Objects.equals(priorities, that.priorities)
-               ;
-                   }
-               
-                   @Override
-                   public int hashCode() {
-                       return Objects.hash(
-               
-                           priorities
-                       );
-                   }
-               
-                   @Override
-                   public String toString() {
-                       StringBuilder sb = new StringBuilder();
-                       sb.append("class ObjectWithArrayOfEnums {\n");
-                       sb.append("    priorities: ").append(priorities).append("\n");
-                       sb.append("}");
-                       return sb.toString();
-                   }
-               }
-           """.trimIndent()
+        val expected =
+            """
+            public class ObjectWithArrayOfEnums implements Serializable {
+            
+                private List<Priorities> priorities;
+            
+                public ObjectWithArrayOfEnums() {
+                    // Default constructor
+                }
+            
+                // All-args constructor
+                public ObjectWithArrayOfEnums(
+                    List<Priorities> priorities
+                ) {
+                    this.priorities = priorities;
+                }
+            
+                /**
+                 * Get priorities.
+                 * @return List<Priorities>
+                 */
+                public List<Priorities> getPriorities() {
+                    return priorities;
+                }
+            
+                /**
+                 * Set priorities.
+                 * @param priorities
+                 */
+                public void setPriorities(List<Priorities> priorities) {
+                    this.priorities = priorities;
+                }
+            
+                @Override
+                public boolean equals(Object o) {
+                    if (this == o) return true;
+                    if (o == null || getClass() != o.getClass()) return false;
+                    ObjectWithArrayOfEnums that = (ObjectWithArrayOfEnums) o;
+                    return
+                        Objects.equals(priorities, that.priorities)
+            ;
+                }
+            
+                @Override
+                public int hashCode() {
+                    return Objects.hash(
+            
+                        priorities
+                    );
+                }
+            
+                @Override
+                public String toString() {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("class ObjectWithArrayOfEnums {\n");
+                    sb.append("    priorities: ").append(priorities).append("\n");
+                    sb.append("}");
+                    return sb.toString();
+                }
+            }
+            """.trimIndent()
         assertEquals(expected, classBody)
     }
 }

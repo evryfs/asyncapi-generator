@@ -2,7 +2,10 @@ package dev.banking.asyncapi.generator.core.document
 
 import com.fasterxml.jackson.core.io.JsonStringEncoder
 
-internal fun appendDocumentMember(parentPath: String, memberName: String): String =
+internal fun appendDocumentMember(
+    parentPath: String,
+    memberName: String,
+): String =
     if (memberName.isSimpleDocumentMember()) {
         if (parentPath.isEmpty()) memberName else "$parentPath.$memberName"
     } else {
@@ -14,17 +17,21 @@ internal fun appendDocumentMember(parentPath: String, memberName: String): Strin
         }
     }
 
-internal fun appendDocumentIndex(parentPath: String, index: Int): String {
+internal fun appendDocumentIndex(
+    parentPath: String,
+    index: Int,
+): String {
     require(index >= 0) { "Document array indexes must be nonnegative" }
     return "$parentPath[$index]"
 }
 
 private fun String.isSimpleDocumentMember(): Boolean =
-    isNotEmpty() && none { character ->
-        character == '.' ||
-            character == '[' ||
-            character == ']' ||
-            character == '"' ||
-            character == '\\' ||
-            character.isISOControl()
-    }
+    isNotEmpty() &&
+        none { character ->
+            character == '.' ||
+                character == '[' ||
+                character == ']' ||
+                character == '"' ||
+                character == '\\' ||
+                character.isISOControl()
+        }

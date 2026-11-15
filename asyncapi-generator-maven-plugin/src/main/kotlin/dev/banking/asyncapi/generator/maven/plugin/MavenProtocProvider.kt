@@ -20,7 +20,12 @@ internal class MavenProtocProvider(
 ) : ProtocProvider {
     override fun protoc(version: String): Path {
         val artifact = DefaultArtifact("com.google.protobuf", "protoc", ProtocPlatform.classifier(), "exe", version)
-        val file = repositorySystem.resolveArtifact(session, ArtifactRequest(artifact, repositories, null)).artifact.file
+        val file =
+            repositorySystem
+                .resolveArtifact(
+                    session,
+                    ArtifactRequest(artifact, repositories, null),
+                ).artifact.file
         file.setExecutable(true)
         return file.toPath()
     }

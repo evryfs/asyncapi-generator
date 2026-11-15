@@ -35,10 +35,11 @@ class GenerateKotlinSpringKafkaConfigurationTest {
 
     @Test
     fun `configuration can generate only producer contracts`() {
-        val result = render(
-            generateProducers = true,
-            generateConsumers = false,
-        )
+        val result =
+            render(
+                generateProducers = true,
+                generateConsumers = false,
+            )
 
         assertTrue(result.artifacts.any { it.relativePath == producerContract })
         assertFalse(result.artifacts.any { it.relativePath == consumerContract })
@@ -46,10 +47,11 @@ class GenerateKotlinSpringKafkaConfigurationTest {
 
     @Test
     fun `configuration can generate only consumer contracts`() {
-        val result = render(
-            generateProducers = false,
-            generateConsumers = true,
-        )
+        val result =
+            render(
+                generateProducers = false,
+                generateConsumers = true,
+            )
 
         assertFalse(result.artifacts.any { it.relativePath == producerContract })
         assertTrue(result.artifacts.any { it.relativePath == consumerContract })
@@ -57,10 +59,11 @@ class GenerateKotlinSpringKafkaConfigurationTest {
 
     @Test
     fun `generates no contracts when both capabilities are disabled`() {
-        val result = render(
-            generateProducers = false,
-            generateConsumers = false,
-        )
+        val result =
+            render(
+                generateProducers = false,
+                generateConsumers = false,
+            )
 
         assertFalse(result.artifacts.any { it.relativePath == producerContract })
         assertFalse(result.artifacts.any { it.relativePath == consumerContract })

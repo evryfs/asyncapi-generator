@@ -6,12 +6,11 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import org.junit.jupiter.api.Test
-import kotlin.test.assertIs
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class OperationReplyBundlerTest {
-
     private val bundler = OperationReplyBundler()
 
     @Test
@@ -19,22 +18,26 @@ class OperationReplyBundlerTest {
         val addressReference = Reference("#/components/replyAddresses/success")
         val channelReference = Reference("#/channels/reply")
         val messageReference = Reference("#/components/messages/reply")
-        val reply = OperationReply(
-            address = OperationReplyAddressInterface.OperationReplyAddressReference(addressReference),
-            channel = channelReference,
-            messages = listOf(messageReference),
-        )
+        val reply =
+            OperationReply(
+                address = OperationReplyAddressInterface.OperationReplyAddressReference(addressReference),
+                channel = channelReference,
+                messages = listOf(messageReference),
+            )
         val replyReference = Reference("#/components/replies/success", model = reply)
         val replyInterface = OperationReplyInterface.OperationReplyReference(replyReference)
 
-        val bundled = assertIs<OperationReplyInterface.OperationReplyReference>(
-            bundler.bundle(replyInterface, BundlingContext.empty()),
-        )
+        val bundled =
+            assertIs<OperationReplyInterface.OperationReplyReference>(
+                bundler.bundle(replyInterface, BundlingContext.empty()),
+            )
 
         assertTrue(bundled.reference.inline)
         val bundledReply = assertIs<OperationReply>(bundled.reference.model)
         assertTrue(
-            assertIs<OperationReplyAddressInterface.OperationReplyAddressReference>(bundledReply.address).reference.inline,
+            assertIs<OperationReplyAddressInterface.OperationReplyAddressReference>(
+                bundledReply.address,
+            ).reference.inline,
         )
         assertFalse(bundledReply.channel!!.inline, "the reply channel stays a reference")
         assertFalse(bundledReply.messages!!.single().inline, "reply messages stay references")

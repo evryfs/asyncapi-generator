@@ -68,7 +68,8 @@ enum class SchemaFormat(
     PROTOBUF_3(
         value = AsyncApiConstants.PROTOBUF_V_3,
         family = SchemaFormatFamily.PROTOBUF,
-    );
+    ),
+    ;
 
     val isAsyncApiSchemaObject: Boolean
         get() = family == SchemaFormatFamily.ASYNCAPI

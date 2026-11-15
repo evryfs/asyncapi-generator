@@ -13,5 +13,5 @@ data class Info(
     val license: License? = null,
     val tags: List<TagInterface>? = null,
     val externalDocs: ExternalDocInterface? = null,
-    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null
+    @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )

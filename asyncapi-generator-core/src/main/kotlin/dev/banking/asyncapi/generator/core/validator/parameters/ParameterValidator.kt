@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class ParameterValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
     fun validateInterface(
@@ -26,10 +25,11 @@ internal class ParameterValidator(
         name: String? = null,
     ) {
         if (name != null && !ValidationFormats.isReusableObjectName(name)) {
-            val model = when (parameterInterface) {
-                is ParameterInterface.ParameterInline -> parameterInterface.parameter
-                is ParameterInterface.ParameterReference -> parameterInterface.reference
-            }
+            val model =
+                when (parameterInterface) {
+                    is ParameterInterface.ParameterInline -> parameterInterface.parameter
+                    is ParameterInterface.ParameterReference -> parameterInterface.reference
+                }
             results.error(
                 PARAMETER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
@@ -45,7 +45,11 @@ internal class ParameterValidator(
         }
     }
 
-    fun validate(node: Parameter, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: Parameter,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validateEnum(node, contextString, results)
         validateDefault(node, contextString, results)
@@ -53,7 +57,11 @@ internal class ParameterValidator(
         validateLocation(node, contextString, results)
     }
 
-    private fun validateEnum(node: Parameter, contextString: String, results: ValidationCollector) {
+    private fun validateEnum(
+        node: Parameter,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val enum = node.enum ?: return
         if (enum.distinct().size != enum.size) {
             results.error(
@@ -64,7 +72,11 @@ internal class ParameterValidator(
         }
     }
 
-    private fun validateDefault(node: Parameter, contextString: String, results: ValidationCollector) {
+    private fun validateDefault(
+        node: Parameter,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val default = node.default ?: return
         val enum = node.enum ?: return
         if (!enum.contains(default)) {
@@ -76,7 +88,11 @@ internal class ParameterValidator(
         }
     }
 
-    private fun validateExamples(node: Parameter, contextString: String, results: ValidationCollector) {
+    private fun validateExamples(
+        node: Parameter,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val examples = node.examples ?: return
         val enum = node.enum
         if (enum != null && examples.any { it !in enum }) {
@@ -88,7 +104,11 @@ internal class ParameterValidator(
         }
     }
 
-    private fun validateLocation(node: Parameter, contextString: String, results: ValidationCollector) {
+    private fun validateLocation(
+        node: Parameter,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val location = node.location ?: return
         if (!ValidationFormats.isRuntimeExpression(location)) {
             results.error(

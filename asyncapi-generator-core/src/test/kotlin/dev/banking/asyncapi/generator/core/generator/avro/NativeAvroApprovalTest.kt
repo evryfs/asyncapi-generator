@@ -44,9 +44,10 @@ class NativeAvroApprovalTest {
                 schemas =
                     generationInputFactory
                         .create(
-                            bundlerFixtures.bundledDocument(
-                                "generator/asyncapi_native_avro_spring_kafka_client.yaml",
-                            ).document,
+                            bundlerFixtures
+                                .bundledDocument(
+                                    "generator/asyncapi_native_avro_spring_kafka_client.yaml",
+                                ).document,
                         ).multiFormatSchemas,
                 generateSpecificRecords = true,
             ).artifacts

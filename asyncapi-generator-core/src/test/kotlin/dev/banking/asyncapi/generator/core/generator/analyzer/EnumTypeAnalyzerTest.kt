@@ -7,16 +7,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class EnumTypeAnalyzerTest {
-
     private val analyzer = EnumTypeAnalyzer()
 
     @Test
     fun `infers generator string type for top-level and inline all-string enums`() {
         val inlineEnum = Schema(enum = listOf("ACTIVE", "INACTIVE"))
-        val root = Schema(
-            enum = listOf("CREATE", "UPDATE"),
-            properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)),
-        )
+        val root =
+            Schema(
+                enum = listOf("CREATE", "UPDATE"),
+                properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)),
+            )
 
         val analyzed = analyzer.analyze(mapOf("Action" to root)).getValue("Action")
 

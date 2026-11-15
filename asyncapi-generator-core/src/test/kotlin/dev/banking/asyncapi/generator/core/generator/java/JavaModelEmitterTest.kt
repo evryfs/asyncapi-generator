@@ -42,7 +42,12 @@ class JavaModelEmitterTest {
 
     @Test
     fun `renders required properties and references to open objects`() {
-        val content = JavaModelEmitter().emit(listOf(user())).artifacts.single().content
+        val content =
+            JavaModelEmitter()
+                .emit(listOf(user()))
+                .artifacts
+                .single()
+                .content
 
         assertTrue(content.contains("import java.util.UUID;"))
         assertTrue(content.contains("import jakarta.validation.constraints.NotNull;"))
@@ -55,9 +60,19 @@ class JavaModelEmitterTest {
     fun `emits records when configured`() {
         val emitter = JavaModelEmitter(JavaModelType.RECORD)
 
-        val user = emitter.emit(listOf(user())).artifacts.single().content
+        val user =
+            emitter
+                .emit(listOf(user()))
+                .artifacts
+                .single()
+                .content
         val empty =
-            emitter.emit(listOf(ObjectModel("Empty", PACKAGE, null, emptyList(), emptyList()))).artifacts.single().content
+            emitter
+                .emit(
+                    listOf(ObjectModel("Empty", PACKAGE, null, emptyList(), emptyList())),
+                ).artifacts
+                .single()
+                .content
 
         assertTrue(user.contains("public record User("))
         assertFalse(user.contains("java.util.Objects"))

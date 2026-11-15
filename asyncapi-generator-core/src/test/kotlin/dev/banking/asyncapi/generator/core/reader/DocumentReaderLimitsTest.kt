@@ -8,7 +8,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class DocumentReaderLimitsTest {
-
     @TempDir
     lateinit var tempDir: Path
 
@@ -22,9 +21,10 @@ class DocumentReaderLimitsTest {
                 maxDocumentCharacters = 8,
             )
 
-        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            limits.readContent(file)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                limits.readContent(file)
+            }
         assertEquals(file, failure.file)
         assertEquals(DocumentResourceLimit.DOCUMENT_BYTES, failure.limit)
         assertEquals(8L, failure.maximum)

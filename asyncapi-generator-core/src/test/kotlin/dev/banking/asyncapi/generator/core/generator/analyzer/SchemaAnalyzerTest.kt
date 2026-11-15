@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class SchemaAnalyzerTest {
-
     private val analyzer = SchemaAnalyzer()
 
     @Test
@@ -20,16 +19,19 @@ class SchemaAnalyzerTest {
         // 3. Root has a oneOf pointing to External
 
         val inlineEnum = Schema(enum = listOf("A", "B"))
-        val externalSchema = Schema(
-            type = "object",
-            properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum))
-        )
-
-        val rootSchema = Schema(
-            oneOf = listOf(
-                SchemaInterface.SchemaReference(Reference(ref = "#/c/s/External", model = externalSchema))
+        val externalSchema =
+            Schema(
+                type = "object",
+                properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)),
             )
-        )
+
+        val rootSchema =
+            Schema(
+                oneOf =
+                    listOf(
+                        SchemaInterface.SchemaReference(Reference(ref = "#/c/s/External", model = externalSchema)),
+                    ),
+            )
 
         val input = mapOf("Root" to rootSchema)
 

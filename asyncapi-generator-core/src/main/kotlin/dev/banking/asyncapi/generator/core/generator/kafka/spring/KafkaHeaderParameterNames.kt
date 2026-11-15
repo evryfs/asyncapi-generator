@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 
 /** Converts Kafka wire-header names into camelCase source identifiers shared by Java and Kotlin output. */
 internal object KafkaHeaderParameterNames {
-
     /** Parameters every consumer or producer method declares itself, which a header must not reuse. */
     private val fixedParameterNames = setOf("payload", "receivedTopic", "receivedKey", "messageKey")
 

@@ -23,7 +23,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class AsyncApiParserTest {
-
     private val context = AsyncApiContext()
     private val parser = AsyncApiParser(context)
 
@@ -54,12 +53,14 @@ class AsyncApiParserTest {
 
     @Test
     fun `parses equivalent yaml and json documents into the same model`() {
-        val yamlDocument = DocumentReaderRegistry.read(
-            TestResources.file("parser/asyncapi/format-independent.yaml"),
-        )
-        val jsonDocument = DocumentReaderRegistry.read(
-            TestResources.file("parser/asyncapi/format-independent.json"),
-        )
+        val yamlDocument =
+            DocumentReaderRegistry.read(
+                TestResources.file("parser/asyncapi/format-independent.yaml"),
+            )
+        val jsonDocument =
+            DocumentReaderRegistry.read(
+                TestResources.file("parser/asyncapi/format-independent.json"),
+            )
         // Separate contexts: references carry the unique id of the file they were written in.
         val yamlContext = AsyncApiContext()
         val jsonContext = AsyncApiContext()
@@ -74,43 +75,45 @@ class AsyncApiParserTest {
 
     @Test
     fun `yaml and json reject unknown root members`() {
-        val sources = listOf(
-            DocumentSource(
-                id = "unknown-yaml",
-                file = File("unknown.yaml").canonicalFile,
-                content =
-                    """
-                    asyncapi: 3.0.0
-                    info:
-                      title: Unknown member
-                      version: 1.0.0
-                    unexpected: true
-                    """.trimIndent(),
-                format = DocumentFormat.YAML,
-            ),
-            DocumentSource(
-                id = "unknown-json",
-                file = File("unknown.json").canonicalFile,
-                content =
-                    """
-                    {
-                      "asyncapi": "3.0.0",
-                      "info": {"title": "Unknown member", "version": "1.0.0"},
-                      "unexpected": true
-                    }
-                    """.trimIndent(),
-                format = DocumentFormat.JSON,
-            ),
-        )
+        val sources =
+            listOf(
+                DocumentSource(
+                    id = "unknown-yaml",
+                    file = File("unknown.yaml").canonicalFile,
+                    content =
+                        """
+                        asyncapi: 3.0.0
+                        info:
+                          title: Unknown member
+                          version: 1.0.0
+                        unexpected: true
+                        """.trimIndent(),
+                    format = DocumentFormat.YAML,
+                ),
+                DocumentSource(
+                    id = "unknown-json",
+                    file = File("unknown.json").canonicalFile,
+                    content =
+                        """
+                        {
+                          "asyncapi": "3.0.0",
+                          "info": {"title": "Unknown member", "version": "1.0.0"},
+                          "unexpected": true
+                        }
+                        """.trimIndent(),
+                    format = DocumentFormat.JSON,
+                ),
+            )
 
         sources.forEach { source ->
             val sourceContext = AsyncApiContext()
             val document = DocumentReaderRegistry.read(source)
             val root = ParserNodeFactory.root(document, sourceContext)
 
-            val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                AsyncApiParser(sourceContext).parse(root)
-            }
+            val error =
+                assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                    AsyncApiParser(sourceContext).parse(root)
+                }
             val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
 
             assertEquals("unexpected", diagnostic.memberName)
@@ -136,30 +139,30 @@ class AsyncApiParserTest {
 
         assertNotNull(
             modelRepositoryModels[lightMeasuredPayloadSchema],
-            "lightMeasuredPayload Schema should be registered"
+            "lightMeasuredPayload Schema should be registered",
         )
         assertNotNull(
             modelRepositoryModels[referencedSchema],
-            "referencedSchema Reference should be registered"
+            "referencedSchema Reference should be registered",
         )
         val properties = assertNotNull(lightMeasuredPayloadSchema.properties)
         val nestedLumensSchema = assertIs<SchemaInterface.SchemaInline>(properties["lumens"]).schema
         assertNotNull(
             modelRepositoryModels[nestedLumensSchema],
-            "Nested lumens schema should be registered"
+            "Nested lumens schema should be registered",
         )
         val modelRepositoryPaths = context.modelRepository.getModelsByPath()
         val expectedPathForLightMeasuredPayload =
             "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.lightMeasuredPayload"
         assertTrue(
             modelRepositoryPaths.containsKey(expectedPathForLightMeasuredPayload),
-            "Path for lightMeasuredPayload should be registered"
+            "Path for lightMeasuredPayload should be registered",
         )
         val expectedPathForReferencedSchema =
             "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.referencedSchema"
         assertTrue(
             modelRepositoryPaths.containsKey(expectedPathForReferencedSchema),
-            "Path for referencedSchema should be registered"
+            "Path for referencedSchema should be registered",
         )
     }
 
@@ -179,11 +182,15 @@ class AsyncApiParserTest {
         assertEquals(415, schemaLocation.line)
         assertTrue(schemaLocation.column > 0)
 
-        val titleLocation = assertNotNull(
-            context.modelTracking.getSourceLocation(simpleStringSchema, simpleStringSchema::title)
-        )
+        val titleLocation =
+            assertNotNull(
+                context.modelTracking.getSourceLocation(simpleStringSchema, simpleStringSchema::title),
+            )
         assertEquals("asyncapi_kafka_single_file_example.yaml", titleLocation.file.name)
-        assertEquals("asyncapi_kafka_single_file_example.root.components.schemas.simpleString.title", titleLocation.path)
+        assertEquals(
+            "asyncapi_kafka_single_file_example.root.components.schemas.simpleString.title",
+            titleLocation.path,
+        )
         assertEquals(416, titleLocation.line)
         assertTrue(titleLocation.column > 0)
         assertEquals(417, context.modelTracking.getLine(simpleStringSchema, simpleStringSchema::description))
@@ -194,13 +201,18 @@ class AsyncApiParserTest {
     fun `parse document missing AsyncAPI version reports the required member and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("MissingVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("MissingVersion")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -215,13 +227,18 @@ class AsyncApiParserTest {
     fun `parse document with boolean AsyncAPI version reports its expected type and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("BooleanVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("BooleanVersion")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
@@ -237,13 +254,18 @@ class AsyncApiParserTest {
     fun `parse document with malformed specification version reports its source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("MalformedVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("MalformedVersion")
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.InvalidSpecificationVersion>(exception.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.INVALID_SPECIFICATION_VERSION, diagnostic.category)
@@ -258,13 +280,18 @@ class AsyncApiParserTest {
     fun `parse document distinguishes a known unimplemented specification version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("KnownUnimplementedVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("KnownUnimplementedVersion")
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNSUPPORTED_SPECIFICATION_VERSION, diagnostic.category)
@@ -278,13 +305,18 @@ class AsyncApiParserTest {
     fun `parse document rejects an unknown future specification version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("UnknownVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("UnknownVersion")
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
 
         assertEquals("3.5.0", diagnostic.declaredVersion)
@@ -297,13 +329,18 @@ class AsyncApiParserTest {
     fun `parse document rejects an old specification major version`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("OldMajorVersion")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("OldMajorVersion")
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
 
         assertEquals("2.6.0", diagnostic.declaredVersion)
@@ -314,9 +351,12 @@ class AsyncApiParserTest {
     fun `supported patch and suffixed versions retain their declared value`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val cases = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject()
+        val cases =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
 
         val patchVersion = parser.parse(cases.required("SupportedPatchVersion"))
         val suffixedVersion = parser.parse(cases.required("SupportedSuffixedVersion"))
@@ -329,13 +369,18 @@ class AsyncApiParserTest {
     fun `parse document missing info reports the required member and source`() {
         val file = TestResources.file("parser/asyncapi/asyncapi_parser_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val rootNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("cases")
-            .expectObject().required("MissingInfo")
+        val rootNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("cases")
+                .expectObject()
+                .required("MissingInfo")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parse(rootNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parse(rootNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -345,5 +390,4 @@ class AsyncApiParserTest {
         assertEquals("root.cases.MissingInfo", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

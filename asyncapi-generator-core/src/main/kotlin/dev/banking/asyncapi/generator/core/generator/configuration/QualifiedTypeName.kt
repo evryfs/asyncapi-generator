@@ -18,7 +18,9 @@ value class QualifiedTypeName private constructor(
             path: String,
         ): QualifiedTypeName {
             require(value.isNotBlank()) { "$path cannot be empty" }
-            require(pattern.matches(value)) { "$path must be a fully qualified type name, for example com.example.GeneratedPayload" }
+            require(pattern.matches(value)) {
+                "$path must be a fully qualified type name, for example com.example.GeneratedPayload"
+            }
 
             return QualifiedTypeName(value)
         }

@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.parser.info
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.info.Contact
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.info.License
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CONTACT
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.INFO
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.LICENSE
@@ -17,7 +17,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.LIC
 internal class InfoParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val tagParser = TagParser(asyncApiContext)
 

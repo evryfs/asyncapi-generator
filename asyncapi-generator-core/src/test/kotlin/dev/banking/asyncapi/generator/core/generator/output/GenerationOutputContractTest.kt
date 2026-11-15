@@ -70,7 +70,10 @@ class GenerationOutputContractTest {
                 )
             }
 
-        assertEquals("Generated artifact path cannot contain parent directory segments: ../outside/User.kt", failure.message)
+        assertEquals(
+            "Generated artifact path cannot contain parent directory segments: ../outside/User.kt",
+            failure.message,
+        )
     }
 
     @Test
@@ -88,7 +91,11 @@ class GenerationOutputContractTest {
         val source = artifact("com/example/User.kt", GeneratedArtifactKind.SOURCE)
         val javaSource = artifact("com/example/User.java", GeneratedArtifactKind.JAVA_SOURCE)
         val schema = artifact("com/example/schema/User.avsc", GeneratedArtifactKind.SCHEMA)
-        val resource = artifact("META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports", GeneratedArtifactKind.RESOURCE)
+        val resource =
+            artifact(
+                "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports",
+                GeneratedArtifactKind.RESOURCE,
+            )
 
         val result = GenerationResult.of(source, javaSource, schema, resource)
 
@@ -122,9 +129,10 @@ class GenerationOutputContractTest {
         assertEquals(emptyList(), result.documentArtifacts)
         assertFalse(GenerationResult.of(artifact("com/example/User.kt", GeneratedArtifactKind.SOURCE)).isEmpty())
         assertFalse(
-            GenerationResult.of(
-                GeneratedDocumentArtifact(File("asyncapi.yaml"), "asyncapi: 3.0.0"),
-            ).isEmpty(),
+            GenerationResult
+                .of(
+                    GeneratedDocumentArtifact(File("asyncapi.yaml"), "asyncapi: 3.0.0"),
+                ).isEmpty(),
         )
     }
 

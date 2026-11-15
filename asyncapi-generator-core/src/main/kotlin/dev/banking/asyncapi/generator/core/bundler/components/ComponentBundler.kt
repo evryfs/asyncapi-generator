@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.bundler.components
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
-import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.channels.ChannelBundler
 import dev.banking.asyncapi.generator.core.bundler.correlations.CorrelationIdBundler
@@ -19,6 +18,7 @@ import dev.banking.asyncapi.generator.core.bundler.security.SecuritySchemeBundle
 import dev.banking.asyncapi.generator.core.bundler.servers.ServerBundler
 import dev.banking.asyncapi.generator.core.bundler.servers.ServerVariableBundler
 import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
+import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -27,10 +27,9 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Bundles component objects and references.
  */
 internal class ComponentBundler {
-
     private val schemaBundler = SchemaBundler()
     private val serverBundler = ServerBundler()
-    private val channelBundler= ChannelBundler()
+    private val channelBundler = ChannelBundler()
     private val operationBundler = OperationBundler()
     private val messagesBundler = MessagesBundler()
     private val messageTraitsBundler = MessageTraitBundler()
@@ -44,6 +43,7 @@ internal class ComponentBundler {
     private val operationReplyAddressBundler = OperationReplyAddressBundler()
     private val bindingBundler = BindingBundler()
     private val serverVariableBundler = ServerVariableBundler()
+
     fun bundleComponents(
         components: ComponentInterface?,
         context: BundlingContext,
@@ -52,20 +52,27 @@ internal class ComponentBundler {
         return when (components) {
             is ComponentInterface.ComponentInline ->
                 ComponentInterface.ComponentInline(
-                    bundleComponent(components.component, context)
+                    bundleComponent(components.component, context),
                 )
 
             is ComponentInterface.ComponentReference -> {
-                components.copy(reference = ReferenceBundler.bundleReferencedModel<Component>(
-                    reference = components.reference,
-                    context = context,
-                ) { component, nextContext ->
-                    bundleComponent(component, nextContext)
-                })
+                components.copy(
+                    reference =
+                        ReferenceBundler.bundleReferencedModel<Component>(
+                            reference = components.reference,
+                            context = context,
+                        ) { component, nextContext ->
+                            bundleComponent(component, nextContext)
+                        },
+                )
             }
         }
     }
-    fun bundleComponent(component: Component, context: BundlingContext): Component {
+
+    fun bundleComponent(
+        component: Component,
+        context: BundlingContext,
+    ): Component {
         val bundledSchemas = schemaBundler.bundleComponentMap(component.schemas, context)
         val bundledServers = component.servers?.let { serverBundler.bundleServers(it, context) }
         val bundledChannels = component.channels?.let { channelBundler.bundleMap(it, context) }
@@ -112,7 +119,11 @@ internal class ComponentBundler {
         when (components) {
             null -> emptyMap()
             is ComponentInterface.ComponentInline -> components.component.schemas.orEmpty()
-            is ComponentInterface.ComponentReference -> components.reference.requireModel<Component>().schemas.orEmpty()
+            is ComponentInterface.ComponentReference ->
+                components.reference
+                    .requireModel<Component>()
+                    .schemas
+                    .orEmpty()
         }
 
     internal fun mergeSchemas(
@@ -137,7 +148,13 @@ internal class ComponentBundler {
             is ComponentInterface.ComponentReference -> {
                 val component = components.reference.requireModel<Component>()
                 components.copy(
-                    reference = components.reference.withModel(component.copy(schemas = component.schemas.orEmpty() + schemas)),
+                    reference =
+                        components.reference.withModel(
+                            component.copy(
+                                schemas =
+                                    component.schemas.orEmpty() + schemas,
+                            ),
+                        ),
                 )
             }
         }

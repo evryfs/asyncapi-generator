@@ -1,17 +1,17 @@
 package dev.banking.asyncapi.generator.core.parser.messages
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.messages.Message
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
-import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE as MESSAGE_BINDING
-import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE as MESSAGE_BINDING
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MESSAGE as MESSAGE_OBJECT
 
 /**
@@ -20,7 +20,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MES
 internal class MessageParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val schemaParser = SchemaParser(asyncApiContext)
     private val tagParser = TagParser(asyncApiContext)
     private val bindingParser = BindingParser(asyncApiContext)
@@ -66,5 +65,4 @@ internal class MessageParser(
             )
         }
     }
-
 }

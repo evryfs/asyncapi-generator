@@ -28,7 +28,11 @@ internal class MessageValidator(
     private val messageExampleValidator = MessageExampleValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: MessageInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: MessageInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is MessageInterface.MessageInline ->
                 validate(node.message, contextString, results)
@@ -38,7 +42,11 @@ internal class MessageValidator(
         }
     }
 
-    fun validate(node: Message, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validatePayload(node, contextString, results)
         validateHeaders(node, contextString, results)
@@ -51,7 +59,11 @@ internal class MessageValidator(
         validateBindings(node, contextString, results)
     }
 
-    private fun validateContentType(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateContentType(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val contentType = node.contentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
@@ -62,7 +74,11 @@ internal class MessageValidator(
         }
     }
 
-    private fun validateExamples(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateExamples(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         node.examples?.let { examples ->
             messageExampleValidator.validate(
                 examples = examples,
@@ -74,12 +90,20 @@ internal class MessageValidator(
         }
     }
 
-    private fun validatePayload(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validatePayload(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val contextString = "$contextString Payload"
         node.payload?.let { payload -> schemaValidator.validateInterface(payload, contextString, results) }
     }
 
-    private fun validateHeaders(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateHeaders(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val headersSchema = node.headers ?: return
         schemaValidator.validateInterface(headersSchema, "$contextString Headers", results)
 
@@ -97,13 +121,21 @@ internal class MessageValidator(
         }
     }
 
-    private fun validateCorrelationId(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateCorrelationId(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         node.correlationId?.let { correlationId ->
             correlationIdValidator.validateInterface(correlationId, "$contextString Correlation ID", results)
         }
     }
 
-    private fun validateTraits(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateTraits(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val traits = node.traits ?: return
         traits.forEachIndexed { index, trait ->
             val traitContext = "$contextString Trait[$index]"
@@ -111,18 +143,29 @@ internal class MessageValidator(
         }
     }
 
-    private fun validateTags(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateTags(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         tagValidator.validateList(node.tags, contextString, results)
     }
 
-    private fun validateExternalDocs(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val externalDocs = node.externalDocs ?: return
         val context = "$contextString ExternalDocs"
         externalDocsValidator.validateInterface(externalDocs, context, results)
     }
 
-    private fun validateBindings(node: Message, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        node: Message,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindingValidator.validateMap(node.bindings, contextString, results)
     }
-
 }

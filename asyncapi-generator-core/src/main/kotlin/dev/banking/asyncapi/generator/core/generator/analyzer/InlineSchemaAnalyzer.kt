@@ -18,7 +18,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Items of a named array schema are named `<Array>Item`, so they never replace the array.
  */
 internal class InlineSchemaAnalyzer {
-
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val promotion = Promotion(schemas)
         while (promotion.namesToProcess.isNotEmpty()) {
@@ -39,7 +38,9 @@ internal class InlineSchemaAnalyzer {
         return promotion.schemas
     }
 
-    private class Promotion(initial: Map<String, Schema>) {
+    private class Promotion(
+        initial: Map<String, Schema>,
+    ) {
         val schemas = initial.toMutableMap()
         val namesToProcess = initial.keys.toMutableList()
         val processed = mutableSetOf<String>()
@@ -55,9 +56,10 @@ internal class InlineSchemaAnalyzer {
         ): Schema {
             var modifiedSchema = schema
             schema.properties?.let { props ->
-                val newProps = props.mapValues { (propName, propSchema) ->
-                    promoteIfNeeded(propSchema, propName, owner, "$location.properties.$propName")
-                }
+                val newProps =
+                    props.mapValues { (propName, propSchema) ->
+                        promoteIfNeeded(propSchema, propName, owner, "$location.properties.$propName")
+                    }
                 if (newProps != props) {
                     modifiedSchema = modifiedSchema.copy(properties = newProps)
                 }

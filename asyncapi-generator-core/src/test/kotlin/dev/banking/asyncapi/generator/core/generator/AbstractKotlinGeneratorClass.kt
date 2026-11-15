@@ -76,7 +76,7 @@ abstract class AbstractKotlinGeneratorClass {
     fun loadGeneratedClassContent(
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
         generated: String? = null,
-        modelPackage: String
+        modelPackage: String,
     ): String {
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')

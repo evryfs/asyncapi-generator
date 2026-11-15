@@ -1,21 +1,21 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA as SCHEMA_BINDING
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
+import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA as SCHEMA_BINDING
 
 /**
  * Parses AsyncAPI schema objects from parser nodes.
@@ -23,7 +23,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MUL
 internal class SchemaParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val bindingParser = BindingParser(asyncApiContext)
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
@@ -39,28 +38,31 @@ internal class SchemaParser(
     fun parseElement(parserNode: ParserNode): SchemaInterface {
         if (parserNode.node is DocumentBoolean) {
             val bool = parserNode.expect<Boolean>()
-            return SchemaInterface.BooleanSchema(
-                value = bool,
-            ).also { asyncApiContext.register(it, parserNode) }
+            return SchemaInterface
+                .BooleanSchema(
+                    value = bool,
+                ).also { asyncApiContext.register(it, parserNode) }
         }
         val objectNode = parserNode.expectObject()
         objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
-            return SchemaInterface.SchemaReference(
-                Reference(
-                    ref = reference,
-                    referenceCategoryKey = SCHEMA
-                )
-            ).also { asyncApiContext.register(it.reference, parserNode) }
+            return SchemaInterface
+                .SchemaReference(
+                    Reference(
+                        ref = reference,
+                        referenceCategoryKey = SCHEMA,
+                    ),
+                ).also { asyncApiContext.register(it.reference, parserNode) }
         }
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
-            val schemaFormat = SchemaFormat.fromValue(format)
-                ?: throw UnexpectedSchemaFormat(
-                    format,
-                    parserNode.path,
-                    parserNode.sourceLocation,
-                    asyncApiContext,
-                )
+            val schemaFormat =
+                SchemaFormat.fromValue(format)
+                    ?: throw UnexpectedSchemaFormat(
+                        format,
+                        parserNode.path,
+                        parserNode.sourceLocation,
+                        asyncApiContext,
+                    )
             val schemaNode = objectNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {
                 return parseElement(schemaNode)
@@ -77,7 +79,8 @@ internal class SchemaParser(
                     schema = schemaContent,
                     format = schemaFormat,
                 )
-            return SchemaInterface.MultiFormatSchemaInline(multiFormatSchema)
+            return SchemaInterface
+                .MultiFormatSchemaInline(multiFormatSchema)
                 .also { asyncApiContext.register(multiFormatSchema, parserNode) }
         }
         return parseSchema(parserNode)
@@ -211,7 +214,7 @@ internal class SchemaParser(
                 externalDocs = externalDocs,
                 bindings = bindings,
                 extensions = extensions,
-            ).also { asyncApiContext.register(it, parserNode) }
+            ).also { asyncApiContext.register(it, parserNode) },
         )
     }
 
@@ -225,10 +228,17 @@ internal class SchemaParser(
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {
         val objectNode = parserNode.expectObject()
         return objectNode.members().associate { dependency ->
-            val parsedValue: Any = when (dependency.node) {
-                is DocumentArray -> dependency.expect<List<String>>().also { asyncApiContext.register(it, dependency) }
-                else -> parseElement(dependency)
-            }
+            val parsedValue: Any =
+                when (dependency.node) {
+                    is DocumentArray ->
+                        dependency.expect<List<String>>().also {
+                            asyncApiContext.register(
+                                it,
+                                dependency,
+                            )
+                        }
+                    else -> parseElement(dependency)
+                }
             dependency.name to parsedValue
         }
     }

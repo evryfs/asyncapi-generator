@@ -3,101 +3,103 @@ package dev.banking.asyncapi.generator.core.generator.java.ref
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertTrue
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
-    private val actionTypeClassBody = """
-            public enum ActionType implements Serializable {
-                CREATE,
-                UPDATE,
-                DELETE,
-            }
+    private val actionTypeClassBody =
+        """
+        public enum ActionType implements Serializable {
+            CREATE,
+            UPDATE,
+            DELETE,
+        }
         """.trimIndent()
 
-    private val messageClassBody = """
-            public class Message implements Serializable {
+    private val messageClassBody =
+        """
+        public class Message implements Serializable {
 
-                private String text;
+            private String text;
 
-                private ActionType actionType;
+            private ActionType actionType;
 
-                public Message() {
-                    // Default constructor
-                }
-
-                // All-args constructor
-                public Message(
-                    String text,
-                    ActionType actionType
-                ) {
-                    this.text = text;
-                    this.actionType = actionType;
-                }
-
-                /**
-                 * Get text.
-                 * @return String
-                 */
-                public String getText() {
-                    return text;
-                }
-
-                /**
-                 * Set text.
-                 * @param text
-                 */
-                public void setText(String text) {
-                    this.text = text;
-                }
-
-                /**
-                 * Get actionType.
-                 * @return ActionType
-                 */
-                public ActionType getActionType() {
-                    return actionType;
-                }
-
-                /**
-                 * Set actionType.
-                 * @param actionType
-                 */
-                public void setActionType(ActionType actionType) {
-                    this.actionType = actionType;
-                }
-
-                @Override
-                public boolean equals(Object o) {
-                    if (this == o) return true;
-                    if (o == null || getClass() != o.getClass()) return false;
-                    Message that = (Message) o;
-                    return
-                        Objects.equals(text, that.text) &&
-
-                        Objects.equals(actionType, that.actionType)
-            ;
-                }
-
-                @Override
-                public int hashCode() {
-                    return Objects.hash(
-
-                        text,
-                        actionType
-                    );
-                }
-
-                @Override
-                public String toString() {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("class Message {\n");
-                    sb.append("    text: ").append(text).append("\n");
-                    sb.append("    actionType: ").append(actionType).append("\n");
-                    sb.append("}");
-                    return sb.toString();
-                }
+            public Message() {
+                // Default constructor
             }
+
+            // All-args constructor
+            public Message(
+                String text,
+                ActionType actionType
+            ) {
+                this.text = text;
+                this.actionType = actionType;
+            }
+
+            /**
+             * Get text.
+             * @return String
+             */
+            public String getText() {
+                return text;
+            }
+
+            /**
+             * Set text.
+             * @param text
+             */
+            public void setText(String text) {
+                this.text = text;
+            }
+
+            /**
+             * Get actionType.
+             * @return ActionType
+             */
+            public ActionType getActionType() {
+                return actionType;
+            }
+
+            /**
+             * Set actionType.
+             * @param actionType
+             */
+            public void setActionType(ActionType actionType) {
+                this.actionType = actionType;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                Message that = (Message) o;
+                return
+                    Objects.equals(text, that.text) &&
+
+                    Objects.equals(actionType, that.actionType)
+        ;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(
+
+                    text,
+                    actionType
+                );
+            }
+
+            @Override
+            public String toString() {
+                StringBuilder sb = new StringBuilder();
+                sb.append("class Message {\n");
+                sb.append("    text: ").append(text).append("\n");
+                sb.append("    actionType: ").append(actionType).append("\n");
+                sb.append("}");
+                return sb.toString();
+            }
+        }
         """.trimIndent()
 
     @Test
@@ -107,13 +109,14 @@ class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-example.yml"),
                 generated = "EventMessagePayload.java",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.java",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.java",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("private ActionType actionType;"), "Expected enum ref type for actionType")
         assertEquals(actionTypeClassBody, extractClassBody(actionTypeGenerated))
@@ -126,18 +129,20 @@ class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-nested-example.yml"),
                 generated = "EventMessagePayload.java",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.java",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.java",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.java",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.java",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("private Message message;"), "Expected complex ref type for message")
         assertEquals(messageClassBody, extractClassBody(messageGenerated))
@@ -151,18 +156,20 @@ class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-allof-example.yml"),
                 generated = "EventMessagePayload.java",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.java",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.java",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.java",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.java",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("private Message message;"), "Expected complex ref type for message")
         assertTrue(generated.contains("private String entityType;"), "Expected entityType property")
@@ -181,21 +188,23 @@ class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-external-refs-example.yml"),
                 generated = "EventMessagePayload.java",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.java",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.java",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.java",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.java",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("private Message message;"), "Expected complex ref type for message")
         assertEquals(messageClassBody, extractClassBody(messageGenerated))
-        assertEquals(actionTypeClassBody,  extractClassBody(actionTypeGenerated))
+        assertEquals(actionTypeClassBody, extractClassBody(actionTypeGenerated))
     }
 }

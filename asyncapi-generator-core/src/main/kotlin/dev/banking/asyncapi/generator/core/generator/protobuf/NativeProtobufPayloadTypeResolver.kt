@@ -24,14 +24,18 @@ internal class NativeProtobufPayloadTypeResolver(
         if (packageName.isNullOrBlank()) {
             throw unsupported(
                 message = message,
-                reason = "Protobuf client APIs require either `option java_package = \"...\";` or a `package ...;` declaration.",
+                reason =
+                    "Protobuf client APIs require either `option java_package = \"...\";` " +
+                        "or a `package ...;` declaration.",
             )
         }
 
         if (protobufSchema.javaMultipleFiles != true) {
             throw unsupported(
                 message = message,
-                reason = "Protobuf client APIs require `option java_multiple_files = true;` so the payload message can be referenced as a top-level Java type.",
+                reason =
+                    "Protobuf client APIs require `option java_multiple_files = true;` " +
+                        "so the payload message can be referenced as a top-level Java type.",
             )
         }
 

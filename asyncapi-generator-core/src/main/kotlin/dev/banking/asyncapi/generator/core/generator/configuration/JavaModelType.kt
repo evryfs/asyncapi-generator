@@ -8,5 +8,4 @@ enum class JavaModelType(
 ) {
     CLASS("class"),
     RECORD("record"),
-    ;
 }

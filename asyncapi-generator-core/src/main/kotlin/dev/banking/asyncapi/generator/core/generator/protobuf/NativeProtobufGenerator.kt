@@ -126,7 +126,10 @@ internal class NativeProtobufGenerator(
     }
 
     /** Runs protoc in [workingDirectory]; returns its exit code and combined output. */
-    private fun runProtoc(arguments: List<String>, workingDirectory: Path): Pair<Int, String> {
+    private fun runProtoc(
+        arguments: List<String>,
+        workingDirectory: Path,
+    ): Pair<Int, String> {
         val process =
             ProcessBuilder(listOf(protocProvider.protoc(protocVersion).toString()) + arguments)
                 .directory(workingDirectory.resolve("schemas").toFile())
@@ -149,7 +152,9 @@ internal class NativeProtobufGenerator(
             throw InvalidNativeProtobufSchema(
                 payloadName = payloadName,
                 schemaFormat = schemaFormat,
-                reason = "Protobuf model generation requires either `option java_package = \"...\";` or a `package ...;` declaration.",
+                reason =
+                    "Protobuf model generation requires either `option java_package = \"...\";` " +
+                        "or a `package ...;` declaration.",
             )
         }
 
@@ -167,7 +172,9 @@ internal class NativeProtobufGenerator(
             throw InvalidNativeProtobufSchema(
                 payloadName = payloadName,
                 schemaFormat = schemaFormat,
-                reason = "Protobuf model generation requires `option java_multiple_files = true;` so the payload message is generated as a top-level Java class.",
+                reason =
+                    "Protobuf model generation requires `option java_multiple_files = true;` " +
+                        "so the payload message is generated as a top-level Java class.",
             )
         }
 

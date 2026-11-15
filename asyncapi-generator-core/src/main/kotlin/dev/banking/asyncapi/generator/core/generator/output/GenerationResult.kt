@@ -10,8 +10,7 @@ data class GenerationResult(
 ) {
     fun isEmpty(): Boolean = artifacts.isEmpty() && documentArtifacts.isEmpty()
 
-    fun artifactsOfKind(kind: GeneratedArtifactKind): List<GeneratedArtifact> =
-        artifacts.filter { it.kind == kind }
+    fun artifactsOfKind(kind: GeneratedArtifactKind): List<GeneratedArtifact> = artifacts.filter { it.kind == kind }
 
     operator fun plus(other: GenerationResult): GenerationResult =
         GenerationResult(
@@ -22,8 +21,7 @@ data class GenerationResult(
     companion object {
         val Empty = GenerationResult(emptyList())
 
-        fun of(vararg artifacts: GeneratedArtifact): GenerationResult =
-            GenerationResult(artifacts.toList())
+        fun of(vararg artifacts: GeneratedArtifact): GenerationResult = GenerationResult(artifacts.toList())
 
         fun of(documentArtifact: GeneratedDocumentArtifact): GenerationResult =
             GenerationResult(

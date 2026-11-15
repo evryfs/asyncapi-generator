@@ -6,7 +6,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MapperUtilTest {
-
     @Test
     fun `schema type compatibility normalization remains generator local`() {
         with(MapperUtil) {

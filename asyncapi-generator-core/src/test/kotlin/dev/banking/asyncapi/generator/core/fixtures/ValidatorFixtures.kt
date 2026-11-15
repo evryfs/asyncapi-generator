@@ -19,23 +19,17 @@ internal class ValidatorFixtures(
     private val parserFixtures = ParserFixtures(context)
     private val validator = AsyncApiValidator(context)
 
-    fun document(path: String): AsyncApiDocument =
-        parserFixtures.document(path)
+    fun document(path: String): AsyncApiDocument = parserFixtures.document(path)
 
-    fun document(file: File): AsyncApiDocument =
-        parserFixtures.document(file)
+    fun document(file: File): AsyncApiDocument = parserFixtures.document(file)
 
-    fun validate(document: AsyncApiDocument): ValidationReport =
-        validator.validate(document)
+    fun validate(document: AsyncApiDocument): ValidationReport = validator.validate(document)
 
-    fun validate(path: String): ValidationReport =
-        validate(document(path))
+    fun validate(path: String): ValidationReport = validate(document(path))
 
-    fun validate(file: File): ValidationReport =
-        validate(document(file))
+    fun validate(file: File): ValidationReport = validate(document(file))
 
-    fun validatedDocument(path: String): AsyncApiDocument =
-        validatedDocument(TestResources.file(path))
+    fun validatedDocument(path: String): AsyncApiDocument = validatedDocument(TestResources.file(path))
 
     fun validatedDocument(file: File): AsyncApiDocument {
         val document = document(file)

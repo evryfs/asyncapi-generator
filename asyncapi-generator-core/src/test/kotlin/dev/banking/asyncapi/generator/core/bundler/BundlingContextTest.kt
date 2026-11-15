@@ -7,7 +7,6 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class BundlingContextTest {
-
     @Test
     fun `empty context has no visited references`() {
         val reference = Reference("#/components/schemas/User")

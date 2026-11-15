@@ -13,7 +13,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 class MessageValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
@@ -21,9 +20,10 @@ class MessageValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/messages/asyncapi_validator_message_invalid.yaml")
 
         assertEquals(7, results.errors.size)
-        val contentType = results.findings.single {
-            it.code == MESSAGE_CONTENT_TYPE_FORMAT.code
-        }
+        val contentType =
+            results.findings.single {
+                it.code == MESSAGE_CONTENT_TYPE_FORMAT.code
+            }
         assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.severity, contentType.severity)
         assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.concern, contentType.concern)
         assertEquals(
@@ -36,9 +36,10 @@ class MessageValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(8, contentType.line)
 
-        val missingExample = results.findings.single {
-            it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
-        }
+        val missingExample =
+            results.findings.single {
+                it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
+            }
         assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.severity, missingExample.severity)
         assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.concern, missingExample.concern)
         assertEquals(
@@ -51,9 +52,10 @@ class MessageValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(11, missingExample.line)
 
-        val exampleSchemaMismatch = results.findings.filter {
-            it.code == MESSAGE_EXAMPLE_SCHEMA_MISMATCH.code
-        }
+        val exampleSchemaMismatch =
+            results.findings.filter {
+                it.code == MESSAGE_EXAMPLE_SCHEMA_MISMATCH.code
+            }
         assertEquals(5, exampleSchemaMismatch.size)
         assertEquals(
             "asyncapi_validator_message_invalid.root.components.messages.InvalidSchemaExample.examples[0].headers.traceId",

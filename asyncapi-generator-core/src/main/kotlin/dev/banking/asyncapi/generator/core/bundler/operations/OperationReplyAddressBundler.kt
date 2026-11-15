@@ -11,9 +11,12 @@ internal class OperationReplyAddressBundler {
     fun bundleMap(
         addresses: Map<String, OperationReplyAddressInterface>?,
         context: BundlingContext,
-    ): Map<String, OperationReplyAddressInterface>? =
-        addresses?.mapValues { (_, addr) -> bundle(addr, context) }
-    fun bundle(address: OperationReplyAddressInterface, context: BundlingContext): OperationReplyAddressInterface =
+    ): Map<String, OperationReplyAddressInterface>? = addresses?.mapValues { (_, addr) -> bundle(addr, context) }
+
+    fun bundle(
+        address: OperationReplyAddressInterface,
+        context: BundlingContext,
+    ): OperationReplyAddressInterface =
         when (address) {
             is OperationReplyAddressInterface.OperationReplyAddressInline -> address
             is OperationReplyAddressInterface.OperationReplyAddressReference -> {

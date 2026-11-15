@@ -87,13 +87,19 @@ class ModelTypeMapperTest {
             "OrderStatus",
             (mapper.map("status", Schema(type = "string", title = "order status", enum = listOf("A"))) as Named).name,
         )
-        assertEquals(Named("Status", isModel = false), mapper.map("status", Schema(type = "string", enum = listOf("A"))))
+        assertEquals(
+            Named("Status", isModel = false),
+            mapper.map("status", Schema(type = "string", enum = listOf("A"))),
+        )
         assertEquals(Named("Payment", isModel = true), mapper.map("payment", Schema(oneOf = listOf(ref("User")))))
     }
 
     @Test
     fun `marks references to open objects`() {
-        assertEquals(Named("Anything", isModel = true, isOpenObject = true), mapper.mapReference(Reference("#/components/schemas/Anything")))
+        assertEquals(
+            Named("Anything", isModel = true, isOpenObject = true),
+            mapper.mapReference(Reference("#/components/schemas/Anything")),
+        )
         assertEquals(Named("User", isModel = true), mapper.mapReference(Reference("#/components/schemas/User")))
     }
 

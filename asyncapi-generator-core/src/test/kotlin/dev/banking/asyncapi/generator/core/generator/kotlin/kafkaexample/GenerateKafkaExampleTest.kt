@@ -6,98 +6,104 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class GenerateKafkaExampleTest : AbstractKotlinGeneratorClass() {
-
     @Test
     fun generate_AMPKafkaExampleEvent_v1_yaml_CustomerReadPayload_dataClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
-            generated = "CustomerReadPayload.kt",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
+                generated = "CustomerReadPayload.kt",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
+            )
         val dataClass = extractElement(generated)
-        val expectedDataClass = """
-        data class CustomerReadPayload(
+        val expectedDataClass =
+            """
+            data class CustomerReadPayload(
 
-            val customerId: String,
+                val customerId: String,
 
-            @field:Min(0L)
-            @field:Max(9999L)
-            val orgId: Int? = null,
+                @field:Min(0L)
+                @field:Max(9999L)
+                val orgId: Int? = null,
 
-            val customerName: String? = null,
+                val customerName: String? = null,
 
-            val updatedDate: OffsetDateTime? = null,
+                val updatedDate: OffsetDateTime? = null,
 
-            val customerType: CustomerType? = null,
+                val customerType: CustomerType? = null,
 
-            val phoneNumber: String? = null,
+                val phoneNumber: String? = null,
 
-            @field:Email
-            val email: String? = null
-        ) {
-        }
-    """.trimIndent()
+                @field:Email
+                val email: String? = null
+            ) {
+            }
+            """.trimIndent()
         assertEquals(expectedDataClass, dataClass)
     }
 
-
     @Test
     fun generate_AMPKafkaExampleEvent_v1_yaml_AccountType_enumClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
-            generated = "CustomerType.kt",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
+                generated = "CustomerType.kt",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
+            )
         val enumClass = extractElement(generated)
-        val expected = """
-           enum class CustomerType {
-               @JsonProperty("private")
-               PRIVATE,
-               @JsonProperty("corporate")
-               CORPORATE,
-           }
-           """.trimIndent()
+        val expected =
+            """
+            enum class CustomerType {
+                @JsonProperty("private")
+                PRIVATE,
+                @JsonProperty("corporate")
+                CORPORATE,
+            }
+            """.trimIndent()
         assertEquals(expected, enumClass)
     }
 
     @Test
     fun generate_AMPKafkaExampleEvent_v1_yaml_CustomerEmailPayload_dataClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
-            generated = "CustomerEmailPayload.kt",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
+                generated = "CustomerEmailPayload.kt",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
+            )
         val dataClass = extractElement(generated)
-        val expected = """
-        data class CustomerEmailPayload(
+        val expected =
+            """
+            data class CustomerEmailPayload(
 
-            val customerId: String? = null,
+                val customerId: String? = null,
 
-            @field:Email
-            val email: String? = null
-        ) {
-        }
-    """.trimIndent()
+                @field:Email
+                val email: String? = null
+            ) {
+            }
+            """.trimIndent()
         assertEquals(expected, dataClass)
     }
 
     @Test
     fun generate_AMPKafkaExampleEvent_v1_yaml_CustomerPhoneNumberPayload_dataClass() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
-            generated = "CustomerPhoneNumberPayload.kt",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_spring_kafka_example.yaml"),
+                generated = "CustomerPhoneNumberPayload.kt",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.kafkaexample",
+            )
         val dataClass = extractElement(generated)
-        val expected = """
-        data class CustomerPhoneNumberPayload(
+        val expected =
+            """
+            data class CustomerPhoneNumberPayload(
 
-            val customerId: String? = null,
+                val customerId: String? = null,
 
-            val phoneNumber: String? = null
-        ) {
-        }
-    """.trimIndent()
+                val phoneNumber: String? = null
+            ) {
+            }
+            """.trimIndent()
         assertEquals(expected, dataClass)
     }
 }

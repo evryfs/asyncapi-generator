@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class AvroTypeMapperTest {
-
     private val mapper = AvroTypeMapper("com.example.avro")
 
     @Test
@@ -21,15 +20,15 @@ class AvroTypeMapperTest {
     fun `should map logical types`() {
         assertMapping(
             "{\"type\": \"string\", \"logicalType\": \"uuid\"}",
-            Schema(type = "string", format = "uuid")
+            Schema(type = "string", format = "uuid"),
         )
         assertMapping(
             "{\"type\": \"int\", \"logicalType\": \"date\"}",
-            Schema(type = "string", format = "date")
+            Schema(type = "string", format = "date"),
         )
         assertMapping(
             "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}",
-            Schema(type = "string", format = "date-time")
+            Schema(type = "string", format = "date-time"),
         )
     }
 
@@ -45,7 +44,10 @@ class AvroTypeMapperTest {
         assertMapping("string", null)
     }
 
-    private fun assertMapping(expectedJson: String, schema: Schema?) {
+    private fun assertMapping(
+        expectedJson: String,
+        schema: Schema?,
+    ) {
         val actual = mapper.mapToAvroType(schema, isOptional = false)
         val effectiveExpected =
             if (!expectedJson.startsWith("{") && !expectedJson.startsWith("[")) {

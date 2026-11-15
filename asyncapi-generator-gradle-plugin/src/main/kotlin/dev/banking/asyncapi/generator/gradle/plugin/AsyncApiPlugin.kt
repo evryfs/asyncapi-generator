@@ -67,13 +67,14 @@ class AsyncApiPlugin : Plugin<Project> {
                     executionName.set(execution.name)
                     // Resolved only for executions that run protoc, so others never need to download it.
                     protoc.from(
-                        execution.modelConfig.modelType.map { modelType ->
-                            when {
-                                modelType != PROTOBUF_MESSAGE -> emptyList<Any>()
-                                extension.protocExecutable.isPresent -> listOf(extension.protocExecutable)
-                                else -> listOf(protocConfiguration)
-                            }
-                        }.orElse(emptyList()),
+                        execution.modelConfig.modelType
+                            .map { modelType ->
+                                when {
+                                    modelType != PROTOBUF_MESSAGE -> emptyList<Any>()
+                                    extension.protocExecutable.isPresent -> listOf(extension.protocExecutable)
+                                    else -> listOf(protocConfiguration)
+                                }
+                            }.orElse(emptyList()),
                     )
                     suppressedWarnings.addAll(execution.suppressedWarnings)
 

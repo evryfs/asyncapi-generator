@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 internal class ReferenceAnalyzer {
-
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val discoveredSchemas = schemas.toMutableMap()
         val namesToProcess = discoveredSchemas.keys.toMutableList()

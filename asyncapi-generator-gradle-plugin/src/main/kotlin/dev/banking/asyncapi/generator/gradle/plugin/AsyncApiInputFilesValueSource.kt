@@ -12,17 +12,15 @@ import org.gradle.api.provider.ValueSourceParameters
  * - `AsyncApiPluginTest`
  * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiInputFilesValueSource :
-    ValueSource<List<String>, AsyncApiInputFilesValueSource.Parameters> {
+abstract class AsyncApiInputFilesValueSource : ValueSource<List<String>, AsyncApiInputFilesValueSource.Parameters> {
     interface Parameters : ValueSourceParameters {
         val inputSpec: RegularFileProperty
     }
 
-    override fun obtain(): List<String> {
-        return AsyncApiDocumentLoader()
+    override fun obtain(): List<String> =
+        AsyncApiDocumentLoader()
             .load(parameters.inputSpec.get().asFile)
             .sourceFiles
             .map { file -> file.absolutePath }
             .sorted()
-    }
 }

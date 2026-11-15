@@ -16,7 +16,11 @@ class GeneratedOutputManifestTest {
 
     @Test
     fun `removes files an execution no longer generates and keeps everything else`() {
-        val unrelated = sources.resolve("com/example/HandWritten.kt").apply { parentFile.mkdirs(); writeText("keep") }
+        val unrelated =
+            sources.resolve("com/example/HandWritten.kt").apply {
+                parentFile.mkdirs()
+                writeText("keep")
+            }
         write("models", "com/example/User.kt", "com/example/old/Legacy.kt")
 
         write("models", "com/example/User.kt")
@@ -44,7 +48,11 @@ class GeneratedOutputManifestTest {
     @Test
     fun `never removes the output root or its parents`() {
         val manifest = GeneratedOutputManifest(manifestFile, "models")
-        val generated = sources.resolve("com/example/Only.kt").apply { parentFile.mkdirs(); writeText("// generated") }
+        val generated =
+            sources.resolve("com/example/Only.kt").apply {
+                parentFile.mkdirs()
+                writeText("// generated")
+            }
         manifest.update(listOf(generated), listOf(sources))
 
         manifest.update(emptyList(), listOf(sources))
@@ -54,14 +62,23 @@ class GeneratedOutputManifestTest {
         assertTrue(sources.exists(), "the output root stays even when empty")
     }
 
-    private fun write(owner: String, vararg relativePaths: String) {
+    private fun write(
+        owner: String,
+        vararg relativePaths: String,
+    ) {
         FileSystemGeneratedArtifactWriter(
             sourceOutputDirectory = sources,
             resourceOutputDirectory = sources,
             manifest = GeneratedOutputManifest(manifestFile, owner),
         ).write(
             GenerationResult(
-                relativePaths.map { GeneratedArtifact(relativePath = it, content = "// $owner", kind = GeneratedArtifactKind.SOURCE) },
+                relativePaths.map {
+                    GeneratedArtifact(
+                        relativePath = it,
+                        content = "// $owner",
+                        kind = GeneratedArtifactKind.SOURCE,
+                    )
+                },
             ),
         )
     }

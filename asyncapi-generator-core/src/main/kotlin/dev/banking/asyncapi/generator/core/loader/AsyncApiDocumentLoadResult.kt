@@ -24,12 +24,13 @@ class AsyncApiDocumentLoadResult internal constructor(
     val warnings: List<ValidationFinding> = unmodifiableList(warnings.toList())
 
     /** Canonical source files consumed by this load, in deterministic path order. */
-    val sourceFiles: Set<File> = unmodifiableSet(
-        sourceFiles
-            .map(File::getCanonicalFile)
-            .sortedBy(File::getAbsolutePath)
-            .toCollection(linkedSetOf()),
-    )
+    val sourceFiles: Set<File> =
+        unmodifiableSet(
+            sourceFiles
+                .map(File::getCanonicalFile)
+                .sortedBy(File::getAbsolutePath)
+                .toCollection(linkedSetOf()),
+        )
 
     fun formatWarnings(): String = formattedWarnings
 }

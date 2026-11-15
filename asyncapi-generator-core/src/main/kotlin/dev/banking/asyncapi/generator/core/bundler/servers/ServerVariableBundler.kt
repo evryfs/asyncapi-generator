@@ -15,7 +15,11 @@ internal class ServerVariableBundler {
         variables?.mapValues { (_, variable) ->
             bundle(variable, context)
         }
-    fun bundle(variable: ServerVariableInterface, context: BundlingContext): ServerVariableInterface =
+
+    fun bundle(
+        variable: ServerVariableInterface,
+        context: BundlingContext,
+    ): ServerVariableInterface =
         when (variable) {
             is ServerVariableInterface.ServerVariableInline -> {
                 variable

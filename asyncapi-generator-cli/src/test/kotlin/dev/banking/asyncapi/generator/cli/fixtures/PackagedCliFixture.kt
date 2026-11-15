@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit
  * - `CliPackagedApplicationIT`
  */
 internal object PackagedCliFixture {
-
     val expectedVersion: String
         get() =
             requireNotNull(System.getProperty(CLI_VERSION_PROPERTY)) {

@@ -188,9 +188,7 @@ class MavenGeneratedOutputRegistrarTest {
             ),
         )
 
-    private fun outputDirectory(name: String): File =
-        File("target/generated-output-registration/$name")
+    private fun outputDirectory(name: String): File = File("target/generated-output-registration/$name")
 
-    private fun File.normalizedAbsolutePath(): String =
-        toPath().toAbsolutePath().normalize().toString()
+    private fun File.normalizedAbsolutePath(): String = toPath().toAbsolutePath().normalize().toString()
 }

@@ -10,7 +10,10 @@ import java.math.BigDecimal
  * and explicit exact-value presence.
  */
 internal class SchemaMerger {
-    fun merge(base: Schema, override: Schema): Schema {
+    fun merge(
+        base: Schema,
+        override: Schema,
+    ): Schema {
         val baseProps = base.properties ?: emptyMap()
         val overrideProps = override.properties ?: emptyMap()
         val allPropKeys = baseProps.keys + overrideProps.keys

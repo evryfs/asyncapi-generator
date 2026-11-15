@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.constants
 
 object RegexPatterns {
-
     /**
      * Matches absolute URIs with support for both web and socket protocols.
      *

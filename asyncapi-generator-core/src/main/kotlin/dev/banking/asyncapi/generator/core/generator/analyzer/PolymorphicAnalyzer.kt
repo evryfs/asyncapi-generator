@@ -5,7 +5,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 internal class PolymorphicAnalyzer {
-
     fun analyze(schemas: Map<String, Schema>): Map<String, List<String>> {
         val childToParents = mutableMapOf<String, MutableList<String>>()
 

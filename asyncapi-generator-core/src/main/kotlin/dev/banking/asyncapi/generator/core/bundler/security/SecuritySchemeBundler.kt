@@ -15,6 +15,7 @@ internal class SecuritySchemeBundler {
         schemes?.mapValues { (_, scheme) ->
             bundle(scheme, context)
         }
+
     fun bundleList(
         schemes: List<SecuritySchemeInterface>?,
         context: BundlingContext,
@@ -23,7 +24,10 @@ internal class SecuritySchemeBundler {
             bundle(scheme, context)
         }
 
-    fun bundle(scheme: SecuritySchemeInterface, context: BundlingContext): SecuritySchemeInterface =
+    fun bundle(
+        scheme: SecuritySchemeInterface,
+        context: BundlingContext,
+    ): SecuritySchemeInterface =
         when (scheme) {
             is SecuritySchemeInterface.SecuritySchemeReference -> {
                 scheme.copy(reference = ReferenceBundler.inlineIfUnvisited(scheme.reference, context))

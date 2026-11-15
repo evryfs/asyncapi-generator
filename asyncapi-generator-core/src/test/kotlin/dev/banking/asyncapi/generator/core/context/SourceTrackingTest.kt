@@ -8,7 +8,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SourceTrackingTest {
-
     private val tracking = SourceTracking()
 
     @Test

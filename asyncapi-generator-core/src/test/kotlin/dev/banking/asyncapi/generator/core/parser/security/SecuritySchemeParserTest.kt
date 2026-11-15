@@ -16,7 +16,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class SecuritySchemeParserTest {
-
     private val context = AsyncApiContext()
     private val parser = SecuritySchemeParser(context)
 
@@ -24,9 +23,13 @@ class SecuritySchemeParserTest {
     fun `parse SCRAM certificate and basic authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val securitySchemesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
+        val securitySchemesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("securitySchemes")
 
         val result = parser.parseMap(securitySchemesNode)
 
@@ -53,9 +56,13 @@ class SecuritySchemeParserTest {
     fun `parse bearer and API key authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val securitySchemesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
+        val securitySchemesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("securitySchemes")
 
         val result = parser.parseMap(securitySchemesNode)
 
@@ -82,9 +89,13 @@ class SecuritySchemeParserTest {
     fun `parse OpenID Connect and OAuth2 authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val securitySchemesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
+        val securitySchemesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("securitySchemes")
 
         val result = parser.parseMap(securitySchemesNode)
 
@@ -127,20 +138,29 @@ class SecuritySchemeParserTest {
     fun `parse security scheme missing type reports the required member and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("MissingType")
+        val schemeNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("securitySchemes")
+                .expectObject()
+                .required("MissingType")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemeNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("type", diagnostic.memberName)
         assertEquals("present member", diagnostic.expectedType)
-        assertEquals("asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type", diagnostic.path)
+        assertEquals(
+            "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
+            diagnostic.path,
+        )
         assertEquals("root.components.securitySchemes.MissingType", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
@@ -149,14 +169,20 @@ class SecuritySchemeParserTest {
     fun `parse OAuth flow missing available scopes reports the required member and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemeNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("securitySchemes")
-            .expectObject().required("MissingAvailableScopes")
+        val schemeNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("securitySchemes")
+                .expectObject()
+                .required("MissingAvailableScopes")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemeNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemeNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -172,5 +198,4 @@ class SecuritySchemeParserTest {
         )
         assertEquals("asyncapi_parser_security_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

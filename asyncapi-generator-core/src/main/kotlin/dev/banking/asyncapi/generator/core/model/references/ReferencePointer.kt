@@ -27,13 +27,14 @@ internal data class ParsedReference(
         return File(resolved).canonicalFile
     }
 
-    fun pointerSegments(): List<String> = buildList {
-        var current = pointer
-        while (!current.matches()) {
-            add(current.matchingProperty)
-            current = current.tail()
+    fun pointerSegments(): List<String> =
+        buildList {
+            var current = pointer
+            while (!current.matches()) {
+                add(current.matchingProperty)
+                current = current.tail()
+            }
         }
-    }
 }
 
 internal fun String.parseReference(): ParsedReference {
@@ -67,11 +68,9 @@ internal fun String.referenceTargetNameOrNull(): String? =
         .getOrNull()
         ?.takeIf(String::isNotBlank)
 
-internal fun String.isExternalReference(): Boolean =
-    runCatching { parseReference().isExternal }.getOrDefault(false)
+internal fun String.isExternalReference(): Boolean = runCatching { parseReference().isExternal }.getOrDefault(false)
 
-internal fun componentSchemaReference(name: String): String =
-    "#/components/schemas/${name.encodeJsonPointerSegment()}"
+internal fun componentSchemaReference(name: String): String = "#/components/schemas/${name.encodeJsonPointerSegment()}"
 
 private fun String.encodeJsonPointerSegment(): String =
     replace("~", "~0")

@@ -28,7 +28,8 @@ internal class ModelDefinitionFactory(
     private val typeMapper = ModelTypeMapper(context)
     private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName)
 
-    private val parsedScalars = setOf(TypeRef.Scalar.DATE, TypeRef.Scalar.TIME, TypeRef.Scalar.DATE_TIME, TypeRef.Scalar.UUID)
+    private val parsedScalars =
+        setOf(TypeRef.Scalar.DATE, TypeRef.Scalar.TIME, TypeRef.Scalar.DATE_TIME, TypeRef.Scalar.UUID)
 
     fun create(): List<ModelDefinition> = input.schemas.mapNotNull { (name, schema) -> create(name, schema) }
 
@@ -61,9 +62,11 @@ internal class ModelDefinitionFactory(
                     packageName = packageName,
                     description = schema.description,
                     properties =
-                        schema.properties.orEmpty().map { (propertyName, propertySchema) ->
-                            createProperty(propertyName, propertySchema, schema.required.orEmpty())
-                        }.also { failOnIdentifierCollision(name, it) },
+                        schema.properties
+                            .orEmpty()
+                            .map { (propertyName, propertySchema) ->
+                                createProperty(propertyName, propertySchema, schema.required.orEmpty())
+                            }.also { failOnIdentifierCollision(name, it) },
                     unions = input.polymorphicRelationships[name].orEmpty(),
                     annotation = annotation,
                 )
@@ -78,7 +81,8 @@ internal class ModelDefinitionFactory(
     private fun unionSubtypes(schema: Schema): List<UnionSubtype> =
         UnionSubtypes.of(schema, context).filter { subtype ->
             schema.discriminator != null ||
-                context.findSchemaByName(subtype.type)
+                context
+                    .findSchemaByName(subtype.type)
                     ?.let { it.type.getPrimaryType() == "object" && !it.isOpenPayload() } == true
         }
 

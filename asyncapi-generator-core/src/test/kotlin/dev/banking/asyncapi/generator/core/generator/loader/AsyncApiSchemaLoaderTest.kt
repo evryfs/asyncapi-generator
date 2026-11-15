@@ -10,8 +10,8 @@ import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -21,14 +21,15 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class AsyncApiSchemaLoaderTest {
-
     @Test
     fun `should load explicit schemas`() {
-        val components = Component(
-            schemas = mapOf(
-                "User" to SchemaInterface.SchemaInline(Schema(type = "object"))
+        val components =
+            Component(
+                schemas =
+                    mapOf(
+                        "User" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                    ),
             )
-        )
         val doc = docWithComponents(components)
         val loaded = AsyncApiSchemaLoader.load(doc)
 
@@ -38,15 +39,18 @@ class AsyncApiSchemaLoaderTest {
 
     @Test
     fun `should harvest schemas from message payloads`() {
-        val components = Component(
-            messages = mapOf(
-                "UserSignedUp" to MessageInterface.MessageInline(
-                    Message(
-                        payload = SchemaInterface.SchemaInline(Schema(type = "object"))
-                    )
-                )
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "UserSignedUp" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                ),
+                            ),
+                    ),
             )
-        )
         val doc = docWithComponents(components)
         val loaded = AsyncApiSchemaLoader.load(doc)
 
@@ -71,7 +75,9 @@ class AsyncApiSchemaLoaderTest {
         val document =
             AsyncApiDocument(
                 asyncapi = "3.0.0",
-                info = dev.banking.asyncapi.generator.core.model.info.Info("T", "1"),
+                info =
+                    dev.banking.asyncapi.generator.core.model.info
+                        .Info("T", "1"),
                 channels =
                     mapOf(
                         "billingAccountCreatedV1" to
@@ -155,7 +161,9 @@ class AsyncApiSchemaLoaderTest {
         val document =
             AsyncApiDocument(
                 asyncapi = "3.0.0",
-                info = dev.banking.asyncapi.generator.core.model.info.Info("T", "1"),
+                info =
+                    dev.banking.asyncapi.generator.core.model.info
+                        .Info("T", "1"),
                 channels =
                     mapOf(
                         "recursiveNodes" to
@@ -266,20 +274,22 @@ class AsyncApiSchemaLoaderTest {
     @Test
     fun `should retain all supported component schema declaration forms`() {
         val avroSchema = nativeAvroSchema()
-        val components = Component(
-            schemas = mapOf(
-                "Task" to SchemaInterface.SchemaInline(Schema(type = "object")),
-                "UserCreated" to SchemaInterface.MultiFormatSchemaInline(avroSchema),
-                "AllowAnything" to SchemaInterface.BooleanSchema(true),
-                "DenyAnything" to
-                    SchemaInterface.SchemaReference(
-                        Reference(
-                            ref = "./schemas.yaml#/DenyAnything",
-                            model = SchemaInterface.BooleanSchema(false),
-                        ),
+        val components =
+            Component(
+                schemas =
+                    mapOf(
+                        "Task" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                        "UserCreated" to SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                        "AllowAnything" to SchemaInterface.BooleanSchema(true),
+                        "DenyAnything" to
+                            SchemaInterface.SchemaReference(
+                                Reference(
+                                    ref = "./schemas.yaml#/DenyAnything",
+                                    model = SchemaInterface.BooleanSchema(false),
+                                ),
+                            ),
                     ),
-            ),
-        )
+            )
         val doc = docWithComponents(components)
 
         val loaded = AsyncApiSchemaLoader.load(doc)
@@ -301,15 +311,18 @@ class AsyncApiSchemaLoaderTest {
     @Test
     fun `should harvest multi format schemas from message payloads`() {
         val avroSchema = nativeAvroSchema()
-        val components = Component(
-            messages = mapOf(
-                "UserSignedUp" to MessageInterface.MessageInline(
-                    Message(
-                        payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
+        val components =
+            Component(
+                messages =
+                    mapOf(
+                        "UserSignedUp" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                                ),
+                            ),
                     ),
-                ),
-            ),
-        )
+            )
         val doc = docWithComponents(components)
 
         val loadedMultiFormatSchemas = AsyncApiSchemaLoader.load(doc).schemaDeclarations.multiFormatSchemas
@@ -334,7 +347,9 @@ class AsyncApiSchemaLoaderTest {
         val document =
             AsyncApiDocument(
                 asyncapi = "3.0.0",
-                info = dev.banking.asyncapi.generator.core.model.info.Info("T", "1"),
+                info =
+                    dev.banking.asyncapi.generator.core.model.info
+                        .Info("T", "1"),
                 channels =
                     mapOf(
                         "userEvents" to
@@ -450,13 +465,14 @@ class AsyncApiSchemaLoaderTest {
         assertFalse(loaded.schemas.containsKey("MessageHeaders"))
     }
 
-    private fun docWithComponents(component: Component): AsyncApiDocument {
-        return AsyncApiDocument(
+    private fun docWithComponents(component: Component): AsyncApiDocument =
+        AsyncApiDocument(
             asyncapi = "3.0.0",
-            info = dev.banking.asyncapi.generator.core.model.info.Info("T", "1"),
-            components = ComponentInterface.ComponentInline(component)
+            info =
+                dev.banking.asyncapi.generator.core.model.info
+                    .Info("T", "1"),
+            components = ComponentInterface.ComponentInline(component),
         )
-    }
 
     private fun nativeAvroSchema(): MultiFormatSchema =
         MultiFormatSchema(

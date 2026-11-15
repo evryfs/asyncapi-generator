@@ -27,10 +27,11 @@ internal class NativeSchemaAssetReader(
             asyncApiContext.sourceTracking.findFileById(schemaNode.address.sourceId)
                 ?: asyncApiContext.sourceTracking.getCurrentFile()
         val file =
-            pathResolver.resolve(
-                reference = reference,
-                sourceFile = sourceFile,
-            )?.file ?: return null
+            pathResolver
+                .resolve(
+                    reference = reference,
+                    sourceFile = sourceFile,
+                )?.file ?: return null
 
         return try {
             asyncApiContext.readNativeSchemaAsset(

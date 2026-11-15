@@ -18,22 +18,28 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class OAuthFlowsValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
-    fun validate(node: SecurityScheme, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: SecurityScheme,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (node.type != "oauth2") return
         val flows = node.flows
         if (
             flows == null ||
-            (flows.implicit == null &&
-                flows.password == null &&
-                flows.clientCredentials == null &&
-                flows.authorizationCode == null)
+            (
+                flows.implicit == null &&
+                    flows.password == null &&
+                    flows.clientCredentials == null &&
+                    flows.authorizationCode == null
+            )
         ) {
             results.error(
                 SECURITY_OAUTH_FLOWS_REQUIRED,
                 "$contextString of type 'oauth2' requires at least one OAuth2 flow.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::flows)
-                    ?: asyncApiContext.modelTracking.getSourceLocation(node),
+                sourceLocation =
+                    asyncApiContext.modelTracking.getSourceLocation(node, node::flows)
+                        ?: asyncApiContext.modelTracking.getSourceLocation(node),
             )
             return
         }
@@ -133,8 +139,9 @@ internal class OAuthFlowsValidator(
             results.error(
                 requiredRule,
                 "$contextString must define '$fieldName'.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, fieldName)
-                    ?: asyncApiContext.modelTracking.getSourceLocation(flow),
+                sourceLocation =
+                    asyncApiContext.modelTracking.getSourceLocation(flow, fieldName)
+                        ?: asyncApiContext.modelTracking.getSourceLocation(flow),
             )
         } else if (ValidationFormats.absoluteUri(value) == null) {
             results.error(
@@ -145,7 +152,10 @@ internal class OAuthFlowsValidator(
         }
     }
 
-    private fun validateRequestedScopes(node: SecurityScheme, results: ValidationCollector) {
+    private fun validateRequestedScopes(
+        node: SecurityScheme,
+        results: ValidationCollector,
+    ) {
         val requestedScopes = node.scopes ?: return
         val flows = node.flows ?: return
         val availableScopes =

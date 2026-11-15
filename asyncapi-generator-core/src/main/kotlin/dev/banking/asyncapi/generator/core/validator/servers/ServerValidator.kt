@@ -2,9 +2,9 @@ package dev.banking.asyncapi.generator.core.validator.servers
 
 import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_NAME_FORMAT
@@ -21,7 +21,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class ServerValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagValidator = TagValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val bindingValidator = BindingValidator(asyncApiContext)
@@ -36,10 +35,11 @@ internal class ServerValidator(
         name: String? = null,
     ) {
         if (name != null && !ValidationFormats.isReusableObjectName(name)) {
-            val model = when (node) {
-                is ServerInterface.ServerInline -> node.server
-                is ServerInterface.ServerReference -> node.reference
-            }
+            val model =
+                when (node) {
+                    is ServerInterface.ServerInline -> node.server
+                    is ServerInterface.ServerReference -> node.reference
+                }
             results.error(
                 SERVER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
@@ -56,7 +56,11 @@ internal class ServerValidator(
         }
     }
 
-    private fun validate(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validate(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validateHost(node, contextString, results)
         validateProtocol(node, contextString, results)
@@ -67,7 +71,11 @@ internal class ServerValidator(
         validateBindings(node, contextString, results)
     }
 
-    private fun validateHost(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateHost(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val host = node.host
         if (host.isBlank()) {
             results.error(
@@ -86,11 +94,12 @@ internal class ServerValidator(
         }
         val definedVars = node.variables?.keys ?: emptySet()
         val hostVars = PARAMETER_PLACEHOLDER.findAll(host).map { it.groupValues[1] }.toSet()
-        val pathVars = node.pathname
-            ?.let(PARAMETER_PLACEHOLDER::findAll)
-            ?.map { it.groupValues[1] }
-            ?.toSet()
-            ?: emptySet()
+        val pathVars =
+            node.pathname
+                ?.let(PARAMETER_PLACEHOLDER::findAll)
+                ?.map { it.groupValues[1] }
+                ?.toSet()
+                ?: emptySet()
         val missingHostVars = hostVars - definedVars
         if (missingHostVars.isNotEmpty()) {
             results.error(
@@ -111,7 +120,11 @@ internal class ServerValidator(
         }
     }
 
-    private fun validateProtocol(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateProtocol(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val protocol = node.protocol
         if (protocol.isBlank()) {
             results.error(
@@ -123,11 +136,19 @@ internal class ServerValidator(
         }
     }
 
-    private fun validateVariables(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateVariables(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         serverVariableValidator.validateMap(node.variables, contextString, results)
     }
 
-    private fun validateSecurity(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateSecurity(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         securitySchemeValidator.validateList(
             node.security ?: return,
             "$contextString Security Scheme",
@@ -135,16 +156,28 @@ internal class ServerValidator(
         )
     }
 
-    private fun validateTags(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateTags(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         tagValidator.validateList(node.tags, contextString, results)
     }
 
-    private fun validateExternalDocs(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val externalDocs = node.externalDocs ?: return
         externalDocsValidator.validateInterface(externalDocs, "$contextString ExternalDocs", results)
     }
 
-    private fun validateBindings(node: Server, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        node: Server,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindingValidator.validateMap(node.bindings, contextString, results)
     }
 }

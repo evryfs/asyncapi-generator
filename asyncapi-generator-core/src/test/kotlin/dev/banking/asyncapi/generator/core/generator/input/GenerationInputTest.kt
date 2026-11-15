@@ -8,7 +8,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 class GenerationInputTest {
-
     @Test
     fun `schema context exposes analyzed schemas`() {
         val userSchema = Schema(type = "object")

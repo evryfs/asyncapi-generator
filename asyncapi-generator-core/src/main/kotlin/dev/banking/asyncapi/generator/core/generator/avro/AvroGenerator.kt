@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
 import dev.banking.asyncapi.generator.core.generator.avro.factory.AvroGeneratorModelFactory
-import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import dev.banking.asyncapi.generator.core.model.schemas.Schema as AsyncApiSchema
-import org.apache.avro.Schema
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
+import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidGeneratedAvroSchema
+import org.apache.avro.Schema
 import org.apache.avro.SchemaParseException
+import dev.banking.asyncapi.generator.core.model.schemas.Schema as AsyncApiSchema
 
 /**
  * Renders parsed schemas into Avro schema artifacts before writing them.

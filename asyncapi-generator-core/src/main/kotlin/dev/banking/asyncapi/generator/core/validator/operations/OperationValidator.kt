@@ -34,7 +34,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 internal class OperationValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagValidator = TagValidator(asyncApiContext)
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
@@ -74,7 +73,11 @@ internal class OperationValidator(
         validateExternalDocs(node, contextString, results)
     }
 
-    private fun validateAction(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateAction(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val action = node.action
         if (action.isEmpty()) {
             results.error(
@@ -121,12 +124,19 @@ internal class OperationValidator(
             if (
                 target != null &&
                 channel != null &&
-                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.modelTracking.findReference(messageReference))
+                !OperationReferenceBoundary.containsMessage(
+                    channel,
+                    asyncApiContext.modelTracking.findReference(messageReference),
+                )
             ) {
                 results.error(
                     OPERATION_MESSAGE_REFERENCE,
                     "$messageContext must reference a message from the operation channel's 'messages' object.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(messageReference, messageReference::ref),
+                    sourceLocation =
+                        asyncApiContext.modelTracking.getSourceLocation(
+                            messageReference,
+                            messageReference::ref,
+                        ),
                 )
             }
         }
@@ -148,7 +158,11 @@ internal class OperationValidator(
         }
     }
 
-    private fun validateTraits(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateTraits(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         node.traits
             ?.forEachIndexed { index, trait ->
                 operationTraitValidator.validateInterface(
@@ -159,11 +173,19 @@ internal class OperationValidator(
             }
     }
 
-    private fun validateBindings(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindingValidator.validateMap(node.bindings, contextString, results)
     }
 
-    private fun validateSecurity(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateSecurity(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         securitySchemeValidator.validateList(
             node.security ?: return,
             "$contextString Security Scheme",
@@ -171,11 +193,19 @@ internal class OperationValidator(
         )
     }
 
-    private fun validateTags(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateTags(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         tagValidator.validateList(node.tags, contextString, results)
     }
 
-    private fun validateExternalDocs(node: Operation, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        node: Operation,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val externalDocs = node.externalDocs ?: return
         externalDocsValidator.validateInterface(
             externalDocs,

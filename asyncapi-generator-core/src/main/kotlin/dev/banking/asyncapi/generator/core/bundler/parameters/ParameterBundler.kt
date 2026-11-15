@@ -16,7 +16,10 @@ internal class ParameterBundler {
             bundle(param, context)
         }
 
-    fun bundle(parameter: ParameterInterface, context: BundlingContext): ParameterInterface =
+    fun bundle(
+        parameter: ParameterInterface,
+        context: BundlingContext,
+    ): ParameterInterface =
         when (parameter) {
             is ParameterInterface.ParameterReference -> {
                 parameter.copy(reference = ReferenceBundler.inlineIfUnvisited(parameter.reference, context))

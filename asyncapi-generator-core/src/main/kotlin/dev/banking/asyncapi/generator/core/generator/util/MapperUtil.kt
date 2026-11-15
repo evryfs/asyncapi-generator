@@ -7,14 +7,16 @@ internal object MapperUtil {
     private val wordBoundary = Regex("([a-z0-9])([A-Z])")
 
     fun toPascalCase(raw: String): String =
-        raw.split(NON_ALPHANUMERIC)
+        raw
+            .split(NON_ALPHANUMERIC)
             .filter { it.isNotBlank() }
             .joinToString("") { part ->
                 part.replaceFirstChar { it.uppercase() }
             }
 
     fun toCamelCase(raw: String): String =
-        raw.split(NON_ALPHANUMERIC)
+        raw
+            .split(NON_ALPHANUMERIC)
             .filter { it.isNotBlank() }
             .map { part -> if (part.all(Char::isUpperCase)) part.lowercase() else part }
             .mapIndexed { index, part ->
@@ -23,8 +25,7 @@ internal object MapperUtil {
                 } else {
                     part.replaceFirstChar { it.uppercase() }
                 }
-            }
-            .joinToString("")
+            }.joinToString("")
 
     fun toUpperSnakeCase(raw: String): String =
         raw
@@ -34,34 +35,36 @@ internal object MapperUtil {
             .filter { it.isNotBlank() }
             .joinToString("_") { part -> part.uppercase() }
 
-    fun Any?.getPrimaryType(): String? {
-        return when (this) {
+    fun Any?.getPrimaryType(): String? =
+        when (this) {
             is String -> normalizeSchemaType()
-            is List<*> -> this
-                .filterIsInstance<String>()
-                .map { it.normalizeSchemaType() }
-                .firstOrNull { !it.equals("null", ignoreCase = true) }
+            is List<*> ->
+                this
+                    .filterIsInstance<String>()
+                    .map { it.normalizeSchemaType() }
+                    .firstOrNull { !it.equals("null", ignoreCase = true) }
 
             else -> null
         }
-    }
 
-    fun Any?.isTypeNullable(): Boolean {
-        return when (this) {
+    fun Any?.isTypeNullable(): Boolean =
+        when (this) {
             is String -> normalizeSchemaType().equals("null", ignoreCase = true)
-            is List<*> -> this
-                .filterIsInstance<String>()
-                .any { it.normalizeSchemaType().equals("null", ignoreCase = true) }
+            is List<*> ->
+                this
+                    .filterIsInstance<String>()
+                    .any { it.normalizeSchemaType().equals("null", ignoreCase = true) }
 
             else -> false
         }
-    }
 
     fun Any?.hasMultipleNonNullTypes(): Boolean {
-        val types = (this as? List<*>)?.filterIsInstance<String>()
-            ?.map { it.normalizeSchemaType() }
-            ?.filter { !it.equals("null", ignoreCase = true) }
-            ?: return false
+        val types =
+            (this as? List<*>)
+                ?.filterIsInstance<String>()
+                ?.map { it.normalizeSchemaType() }
+                ?.filter { !it.equals("null", ignoreCase = true) }
+                ?: return false
         return types.distinct().size > 1
     }
 

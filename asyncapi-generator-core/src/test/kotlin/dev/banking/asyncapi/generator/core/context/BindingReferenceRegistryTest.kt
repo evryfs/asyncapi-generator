@@ -7,7 +7,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class BindingReferenceRegistryTest {
-
     private val registry = BindingReferenceRegistry()
 
     @Test

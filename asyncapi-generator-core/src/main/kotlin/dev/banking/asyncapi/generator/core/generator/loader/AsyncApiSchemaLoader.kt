@@ -24,7 +24,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 internal object AsyncApiSchemaLoader {
-
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val sourceModels = SourceModelRegistry()
         val contractDeclarations = ContractDeclarationRegistry()
@@ -189,7 +188,9 @@ internal object AsyncApiSchemaLoader {
             asyncApiDocument.channels?.forEach { (channelKey, channelInterface) ->
                 val externalChannel =
                     channelInterface is ChannelInterface.ChannelReference &&
-                        channelInterface.reference.ref.parseReference().isExternal
+                        channelInterface.reference.ref
+                            .parseReference()
+                            .isExternal
                 val channel =
                     when (channelInterface) {
                         is ChannelInterface.ChannelInline -> channelInterface.channel
@@ -248,11 +249,12 @@ internal object AsyncApiSchemaLoader {
         val messageReference =
             (componentMessages[messageName] as? MessageInterface.MessageReference)?.reference
                 ?: return immediateIdentity
-        val referencedComponentName = messageReference.localComponentName("messages")
-            ?: return ContractDeclarationIdentity.ReferencedMessagePayload(
-                messageReference.sourceId,
-                messageReference.ref,
-            )
+        val referencedComponentName =
+            messageReference.localComponentName("messages")
+                ?: return ContractDeclarationIdentity.ReferencedMessagePayload(
+                    messageReference.sourceId,
+                    messageReference.ref,
+                )
         return componentMessagePayloadIdentity(
             messageName = referencedComponentName,
             componentMessages = componentMessages,
@@ -264,8 +266,9 @@ internal object AsyncApiSchemaLoader {
         collectedMessage: CollectedMessage,
         message: Message,
     ): ContractDeclarationIdentity? {
-        val payloadReference = (message.payload as? SchemaInterface.SchemaReference)?.reference
-            ?: return collectedMessage.payloadIdentity
+        val payloadReference =
+            (message.payload as? SchemaInterface.SchemaReference)?.reference
+                ?: return collectedMessage.payloadIdentity
         val componentSchemaName = payloadReference.localComponentName("schemas")
         return if (
             componentSchemaName != null &&
@@ -326,7 +329,8 @@ internal object AsyncApiSchemaLoader {
                     val trait =
                         when (traitInterface) {
                             is MessageTraitInterface.InlineMessageTrait -> traitInterface.trait
-                            is MessageTraitInterface.ReferenceMessageTrait -> traitInterface.reference.model as? MessageTrait
+                            is MessageTraitInterface.ReferenceMessageTrait ->
+                                traitInterface.reference.model as? MessageTrait
                         } ?: return@forEach
                     trait.headers?.let { collectFromSchemaInterface(it, headerNames, mutableSetOf()) }
                 }
@@ -516,7 +520,7 @@ internal object AsyncApiSchemaLoader {
         ) : ContractDeclaration {
             override fun hasSameIdentity(other: ContractDeclaration): Boolean =
                 other is AsyncApi &&
-                    (identity != null && identity == other.identity || schema === other.schema)
+                    ((identity != null && identity == other.identity) || schema === other.schema)
         }
 
         class MultiFormat(
@@ -525,7 +529,7 @@ internal object AsyncApiSchemaLoader {
         ) : ContractDeclaration {
             override fun hasSameIdentity(other: ContractDeclaration): Boolean =
                 other is MultiFormat &&
-                    (identity != null && identity == other.identity || schema === other.schema)
+                    ((identity != null && identity == other.identity) || schema === other.schema)
         }
 
         class BooleanSchema(

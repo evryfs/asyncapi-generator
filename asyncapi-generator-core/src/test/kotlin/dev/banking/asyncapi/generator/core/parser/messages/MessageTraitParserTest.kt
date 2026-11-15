@@ -15,7 +15,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class MessageTraitParserTest {
-
     private val context = AsyncApiContext()
     private val parser = MessageTraitParser(context)
 
@@ -23,9 +22,13 @@ class MessageTraitParserTest {
     fun `parses all message trait fields`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val traitsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageTraits")
+        val traitsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messageTraits")
 
         val traits = parser.parseMap(traitsNode)
 
@@ -47,5 +50,4 @@ class MessageTraitParserTest {
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
         assertEquals("commonHeadersExample", trait.examples?.single()?.name)
     }
-
 }

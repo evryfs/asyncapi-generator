@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.parameters
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PARAMETER as PARAMETER_OBJECT
 
 /**
@@ -14,7 +14,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.PAR
 internal class ParameterParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun parseMap(parserNode: ParserNode): Map<String, ParameterInterface> =
         parserNode.expectObject().members().associate { node ->
             node.name to parseElement(node)

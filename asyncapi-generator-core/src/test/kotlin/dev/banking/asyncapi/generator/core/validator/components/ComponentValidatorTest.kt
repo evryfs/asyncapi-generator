@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ComponentValidatorTest : AbstractValidatorTest() {
-
     @Test
     fun `component names may contain dots`() {
         val results = validate("validator/components/asyncapi_validator_component_names_valid.yaml")

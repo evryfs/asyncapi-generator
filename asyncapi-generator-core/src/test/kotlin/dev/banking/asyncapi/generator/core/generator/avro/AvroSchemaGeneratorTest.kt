@@ -62,5 +62,4 @@ class AvroSchemaGeneratorTest {
         assertTrue(artifact.content.contains("\"name\": \"Status\""))
         assertTrue(artifact.content.contains("\"ACTIVE\""))
     }
-
 }

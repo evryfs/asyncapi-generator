@@ -25,17 +25,13 @@ internal class ResourceApprovalNamer(
     private val scenario: String,
     private val additionalInformation: String = "",
 ) : ApprovalNamer {
-    override fun getApprovedFile(fileExtensionWithDot: String): File =
-        approvalFile("approved", fileExtensionWithDot)
+    override fun getApprovedFile(fileExtensionWithDot: String): File = approvalFile("approved", fileExtensionWithDot)
 
-    override fun getReceivedFile(fileExtensionWithDot: String): File =
-        approvalFile("received", fileExtensionWithDot)
+    override fun getReceivedFile(fileExtensionWithDot: String): File = approvalFile("received", fileExtensionWithDot)
 
-    override fun getApprovalName(): String =
-        approvalBaseName()
+    override fun getApprovalName(): String = approvalBaseName()
 
-    override fun getSourceFilePath(): String =
-        directory.toString()
+    override fun getSourceFilePath(): String = directory.toString()
 
     override fun addAdditionalInformation(additionalInformation: String): ApprovalNamer =
         ResourceApprovalNamer(
@@ -47,8 +43,7 @@ internal class ResourceApprovalNamer(
                     .joinToString("."),
         )
 
-    override fun getAdditionalInformation(): String =
-        additionalInformation
+    override fun getAdditionalInformation(): String = additionalInformation
 
     private fun approvalFile(
         approvalState: String,

@@ -10,5 +10,3 @@ data class Parameter(
     val examples: List<String>? = null,
     @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )
-
-

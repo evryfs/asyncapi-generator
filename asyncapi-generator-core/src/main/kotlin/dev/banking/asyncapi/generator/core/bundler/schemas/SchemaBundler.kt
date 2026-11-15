@@ -2,13 +2,13 @@ package dev.banking.asyncapi.generator.core.bundler.schemas
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
-import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
+import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
-import dev.banking.asyncapi.generator.core.model.references.componentSchemaReference
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
+import dev.banking.asyncapi.generator.core.model.references.componentSchemaReference
 import dev.banking.asyncapi.generator.core.model.references.isExternalReference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -18,11 +18,13 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Bundles schema objects and references.
  */
 internal class SchemaBundler {
-
     private val externalDocsBundler = ExternalDocsBundler()
     private val bindingsBundler = BindingBundler()
 
-    fun bundleMap(schemas: Map<String, SchemaInterface>?, context: BundlingContext): Map<String, SchemaInterface>? =
+    fun bundleMap(
+        schemas: Map<String, SchemaInterface>?,
+        context: BundlingContext,
+    ): Map<String, SchemaInterface>? =
         schemas?.mapValues { (_, schemaInterface) ->
             bundle(schemaInterface, context)
         }
@@ -34,13 +36,20 @@ internal class SchemaBundler {
         schemas?.mapValues { (name, schemaInterface) ->
             bundle(schemaInterface, context.defineRootSchema(name))
         }
-    fun bundleList(schemas: List<SchemaInterface>?, context: BundlingContext): List<SchemaInterface>? =
-        schemas?.map { schemaInterface -> bundle(schemaInterface, context) }
-    fun bundle(schemaInterface: SchemaInterface, context: BundlingContext): SchemaInterface =
+
+    fun bundleList(
+        schemas: List<SchemaInterface>?,
+        context: BundlingContext,
+    ): List<SchemaInterface>? = schemas?.map { schemaInterface -> bundle(schemaInterface, context) }
+
+    fun bundle(
+        schemaInterface: SchemaInterface,
+        context: BundlingContext,
+    ): SchemaInterface =
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
                 SchemaInterface.SchemaInline(
-                    bundleSchema(schemaInterface.schema, context)
+                    bundleSchema(schemaInterface.schema, context),
                 )
             is SchemaInterface.SchemaReference ->
                 bundleReference(schemaInterface, context)
@@ -55,7 +64,10 @@ internal class SchemaBundler {
      * `components.schemas` under its pointer name, so the schema keeps the name it has in the source
      * contract and code generated from the bundle matches code generated from the original files.
      */
-    fun bundleBindingField(schemaInterface: SchemaInterface, context: BundlingContext): SchemaInterface {
+    fun bundleBindingField(
+        schemaInterface: SchemaInterface,
+        context: BundlingContext,
+    ): SchemaInterface {
         if (schemaInterface is SchemaInterface.SchemaReference) {
             val reference = schemaInterface.reference
             val referencedModel = reference.requireModel<Any>()
@@ -110,11 +122,12 @@ internal class SchemaBundler {
                 SchemaInterface.SchemaInline(
                     bundleSchema(
                         schema = referencedModel,
-                        context = if (reference.ref.isExternalReference()) {
-                            context.enterExternalSchema(reference)
-                        } else {
-                            context.enter(reference)
-                        },
+                        context =
+                            if (reference.ref.isExternalReference()) {
+                                context.enterExternalSchema(reference)
+                            } else {
+                                context.enter(reference)
+                            },
                     ),
                 )
             is MultiFormatSchema ->
@@ -193,7 +206,10 @@ internal class SchemaBundler {
             else -> throw IllegalArgumentException("Schema reference resolved to unsupported model")
         }
 
-    private fun bundleSchema(schema: Schema, context: BundlingContext): Schema {
+    private fun bundleSchema(
+        schema: Schema,
+        context: BundlingContext,
+    ): Schema {
         val bundledItems = schema.items?.let { bundle(it, context) }
         val bundledTupleItems = bundleList(schema.tupleItems, context)
         val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, context) }
@@ -203,9 +219,10 @@ internal class SchemaBundler {
         val bundledPatternProperties = bundleMap(schema.patternProperties, context)
         val bundledAdditionalProperties = schema.additionalProperties?.let { bundle(it, context) }
         val bundledPropertyNames = schema.propertyNames?.let { bundle(it, context) }
-        val bundledDependencies = schema.dependencies?.mapValues { (_, dependency) ->
-            if (dependency is SchemaInterface) bundle(dependency, context) else dependency
-        }
+        val bundledDependencies =
+            schema.dependencies?.mapValues { (_, dependency) ->
+                if (dependency is SchemaInterface) bundle(dependency, context) else dependency
+            }
         val bundledDefinitions = bundleMap(schema.definitions, context)
 
         val bundledAllOf = bundleList(schema.allOf, context)
@@ -241,7 +258,5 @@ internal class SchemaBundler {
         )
     }
 
-    private fun isComponentSchemaRef(ref: String): Boolean {
-        return ref.componentSchemaNameOrNull() != null
-    }
+    private fun isComponentSchemaRef(ref: String): Boolean = ref.componentSchemaNameOrNull() != null
 }

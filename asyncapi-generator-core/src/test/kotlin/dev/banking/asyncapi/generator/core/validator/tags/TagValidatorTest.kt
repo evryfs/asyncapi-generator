@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class TagValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test

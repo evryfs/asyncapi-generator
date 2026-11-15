@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.context
 
 import com.fasterxml.jackson.core.JsonPointer
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentObject
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /**
  * Resolves a JSON pointer against a parsed document tree to find the target node.
@@ -13,32 +13,36 @@ internal object ExternalReferenceTargetResolver {
         val node: ParserNode,
     )
 
-    fun resolve(rootNode: ParserNode, pointer: JsonPointer): Target? {
+    fun resolve(
+        rootNode: ParserNode,
+        pointer: JsonPointer,
+    ): Target? {
         var currentNode = rootNode
         var currentPointer = pointer
 
         while (!currentPointer.matches()) {
-            val nextNode = when (val documentNode = currentNode.node) {
-                is DocumentObject -> {
-                    val memberName = currentPointer.matchingProperty
-                    val member = documentNode.member(memberName) ?: return null
-                    currentNode.member(
-                        name = memberName,
-                        node = member.value,
-                    )
-                }
+            val nextNode =
+                when (val documentNode = currentNode.node) {
+                    is DocumentObject -> {
+                        val memberName = currentPointer.matchingProperty
+                        val member = documentNode.member(memberName) ?: return null
+                        currentNode.member(
+                            name = memberName,
+                            node = member.value,
+                        )
+                    }
 
-                is DocumentArray -> {
-                    val index = currentPointer.matchingIndex
-                    if (index !in documentNode.elements.indices) return null
-                    currentNode.index(
-                        index = index,
-                        node = documentNode[index],
-                    )
-                }
+                    is DocumentArray -> {
+                        val index = currentPointer.matchingIndex
+                        if (index !in documentNode.elements.indices) return null
+                        currentNode.index(
+                            index = index,
+                            node = documentNode[index],
+                        )
+                    }
 
-                else -> return null
-            }
+                    else -> return null
+                }
             currentNode = nextNode
             currentPointer = currentPointer.tail()
         }

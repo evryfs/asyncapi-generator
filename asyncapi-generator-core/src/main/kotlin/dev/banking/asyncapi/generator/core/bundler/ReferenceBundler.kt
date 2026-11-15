@@ -12,7 +12,6 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
  * between places of the document.
  */
 internal object ReferenceBundler {
-
     /**
      * Returns an inline copy of [reference] holding its fully resolved model, or [reference] itself when it
      * is already being visited. A reference to a component that is itself a reference is followed to the end,

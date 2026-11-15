@@ -2,14 +2,14 @@ package dev.banking.asyncapi.generator.core.parser
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.components.ComponentParser
 import dev.banking.asyncapi.generator.core.parser.info.InfoParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
-import dev.banking.asyncapi.generator.core.parser.version.AsyncApiSpecificationLine
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.ASYNC_API
+import dev.banking.asyncapi.generator.core.parser.version.AsyncApiSpecificationLine
 
 /**
  * Parses a reader-backed parser-node tree into an AsyncAPI document model.
@@ -24,7 +24,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.ASY
 internal class AsyncApiParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val infoParser = InfoParser(asyncApiContext)
     private val serverParser = ServerParser(asyncApiContext)
     private val channelParser = ChannelParser(asyncApiContext)

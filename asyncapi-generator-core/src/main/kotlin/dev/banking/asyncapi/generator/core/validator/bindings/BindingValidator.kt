@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_TYPE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_TYPE
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
@@ -17,7 +17,11 @@ internal class BindingValidator(
     private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }
     private val kafkaBindingValidator = KafkaBindingValidator(asyncApiContext)
 
-    fun validateInterface(node: BindingInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: BindingInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is BindingInterface.BindingInline ->
                 validate(node.binding, contextString, results)
@@ -27,13 +31,21 @@ internal class BindingValidator(
         }
     }
 
-    fun validateMap(bindings: Map<String, BindingInterface>?, contextString: String, results: ValidationCollector) {
+    fun validateMap(
+        bindings: Map<String, BindingInterface>?,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindings?.forEach { (bindingName, bindingInterface) ->
             validateInterface(bindingInterface, "$contextString Binding '$bindingName'", results)
         }
     }
 
-    fun validate(binding: Binding, bindingName: String, results: ValidationCollector) {
+    fun validate(
+        binding: Binding,
+        bindingName: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(binding)) return
 
         if (binding.protocolBindings.isEmpty()) {

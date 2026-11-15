@@ -68,7 +68,10 @@ internal class KafkaBindingValidator(
         return value
     }
 
-    private fun validateSchemaFields(binding: ProtocolBinding, results: ValidationCollector) {
+    private fun validateSchemaFields(
+        binding: ProtocolBinding,
+        results: ValidationCollector,
+    ) {
         binding.schemaFields.forEach { (fieldName, schema) ->
             schemaValidator.validateInterface(schema, "Kafka binding '$fieldName'", results)
         }
@@ -277,16 +280,20 @@ internal class KafkaBindingValidator(
         )
     }
 
-    private fun location(binding: ProtocolBinding, field: String) =
-        asyncApiContext.modelTracking.getSourceLocation(binding, field)
-            ?: asyncApiContext.modelTracking.getSourceLocation(binding)
+    private fun location(
+        binding: ProtocolBinding,
+        field: String,
+    ) = asyncApiContext.modelTracking.getSourceLocation(binding, field)
+        ?: asyncApiContext.modelTracking.getSourceLocation(binding)
 
-    private fun location(sourceModel: Any, binding: ProtocolBinding, field: String) =
-        asyncApiContext.modelTracking.getSourceLocation(sourceModel, field)
-            ?: location(binding, "topicConfiguration")
+    private fun location(
+        sourceModel: Any,
+        binding: ProtocolBinding,
+        field: String,
+    ) = asyncApiContext.modelTracking.getSourceLocation(sourceModel, field)
+        ?: location(binding, "topicConfiguration")
 
-    private fun isInteger(value: Any?): Boolean =
-        decimal(value)?.stripTrailingZeros()?.scale()?.let { it <= 0 } == true
+    private fun isInteger(value: Any?): Boolean = decimal(value)?.stripTrailingZeros()?.scale()?.let { it <= 0 } == true
 
     private fun decimal(value: Any?): BigDecimal? =
         when (value) {
@@ -307,34 +314,39 @@ internal class KafkaBindingValidator(
         val SERVER_FIELDS = setOf("schemaRegistryUrl", "schemaRegistryVendor", "bindingVersion")
         val CHANNEL_FIELDS = setOf("topic", "partitions", "replicas", "topicConfiguration", "bindingVersion")
         val OPERATION_FIELDS = setOf("groupId", "clientId", "bindingVersion")
-        val MESSAGE_FIELDS = setOf(
-            "key",
-            "schemaIdLocation",
-            "schemaIdPayloadEncoding",
-            "schemaLookupStrategy",
-            "bindingVersion",
-        )
-        val TOPIC_CONFIGURATION_0_4_FIELDS = setOf(
-            "cleanup.policy",
-            "retention.ms",
-            "retention.bytes",
-            "delete.retention.ms",
-            "max.message.bytes",
-        )
-        val TOPIC_CONFIGURATION_INTEGER_FIELDS = setOf(
-            "retention.ms",
-            "retention.bytes",
-            "delete.retention.ms",
-            "max.message.bytes",
-        )
-        val TOPIC_CONFIGURATION_BOOLEAN_FIELDS = setOf(
-            "confluent.key.schema.validation",
-            "confluent.value.schema.validation",
-        )
-        val TOPIC_CONFIGURATION_STRING_FIELDS = setOf(
-            "confluent.key.subject.name.strategy",
-            "confluent.value.subject.name.strategy",
-        )
+        val MESSAGE_FIELDS =
+            setOf(
+                "key",
+                "schemaIdLocation",
+                "schemaIdPayloadEncoding",
+                "schemaLookupStrategy",
+                "bindingVersion",
+            )
+        val TOPIC_CONFIGURATION_0_4_FIELDS =
+            setOf(
+                "cleanup.policy",
+                "retention.ms",
+                "retention.bytes",
+                "delete.retention.ms",
+                "max.message.bytes",
+            )
+        val TOPIC_CONFIGURATION_INTEGER_FIELDS =
+            setOf(
+                "retention.ms",
+                "retention.bytes",
+                "delete.retention.ms",
+                "max.message.bytes",
+            )
+        val TOPIC_CONFIGURATION_BOOLEAN_FIELDS =
+            setOf(
+                "confluent.key.schema.validation",
+                "confluent.value.schema.validation",
+            )
+        val TOPIC_CONFIGURATION_STRING_FIELDS =
+            setOf(
+                "confluent.key.subject.name.strategy",
+                "confluent.value.subject.name.strategy",
+            )
         const val CLEANUP_POLICY = "cleanup.policy"
         val CLEANUP_POLICY_VALUES = setOf("delete", "compact")
     }

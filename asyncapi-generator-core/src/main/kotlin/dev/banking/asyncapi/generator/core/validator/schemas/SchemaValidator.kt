@@ -1,13 +1,11 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
-import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ANNOTATION_IGNORED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE
@@ -26,13 +24,15 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_OBJECT_SIZE_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNDECLARED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_REQUIRED_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_STRING_LENGTH_RANGE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
+import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -44,13 +44,16 @@ import java.util.IdentityHashMap
 internal class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val bindingValidator = BindingValidator(asyncApiContext)
     private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
     private val propertyDeclarations = SchemaPropertyDeclarations(asyncApiContext)
 
-    fun validateInterface(schemaInterface: SchemaInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        schemaInterface: SchemaInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         validateInterface(schemaInterface, contextString, results, newVisitedSet(), emptySet())
     }
 
@@ -84,7 +87,11 @@ internal class SchemaValidator(
         }
     }
 
-    fun validate(node: Schema, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         validate(node, contextString, results, newVisitedSet(), emptySet())
     }
 
@@ -176,10 +183,13 @@ internal class SchemaValidator(
         referenceResolver.resolve(reference, SCHEMA, contextString, results)
     }
 
-    private fun newVisitedSet(): MutableSet<Any> =
-        Collections.newSetFromMap(IdentityHashMap())
+    private fun newVisitedSet(): MutableSet<Any> = Collections.newSetFromMap(IdentityHashMap())
 
-    private fun validateKeywords(node: Any, contextString: String, results: ValidationCollector) {
+    private fun validateKeywords(
+        node: Any,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         asyncApiContext.modelTracking.getFieldNames(node).forEach { keyword ->
             val classification = SchemaKeywordPolicy.classify(keyword)
             val severity = classification.severity ?: return@forEach
@@ -213,7 +223,11 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateDialect(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateDialect(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if ("\$schema" !in asyncApiContext.modelTracking.getFieldNames(node)) return
         val dialect = node.schema
         if (dialect == null) {
@@ -236,7 +250,11 @@ internal class SchemaValidator(
         )
     }
 
-    private fun validateType(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateType(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val type = node.type
         if (type == null) {
             if ("type" in asyncApiContext.modelTracking.getFieldNames(node)) {
@@ -313,7 +331,11 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateEnum(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateEnum(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val enum = node.enum ?: return
         if (enum.isEmpty()) {
             results.error(
@@ -333,7 +355,11 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateConst(node: Schema, schemaName: String, results: ValidationCollector) {
+    private fun validateConst(
+        node: Schema,
+        schemaName: String,
+        results: ValidationCollector,
+    ) {
         if (!node.constSet && node.const == null) return
         val const = node.const
         val type = node.type ?: return
@@ -347,7 +373,11 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateNumericConstraints(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateNumericConstraints(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         validateOrderedRange(
             node,
             "minimum",
@@ -380,23 +410,29 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateStringLength(node: Schema, contextString: String, results: ValidationCollector) {
-        val minimum = validateNonNegativeInteger(
-            node,
-            "minLength",
-            node.minLength,
-            SCHEMA_STRING_LENGTH,
-            contextString,
-            results,
-        )
-        val maximum = validateNonNegativeInteger(
-            node,
-            "maxLength",
-            node.maxLength,
-            SCHEMA_STRING_LENGTH,
-            contextString,
-            results,
-        )
+    private fun validateStringLength(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
+        val minimum =
+            validateNonNegativeInteger(
+                node,
+                "minLength",
+                node.minLength,
+                SCHEMA_STRING_LENGTH,
+                contextString,
+                results,
+            )
+        val maximum =
+            validateNonNegativeInteger(
+                node,
+                "maxLength",
+                node.maxLength,
+                SCHEMA_STRING_LENGTH,
+                contextString,
+                results,
+            )
         validateOrderedRange(
             node,
             "minLength",
@@ -409,7 +445,11 @@ internal class SchemaValidator(
         )
     }
 
-    private fun validateArray(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateArray(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val minimum =
             validateNonNegativeInteger(node, "minItems", node.minItems, SCHEMA_ARRAY_SIZE, contextString, results)
         val maximum =
@@ -432,22 +472,24 @@ internal class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val minimum = validateNonNegativeInteger(
-            node,
-            "minProperties",
-            node.minProperties,
-            SCHEMA_OBJECT_SIZE,
-            contextString,
-            results,
-        )
-        val maximum = validateNonNegativeInteger(
-            node,
-            "maxProperties",
-            node.maxProperties,
-            SCHEMA_OBJECT_SIZE,
-            contextString,
-            results,
-        )
+        val minimum =
+            validateNonNegativeInteger(
+                node,
+                "minProperties",
+                node.minProperties,
+                SCHEMA_OBJECT_SIZE,
+                contextString,
+                results,
+            )
+        val maximum =
+            validateNonNegativeInteger(
+                node,
+                "maxProperties",
+                node.maxProperties,
+                SCHEMA_OBJECT_SIZE,
+                contextString,
+                results,
+            )
         validateOrderedRange(
             node,
             "minProperties",
@@ -479,25 +521,35 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateDependencies(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateDependencies(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         node.dependencies?.forEach { (propertyName, dependency) ->
             val propertyNames = dependency as? List<*> ?: return@forEach
             val location = asyncApiContext.modelTracking.getSourceLocation(dependency)
-            val duplicateIndex = propertyNames.indices.firstOrNull { index ->
-                propertyNames.subList(0, index).contains(propertyNames[index])
-            }
+            val duplicateIndex =
+                propertyNames.indices.firstOrNull { index ->
+                    propertyNames.subList(0, index).contains(propertyNames[index])
+                }
             if (duplicateIndex != null) {
                 results.error(
                     SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
                     "$contextString dependency '$propertyName' contains duplicate property names.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
+                    sourceLocation =
+                        asyncApiContext.modelTracking.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
                     doc = JSON_SCHEMA_DEPENDENCIES_DOC,
                 )
             }
         }
     }
 
-    private fun validateDefaultValue(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateDefaultValue(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!node.defaultSet && node.default == null) return
         val default = node.default
         val type = node.type ?: return
@@ -510,7 +562,11 @@ internal class SchemaValidator(
         }
     }
 
-    private fun validateDiscriminator(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateDiscriminator(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val discriminator = node.discriminator ?: return
         if (discriminator !in node.required.orEmpty()) {
             results.error(
@@ -534,10 +590,15 @@ internal class SchemaValidator(
      * Without a discriminator, generated code tells union members apart by the property names they
      * declare, so two members with the same names can never be told apart.
      */
-    private fun validateUnionMembers(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateUnionMembers(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (node.discriminator != null) return
         val members =
-            (node.oneOf ?: node.anyOf).orEmpty()
+            (node.oneOf ?: node.anyOf)
+                .orEmpty()
                 .filterIsInstance<SchemaInterface.SchemaReference>()
                 .mapNotNull { member ->
                     (member.reference.model as? Schema)
@@ -564,19 +625,31 @@ internal class SchemaValidator(
             schema.allOf.orEmpty().flatMap { part ->
                 when (part) {
                     is SchemaInterface.SchemaInline -> propertyNames(part.schema)
-                    is SchemaInterface.SchemaReference -> (part.reference.model as? Schema)?.let(::propertyNames).orEmpty()
+                    is SchemaInterface.SchemaReference ->
+                        (part.reference.model as? Schema)
+                            ?.let(
+                                ::propertyNames,
+                            ).orEmpty()
                     else -> emptySet()
                 }
             }
 
-    private fun validateExternalDocs(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val contextString = "$contextString ExternalDocs"
         node.externalDocs?.let { docs ->
             externalDocsValidator.validateInterface(docs, contextString, results)
         }
     }
 
-    private fun validateBindings(node: Schema, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        node: Schema,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindingValidator.validateMap(node.bindings, contextString, results)
     }
 

@@ -11,8 +11,9 @@ import kotlin.reflect.KProperty0
  *
  * @param sourceTracking shared source tracking for cross-referencing models with source locations
  */
-internal class ModelTracking(sourceTracking: SourceTracking) {
-
+internal class ModelTracking(
+    sourceTracking: SourceTracking,
+) {
     val repository = ModelRepository(sourceTracking.repository)
 
     fun register(
@@ -45,8 +46,10 @@ internal class ModelTracking(sourceTracking: SourceTracking) {
 
     fun getFieldNames(model: Any): Set<String> = repository.getFieldNames(model)
 
-    fun getFieldValue(model: Any, fieldName: String): Any? =
-        repository.getFieldValue(model, fieldName)
+    fun getFieldValue(
+        model: Any,
+        fieldName: String,
+    ): Any? = repository.getFieldValue(model, fieldName)
 
     fun findReference(reference: Reference): Any? = repository.findByReference(reference)
 

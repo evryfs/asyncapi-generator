@@ -103,10 +103,10 @@ internal class CompositionNormalizer {
             is SchemaInterface.SchemaReference -> {
                 val referencedSchema =
                     resolveReference(schemaInterface.reference)
-                    ?: throw IllegalArgumentException(
-                        "Schema normalization requires allOf reference " +
-                            "'${schemaInterface.reference.ref}' in schema '$parentName' to resolve to a Schema.",
-                    )
+                        ?: throw IllegalArgumentException(
+                            "Schema normalization requires allOf reference " +
+                                "'${schemaInterface.reference.ref}' in schema '$parentName' to resolve to a Schema.",
+                        )
                 resolveSchemaRecursive(
                     schema = referencedSchema,
                     schemaName = schemaInterface.reference.ref,

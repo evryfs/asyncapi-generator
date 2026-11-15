@@ -13,10 +13,13 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class CorrelationIdValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: CorrelationIdInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: CorrelationIdInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is CorrelationIdInterface.CorrelationIdInline ->
                 validate(node.correlationId, contextString, results)
@@ -25,12 +28,20 @@ internal class CorrelationIdValidator(
         }
     }
 
-    fun validate(node: CorrelationId, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: CorrelationId,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validateLocation(node, contextString, results)
     }
 
-    private fun validateLocation(node: CorrelationId, contextString: String, results: ValidationCollector) {
+    private fun validateLocation(
+        node: CorrelationId,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val location = node.location
         if (location.isBlank()) {
             results.error(

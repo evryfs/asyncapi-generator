@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.model.UnionSubtype
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -15,7 +15,11 @@ import kotlin.test.assertIs
 class ModelDefinitionFactoryTest {
     @Test
     fun `creates object and enum models and skips scalar aliases`() {
-        val annotation = QualifiedTypeName.fromConfigurationValue("jakarta.validation.Valid", "modelConfig.modelAnnotation")
+        val annotation =
+            QualifiedTypeName.fromConfigurationValue(
+                "jakarta.validation.Valid",
+                "modelConfig.modelAnnotation",
+            )
 
         val models =
             ModelDefinitionFactory(
@@ -38,7 +42,12 @@ class ModelDefinitionFactoryTest {
         val models =
             create(
                 "Command" to Schema(oneOf = listOf(ref("Start")), discriminator = "kind"),
-                "Start" to Schema(type = "object", properties = mapOf("kind" to inline(Schema(type = "string", const = "start")))),
+                "Start" to
+                    Schema(
+                        type = "object",
+                        properties =
+                            mapOf("kind" to inline(Schema(type = "string", const = "start"))),
+                    ),
                 "Anything" to Schema(type = "object"),
             )
 
@@ -79,7 +88,12 @@ class ModelDefinitionFactoryTest {
 
     private fun create(vararg schemas: Pair<String, Schema>): List<ModelDefinition> =
         ModelDefinitionFactory(
-            input = GenerationInput(schemas = linkedMapOf(*schemas), polymorphicRelationships = emptyMap(), channels = emptyList()),
+            input =
+                GenerationInput(
+                    schemas = linkedMapOf(*schemas),
+                    polymorphicRelationships = emptyMap(),
+                    channels = emptyList(),
+                ),
             packageName = "com.example.model",
         ).create()
 
@@ -95,7 +109,11 @@ class ModelDefinitionFactoryTest {
                     "Account" to
                         Schema(
                             type = "object",
-                            properties = mapOf("account-id" to inline(Schema(type = "string")), "accountId" to inline(Schema(type = "string"))),
+                            properties =
+                                mapOf(
+                                    "account-id" to inline(Schema(type = "string")),
+                                    "accountId" to inline(Schema(type = "string")),
+                                ),
                         ),
                 )
             }

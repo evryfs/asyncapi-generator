@@ -15,33 +15,37 @@ class SchemaInstanceValidatorTest {
 
     @Test
     fun `reports exact nested paths for object and array constraints`() {
-        val schema = SchemaInline(
-            Schema(
-                type = "object",
-                required = listOf("name"),
-                properties = mapOf(
-                    "age" to SchemaInline(Schema(type = "integer", minimum = 18)),
-                    "labels" to SchemaInline(
-                        Schema(
-                            type = "array",
-                            uniqueItems = true,
-                            items = SchemaInline(Schema(type = "string")),
+        val schema =
+            SchemaInline(
+                Schema(
+                    type = "object",
+                    required = listOf("name"),
+                    properties =
+                        mapOf(
+                            "age" to SchemaInline(Schema(type = "integer", minimum = 18)),
+                            "labels" to
+                                SchemaInline(
+                                    Schema(
+                                        type = "array",
+                                        uniqueItems = true,
+                                        items = SchemaInline(Schema(type = "string")),
+                                    ),
+                                ),
                         ),
-                    ),
+                    additionalProperties = BooleanSchema(false),
                 ),
-                additionalProperties = BooleanSchema(false),
-            ),
-        )
+            )
 
-        val result = validator.validate(
-            schema,
-            mapOf(
-                "age" to 17.5,
-                "labels" to listOf("primary", 2, "primary"),
-                "unexpected" to true,
-            ),
-            "example.payload",
-        )
+        val result =
+            validator.validate(
+                schema,
+                mapOf(
+                    "age" to 17.5,
+                    "labels" to listOf("primary", 2, "primary"),
+                    "unexpected" to true,
+                ),
+                "example.payload",
+            )
 
         assertEquals(
             listOf(
@@ -63,36 +67,41 @@ class SchemaInstanceValidatorTest {
         val number = SchemaInline(Schema(type = "number"))
         val integer = SchemaInline(Schema(type = "integer"))
 
-        val anyOf = validator.validate(
-            SchemaInline(Schema(anyOf = listOf(string, integer))),
-            true,
-            "example.payload",
-        )
-        val oneOf = validator.validate(
-            SchemaInline(Schema(oneOf = listOf(number, integer))),
-            1,
-            "example.payload",
-        )
-        val not = validator.validate(
-            SchemaInline(Schema(not = string)),
-            "forbidden",
-            "example.payload",
-        )
-        val conditional = validator.validate(
-            SchemaInline(
-                Schema(
-                    ifSchema = SchemaInline(
-                        Schema(
-                            required = listOf("kind"),
-                            properties = mapOf("kind" to SchemaInline(Schema(const = "car", constSet = true))),
-                        ),
+        val anyOf =
+            validator.validate(
+                SchemaInline(Schema(anyOf = listOf(string, integer))),
+                true,
+                "example.payload",
+            )
+        val oneOf =
+            validator.validate(
+                SchemaInline(Schema(oneOf = listOf(number, integer))),
+                1,
+                "example.payload",
+            )
+        val not =
+            validator.validate(
+                SchemaInline(Schema(not = string)),
+                "forbidden",
+                "example.payload",
+            )
+        val conditional =
+            validator.validate(
+                SchemaInline(
+                    Schema(
+                        ifSchema =
+                            SchemaInline(
+                                Schema(
+                                    required = listOf("kind"),
+                                    properties = mapOf("kind" to SchemaInline(Schema(const = "car", constSet = true))),
+                                ),
+                            ),
+                        thenSchema = SchemaInline(Schema(required = listOf("wheels"))),
                     ),
-                    thenSchema = SchemaInline(Schema(required = listOf("wheels"))),
                 ),
-            ),
-            mapOf("kind" to "car"),
-            "example.payload",
-        )
+                mapOf("kind" to "car"),
+                "example.payload",
+            )
 
         assertEquals("does not match any schema in 'anyOf'", anyOf.violations.single().message)
         assertEquals("must match exactly one schema in 'oneOf', but matched 2", oneOf.violations.single().message)
@@ -103,16 +112,17 @@ class SchemaInstanceValidatorTest {
     @Test
     fun `distinguishes boolean rejection from an unsupported schema format`() {
         val rejected = validator.validate(BooleanSchema(false), null, "example.payload")
-        val unsupported = validator.validate(
-            MultiFormatSchemaInline(
-                MultiFormatSchema(
-                    schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
-                    schema = mapOf("type" to "string"),
+        val unsupported =
+            validator.validate(
+                MultiFormatSchemaInline(
+                    MultiFormatSchema(
+                        schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+                        schema = mapOf("type" to "string"),
+                    ),
                 ),
-            ),
-            "value",
-            "example.payload",
-        )
+                "value",
+                "example.payload",
+            )
 
         assertEquals("is rejected by the boolean schema 'false'", rejected.violations.single().message)
         assertEquals(

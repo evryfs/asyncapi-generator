@@ -65,7 +65,11 @@ class NativeProtobufGeneratorTest {
 
         val schemaArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.proto" }
         val messageArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }
-        val builderArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreatedOrBuilder.java" }
+        val builderArtifact =
+            result.artifacts.single {
+                it.relativePath ==
+                    "com/example/protobuf/UserCreatedOrBuilder.java"
+            }
 
         assertEquals(GeneratedArtifactKind.SCHEMA, schemaArtifact.kind)
         assertEquals(GeneratedArtifactKind.JAVA_SOURCE, messageArtifact.kind)

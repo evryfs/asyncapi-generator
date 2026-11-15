@@ -6,13 +6,12 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
-
     @Test
     fun `should generate individual records for polymorphic types with ref types from unknown schema`() {
         generateAvro(
             yaml = File("src/test/resources/parser/openapi/asyncapi-single-example.yml"),
             packageName = "com.example.openapi",
-            schema = null
+            schema = null,
         )
 
         val outputDir = File("target/generated-resources/asyncapi")
@@ -27,7 +26,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
         generateAvro(
             yaml = File("src/test/resources/parser/openapi/asyncapi-single-nested-example.yml"),
             packageName = "com.example.openapi",
-            schema = null
+            schema = null,
         )
 
         val outputDir = File("target/generated-resources/asyncapi")
@@ -43,7 +42,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
         generateAvro(
             yaml = File("src/test/resources/parser/openapi/asyncapi-single-allof-example.yml"),
             packageName = "com.example.openapi",
-            schema = null
+            schema = null,
         )
 
         val outputDir = File("target/generated-resources/asyncapi")
@@ -59,7 +58,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
         generateAvro(
             yaml = File("src/test/resources/parser/openapi/asyncapi-single-external-refs-example.yml"),
             packageName = "com.example.openapi",
-            schema = null
+            schema = null,
         )
 
         val outputDir = File("target/generated-resources/asyncapi")

@@ -36,16 +36,18 @@ internal class ConstraintAnnotationMapper(
                 val minimum = schema.exclusiveMinimum ?: schema.minimum
                 val maximum = schema.exclusiveMaximum ?: schema.maximum
                 minimum?.let {
-                    annotations += annotation(
-                        "DecimalMin",
-                        "value = \"$it\", inclusive = ${schema.exclusiveMinimum == null}",
-                    )
+                    annotations +=
+                        annotation(
+                            "DecimalMin",
+                            "value = \"$it\", inclusive = ${schema.exclusiveMinimum == null}",
+                        )
                 }
                 maximum?.let {
-                    annotations += annotation(
-                        "DecimalMax",
-                        "value = \"$it\", inclusive = ${schema.exclusiveMaximum == null}",
-                    )
+                    annotations +=
+                        annotation(
+                            "DecimalMax",
+                            "value = \"$it\", inclusive = ${schema.exclusiveMaximum == null}",
+                        )
                 }
             }
         }

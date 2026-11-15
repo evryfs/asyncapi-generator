@@ -9,7 +9,6 @@ import kotlin.collections.forEach
 import kotlin.collections.get
 
 internal object GeneratorPrinter {
-
     fun debugSchemasPrinter(schemas: Map<String, Schema>) {
         schemas.forEach { (name, schema) ->
             println("Schema: $name")
@@ -38,7 +37,7 @@ internal object GeneratorPrinter {
                             propEnum = model.enum
                         }
                     }
-                    else -> { /* do nothing */
+                    else -> { // do nothing
                     }
                 }
                 println("  - Property: '$propName', Type: $propType, Default: $propDefault, Enum: $propEnum")
@@ -90,7 +89,9 @@ internal object GeneratorPrinter {
                     propType = "multi-format-schema"
                 }
             }
-            println("  - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel")
+            println(
+                "  - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel",
+            )
         }
     }
 }

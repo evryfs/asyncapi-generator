@@ -10,15 +10,14 @@ import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import java.nio.file.Path
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AsyncApiRegistryTest {
-
     @Test
     fun `read creates parser root through document reader stage`() {
         val context = AsyncApiContext()
@@ -52,35 +51,42 @@ class AsyncApiRegistryTest {
         @TempDir tempDir: Path,
     ) {
         val context = AsyncApiContext()
-        val document = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info(
-                title = "Value preservation",
-                version = "123",
-                description = "First line\nSecond line",
-                extensions = linkedMapOf(
-                    "x-leading-pipe" to "|leading-indicator",
-                    "x-leading-gt" to ">leading-indicator",
-                    "x-leading-trailing-whitespace" to "  whitespace preserved  ",
-                    "x-quoted-both-sides" to "\"quoted\"",
-                    "x-yaml-word" to "on",
-                    "x-yaml-date" to "2026-08-03",
-                    "x-yaml-timestamp" to "2026-08-03T12:34:56Z",
-                    "x-string-list" to listOf("true", "123", "null", "|field", ">field", "'field", "\"field"),
-                ),
-            ),
-            components = ComponentInterface.ComponentInline(
-                Component(
-                    schemas = linkedMapOf(
-                        "SampleSchema" to SchemaInterface.SchemaInline(
-                            Schema(
-                                type = listOf("string", "null"),
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info =
+                    Info(
+                        title = "Value preservation",
+                        version = "123",
+                        description = "First line\nSecond line",
+                        extensions =
+                            linkedMapOf(
+                                "x-leading-pipe" to "|leading-indicator",
+                                "x-leading-gt" to ">leading-indicator",
+                                "x-leading-trailing-whitespace" to "  whitespace preserved  ",
+                                "x-quoted-both-sides" to "\"quoted\"",
+                                "x-yaml-word" to "on",
+                                "x-yaml-date" to "2026-08-03",
+                                "x-yaml-timestamp" to "2026-08-03T12:34:56Z",
+                                "x-string-list" to
+                                    listOf("true", "123", "null", "|field", ">field", "'field", "\"field"),
                             ),
+                    ),
+                components =
+                    ComponentInterface.ComponentInline(
+                        Component(
+                            schemas =
+                                linkedMapOf(
+                                    "SampleSchema" to
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = listOf("string", "null"),
+                                            ),
+                                        ),
+                                ),
                         ),
                     ),
-                ),
-            ),
-        )
+            )
 
         val yamlFile = tempDir.resolve("roundtrip.yaml").toFile()
         AsyncApiRegistry.writeYaml(yamlFile, document)
@@ -110,15 +116,16 @@ class AsyncApiRegistryTest {
         assertEquals("2026-08-03", info.required("x-yaml-date").expect<String>())
         assertEquals("2026-08-03T12:34:56Z", info.required("x-yaml-timestamp").expect<String>())
 
-        val schemaType = rootObject
-            .required("components")
-            .expectObject()
-            .required("schemas")
-            .expectObject()
-            .required("SampleSchema")
-            .expectObject()
-            .required("type")
-            .expect<List<String>>()
+        val schemaType =
+            rootObject
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("SampleSchema")
+                .expectObject()
+                .required("type")
+                .expect<List<String>>()
 
         assertEquals(listOf("string", "null"), schemaType)
 
@@ -154,21 +161,81 @@ class AsyncApiRegistryTest {
         val jsonSchemas = ObjectMapper().readTree(json)
 
         assertEquals(2, yamlSchemas.path("tuple").path("items").size())
-        assertEquals("string", yamlSchemas.path("tuple").path("items").path(0).path("type").textValue())
-        assertEquals("integer", yamlSchemas.path("tuple").path("items").path(1).path("type").textValue())
-        assertEquals("string", yamlSchemas.path("single").path("items").path("type").textValue())
+        assertEquals(
+            "string",
+            yamlSchemas
+                .path("tuple")
+                .path("items")
+                .path(0)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "integer",
+            yamlSchemas
+                .path("tuple")
+                .path("items")
+                .path(1)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "string",
+            yamlSchemas
+                .path("single")
+                .path("items")
+                .path("type")
+                .textValue(),
+        )
         assertEquals(false, yamlSchemas.path("false").path("items").booleanValue())
-        assertEquals(setOf("items"), yamlSchemas.path("tuple").fieldNames().asSequence().toSet())
+        assertEquals(
+            setOf("items"),
+            yamlSchemas
+                .path("tuple")
+                .fieldNames()
+                .asSequence()
+                .toSet(),
+        )
         assertEquals(3, Regex("(?m)^\\s*items:").findAll(yaml).count())
         assertFalse(yaml.contains("tupleItems"))
         assertFalse(yaml.contains("serializedItems"))
 
         assertEquals(2, jsonSchemas.path("tuple").path("items").size())
-        assertEquals("string", jsonSchemas.path("tuple").path("items").path(0).path("type").textValue())
-        assertEquals("integer", jsonSchemas.path("tuple").path("items").path(1).path("type").textValue())
-        assertEquals("string", jsonSchemas.path("single").path("items").path("type").textValue())
+        assertEquals(
+            "string",
+            jsonSchemas
+                .path("tuple")
+                .path("items")
+                .path(0)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "integer",
+            jsonSchemas
+                .path("tuple")
+                .path("items")
+                .path(1)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "string",
+            jsonSchemas
+                .path("single")
+                .path("items")
+                .path("type")
+                .textValue(),
+        )
         assertEquals(false, jsonSchemas.path("false").path("items").booleanValue())
-        assertEquals(setOf("items"), jsonSchemas.path("tuple").fieldNames().asSequence().toSet())
+        assertEquals(
+            setOf("items"),
+            jsonSchemas
+                .path("tuple")
+                .fieldNames()
+                .asSequence()
+                .toSet(),
+        )
         assertEquals(3, Regex("\"items\"\\s*:").findAll(json).count())
         assertFalse(json.contains("tupleItems"))
         assertFalse(json.contains("serializedItems"))

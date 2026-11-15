@@ -15,7 +15,9 @@ value class PackageName private constructor(
             path: String,
         ): PackageName {
             require(value.isNotBlank()) { "$path cannot be empty" }
-            require(pattern.matches(value)) { "$path must be a dot-separated package name, for example com.example.model" }
+            require(
+                pattern.matches(value),
+            ) { "$path must be a dot-separated package name, for example com.example.model" }
 
             return PackageName(value)
         }

@@ -15,24 +15,24 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class ParserNodeFactoryTest {
-
     @Test
     fun `creates parser root node from input document`() {
         val context = AsyncApiContext()
         val file = File("source-map.yaml").canonicalFile
-        val source = DocumentSource(
-            id = "source-map",
-            file = file,
-            content =
-                """
-                asyncapi: '3.0.0'
-                info:
-                  title: Demo
-                  tags:
-                    - public
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "source-map",
+                file = file,
+                content =
+                    """
+                    asyncapi: '3.0.0'
+                    info:
+                      title: Demo
+                      tags:
+                        - public
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val document = DocumentReaderRegistry.read(source)
 
         val root = ParserNodeFactory.root(document, context)
@@ -47,19 +47,20 @@ class ParserNodeFactoryTest {
     fun `registers source locations using parser path convention`() {
         val context = AsyncApiContext()
         val file = File("source-map.yaml").canonicalFile
-        val source = DocumentSource(
-            id = "source-map",
-            file = file,
-            content =
-                """
-                asyncapi: '3.0.0'
-                info:
-                  title: Demo
-                  tags:
-                    - public
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "source-map",
+                file = file,
+                content =
+                    """
+                    asyncapi: '3.0.0'
+                    info:
+                      title: Demo
+                      tags:
+                        - public
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val document = DocumentReaderRegistry.read(source)
 
         ParserNodeFactory.root(document, context)
@@ -75,35 +76,38 @@ class ParserNodeFactoryTest {
     fun `registers full source locations using parser path convention`() {
         val context = AsyncApiContext()
         val file = File("source-map.yaml").canonicalFile
-        val source = DocumentSource(
-            id = "source-map",
-            file = file,
-            content =
-                """
-                asyncapi: '3.0.0'
-                info:
-                  title: Demo
-                  tags:
-                    - public
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "source-map",
+                file = file,
+                content =
+                    """
+                    asyncapi: '3.0.0'
+                    info:
+                      title: Demo
+                      tags:
+                        - public
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val document = DocumentReaderRegistry.read(source)
 
         ParserNodeFactory.root(document, context)
 
-        val titleLocation = assertNotNull(
-            context.sourceRepository.getLocation("source_map.root.info.title"),
-        )
+        val titleLocation =
+            assertNotNull(
+                context.sourceRepository.getLocation("source_map.root.info.title"),
+            )
         assertEquals("source-map", titleLocation.sourceId)
         assertEquals(file, titleLocation.file)
         assertEquals("source_map.root.info.title", titleLocation.path)
         assertEquals(3, titleLocation.line)
         assertEquals(3, titleLocation.column)
 
-        val arrayLocation = assertNotNull(
-            context.sourceRepository.getLocation("source_map.root.info.tags[0]"),
-        )
+        val arrayLocation =
+            assertNotNull(
+                context.sourceRepository.getLocation("source_map.root.info.tags[0]"),
+            )
         assertEquals("source_map.root.info.tags[0]", arrayLocation.path)
         assertEquals(5, arrayLocation.line)
     }
@@ -111,25 +115,31 @@ class ParserNodeFactoryTest {
     @Test
     fun `keeps complex members and array indexes collision safe`() {
         val context = AsyncApiContext()
-        val source = DocumentSource(
-            id = "identity",
-            file = File("identity.yaml").canonicalFile,
-            content =
-                """
-                "A.properties.x": dotted
-                "bracket[name]": bracketed
-                "0": numeric member
-                items:
-                  - numeric index
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "identity",
+                file = File("identity.yaml").canonicalFile,
+                content =
+                    """
+                    "A.properties.x": dotted
+                    "bracket[name]": bracketed
+                    "0": numeric member
+                    items:
+                      - numeric index
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val root = ParserNodeFactory.root(DocumentReaderRegistry.read(source), context)
         val rootObject = root.expectObject()
         val dotted = rootObject.required("A.properties.x")
         val bracketed = rootObject.required("bracket[name]")
         val numericMember = rootObject.required("0")
-        val numericIndex = rootObject.required("items").expectArray().elements().single()
+        val numericIndex =
+            rootObject
+                .required("items")
+                .expectArray()
+                .elements()
+                .single()
 
         assertEquals("identity.root[\"A.properties.x\"]", dotted.path)
         assertEquals("identity.root[\"bracket[name]\"]", bracketed.path)
@@ -151,27 +161,33 @@ class ParserNodeFactoryTest {
     fun `strict expectations report locations supplied by the document reader`() {
         val context = AsyncApiContext()
         val file = File("source-map.yaml").canonicalFile
-        val source = DocumentSource(
-            id = "source-map",
-            file = file,
-            content =
-                """
-                asyncapi: '3.0.0'
-                info:
-                  title: Demo
-                  tags:
-                    - public
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "source-map",
+                file = file,
+                content =
+                    """
+                    asyncapi: '3.0.0'
+                    info:
+                      title: Demo
+                      tags:
+                        - public
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val document = DocumentReaderRegistry.read(source)
-        val title = ParserNodeFactory.root(document, context)
-            .expectObject().required("info")
-            .expectObject().required("title")
+        val title =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("info")
+                .expectObject()
+                .required("title")
 
-        val failure = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            title.expect<Boolean>()
-        }
+        val failure =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                title.expect<Boolean>()
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(failure.diagnostic)
 
         assertEquals(ParserValueType.STRING, diagnostic.actualType)

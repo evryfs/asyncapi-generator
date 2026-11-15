@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class MessageExampleParserTest {
-
     private val context = AsyncApiContext()
     private val parser = MessageExampleParser(context)
 
@@ -17,11 +16,17 @@ class MessageExampleParserTest {
     fun `parses every message example field`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val examplesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messages")
-            .expectObject().required("lightMeasured")
-            .expectObject().required("examples")
+        val examplesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messages")
+                .expectObject()
+                .required("lightMeasured")
+                .expectObject()
+                .required("examples")
 
         val examples = parser.parseList(examplesNode)
 
@@ -38,5 +43,4 @@ class MessageExampleParserTest {
             example.payload,
         )
     }
-
 }

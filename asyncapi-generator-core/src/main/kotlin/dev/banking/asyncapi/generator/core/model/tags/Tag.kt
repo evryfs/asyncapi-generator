@@ -9,4 +9,3 @@ data class Tag(
     val externalDocs: ExternalDocInterface? = null,
     @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 )
-

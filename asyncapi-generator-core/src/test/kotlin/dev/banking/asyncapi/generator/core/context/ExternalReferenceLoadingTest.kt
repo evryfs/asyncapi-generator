@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceLimit
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
@@ -17,7 +18,6 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -34,12 +34,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
-import kotlin.test.assertTrue
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class ExternalReferenceLoadingTest {
     @TempDir
@@ -53,48 +53,60 @@ class ExternalReferenceLoadingTest {
     fun `loads escaped pointers root schemas and equivalent yaml and json fragments`() {
         val file = TestResources.file("parser/references/external/main.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemasNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val schemasNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
         val schemas = schemaParser.parseMap(schemasNode)
 
-        val escapedReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("EscapedReference"),
-        ).reference
+        val escapedReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("EscapedReference"),
+            ).reference
         val escapedSchema = assertIs<Schema>(context.modelTracking.findReference(escapedReference))
         assertEquals("escaped pointer target", escapedSchema.description)
 
-        val rootReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("RootReference"),
-        ).reference
+        val rootReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("RootReference"),
+            ).reference
         val rootSchema = assertIs<Schema>(context.modelTracking.findReference(rootReference))
         assertEquals("root schema target", rootSchema.description)
 
-        val yamlReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("YamlReference"),
-        ).reference
-        val jsonReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("JsonReference"),
-        ).reference
+        val yamlReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("YamlReference"),
+            ).reference
+        val jsonReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("JsonReference"),
+            ).reference
         val yamlSchema = assertIs<Schema>(context.modelTracking.findReference(yamlReference))
         val jsonSchema = assertIs<Schema>(context.modelTracking.findReference(jsonReference))
         assertEquals(yamlSchema.description, jsonSchema.description)
 
-        val encodedReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("EncodedReference"),
-        ).reference
+        val encodedReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("EncodedReference"),
+            ).reference
         val encodedSchema = assertIs<Schema>(context.modelTracking.findReference(encodedReference))
         assertEquals("percent encoded URI and pointer", encodedSchema.description)
 
-        val booleanReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("BooleanRootReference"),
-        ).reference
-        val booleanSchema = assertIs<SchemaInterface.BooleanSchema>(context.modelTracking.findReference(booleanReference))
+        val booleanReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("BooleanRootReference"),
+            ).reference
+        val booleanSchema =
+            assertIs<SchemaInterface.BooleanSchema>(context.modelTracking.findReference(booleanReference))
         assertEquals(true, booleanSchema.value)
 
-        val arrayReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("ArrayRootReference"),
-        ).reference
+        val arrayReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("ArrayRootReference"),
+            ).reference
         val arraySchema = assertIs<Schema>(context.modelTracking.findReference(arrayReference))
         assertEquals("array root target", arraySchema.description)
 
@@ -113,17 +125,23 @@ class ExternalReferenceLoadingTest {
     fun `keeps same named external documents in different directories distinct`() {
         val file = TestResources.file("parser/references/external/main.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemasNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val schemasNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
         val schemas = schemaParser.parseMap(schemasNode)
 
-        val leftReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("LeftReference"),
-        ).reference
-        val rightReference = assertIs<SchemaInterface.SchemaReference>(
-            schemas.getValue("RightReference"),
-        ).reference
+        val leftReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("LeftReference"),
+            ).reference
+        val rightReference =
+            assertIs<SchemaInterface.SchemaReference>(
+                schemas.getValue("RightReference"),
+            ).reference
         val left = assertIs<Schema>(context.modelTracking.findReference(leftReference))
         val right = assertIs<Schema>(context.modelTracking.findReference(rightReference))
         assertEquals("left shared schema", left.description)
@@ -147,19 +165,27 @@ class ExternalReferenceLoadingTest {
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
-        val reference = assertIs<Reference>(
-            context.modelRepository.getModelsByPath()[
-                "message_main.root.components.messages.ExternalEvent"
-            ],
-        )
+        val reference =
+            assertIs<Reference>(
+                context.modelRepository.getModelsByPath()[
+                    "message_main.root.components.messages.ExternalEvent",
+                ],
+            )
         assertEquals(
             AsyncApiParserProfile.V3_0,
             context.modelRepository.getReferenceOrigin(reference)?.parserProfile,
         )
-        val message = assertNotNull(
-            context.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
+        val message =
+            assertNotNull(
+                context.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
+            )
+        assertEquals(
+            "messages.yaml",
+            context.modelTracking
+                .getSourceLocation(message)
+                ?.file
+                ?.name,
         )
-        assertEquals("messages.yaml", context.modelTracking.getSourceLocation(message)?.file?.name)
     }
 
     @Test
@@ -187,7 +213,13 @@ class ExternalReferenceLoadingTest {
         assertIs<ExternalDoc>(models["category_fragments.root.externalDoc"])
         assertIs<Tag>(models["category_fragments.root.tag"])
         val binding = assertIs<Binding>(models["category_fragments.root.binding"])
-        assertEquals("category-fragments.yaml", context.modelTracking.getSourceLocation(binding)?.file?.name)
+        assertEquals(
+            "category-fragments.yaml",
+            context.modelTracking
+                .getSourceLocation(binding)
+                ?.file
+                ?.name,
+        )
     }
 
     @Test
@@ -198,14 +230,21 @@ class ExternalReferenceLoadingTest {
 
         documentParser.parse(root)
 
-        val binding = assertIs<Binding>(
-            context.modelRepository.getModelsByPath()["binding_fragments.root.channelKafka"],
-        )
+        val binding =
+            assertIs<Binding>(
+                context.modelRepository.getModelsByPath()["binding_fragments.root.channelKafka"],
+            )
         val protocolBinding = binding.protocolBindings.single()
         assertEquals("kafka", protocolBinding.protocol)
         assertEquals(CHANNEL, protocolBinding.location)
         assertEquals("0.4.0", protocolBinding.bindingVersion)
-        assertEquals("binding-fragments.yaml", context.modelTracking.getSourceLocation(protocolBinding)?.file?.name)
+        assertEquals(
+            "binding-fragments.yaml",
+            context.modelTracking
+                .getSourceLocation(protocolBinding)
+                ?.file
+                ?.name,
+        )
     }
 
     @Test
@@ -225,7 +264,13 @@ class ExternalReferenceLoadingTest {
         val second = assertIs<Reference>(context.modelTracking.findReference(first))
         val third = assertIs<Schema>(context.modelTracking.findReference(second))
         assertEquals("End of the same-file reference chain", third.description)
-        assertEquals("heterogeneous-fragments.yaml", context.modelTracking.getSourceLocation(third)?.file?.name)
+        assertEquals(
+            "heterogeneous-fragments.yaml",
+            context.modelTracking
+                .getSourceLocation(third)
+                ?.file
+                ?.name,
+        )
         assertEquals("heterogeneous_fragments.root.thirdSchema", context.modelTracking.getSourceLocation(third)?.path)
     }
 
@@ -245,9 +290,10 @@ class ExternalReferenceLoadingTest {
         val document = DocumentReaderRegistry.read(file)
         val root = ParserNodeFactory.root(document, context)
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            documentParser.parse(root)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                documentParser.parse(root)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceTargetNotFound>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.REFERENCE_TARGET_NOT_FOUND, diagnostic.category)
@@ -263,14 +309,21 @@ class ExternalReferenceLoadingTest {
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
-        val reference = assertIs<Reference>(
-            context.modelRepository.getModelsByPath()[
-                "message_root_main.root.components.messages.RootEvent"
-            ],
-        )
+        val reference =
+            assertIs<Reference>(
+                context.modelRepository.getModelsByPath()[
+                    "message_root_main.root.components.messages.RootEvent",
+                ],
+            )
         val message = assertIs<Message>(context.modelTracking.findReference(reference))
         assertEquals("RootEvent", message.name)
-        assertEquals("message-root.yaml", context.modelTracking.getSourceLocation(message)?.file?.name)
+        assertEquals(
+            "message-root.yaml",
+            context.modelTracking
+                .getSourceLocation(message)
+                ?.file
+                ?.name,
+        )
     }
 
     @Test
@@ -280,14 +333,21 @@ class ExternalReferenceLoadingTest {
         val root = ParserNodeFactory.root(document, context)
         documentParser.parse(root)
 
-        val reference = assertIs<Reference>(
-            context.modelRepository.getModelsByPath()[
-                "server_root_main.root.components.servers.RootServer"
-            ],
-        )
+        val reference =
+            assertIs<Reference>(
+                context.modelRepository.getModelsByPath()[
+                    "server_root_main.root.components.servers.RootServer",
+                ],
+            )
         val server = assertIs<Server>(context.modelTracking.findReference(reference))
         assertEquals("events.example.com", server.host)
-        assertEquals("server-root.yaml", context.modelTracking.getSourceLocation(server)?.file?.name)
+        assertEquals(
+            "server-root.yaml",
+            context.modelTracking
+                .getSourceLocation(server)
+                ?.file
+                ?.name,
+        )
     }
 
     @Test
@@ -296,9 +356,10 @@ class ExternalReferenceLoadingTest {
         val document = DocumentReaderRegistry.read(file)
         val root = ParserNodeFactory.root(document, context)
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            documentParser.parse(root)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                documentParser.parse(root)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
@@ -311,14 +372,20 @@ class ExternalReferenceLoadingTest {
     fun `reports malformed external reference at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("MalformedReference")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("MalformedReference")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            schemaParser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                schemaParser.parseElement(schemaNode)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.InvalidReference>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.INVALID_REFERENCE, diagnostic.category)
@@ -334,14 +401,20 @@ class ExternalReferenceLoadingTest {
     fun `reports missing external document at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("MissingDocument")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("MissingDocument")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            schemaParser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                schemaParser.parseElement(schemaNode)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceDocumentNotFound>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.REFERENCE_DOCUMENT_NOT_FOUND, diagnostic.category)
@@ -357,14 +430,20 @@ class ExternalReferenceLoadingTest {
     fun `reports missing external pointer target at the referencing field`() {
         val file = TestResources.file("parser/references/external/external_reference_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("MissingTarget")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("MissingTarget")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            schemaParser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                schemaParser.parseElement(schemaNode)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceTargetNotFound>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.REFERENCE_TARGET_NOT_FOUND, diagnostic.category)
@@ -393,14 +472,16 @@ class ExternalReferenceLoadingTest {
                   ${'$'}ref: ./fragment.yaml
             """.trimIndent(),
         )
-        val limitedContext = AsyncApiContext(
-            ParserLoadResourceLimits(maxSourceDocuments = 1),
-        )
+        val limitedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(maxSourceDocuments = 1),
+            )
         val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            AsyncApiParser(limitedContext).parse(root)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(limitedContext).parse(root)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.LOAD_RESOURCE_LIMIT_EXCEEDED, diagnostic.category)
@@ -439,16 +520,18 @@ class ExternalReferenceLoadingTest {
                   ${'$'}ref: ./nested/../fragment.yaml#/selected
             """.trimIndent(),
         )
-        val repeatedContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxSourceDocuments = 2,
-                maxReferenceTargets = 1,
-            ),
-        )
-        val repeatedRoot = ParserNodeFactory.root(
-            DocumentReaderRegistry.read(repeatedMain),
-            repeatedContext,
-        )
+        val repeatedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxSourceDocuments = 2,
+                    maxReferenceTargets = 1,
+                ),
+            )
+        val repeatedRoot =
+            ParserNodeFactory.root(
+                DocumentReaderRegistry.read(repeatedMain),
+                repeatedContext,
+            )
 
         AsyncApiParser(repeatedContext).parse(repeatedRoot)
 
@@ -459,17 +542,20 @@ class ExternalReferenceLoadingTest {
                 "./fragment.yaml#/other",
             ),
         )
-        val distinctContext = AsyncApiContext(
-            ParserLoadResourceLimits(maxReferenceTargets = 1),
-        )
-        val distinctRoot = ParserNodeFactory.root(
-            DocumentReaderRegistry.read(distinctMain),
-            distinctContext,
-        )
+        val distinctContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(maxReferenceTargets = 1),
+            )
+        val distinctRoot =
+            ParserNodeFactory.root(
+                DocumentReaderRegistry.read(distinctMain),
+                distinctContext,
+            )
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            AsyncApiParser(distinctContext).parse(distinctRoot)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(distinctContext).parse(distinctRoot)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserLoadResourceLimit.REFERENCE_TARGETS, diagnostic.limit)
@@ -499,14 +585,16 @@ class ExternalReferenceLoadingTest {
                   ${'$'}ref: ./first.yaml
             """.trimIndent(),
         )
-        val limitedContext = AsyncApiContext(
-            ParserLoadResourceLimits(maxExternalReferenceDepth = 2),
-        )
+        val limitedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(maxExternalReferenceDepth = 2),
+            )
         val limitedRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            AsyncApiParser(limitedContext).parse(limitedRoot)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(limitedContext).parse(limitedRoot)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserLoadResourceLimit.EXTERNAL_REFERENCE_DEPTH, diagnostic.limit)
@@ -517,15 +605,17 @@ class ExternalReferenceLoadingTest {
 
         first.writeText("${'$'}ref: ./second.yaml")
         second.writeText("${'$'}ref: ./first.yaml")
-        val cyclicContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxReferenceTargets = 2,
-                maxExternalReferenceDepth = 2,
-            ),
-        )
+        val cyclicContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxReferenceTargets = 2,
+                    maxExternalReferenceDepth = 2,
+                ),
+            )
         val cyclicRoot = ParserNodeFactory.root(DocumentReaderRegistry.read(main), cyclicContext)
 
-        val cycle = assertFailsWith<AsyncApiValidateException.ValidateError> { AsyncApiParser(cyclicContext).parse(cyclicRoot) }
+        val cycle =
+            assertFailsWith<AsyncApiValidateException.ValidateError> { AsyncApiParser(cyclicContext).parse(cyclicRoot) }
         assertTrue("cycle" in cycle.message.orEmpty(), cycle.message)
     }
 
@@ -548,16 +638,18 @@ class ExternalReferenceLoadingTest {
         )
         val mainBytes = main.readBytes().size.toLong()
         val fragmentBytes = fragment.readBytes().size.toLong()
-        val limitedContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxAggregateSourceBytes = mainBytes + fragmentBytes - 1,
-            ),
-        )
+        val limitedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxAggregateSourceBytes = mainBytes + fragmentBytes - 1,
+                ),
+            )
         val root = ParserNodeFactory.root(DocumentReaderRegistry.read(main), limitedContext)
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            AsyncApiParser(limitedContext).parse(root)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                AsyncApiParser(limitedContext).parse(root)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserLoadResourceLimit.AGGREGATE_SOURCE_BYTES, diagnostic.limit)

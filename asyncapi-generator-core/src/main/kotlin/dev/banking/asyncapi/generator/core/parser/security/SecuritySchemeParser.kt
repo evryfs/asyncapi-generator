@@ -1,13 +1,13 @@
 package dev.banking.asyncapi.generator.core.parser.security
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.OAuthFlow
 import dev.banking.asyncapi.generator.core.model.security.OAuthFlows
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OAUTH_FLOW
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OAUTH_FLOWS
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SECURITY_SCHEME as SECURITY_SCHEME_OBJECT
@@ -18,7 +18,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SEC
 internal class SecuritySchemeParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun parseMap(parserNode: ParserNode): Map<String, SecuritySchemeInterface> =
         parserNode.expectObject().members().associate { node ->
             node.name to parseElement(node)
@@ -33,8 +32,8 @@ internal class SecuritySchemeParser(
             return SecuritySchemeInterface.SecuritySchemeReference(
                 Reference(
                     ref = reference,
-                    referenceCategoryKey = SECURITY_SCHEME
-                ).also { asyncApiContext.register(it, parserNode) }
+                    referenceCategoryKey = SECURITY_SCHEME,
+                ).also { asyncApiContext.register(it, parserNode) },
             )
         }
         objectNode.expectOnlyMembers(SECURITY_SCHEME_OBJECT)
@@ -59,7 +58,7 @@ internal class SecuritySchemeParser(
                 flows = flows,
                 scopes = scopes,
                 extensions = objectNode.extensions(),
-            ).also { asyncApiContext.register(it, parserNode) }
+            ).also { asyncApiContext.register(it, parserNode) },
         )
     }
 
@@ -85,7 +84,7 @@ internal class SecuritySchemeParser(
             authorizationUrl = authorizationUrl,
             tokenUrl = tokenUrl,
             refreshUrl = refreshUrl,
-            availableScopes = availableScopes
+            availableScopes = availableScopes,
         ).also { asyncApiContext.register(it, parserNode) }
     }
 }

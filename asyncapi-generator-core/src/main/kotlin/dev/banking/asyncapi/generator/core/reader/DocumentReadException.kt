@@ -4,7 +4,9 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 
 /** Reader resource whose configured maximum was exceeded. */
-enum class DocumentResourceLimit(val description: String) {
+enum class DocumentResourceLimit(
+    val description: String,
+) {
     DOCUMENT_BYTES("UTF-8 document bytes"),
     DOCUMENT_CHARACTERS("document characters"),
     NESTING_DEPTH("nesting depth"),
@@ -21,35 +23,34 @@ sealed class DocumentReadException(
     val location: SourceLocation? = null,
     cause: Throwable? = null,
 ) : RuntimeException(message, cause) {
-
     class MissingDocument(
         file: File,
     ) : DocumentReadException(
-        message = "Input document does not exist: ${file.absolutePath}",
-        file = file,
-    )
+            message = "Input document does not exist: ${file.absolutePath}",
+            file = file,
+        )
 
     class NotAFile(
         file: File,
     ) : DocumentReadException(
-        message = "Input document is not a file: ${file.absolutePath}",
-        file = file,
-    )
+            message = "Input document is not a file: ${file.absolutePath}",
+            file = file,
+        )
 
     class EmptyDocument(
         file: File,
     ) : DocumentReadException(
-        message = "Input document is empty: ${file.absolutePath}",
-        file = file,
-    )
+            message = "Input document is empty: ${file.absolutePath}",
+            file = file,
+        )
 
     class UnsupportedFormat(
         file: File,
         val format: String,
     ) : DocumentReadException(
-        message = "Unsupported input document format '$format': ${file.absolutePath}",
-        file = file,
-    )
+            message = "Unsupported input document format '$format': ${file.absolutePath}",
+            file = file,
+        )
 
     /** @param reason What is wrong, when the reader knows it better than the underlying parser error. */
     class MalformedDocument(
@@ -58,21 +59,22 @@ sealed class DocumentReadException(
         location: SourceLocation? = null,
         reason: String? = null,
     ) : DocumentReadException(
-        message = "Malformed input document${locationSuffix(location)}${reason?.let { " ($it)" }.orEmpty()}: " +
-            file.absolutePath,
-        file = file,
-        location = location,
-        cause = cause,
-    )
+            message =
+                "Malformed input document${locationSuffix(location)}${reason?.let { " ($it)" }.orEmpty()}: " +
+                    file.absolutePath,
+            file = file,
+            location = location,
+            cause = cause,
+        )
 
     class UnreadableDocument(
         file: File,
         cause: Throwable,
     ) : DocumentReadException(
-        message = "Unable to read input document: ${file.absolutePath}",
-        file = file,
-        cause = cause,
-    )
+            message = "Unable to read input document: ${file.absolutePath}",
+            file = file,
+            cause = cause,
+        )
 
     class ResourceLimitExceeded(
         file: File,
@@ -81,36 +83,36 @@ sealed class DocumentReadException(
         cause: Throwable,
         location: SourceLocation? = null,
     ) : DocumentReadException(
-        message =
-            "Input document exceeds ${limit.description} limit of $maximum" +
-                "${locationSuffix(location)}: ${file.absolutePath}",
-        file = file,
-        location = location,
-        cause = cause,
-    )
+            message =
+                "Input document exceeds ${limit.description} limit of $maximum" +
+                    "${locationSuffix(location)}: ${file.absolutePath}",
+            file = file,
+            location = location,
+            cause = cause,
+        )
 
     class InvalidMappingKey(
         file: File,
         location: SourceLocation,
     ) : DocumentReadException(
-        message =
-            "Invalid mapping key in ${file.absolutePath} at line ${location.line}, " +
-                "column ${location.column}: expected string key",
-        file = file,
-        location = location,
-    )
+            message =
+                "Invalid mapping key in ${file.absolutePath} at line ${location.line}, " +
+                    "column ${location.column}: expected string key",
+            file = file,
+            location = location,
+        )
 
     class DuplicateKey(
         file: File,
         val memberName: String,
         location: SourceLocation,
     ) : DocumentReadException(
-        message =
-            "Duplicate key '$memberName' in ${file.absolutePath} at line ${location.line}, " +
-                "column ${location.column}",
-        file = file,
-        location = location,
-    )
+            message =
+                "Duplicate key '$memberName' in ${file.absolutePath} at line ${location.line}, " +
+                    "column ${location.column}",
+            file = file,
+            location = location,
+        )
 
     companion object {
         private fun locationSuffix(location: SourceLocation?): String =

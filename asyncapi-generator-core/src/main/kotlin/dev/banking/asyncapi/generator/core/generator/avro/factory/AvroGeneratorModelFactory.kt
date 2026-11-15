@@ -24,8 +24,14 @@ internal class AvroGeneratorModelFactory(
 ) {
     private val typeMapper = AvroTypeMapper(packageName)
 
-    fun create(name: String, schema: Schema): AvroSchema? {
-        if ((schema.oneOf ?: schema.anyOf).orEmpty().any { schemaOption -> schemaOption is SchemaInterface.SchemaReference }) {
+    fun create(
+        name: String,
+        schema: Schema,
+    ): AvroSchema? {
+        if ((schema.oneOf ?: schema.anyOf).orEmpty().any { schemaOption ->
+                schemaOption is SchemaInterface.SchemaReference
+            }
+        ) {
             return null
         }
 
@@ -33,10 +39,15 @@ internal class AvroGeneratorModelFactory(
             requireAvroName("enum", name, "components.schemas.$name")
             val symbols = schema.enum.map { it.toString().trim('"', '\'') }
             symbols.forEach { requireAvroName("enum symbol", it, "components.schemas.$name") }
-            val defaultSymbol = schema.default?.toString()?.trim('"', '\'')?.takeIf { symbols.contains(it) }
-            val symbolWrappers = symbols.mapIndexed { index, s ->
-                AvroEnumSymbol(name = s, last = index == symbols.size - 1)
-            }
+            val defaultSymbol =
+                schema.default
+                    ?.toString()
+                    ?.trim('"', '\'')
+                    ?.takeIf { symbols.contains(it) }
+            val symbolWrappers =
+                symbols.mapIndexed { index, s ->
+                    AvroEnumSymbol(name = s, last = index == symbols.size - 1)
+                }
             return AvroEnum(
                 namespace = packageName,
                 name = name,
@@ -53,37 +64,40 @@ internal class AvroGeneratorModelFactory(
 
         val properties = schema.properties?.entries?.toList() ?: emptyList()
 
-        val fields = properties.mapIndexed { index, (propName, propInterface) ->
-            requireAvroName("field", propName, "components.schemas.$name")
-            val (propSchema, refName) = when (propInterface) {
-                is SchemaInterface.SchemaInline -> propInterface.schema to null
-                is SchemaInterface.SchemaReference -> {
-                    val resolved = propInterface.reference.model as? Schema
-                    val name = propInterface.reference.ref.substringAfterLast('/')
-                    resolved to name
-                }
-                else -> null to null
+        val fields =
+            properties.mapIndexed { index, (propName, propInterface) ->
+                requireAvroName("field", propName, "components.schemas.$name")
+                val (propSchema, refName) =
+                    when (propInterface) {
+                        is SchemaInterface.SchemaInline -> propInterface.schema to null
+                        is SchemaInterface.SchemaReference -> {
+                            val resolved = propInterface.reference.model as? Schema
+                            val name = propInterface.reference.ref.substringAfterLast('/')
+                            resolved to name
+                        }
+                        else -> null to null
+                    }
+
+                val isOptional = !(schema.required?.contains(propName) ?: false)
+                val defaultJson = propSchema?.let { defaultJson(it, refName) }
+
+                AvroField(
+                    name = propName,
+                    doc = jsonText(toAvroDocLines(propSchema?.description)),
+                    jsonType =
+                        when {
+                            // A union's default must match its first branch, so a non-null default comes first.
+                            isOptional && defaultJson != null ->
+                                typeMapper
+                                    .mapToAvroType(propSchema, isOptional = true, refName)
+                                    .replaceFirst("[\"null\", ", "[")
+                                    .removeSuffix("]") + ", \"null\"]"
+                            else -> typeMapper.mapToAvroType(propSchema, isOptional, refName)
+                        },
+                    last = index == properties.size - 1,
+                    defaultJson = defaultJson ?: "null".takeIf { isOptional },
+                )
             }
-
-            val isOptional = !(schema.required?.contains(propName) ?: false)
-            val defaultJson = propSchema?.let { defaultJson(it, refName) }
-
-            AvroField(
-                name = propName,
-                doc = jsonText(toAvroDocLines(propSchema?.description)),
-                jsonType =
-                    when {
-                        // A union's default must match its first branch, so a non-null default comes first.
-                        isOptional && defaultJson != null ->
-                            typeMapper.mapToAvroType(propSchema, isOptional = true, refName)
-                                .replaceFirst("[\"null\", ", "[")
-                                .removeSuffix("]") + ", \"null\"]"
-                        else -> typeMapper.mapToAvroType(propSchema, isOptional, refName)
-                    },
-                last = index == properties.size - 1,
-                defaultJson = defaultJson ?: "null".takeIf { isOptional },
-            )
-        }
 
         return AvroRecord(
             namespace = packageName,
@@ -97,11 +111,17 @@ internal class AvroGeneratorModelFactory(
      * The field's default as Avro default JSON, for scalars and enum symbols. Other defaults are
      * left out: Avro encodes them differently from JSON Schema (logical types, records).
      */
-    private fun defaultJson(schema: Schema, refName: String?): String? {
+    private fun defaultJson(
+        schema: Schema,
+        refName: String?,
+    ): String? {
         val value = schema.default ?: return null
         val text = value as? String ?: value.toString()
         return when {
-            !schema.enum.isNullOrEmpty() -> "\"${jsonText(text)}\"".takeIf { schema.enum.map(Any?::toString).contains(text) }
+            !schema.enum.isNullOrEmpty() ->
+                "\"${jsonText(
+                    text,
+                )}\"".takeIf { schema.enum.map(Any?::toString).contains(text) }
             refName != null -> null
             schema.format != null -> null
             else ->
@@ -114,11 +134,16 @@ internal class AvroGeneratorModelFactory(
         }
     }
 
-    private fun requireAvroName(kind: String, value: String, location: String) {
+    private fun requireAvroName(
+        kind: String,
+        value: String,
+        location: String,
+    ) {
         if (!AVRO_NAME.matches(value)) throw InvalidAvroName(kind = kind, avroName = value, location = location)
     }
 
-    private fun jsonText(text: String?): String? = text?.let { String(JsonStringEncoder.getInstance().quoteAsString(it)) }
+    private fun jsonText(text: String?): String? =
+        text?.let { String(JsonStringEncoder.getInstance().quoteAsString(it)) }
 
     private companion object {
         val AVRO_NAME = Regex("[A-Za-z_][A-Za-z0-9_]*")

@@ -16,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class OperationReplyParserTest {
-
     private val context = AsyncApiContext()
     private val parser = OperationReplyParser(context)
 
@@ -24,17 +23,24 @@ class OperationReplyParserTest {
     fun `parses an inline operation reply with address channel and messages`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val replyNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
-            .expectObject().required("receiveLightMeasurement")
-            .expectObject().required("reply")
+        val replyNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
+                .expectObject()
+                .required("receiveLightMeasurement")
+                .expectObject()
+                .required("reply")
 
-        val reply = assertIs<OperationReplyInterface.OperationReplyInline>(
-            parser.parseElement(replyNode),
-        ).operationReply
+        val reply =
+            assertIs<OperationReplyInterface.OperationReplyInline>(
+                parser.parseElement(replyNode),
+            ).operationReply
 
-        val address = assertIs<OperationReplyAddressInterface.OperationReplyAddressInline>(reply.address)
-            .operationReplyAddress
+        val address =
+            assertIs<OperationReplyAddressInterface.OperationReplyAddressInline>(reply.address)
+                .operationReplyAddress
         assertEquals("\$message.header#/replyTo", address.location)
         assertEquals("#/channels/lightingMeasured", reply.channel?.ref)
         assertEquals(listOf("#/components/messages/lightMeasured"), reply.messages?.map { it.ref })
@@ -44,13 +50,19 @@ class OperationReplyParserTest {
     fun `parses a referenced operation reply with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val replyNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("replies")
-            .expectObject().required("referencedReply")
+        val replyNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("replies")
+                .expectObject()
+                .required("referencedReply")
 
-        val reference = assertIs<OperationReplyInterface.OperationReplyReference>(parser.parseElement(replyNode))
-            .reference
+        val reference =
+            assertIs<OperationReplyInterface.OperationReplyReference>(parser.parseElement(replyNode))
+                .reference
 
         assertEquals("#/components/replies/standardReply", reference.ref)
         assertEquals(OPERATION_REPLY, reference.referenceCategoryKey)
@@ -60,14 +72,20 @@ class OperationReplyParserTest {
     fun `parse operation reply reports missing channel ref`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operation_reply_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val replyNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("operationReplyCases")
-            .expectObject().required("MissingChannelReference")
+        val replyNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("operationReplyCases")
+                .expectObject()
+                .required("MissingChannelReference")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(replyNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(replyNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -88,14 +106,20 @@ class OperationReplyParserTest {
     fun `parse operation reply reports missing message ref at indexed path`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operation_reply_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val replyNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("operationReplyCases")
-            .expectObject().required("MissingMessageReference")
+        val replyNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("operationReplyCases")
+                .expectObject()
+                .required("MissingMessageReference")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(replyNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(replyNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -111,5 +135,4 @@ class OperationReplyParserTest {
         )
         assertEquals("asyncapi_parser_operation_reply_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

@@ -8,7 +8,6 @@ import java.util.IdentityHashMap
  * Tracks the source location and protocol of binding references.
  */
 internal class BindingReferenceRegistry {
-
     internal data class BindingReferenceOrigin(
         val location: BindingLocation,
         val protocol: String?,

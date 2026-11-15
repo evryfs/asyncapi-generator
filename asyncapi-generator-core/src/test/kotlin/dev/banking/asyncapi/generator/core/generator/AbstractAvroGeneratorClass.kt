@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.io.File
 
 abstract class AbstractAvroGeneratorClass {
-
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     protected val generator = AsyncApiGenerator()
@@ -44,9 +43,10 @@ abstract class AbstractAvroGeneratorClass {
 
         if (schema != null) {
             val packagePath = packageName.replace('.', '/')
-            val output = resourceOutputDirectory
-                .resolve(packagePath)
-                .resolve(schema)
+            val output =
+                resourceOutputDirectory
+                    .resolve(packagePath)
+                    .resolve(schema)
             if (output.exists()) return output.readText()
         }
         return ""

@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * executable-JAR boundary as an installed CLI invocation.
  */
 class CliPackagedApplicationIT {
-
     @Test
     fun `should report the packaged CLI version`() {
         val result = PackagedCliFixture.run("--version")
@@ -52,7 +51,9 @@ class CliPackagedApplicationIT {
     }
 
     @Test
-    fun `should generate a bundled document through the packaged CLI`(@TempDir tempDir: Path) {
+    fun `should generate a bundled document through the packaged CLI`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
         val outputFile = tempDir.resolve("bundled.yaml").toFile()
 
@@ -73,7 +74,9 @@ class CliPackagedApplicationIT {
     }
 
     @Test
-    fun `should generate a bundled document from an argument file`(@TempDir tempDir: Path) {
+    fun `should generate a bundled document from an argument file`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
         val outputFile = tempDir.resolve("bundled output.yaml").toFile()
         val argumentFile =
@@ -100,7 +103,9 @@ class CliPackagedApplicationIT {
     }
 
     @Test
-    fun `should generate complete Spring Kafka output through the packaged CLI`(@TempDir tempDir: Path) {
+    fun `should generate complete Spring Kafka output through the packaged CLI`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/asyncapi_spring_kafka.yaml")
         val outputDirectory = tempDir.resolve("generated").toFile()
 
@@ -136,13 +141,16 @@ class CliPackagedApplicationIT {
 
         assertEquals(0, result.exitCode, result.output)
         val model =
-            outputDirectory.resolve("com/example/cli/model/MyAccountUpdatedPayload.kt")
+            outputDirectory
+                .resolve("com/example/cli/model/MyAccountUpdatedPayload.kt")
                 .readText()
         val producer =
-            outputDirectory.resolve("com/example/cli/client/producer/MyAccountUpdatedProducer.kt")
+            outputDirectory
+                .resolve("com/example/cli/client/producer/MyAccountUpdatedProducer.kt")
                 .readText()
         val consumer =
-            outputDirectory.resolve("com/example/cli/client/consumer/MyAccountUpdatedConsumer.kt")
+            outputDirectory
+                .resolve("com/example/cli/client/consumer/MyAccountUpdatedConsumer.kt")
                 .readText()
 
         assertTrue(model.contains("import com.example.codegen.GeneratedPayload"))
@@ -158,7 +166,9 @@ class CliPackagedApplicationIT {
     }
 
     @Test
-    fun `should generate native Avro output through the packaged CLI`(@TempDir tempDir: Path) {
+    fun `should generate native Avro output through the packaged CLI`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/asyncapi_native_avro.yaml")
         val outputDirectory = tempDir.resolve("generated").toFile()
 
@@ -186,13 +196,16 @@ class CliPackagedApplicationIT {
         assertTrue(schemaFile.readText().contains("\"type\" : \"record\""))
         assertTrue(specificRecordFile.isFile)
         assertTrue(
-            specificRecordFile.readText()
+            specificRecordFile
+                .readText()
                 .contains("extends org.apache.avro.specific.SpecificRecordBase"),
         )
     }
 
     @Test
-    fun `should generate native Protobuf output through the packaged CLI`(@TempDir tempDir: Path) {
+    fun `should generate native Protobuf output through the packaged CLI`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/asyncapi_native_protobuf.yaml")
         val outputDirectory = tempDir.resolve("generated").toFile()
 
@@ -226,7 +239,9 @@ class CliPackagedApplicationIT {
     }
 
     @Test
-    fun `should return a failure status for malformed input`(@TempDir tempDir: Path) {
+    fun `should return a failure status for malformed input`(
+        @TempDir tempDir: Path,
+    ) {
         val inputFile = File("src/test/resources/diagnostics/asyncapi-malformed.yaml")
         val outputFile = tempDir.resolve("should-not-be-generated.yaml").toFile()
 

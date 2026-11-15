@@ -16,7 +16,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  * validate AsyncAPI semantics, or generate code.
  */
 class AsyncApiBundler {
-
     private val infoBundler = InfoBundler()
     private val serverBundler = ServerBundler()
     private val channelBundler = ChannelBundler()
@@ -33,10 +32,11 @@ class AsyncApiBundler {
         val bundledChannels = channelBundler.bundleMap(document.channels, context)
         val bundledOperations = operationBundler.bundleMap(document.operations, context)
         val bundledComponents = componentBundler.bundleComponents(document.components, context)
-        val componentsWithPromotedSchemas = componentBundler.mergeSchemas(
+        val componentsWithPromotedSchemas =
+            componentBundler.mergeSchemas(
                 components = bundledComponents,
-            schemas = context.schemaPromotions.schemas(),
-        )
+                schemas = context.schemaPromotions.schemas(),
+            )
 
         return BundledAsyncApiDocument(
             document.copy(

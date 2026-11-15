@@ -10,8 +10,13 @@ import java.io.Writer
  * `Map&lt;String, Int&gt;`. Source code is not HTML, so values are written exactly as given;
  * callers escape them for the target language where needed.
  */
-internal class SourceMustacheFactory(resourceRoot: String) : DefaultMustacheFactory(resourceRoot) {
-    override fun encode(value: String, writer: Writer) {
+internal class SourceMustacheFactory(
+    resourceRoot: String,
+) : DefaultMustacheFactory(resourceRoot) {
+    override fun encode(
+        value: String,
+        writer: Writer,
+    ) {
         writer.write(value)
     }
 }

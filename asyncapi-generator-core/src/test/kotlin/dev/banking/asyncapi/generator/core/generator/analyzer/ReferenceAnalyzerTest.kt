@@ -10,7 +10,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class ReferenceAnalyzerTest {
-
     private val analyzer = ReferenceAnalyzer()
 
     @Test
@@ -19,10 +18,11 @@ class ReferenceAnalyzerTest {
         val externalSchema = Schema(type = "object", title = "External")
         val ref = Reference(ref = "#/components/schemas/External", model = externalSchema)
 
-        val rootSchema = Schema(
-            type = "object",
-            properties = mapOf("field" to SchemaInterface.SchemaReference(ref))
-        )
+        val rootSchema =
+            Schema(
+                type = "object",
+                properties = mapOf("field" to SchemaInterface.SchemaReference(ref)),
+            )
         val input = mapOf("Root" to rootSchema)
 
         // Act
@@ -39,28 +39,34 @@ class ReferenceAnalyzerTest {
     fun `analyze should handle nested references`() {
         // Arrange: Root -> Middle (ref) -> End (ref)
         val endSchema = Schema(type = "string")
-        val middleSchema = Schema(
-            type = "object",
-            properties = mapOf(
-                "end" to SchemaInterface.SchemaReference(
-                    Reference(
-                        ref = "#/c/s/End",
-                        model = endSchema
-                    )
-                )
+        val middleSchema =
+            Schema(
+                type = "object",
+                properties =
+                    mapOf(
+                        "end" to
+                            SchemaInterface.SchemaReference(
+                                Reference(
+                                    ref = "#/c/s/End",
+                                    model = endSchema,
+                                ),
+                            ),
+                    ),
             )
-        )
-        val rootSchema = Schema(
-            type = "object",
-            properties = mapOf(
-                "middle" to SchemaInterface.SchemaReference(
-                    Reference(
-                        ref = "#/c/s/Middle",
-                        model = middleSchema
-                    )
-                )
+        val rootSchema =
+            Schema(
+                type = "object",
+                properties =
+                    mapOf(
+                        "middle" to
+                            SchemaInterface.SchemaReference(
+                                Reference(
+                                    ref = "#/c/s/Middle",
+                                    model = middleSchema,
+                                ),
+                            ),
+                    ),
             )
-        )
         val input = mapOf("Root" to rootSchema)
 
         // Act

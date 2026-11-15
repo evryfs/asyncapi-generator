@@ -73,7 +73,11 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     override fun run() {
         val generatorConfiguration = generatorConfiguration()
-        generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { echo(message = it.trimEnd(), err = true) }
+        generatorConfiguration
+            .formatWarnings()
+            .takeIf(
+                String::isNotEmpty,
+            )?.let { echo(message = it.trimEnd(), err = true) }
         echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
 
         try {

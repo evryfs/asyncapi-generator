@@ -7,7 +7,9 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceL
  * Result of a resource budget operation.
  */
 internal sealed interface ResourceBudgetResult<out T> {
-    data class Success<T>(val value: T) : ResourceBudgetResult<T>
+    data class Success<T>(
+        val value: T,
+    ) : ResourceBudgetResult<T>
 
     data class LimitExceeded(
         val limit: ParserLoadResourceLimit,

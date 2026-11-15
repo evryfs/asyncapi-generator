@@ -17,18 +17,18 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class JsonDocumentReaderTest {
-
     private val reader = JsonDocumentReader()
 
     @Test
     fun `reads semantic scalar values`() {
         val file = TestResources.file("reader/json/semantic-scalars.json")
-        val source = DocumentSource(
-            id = "semantic-scalars",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "semantic-scalars",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
         val info = assertIs<DocumentObject>(root["info"])
@@ -51,16 +51,18 @@ class JsonDocumentReaderTest {
     @Test
     fun `fails when json is malformed`() {
         val file = TestResources.file("reader/json/malformed.json")
-        val source = DocumentSource(
-            id = "malformed",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "malformed",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                reader.read(source)
+            }
         assertEquals(source.file, failure.file)
         assertNotNull(failure.location)
         assertNotNull(failure.cause)
@@ -69,12 +71,13 @@ class JsonDocumentReaderTest {
     @Test
     fun `reads an array root without applying AsyncAPI rules`() {
         val file = TestResources.file("reader/json/invalid-root.json")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
         val document = reader.read(source)
 
         val root = assertIs<DocumentArray>(document.root)
@@ -87,12 +90,13 @@ class JsonDocumentReaderTest {
     @Test
     fun `fails when document is empty`() {
         val file = TestResources.file("reader/json/empty.json")
-        val source = DocumentSource(
-            id = "empty",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "empty",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
 
         assertFailsWith<DocumentReadException.EmptyDocument> {
             reader.read(source)
@@ -102,15 +106,17 @@ class JsonDocumentReaderTest {
     @Test
     fun `fails when object contains duplicate keys`() {
         val file = TestResources.file("reader/json/duplicate-key.json")
-        val source = DocumentSource(
-            id = "duplicate-key",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
-        val failure = assertFailsWith<DocumentReadException.DuplicateKey> {
-            reader.read(source)
-        }
+        val source =
+            DocumentSource(
+                id = "duplicate-key",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
+        val failure =
+            assertFailsWith<DocumentReadException.DuplicateKey> {
+                reader.read(source)
+            }
 
         assertEquals(source.file, failure.file)
         assertEquals("title", failure.memberName)
@@ -126,16 +132,18 @@ class JsonDocumentReaderTest {
                 DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
             )
         val file = TestResources.file("reader/json/invalid-root.json")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content = """{"root":{"child":{"leaf":true}}}""",
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content = """{"root":{"child":{"leaf":true}}}""",
+                format = DocumentFormat.JSON,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            constrainedReader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                constrainedReader.read(source)
+            }
         assertEquals(DocumentResourceLimit.NESTING_DEPTH, failure.limit)
         assertEquals(2L, failure.maximum)
         assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
@@ -144,12 +152,13 @@ class JsonDocumentReaderTest {
     @Test
     fun `records source locations for root object fields and array items`() {
         val file = TestResources.file("reader/json/source-map.json")
-        val source = DocumentSource(
-            id = "source-map",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.JSON,
-        )
+        val source =
+            DocumentSource(
+                id = "source-map",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.JSON,
+            )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
         val info = assertIs<DocumentObject>(root["info"])

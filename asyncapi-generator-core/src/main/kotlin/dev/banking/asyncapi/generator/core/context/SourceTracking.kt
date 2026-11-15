@@ -9,7 +9,6 @@ import java.io.File
  * Tracks source files, line registrations, source locations, and code snippets.
  */
 internal class SourceTracking {
-
     val repository = SourceRepository()
 
     fun registerSource(

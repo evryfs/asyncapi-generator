@@ -14,7 +14,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class OperationTraitParserTest {
-
     private val context = AsyncApiContext()
     private val parser = OperationTraitParser(context)
 
@@ -22,9 +21,13 @@ class OperationTraitParserTest {
     fun `parses all operation trait fields`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val traitsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("operationTraits")
+        val traitsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("operationTraits")
 
         val traits = parser.parseMap(traitsNode)
 

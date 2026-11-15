@@ -7,7 +7,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ResourceBudgetTest {
-
     private val budget = ResourceBudget(ParserLoadResourceLimits())
 
     @Test

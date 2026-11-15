@@ -38,11 +38,11 @@ import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.tags.Tag
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CATEGORY_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CYCLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_TARGET_CATEGORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.util.Collections
 import java.util.IdentityHashMap
@@ -55,7 +55,6 @@ import java.util.IdentityHashMap
 internal class ReferenceResolver(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun resolve(
         reference: Reference,
         expectedCategory: ReferenceCategoryKey,
@@ -151,7 +150,10 @@ internal class ReferenceResolver(
         return target?.takeUnless { it is Reference }
     }
 
-    private fun matches(category: ReferenceCategoryKey, target: Any): Boolean =
+    private fun matches(
+        category: ReferenceCategoryKey,
+        target: Any,
+    ): Boolean =
         when (category) {
             SCHEMA -> target is Schema || target is MultiFormatSchema || target is SchemaInterface.BooleanSchema
             CHANNEL -> target is Channel

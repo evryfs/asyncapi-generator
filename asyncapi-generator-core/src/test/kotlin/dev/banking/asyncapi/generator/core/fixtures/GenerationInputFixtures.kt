@@ -5,9 +5,9 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
+import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
-import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
@@ -261,9 +261,13 @@ internal class GenerationInputFixtures {
                                                                 properties =
                                                                     mapOf(
                                                                         "correlationId" to
-                                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                                            SchemaInterface.SchemaInline(
+                                                                                Schema(type = "string"),
+                                                                            ),
                                                                         "applicationInstanceId" to
-                                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                                            SchemaInterface.SchemaInline(
+                                                                                Schema(type = "string"),
+                                                                            ),
                                                                     ),
                                                             ),
                                                         ),

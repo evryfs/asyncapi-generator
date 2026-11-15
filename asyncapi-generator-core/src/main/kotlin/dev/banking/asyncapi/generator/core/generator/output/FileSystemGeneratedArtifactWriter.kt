@@ -40,7 +40,6 @@ class FileSystemGeneratedArtifactWriter(
     private val javaSourceOutputDirectory: File = sourceOutputDirectory,
     private val manifest: GeneratedOutputManifest? = null,
 ) : GeneratedArtifactWriter {
-
     override fun write(result: GenerationResult) {
         val outputs = resolveOutputs(result)
         if (outputs.isEmpty()) return
@@ -77,19 +76,24 @@ class FileSystemGeneratedArtifactWriter(
                 content = artifact.content,
                 description = "${artifact.kind}: ${artifact.relativePath}",
             )
-        } + result.documentArtifacts.map { artifact ->
-            ResolvedOutput(
-                file = artifact.file,
-                content = artifact.content,
-                description = "BUNDLED_DOCUMENT: ${artifact.file.path}",
-            )
-        }
+        } +
+            result.documentArtifacts.map { artifact ->
+                ResolvedOutput(
+                    file = artifact.file,
+                    content = artifact.content,
+                    description = "BUNDLED_DOCUMENT: ${artifact.file.path}",
+                )
+            }
 
     private fun rejectOutputCollisions(outputs: List<ResolvedOutput>) {
         val collision =
             outputs
-                .groupBy { output -> output.file.toPath().toAbsolutePath().normalize() }
-                .entries
+                .groupBy { output ->
+                    output.file
+                        .toPath()
+                        .toAbsolutePath()
+                        .normalize()
+                }.entries
                 .firstOrNull { (_, collidingOutputs) -> collidingOutputs.size > 1 }
                 ?: return
 
@@ -100,16 +104,21 @@ class FileSystemGeneratedArtifactWriter(
     }
 
     private fun stageFile(output: ResolvedOutput): StagedFile {
-        val destination = output.file.toPath().toAbsolutePath().normalize()
+        val destination =
+            output.file
+                .toPath()
+                .toAbsolutePath()
+                .normalize()
         var tempFile: java.nio.file.Path? = null
 
         try {
             Files.createDirectories(destination.parent)
-            tempFile = Files.createTempFile(
-                destination.parent,
-                ".asyncapi-generator-",
-                ".tmp",
-            )
+            tempFile =
+                Files.createTempFile(
+                    destination.parent,
+                    ".asyncapi-generator-",
+                    ".tmp",
+                )
             Files.writeString(tempFile, output.content)
         } catch (ex: Exception) {
             if (tempFile != null) {
@@ -120,7 +129,7 @@ class FileSystemGeneratedArtifactWriter(
                 }
             }
             throw IOException(
-                "Failed to stage artifact '${output.description}' to '${destination}'",
+                "Failed to stage artifact '${output.description}' to '$destination'",
                 ex,
             )
         }
@@ -134,14 +143,15 @@ class FileSystemGeneratedArtifactWriter(
 
         while (iterator.hasNext()) {
             val staged = iterator.next()
-            val unchanged = try {
-                Files.exists(staged.destination) && Files.mismatch(staged.tempFile, staged.destination) == -1L
-            } catch (ex: IOException) {
-                throw IOException(
-                    "Failed to compare staged file with destination for '${staged.description}'",
-                    ex,
-                )
-            }
+            val unchanged =
+                try {
+                    Files.exists(staged.destination) && Files.mismatch(staged.tempFile, staged.destination) == -1L
+                } catch (ex: IOException) {
+                    throw IOException(
+                        "Failed to compare staged file with destination for '${staged.description}'",
+                        ex,
+                    )
+                }
 
             if (unchanged) {
                 try {
@@ -190,7 +200,10 @@ class FileSystemGeneratedArtifactWriter(
         }
     }
 
-    private fun cleanupTempFiles(stagedFiles: List<StagedFile>, primaryFailure: Exception?) {
+    private fun cleanupTempFiles(
+        stagedFiles: List<StagedFile>,
+        primaryFailure: Exception?,
+    ) {
         var cleanupFailure: IOException? = null
         for (staged in stagedFiles) {
             try {
@@ -199,10 +212,11 @@ class FileSystemGeneratedArtifactWriter(
                 if (primaryFailure != null) {
                     primaryFailure.addSuppressed(ex)
                 } else if (cleanupFailure == null) {
-                    cleanupFailure = IOException(
-                        "Failed to clean temporary file for '${staged.description}'",
-                        ex,
-                    )
+                    cleanupFailure =
+                        IOException(
+                            "Failed to clean temporary file for '${staged.description}'",
+                            ex,
+                        )
                 } else {
                     cleanupFailure.addSuppressed(ex)
                 }

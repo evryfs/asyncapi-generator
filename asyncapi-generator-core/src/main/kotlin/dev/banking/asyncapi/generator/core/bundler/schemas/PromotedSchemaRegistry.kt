@@ -18,7 +18,6 @@ import java.util.IdentityHashMap
 internal class PromotedSchemaRegistry(
     rootSchemas: Map<String, SchemaInterface> = emptyMap(),
 ) {
-
     internal class Entry(
         val name: String,
         val model: Any,
@@ -54,12 +53,16 @@ internal class PromotedSchemaRegistry(
         }
     }
 
-    fun reserve(reference: Reference, model: Any): Entry {
+    fun reserve(
+        reference: Reference,
+        model: Any,
+    ): Entry {
         entriesByModel[model]?.let { return it }
 
-        val name = reference.ref.componentSchemaNameOrNull()
-            ?: reference.ref.referenceTargetNameOrNull()
-            ?: throw AsyncApiBundlingException.ExternalSchemaNameUnavailable(reference.ref)
+        val name =
+            reference.ref.componentSchemaNameOrNull()
+                ?: reference.ref.referenceTargetNameOrNull()
+                ?: throw AsyncApiBundlingException.ExternalSchemaNameUnavailable(reference.ref)
         val origin = reference.origin()
         entriesByName[name]?.let { existing ->
             if (sameContent(existing.model, model)) {
@@ -91,7 +94,10 @@ internal class PromotedSchemaRegistry(
         return true
     }
 
-    fun complete(entry: Entry, schema: SchemaInterface) {
+    fun complete(
+        entry: Entry,
+        schema: SchemaInterface,
+    ) {
         entry.bundledSchema = schema
         entry.state = State.COMPLETE
     }
@@ -100,14 +106,17 @@ internal class PromotedSchemaRegistry(
         entriesByName.values
             .filter(Entry::promoted)
             .associateTo(linkedMapOf()) { entry ->
-                entry.name to checkNotNull(entry.bundledSchema) {
-                    "Promoted schema '${entry.name}' was not bundled"
-                }
+                entry.name to
+                    checkNotNull(entry.bundledSchema) {
+                        "Promoted schema '${entry.name}' was not bundled"
+                    }
             }
 
     /** Compares the schemas as written, with nested references as their `$ref` text. */
-    private fun sameContent(first: Any, second: Any): Boolean =
-        first === second || AsyncApiRegistry.serializeJson(first) == AsyncApiRegistry.serializeJson(second)
+    private fun sameContent(
+        first: Any,
+        second: Any,
+    ): Boolean = first === second || AsyncApiRegistry.serializeJson(first) == AsyncApiRegistry.serializeJson(second)
 
     private fun SchemaInterface.modelIdentity(): Any =
         when (this) {
@@ -120,6 +129,5 @@ internal class PromotedSchemaRegistry(
     private fun SchemaInterface.isExternalReference(): Boolean =
         this is SchemaInterface.SchemaReference && reference.ref.substringBefore('#').isNotBlank()
 
-    private fun Reference.origin(): String =
-        sourceId?.let { source -> "$source:$ref" } ?: ref
+    private fun Reference.origin(): String = sourceId?.let { source -> "$source:$ref" } ?: ref
 }

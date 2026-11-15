@@ -7,7 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateJavaSpringKafkaOpenPayloadClientTest : AbstractJavaGeneratorClass() {
-
     @Test
     fun `should use Object for open payload in spring kafka clients`() {
         val yaml = File("src/test/resources/generator/asyncapi_open_payload_kafka_inline.yaml")

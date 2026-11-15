@@ -8,7 +8,6 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity
  * Collects and deduplicates validation warnings from external document loading.
  */
 internal class ValidationWarningCollector {
-
     private val warnings = linkedMapOf<FindingIdentity, ValidationFinding>()
 
     fun collect(newWarnings: List<ValidationFinding>) {

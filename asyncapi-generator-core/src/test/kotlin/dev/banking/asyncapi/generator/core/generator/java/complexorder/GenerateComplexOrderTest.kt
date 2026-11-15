@@ -6,145 +6,148 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class GenerateComplexOrderTest : AbstractJavaGeneratorClass() {
-
     @Test
     fun `generate OrderLineType data class`() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
-            generated = "OrderLineType.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
+                generated = "OrderLineType.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
+            )
         val classBody = extractClassBody(generated)
-        val expected = """
-               public class OrderLineType implements Serializable {
+        val expected =
+            """
+            public class OrderLineType implements Serializable {
 
-                   @Size(min = 1, max = 50)
-                   @NotNull
-                   private String productCode;
+                @Size(min = 1, max = 50)
+                @NotNull
+                private String productCode;
 
-                   @Min(1L)
-                   @Max(100000L)
-                   @NotNull
-                   private Integer quantity;
+                @Min(1L)
+                @Max(100000L)
+                @NotNull
+                private Integer quantity;
 
-                   @DecimalMin(value = "0", inclusive = false)
-                   @NotNull
-                   private BigDecimal unitPrice;
+                @DecimalMin(value = "0", inclusive = false)
+                @NotNull
+                private BigDecimal unitPrice;
 
-                   public OrderLineType() {
-                       // Default constructor
-                   }
+                public OrderLineType() {
+                    // Default constructor
+                }
 
-                   // All-args constructor
-                   public OrderLineType(
-                       String productCode,
-                       Integer quantity,
-                       BigDecimal unitPrice
-                   ) {
-                       this.productCode = productCode;
-                       this.quantity = quantity;
-                       this.unitPrice = unitPrice;
-                   }
+                // All-args constructor
+                public OrderLineType(
+                    String productCode,
+                    Integer quantity,
+                    BigDecimal unitPrice
+                ) {
+                    this.productCode = productCode;
+                    this.quantity = quantity;
+                    this.unitPrice = unitPrice;
+                }
 
-                   /**
-                    * Get productCode.
-                    * Internal product identifier or SKU.
-                    * @return String
-                    */
-                   public String getProductCode() {
-                       return productCode;
-                   }
+                /**
+                 * Get productCode.
+                 * Internal product identifier or SKU.
+                 * @return String
+                 */
+                public String getProductCode() {
+                    return productCode;
+                }
 
-                   /**
-                    * Set productCode.
-                    * @param productCode Internal product identifier or SKU.
-                    */
-                   public void setProductCode(String productCode) {
-                       this.productCode = productCode;
-                   }
+                /**
+                 * Set productCode.
+                 * @param productCode Internal product identifier or SKU.
+                 */
+                public void setProductCode(String productCode) {
+                    this.productCode = productCode;
+                }
 
-                   /**
-                    * Get quantity.
-                    * Ordered quantity.
-                    * @return Integer
-                    */
-                   public Integer getQuantity() {
-                       return quantity;
-                   }
+                /**
+                 * Get quantity.
+                 * Ordered quantity.
+                 * @return Integer
+                 */
+                public Integer getQuantity() {
+                    return quantity;
+                }
 
-                   /**
-                    * Set quantity.
-                    * @param quantity Ordered quantity.
-                    */
-                   public void setQuantity(Integer quantity) {
-                       this.quantity = quantity;
-                   }
+                /**
+                 * Set quantity.
+                 * @param quantity Ordered quantity.
+                 */
+                public void setQuantity(Integer quantity) {
+                    this.quantity = quantity;
+                }
 
-                   /**
-                    * Get unitPrice.
-                    * Price per unit in the order currency.
-                    * @return BigDecimal
-                    */
-                   public BigDecimal getUnitPrice() {
-                       return unitPrice;
-                   }
+                /**
+                 * Get unitPrice.
+                 * Price per unit in the order currency.
+                 * @return BigDecimal
+                 */
+                public BigDecimal getUnitPrice() {
+                    return unitPrice;
+                }
 
-                   /**
-                    * Set unitPrice.
-                    * @param unitPrice Price per unit in the order currency.
-                    */
-                   public void setUnitPrice(BigDecimal unitPrice) {
-                       this.unitPrice = unitPrice;
-                   }
+                /**
+                 * Set unitPrice.
+                 * @param unitPrice Price per unit in the order currency.
+                 */
+                public void setUnitPrice(BigDecimal unitPrice) {
+                    this.unitPrice = unitPrice;
+                }
 
-                   @Override
-                   public boolean equals(Object o) {
-                       if (this == o) return true;
-                       if (o == null || getClass() != o.getClass()) return false;
-                       OrderLineType that = (OrderLineType) o;
-                       return
-                           Objects.equals(productCode, that.productCode) &&
+                @Override
+                public boolean equals(Object o) {
+                    if (this == o) return true;
+                    if (o == null || getClass() != o.getClass()) return false;
+                    OrderLineType that = (OrderLineType) o;
+                    return
+                        Objects.equals(productCode, that.productCode) &&
 
-                           Objects.equals(quantity, that.quantity) &&
+                        Objects.equals(quantity, that.quantity) &&
 
-                           Objects.equals(unitPrice, that.unitPrice)
-               ;
-                   }
+                        Objects.equals(unitPrice, that.unitPrice)
+            ;
+                }
 
-                   @Override
-                   public int hashCode() {
-                       return Objects.hash(
-               
-                           productCode,
-                           quantity,
-                           unitPrice
-                       );
-                   }
+                @Override
+                public int hashCode() {
+                    return Objects.hash(
+            
+                        productCode,
+                        quantity,
+                        unitPrice
+                    );
+                }
 
-                   @Override
-                   public String toString() {
-                       StringBuilder sb = new StringBuilder();
-                       sb.append("class OrderLineType {\n");
-                       sb.append("    productCode: ").append(productCode).append("\n");
-                       sb.append("    quantity: ").append(quantity).append("\n");
-                       sb.append("    unitPrice: ").append(unitPrice).append("\n");
-                       sb.append("}");
-                       return sb.toString();
-                   }
-               }
-           """.trimIndent()
+                @Override
+                public String toString() {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("class OrderLineType {\n");
+                    sb.append("    productCode: ").append(productCode).append("\n");
+                    sb.append("    quantity: ").append(quantity).append("\n");
+                    sb.append("    unitPrice: ").append(unitPrice).append("\n");
+                    sb.append("}");
+                    return sb.toString();
+                }
+            }
+            """.trimIndent()
         assertEquals(expected, classBody)
     }
 
     @Test
     fun `generate ComplexOrderPayloadType data class`() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
-            generated = "ComplexOrderPayloadType.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
+                generated = "ComplexOrderPayloadType.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
+            )
         val classBody = extractClassBody(generated)
-        val expected = """
+        val expected =
+            """
             public class ComplexOrderPayloadType implements Serializable {
 
                 private List<String> attributes;
@@ -439,160 +442,161 @@ class GenerateComplexOrderTest : AbstractJavaGeneratorClass() {
                     return sb.toString();
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         assertEquals(expected, classBody)
     }
 
-
     @Test
     fun `generate CustomerWithContacts data class from referenced file`() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
-            generated = "CustomerWithContacts.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_complex_order_payload_type.yaml"),
+                generated = "CustomerWithContacts.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.complexorder",
+            )
         val classBody = extractClassBody(generated)
-        val expected = """
-              public class CustomerWithContacts implements Serializable {
+        val expected =
+            """
+            public class CustomerWithContacts implements Serializable {
 
-                  @NotNull
-                  private UUID customerId;
+                @NotNull
+                private UUID customerId;
 
-                  @Size(max = 140)
-                  @NotNull
-                  private String fullName;
+                @Size(max = 140)
+                @NotNull
+                private String fullName;
 
-                  private List<String> tags;
+                private List<String> tags;
 
-                  @NotNull
-                  @Valid
-                  private List<ContactPointType> contactPoints;
+                @NotNull
+                @Valid
+                private List<ContactPointType> contactPoints;
 
-                  public CustomerWithContacts() {
-                      // Default constructor
-                  }
+                public CustomerWithContacts() {
+                    // Default constructor
+                }
 
-                  // All-args constructor
-                  public CustomerWithContacts(
-                      UUID customerId,
-                      String fullName,
-                      List<String> tags,
-                      List<ContactPointType> contactPoints
-                  ) {
-                      this.customerId = customerId;
-                      this.fullName = fullName;
-                      this.tags = tags;
-                      this.contactPoints = contactPoints;
-                  }
+                // All-args constructor
+                public CustomerWithContacts(
+                    UUID customerId,
+                    String fullName,
+                    List<String> tags,
+                    List<ContactPointType> contactPoints
+                ) {
+                    this.customerId = customerId;
+                    this.fullName = fullName;
+                    this.tags = tags;
+                    this.contactPoints = contactPoints;
+                }
 
-                  /**
-                   * Get customerId.
-                   * Unique identifier for the customer.
-                   * @return UUID
-                   */
-                  public UUID getCustomerId() {
-                      return customerId;
-                  }
+                /**
+                 * Get customerId.
+                 * Unique identifier for the customer.
+                 * @return UUID
+                 */
+                public UUID getCustomerId() {
+                    return customerId;
+                }
 
-                  /**
-                   * Set customerId.
-                   * @param customerId Unique identifier for the customer.
-                   */
-                  public void setCustomerId(UUID customerId) {
-                      this.customerId = customerId;
-                  }
+                /**
+                 * Set customerId.
+                 * @param customerId Unique identifier for the customer.
+                 */
+                public void setCustomerId(UUID customerId) {
+                    this.customerId = customerId;
+                }
 
-                  /**
-                   * Get fullName.
-                   * Customer's full name as presented in UI and reports.
-                   * @return String
-                   */
-                  public String getFullName() {
-                      return fullName;
-                  }
+                /**
+                 * Get fullName.
+                 * Customer's full name as presented in UI and reports.
+                 * @return String
+                 */
+                public String getFullName() {
+                    return fullName;
+                }
 
-                  /**
-                   * Set fullName.
-                   * @param fullName Customer's full name as presented in UI and reports.
-                   */
-                  public void setFullName(String fullName) {
-                      this.fullName = fullName;
-                  }
+                /**
+                 * Set fullName.
+                 * @param fullName Customer's full name as presented in UI and reports.
+                 */
+                public void setFullName(String fullName) {
+                    this.fullName = fullName;
+                }
 
-                  /**
-                   * Get tags.
-                   * Free-form tags associated with the customer.
-                   * @return List<String>
-                   */
-                  public List<String> getTags() {
-                      return tags;
-                  }
+                /**
+                 * Get tags.
+                 * Free-form tags associated with the customer.
+                 * @return List<String>
+                 */
+                public List<String> getTags() {
+                    return tags;
+                }
 
-                  /**
-                   * Set tags.
-                   * @param tags Free-form tags associated with the customer.
-                   */
-                  public void setTags(List<String> tags) {
-                      this.tags = tags;
-                  }
+                /**
+                 * Set tags.
+                 * @param tags Free-form tags associated with the customer.
+                 */
+                public void setTags(List<String> tags) {
+                    this.tags = tags;
+                }
 
-                  /**
-                   * Get contactPoints.
-                   * List of contact points associated with the customer.
-                   * @return List<ContactPointType>
-                   */
-                  public List<ContactPointType> getContactPoints() {
-                      return contactPoints;
-                  }
+                /**
+                 * Get contactPoints.
+                 * List of contact points associated with the customer.
+                 * @return List<ContactPointType>
+                 */
+                public List<ContactPointType> getContactPoints() {
+                    return contactPoints;
+                }
 
-                  /**
-                   * Set contactPoints.
-                   * @param contactPoints List of contact points associated with the customer.
-                   */
-                  public void setContactPoints(List<ContactPointType> contactPoints) {
-                      this.contactPoints = contactPoints;
-                  }
+                /**
+                 * Set contactPoints.
+                 * @param contactPoints List of contact points associated with the customer.
+                 */
+                public void setContactPoints(List<ContactPointType> contactPoints) {
+                    this.contactPoints = contactPoints;
+                }
 
-                  @Override
-                  public boolean equals(Object o) {
-                      if (this == o) return true;
-                      if (o == null || getClass() != o.getClass()) return false;
-                      CustomerWithContacts that = (CustomerWithContacts) o;
-                      return
-                          Objects.equals(customerId, that.customerId) &&
+                @Override
+                public boolean equals(Object o) {
+                    if (this == o) return true;
+                    if (o == null || getClass() != o.getClass()) return false;
+                    CustomerWithContacts that = (CustomerWithContacts) o;
+                    return
+                        Objects.equals(customerId, that.customerId) &&
 
-                          Objects.equals(fullName, that.fullName) &&
+                        Objects.equals(fullName, that.fullName) &&
 
-                          Objects.equals(tags, that.tags) &&
+                        Objects.equals(tags, that.tags) &&
 
-                          Objects.equals(contactPoints, that.contactPoints)
-              ;
-                  }
+                        Objects.equals(contactPoints, that.contactPoints)
+            ;
+                }
 
-                  @Override
-                  public int hashCode() {
-                      return Objects.hash(
-              
-                          customerId,
-                          fullName,
-                          tags,
-                          contactPoints
-                      );
-                  }
+                @Override
+                public int hashCode() {
+                    return Objects.hash(
+            
+                        customerId,
+                        fullName,
+                        tags,
+                        contactPoints
+                    );
+                }
 
-                  @Override
-                  public String toString() {
-                      StringBuilder sb = new StringBuilder();
-                      sb.append("class CustomerWithContacts {\n");
-                      sb.append("    customerId: ").append(customerId).append("\n");
-                      sb.append("    fullName: ").append(fullName).append("\n");
-                      sb.append("    tags: ").append(tags).append("\n");
-                      sb.append("    contactPoints: ").append(contactPoints).append("\n");
-                      sb.append("}");
-                      return sb.toString();
-                  }
-              }
-              """.trimIndent()
+                @Override
+                public String toString() {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("class CustomerWithContacts {\n");
+                    sb.append("    customerId: ").append(customerId).append("\n");
+                    sb.append("    fullName: ").append(fullName).append("\n");
+                    sb.append("    tags: ").append(tags).append("\n");
+                    sb.append("    contactPoints: ").append(contactPoints).append("\n");
+                    sb.append("}");
+                    return sb.toString();
+                }
+            }
+            """.trimIndent()
 
         assertEquals(expected, classBody)
     }

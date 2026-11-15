@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
 sealed interface SecuritySchemeInterface {
-
     data class SecuritySchemeInline(
         @get:JsonUnwrapped
         val security: SecurityScheme,

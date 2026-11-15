@@ -46,13 +46,27 @@ class JsonSchemaGeneratorTest {
         assertEquals("urn:example:my-account", accountSchema.path($$"$id").asText())
         assertEquals(
             listOf("string", "null"),
-            accountSchema.path("properties").path("accountId").path("type").map { type -> type.asText() },
+            accountSchema
+                .path("properties")
+                .path("accountId")
+                .path("type")
+                .map { type -> type.asText() },
         )
         assertTrue(accountSchema.path("properties").path("accountId").has("default"))
-        assertTrue(accountSchema.path("properties").path("accountId").path("default").isNull)
+        assertTrue(
+            accountSchema
+                .path("properties")
+                .path("accountId")
+                .path("default")
+                .isNull,
+        )
         assertEquals(
             "Address.schema.json",
-            accountSchema.path("properties").path("address").path($$"$ref").asText(),
+            accountSchema
+                .path("properties")
+                .path("address")
+                .path($$"$ref")
+                .asText(),
         )
         assertTrue(accountSchema.has("if"))
         assertTrue(accountSchema.has("then"))
@@ -77,7 +91,11 @@ class JsonSchemaGeneratorTest {
         assertEquals("http://json-schema.org/draft-07/schema#", schema.path($$"$schema").asText())
         assertEquals(
             "Address.schema.json",
-            schema.path("properties").path("address").path($$"$ref").asText(),
+            schema
+                .path("properties")
+                .path("address")
+                .path($$"$ref")
+                .asText(),
         )
     }
 
@@ -180,8 +198,22 @@ class JsonSchemaGeneratorTest {
         assertEquals("array", schema.path("type").asText())
         assertTrue(schema.path("items").isArray)
         assertEquals(2, schema.path("items").size())
-        assertEquals("string", schema.path("items").get(0).path("type").asText())
-        assertEquals("integer", schema.path("items").get(1).path("type").asText())
+        assertEquals(
+            "string",
+            schema
+                .path("items")
+                .get(0)
+                .path("type")
+                .asText(),
+        )
+        assertEquals(
+            "integer",
+            schema
+                .path("items")
+                .get(1)
+                .path("type")
+                .asText(),
+        )
     }
 
     @Test
@@ -210,7 +242,14 @@ class JsonSchemaGeneratorTest {
         val schema = objectMapper.readTree(result.artifacts.single().content)
         assertTrue(schema.path("items").isArray)
         assertEquals(1, schema.path("items").size())
-        assertEquals("string", schema.path("items").get(0).path("type").asText())
+        assertEquals(
+            "string",
+            schema
+                .path("items")
+                .get(0)
+                .path("type")
+                .asText(),
+        )
         assertEquals("boolean", schema.path("additionalItems").path("type").asText())
     }
 

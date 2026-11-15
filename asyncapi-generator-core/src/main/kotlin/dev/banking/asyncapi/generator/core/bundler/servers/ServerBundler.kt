@@ -13,12 +13,12 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
  * Bundles server objects and references.
  */
 internal class ServerBundler {
-
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val securitySchemeBundler = SecuritySchemeBundler()
     private val serverVariableBundler = ServerVariableBundler()
     private val bindingBundler = BindingBundler()
+
     fun bundleServers(
         servers: Map<String, ServerInterface>?,
         context: BundlingContext,
@@ -29,21 +29,28 @@ internal class ServerBundler {
             when (serverInterface) {
                 is ServerInterface.ServerInline ->
                     ServerInterface.ServerInline(
-                        bundleServer(serverInterface.server, context)
+                        bundleServer(serverInterface.server, context),
                     )
 
                 is ServerInterface.ServerReference -> {
-                    serverInterface.copy(reference = ReferenceBundler.bundleReferencedModel<Server>(
-                        reference = serverInterface.reference,
-                        context = context,
-                    ) { server, nextContext ->
-                        bundleServer(server, nextContext)
-                    })
+                    serverInterface.copy(
+                        reference =
+                            ReferenceBundler.bundleReferencedModel<Server>(
+                                reference = serverInterface.reference,
+                                context = context,
+                            ) { server, nextContext ->
+                                bundleServer(server, nextContext)
+                            },
+                    )
                 }
             }
         }
     }
-    fun bundleServer(server: Server, context: BundlingContext): Server {
+
+    fun bundleServer(
+        server: Server,
+        context: BundlingContext,
+    ): Server {
         val bundledVariables = serverVariableBundler.bundleMap(server.variables, context)
         val bundledSecurity = securitySchemeBundler.bundleList(server.security, context)
         val bundledTags = tagBundler.bundleList(server.tags, context)
@@ -54,7 +61,7 @@ internal class ServerBundler {
             security = bundledSecurity,
             tags = bundledTags,
             externalDocs = bundledExternalDocs,
-            bindings = bundledBindings
+            bindings = bundledBindings,
         )
     }
 }

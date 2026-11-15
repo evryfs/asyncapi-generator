@@ -10,7 +10,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * to generation analysis rather than parsing or semantic conformance validation.
  */
 internal class EnumTypeAnalyzer {
-
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> =
         schemas.mapValues { (_, schema) -> analyzeSchema(schema) }
 
@@ -25,9 +24,10 @@ internal class EnumTypeAnalyzer {
             patternProperties = schema.patternProperties?.mapValues { (_, value) -> analyzeInterface(value) },
             additionalProperties = schema.additionalProperties?.let(::analyzeInterface),
             propertyNames = schema.propertyNames?.let(::analyzeInterface),
-            dependencies = schema.dependencies?.mapValues { (_, value) ->
-                if (value is SchemaInterface) analyzeInterface(value) else value
-            },
+            dependencies =
+                schema.dependencies?.mapValues { (_, value) ->
+                    if (value is SchemaInterface) analyzeInterface(value) else value
+                },
             definitions = schema.definitions?.mapValues { (_, value) -> analyzeInterface(value) },
             allOf = schema.allOf?.map(::analyzeInterface),
             anyOf = schema.anyOf?.map(::analyzeInterface),

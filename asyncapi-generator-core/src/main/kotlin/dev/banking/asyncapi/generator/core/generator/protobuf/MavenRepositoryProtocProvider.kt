@@ -26,7 +26,6 @@ class MavenRepositoryProtocProvider(
     private val override: Path? = null,
     private val classifier: () -> String = { ProtocPlatform.classifier() },
 ) : ProtocProvider {
-
     override fun protoc(version: String): Path {
         override?.let { path ->
             require(Files.isRegularFile(path)) { "protoc executable does not exist: $path" }
@@ -40,7 +39,10 @@ class MavenRepositoryProtocProvider(
         return local
     }
 
-    private fun download(relativePath: String, destination: Path) {
+    private fun download(
+        relativePath: String,
+        destination: Path,
+    ) {
         val base = remoteRepository.toString().trimEnd('/')
         val content = get("$base/$relativePath")
         val expectedSha1 = String(get("$base/$relativePath.sha1")).trim().substringBefore(' ')
@@ -60,7 +62,14 @@ class MavenRepositoryProtocProvider(
 
     private fun get(url: String): ByteArray {
         val response =
-            client.send(HttpRequest.newBuilder(URI.create(url)).timeout(TIMEOUT).GET().build(), HttpResponse.BodyHandlers.ofByteArray())
+            client.send(
+                HttpRequest
+                    .newBuilder(URI.create(url))
+                    .timeout(TIMEOUT)
+                    .GET()
+                    .build(),
+                HttpResponse.BodyHandlers.ofByteArray(),
+            )
         if (response.statusCode() != 200) {
             throw IOException(
                 "Could not download $url (HTTP ${response.statusCode()}). Without network access, " +
@@ -74,7 +83,8 @@ class MavenRepositoryProtocProvider(
         val MAVEN_CENTRAL: URI = URI.create("https://repo.maven.apache.org/maven2/")
         private val TIMEOUT: Duration = Duration.ofMinutes(2)
         private val client: HttpClient =
-            HttpClient.newBuilder()
+            HttpClient
+                .newBuilder()
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .proxy(ProxySelector.getDefault())
                 .connectTimeout(Duration.ofSeconds(30))

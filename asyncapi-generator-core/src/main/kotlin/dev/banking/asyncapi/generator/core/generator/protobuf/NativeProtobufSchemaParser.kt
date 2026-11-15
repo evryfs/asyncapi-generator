@@ -11,7 +11,8 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
  * declarations before generated Kafka APIs can reference Protobuf types.
  */
 internal class NativeProtobufSchemaParser {
-    private val protoPackageRegex = Regex("""(?m)^\s*package\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*;""")
+    private val protoPackageRegex =
+        Regex("""(?m)^\s*package\s+([A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*)\s*;""")
     private val javaPackageRegex = Regex("""(?m)^\s*option\s+java_package\s*=\s*"([^"]+)"\s*;""")
     private val javaMultipleFilesRegex = Regex("""(?m)^\s*option\s+java_multiple_files\s*=\s*(true|false)\s*;""")
 
@@ -25,7 +26,12 @@ internal class NativeProtobufSchemaParser {
             content = content,
             protoPackageName = protoPackageRegex.find(content)?.groupValues?.get(1),
             javaPackageName = javaPackageRegex.find(content)?.groupValues?.get(1),
-            javaMultipleFiles = javaMultipleFilesRegex.find(content)?.groupValues?.get(1)?.toBooleanStrict(),
+            javaMultipleFiles =
+                javaMultipleFilesRegex
+                    .find(content)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.toBooleanStrict(),
             messageNames = extractTopLevelMessageNames(content),
         )
     }

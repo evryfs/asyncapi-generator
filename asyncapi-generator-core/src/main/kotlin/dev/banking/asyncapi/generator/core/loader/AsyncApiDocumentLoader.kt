@@ -17,7 +17,6 @@ import java.io.File
  * are separate downstream stages.
  */
 class AsyncApiDocumentLoader {
-
     /**
      * Fails when [file] does not exist or is not a regular file.
      *

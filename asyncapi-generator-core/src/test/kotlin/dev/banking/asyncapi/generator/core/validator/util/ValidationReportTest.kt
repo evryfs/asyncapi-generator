@@ -18,16 +18,16 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ValidationReportTest {
-
     @Test
     fun `report exposes stable rule metadata and source-derived coordinates`() {
-        val sourceLocation = SourceLocation(
-            sourceId = "streetlights",
-            file = File("streetlights.yaml"),
-            path = "streetlights.root.id",
-            line = 8,
-            column = 5,
-        )
+        val sourceLocation =
+            SourceLocation(
+                sourceId = "streetlights",
+                file = File("streetlights.yaml"),
+                path = "streetlights.root.id",
+                line = 8,
+                column = 5,
+            )
         val collector = ValidationCollector()
 
         collector.error(DOCUMENT_ID_FORMAT, "Invalid identifier.", sourceLocation)
@@ -75,23 +75,25 @@ class ValidationReportTest {
             asyncapi: 2.6.0
             info:
               title: Streetlights
-            """.trimIndent()
+            """.trimIndent(),
         )
-        val sourceLocation = SourceLocation(
-            sourceId = "streetlights",
-            file = file,
-            path = "streetlights.root.asyncapi",
-            line = 1,
-            column = 1,
-        )
+        val sourceLocation =
+            SourceLocation(
+                sourceId = "streetlights",
+                file = file,
+                path = "streetlights.root.asyncapi",
+                line = 1,
+                column = 1,
+            )
         context.sourceTracking.registerLocation(sourceLocation.path, sourceLocation)
         val collector = ValidationCollector()
         collector.error(DOCUMENT_ID_FORMAT, "Unsupported AsyncAPI version.", sourceLocation)
         val report = collector.report()
 
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            ValidationReporter(context).throwErrors(report)
-        }
+        val exception =
+            assertFailsWith<AsyncApiValidateException.ValidateError> {
+                ValidationReporter(context).throwErrors(report)
+            }
 
         assertEquals(report.errors, exception.errors)
         val message = exception.message.orEmpty()

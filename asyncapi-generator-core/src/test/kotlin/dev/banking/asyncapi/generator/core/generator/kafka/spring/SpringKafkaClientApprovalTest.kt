@@ -5,8 +5,8 @@ import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll

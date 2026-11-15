@@ -1,19 +1,19 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
-import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
-import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION as OPERATION_BINDING
-import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
+import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION as OPERATION_BINDING
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION as OPERATION_OBJECT
 
 /**
@@ -22,7 +22,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
 internal class OperationParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagParser = TagParser(asyncApiContext)
     private val referenceParser = ReferenceParser(asyncApiContext)
     private val operationTraitParser = OperationTraitParser(asyncApiContext)

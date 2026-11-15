@@ -27,75 +27,78 @@ object GeneratorConfigurationFactory {
         val modelAnnotation = resolveModelAnnotation(request, modelType)
         val protobufModels = request.protobufModels(modelType)
 
-        val configuration = GeneratorConfiguration(
-            profile = profile,
-            output =
-                GeneratorOutputConfiguration(
-                    sourceOutputDirectory = request.sourceOutputDirectory,
-                    javaSourceOutputDirectory = request.javaSourceOutputDirectory,
-                    resourceOutputDirectory = request.resourceOutputDirectory,
-                    manifest = request.manifest,
-                    document =
-                        request.outputFile?.let { outputFile ->
-                            DocumentOutput(
-                                file = outputFile,
-                                format =
-                                    when (profile) {
-                                        is GeneratorProfile.Document -> profile.format
-                                        is GeneratorProfile.Schema,
-                                        is GeneratorProfile.Source,
-                                        -> DocumentFormat.YAML
-                                    },
+        val configuration =
+            GeneratorConfiguration(
+                profile = profile,
+                output =
+                    GeneratorOutputConfiguration(
+                        sourceOutputDirectory = request.sourceOutputDirectory,
+                        javaSourceOutputDirectory = request.javaSourceOutputDirectory,
+                        resourceOutputDirectory = request.resourceOutputDirectory,
+                        manifest = request.manifest,
+                        document =
+                            request.outputFile?.let { outputFile ->
+                                DocumentOutput(
+                                    file = outputFile,
+                                    format =
+                                        when (profile) {
+                                            is GeneratorProfile.Document -> profile.format
+                                            is GeneratorProfile.Schema,
+                                            is GeneratorProfile.Source,
+                                            -> DocumentFormat.YAML
+                                        },
+                                )
+                            },
+                    ),
+                models = request.jvmModels(modelType, modelAnnotation),
+                schemas = request.schemaGeneration(modelType, protobufModels),
+                clients =
+                    buildList {
+                        request.clients.kafka?.let { kafka ->
+                            add(
+                                ClientGeneration.Kafka(
+                                    packageName =
+                                        requiredPackageName(
+                                            path = "clients.kafka.packageName",
+                                            value = kafka.packageName,
+                                        ),
+                                    modelPackageName =
+                                        requiredClientModelPackageName(
+                                            path = "clients.kafka.modelPackageName",
+                                            configuredModelPackageName = kafka.modelPackageName,
+                                            modelsPackageName = request.models?.packageName,
+                                        ),
+                                    springKafka =
+                                        kafka.springKafka?.let { springKafka ->
+                                            ClientGeneration.SpringKafka(
+                                                clientContract = springKafka.clientContract,
+                                                topicParameterProperties =
+                                                    TopicParameterProperties.fromConfigurationValues(
+                                                        values = springKafka.topicParameterProperties,
+                                                        path = "clients.kafka.springKafka.topicParameterProperties",
+                                                    ),
+                                                validationAnnotations = springKafka.validationAnnotations,
+                                                producer =
+                                                    ClientGeneration.Producer(
+                                                        enabled = springKafka.producer.enabled,
+                                                        additionalPayloadTypes =
+                                                            AdditionalProducerPayloadType.fromConfigurationValues(
+                                                                values = springKafka.producer.additionalPayloadTypes,
+                                                                path = "clientConfig.producer.additionalPayloadTypes",
+                                                            ),
+                                                    ),
+                                                consumer =
+                                                    ClientGeneration.Consumer(
+                                                        enabled = springKafka.consumer.enabled,
+                                                    ),
+                                            )
+                                        },
+                                ),
                             )
-                        },
-                ),
-            models = request.jvmModels(modelType, modelAnnotation),
-            schemas = request.schemaGeneration(modelType, protobufModels),
-            clients =
-                buildList {
-                    request.clients.kafka?.let { kafka ->
-                        add(
-                            ClientGeneration.Kafka(
-                                packageName = requiredPackageName(
-                                    path = "clients.kafka.packageName",
-                                    value = kafka.packageName,
-                                ),
-                                modelPackageName = requiredClientModelPackageName(
-                                    path = "clients.kafka.modelPackageName",
-                                    configuredModelPackageName = kafka.modelPackageName,
-                                    modelsPackageName = request.models?.packageName,
-                                ),
-                                springKafka =
-                                    kafka.springKafka?.let { springKafka ->
-                                        ClientGeneration.SpringKafka(
-                                            clientContract = springKafka.clientContract,
-                                            topicParameterProperties =
-                                                TopicParameterProperties.fromConfigurationValues(
-                                                    values = springKafka.topicParameterProperties,
-                                                    path = "clients.kafka.springKafka.topicParameterProperties",
-                                                ),
-                                            validationAnnotations = springKafka.validationAnnotations,
-                                            producer =
-                                                ClientGeneration.Producer(
-                                                    enabled = springKafka.producer.enabled,
-                                                    additionalPayloadTypes =
-                                                        AdditionalProducerPayloadType.fromConfigurationValues(
-                                                            values = springKafka.producer.additionalPayloadTypes,
-                                                            path = "clientConfig.producer.additionalPayloadTypes",
-                                                        ),
-                                                ),
-                                            consumer =
-                                                ClientGeneration.Consumer(
-                                                    enabled = springKafka.consumer.enabled,
-                                                ),
-                                        )
-                                    },
-                            ),
-                        )
-                    }
-                },
-            warnings = warnings.filterNot { it.id in suppressedWarnings },
-        )
+                        }
+                    },
+                warnings = warnings.filterNot { it.id in suppressedWarnings },
+            )
 
         validateActivatedOutputs(request, configuration)
         return configuration
@@ -202,7 +205,7 @@ object GeneratorConfigurationFactory {
                 }
                 require(
                     request.schemaPackageName == null &&
-                    request.schemas == GeneratorConfigurationRequest.Schemas(),
+                        request.schemas == GeneratorConfigurationRequest.Schemas(),
                 ) {
                     "schemas cannot be configured when generatorName is ${request.generatorName.configurationValue}"
                 }
@@ -228,8 +231,7 @@ object GeneratorConfigurationFactory {
     private fun requiredPackageName(
         path: String,
         value: String?,
-    ): String =
-        requireNotNull(value) { "$path is required" }
+    ): String = requireNotNull(value) { "$path is required" }
 
     private fun requiredClientModelPackageName(
         path: String,
@@ -290,9 +292,7 @@ object GeneratorConfigurationFactory {
             }
         } ?: ModelGeneration.Disabled
 
-    private fun GeneratorConfigurationRequest.protobufModels(
-        modelType: ModelType?,
-    ): ProtobufModelGeneration? =
+    private fun GeneratorConfigurationRequest.protobufModels(modelType: ModelType?): ProtobufModelGeneration? =
         models
             ?.takeIf { modelType == ModelType.PROTOBUF_MESSAGE }
             ?.packageName
