@@ -68,8 +68,6 @@
     <ID>LongMethod:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
-    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
-    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: NodePath, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$private fun normalizeAsyncApiSchemaNode( schemaNode: ObjectNode, schema: Schema, )</ID>
     <ID>LongMethod:KafkaHeaderParameterNames.kt$KafkaHeaderParameterNames$fun resolve( headerContractName: String, wireNames: Collection&lt;String&gt;, ): Map&lt;String, String&gt;</ID>
@@ -92,7 +90,6 @@
     <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowName: String, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
     <ID>LongMethod:OperationParser.kt$OperationParser$fun parseElement(parserNode: ParserNode): OperationInterface</ID>
     <ID>LongMethod:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$fun format( diagnostic: ParserDiagnostic, context: AsyncApiContext, ): String</ID>
-    <ID>LongMethod:ParserLoadResourceBudget.kt$ParserLoadResourceBudget$@Throws(IOException::class) fun readNativeSchemaAsset(file: File): String</ID>
     <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
     <ID>LongMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
     <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, context: BundlingContext, ): SchemaInterface</ID>
@@ -118,7 +115,6 @@
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
     <ID>LongMethod:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
-    <ID>LongMethod:YamlDocumentReader.kt$YamlDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
     <ID>LongParameterList:AsyncApiExternalContext.kt$AsyncApiExternalContext$( private val sourceTracking: SourceTracking, private val modelTracking: ModelTracking, private val warningCollector: ValidationWarningCollector, private val sourceBudget: SourceBudget, private val createParser: () -&gt; AsyncApiParser, private val createValidator: () -&gt; AsyncApiValidator, private val createReporter: () -&gt; ValidationReporter, private val createFragmentProcessor: () -&gt; ExternalFragmentProcessor, private val createDiagnosticException: (ParserDiagnostic) -&gt; AsyncApiParseException, private val readDocument: (File) -&gt; ParserNode, )</ID>
     <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, sourceModel: Any = binding, predicate: (Any?) -&gt; Boolean, )</ID>
     <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, contextString: String, index: Int, results: ValidationCollector, )</ID>
@@ -134,8 +130,6 @@
     <ID>MagicNumber:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$3</ID>
     <ID>MagicNumber:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$3</ID>
     <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
-    <ID>MagicNumber:ParserLoadResourceLimits.kt$ParserLoadResourceLimits$20</ID>
-    <ID>MagicNumber:ParserLoadResourceLimits.kt$ParserLoadResourceLimits$64L</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$16</ID>
@@ -227,9 +221,7 @@
     <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: URISyntaxException</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
     <ID>ThrowsCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
-    <ID>ThrowsCount:SourceReader.kt$SourceReader$fun read(file: File): InputDocument</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
-    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
     <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: NodePath, source: DocumentSource, ): DocumentNode</ID>
     <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: NodePath, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
     <ID>ThrowsCount:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
@@ -239,8 +231,6 @@
     <ID>ThrowsCount:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
     <ID>ThrowsCount:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
     <ID>ThrowsCount:TopicParameterProperties.kt$TopicParameterProperties.Companion$fun fromConfigurationValues( values: Map&lt;String, String&gt;, path: String, ): TopicParameterProperties</ID>
-    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
-    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$private fun parseMapping( node: MappingNode, path: NodePath, source: DocumentSource, location: SourceLocation, ancestors: MutableSet&lt;Node&gt;, ): DocumentObject</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
@@ -265,7 +255,6 @@
     <ID>TooManyFunctions:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
     <ID>TooManyFunctions:SchemaValidator.kt$SchemaValidator</ID>
     <ID>TooManyFunctions:SourceRepository.kt$SourceRepository</ID>
-    <ID>TooManyFunctions:YamlDocumentReader.kt$YamlDocumentReader</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$ExternalSchemaNameUnavailable : AsyncApiBundlingException</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>
@@ -431,7 +420,6 @@
     <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagInline : TagInterface</ID>
     <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagReference : TagInterface</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
-    <ID>UnusedParameter:AsyncApiContext.kt$AsyncApiContext$location: SourceLocation</ID>
     <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
     <ID>UnusedPrivateProperty:BindingBundlerTest.kt$BindingBundlerTest$val originalKey = assertIs&lt;SchemaInterface.SchemaReference&gt;(binding.kafkaKeySchema)</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>

@@ -60,7 +60,6 @@ internal data class SourceLimits(
                 file = location.file,
                 limit = DocumentResourceLimit.NUMBER_CHARACTERS,
                 maximum = maxNumberCharacters.toLong(),
-                cause = IllegalArgumentException("Maximum numeric token length is $maxNumberCharacters characters"),
                 location = location,
             )
         }
@@ -76,7 +75,6 @@ internal data class SourceLimits(
             file = file,
             limit = limit,
             maximum = maximum.toLong(),
-            cause = IllegalArgumentException("Maximum ${limit.description} is $maximum"),
         )
 
     private companion object {
