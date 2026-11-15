@@ -379,6 +379,14 @@ defined as free-form cross the typed parser boundary as JSON-compatible plain
 values: `Map<String, Any?>`, `List<Any?>`, `String`, `Number`, `Boolean`, or
 `null`.
 
+Specification extensions are kept on the objects the specification marks as
+extensible (the root document, Info, Contact, License, Server, Server Variable,
+Channel, Parameter, Message, Message Trait, Operation, Operation Trait,
+Operation Reply, Reply Address, Tag, External Documentation, Correlation ID,
+Security Scheme, Components, and Schema). `ParserObjectNode.extensions()`
+collects them into the model's `extensions` field, and bundled output writes
+them back.
+
 Use `toPlainValue()` only at those boundaries. The returned value has no
 `SourceLocation`, so the containing model and its registered field locations
 remain the source of downstream diagnostics. Known structural fields must use
