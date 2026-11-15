@@ -195,6 +195,7 @@ internal class SchemaBundler {
 
     private fun bundleSchema(schema: Schema, context: BundlingContext): Schema {
         val bundledItems = schema.items?.let { bundle(it, context) }
+        val bundledTupleItems = bundleList(schema.tupleItems, context)
         val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, context) }
         val bundledContains = schema.contains?.let { bundle(it, context) }
 
@@ -219,6 +220,7 @@ internal class SchemaBundler {
         val bundledBindings = bindingsBundler.bundleMap(schema.bindings, context)
         return schema.copy(
             items = bundledItems,
+            tupleItems = bundledTupleItems,
             additionalItems = bundledAdditionalItems,
             contains = bundledContains,
             properties = bundledProperties,

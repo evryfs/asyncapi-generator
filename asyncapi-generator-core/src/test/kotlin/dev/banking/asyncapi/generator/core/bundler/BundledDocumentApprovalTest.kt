@@ -308,6 +308,23 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `bundles external references inside tuple items`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/tuple-items/main.yaml",
+                scenario = "tuple-items",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        assertFalse(bundledFile.readText().contains("shared.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "tuple-items",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,
