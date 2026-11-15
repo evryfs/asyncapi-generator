@@ -44,6 +44,7 @@ have to describe the same configuration.
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
+| [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |
 | [stale-generated-files](stale-generated-files) | Regenerating after a schema is removed deletes its generated files (`StaleGeneratedFilesSystemTest`). |
 | [gradle-incremental-build](gradle-incremental-build) | Configuration cache and up-to-date checks (`GradleIncrementalBuildSystemTest`). |

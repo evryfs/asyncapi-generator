@@ -1,0 +1,60 @@
+asyncapi: 3.0.0
+x-contract-owner: payments-team
+info:
+  title: Bundle Round Trip
+  version: 1.0.0
+  x-lifecycle: stable
+servers:
+  broker:
+    host: broker.example.com:9092
+    protocol: kafka
+    x-server-region: eu
+channels:
+  orders:
+    address: 'orders.{region}'
+    x-channel-retention: 7d
+    parameters:
+      region:
+        $ref: '#/components/parameters/Region'
+    tags:
+      - $ref: '#/components/tags/Orders'
+    messages:
+      orderPlaced:
+        $ref: 'catalog.yaml#/components/messages/OrderPlaced'
+  orderReplies:
+    messages:
+      orderAccepted:
+        $ref: '#/components/messages/OrderAccepted'
+operations:
+  placeOrder:
+    action: send
+    x-operation-owner: checkout
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/orderPlaced'
+    reply:
+      x-reply-timeout: 30s
+      channel:
+        $ref: '#/channels/orderReplies'
+      messages:
+        - $ref: '#/channels/orderReplies/messages/orderAccepted'
+components:
+  x-components-note: shared building blocks
+  parameters:
+    Region:
+      $ref: 'catalog.yaml#/components/parameters/Region'
+  tags:
+    Orders:
+      $ref: 'catalog.yaml#/components/tags/Orders'
+  messages:
+    OrderAccepted:
+      name: OrderAccepted
+      payload:
+        $ref: '#/components/schemas/OrderAcceptedPayload'
+  schemas:
+    OrderAcceptedPayload:
+      type: object
+      properties:
+        orderId:
+          type: string
