@@ -48,6 +48,9 @@ internal class KotlinModelEmitter : ModelEmitter {
     private fun dataClass(model: ObjectModel): KotlinClassTemplate {
         val properties = model.properties.map(::property)
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@field:", "Access.") }
+        // Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own.
+        val emptyClassImports = if (properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
+        val emptyClassAnnotations = if (properties.isEmpty()) listOf("@JsonIgnoreProperties(ignoreUnknown = true)") else emptyList()
         val typeImports = model.properties.flatMap { it.type.imports(model.packageName, model.name) }
         return KotlinClassTemplate(
             packageName = model.packageName,
@@ -66,9 +69,12 @@ internal class KotlinModelEmitter : ModelEmitter {
                         "annotations" to property.annotations,
                     )
                 },
-            imports = (typeImports + annotationImports + listOfNotNull(model.annotation?.value)).distinct().sorted(),
+            imports =
+                (typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports)
+                    .distinct()
+                    .sorted(),
             implementsClause = model.unions.takeIf { it.isNotEmpty() }?.joinToString(", ", prefix = " : ").orEmpty(),
-            classAnnotations = listOfNotNull(model.annotation?.let { "@${it.simpleName}" }),
+            classAnnotations = listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) + emptyClassAnnotations,
         )
     }
 
@@ -99,6 +105,8 @@ internal class KotlinModelEmitter : ModelEmitter {
         mapOf(
             "packageName" to model.packageName,
             "name" to model.name,
+            "hasDescription" to DocumentationUtils.toKDocLines(model.description).isNotEmpty(),
+            "description" to DocumentationUtils.toKDocLines(model.description),
             "hasJsonValues" to model.constants.any { it.jsonValue != null },
             "values" to model.constants.map { it.copy(jsonValue = it.jsonValue?.let(SourceLiteralEscaper::forKotlin)) },
         )
@@ -107,7 +115,12 @@ internal class KotlinModelEmitter : ModelEmitter {
         mapOf(
             "packageName" to model.packageName,
             "interfaceName" to model.name,
+            "hasDescription" to DocumentationUtils.toKDocLines(model.description).isNotEmpty(),
+            "description" to DocumentationUtils.toKDocLines(model.description),
             "discriminator" to model.discriminator?.let(SourceLiteralEscaper::forKotlin),
+            "deduction" to model.deduction,
+            "hasTypeInfo" to (model.discriminator != null || model.deduction),
+            "hasDiscriminator" to (model.discriminator != null),
             "hasSubTypes" to model.subtypes.isNotEmpty(),
             "subTypes" to model.subtypes.map { it.copy(name = SourceLiteralEscaper.forKotlin(it.name)) },
         )
@@ -143,9 +156,9 @@ internal class KotlinModelEmitter : ModelEmitter {
         val annotations: List<String>,
     )
 
-    private companion object {
+    companion object {
         /** The Kotlin source name of [type]. */
-        private fun typeName(type: TypeRef): String =
+        internal fun typeName(type: TypeRef): String =
             when (type) {
                 is TypeRef.Scalar ->
                     when (type) {
@@ -178,7 +191,17 @@ internal class KotlinModelEmitter : ModelEmitter {
                 is DefaultValue.IntegerLiteral -> value.value
                 is DefaultValue.NumberLiteral -> numberLiteral(value.value, type)
                 is DefaultValue.StringLiteral -> "\"${SourceLiteralEscaper.forKotlin(value.value)}\""
+                is DefaultValue.ParsedScalar -> parsedLiteral(value)
             }
+
+        /** A call that parses the default text into the property's date, time, or UUID type. */
+        private fun parsedLiteral(value: DefaultValue.ParsedScalar): String {
+            val text = "\"${SourceLiteralEscaper.forKotlin(value.value)}\""
+            return when (value.scalar) {
+                TypeRef.Scalar.UUID -> "UUID.fromString($text)"
+                else -> "${typeName(value.scalar)}.parse($text)"
+            }
+        }
 
         /** A number literal of the property's type: `1` is an Int literal, which a Double property rejects. */
         private fun numberLiteral(

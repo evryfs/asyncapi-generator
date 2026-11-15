@@ -144,11 +144,18 @@ internal class JavaModelEmitter(
             "packageName" to model.packageName,
             "interfaceName" to model.name,
             "description" to DocumentationUtils.toJavaDocLines(model.description),
-            "discriminator" to model.discriminator,
+            "discriminator" to model.discriminator?.let(SourceLiteralEscaper::forJava),
+            "deduction" to model.deduction,
+            "hasTypeInfo" to (model.discriminator != null || model.deduction),
+            "hasDiscriminator" to (model.discriminator != null),
             "hasSubTypes" to model.subtypes.isNotEmpty(),
             "subTypes" to
                 model.subtypes.mapIndexed { index, subtype ->
-                    mapOf("type" to subtype.type, "name" to subtype.name, "last" to (index == model.subtypes.lastIndex))
+                    mapOf(
+                        "type" to subtype.type,
+                        "name" to SourceLiteralEscaper.forJava(subtype.name),
+                        "last" to (index == model.subtypes.lastIndex),
+                    )
                 },
         )
 
@@ -185,9 +192,9 @@ internal class JavaModelEmitter(
             )
     }
 
-    private companion object {
+    companion object {
         /** The Java source name of [type]. */
-        private fun typeName(type: TypeRef): String =
+        internal fun typeName(type: TypeRef): String =
             when (type) {
                 is TypeRef.Scalar ->
                     when (type) {

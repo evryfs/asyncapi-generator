@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
@@ -85,4 +86,42 @@ class ModelDefinitionFactoryTest {
     private fun inline(schema: Schema) = SchemaInterface.SchemaInline(schema)
 
     private fun ref(name: String) = SchemaInterface.SchemaReference(Reference("#/components/schemas/$name"))
+
+    @Test
+    fun `fails when two properties become the same identifier`() {
+        val failure =
+            kotlin.test.assertFailsWith<AsyncApiGeneratorException.PropertyNameCollision> {
+                create(
+                    "Account" to
+                        Schema(
+                            type = "object",
+                            properties = mapOf("account-id" to inline(Schema(type = "string")), "accountId" to inline(Schema(type = "string"))),
+                        ),
+                )
+            }
+
+        assertEquals(listOf("account-id", "accountId"), failure.wireNames)
+        kotlin.test.assertTrue("Account" in failure.message.orEmpty())
+    }
+
+    @Test
+    fun `parses string defaults of date and uuid properties`() {
+        val order =
+            assertIs<ObjectModel>(
+                create(
+                    "Order" to
+                        Schema(
+                            type = "object",
+                            properties =
+                                mapOf(
+                                    "day" to inline(Schema(type = "string", format = "date", default = "2024-01-01")),
+                                    "note" to inline(Schema(type = "string", default = "n")),
+                                ),
+                        ),
+                ).single(),
+            )
+
+        assertEquals(DefaultValue.ParsedScalar(TypeRef.Scalar.DATE, "2024-01-01"), order.properties[0].default)
+        assertEquals(DefaultValue.StringLiteral("n"), order.properties[1].default)
+    }
 }

@@ -35,7 +35,8 @@ class KotlinModelEmitterTest {
         )
         assertTrue(result.artifacts.all { it.kind == GeneratedArtifactKind.SOURCE })
         val (user, status, command, payload) = result.artifacts.map { it.content }
-        assertTrue(user.contains("data class User(") && user.contains(") : Command {"))
+        // A model without properties cannot be a data class, so it is a plain class with value equality.
+        assertTrue(user.contains("\nclass User : Command {") && user.contains("override fun equals"))
         assertTrue(status.contains("enum class Status"))
         assertTrue(command.contains("sealed interface Command"))
         assertTrue(payload.contains("typealias Payload = Any"))

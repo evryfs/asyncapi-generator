@@ -4,11 +4,13 @@ import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedType
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
+import dev.banking.asyncapi.generator.core.generator.model.UnionSubtype
 import dev.banking.asyncapi.generator.core.generator.model.UnionSubtypes
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.PropertyNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -25,6 +27,8 @@ internal class ModelDefinitionFactory(
     private val context: GeneratorContext = input.schemaContext
     private val typeMapper = ModelTypeMapper(context)
     private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName)
+
+    private val parsedScalars = setOf(TypeRef.Scalar.DATE, TypeRef.Scalar.TIME, TypeRef.Scalar.DATE_TIME, TypeRef.Scalar.UUID)
 
     fun create(): List<ModelDefinition> = input.schemas.mapNotNull { (name, schema) -> create(name, schema) }
 
@@ -47,7 +51,7 @@ internal class ModelDefinitionFactory(
                     packageName = packageName,
                     description = schema.description,
                     discriminator = schema.discriminator,
-                    subtypes = UnionSubtypes.of(schema, context),
+                    subtypes = unionSubtypes(schema),
                 )
             schema.isOpenPayload() ->
                 OpenObjectModel(name = name, packageName = packageName, description = schema.description)
@@ -59,12 +63,34 @@ internal class ModelDefinitionFactory(
                     properties =
                         schema.properties.orEmpty().map { (propertyName, propertySchema) ->
                             createProperty(propertyName, propertySchema, schema.required.orEmpty())
-                        },
+                        }.also { failOnIdentifierCollision(name, it) },
                     unions = input.polymorphicRelationships[name].orEmpty(),
                     annotation = annotation,
                 )
             else -> null
         }
+    }
+
+    /**
+     * Without a discriminator the subtypes are only listed so that Jackson can deduce them, which
+     * needs a generated class: members that are scalars, unions, or open objects have none.
+     */
+    private fun unionSubtypes(schema: Schema): List<UnionSubtype> =
+        UnionSubtypes.of(schema, context).filter { subtype ->
+            schema.discriminator != null ||
+                context.findSchemaByName(subtype.type)
+                    ?.let { it.type.getPrimaryType() == "object" && !it.isOpenPayload() } == true
+        }
+
+    private fun failOnIdentifierCollision(
+        schemaName: String,
+        properties: List<PropertyDefinition>,
+    ) {
+        properties
+            .groupBy(PropertyDefinition::identifier, PropertyDefinition::wireName)
+            .entries
+            .firstOrNull { (_, wireNames) -> wireNames.size > 1 }
+            ?.let { (identifier, wireNames) -> throw PropertyNameCollision(schemaName, wireNames, identifier) }
     }
 
     private fun createProperty(
@@ -112,7 +138,12 @@ internal class ModelDefinitionFactory(
             "boolean" -> DefaultValue.BooleanLiteral(value)
             "integer" -> DefaultValue.IntegerLiteral(value)
             "number" -> DefaultValue.NumberLiteral(value)
-            "string" -> DefaultValue.StringLiteral(value)
+            "string" ->
+                if (type in parsedScalars) {
+                    DefaultValue.ParsedScalar(type as TypeRef.Scalar, value)
+                } else {
+                    DefaultValue.StringLiteral(value)
+                }
             else -> null
         }
     }
