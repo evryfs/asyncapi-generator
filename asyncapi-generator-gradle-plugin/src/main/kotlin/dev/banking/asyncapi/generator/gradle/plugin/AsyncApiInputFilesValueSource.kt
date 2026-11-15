@@ -7,10 +7,6 @@ import org.gradle.api.provider.ValueSourceParameters
 
 /**
  * Discovers all files read while parsing one AsyncAPI contract.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiInputFilesValueSource : ValueSource<List<String>, AsyncApiInputFilesValueSource.Parameters> {
     interface Parameters : ValueSourceParameters {

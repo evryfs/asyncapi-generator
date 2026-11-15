@@ -4,9 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 
 /**
  * Gradle model generation configuration.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal data class GradleModelConfiguration(
     val modelAnnotation: String? = null,
@@ -23,9 +20,6 @@ internal data class GradleModelConfiguration(
 
 /**
  * Gradle producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal data class GradleProducerConfiguration(
     val enabled: Boolean? = null,
@@ -34,9 +28,6 @@ internal data class GradleProducerConfiguration(
 
 /**
  * Gradle consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal data class GradleConsumerConfiguration(
     val enabled: Boolean? = null,
@@ -44,9 +35,6 @@ internal data class GradleConsumerConfiguration(
 
 /**
  * Gradle client generation configuration.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal data class GradleClientConfiguration(
     val clientType: String? = null,
@@ -79,9 +67,6 @@ internal data class GradleClientConfiguration(
  *
  * Annotation values must be fully qualified so generated imports do not depend
  * on framework or validation-library aliases maintained by the generator.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal data class GradleValidationAnnotationsConfiguration(
     val clientContract: String? = null,

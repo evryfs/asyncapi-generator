@@ -18,11 +18,6 @@ fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
 /**
  * Command-line frontend for one AsyncAPI generation request.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorCliTest`
- * - `CliDiagnosticsTest`
- * - `CliPackagedApplicationIT`
  */
 class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
     override val printHelpOnEmptyArgs: Boolean = true

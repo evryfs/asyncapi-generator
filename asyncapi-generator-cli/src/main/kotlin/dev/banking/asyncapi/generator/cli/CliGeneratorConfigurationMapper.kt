@@ -23,9 +23,6 @@ internal data class CliGeneratorConfigurationRequest(
 
 /**
  * Maps and validates CLI configuration before contract processing starts.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal object CliGeneratorConfigurationMapper {
     fun map(request: CliGeneratorConfigurationRequest): GeneratorConfiguration {

@@ -25,9 +25,6 @@ internal data class GradleGeneratorConfigurationRequest(
 
 /**
  * Maps and validates Gradle plugin configuration before contract processing starts.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratorConfigurationMapperTest`
  */
 internal object GradleGeneratorConfigurationMapper {
     fun map(request: GradleGeneratorConfigurationRequest): GeneratorConfiguration {

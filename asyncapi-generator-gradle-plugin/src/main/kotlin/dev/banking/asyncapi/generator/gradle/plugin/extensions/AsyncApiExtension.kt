@@ -13,10 +13,6 @@ import javax.inject.Inject
 
 /**
  * Gradle configuration surface for the AsyncAPI generator.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiExtension
     @Inject
@@ -51,10 +47,6 @@ abstract class AsyncApiExtension
 
 /**
  * One named AsyncAPI generation request.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiExecution
     @Inject
@@ -84,10 +76,6 @@ abstract class AsyncApiExecution
 
 /**
  * Gradle model generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiModelConfiguration
     @Inject
@@ -100,10 +88,6 @@ abstract class AsyncApiModelConfiguration
 
 /**
  * Shared Gradle client generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiClientConfiguration
     @Inject
@@ -136,10 +120,6 @@ abstract class AsyncApiClientConfiguration
 
 /**
  * Validation annotations applied to generated client contracts.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiValidationAnnotationsConfiguration
     @Inject
@@ -152,10 +132,6 @@ abstract class AsyncApiValidationAnnotationsConfiguration
 
 /**
  * Gradle producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiProducerConfiguration
     @Inject
@@ -168,10 +144,6 @@ abstract class AsyncApiProducerConfiguration
 
 /**
  * Gradle consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 abstract class AsyncApiConsumerConfiguration
     @Inject

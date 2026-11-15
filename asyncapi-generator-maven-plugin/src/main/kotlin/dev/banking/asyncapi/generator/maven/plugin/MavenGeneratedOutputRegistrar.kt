@@ -11,9 +11,6 @@ import java.io.File
 
 /**
  * Registers generated source and schema directories with the Maven project.
- *
- * Expected behavior is covered by:
- * - `MavenGeneratedOutputRegistrarTest`
  */
 internal class MavenGeneratedOutputRegistrar(
     private val project: MavenProject,

@@ -4,9 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 
 /**
  * CLI model generation configuration.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal data class CliModelConfiguration(
     val modelAnnotation: String? = null,
@@ -23,9 +20,6 @@ internal data class CliModelConfiguration(
 
 /**
  * CLI producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal data class CliProducerConfiguration(
     val enabled: Boolean? = null,
@@ -34,9 +28,6 @@ internal data class CliProducerConfiguration(
 
 /**
  * CLI consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal data class CliConsumerConfiguration(
     val enabled: Boolean? = null,
@@ -44,9 +35,6 @@ internal data class CliConsumerConfiguration(
 
 /**
  * CLI client generation configuration.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal data class CliClientConfiguration(
     val clientType: String? = null,
@@ -79,9 +67,6 @@ internal data class CliClientConfiguration(
  *
  * Annotation values must be fully qualified so generated imports do not depend
  * on framework or validation-library aliases maintained by the generator.
- *
- * Expected behavior is covered by:
- * - `CliGeneratorConfigurationMapperTest`
  */
 internal data class CliValidationAnnotationsConfiguration(
     val clientContract: String? = null,

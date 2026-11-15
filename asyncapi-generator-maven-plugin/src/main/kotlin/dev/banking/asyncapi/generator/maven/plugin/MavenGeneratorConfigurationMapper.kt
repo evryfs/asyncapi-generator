@@ -25,9 +25,6 @@ internal data class MavenGeneratorConfigurationRequest(
 
 /**
  * Maps and validates Maven plugin configuration before contract processing starts.
- *
- * Expected behavior is covered by:
- * - `MavenGeneratorConfigurationMapperTest`
  */
 internal object MavenGeneratorConfigurationMapper {
     fun map(request: MavenGeneratorConfigurationRequest): GeneratorConfiguration {

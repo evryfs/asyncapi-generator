@@ -10,10 +10,6 @@ import org.gradle.kotlin.dsl.register
 
 /**
  * Registers the AsyncAPI generator extension and one task for each named execution.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class AsyncApiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
