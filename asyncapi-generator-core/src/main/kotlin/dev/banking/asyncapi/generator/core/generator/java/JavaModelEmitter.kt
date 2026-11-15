@@ -121,14 +121,20 @@ internal class JavaModelEmitter(
         val typeImports =
             properties.flatMap { it.type.imports(model.packageName, model.name, "java.util.List", "java.util.Map") }
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@", "access = Access.") }
-        return (fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports + listOfNotNull(model.annotation?.value))
+        return (fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports(model))
             .distinct()
             .sorted()
     }
 
+    /** Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own. */
+    private fun emptyClassImports(model: ObjectModel): List<String> =
+        if (model.properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
+
     private fun implementsClause(model: ObjectModel): String = " implements " + (model.unions + "Serializable").joinToString(", ")
 
-    private fun classAnnotations(model: ObjectModel): List<String> = listOfNotNull(model.annotation?.let { "@${it.simpleName}" })
+    private fun classAnnotations(model: ObjectModel): List<String> =
+        listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) +
+            if (model.properties.isEmpty()) listOf("@JsonIgnoreProperties(ignoreUnknown = true)") else emptyList()
 
     private fun javaEnum(model: EnumModel) =
         mapOf(
