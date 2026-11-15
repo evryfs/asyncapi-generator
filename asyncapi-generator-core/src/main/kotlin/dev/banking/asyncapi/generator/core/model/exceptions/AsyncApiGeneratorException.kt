@@ -36,6 +36,21 @@ sealed class AsyncApiGeneratorException(
         )
 
     /** A name Avro rejects; renaming it silently would change a schema that may already be registered. */
+    class PropertyNameCollision(
+        val schemaName: String,
+        val wireNames: List<String>,
+        val identifier: String,
+    ) : AsyncApiGeneratorException(
+            "Schema '$schemaName' has properties ${wireNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} " +
+                "that all become the source identifier '$identifier'. Rename one of them in the contract.",
+        )
+
+    /** A generated `.avsc` that Apache Avro does not accept, which would fail only when a consumer loads it. */
+    class InvalidGeneratedAvroSchema(
+        val schemaPath: String,
+        reason: String,
+    ) : AsyncApiGeneratorException("Generated Avro schema '$schemaPath' is not valid: $reason")
+
     class InvalidAvroName(
         val kind: String,
         val avroName: String,
@@ -98,15 +113,22 @@ sealed class AsyncApiGeneratorException(
         headerContractName: String,
         wireNames: List<String>,
         parameterName: String,
+        fixedParameter: Boolean = false,
     ) : AsyncApiGeneratorException(
             buildString {
                 appendLine()
                 appendLine("Kafka header generation failed for '$headerContractName'.")
-                appendLine(
-                    "Header names collide after source-parameter normalization: " +
-                        "${wireNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }} -> '$parameterName'",
-                )
-                appendLine("Use distinct header names that remain unique after non-identifier characters are replaced with underscores.")
+                val names = wireNames.joinToString(prefix = "[", postfix = "]") { "'$it'" }
+                if (fixedParameter) {
+                    appendLine(
+                        "Header name $names becomes the parameter '$parameterName', which the generated " +
+                            "method already declares for the payload, topic, or key.",
+                    )
+                    appendLine("Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey.")
+                } else {
+                    appendLine("Header names collide after source-parameter normalization: $names -> '$parameterName'")
+                    appendLine("Use distinct header names that remain unique after non-identifier characters are replaced with underscores.")
+                }
                 appendLine()
             }.trimEnd(),
         )

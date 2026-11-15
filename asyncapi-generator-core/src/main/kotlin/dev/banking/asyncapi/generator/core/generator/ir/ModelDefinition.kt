@@ -50,7 +50,10 @@ internal data class UnionModel(
     override val description: String?,
     val discriminator: String?,
     val subtypes: List<UnionSubtype>,
-) : ModelDefinition
+) : ModelDefinition {
+    /** Whether the member is deduced from the properties present, because there is no discriminator. */
+    val deduction: Boolean get() = discriminator == null && subtypes.isNotEmpty()
+}
 
 /** An object without declared properties, which accepts any payload. */
 internal data class OpenObjectModel(
@@ -99,6 +102,12 @@ internal sealed interface DefaultValue {
     ) : DefaultValue
 
     data class NumberLiteral(
+        val value: String,
+    ) : DefaultValue
+
+    /** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */
+    data class ParsedScalar(
+        val scalar: TypeRef.Scalar,
         val value: String,
     ) : DefaultValue
 

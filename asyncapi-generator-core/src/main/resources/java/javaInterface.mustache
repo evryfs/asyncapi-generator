@@ -1,10 +1,10 @@
 package {{packageName}};
 
 import java.io.Serializable;
-{{#discriminator}}
+{{#hasTypeInfo}}
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
-{{/discriminator}}
+{{/hasTypeInfo}}
 
 /**
 {{#description}}
@@ -18,13 +18,18 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
     property = "{{discriminator}}",
     visible = true
 )
+{{/discriminator}}
+{{#deduction}}
+@JsonTypeInfo(use = JsonTypeInfo.Id.DEDUCTION)
+{{/deduction}}
+{{#hasTypeInfo}}
 {{#hasSubTypes}}
 @JsonSubTypes({
     {{#subTypes}}
-    @JsonSubTypes.Type(value = {{type}}.class, name = "{{name}}"){{^last}},{{/last}}
+    @JsonSubTypes.Type(value = {{type}}.class{{#hasDiscriminator}}, name = "{{name}}"{{/hasDiscriminator}}){{^last}},{{/last}}
     {{/subTypes}}
 })
 {{/hasSubTypes}}
-{{/discriminator}}
+{{/hasTypeInfo}}
 public interface {{interfaceName}} extends Serializable {
 }

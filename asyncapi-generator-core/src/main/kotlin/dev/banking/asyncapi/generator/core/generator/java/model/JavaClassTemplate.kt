@@ -6,6 +6,7 @@ internal data class JavaClassTemplate(
     val classDocLines: List<String>,
     val fields: List<Map<String, Any?>>,
     val allFields: List<Map<String, Any?>> = fields,
+    val hasFields: Boolean = fields.isNotEmpty(),
     val imports: List<String> = emptyList(),
     val implementsClause: String = "",
     val classAnnotations: List<String> = emptyList(),

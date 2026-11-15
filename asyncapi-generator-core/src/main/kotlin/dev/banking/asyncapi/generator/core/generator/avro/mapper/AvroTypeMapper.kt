@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
+import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -23,8 +25,8 @@ internal class AvroTypeMapper(
 
     /** The Avro type of a field that must hold a value; [refName] names a referenced schema. */
     fun requiredType(schema: Schema?, refName: String? = null): String {
-        if (schema != null && !schema.oneOf.isNullOrEmpty()) {
-            val unionTypes = schema.oneOf.filterIsInstance<SchemaInterface.SchemaReference>().map(::namedType)
+        if (schema != null && !(schema.oneOf ?: schema.anyOf).isNullOrEmpty()) {
+            val unionTypes = (schema.oneOf ?: schema.anyOf).orEmpty().filterIsInstance<SchemaInterface.SchemaReference>().map(::namedType)
             if (unionTypes.isNotEmpty()) return unionTypes.joinToString(", ", "[", "]")
         }
         // A named scalar or array schema has no .avsc of its own, so it is used in place.
@@ -47,7 +49,7 @@ internal class AvroTypeMapper(
         }
 
     private fun Schema.isAlias(): Boolean =
-        enum.isNullOrEmpty() && oneOf.isNullOrEmpty() &&
+        enum.isNullOrEmpty() && oneOf.isNullOrEmpty() && anyOf.isNullOrEmpty() &&
             type.getPrimaryType() in setOf("string", "number", "integer", "boolean", "array")
 
     private fun namedType(reference: SchemaInterface.SchemaReference): String =
@@ -68,8 +70,7 @@ internal class AvroTypeMapper(
             "integer" ->
                 when (schema.format) {
                     "date" -> "{\"type\": \"int\", \"logicalType\": \"date\"}"
-                    "int64" -> "\"long\""
-                    else -> "\"int\""
+                    else -> if (ModelTypeMapper.integerType(schema) == TypeRef.Scalar.INT64) "\"long\"" else "\"int\""
                 }
             // Always double: narrowing an existing double field to float breaks registered schemas.
             "number" -> "\"double\""

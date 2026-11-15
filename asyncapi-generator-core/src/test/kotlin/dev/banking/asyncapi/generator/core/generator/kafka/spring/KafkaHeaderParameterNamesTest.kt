@@ -121,4 +121,13 @@ class KafkaHeaderParameterNamesTest {
             parameterNames,
         )
     }
+
+    @Test
+    fun `rejects headers that collide with the fixed consumer parameters`() {
+        listOf("payload", "receivedTopic", "received-key", "messageKey").forEach { wireName ->
+            assertFailsWith<KafkaHeaderParameterNameCollision> {
+                KafkaHeaderParameterNames.resolve("ExampleHeaders", listOf(wireName))
+            }
+        }
+    }
 }

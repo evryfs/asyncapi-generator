@@ -25,7 +25,7 @@ internal class AvroGeneratorModelFactory(
     private val typeMapper = AvroTypeMapper(packageName)
 
     fun create(name: String, schema: Schema): AvroSchema? {
-        if (schema.oneOf.orEmpty().any { schemaOption -> schemaOption is SchemaInterface.SchemaReference }) {
+        if ((schema.oneOf ?: schema.anyOf).orEmpty().any { schemaOption -> schemaOption is SchemaInterface.SchemaReference }) {
             return null
         }
 

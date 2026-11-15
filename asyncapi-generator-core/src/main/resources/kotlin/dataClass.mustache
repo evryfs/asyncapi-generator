@@ -23,6 +23,7 @@ import {{.}}
 {{#classAnnotations}}
 {{{.}}}
 {{/classAnnotations}}
+{{#hasFields}}
 data class {{className}}(
 {{#fields}}
 
@@ -33,3 +34,13 @@ data class {{className}}(
 {{/fields}}
 ){{implementsClause}} {
 }
+{{/hasFields}}
+{{^hasFields}}
+class {{className}}{{implementsClause}} {
+    override fun equals(other: Any?): Boolean = other is {{className}}
+
+    override fun hashCode(): Int = {{className}}::class.hashCode()
+
+    override fun toString(): String = "{{className}}()"
+}
+{{/hasFields}}

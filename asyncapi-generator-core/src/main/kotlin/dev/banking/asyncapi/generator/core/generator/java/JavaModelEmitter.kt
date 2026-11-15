@@ -121,14 +121,20 @@ internal class JavaModelEmitter(
         val typeImports =
             properties.flatMap { it.type.imports(model.packageName, model.name, "java.util.List", "java.util.Map") }
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@", "access = Access.") }
-        return (fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports + listOfNotNull(model.annotation?.value))
+        return (fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports(model))
             .distinct()
             .sorted()
     }
 
+    /** Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own. */
+    private fun emptyClassImports(model: ObjectModel): List<String> =
+        if (model.properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
+
     private fun implementsClause(model: ObjectModel): String = " implements " + (model.unions + "Serializable").joinToString(", ")
 
-    private fun classAnnotations(model: ObjectModel): List<String> = listOfNotNull(model.annotation?.let { "@${it.simpleName}" })
+    private fun classAnnotations(model: ObjectModel): List<String> =
+        listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) +
+            if (model.properties.isEmpty()) listOf("@JsonIgnoreProperties(ignoreUnknown = true)") else emptyList()
 
     private fun javaEnum(model: EnumModel) =
         mapOf(
@@ -144,11 +150,18 @@ internal class JavaModelEmitter(
             "packageName" to model.packageName,
             "interfaceName" to model.name,
             "description" to DocumentationUtils.toJavaDocLines(model.description),
-            "discriminator" to model.discriminator,
+            "discriminator" to model.discriminator?.let(SourceLiteralEscaper::forJava),
+            "deduction" to model.deduction,
+            "hasTypeInfo" to (model.discriminator != null || model.deduction),
+            "hasDiscriminator" to (model.discriminator != null),
             "hasSubTypes" to model.subtypes.isNotEmpty(),
             "subTypes" to
                 model.subtypes.mapIndexed { index, subtype ->
-                    mapOf("type" to subtype.type, "name" to subtype.name, "last" to (index == model.subtypes.lastIndex))
+                    mapOf(
+                        "type" to subtype.type,
+                        "name" to SourceLiteralEscaper.forJava(subtype.name),
+                        "last" to (index == model.subtypes.lastIndex),
+                    )
                 },
         )
 
@@ -185,9 +198,9 @@ internal class JavaModelEmitter(
             )
     }
 
-    private companion object {
+    companion object {
         /** The Java source name of [type]. */
-        private fun typeName(type: TypeRef): String =
+        internal fun typeName(type: TypeRef): String =
             when (type) {
                 is TypeRef.Scalar ->
                     when (type) {

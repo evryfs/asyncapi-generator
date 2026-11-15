@@ -1,0 +1,68 @@
+asyncapi: 3.0.0
+info:
+  title: Kafka payload types
+  version: 1.0.0
+channels:
+  orderBatch:
+    address: order-batch
+    messages:
+      orderBatch:
+        $ref: '#/components/messages/OrderBatch'
+  orderList:
+    address: order-list
+    messages:
+      orderList:
+        $ref: '#/components/messages/OrderList'
+  tags:
+    address: tags
+    messages:
+      tags:
+        $ref: '#/components/messages/Tags'
+  counter:
+    address: counter
+    messages:
+      counter:
+        $ref: '#/components/messages/Counter'
+  bigCounter:
+    address: big-counter
+    messages:
+      bigCounter:
+        $ref: '#/components/messages/BigCounter'
+components:
+  messages:
+    OrderBatch:
+      name: OrderBatch
+      payload:
+        type: array
+        items:
+          $ref: '#/components/schemas/Order'
+    OrderList:
+      name: OrderList
+      payload:
+        $ref: '#/components/schemas/Orders'
+    Tags:
+      name: Tags
+      payload:
+        type: array
+        items:
+          type: string
+    Counter:
+      name: Counter
+      payload:
+        type: integer
+        format: int64
+    BigCounter:
+      name: BigCounter
+      payload:
+        type: integer
+        maximum: 9999999999
+  schemas:
+    Order:
+      type: object
+      properties:
+        id:
+          type: string
+    Orders:
+      type: array
+      items:
+        $ref: '#/components/schemas/Order'

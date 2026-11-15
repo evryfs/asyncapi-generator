@@ -29,6 +29,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_TYPE_ARRAY_UNIQUE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -643,4 +644,14 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(24, objectRange.line)
     }
 
+    @Test
+    fun `union members with identical properties and no discriminator are warned about`() {
+        val results = validate("validator/schemas/asyncapi_validator_schema_union_members.yaml")
+
+        val warning = results.findings.single { it.code == UNION_INDISTINGUISHABLE_MEMBERS.code }
+        assertEquals(UNION_INDISTINGUISHABLE_MEMBERS.severity, warning.severity)
+        assertTrue("Twins" in warning.path.orEmpty())
+        assertTrue("'Cat'" in warning.message && "'Lion'" in warning.message)
+        assertEquals(1, results.warnings.size)
+    }
 }

@@ -1,0 +1,26 @@
+asyncapi: 3.0.0
+info:
+  title: Header name collision
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      accountOpened:
+        $ref: '#/components/messages/AccountOpened'
+components:
+  messages:
+    AccountOpened:
+      name: AccountOpened
+      headers:
+        type: object
+        properties:
+          payload:
+            type: string
+          receivedTopic:
+            type: string
+      payload:
+        type: object
+        properties:
+          id:
+            type: string

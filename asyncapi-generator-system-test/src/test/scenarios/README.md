@@ -40,6 +40,9 @@ have to describe the same configuration.
 | [suppressed-warnings](suppressed-warnings) | The same build with the warning silenced through `suppressedWarnings`. |
 | [generated-code](generated-code) | Kotlin and Java models for enums, `oneOf` with a discriminator, defaults, and property names. |
 | [avro-schemas](avro-schemas) | Avro schemas for recursive types, defaults, and escaped documentation. |
+| [avro-schema-types](avro-schema-types) | Avro schemas use `long` for wide integers and inline `anyOf` unions. |
+| [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
+| [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |
 | [stale-generated-files](stale-generated-files) | Regenerating after a schema is removed deletes its generated files (`StaleGeneratedFilesSystemTest`). |
@@ -60,4 +63,6 @@ in the contract, that every frontend must reject with a clear message:
 | [diagnostics-reference-cycle](diagnostics-reference-cycle) | `$ref`s that form a cycle. |
 | [diagnostics-recursive-yaml-alias](diagnostics-recursive-yaml-alias) | A YAML alias that refers to itself. |
 | [diagnostics-inline-name-collision](diagnostics-inline-name-collision) | Two different inline schemas that would get the same class name. |
+| [diagnostics-property-name-collision](diagnostics-property-name-collision) | Two properties that become the same source identifier. |
+| [diagnostics-header-name-collision](diagnostics-header-name-collision) | Kafka headers whose parameter names collide with the fixed consumer parameters. |
 | [diagnostics-invalid-avro-name](diagnostics-invalid-avro-name) | A property name that is not a valid Avro name. |

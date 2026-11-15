@@ -106,5 +106,6 @@ This reference records implemented validation rules and their ownership.
 | `GEN-SCHEMA-DEFAULT-TYPE` | `default` cannot be represented by declared generator type. | Generator behavior | capability / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not locally required. | AsyncAPI Schema Object | specification / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not locally declared. | AsyncAPI Schema Object | specification / error |
+| `ADV-UNION-INDISTINGUISHABLE-MEMBERS` | `oneOf`/`anyOf` members without a discriminator declare the same property names, so generated code cannot tell them apart. | Project guidance | advisory / warning |
 
 `GEN-SCHEMA-ITEMS-REPRESENTATION`, `GEN-SCHEMA-UNTYPED-ENUM`, and `GEN-SCHEMA-PATTERN` remain public legacy identifiers but are no longer emitted. Output-specific incompatibilities for these schema features are reported by generation compatibility exceptions.

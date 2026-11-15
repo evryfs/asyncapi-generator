@@ -1,0 +1,39 @@
+asyncapi: 3.0.0
+info:
+  title: Avro schema types
+  version: 1.0.0
+channels:
+  metrics:
+    address: metrics
+    messages:
+      metrics:
+        payload:
+          $ref: '#/components/schemas/Metrics'
+components:
+  schemas:
+    Metrics:
+      type: object
+      required:
+        - counter
+      properties:
+        counter:
+          type: integer
+          maximum: 9999999999
+        small:
+          type: integer
+        pet:
+          $ref: '#/components/schemas/AnyPet'
+    AnyPet:
+      anyOf:
+        - $ref: '#/components/schemas/Cat'
+        - $ref: '#/components/schemas/Dog'
+    Cat:
+      type: object
+      properties:
+        whiskers:
+          type: integer
+    Dog:
+      type: object
+      properties:
+        tail:
+          type: boolean

@@ -197,6 +197,7 @@ internal class KotlinSpringKafkaModelFactory(
         headerProperties.map { header ->
             GeneratorItem.HeaderProperty(
                 wireName = header.wireName,
+                wireNameLiteral = header.wireName.toKotlinStringLiteral(),
                 parameterName = header.parameterName,
                 typeName = header.kotlinTypeName + if (header.nullable) "?" else "",
                 description = header.parameterDescription(),
@@ -219,7 +220,7 @@ internal class KotlinSpringKafkaModelFactory(
             listOfNotNull(
                 message.payload.kotlinImportName,
                 message.keyContract?.importName,
-            ) + message.payload.headerProperties.mapNotNull { header -> header.importName }
+            ) + message.payload.kotlinImports + message.payload.headerProperties.mapNotNull { header -> header.importName }
         }
 
     private fun KafkaHeaderProperty.parameterDescription(): List<String> =

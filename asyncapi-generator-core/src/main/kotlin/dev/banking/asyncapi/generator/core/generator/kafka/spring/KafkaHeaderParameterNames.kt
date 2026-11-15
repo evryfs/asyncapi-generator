@@ -1,117 +1,15 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKafkaHeaderName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KafkaHeaderParameterNameCollision
 
 /** Converts Kafka wire-header names into camelCase source identifiers shared by Java and Kotlin output. */
 internal object KafkaHeaderParameterNames {
 
-    private val reservedIdentifiers =
-        setOf(
-            "_",
-            "abstract",
-            "actual",
-            "annotation",
-            "as",
-            "assert",
-            "boolean",
-            "break",
-            "by",
-            "byte",
-            "case",
-            "catch",
-            "char",
-            "class",
-            "companion",
-            "const",
-            "constructor",
-            "continue",
-            "crossinline",
-            "data",
-            "default",
-            "delegate",
-            "do",
-            "double",
-            "dynamic",
-            "else",
-            "enum",
-            "expect",
-            "extends",
-            "external",
-            "false",
-            "field",
-            "final",
-            "finally",
-            "float",
-            "for",
-            "fun",
-            "get",
-            "goto",
-            "if",
-            "implements",
-            "import",
-            "in",
-            "infix",
-            "init",
-            "inline",
-            "inner",
-            "instanceof",
-            "int",
-            "interface",
-            "internal",
-            "is",
-            "lateinit",
-            "long",
-            "native",
-            "new",
-            "noinline",
-            "null",
-            "object",
-            "open",
-            "operator",
-            "out",
-            "override",
-            "package",
-            "param",
-            "permits",
-            "private",
-            "property",
-            "protected",
-            "public",
-            "receiver",
-            "record",
-            "reified",
-            "return",
-            "sealed",
-            "set",
-            "setparam",
-            "short",
-            "static",
-            "strictfp",
-            "super",
-            "suspend",
-            "switch",
-            "synchronized",
-            "tailrec",
-            "this",
-            "throw",
-            "throws",
-            "transient",
-            "true",
-            "try",
-            "typealias",
-            "typeof",
-            "val",
-            "var",
-            "vararg",
-            "void",
-            "volatile",
-            "when",
-            "where",
-            "while",
-            "yield",
-        )
+    /** Parameters every consumer or producer method declares itself, which a header must not reuse. */
+    private val fixedParameterNames = setOf("payload", "receivedTopic", "receivedKey", "messageKey")
 
     fun resolve(
         headerContractName: String,
@@ -137,6 +35,18 @@ internal object KafkaHeaderParameterNames {
                     headerContractName = headerContractName,
                     wireNames = matchingWireNames,
                     parameterName = parameterName,
+                )
+            }
+
+        parameterNames
+            .entries
+            .firstOrNull { (_, parameterName) -> parameterName in fixedParameterNames }
+            ?.let { (wireName, parameterName) ->
+                throw KafkaHeaderParameterNameCollision(
+                    headerContractName = headerContractName,
+                    wireNames = listOf(wireName),
+                    parameterName = parameterName,
+                    fixedParameter = true,
                 )
             }
 
@@ -171,7 +81,7 @@ internal object KafkaHeaderParameterNames {
                 normalized
             }
 
-        return if (identifier in reservedIdentifiers) {
+        return if (SourceIdentifierMapper.isReserved(identifier)) {
             "${identifier}_"
         } else {
             identifier

@@ -219,6 +219,7 @@ internal class JavaSpringKafkaModelFactory(
         headerProperties.mapIndexed { index, header ->
             GeneratorItem.HeaderProperty(
                 wireName = header.wireName,
+                wireNameLiteral = header.wireName.toJavaStringLiteral(),
                 parameterName = header.parameterName,
                 typeName = header.javaTypeName,
                 description = header.parameterDescription(),
@@ -243,7 +244,7 @@ internal class JavaSpringKafkaModelFactory(
             listOfNotNull(
                 message.payload.javaImportName,
                 message.keyContract?.importName,
-            ) + message.payload.headerProperties.mapNotNull { header -> header.importName }
+            ) + message.payload.javaImports + message.payload.headerProperties.mapNotNull { header -> header.importName }
         }
 
     private fun KafkaHeaderProperty.parameterDescription(): List<String> =

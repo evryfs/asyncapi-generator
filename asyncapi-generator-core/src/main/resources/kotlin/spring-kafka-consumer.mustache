@@ -166,7 +166,7 @@ interface {{name}} {
 
 {{/hasHeaders}}
 {{#headerProperties}}
-        @Header(name = "{{{wireName}}}", required = {{required}})
+        @Header(name = "{{{wireNameLiteral}}}", required = {{required}})
         {{parameterName}}: {{typeName}}{{#defaultValue}} = {{{.}}}{{/defaultValue}},
 {{/headerProperties}}
     ) = Unit

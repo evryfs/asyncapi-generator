@@ -66,6 +66,21 @@ internal class ModelTypeMapper(
 
     private val resolvingAliases = mutableSetOf<String>()
 
+    companion object {
+        /** The width of an integer schema: 64-bit by `format: int64` or when its bounds leave the 32-bit range. */
+        fun integerType(schema: Schema): TypeRef.Scalar {
+            when (schema.format?.lowercase()) {
+                "int64" -> return TypeRef.Scalar.INT64
+                "int32" -> return TypeRef.Scalar.INT32
+            }
+            val minimum = schema.minimum
+            val maximum = schema.maximum
+            val minimumFits = minimum == null || minimum.toDouble() >= Int.MIN_VALUE.toDouble()
+            val maximumFits = maximum == null || maximum.toDouble() <= Int.MAX_VALUE.toDouble()
+            return if (minimumFits && maximumFits) TypeRef.Scalar.INT32 else TypeRef.Scalar.INT64
+        }
+    }
+
     private fun Schema.isAlias(): Boolean = isScalarAlias() || (type.getPrimaryType() == "array" && enum.isNullOrEmpty())
 
     /** The generated model a reference points to; marked when it is an open object. */
@@ -95,17 +110,7 @@ internal class ModelTypeMapper(
             else -> TypeRef.Scalar.STRING
         }
 
-    private fun mapInteger(schema: Schema): TypeRef {
-        when (schema.format?.lowercase()) {
-            "int64" -> return TypeRef.Scalar.INT64
-            "int32" -> return TypeRef.Scalar.INT32
-        }
-        val minimum = schema.minimum
-        val maximum = schema.maximum
-        val minimumFits = minimum == null || minimum.toDouble() >= Int.MIN_VALUE.toDouble()
-        val maximumFits = maximum == null || maximum.toDouble() <= Int.MAX_VALUE.toDouble()
-        return if (minimumFits && maximumFits) TypeRef.Scalar.INT32 else TypeRef.Scalar.INT64
-    }
+    private fun mapInteger(schema: Schema): TypeRef = integerType(schema)
 
     private fun mapNumber(schema: Schema): TypeRef {
         if (schema.multipleOf != null) return TypeRef.Scalar.DECIMAL
@@ -122,7 +127,7 @@ internal class ModelTypeMapper(
                 is SchemaInterface.SchemaInline -> map(propertyName, items.schema)
                 is SchemaInterface.SchemaReference -> {
                     val referenceName = items.reference.ref.substringAfterLast("/")
-                    val referencedSchema = context.findSchemaByName(referenceName)
+                    val referencedSchema = context.findSchemaByName(referenceName) ?: items.reference.model as? Schema
                     val isPlainString =
                         referencedSchema?.type.getPrimaryType() == "string" && referencedSchema?.enum.isNullOrEmpty()
                     when {

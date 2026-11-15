@@ -5,6 +5,7 @@ internal data class KotlinClassTemplate(
     val className: String,
     val classDocLines: List<String>,
     val fields: List<Map<String, Any?>>,
+    val hasFields: Boolean = fields.isNotEmpty(),
     val imports: List<String> = emptyList(),
     val implementsClause: String = "",
     val classAnnotations: List<String> = emptyList(),

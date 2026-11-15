@@ -155,7 +155,7 @@ public interface {{name}} {
         @Header(name = KafkaHeaders.RECEIVED_KEY, required = {{required}}) {{#annotations}}{{{.}}} {{/annotations}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/keyParameter}}
 {{#headerProperties}}
-        @Header(name = "{{{wireName}}}", required = {{required}}) {{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
+        @Header(name = "{{{wireNameLiteral}}}", required = {{required}}) {{#requiredAnnotation}}{{.}} {{/requiredAnnotation}}{{#nullableAnnotation}}{{.}} {{/nullableAnnotation}}{{typeName}} {{parameterName}}{{parameterSuffix}}
 {{/headerProperties}}
     ) {
     }
