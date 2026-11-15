@@ -47,6 +47,7 @@ have to describe the same configuration.
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |
 | [stale-generated-files](stale-generated-files) | Regenerating after a schema is removed deletes its generated files (`StaleGeneratedFilesSystemTest`). |
+| [dotted-component-names](dotted-component-names) | Component names with dots, such as `eu.prod`, are accepted in every components map. |
 | [gradle-incremental-build](gradle-incremental-build) | Configuration cache and up-to-date checks (`GradleIncrementalBuildSystemTest`). |
 
 The `diagnostics-*` scenarios each contain one mistake, in the configuration or
@@ -66,4 +67,6 @@ in the contract, that every frontend must reject with a clear message:
 | [diagnostics-inline-name-collision](diagnostics-inline-name-collision) | Two different inline schemas that would get the same class name. |
 | [diagnostics-property-name-collision](diagnostics-property-name-collision) | Two properties that become the same source identifier. |
 | [diagnostics-header-name-collision](diagnostics-header-name-collision) | Kafka headers whose parameter names collide with the fixed consumer parameters. |
+| [diagnostics-ref-operation-channel-scope](diagnostics-ref-operation-channel-scope) | A root operation or reply reached through `$ref` that uses a component channel instead of a root channel. |
+| [diagnostics-invalid-component-name](diagnostics-invalid-component-name) | A components key with characters the spec does not allow. |
 | [diagnostics-invalid-avro-name](diagnostics-invalid-avro-name) | A property name that is not a valid Avro name. |
