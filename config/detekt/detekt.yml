@@ -1,0 +1,34 @@
+# Overrides on top of detekt's default configuration (buildUponDefaultConfig).
+# The limits are explained in docs/contributing/code-conventions.md.
+# Size and documentation rules apply to production code only; tests follow
+# their own structure (given/when/then, approval fixtures).
+complexity:
+  LargeClass:
+    threshold: 250
+    excludes: ['**/test/**']
+  LongMethod:
+    threshold: 30
+    excludes: ['**/test/**']
+  LongParameterList:
+    functionThreshold: 6
+    constructorThreshold: 8
+    ignoreDefaultParameters: true
+    ignoreDataClasses: true
+  TooManyFunctions:
+    excludes: ['**/test/**']
+
+comments:
+  OutdatedDocumentation:
+    active: true
+    matchDeclarationsOrder: true
+    allowParamOnConstructorProperties: true
+  UndocumentedPublicClass:
+    active: true
+    searchInInnerClass: false
+    searchInInnerObject: false
+    excludes: ['**/test/**']
+
+style:
+  MaxLineLength:
+    maxLineLength: 120
+    excludes: ['**/test/**']

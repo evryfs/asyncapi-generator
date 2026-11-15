@@ -91,6 +91,8 @@
         <maven.remote.resources.plugin.version>3.3.0</maven.remote.resources.plugin.version>
         <maven.deploy.plugin.version>3.1.4</maven.deploy.plugin.version>
         <kover.version>0.9.8</kover.version>
+        <ktlint.maven.plugin.version>3.7.1</ktlint.maven.plugin.version>
+        <detekt.version>1.23.8</detekt.version>
     </properties>
 
     <dependencyManagement>
@@ -276,6 +278,44 @@
                     <groupId>org.jetbrains.kotlinx</groupId>
                     <artifactId>kover-maven-plugin</artifactId>
                     <version>${kover.version}</version>
+                </plugin>
+                <!-- code conventions: docs/contributing/code-conventions.md -->
+                <plugin>
+                    <groupId>com.github.gantsign.maven</groupId>
+                    <artifactId>ktlint-maven-plugin</artifactId>
+                    <version>${ktlint.maven.plugin.version}</version>
+                    <configuration>
+                        <includeScripts>false</includeScripts>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>ktlint</id>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.ozsie</groupId>
+                    <artifactId>detekt-maven-plugin</artifactId>
+                    <version>${detekt.version}</version>
+                    <configuration>
+                        <input>${project.basedir}/src</input>
+                        <excludes>**/resources/**</excludes>
+                        <config>${maven.multiModuleProjectDirectory}/config/detekt/detekt.yml</config>
+                        <buildUponDefaultConfig>true</buildUponDefaultConfig>
+                        <baseline>${project.basedir}/detekt-baseline.xml</baseline>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>detekt</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
