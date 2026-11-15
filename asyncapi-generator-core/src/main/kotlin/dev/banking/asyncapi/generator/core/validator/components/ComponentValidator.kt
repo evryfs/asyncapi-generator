@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.COMPONENT_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
@@ -23,6 +24,7 @@ import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerVariableValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEach
@@ -62,6 +64,7 @@ internal class ComponentValidator(
         if (component == null) return
         if (!results.visit(component)) return
 
+        validateNames(component, results)
         validateSchemas(component, contextString, results)
         validateServers(component, contextString, results)
         validateChannels(component, contextString, results)
@@ -80,6 +83,40 @@ internal class ComponentValidator(
         validateBindings(component, contextString, results)
     }
 
+    private fun validateNames(component: Component, results: ValidationCollector) {
+        val maps = listOf(
+            component::schemas,
+            component::servers,
+            component::channels,
+            component::operations,
+            component::messages,
+            component::securitySchemes,
+            component::serverVariables,
+            component::parameters,
+            component::correlationIds,
+            component::replies,
+            component::replyAddresses,
+            component::externalDocs,
+            component::tags,
+            component::operationTraits,
+            component::messageTraits,
+            component::serverBindings,
+            component::channelBindings,
+            component::operationBindings,
+            component::messageBindings,
+        )
+        maps.forEach { property ->
+            property.get()?.keys?.filterNot(ValidationFormats::isComponentName)?.forEach { name ->
+                results.error(
+                    COMPONENT_NAME_FORMAT,
+                    "Component ${property.name} key '$name' must match ^[a-zA-Z0-9.\\-_]+$.",
+                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(component, property.name),
+                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#componentsObject",
+                )
+            }
+        }
+    }
+
     private fun validateSchemas(component: Component, contextString: String, results: ValidationCollector) {
         component.schemas?.let { schemas ->
             schemaValidator.validateMap(schemas, contextString, results)
@@ -96,7 +133,7 @@ internal class ComponentValidator(
     private fun validateParameters(component: Component, contextString: String, results: ValidationCollector) {
         component.parameters?.forEach { (parameterName, parameterInterface) ->
             val contextString = "$contextString Parameter '$parameterName'"
-            parameterValidator.validateInterface(parameterInterface, contextString, results, parameterName)
+            parameterValidator.validateInterface(parameterInterface, contextString, results)
         }
     }
 
@@ -117,7 +154,7 @@ internal class ComponentValidator(
     private fun validateServers(component: Component, contextString: String, results: ValidationCollector) {
         component.servers?.forEach { (serverName, serverInterface) ->
             val contextString = "$contextString Server '$serverName'"
-            serverValidator.validateInterface(serverInterface, contextString, results, serverName)
+            serverValidator.validateInterface(serverInterface, contextString, results)
         }
     }
 

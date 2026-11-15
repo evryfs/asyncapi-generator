@@ -1,0 +1,29 @@
+asyncapi: 3.0.0
+info:
+  title: Referenced Operation Boundaries
+  version: 1.0.0
+channels:
+  requests:
+    address: requests
+operations:
+  ByRefOperation:
+    $ref: '#/components/operations/Hidden'
+  ByRefReply:
+    action: send
+    channel:
+      $ref: '#/channels/requests'
+    reply:
+      $ref: '#/components/replies/HiddenReply'
+components:
+  channels:
+    componentChannel:
+      address: component
+  operations:
+    Hidden:
+      action: send
+      channel:
+        $ref: '#/components/channels/componentChannel'
+  replies:
+    HiddenReply:
+      channel:
+        $ref: '#/components/channels/componentChannel'

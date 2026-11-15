@@ -34,18 +34,22 @@ data class GeneratedOutputManifest(
     /**
      * Claims [generatedFiles] for [owner] and deletes files [owner] generated before but no longer
      * generates, unless another owner still claims them.
+     *
+     * Directories a deleted file leaves empty are removed too, but never an output root in
+     * [outputRoots] or anything above it. A stale file outside every output root is deleted
+     * without removing any directory.
      */
-    fun update(generatedFiles: Collection<File>) {
+    fun update(generatedFiles: Collection<File>, outputRoots: Collection<File> = emptyList()) {
         val manifestPath = file.toPath().toAbsolutePath().normalize()
         val base = manifestPath.parent
         Files.createDirectories(base)
         // Threads of one JVM (parallel Gradle tasks) wait on the monitor; separate processes on the file lock.
         synchronized(monitors.computeIfAbsent(manifestPath) { Any() }) {
-            updateLocked(manifestPath, base, generatedFiles)
+            updateLocked(manifestPath, base, generatedFiles, outputRoots.map { it.toPath().toAbsolutePath().normalize() })
         }
     }
 
-    private fun updateLocked(manifestPath: Path, base: Path, generatedFiles: Collection<File>) {
+    private fun updateLocked(manifestPath: Path, base: Path, generatedFiles: Collection<File>, roots: List<Path>) {
         FileChannel.open(
             base.resolve("${manifestPath.fileName}.lock"),
             StandardOpenOption.CREATE,
@@ -57,7 +61,7 @@ data class GeneratedOutputManifest(
                 val previous = entries.filter { it.owner == owner }.map(Entry::path).toSet()
                 val claimedByOthers = entries.filter { it.owner != owner }.map(Entry::path).toSet()
 
-                (previous - current - claimedByOthers).forEach { stale -> delete(base, stale) }
+                (previous - current - claimedByOthers).forEach { stale -> delete(base, stale, roots) }
 
                 val updated = entries.filter { it.owner != owner } + current.map { Entry(owner, it) }
                 write(manifestPath, updated)
@@ -91,13 +95,13 @@ data class GeneratedOutputManifest(
     }
 
     /** Deletes one stale generated file, then the directories it leaves empty. */
-    private fun delete(base: Path, stale: String) {
+    private fun delete(base: Path, stale: String, roots: List<Path>) {
         val target = base.resolve(stale).normalize()
         if (!Files.isRegularFile(target)) return
         try {
             Files.delete(target)
             var directory = target.parent
-            while (directory != null && directory != base && isEmptyDirectory(directory)) {
+            while (directory != null && directory != base && isBelowRoot(directory, roots) && isEmptyDirectory(directory)) {
                 Files.delete(directory)
                 directory = directory.parent
             }
@@ -105,6 +109,10 @@ data class GeneratedOutputManifest(
             throw IOException("Failed to remove stale generated file '$target'", exception)
         }
     }
+
+    /** True when [directory] lies strictly inside one of the output [roots]. */
+    private fun isBelowRoot(directory: Path, roots: List<Path>): Boolean =
+        roots.any { root -> directory != root && directory.startsWith(root) }
 
     private fun isEmptyDirectory(directory: Path): Boolean =
         Files.isDirectory(directory) && Files.list(directory).use { it.findAny().isEmpty }

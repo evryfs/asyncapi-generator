@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistr
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.components.ComponentValidator
 import dev.banking.asyncapi.generator.core.validator.info.InfoValidator
+import dev.banking.asyncapi.generator.core.validator.operations.OperationBoundaryValidator
 import dev.banking.asyncapi.generator.core.validator.operations.OperationValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
@@ -28,6 +29,7 @@ internal class AsyncApiValidator(
     private val operationValidator = OperationValidator(asyncApiContext)
     private val componentValidator = ComponentValidator(asyncApiContext)
     private val referenceTargetTraversal = ReferenceTargetTraversal(asyncApiContext)
+    private val operationBoundaryValidator = OperationBoundaryValidator(asyncApiContext)
     private val kafkaSchemaRegistryValidator = KafkaSchemaRegistryValidator(asyncApiContext)
 
     fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
@@ -48,7 +50,6 @@ internal class AsyncApiValidator(
                 operation,
                 "Operation '$name'",
                 results,
-                rootChannels = asyncApiDocument.channels.orEmpty(),
             )
         }
         asyncApiDocument.components?.let { components ->
@@ -56,6 +57,7 @@ internal class AsyncApiValidator(
         }
 
         referenceTargetTraversal.drain(results)
+        operationBoundaryValidator.validate(asyncApiDocument, results)
         kafkaSchemaRegistryValidator.validate(asyncApiDocument, results)
         return results.report()
     }

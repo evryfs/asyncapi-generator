@@ -19,6 +19,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-TAG-NAME-REQUIRED` | Tag name is empty. | AsyncAPI 3.0 Tag Object | specification / error |
 | `AAS3-SERVER-HOST-REQUIRED` | Server host is empty. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-NAME-FORMAT` | Server map key uses unsupported characters. | AsyncAPI 3.0 Servers Object | specification / error |
+| `AAS3-COMPONENT-NAME-FORMAT` | Component map key uses unsupported characters (letters, digits, `.`, `-`, `_` allowed). | AsyncAPI 3.0 Components Object | specification / error |
 | `ADV-SERVER-HOST-PROTOCOL` | Host contains a protocol scheme. | Project guidance | advisory / warning |
 | `AAS3-SERVER-VARIABLE-UNDEFINED` | Host or pathname variable lacks a definition. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-PROTOCOL-REQUIRED` | Server protocol is empty. | AsyncAPI 3.0 Server Object | specification / error |
@@ -46,7 +47,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-OPERATION-CHANNEL-SCOPE` | Root operation channel is not owned by root `channels`. | AsyncAPI 3.0 Operation Object | specification / error |
 | `AAS3-OPERATION-MESSAGE-REFERENCE` | Operation message is not a valid channel message. | AsyncAPI 3.0 Operation Object | specification / error |
 | `AAS3-REPLY-CHANNEL-REQUIRED` | Reply defines messages without a channel. | AsyncAPI 3.0 Operation Reply Object | specification / error |
-| `AAS3-REPLY-CHANNEL-SCOPE` | Inline root-operation reply channel is not owned by root `channels`. | AsyncAPI 3.0 Operation Reply Object | specification / error |
+| `AAS3-REPLY-CHANNEL-SCOPE` | Root-operation reply channel (inline or `$ref`) is not owned by root `channels`. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-CHANNEL-ADDRESS` | Reply defines an address while its channel has a known address. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-MESSAGE-REFERENCE` | Reply message does not reference a message owned by reply channel. | AsyncAPI 3.0 Operation Reply Object | specification / error |
 | `AAS3-REPLY-ADDRESS-REQUIRED` | Reply defines a message set without `address`. | AsyncAPI 3.0 Operation Reply Object | specification / error |
