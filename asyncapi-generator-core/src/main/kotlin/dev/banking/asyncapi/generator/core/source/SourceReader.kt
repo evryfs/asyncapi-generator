@@ -26,7 +26,6 @@ internal object SourceReader {
             }
         val source =
             DocumentSource(
-                id = file.nameWithoutExtension,
                 file = file,
                 content = content,
                 format = format,

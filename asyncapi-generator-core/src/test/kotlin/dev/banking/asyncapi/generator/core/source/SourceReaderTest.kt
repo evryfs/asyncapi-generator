@@ -21,7 +21,6 @@ class SourceReaderTest {
         val root = assertIs<DocumentObject>(document.root)
 
         assertEquals(InputFormat.YAML, document.source.format)
-        assertEquals("registry-asyncapi", document.source.id)
         assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
 
@@ -30,7 +29,6 @@ class SourceReaderTest {
         val file = TestResources.file("reader/yaml/registry-contract.yml")
         val document = SourceReader.read(file)
         assertEquals(InputFormat.YAML, document.source.format)
-        assertEquals("registry-contract", document.source.id)
     }
 
     @Test
@@ -40,7 +38,6 @@ class SourceReaderTest {
         val root = assertIs<DocumentObject>(document.root)
 
         assertEquals(InputFormat.JSON, document.source.format)
-        assertEquals("registry-asyncapi", document.source.id)
         assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
 

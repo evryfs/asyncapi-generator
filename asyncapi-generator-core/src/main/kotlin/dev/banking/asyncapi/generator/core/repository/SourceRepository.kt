@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.parser.node.NodeAddress
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -126,7 +127,7 @@ internal class SourceRepository {
         address.ancestors().mapNotNull(locationsByAddress::get).firstOrNull()
 
     internal fun resolveAddress(
-        sourceId: String,
+        sourceId: SourceId,
         pointerSegments: List<String>,
     ): NodeAddress? {
         var address = NodeAddress.root(sourceId)
@@ -188,9 +189,7 @@ internal class SourceRepository {
     }
 
     private fun sourceFor(location: SourceLocation): Source =
-        sources[location.file.canonicalFile.absolutePath]
-            ?: sourcesByPathId[location.sourceId]
-            ?: current
+        sources[location.file.canonicalFile.absolutePath] ?: current
 
     private fun uniquePathId(
         preferredId: String,

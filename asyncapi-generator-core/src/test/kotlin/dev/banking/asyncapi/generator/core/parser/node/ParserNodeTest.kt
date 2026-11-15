@@ -24,7 +24,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content =
                     """
@@ -69,7 +68,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "present: true",
                 format = InputFormat.YAML,
@@ -101,7 +99,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "explicit: null",
                 format = InputFormat.YAML,
@@ -120,7 +117,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "explicit: null",
                 format = InputFormat.YAML,
@@ -153,7 +149,6 @@ class ParserNodeTest {
         val objectContext = AsyncApiContext()
         val objectSource =
             DocumentSource(
-                id = "object",
                 file = File("object.yaml").canonicalFile,
                 content =
                     """
@@ -168,7 +163,6 @@ class ParserNodeTest {
         val arrayContext = AsyncApiContext()
         val arraySource =
             DocumentSource(
-                id = "array",
                 file = File("array.yaml").canonicalFile,
                 content =
                     """
@@ -195,7 +189,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "- value",
                 format = InputFormat.YAML,
@@ -219,7 +212,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content =
                     """
@@ -246,7 +238,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content =
                     """
@@ -279,7 +270,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "value: true",
                 format = InputFormat.YAML,
@@ -303,7 +293,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content =
                     """
@@ -334,7 +323,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "name: value",
                 format = InputFormat.YAML,
@@ -361,7 +349,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "- label: null",
                 format = InputFormat.YAML,
@@ -379,7 +366,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content =
                     """
@@ -406,7 +392,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "null",
                 format = InputFormat.YAML,
@@ -422,7 +407,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "deprecated: \"true\"",
                 format = InputFormat.YAML,
@@ -450,7 +434,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "minLength: \"12\"",
                 format = InputFormat.YAML,
@@ -478,7 +461,6 @@ class ParserNodeTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "asyncapi",
                 file = File("asyncapi.yaml").canonicalFile,
                 content = "version: true",
                 format = InputFormat.YAML,

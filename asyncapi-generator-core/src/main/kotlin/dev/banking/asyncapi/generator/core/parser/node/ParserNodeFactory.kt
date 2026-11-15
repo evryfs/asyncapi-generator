@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.source.DocumentArray
 import dev.banking.asyncapi.generator.core.source.DocumentNode
 import dev.banking.asyncapi.generator.core.source.DocumentObject
 import dev.banking.asyncapi.generator.core.source.InputDocument
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 /**
@@ -27,7 +28,7 @@ internal object ParserNodeFactory {
                 location = document.root.location,
             )
 
-        val rootAddress = NodeAddress.root(sourceId)
+        val rootAddress = NodeAddress.root(SourceId(sourceId))
         registerLocations(
             node = document.root,
             address = rootAddress,

@@ -44,7 +44,7 @@ internal class JsonDocumentReader(
                 val rootToken =
                     parser.nextToken()
                         ?: throw DocumentReadException.EmptyDocument(source.file)
-                val root = parseNode(parser, rootToken, ROOT_PATH, source)
+                val root = parseNode(parser, rootToken, NodePath.ROOT, source)
                 val trailingToken = parser.nextToken()
                 if (trailingToken != null) {
                     throw malformed(source, parser, "Unexpected content after JSON root")
@@ -62,7 +62,7 @@ internal class JsonDocumentReader(
             throw DocumentReadException.MalformedDocument(
                 file = source.file,
                 cause = ex,
-                location = ex.location?.let { locationOf(source, ROOT_PATH, it) },
+                location = ex.location?.let { locationOf(source, NodePath.ROOT, it) },
             )
         }
     }
@@ -70,7 +70,7 @@ internal class JsonDocumentReader(
     private fun parseNode(
         parser: JsonParser,
         token: JsonToken,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
     ): DocumentNode {
         val location = locationOf(source, path, parser.currentTokenLocation())
@@ -101,7 +101,7 @@ internal class JsonDocumentReader(
 
     private fun parseObject(
         parser: JsonParser,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
         location: SourceLocation,
     ): DocumentObject {
@@ -118,7 +118,7 @@ internal class JsonDocumentReader(
             }
 
             val key = parser.currentName()
-            val keyPath = appendDocumentMember(path, key)
+            val keyPath = path.member(key)
             val keyLocation = locationOf(source, keyPath, parser.currentTokenLocation())
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(
@@ -141,7 +141,7 @@ internal class JsonDocumentReader(
 
     private fun parseArray(
         parser: JsonParser,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
         location: SourceLocation,
     ): DocumentArray {
@@ -153,13 +153,13 @@ internal class JsonDocumentReader(
             if (token == JsonToken.END_ARRAY) {
                 return DocumentArray(result, location)
             }
-            result += parseNode(parser, token, appendDocumentIndex(path, result.size), source)
+            result += parseNode(parser, token, path.index(result.size), source)
         }
     }
 
     private fun locationOf(
         source: DocumentSource,
-        path: String,
+        path: NodePath,
         location: JsonLocation,
     ): SourceLocation =
         SourceLocation.from(
@@ -177,7 +177,7 @@ internal class JsonDocumentReader(
         DocumentReadException.MalformedDocument(
             file = source.file,
             cause = JsonParseException(parser, message),
-            location = locationOf(source, ROOT_PATH, parser.currentLocation()),
+            location = locationOf(source, NodePath.ROOT, parser.currentLocation()),
         )
 
     private fun resourceLimitExceeded(
@@ -199,12 +199,11 @@ internal class JsonDocumentReader(
             limit = limit,
             maximum = maximum.toLong(),
             cause = exception,
-            location = exception.location?.let { locationOf(source, ROOT_PATH, it) },
+            location = exception.location?.let { locationOf(source, NodePath.ROOT, it) },
         )
     }
 
     private companion object {
-        const val ROOT_PATH = "root"
         const val UTF_8_BOM = "\uFEFF"
     }
 }

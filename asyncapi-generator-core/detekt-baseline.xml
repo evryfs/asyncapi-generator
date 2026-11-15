@@ -69,7 +69,7 @@
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
     <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
-    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: String, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
+    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: NodePath, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$private fun normalizeAsyncApiSchemaNode( schemaNode: ObjectNode, schema: Schema, )</ID>
     <ID>LongMethod:KafkaHeaderParameterNames.kt$KafkaHeaderParameterNames$fun resolve( headerContractName: String, wireNames: Collection&lt;String&gt;, ): Map&lt;String, String&gt;</ID>
@@ -177,7 +177,7 @@
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun TypeRef.imports( modelPackage: String, declaringType: String, listImport: String? = null, mapImport: String? = null, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
-    <ID>OutdatedDocumentation:YamlDocumentReader.kt$YamlDocumentReader$private fun parseNode( node: Node, path: String, source: DocumentSource, ancestors: MutableSet&lt;Node&gt; = Collections.newSetFromMap(IdentityHashMap()), ): DocumentNode</ID>
+    <ID>OutdatedDocumentation:YamlDocumentReader.kt$YamlDocumentReader$private fun parseNode( node: Node, path: NodePath, source: DocumentSource, ancestors: MutableSet&lt;Node&gt; = Collections.newSetFromMap(IdentityHashMap()), ): DocumentNode</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
     <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun resolveReference( reference: Reference, sourceFile: File, ): ExternalReferencePathResolver.ResolvedReference?</ID>
@@ -218,7 +218,7 @@
     <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
     <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
-    <ID>ReturnCount:SourceRepository.kt$SourceRepository$internal fun resolveAddress( sourceId: String, pointerSegments: List&lt;String&gt;, ): NodeAddress?</ID>
+    <ID>ReturnCount:SourceRepository.kt$SourceRepository$internal fun resolveAddress( sourceId: SourceId, pointerSegments: List&lt;String&gt;, ): NodeAddress?</ID>
     <ID>ReturnCount:ValidationFindingFormatter.kt$ValidationFindingFormatter$private fun snippet( finding: ValidationFinding, asyncApiContext: AsyncApiContext, ): String</ID>
     <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
     <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IOException</ID>
@@ -230,8 +230,8 @@
     <ID>ThrowsCount:SourceReader.kt$SourceReader$fun read(file: File): InputDocument</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
     <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
-    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: String, source: DocumentSource, ): DocumentNode</ID>
-    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: String, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
+    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: NodePath, source: DocumentSource, ): DocumentNode</ID>
+    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: NodePath, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
     <ID>ThrowsCount:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
@@ -240,7 +240,7 @@
     <ID>ThrowsCount:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
     <ID>ThrowsCount:TopicParameterProperties.kt$TopicParameterProperties.Companion$fun fromConfigurationValues( values: Map&lt;String, String&gt;, path: String, ): TopicParameterProperties</ID>
     <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
-    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$private fun parseMapping( node: MappingNode, path: String, source: DocumentSource, location: SourceLocation, ancestors: MutableSet&lt;Node&gt;, ): DocumentObject</ID>
+    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$private fun parseMapping( node: MappingNode, path: NodePath, source: DocumentSource, location: SourceLocation, ancestors: MutableSet&lt;Node&gt;, ): DocumentObject</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>

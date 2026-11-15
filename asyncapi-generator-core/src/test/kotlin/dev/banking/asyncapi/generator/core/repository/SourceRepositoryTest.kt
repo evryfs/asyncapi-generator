@@ -38,7 +38,6 @@ class SourceRepositoryTest {
     ) = ParserNodeFactory.root(
         SourceReader.read(
             DocumentSource(
-                id = file.nameWithoutExtension,
                 file = file.canonicalFile,
                 content = content,
                 format = InputFormat.YAML,

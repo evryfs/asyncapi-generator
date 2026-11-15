@@ -130,6 +130,9 @@ when detekt was introduced. The baseline only shrinks:
 - Never add an entry to a baseline. Fix the finding, or, if the rule is wrong
   for that case, suppress it in code with `@Suppress` and a comment that says
   why.
+- A baseline entry is keyed by the function signature. When a refactoring
+  changes the signature of a function that already has an entry, update the
+  key in the same change; that is not a new finding.
 - When a cleanup fixes a baselined finding, remove its entry. Regenerate the
   baseline with `mvn detekt:create-baseline -pl <module>` and check that the
   diff only removes lines.

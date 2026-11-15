@@ -219,8 +219,8 @@ Every `ParserDiagnostic` exposes:
 - expected type or condition;
 - actual value category and actual plain value when applicable;
 - parser path; and
-- `SourceLocation`, containing source identifier, file, one-based line, and
-  one-based column.
+- `SourceLocation`, containing file, path, one-based line, and one-based
+  column.
 
 Current categories are:
 
@@ -242,8 +242,8 @@ the stable surface for programmatic assertions.
 
 ## Internal identity and display paths
 
-Repositories identify nodes with a canonical source identifier and typed
-member/index segments. A rendered dot path is never parsed to recover identity.
+Repositories identify nodes with a `NodeAddress`: the `SourceId` of the
+document, unique within one load, and the node's `NodePath`. A rendered dot path is never parsed to recover identity.
 This distinguishes a component named `A.properties.x` from property `x` below
 component `A`, and distinguishes an object member named `"0"` from array index
 `0`.

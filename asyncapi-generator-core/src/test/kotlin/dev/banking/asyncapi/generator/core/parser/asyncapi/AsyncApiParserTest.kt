@@ -78,7 +78,6 @@ class AsyncApiParserTest {
         val sources =
             listOf(
                 DocumentSource(
-                    id = "unknown-yaml",
                     file = File("unknown.yaml").canonicalFile,
                     content =
                         """
@@ -91,7 +90,6 @@ class AsyncApiParserTest {
                     format = InputFormat.YAML,
                 ),
                 DocumentSource(
-                    id = "unknown-json",
                     file = File("unknown.json").canonicalFile,
                     content =
                         """

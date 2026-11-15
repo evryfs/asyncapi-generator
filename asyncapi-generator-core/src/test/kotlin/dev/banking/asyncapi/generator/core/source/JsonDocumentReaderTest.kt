@@ -16,7 +16,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/semantic-scalars.json")
         val source =
             DocumentSource(
-                id = "semantic-scalars",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -45,7 +44,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/malformed.json")
         val source =
             DocumentSource(
-                id = "malformed",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -65,7 +63,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/invalid-root.json")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -84,7 +81,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/empty.json")
         val source =
             DocumentSource(
-                id = "empty",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -100,7 +96,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/duplicate-key.json")
         val source =
             DocumentSource(
-                id = "duplicate-key",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -126,7 +121,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/invalid-root.json")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content = """{"root":{"child":{"leaf":true}}}""",
                 format = InputFormat.JSON,
@@ -146,7 +140,6 @@ class JsonDocumentReaderTest {
         val file = TestResources.file("reader/json/source-map.json")
         val source =
             DocumentSource(
-                id = "source-map",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.JSON,
@@ -156,42 +149,36 @@ class JsonDocumentReaderTest {
         val info = assertIs<DocumentObject>(root["info"])
         val tags = assertIs<DocumentArray>(info["tags"])
 
-        assertEquals(source.id, root.location.sourceId)
         assertEquals(source.file, root.location.file)
         assertEquals("root", root.location.path)
         assertEquals(1, root.location.line)
         assertTrue(root.location.column >= 1)
 
         val asyncapiMember = assertNotNull(root.member("asyncapi"))
-        assertEquals(source.id, asyncapiMember.keyLocation.sourceId)
         assertEquals(source.file, asyncapiMember.keyLocation.file)
         assertEquals("root.asyncapi", asyncapiMember.keyLocation.path)
         assertEquals(2, asyncapiMember.keyLocation.line)
         assertTrue(asyncapiMember.keyLocation.column >= 1)
 
         val infoMember = assertNotNull(root.member("info"))
-        assertEquals(source.id, infoMember.keyLocation.sourceId)
         assertEquals(source.file, infoMember.keyLocation.file)
         assertEquals("root.info", infoMember.keyLocation.path)
         assertEquals(3, infoMember.keyLocation.line)
         assertTrue(infoMember.keyLocation.column >= 1)
 
         val titleMember = assertNotNull(info.member("title"))
-        assertEquals(source.id, titleMember.keyLocation.sourceId)
         assertEquals(source.file, titleMember.keyLocation.file)
         assertEquals("root.info.title", titleMember.keyLocation.path)
         assertEquals(4, titleMember.keyLocation.line)
         assertTrue(titleMember.keyLocation.column >= 1)
 
         val tagsMember = assertNotNull(info.member("tags"))
-        assertEquals(source.id, tagsMember.keyLocation.sourceId)
         assertEquals(source.file, tagsMember.keyLocation.file)
         assertEquals("root.info.tags", tagsMember.keyLocation.path)
         assertEquals(5, tagsMember.keyLocation.line)
         assertTrue(tagsMember.keyLocation.column >= 1)
 
         val firstTag = tags[0]
-        assertEquals(source.id, firstTag.location.sourceId)
         assertEquals(source.file, firstTag.location.file)
         assertEquals("root.info.tags[0]", firstTag.location.path)
         assertEquals(6, firstTag.location.line)

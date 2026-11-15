@@ -93,7 +93,6 @@ class DocumentNodeTest {
         column: Int,
     ): SourceLocation =
         SourceLocation(
-            sourceId = "fixture",
             file = File("fixture.yaml"),
             path = path,
             line = line,
