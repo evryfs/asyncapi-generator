@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.context.ParserLoadResourceLimits
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
@@ -11,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -229,7 +229,7 @@ class SchemaParserMultiFormatTest {
         )
         val limitedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxNativeSchemaAssetBytes = 4,
                 ),
             )
@@ -315,7 +315,7 @@ class SchemaParserMultiFormatTest {
         val assetBytes = asset.readBytes().size.toLong()
         val exactContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxAggregateSourceBytes = sourceBytes + assetBytes,
                 ),
             )
@@ -333,7 +333,7 @@ class SchemaParserMultiFormatTest {
 
         val limitedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxAggregateSourceBytes = sourceBytes + assetBytes - 1,
                 ),
             )

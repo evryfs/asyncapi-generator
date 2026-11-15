@@ -204,13 +204,13 @@ class DocumentReaderContractTest {
         val byteFailure =
             assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
                 YamlDocumentReader(
-                    DocumentReaderLimits.DEFAULT.copy(maxDocumentBytes = 3),
+                    SourceLimits(maxDocumentBytes = 3),
                 ).read(byteLimitedSource)
             }
         val characterFailure =
             assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
                 YamlDocumentReader(
-                    DocumentReaderLimits.DEFAULT.copy(maxDocumentCharacters = 3),
+                    SourceLimits(maxDocumentCharacters = 3),
                 ).read(characterLimitedSource)
             }
 
@@ -223,7 +223,7 @@ class DocumentReaderContractTest {
     @Test
     fun `readers enforce the same encoded document size limit`() {
         val limits =
-            DocumentReaderLimits.DEFAULT.copy(
+            SourceLimits(
                 maxDocumentBytes = 16,
                 maxDocumentCharacters = 16,
             )
@@ -318,7 +318,7 @@ class DocumentReaderContractTest {
 
     @Test
     fun `readers enforce the same numeric token limit`() {
-        val limits = DocumentReaderLimits.DEFAULT.copy(maxNumberCharacters = 4)
+        val limits = SourceLimits(maxNumberCharacters = 4)
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(

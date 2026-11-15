@@ -298,7 +298,7 @@ class YamlDocumentReaderTest {
     fun `normalizes nesting limit failures`() {
         val constrainedReader =
             YamlDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
+                SourceLimits(maxNestingDepth = 2),
             )
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
@@ -326,7 +326,7 @@ class YamlDocumentReaderTest {
     fun `limits expanded collection aliases`() {
         val constrainedReader =
             YamlDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxAliasesForCollections = 1),
+                SourceLimits(maxAliasesForCollections = 1),
             )
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =

@@ -29,6 +29,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -474,7 +475,7 @@ class ExternalReferenceLoadingTest {
         )
         val limitedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(maxSourceDocuments = 1),
+                SourceLimits(maxSourceDocuments = 1),
             )
         val root = ParserNodeFactory.root(SourceReader.read(main), limitedContext)
 
@@ -522,7 +523,7 @@ class ExternalReferenceLoadingTest {
         )
         val repeatedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxSourceDocuments = 2,
                     maxReferenceTargets = 1,
                 ),
@@ -544,7 +545,7 @@ class ExternalReferenceLoadingTest {
         )
         val distinctContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(maxReferenceTargets = 1),
+                SourceLimits(maxReferenceTargets = 1),
             )
         val distinctRoot =
             ParserNodeFactory.root(
@@ -587,7 +588,7 @@ class ExternalReferenceLoadingTest {
         )
         val limitedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(maxExternalReferenceDepth = 2),
+                SourceLimits(maxExternalReferenceDepth = 2),
             )
         val limitedRoot = ParserNodeFactory.root(SourceReader.read(main), limitedContext)
 
@@ -607,7 +608,7 @@ class ExternalReferenceLoadingTest {
         second.writeText("${'$'}ref: ./first.yaml")
         val cyclicContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxReferenceTargets = 2,
                     maxExternalReferenceDepth = 2,
                 ),
@@ -640,7 +641,7 @@ class ExternalReferenceLoadingTest {
         val fragmentBytes = fragment.readBytes().size.toLong()
         val limitedContext =
             AsyncApiContext(
-                ParserLoadResourceLimits(
+                SourceLimits(
                     maxAggregateSourceBytes = mainBytes + fragmentBytes - 1,
                 ),
             )

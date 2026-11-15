@@ -34,7 +34,7 @@ internal class NativeSchemaAssetReader(
                 )?.file ?: return null
 
         return try {
-            asyncApiContext.readNativeSchemaAsset(
+            asyncApiContext.sourceBudget.readNativeSchemaAsset(
                 file = file,
                 location = referenceNode.sourceLocation,
                 path = referenceNode.path,

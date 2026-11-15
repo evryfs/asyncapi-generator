@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.SourceBudget
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
@@ -22,9 +23,7 @@ import java.net.URISyntaxException
  * @param sourceTracking source file tracking for resolving file references
  * @param modelTracking model tracking for source locations and reference origins
  * @param warningCollector collector for external validation warnings
- * @param registerExternalDocument registers an external document with the resource budget
- * @param registerReferenceTarget registers a reference target with the resource budget
- * @param withinExternalReference executes a block within an external reference scope
+ * @param sourceBudget resource accounting for the documents and reference targets of this load
  * @param createParser factory for creating a new parser instance
  * @param createValidator factory for creating a new validator instance
  * @param createReporter factory for creating a new validation reporter instance
@@ -36,9 +35,7 @@ internal class AsyncApiExternalContext(
     private val sourceTracking: SourceTracking,
     private val modelTracking: ModelTracking,
     private val warningCollector: ValidationWarningCollector,
-    private val registerExternalDocument: (File, SourceLocation) -> Unit,
-    private val registerReferenceTarget: (File, String, SourceLocation) -> Unit,
-    private val withinExternalReference: (SourceLocation, () -> Unit) -> Unit,
+    private val sourceBudget: SourceBudget,
     private val createParser: () -> AsyncApiParser,
     private val createValidator: () -> AsyncApiValidator,
     private val createReporter: () -> ValidationReporter,
@@ -86,7 +83,7 @@ internal class AsyncApiExternalContext(
         val referenceLocation = referenceLocation(reference)
         val documentKey =
             try {
-                registerExternalDocument(externalFile, referenceLocation)
+                sourceBudget.registerExternalDocument(externalFile, referenceLocation)
                 externalFile.canonicalPath
             } catch (exception: IOException) {
                 throw missingDocument(reference, externalFile)
@@ -98,7 +95,7 @@ internal class AsyncApiExternalContext(
                 readDocument(externalFile)
             }
         try {
-            registerReferenceTarget(
+            sourceBudget.registerReferenceTarget(
                 externalFile,
                 resolved.pointer.toString(),
                 referenceLocation,
@@ -115,7 +112,7 @@ internal class AsyncApiExternalContext(
                 throw missingTarget(reference)
             }
             if (!loadedDocuments.add(documentKey)) return
-            withinExternalReference(referenceLocation) {
+            sourceBudget.withinExternalReference(referenceLocation) {
                 val parser = createParser()
                 val parsed = parser.parse(rootNode)
                 val result = createValidator().validate(parsed)
@@ -136,7 +133,7 @@ internal class AsyncApiExternalContext(
                     parserProfile = parserProfile?.name.orEmpty(),
                 )
             if (!loadedFragments.add(fragmentIdentity)) return
-            withinExternalReference(referenceLocation) {
+            sourceBudget.withinExternalReference(referenceLocation) {
                 parseFragment(target, reference)
             }
         }

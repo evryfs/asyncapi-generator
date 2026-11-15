@@ -17,13 +17,13 @@ The reader converts YAML or JSON files into a format-independent document tree. 
 
 ## Architecture
 
-The reader stage has three layers:
+The reader stage consists of these parts:
 
 **`SourceReader`** is the entry point. It detects the input format from the file extension, reads the content within byte limits, creates a `DocumentSource`, and delegates to the format-specific reader.
 
 **`YamlDocumentReader`** and **`JsonDocumentReader`** parse the content into a tree of `DocumentNode` values. Each node type — `DocumentObject`, `DocumentArray`, `DocumentString`, `DocumentNumber`, `DocumentBoolean`, `DocumentNull` — maps directly to a JSON or YAML value kind. The readers attach `SourceLocation` to every node during parsing.
 
-**`DocumentReaderLimits`** enforces resource constraints before parsing begins. The default limits are:
+**`SourceLimits`** holds every resource limit of one load. The readers enforce the limits for each document:
 
 | Limit                   | Default |
 |-------------------------|---------|
@@ -33,7 +33,17 @@ The reader stage has three layers:
 | Max collection aliases  | 50      |
 | Max number characters   | 1,000   |
 
-These limits prevent denial-of-service from oversized or deeply nested inputs.
+**`SourceBudget`** enforces the limits for the whole load, across the root document, its external documents, and native schema assets:
+
+| Limit                        | Default |
+|------------------------------|---------|
+| Max source documents         | 256     |
+| Max reference targets        | 4,096   |
+| Max external reference depth | 64      |
+| Max aggregate source bytes   | 64 MiB  |
+| Max native schema asset size | 20 MiB  |
+
+These limits prevent denial-of-service from oversized, deeply nested, or endlessly referencing inputs.
 
 ## What it does not do
 

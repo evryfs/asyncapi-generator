@@ -2,35 +2,30 @@ package dev.banking.asyncapi.generator.core.source
 
 import java.io.File
 import java.io.IOException
+import java.nio.charset.CharacterCodingException
 
 /**
- * Selects the correct format-specific reader for an input file.
+ * Reads an input file into an [InputDocument].
  *
- * This is the reader-stage entry point for file-based inputs. It detects the
- * input format, creates the `DocumentSource`, and delegates parsing to a
- * format-specific reader.
+ * It detects the input format from the file extension, reads the content within the document limits, and
+ * delegates to the reader for that format.
  */
 internal object SourceReader {
-    fun read(file: File): InputDocument {
+    fun read(
+        file: File,
+        limits: SourceLimits = SourceLimits(),
+    ): InputDocument {
         requireInputFile(file)
         val format =
             InputFormat.fromFile(file)
                 ?: throw DocumentReadException.UnsupportedFormat(file, file.extension.ifBlank { "<none>" })
-        val content =
-            try {
-                DocumentReaderLimits.DEFAULT.readContent(file)
-            } catch (exception: IOException) {
-                throw DocumentReadException.UnreadableDocument(file, exception)
-            } catch (exception: SecurityException) {
-                throw DocumentReadException.UnreadableDocument(file, exception)
-            }
         val source =
             DocumentSource(
                 file = file,
-                content = content,
+                content = readContent(file, limits),
                 format = format,
             )
-        return read(source)
+        return read(source, limits)
     }
 
     /** Fails with a reader error when [file] does not exist or is not a regular file. */
@@ -39,9 +34,42 @@ internal object SourceReader {
         if (!file.isFile) throw DocumentReadException.NotAFile(file)
     }
 
-    fun read(source: DocumentSource): InputDocument =
+    fun read(
+        source: DocumentSource,
+        limits: SourceLimits = SourceLimits(),
+    ): InputDocument =
         when (source.format) {
-            InputFormat.YAML -> YamlDocumentReader().read(source)
-            InputFormat.JSON -> JsonDocumentReader().read(source)
+            InputFormat.YAML -> YamlDocumentReader(limits).read(source)
+            InputFormat.JSON -> JsonDocumentReader(limits).read(source)
+        }
+
+    private fun readContent(
+        file: File,
+        limits: SourceLimits,
+    ): String {
+        val bytes =
+            readBytesAtMost(file, limits.maxDocumentBytes)
+                ?: throw limits.documentLimitExceeded(
+                    file,
+                    DocumentResourceLimit.DOCUMENT_BYTES,
+                    limits.maxDocumentBytes,
+                )
+        return try {
+            bytes.decodeUtf8Strictly()
+        } catch (exception: CharacterCodingException) {
+            throw DocumentReadException.MalformedDocument(file, exception)
+        }
+    }
+
+    private fun readBytesAtMost(
+        file: File,
+        maxBytes: Int,
+    ): ByteArray? =
+        try {
+            file.readBytesAtMost(maxBytes)
+        } catch (exception: IOException) {
+            throw DocumentReadException.UnreadableDocument(file, exception)
+        } catch (exception: SecurityException) {
+            throw DocumentReadException.UnreadableDocument(file, exception)
         }
 }

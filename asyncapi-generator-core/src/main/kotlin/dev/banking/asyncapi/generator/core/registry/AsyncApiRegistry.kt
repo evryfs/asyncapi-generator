@@ -25,7 +25,7 @@ internal object AsyncApiRegistry {
         asyncApiContext: AsyncApiContext,
     ): ParserNode =
         ParserNodeFactory.root(
-            document = SourceReader.read(file),
+            document = SourceReader.read(file, asyncApiContext.sourceLimits),
             context = asyncApiContext,
         )
 
