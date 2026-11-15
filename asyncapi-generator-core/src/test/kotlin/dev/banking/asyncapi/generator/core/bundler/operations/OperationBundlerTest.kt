@@ -42,7 +42,7 @@ class OperationBundlerTest {
         assertTrue(assertIs<OperationTraitInterface.OperationTraitReference>(bundledOperation.traits!!.single()).reference.inline)
         val bundledReply = assertIs<OperationReplyInterface.OperationReplyReference>(bundledOperation.reply)
         assertTrue(bundledReply.reference.inline)
-        assertTrue(assertIs<OperationReply>(bundledReply.reference.model).channel!!.inline)
+        assertFalse(assertIs<OperationReply>(bundledReply.reference.model).channel!!.inline, "the reply channel stays a reference")
         assertFalse(operationReference.inline, "the input reference is not changed")
         assertFalse(replyChannelReference.inline, "the input reference is not changed")
     }

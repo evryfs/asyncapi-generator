@@ -146,9 +146,10 @@ class BundledDocumentApprovalTest {
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
         val message = assertIs<MessageInterface.MessageInline>(components.messages?.get("MyAccountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(message.bindings?.get("kafka")).binding
-        val keySchema = assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
-        assertEquals("object", keySchema.schema.type)
-        assertEquals(setOf("institutionId", "accountId"), keySchema.schema.properties?.keys)
+        val keySchema = assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
+        assertEquals("#/components/schemas/myAccountKey", keySchema.reference.ref, "the key keeps the name of its pointer")
+        val promotedKey = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["myAccountKey"])
+        assertEquals(setOf("institutionId", "accountId"), promotedKey.schema.properties?.keys)
 
         val bundledText = bundledFile.readText()
         assertFalse(bundledText.contains("key-schemas.yaml"))
@@ -199,10 +200,10 @@ class BundledDocumentApprovalTest {
 
         val accountUpdated = assertIs<MessageInterface.MessageInline>(channel.messages?.get("accountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(accountUpdated.bindings?.get("kafka")).binding
-        assertIs<SchemaInterface.SchemaInline>(kafkaBinding.kafkaKeySchema)
+        assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
 
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
-        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "ParentNode", "ChildNode"), components.schemas?.keys)
+        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "myAccountKey", "ParentNode", "ChildNode"), components.schemas?.keys)
 
         val bundledText = bundledFile.readText()
         val externalReferences =
@@ -285,6 +286,25 @@ class BundledDocumentApprovalTest {
         BundlerApprovals.verify(
             generated = bundledFile.readText(),
             scenario = "reference-chains",
+        )
+    }
+
+    @Test
+    fun `bundles binding schemas that reference their own external document`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/external-binding-local-ref/main.yaml",
+                scenario = "external-binding-local-ref",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        assertEquals(setOf("Key"), components.schemas?.keys)
+        assertFalse(bundledFile.readText().contains("messages.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "external-binding-local-ref",
         )
     }
 

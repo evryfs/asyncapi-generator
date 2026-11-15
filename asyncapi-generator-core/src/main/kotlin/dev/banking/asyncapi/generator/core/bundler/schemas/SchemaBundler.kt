@@ -50,6 +50,24 @@ internal class SchemaBundler {
                 schemaInterface
         }
 
+    /**
+     * Bundles a schema field of a binding. A reference that leaves the root document is promoted to
+     * `components.schemas` under its pointer name, so the schema keeps the name it has in the source
+     * contract and code generated from the bundle matches code generated from the original files.
+     */
+    fun bundleBindingField(schemaInterface: SchemaInterface, context: BundlingContext): SchemaInterface {
+        if (schemaInterface is SchemaInterface.SchemaReference) {
+            val reference = schemaInterface.reference
+            val referencedModel = reference.requireModel<Any>()
+            if (referencedModel !is SchemaInterface.BooleanSchema &&
+                (reference.ref.isExternalReference() || context.externalDocumentScope)
+            ) {
+                return bundlePromotedReference(reference, referencedModel, context)
+            }
+        }
+        return bundle(schemaInterface, context)
+    }
+
     private fun bundleReference(
         schemaInterface: SchemaInterface.SchemaReference,
         context: BundlingContext,

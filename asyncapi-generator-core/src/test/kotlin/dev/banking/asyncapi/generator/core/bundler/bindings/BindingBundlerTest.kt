@@ -33,10 +33,10 @@ class BindingBundlerTest {
         ).binding
 
         val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
-        val bundledKey = assertIs<SchemaInterface.SchemaInline>(bundled.content["key"])
-        assertEquals("object", bundledKey.schema.type)
-        assertSame(originalKey, bundled.kafkaKeySchema)
-        assertSame(originalKey, bundled.protocolBindings.single().schemaFields["key"])
+        val bundledKey = assertIs<SchemaInterface.SchemaReference>(bundled.content["key"])
+        assertEquals("#/components/schemas/AccountKey", bundledKey.reference.ref, "the key keeps its source name")
+        assertSame(bundledKey, bundled.kafkaKeySchema)
+        assertSame(bundledKey, bundled.protocolBindings.single().schemaFields["key"])
         assertEquals(
             mapOf("\$ref" to "key-schemas.yaml#/AccountKey"),
             assertIs<Map<*, *>>(bundled.protocolBindings.single().content)["key"],
@@ -66,9 +66,9 @@ class BindingBundlerTest {
         val bundledBinding = assertIs<Binding>(bundled.reference.model)
         val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
         val bundledKafka = assertIs<Map<*, *>>(bundledBinding.content["kafka"])
-        val bundledKey = assertIs<SchemaInterface.SchemaInline>(bundledKafka["key"])
-        assertEquals("object", bundledKey.schema.type)
-        assertSame(originalKey, bundledBinding.kafkaKeySchema)
+        val bundledKey = assertIs<SchemaInterface.SchemaReference>(bundledKafka["key"])
+        assertEquals("#/components/schemas/AccountKey", bundledKey.reference.ref, "the key keeps its source name")
+        assertSame(bundledKey, bundledBinding.kafkaKeySchema)
     }
 
     @Test
@@ -101,8 +101,8 @@ class BindingBundlerTest {
 
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["clientId"]).schema.type)
-        assertSame(groupId, bundled.protocolBindings.single().schemaFields["groupId"])
-        assertSame(clientId, bundled.protocolBindings.single().schemaFields["clientId"])
+        assertSame(bundled.content["groupId"], bundled.protocolBindings.single().schemaFields["groupId"])
+        assertSame(bundled.content["clientId"], bundled.protocolBindings.single().schemaFields["clientId"])
     }
 
     @Test
@@ -130,7 +130,7 @@ class BindingBundlerTest {
             bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
         ).binding
 
-        assertSame(binding, bundled)
+        assertEquals(binding, bundled)
     }
 
     private fun kafkaBinding(content: Map<String, Any?>): Binding {

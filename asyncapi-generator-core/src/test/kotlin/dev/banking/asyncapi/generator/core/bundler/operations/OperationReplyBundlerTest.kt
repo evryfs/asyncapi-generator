@@ -36,8 +36,8 @@ class OperationReplyBundlerTest {
         assertTrue(
             assertIs<OperationReplyAddressInterface.OperationReplyAddressReference>(bundledReply.address).reference.inline,
         )
-        assertTrue(bundledReply.channel!!.inline)
-        assertTrue(bundledReply.messages!!.single().inline)
+        assertFalse(bundledReply.channel!!.inline, "the reply channel stays a reference")
+        assertFalse(bundledReply.messages!!.single().inline, "reply messages stay references")
         assertFalse(replyReference.inline, "the input reference is not changed")
         assertFalse(channelReference.inline, "the input reference is not changed")
         assertFalse(messageReference.inline, "the input reference is not changed")
