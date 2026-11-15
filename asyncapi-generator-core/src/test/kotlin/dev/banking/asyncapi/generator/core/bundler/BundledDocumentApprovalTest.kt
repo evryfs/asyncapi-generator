@@ -344,6 +344,25 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `keeps references of same named documents in different directories apart`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/same-named-documents/main.yaml",
+                scenario = "same-named-documents",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        val bundledText = bundledFile.readText()
+        assertFalse(bundledText.contains("shared.yaml"))
+        assertFalse(bundledText.contains("common.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledText,
+            scenario = "same-named-documents",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,

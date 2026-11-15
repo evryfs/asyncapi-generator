@@ -1,0 +1,24 @@
+asyncapi: 3.0.0
+info:
+  title: Same Named Documents
+  version: 1.0.0
+channels:
+  events:
+    address: events
+    messages:
+      occurred:
+        payload:
+          type: object
+          properties:
+            inner:
+              type: object
+              properties:
+                next:
+                  type: object
+                  properties:
+                    inner:
+                      type: object
+                      properties:
+                        code:
+                          type: string
+        name: Occurred
