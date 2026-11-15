@@ -29,6 +29,8 @@ internal object ValidationFormats {
 
     fun isReusableObjectName(value: String): Boolean = REUSABLE_OBJECT_NAME.matches(value)
 
+    fun isComponentName(value: String): Boolean = COMPONENT_NAME.matches(value)
+
     fun isRuntimeExpression(value: String): Boolean {
         val prefix = RUNTIME_EXPRESSION_PREFIXES.firstOrNull(value::startsWith) ?: return false
         if (value == prefix) return true
@@ -44,5 +46,6 @@ internal object ValidationFormats {
         "\$message.payload",
     )
     private val INVALID_JSON_POINTER_ESCAPE = Regex("~(?![01])")
+    private val COMPONENT_NAME = Regex("^[a-zA-Z0-9.\\-_]+$")
     private val REUSABLE_OBJECT_NAME = Regex("^[A-Za-z0-9_-]+$")
 }

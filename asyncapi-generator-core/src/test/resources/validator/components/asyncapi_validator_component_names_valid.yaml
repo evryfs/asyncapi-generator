@@ -1,0 +1,24 @@
+asyncapi: 3.0.0
+info:
+  title: Dotted component names
+  version: 1.0.0
+channels:
+  events:
+    address: events.{user_id}
+    parameters:
+      user_id:
+        $ref: '#/components/parameters/user.id'
+    messages:
+      created:
+        $ref: '#/components/messages/event.created'
+components:
+  servers:
+    eu.prod:
+      host: kafka.example.com
+      protocol: kafka
+  parameters:
+    user.id:
+      description: User identifier
+  messages:
+    event.created:
+      payload: true

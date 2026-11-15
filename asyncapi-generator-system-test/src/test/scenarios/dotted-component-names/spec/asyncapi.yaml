@@ -1,0 +1,36 @@
+asyncapi: 3.0.0
+info:
+  title: Dotted component names
+  version: 1.0.0
+servers:
+  production:
+    $ref: '#/components/servers/eu.prod'
+channels:
+  orders:
+    address: orders.{tenant_id}
+    parameters:
+      tenant_id:
+        $ref: '#/components/parameters/tenant.id'
+    messages:
+      order:
+        $ref: '#/components/messages/Order'
+operations:
+  sendOrder:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+components:
+  servers:
+    eu.prod:
+      host: kafka.example.com:9092
+      protocol: kafka
+  parameters:
+    tenant.id:
+      description: Tenant identifier
+  messages:
+    Order:
+      payload:
+        type: object
+        properties:
+          id:
+            type: string

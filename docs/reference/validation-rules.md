@@ -19,6 +19,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-TAG-NAME-REQUIRED` | Tag name is empty. | AsyncAPI 3.0 Tag Object | specification / error |
 | `AAS3-SERVER-HOST-REQUIRED` | Server host is empty. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-NAME-FORMAT` | Server map key uses unsupported characters. | AsyncAPI 3.0 Servers Object | specification / error |
+| `AAS3-COMPONENT-NAME-FORMAT` | Component map key uses unsupported characters (letters, digits, `.`, `-`, `_` allowed). | AsyncAPI 3.0 Components Object | specification / error |
 | `ADV-SERVER-HOST-PROTOCOL` | Host contains a protocol scheme. | Project guidance | advisory / warning |
 | `AAS3-SERVER-VARIABLE-UNDEFINED` | Host or pathname variable lacks a definition. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-PROTOCOL-REQUIRED` | Server protocol is empty. | AsyncAPI 3.0 Server Object | specification / error |

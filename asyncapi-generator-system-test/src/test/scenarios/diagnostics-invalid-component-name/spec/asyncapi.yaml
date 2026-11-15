@@ -1,0 +1,21 @@
+asyncapi: 3.0.0
+info:
+  title: Invalid component name
+  version: 1.0.0
+channels:
+  orders:
+    address: orders
+    messages:
+      order:
+        $ref: '#/components/messages/Order'
+components:
+  messages:
+    Order:
+      payload:
+        type: object
+        properties:
+          id:
+            type: string
+    "Bad name!":
+      payload:
+        type: string

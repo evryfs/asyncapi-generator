@@ -455,6 +455,14 @@ private val allScenarios: List<Scenario> = listOf(
             ),
         ),
     ),
+    invalidContract(
+        name = "invalid-component-name",
+        expected = ExpectedFailure(messages = listOf("Bad name!", "Component messages key")),
+    ),
+    Scenario(
+        name = "dotted-component-names",
+        executions = listOf(Execution(id = "dotted-component-names", generatorName = "kotlin", modelPackage = "com.example.model")),
+    ),
 )
 
 /** A contract every frontend must reject with a clear diagnostic instead of hanging or generating wrong code. */
