@@ -271,6 +271,23 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `inlines the resolved target of reference chains to external components`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/reference-chains/main.yaml",
+                scenario = "reference-chains",
+            )
+
+        bundlerFixtures.validatedDocument(bundledFile)
+        assertFalse(bundledFile.readText().contains("shared.yaml"))
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "reference-chains",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,
