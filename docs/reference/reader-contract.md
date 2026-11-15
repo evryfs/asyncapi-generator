@@ -13,7 +13,7 @@ val document = SourceReader.read(file)
 1. Detects the format from the file extension (`.yaml`/`.yml` → YAML, `.json` → JSON).
 2. Reads the content within the document byte limit from `SourceLimits`.
 3. Creates a `DocumentSource` with the file, content, and format.
-4. Delegates to `YamlDocumentReader` or `JsonDocumentReader`.
+4. Delegates to the `DocumentReader` for the format, `YamlDocumentReader` or `JsonDocumentReader`.
 5. Returns an `InputDocument` containing the source and root node tree.
 
 Unsupported extensions throw `DocumentReadException.UnsupportedFormat`. Read failures throw `DocumentReadException.UnreadableDocument`.
@@ -63,6 +63,8 @@ This allows validators to distinguish between a missing key and a key with an in
 
 ## Resource limits
 
+`SourceLimits` holds the limits. The readers enforce these for each document:
+
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `maxDocumentBytes` | 20 MiB | Maximum file size in bytes |
@@ -71,13 +73,20 @@ This allows validators to distinguish between a missing key and a key with an in
 | `maxAliasesForCollections` | 50 | Maximum YAML alias references per collection |
 | `maxNumberCharacters` | 1,000 | Maximum length of a numeric token |
 
-Limits are enforced before parsing. A document that exceeds any limit throws `DocumentReadException.ResourceLimitExceeded`.
+A document that exceeds any of these limits throws `DocumentReadException.ResourceLimitExceeded`. The limits for a whole load (documents, reference targets, external reference depth, aggregate bytes, and native schema assets) are enforced by `SourceBudget` and reported as the `parser.load-resource-limit-exceeded` diagnostic.
 
 ## Error types
 
+Every failure is a `DocumentReadException` that names the file and, when known, the location.
+
 | Exception | When |
 |-----------|------|
-| `UnsupportedFormat` | File extension is not `.yaml`, `.yml`, or `.json` |
-| `UnreadableDocument` | File cannot be read (I/O or security error) |
-| `ResourceLimitExceeded` | Document exceeds a configured resource limit |
-| `MalformedDocument` | Content contains invalid UTF-8 or unmappable characters |
+| `MissingDocument` | The file does not exist |
+| `NotAFile` | The path exists but is not a regular file |
+| `UnsupportedFormat` | The file extension is not `.yaml`, `.yml`, or `.json` |
+| `UnreadableDocument` | The file cannot be read (I/O or security error) |
+| `EmptyDocument` | The content is empty or only whitespace |
+| `ResourceLimitExceeded` | The document exceeds a per-document resource limit |
+| `MalformedDocument` | The content is not valid UTF-8, YAML, or JSON, or uses a construct the reader rejects, such as a recursive YAML alias or a YAML-only number |
+| `InvalidMappingKey` | A YAML mapping key is not a string |
+| `DuplicateKey` | An object declares the same key twice |

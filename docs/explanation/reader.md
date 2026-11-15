@@ -19,9 +19,11 @@ The reader converts YAML or JSON files into a format-independent document tree. 
 
 The reader stage consists of these parts:
 
-**`SourceReader`** is the entry point. It detects the input format from the file extension, reads the content within byte limits, creates a `DocumentSource`, and delegates to the format-specific reader.
+**`SourceReader`** is the entry point. It detects the input format from the file extension, reads the content within the byte limit, creates a `DocumentSource`, and delegates to the reader for that format.
 
-**`YamlDocumentReader`** and **`JsonDocumentReader`** parse the content into a tree of `DocumentNode` values. Each node type — `DocumentObject`, `DocumentArray`, `DocumentString`, `DocumentNumber`, `DocumentBoolean`, `DocumentNull` — maps directly to a JSON or YAML value kind. The readers attach `SourceLocation` to every node during parsing.
+**`DocumentReader`** is implemented by **`YamlDocumentReader`** and **`JsonDocumentReader`**. The interface performs the checks every format shares: document size, byte-order mark, and blank content. Each format only parses its content into a tree of `DocumentNode` values. Each node type — `DocumentObject`, `DocumentArray`, `DocumentString`, `DocumentNumber`, `DocumentBoolean`, `DocumentNull` — maps directly to a JSON or YAML value kind. `DocumentObjectBuilder` collects object members in document order and rejects duplicate keys for both formats, and `YamlScalarReader` converts YAML scalars so that numbers follow JSON syntax.
+
+**`NodePath`** is the position of a value inside one document, such as `root.channels.userSignedUp`, `root.servers[0]`, or `root["channel.name"]`. Every node carries a `SourceLocation` with its file, path, line, and column. **`SourceId`** identifies a document within one load; the parser combines it with a `NodePath` to address a node across all documents of the load.
 
 **`SourceLimits`** holds every resource limit of one load. The readers enforce the limits for each document:
 
