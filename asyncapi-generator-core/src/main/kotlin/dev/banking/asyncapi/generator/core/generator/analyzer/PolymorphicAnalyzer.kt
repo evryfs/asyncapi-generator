@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -14,7 +15,7 @@ internal class PolymorphicAnalyzer {
 
             childSchemaRefs.forEach { childSchemaInterface ->
                 if (childSchemaInterface is SchemaInterface.SchemaReference) {
-                    val childName = childSchemaInterface.reference.ref.substringAfterLast('/')
+                    val childName = MapperUtil.toPascalCase(childSchemaInterface.reference.ref.substringAfterLast('/'))
 
                     // For each child, add an entry mapping it back to its parent.
                     childToParents.getOrPut(childName) { mutableListOf() }.add(parentInterfaceName)

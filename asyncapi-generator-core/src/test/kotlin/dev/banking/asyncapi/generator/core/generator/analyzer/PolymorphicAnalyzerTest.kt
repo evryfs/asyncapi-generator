@@ -65,4 +65,13 @@ class PolymorphicAnalyzerTest {
         assertTrue(parents!!.contains("Parent1"))
         assertTrue(parents.contains("Parent2"))
     }
+
+    @Test
+    fun `analyze should key children by their generated PascalCase name`() {
+        val parent = Schema(oneOf = listOf(SchemaInterface.SchemaReference(Reference("#/c/s/dog_event"))))
+
+        val result = analyzer.analyze(mapOf("Parent" to parent, "DogEvent" to Schema()))
+
+        assertEquals(listOf("Parent"), result["DogEvent"])
+    }
 }
