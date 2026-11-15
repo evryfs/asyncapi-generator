@@ -250,6 +250,27 @@ class BundledDocumentApprovalTest {
         )
     }
 
+    @Test
+    fun `keeps reply channel and message references in the bundle`() {
+        val bundledFile =
+            bundleToTemporaryFile(
+                sourcePath = "bundler/approval/reply-channel/main.yaml",
+                scenario = "reply-channel",
+            )
+
+        val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
+        val sendRequest =
+            assertIs<OperationInterface.OperationInline>(bundledDocument.operations?.get("sendRequest")).operation
+        val reply = assertIs<OperationReplyInterface.OperationReplyInline>(sendRequest.reply).operationReply
+        assertEquals("#/channels/replies", reply.channel?.ref)
+        assertEquals(listOf("#/channels/replies/messages/reply"), reply.messages?.map { it.ref })
+
+        BundlerApprovals.verify(
+            generated = bundledFile.readText(),
+            scenario = "reply-channel",
+        )
+    }
+
     private fun bundleToTemporaryFile(
         sourcePath: String,
         scenario: String,
