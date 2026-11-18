@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
+import dev.banking.asyncapi.generator.core.bundler.AsyncApiDocumentSerializer
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedDocumentArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 
 /**
  * Serializes a bundled AsyncAPI document in the configured output format.
@@ -20,8 +20,8 @@ internal class DocumentArtifactGeneration {
                 file = task.file,
                 content =
                     when (task.format) {
-                        DocumentFormat.YAML -> AsyncApiRegistry.serializeYaml(asyncApiDocument)
-                        DocumentFormat.JSON -> AsyncApiRegistry.serializeJson(asyncApiDocument)
+                        DocumentFormat.YAML -> AsyncApiDocumentSerializer.toYaml(asyncApiDocument)
+                        DocumentFormat.JSON -> AsyncApiDocumentSerializer.toJson(asyncApiDocument)
                     },
             ),
         )

@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.registry
+package dev.banking.asyncapi.generator.core.bundler
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -10,6 +10,8 @@ import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -17,35 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AsyncApiRegistryTest {
-    @Test
-    fun `read creates parser root through document reader stage`() {
-        val context = AsyncApiContext()
-        val file = TestResources.file("reader/yaml/source-map.yaml")
-        val root = AsyncApiRegistry.read(file, context)
-        assertEquals("source_map.root", root.name)
-        assertEquals("source_map.root", root.path)
-        assertEquals("3.0.0", root.expectObject().optional("asyncapi")?.expect<String>())
-        assertEquals(1, context.sourceRepository.getLine("source_map.root"))
-        assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
-        assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
-        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
-    }
-
-    @Test
-    fun `read supports json input`() {
-        val context = AsyncApiContext()
-        val file = TestResources.file("reader/json/source-map.json")
-        val root = AsyncApiRegistry.read(file, context)
-        assertEquals("source_map.root", root.name)
-        assertEquals("source_map.root", root.path)
-        assertEquals("3.0.0", root.expectObject().optional("asyncapi")?.expect<String>())
-        assertEquals(1, context.sourceRepository.getLine("source_map.root"))
-        assertEquals(3, context.sourceRepository.getLine("source_map.root.info"))
-        assertEquals(4, context.sourceRepository.getLine("source_map.root.info.title"))
-        assertEquals(6, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
-    }
-
+class AsyncApiDocumentSerializerTest {
     @Test
     fun `write then read preserves YAML scalar values and types`(
         @TempDir tempDir: Path,
@@ -89,7 +63,7 @@ class AsyncApiRegistryTest {
             )
 
         val yamlFile = tempDir.resolve("roundtrip.yaml").toFile()
-        AsyncApiRegistry.writeYaml(yamlFile, document)
+        yamlFile.writeText(AsyncApiDocumentSerializer.toYaml(document))
 
         val yamlText = yamlFile.readText()
         assertTrue(
@@ -102,7 +76,7 @@ class AsyncApiRegistryTest {
         assertTrue(yamlText.contains("x-yaml-date: \"2026-08-03\""))
         assertTrue(yamlText.contains("x-yaml-timestamp: \"2026-08-03T12:34:56Z\""))
 
-        val root = AsyncApiRegistry.read(yamlFile, context)
+        val root = ParserNodeFactory.root(SourceReader.read(yamlFile), context)
         val rootObject = root.expectObject()
         val info = rootObject.required("info").expectObject()
 
@@ -155,8 +129,8 @@ class AsyncApiRegistryTest {
                     ),
             )
 
-        val yaml = AsyncApiRegistry.serializeYaml(schemas)
-        val json = AsyncApiRegistry.serializeJson(schemas)
+        val yaml = AsyncApiDocumentSerializer.toYaml(schemas)
+        val json = AsyncApiDocumentSerializer.toJson(schemas)
         val yamlSchemas = ObjectMapper(YAMLFactory()).readTree(yaml)
         val jsonSchemas = ObjectMapper().readTree(json)
 
