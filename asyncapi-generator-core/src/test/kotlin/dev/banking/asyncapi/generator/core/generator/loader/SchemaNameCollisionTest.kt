@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -631,11 +630,9 @@ class SchemaNameCollisionTest {
             info = Info(title = "Test", version = "1.0.0"),
             channels = channels,
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas = schemas,
-                        messages = messages,
-                    ),
+                Component(
+                    schemas = schemas,
+                    messages = messages,
                 ),
         )
 

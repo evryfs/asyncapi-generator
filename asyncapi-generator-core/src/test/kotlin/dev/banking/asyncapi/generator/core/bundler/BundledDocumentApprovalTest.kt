@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.bundler
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
@@ -83,8 +82,8 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components)
-        val schemas = assertNotNull(components.component.schemas)
+        val components = assertNotNull(bundledDocument.components)
+        val schemas = assertNotNull(components.schemas)
         assertEquals(setOf("LocalEnvelope", "SelectedPayload"), schemas.keys)
         assertIs<SchemaInterface.SchemaInline>(schemas["LocalEnvelope"])
 
@@ -109,8 +108,8 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components)
-        val schemas = assertNotNull(components.component.schemas)
+        val components = assertNotNull(bundledDocument.components)
+        val schemas = assertNotNull(components.schemas)
         assertEquals(setOf("ParentNode", "ChildNode"), schemas.keys)
 
         val parentNode = assertIs<SchemaInterface.SchemaInline>(schemas["ParentNode"])
@@ -141,7 +140,7 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val components = assertNotNull(bundledDocument.components)
         val message = assertIs<MessageInterface.MessageInline>(components.messages?.get("MyAccountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(message.bindings?.get("kafka")).binding
         val keySchema = assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
@@ -204,7 +203,7 @@ class BundledDocumentApprovalTest {
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(accountUpdated.bindings?.get("kafka")).binding
         assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
 
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val components = assertNotNull(bundledDocument.components)
         assertEquals(
             setOf("MessageHeaders", "MyAccountUpdatedPayload", "myAccountKey", "ParentNode", "ChildNode"),
             components.schemas?.keys,
@@ -234,7 +233,7 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val components = assertNotNull(bundledDocument.components)
         assertIs<MessageInterface.MessageInline>(components.messages?.get("AuditEvent"))
         assertIs<OperationTraitInterface.OperationTraitInline>(components.operationTraits?.get("Audited"))
         assertIs<OperationReplyInterface.OperationReplyInline>(components.replies?.get("Accepted"))
@@ -303,7 +302,7 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val components = assertNotNull(bundledDocument.components)
         assertEquals(setOf("Key"), components.schemas?.keys)
         assertFalse(bundledFile.readText().contains("messages.yaml"))
 
@@ -339,7 +338,7 @@ class BundledDocumentApprovalTest {
             )
 
         val bundledDocument = bundlerFixtures.validatedDocument(bundledFile)
-        val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
+        val components = assertNotNull(bundledDocument.components)
         val invoice = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["Invoice"])
         assertEquals(setOf("amount"), invoice.schema.properties?.keys)
 

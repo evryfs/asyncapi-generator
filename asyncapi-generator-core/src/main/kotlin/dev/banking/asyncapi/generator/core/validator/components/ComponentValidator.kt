@@ -2,11 +2,8 @@ package dev.banking.asyncapi.generator.core.validator.components
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.COMPONENT_NAME_FORMAT
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -48,24 +45,12 @@ internal class ComponentValidator(
     private val operationReplyAddressValidator = OperationReplyAddressValidator(asyncApiContext)
     private val operationTraitValidator = OperationTraitValidator(asyncApiContext)
     private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
-    private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(
-        node: ComponentInterface,
+    fun validate(
+        component: Component,
         contextString: String,
         results: ValidationCollector,
     ) {
-        val component: Component? =
-            when (node) {
-                is ComponentInterface.ComponentInline ->
-                    node.component
-
-                is ComponentInterface.ComponentReference -> {
-                    referenceResolver.resolve(node.reference, REFERENCE, contextString, results)
-                    return
-                }
-            }
-        if (component == null) return
         if (!results.visit(component)) return
 
         validateNames(component, results)

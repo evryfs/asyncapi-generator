@@ -46,8 +46,7 @@
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:ChannelValidator.kt$ChannelValidator$private fun validateAddress( node: Channel, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
-    <ID>LongMethod:ComponentParser.kt$ComponentParser$fun parseElement(node: ParserNode): ComponentInterface</ID>
-    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$fun validateInterface( node: ComponentInterface, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ComponentParser.kt$ComponentParser$fun parse(node: ParserNode): Component</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateBindings( component: Component, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateNames( component: Component, results: ValidationCollector, )</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
@@ -151,7 +150,6 @@
     <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: AsyncAPI uses JSON-compatible booleans. Use true or false for booleans; values like yes, no, on, and off are strings."</ID>
     <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."</ID>
     <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
-    <ID>MaxLineLength:RegexPatterns.kt$RegexPatterns$*</ID>
     <ID>NestedBlockDepth:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun parseFragment( target: ExternalReferenceTargetResolver.Target, reference: Reference, )</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
@@ -177,7 +175,6 @@
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
     <ID>ReturnCount:BindingParser.kt$BindingParser$private fun registerKafkaTopicConfiguration( content: Any?, parserNode: ParserNode, location: BindingLocation, protocol: String, )</ID>
-    <ID>ReturnCount:ComponentValidator.kt$ComponentValidator$fun validateInterface( node: ComponentInterface, contextString: String, results: ValidationCollector, )</ID>
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:ExternalReferenceTargetResolver.kt$ExternalReferenceTargetResolver$fun resolve( rootNode: ParserNode, pointer: JsonPointer, ): Target?</ID>
@@ -249,7 +246,6 @@
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EmptyLanguageList : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$GeneratedArtifactCollision : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidAvroName : AsyncApiGeneratorException</ID>
@@ -264,7 +260,6 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeAvroSpecificRecordGenerationFailed : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeProtobufModelGenerationFailed : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NoArtifactsGenerated : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NullComponents : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SchemaNameCollision : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutAddress : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutMessages : AsyncApiGeneratorException</ID>
@@ -272,7 +267,6 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientMethodNameCollision : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaHeaderSchema : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaKeySchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedLanguage : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeAvroPayloadType : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
@@ -281,8 +275,6 @@
     <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$NativeSchemaAssetReadFailure : AsyncApiParseException</ID>
     <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$ParserDiagnosticFailure : AsyncApiParseException</ID>
     <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$UnexpectedSchemaFormat : AsyncApiParseException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiReadException.kt$AsyncApiReadException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiReadException.kt$AsyncApiReadException$InvalidYaml : AsyncApiReadException</ID>
     <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException$ValidateError : AsyncApiValidateException</ID>
     <ID>UndocumentedPublicClass:Binding.kt$Binding</ID>
@@ -298,9 +290,6 @@
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Producer</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$SpringKafka</ID>
     <ID>UndocumentedPublicClass:Component.kt$Component</ID>
-    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface</ID>
-    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface$ComponentInline : ComponentInterface</ID>
-    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface$ComponentReference : ComponentInterface</ID>
     <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
     <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
     <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface</ID>
@@ -338,9 +327,9 @@
     <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageInline : MessageInterface</ID>
     <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageReference : MessageInterface</ID>
     <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitInline : MessageTraitInterface</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitReference : MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$InlineMessageTrait : MessageTraitInterface</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$ReferenceMessageTrait : MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:ModelGeneration.kt$ModelGeneration$Enabled : ModelGeneration</ID>
     <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
     <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>

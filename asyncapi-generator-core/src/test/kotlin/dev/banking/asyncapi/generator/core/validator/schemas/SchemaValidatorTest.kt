@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
@@ -171,7 +170,7 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         assertEquals(emptyList(), results.findings)
 
-        val components = (document.components as ComponentInterface.ComponentInline).component
+        val components = document.components!!
         val payload = components.schemas?.getValue("CompatiblePayload") as SchemaInterface.SchemaInline
         val optionalName = payload.schema.properties?.getValue("optionalName") as SchemaInterface.SchemaInline
         assertEquals(

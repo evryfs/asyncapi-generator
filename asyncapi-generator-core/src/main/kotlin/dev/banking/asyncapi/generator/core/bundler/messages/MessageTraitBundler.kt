@@ -35,11 +35,11 @@ internal class MessageTraitBundler {
         context: BundlingContext,
     ): MessageTraitInterface =
         when (traitInterface) {
-            is MessageTraitInterface.InlineMessageTrait ->
-                MessageTraitInterface.InlineMessageTrait(
-                    bundleTrait(traitInterface.trait, context),
+            is MessageTraitInterface.MessageTraitInline ->
+                MessageTraitInterface.MessageTraitInline(
+                    bundleTrait(traitInterface.messageTrait, context),
                 )
-            is MessageTraitInterface.ReferenceMessageTrait -> {
+            is MessageTraitInterface.MessageTraitReference -> {
                 traitInterface.copy(
                     reference =
                         ReferenceBundler.bundleReferencedModel<MessageTrait>(

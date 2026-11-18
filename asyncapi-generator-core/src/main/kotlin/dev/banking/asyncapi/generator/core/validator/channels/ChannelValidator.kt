@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
+import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT

@@ -32,7 +32,7 @@ class MessageTraitParserTest {
 
         val traits = parser.parseMap(traitsNode)
 
-        val trait = assertIs<MessageTraitInterface.InlineMessageTrait>(traits["commonHeaders"]).trait
+        val trait = assertIs<MessageTraitInterface.MessageTraitInline>(traits["commonHeaders"]).messageTrait
         val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema
         assertIs<SchemaInterface.SchemaInline>(headers.properties?.get("myHeaders"))
         val correlationId = assertIs<CorrelationIdInterface.CorrelationIdInline>(trait.correlationId).correlationId

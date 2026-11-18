@@ -40,7 +40,7 @@ internal class MessageTraitParser(
         val reference = objectNode.optional($$"$ref")?.expect<String>()
         val messageTraitInterface =
             if (reference != null) {
-                MessageTraitInterface.ReferenceMessageTrait(
+                MessageTraitInterface.MessageTraitReference(
                     Reference(
                         ref = reference,
                         referenceCategoryKey = MESSAGE_TRAIT,
@@ -48,7 +48,7 @@ internal class MessageTraitParser(
                 )
             } else {
                 objectNode.expectOnlyMembers(MESSAGE_TRAIT_OBJECT)
-                MessageTraitInterface.InlineMessageTrait(
+                MessageTraitInterface.MessageTraitInline(
                     MessageTrait(
                         headers = objectNode.optional("headers")?.let(schemaParser::parseElement),
                         correlationId = objectNode.optional("correlationId")?.let(correlationIdParser::parseElement),

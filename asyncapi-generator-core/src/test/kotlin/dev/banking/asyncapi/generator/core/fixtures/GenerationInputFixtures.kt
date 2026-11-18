@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -324,13 +323,11 @@ internal class GenerationInputFixtures {
                         ),
                 ),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            mapOf(
-                                "Root" to SchemaInterface.SchemaInline(rootSchema),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        mapOf(
+                            "Root" to SchemaInterface.SchemaInline(rootSchema),
+                        ),
                 ),
         )
     }
@@ -340,16 +337,14 @@ internal class GenerationInputFixtures {
             asyncapi = "3.0.0",
             info = Info(title = "Test API", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            mapOf(
-                                "UserCreated" to
-                                    SchemaInterface.MultiFormatSchemaInline(
-                                        nativeAvroUserCreatedSchema(),
-                                    ),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        mapOf(
+                            "UserCreated" to
+                                SchemaInterface.MultiFormatSchemaInline(
+                                    nativeAvroUserCreatedSchema(),
+                                ),
+                        ),
                 ),
         )
 
@@ -438,16 +433,14 @@ internal class GenerationInputFixtures {
             asyncapi = "3.0.0",
             info = Info(title = "Test API", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            mapOf(
-                                "UserCreated" to
-                                    SchemaInterface.MultiFormatSchemaInline(
-                                        nativeProtobufUserCreatedSchema(),
-                                    ),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        mapOf(
+                            "UserCreated" to
+                                SchemaInterface.MultiFormatSchemaInline(
+                                    nativeProtobufUserCreatedSchema(),
+                                ),
+                        ),
                 ),
         )
 
@@ -456,16 +449,14 @@ internal class GenerationInputFixtures {
             asyncapi = "3.0.0",
             info = Info(title = "Test API", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            mapOf(
-                                "UserCreated" to
-                                    SchemaInterface.MultiFormatSchemaInline(
-                                        nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
-                                    ),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        mapOf(
+                            "UserCreated" to
+                                SchemaInterface.MultiFormatSchemaInline(
+                                    nativeProtobufUserCreatedSchema(javaPackage = "com.example.protobuf"),
+                                ),
+                        ),
                 ),
         )
 

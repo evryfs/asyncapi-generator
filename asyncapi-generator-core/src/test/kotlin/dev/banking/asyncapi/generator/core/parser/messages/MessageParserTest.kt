@@ -67,7 +67,7 @@ class MessageParserTest {
         )
 
         val traitReference =
-            assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+            assertIs<MessageTraitInterface.MessageTraitReference>(
                 assertNotNull(lightMeasured.traits).single(),
             ).reference
         assertEquals("#/components/messageTraits/commonHeaders", traitReference.ref)
@@ -114,7 +114,7 @@ class MessageParserTest {
         val turnOnExample = assertNotNull(turnOnOff.examples).single()
         assertEquals("turnOnExample", turnOnExample.name)
         val turnOnTrait =
-            assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+            assertIs<MessageTraitInterface.MessageTraitReference>(
                 assertNotNull(turnOnOff.traits).single(),
             ).reference
         assertEquals("#/components/messageTraits/commonHeaders", turnOnTrait.ref)
@@ -196,9 +196,9 @@ class MessageParserTest {
         val inlineTrait = assertIs<MessageInterface.MessageInline>(messages["InlineTraitMessage"]).message
         assertEquals("InlineTraitMessage", inlineTrait.name)
         val trait =
-            assertIs<MessageTraitInterface.InlineMessageTrait>(
+            assertIs<MessageTraitInterface.MessageTraitInline>(
                 assertNotNull(inlineTrait.traits).single(),
-            ).trait
+            ).messageTrait
         val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema
         assertEquals("string", headers.type)
     }

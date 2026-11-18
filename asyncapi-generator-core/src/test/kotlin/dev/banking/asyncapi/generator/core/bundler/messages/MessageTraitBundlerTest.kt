@@ -26,10 +26,10 @@ class MessageTraitBundlerTest {
                 bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
             )
         val traitReference = Reference("#/components/messageTraits/audit", model = trait)
-        val traitInterface = MessageTraitInterface.ReferenceMessageTrait(traitReference)
+        val traitInterface = MessageTraitInterface.MessageTraitReference(traitReference)
 
         val bundled =
-            assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+            assertIs<MessageTraitInterface.MessageTraitReference>(
                 bundler.bundle(traitInterface, BundlingContext.empty()),
             )
 

@@ -42,7 +42,7 @@ internal class AsyncApiParser(
             defaultContentType = rootObject.optional("defaultContentType")?.expect<String>(),
             channels = rootObject.optional("channels")?.let(channelParser::parseMap),
             operations = rootObject.optional("operations")?.let(operationParser::parseMap),
-            components = rootObject.optional("components")?.let(componentParser::parseElement),
+            components = rootObject.optional("components")?.let(componentParser::parse),
             extensions = rootObject.extensions(),
         ).also { asyncApiContext.register(it, root) }
     }
