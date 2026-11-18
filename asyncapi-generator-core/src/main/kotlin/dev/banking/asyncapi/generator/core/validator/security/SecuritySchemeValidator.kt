@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_SCHEME_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 

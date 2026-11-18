@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeValidator

@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NAME_REQUIRED
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.context
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.external.ParsedReferences
+import dev.banking.asyncapi.generator.core.parser.linking.ReferenceLinker
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.tracking.ModelTracking
 import dev.banking.asyncapi.generator.core.parser.tracking.NodeLocations
@@ -14,8 +15,8 @@ import dev.banking.asyncapi.generator.core.source.SourceLocation
 import java.io.File
 
 /**
- * The state of one load: its sources, the location of every node and model, its references and its
- * resource budget.
+ * The state of one load: its sources, the location of every node and model, its references with
+ * their links, and its resource budget.
  *
  * A new context is created for each call to [dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader.load].
  *
@@ -28,6 +29,7 @@ internal class AsyncApiContext(
     val nodeLocations = NodeLocations()
     val modelTracking = ModelTracking(sourceTracking, nodeLocations)
     val parsedReferences = ParsedReferences()
+    val referenceLinker = ReferenceLinker(modelTracking)
     val sourceBudget =
         SourceBudget(sourceLimits) { diagnostic ->
             throw AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)

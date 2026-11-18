@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_EXAMPLES_ENUM
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 internal class ServerVariableValidator(

@@ -1,7 +1,10 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.channels.Channel
+import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
+import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -15,9 +18,13 @@ class OperationReplyBundlerTest {
 
     @Test
     fun `bundle bundles and inlines an unvisited operation reply reference`() {
-        val addressReference = Reference("#/components/replyAddresses/success")
-        val channelReference = Reference("#/channels/reply")
-        val messageReference = Reference("#/components/messages/reply")
+        val addressReference =
+            Reference(
+                "#/components/replyAddresses/success",
+                model = OperationReplyAddress(location = "\$message.header#/replyTo"),
+            )
+        val channelReference = Reference("#/channels/reply", model = Channel())
+        val messageReference = Reference("#/components/messages/reply", model = Message())
         val reply =
             OperationReply(
                 address = OperationReplyAddressInterface.OperationReplyAddressReference(addressReference),

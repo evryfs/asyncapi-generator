@@ -33,7 +33,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler
 
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import org.junit.jupiter.api.Test
@@ -11,7 +12,7 @@ import kotlin.test.assertTrue
 class ReferenceBundlerTest {
     @Test
     fun `inlineIfUnvisited marks an unvisited reference as inline`() {
-        val reference = Reference("#/components/externalDocs/api")
+        val reference = Reference("#/components/externalDocs/api", model = ExternalDoc(url = "https://example.com"))
 
         val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty())
 
@@ -21,7 +22,7 @@ class ReferenceBundlerTest {
 
     @Test
     fun `inlineIfUnvisited keeps a visited reference unchanged`() {
-        val reference = Reference("#/components/externalDocs/api")
+        val reference = Reference("#/components/externalDocs/api", model = ExternalDoc(url = "https://example.com"))
 
         val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty().enter(reference))
 

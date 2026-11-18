@@ -2,11 +2,14 @@ package dev.banking.asyncapi.generator.core.bundler.components
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.model.components.Component
+import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
+import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
@@ -18,9 +21,10 @@ class ComponentBundlerTest {
 
     @Test
     fun `bundleComponent traverses correlation IDs parameters and server variables`() {
-        val correlationIdReference = Reference("#/components/correlationIds/user")
-        val parameterReference = Reference("#/components/parameters/userId")
-        val serverVariableReference = Reference("#/components/serverVariables/environment")
+        val correlationIdReference =
+            Reference("#/components/correlationIds/user", model = CorrelationId(location = "\$message.header#/id"))
+        val parameterReference = Reference("#/components/parameters/userId", model = Parameter())
+        val serverVariableReference = Reference("#/components/serverVariables/environment", model = ServerVariable())
         val component =
             Component(
                 correlationIds =

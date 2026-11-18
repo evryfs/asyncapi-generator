@@ -29,10 +29,12 @@ internal class ParserFixtures(
 
     fun document(file: File): AsyncApiDocument = loaded(file).document
 
-    /** Parses [file] and loads the targets of its references. */
+    /** Parses [file], loads the targets of its references and links every reference. */
     fun loaded(file: File): LoadedDocument {
         val document = parser.parse(root(file))
-        return LoadedDocument(document, ExternalReferenceLoader(context).loadAll())
+        val targets = ExternalReferenceLoader(context).loadAll()
+        context.referenceLinker.linkAll(context.parsedReferences.since(0).map { it.reference })
+        return LoadedDocument(document, targets)
     }
 
     /**
