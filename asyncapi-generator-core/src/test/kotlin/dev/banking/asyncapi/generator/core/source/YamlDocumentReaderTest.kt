@@ -15,7 +15,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/semantic-scalars.yaml")
         val source =
             DocumentSource(
-                id = "semantic-scalars",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -44,7 +43,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/malformed.yaml")
         val source =
             DocumentSource(
-                id = "malformed",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -65,7 +63,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content = "value: \u0001",
                 format = InputFormat.YAML,
@@ -86,7 +83,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "multiple-documents",
                 file = file,
                 content = "value: first\n---\nvalue: second\n",
                 format = InputFormat.YAML,
@@ -114,7 +110,6 @@ class YamlDocumentReaderTest {
         taggedDocuments.forEach { content ->
             val source =
                 DocumentSource(
-                    id = "custom-tag",
                     file = file,
                     content = content,
                     format = InputFormat.YAML,
@@ -141,7 +136,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "yaml-words",
                 file = file,
                 content =
                     """
@@ -172,7 +166,6 @@ class YamlDocumentReaderTest {
         yamlOnlyNumbers.forEach { value ->
             val source =
                 DocumentSource(
-                    id = "yaml-number",
                     file = file,
                     content = "value: $value",
                     format = InputFormat.YAML,
@@ -198,7 +191,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -217,7 +209,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/non-scalar-key.yaml")
         val source =
             DocumentSource(
-                id = "non-scalar-key",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -239,7 +230,6 @@ class YamlDocumentReaderTest {
         listOf("true", "42", "null").forEach { key ->
             val source =
                 DocumentSource(
-                    id = "invalid-root",
                     file = file,
                     content = "  $key: value",
                     format = InputFormat.YAML,
@@ -263,7 +253,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content =
                     """
@@ -285,7 +274,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content =
                     """
@@ -315,7 +303,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content =
                     """
@@ -344,7 +331,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content =
                     """
@@ -369,7 +355,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "recursive-alias",
                 file = file,
                 content =
                     """
@@ -400,7 +385,6 @@ class YamlDocumentReaderTest {
         val file = TestResources.file("reader/yaml/order-preservation.yaml")
         val source =
             DocumentSource(
-                id = "order-preservation",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,

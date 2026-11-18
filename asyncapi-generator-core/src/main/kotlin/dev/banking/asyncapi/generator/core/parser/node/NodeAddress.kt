@@ -1,58 +1,36 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import dev.banking.asyncapi.generator.core.source.appendDocumentIndex
-import dev.banking.asyncapi.generator.core.source.appendDocumentMember
+import dev.banking.asyncapi.generator.core.source.NodePath
+import dev.banking.asyncapi.generator.core.source.SourceId
 
 /**
- * Collision-safe identity of one document node within one registered source.
+ * Identity of one document node across all sources of a load.
  *
- * @property sourceId identifies the source document this node belongs to
- * @property segments ordered path segments from root to this node
+ * @property sourceId source document the node belongs to
+ * @property path position of the node within that document
  */
 internal data class NodeAddress(
-    val sourceId: String,
-    val segments: List<NodeAddressSegment>,
+    val sourceId: SourceId,
+    val path: NodePath,
 ) {
+    /** The path prefixed with the source id, unique across all sources of a load. */
     val displayPath: String
-        get() = renderSegments(sourceId)
+        get() = if (sourceId.value.isEmpty()) path.toString() else "$sourceId.$path"
 
+    /** The path within the source document, without the source id. */
     val documentPath: String
-        get() = renderSegments("")
+        get() = path.toString()
 
     val parent: NodeAddress?
-        get() = segments.dropLast(1).takeIf(List<*>::isNotEmpty)?.let { NodeAddress(sourceId, it) }
+        get() = path.parent?.let { NodeAddress(sourceId, it) }
 
-    fun member(name: String): NodeAddress = NodeAddress(sourceId, segments + NodeAddressSegment.Member(name))
+    fun member(name: String): NodeAddress = NodeAddress(sourceId, path.member(name))
 
-    fun index(index: Int): NodeAddress {
-        require(index >= 0) { "Document array indexes must be nonnegative" }
-        return NodeAddress(sourceId, segments + NodeAddressSegment.Index(index))
-    }
+    fun index(index: Int): NodeAddress = NodeAddress(sourceId, path.index(index))
 
     fun ancestors(): Sequence<NodeAddress> = generateSequence(this, NodeAddress::parent)
 
-    private fun renderSegments(initialPath: String): String =
-        segments.fold(initialPath) { path, segment ->
-            when (segment) {
-                is NodeAddressSegment.Member -> appendDocumentMember(path, segment.name)
-                is NodeAddressSegment.Index -> appendDocumentIndex(path, segment.index)
-            }
-        }
-
     companion object {
-        fun root(sourceId: String): NodeAddress = NodeAddress(sourceId, listOf(NodeAddressSegment.Member("root")))
+        fun root(sourceId: SourceId): NodeAddress = NodeAddress(sourceId, NodePath.ROOT)
     }
-}
-
-/** A single segment in a [NodeAddress] path — either a named member or a numeric index. */
-internal sealed interface NodeAddressSegment {
-    /** An object member identified by its key name. */
-    data class Member(
-        val name: String,
-    ) : NodeAddressSegment
-
-    /** An array element identified by its zero-based index. */
-    data class Index(
-        val index: Int,
-    ) : NodeAddressSegment
 }

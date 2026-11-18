@@ -17,7 +17,7 @@ class ResourceBudgetTest {
     @Test
     fun `registerDocument returns success`() {
         val file = File.createTempFile("test", ".yaml")
-        val location = SourceLocation("test", file, "", 1, 0)
+        val location = SourceLocation(file, "", 1, 0)
 
         val result = budget.registerDocument(file, "content", location)
 
@@ -31,7 +31,7 @@ class ResourceBudgetTest {
         val limitedBudget = ResourceBudget(limits)
         val file1 = File.createTempFile("ext1", ".yaml")
         val file2 = File.createTempFile("ext2", ".yaml")
-        val location = SourceLocation("test", file1, "", 1, 0)
+        val location = SourceLocation(file1, "", 1, 0)
 
         limitedBudget.registerExternalDocument(file1, location)
         val result = limitedBudget.registerExternalDocument(file2, location)

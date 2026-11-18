@@ -22,7 +22,6 @@ class ValidationReportTest {
     fun `report exposes stable rule metadata and source-derived coordinates`() {
         val sourceLocation =
             SourceLocation(
-                sourceId = "streetlights",
                 file = File("streetlights.yaml"),
                 path = "streetlights.root.id",
                 line = 8,
@@ -79,7 +78,6 @@ class ValidationReportTest {
         )
         val sourceLocation =
             SourceLocation(
-                sourceId = "streetlights",
                 file = file,
                 path = "streetlights.root.asyncapi",
                 line = 1,

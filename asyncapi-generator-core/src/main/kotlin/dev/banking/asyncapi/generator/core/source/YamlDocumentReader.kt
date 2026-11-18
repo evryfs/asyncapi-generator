@@ -52,7 +52,7 @@ internal class YamlDocumentReader(
                 throw DocumentReadException.MalformedDocument(
                     file = source.file,
                     cause = ex,
-                    location = ex.problemMark?.let { locationOf(source, ROOT_PATH, it) },
+                    location = ex.problemMark?.let { locationOf(source, NodePath.ROOT, it) },
                 )
             } catch (ex: ReaderException) {
                 throw DocumentReadException.MalformedDocument(
@@ -67,7 +67,7 @@ internal class YamlDocumentReader(
         val root =
             parseNode(
                 node = rootNode,
-                path = ROOT_PATH,
+                path = NodePath.ROOT,
                 source = source,
             )
 
@@ -83,7 +83,7 @@ internal class YamlDocumentReader(
      */
     private fun parseNode(
         node: Node,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
         ancestors: MutableSet<Node> = Collections.newSetFromMap(IdentityHashMap()),
     ): DocumentNode {
@@ -111,7 +111,7 @@ internal class YamlDocumentReader(
 
     private fun parseSequence(
         node: SequenceNode,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
         location: SourceLocation,
         ancestors: MutableSet<Node>,
@@ -120,7 +120,7 @@ internal class YamlDocumentReader(
         return DocumentArray(
             elements =
                 node.value.mapIndexed { index, child ->
-                    parseNode(child, appendDocumentIndex(path, index), source, ancestors)
+                    parseNode(child, path.index(index), source, ancestors)
                 },
             location = location,
         )
@@ -128,7 +128,7 @@ internal class YamlDocumentReader(
 
     private fun parseMapping(
         node: MappingNode,
-        path: String,
+        path: NodePath,
         source: DocumentSource,
         location: SourceLocation,
         ancestors: MutableSet<Node>,
@@ -140,10 +140,10 @@ internal class YamlDocumentReader(
                 tuple.keyNode as? ScalarNode
                     ?: throw invalidMappingKey(source, path, tuple.keyNode.startMark)
             if (keyNode.tag != Tag.STR) {
-                throw invalidMappingKey(source, appendDocumentMember(path, keyNode.value), keyNode.startMark)
+                throw invalidMappingKey(source, path.member(keyNode.value), keyNode.startMark)
             }
             val key = keyNode.value
-            val keyPath = appendDocumentMember(path, key)
+            val keyPath = path.member(key)
             val keyLocation = locationOf(source, keyPath, keyNode.startMark)
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(source.file, key, keyLocation)
@@ -259,7 +259,7 @@ internal class YamlDocumentReader(
         val line = prefix.count { it == '\n' } + 1
         val lastLineBreak = prefix.lastIndexOf('\n')
         val column = boundedOffset - lastLineBreak
-        return SourceLocation.from(source, ROOT_PATH, line, column)
+        return SourceLocation.from(source, NodePath.ROOT, line, column)
     }
 
     private fun malformed(
@@ -275,7 +275,7 @@ internal class YamlDocumentReader(
 
     private fun locationOf(
         source: DocumentSource,
-        path: String,
+        path: NodePath,
         mark: Mark,
     ): SourceLocation =
         SourceLocation.from(
@@ -287,7 +287,7 @@ internal class YamlDocumentReader(
 
     private fun invalidMappingKey(
         source: DocumentSource,
-        path: String,
+        path: NodePath,
         mark: Mark,
     ): DocumentReadException.InvalidMappingKey =
         DocumentReadException.InvalidMappingKey(
@@ -296,7 +296,6 @@ internal class YamlDocumentReader(
         )
 
     private companion object {
-        const val ROOT_PATH = "root"
         const val UTF_8_BOM = "\uFEFF"
         val JSON_NUMBER = Regex("-?(?:0|[1-9][0-9]*)(?:\\.[0-9]+)?(?:[eE][+-]?[0-9]+)?")
         val YAML_ONLY_PLAIN_NUMBER = Regex("[-+]?0[oO][0-7](?:_?[0-7])*")

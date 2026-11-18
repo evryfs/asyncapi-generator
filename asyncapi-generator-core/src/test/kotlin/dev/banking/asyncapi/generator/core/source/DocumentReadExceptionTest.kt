@@ -16,7 +16,6 @@ class DocumentReadExceptionTest {
         val file = TestResources.file("reader/yaml/empty.yaml")
         val source =
             DocumentSource(
-                id = "empty",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -36,7 +35,6 @@ class DocumentReadExceptionTest {
         val file = TestResources.file("reader/yaml/duplicate-key.yaml")
         val source =
             DocumentSource(
-                id = "duplicate-key",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -50,7 +48,6 @@ class DocumentReadExceptionTest {
         assertEquals(source.file, failure.file)
         assertEquals("title", failure.memberName)
         val location = assertNotNull(failure.location)
-        assertEquals(source.id, location.sourceId)
         assertEquals(source.file, location.file)
         assertEquals("root.info.title", location.path)
         assertEquals(3, location.line)
@@ -64,7 +61,6 @@ class DocumentReadExceptionTest {
         val file = TestResources.file("reader/yaml/malformed.yaml")
         val source =
             DocumentSource(
-                id = "malformed",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -77,7 +73,6 @@ class DocumentReadExceptionTest {
 
         assertEquals(source.file, failure.file)
         val location = assertNotNull(failure.location)
-        assertEquals(source.id, location.sourceId)
         assertTrue(location.line > 0)
         assertTrue(location.column > 0)
         assertNotNull(failure.cause)
@@ -88,7 +83,6 @@ class DocumentReadExceptionTest {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         val source =
             DocumentSource(
-                id = "invalid-root",
                 file = file,
                 content = "12345",
                 format = InputFormat.YAML,

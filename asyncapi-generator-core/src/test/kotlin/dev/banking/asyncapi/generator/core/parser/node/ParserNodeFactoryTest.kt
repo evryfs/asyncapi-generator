@@ -21,7 +21,6 @@ class ParserNodeFactoryTest {
         val file = File("source-map.yaml").canonicalFile
         val source =
             DocumentSource(
-                id = "source-map",
                 file = file,
                 content =
                     """
@@ -49,7 +48,6 @@ class ParserNodeFactoryTest {
         val file = File("source-map.yaml").canonicalFile
         val source =
             DocumentSource(
-                id = "source-map",
                 file = file,
                 content =
                     """
@@ -78,7 +76,6 @@ class ParserNodeFactoryTest {
         val file = File("source-map.yaml").canonicalFile
         val source =
             DocumentSource(
-                id = "source-map",
                 file = file,
                 content =
                     """
@@ -98,7 +95,6 @@ class ParserNodeFactoryTest {
             assertNotNull(
                 context.sourceRepository.getLocation("source_map.root.info.title"),
             )
-        assertEquals("source-map", titleLocation.sourceId)
         assertEquals(file, titleLocation.file)
         assertEquals("source_map.root.info.title", titleLocation.path)
         assertEquals(3, titleLocation.line)
@@ -117,7 +113,6 @@ class ParserNodeFactoryTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "identity",
                 file = File("identity.yaml").canonicalFile,
                 content =
                     """
@@ -163,7 +158,6 @@ class ParserNodeFactoryTest {
         val file = File("source-map.yaml").canonicalFile
         val source =
             DocumentSource(
-                id = "source-map",
                 file = file,
                 content =
                     """

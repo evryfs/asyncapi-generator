@@ -20,7 +20,6 @@ class DocumentReaderContractTest {
         val file = TestResources.file("reader/yaml/reference-preservation.yaml")
         val source =
             DocumentSource(
-                id = "reference-preservation",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -42,7 +41,6 @@ class DocumentReaderContractTest {
         val file = TestResources.file("reader/yaml/non-asyncapi-object.yaml")
         val source =
             DocumentSource(
-                id = "non-asyncapi-object",
                 file = file,
                 content = file.readText(),
                 format = InputFormat.YAML,
@@ -58,7 +56,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(
-                id = "invalid-root",
                 file = yamlFile,
                 content = "true",
                 format = InputFormat.YAML,
@@ -66,7 +63,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
         val jsonSource =
             DocumentSource(
-                id = "invalid-root",
                 file = jsonFile,
                 content = "true",
                 format = InputFormat.JSON,
@@ -81,7 +77,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(
-                id = "invalid-root",
                 file = yamlFile,
                 content = "null",
                 format = InputFormat.YAML,
@@ -89,7 +84,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
         val jsonSource =
             DocumentSource(
-                id = "invalid-root",
                 file = jsonFile,
                 content = "null",
                 format = InputFormat.JSON,
@@ -104,7 +98,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(
-                id = "bom-crlf",
                 file = yamlFile,
                 content = "\uFEFFvalue:\r\n  nested: true\r\n",
                 format = InputFormat.YAML,
@@ -112,7 +105,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
         val jsonSource =
             DocumentSource(
-                id = "bom-crlf",
                 file = jsonFile,
                 content = "\uFEFF{\r\n  \"value\": {\r\n    \"nested\": true\r\n  }\r\n}",
                 format = InputFormat.JSON,
@@ -134,7 +126,6 @@ class DocumentReaderContractTest {
         val escapedMemberName = "quote\"slash\\line\nbreak"
         val yamlSource =
             DocumentSource(
-                id = "paths",
                 file = File("paths.yaml").canonicalFile,
                 content =
                     """
@@ -149,7 +140,6 @@ class DocumentReaderContractTest {
             )
         val jsonSource =
             DocumentSource(
-                id = "paths",
                 file = File("paths.json").canonicalFile,
                 content =
                     """
@@ -169,7 +159,6 @@ class DocumentReaderContractTest {
             )
 
         roots.forEach { (root, source) ->
-            assertEquals(source.id, root.location.sourceId)
             assertEquals(source.file, root.location.file)
             assertEquals("root", root.location.path)
             assertTrue(root.location.line >= 1)
@@ -182,7 +171,6 @@ class DocumentReaderContractTest {
 
             val dottedMember = assertNotNull(root.member("a.b"))
             val dottedArray = assertIs<DocumentArray>(dottedMember.value)
-            assertEquals(source.id, dottedMember.keyLocation.sourceId)
             assertEquals(source.file, dottedMember.keyLocation.file)
             assertEquals("root[\"a.b\"]", dottedMember.keyLocation.path)
             assertTrue(dottedMember.keyLocation.line >= 1)
@@ -202,14 +190,12 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val byteLimitedSource =
             DocumentSource(
-                id = "byte-limited",
                 file = yamlFile,
                 content = "éé",
                 format = InputFormat.YAML,
             )
         val characterLimitedSource =
             DocumentSource(
-                id = "character-limited",
                 file = yamlFile,
                 content = "true",
                 format = InputFormat.YAML,
@@ -244,7 +230,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(
-                id = "invalid-root",
                 file = yamlFile,
                 content = "value: 1234567890",
                 format = InputFormat.YAML,
@@ -252,7 +237,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
         val jsonSource =
             DocumentSource(
-                id = "invalid-root",
                 file = jsonFile,
                 content = """{"value":1234567890}""",
                 format = InputFormat.JSON,
@@ -271,7 +255,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/equivalent-document.yaml")
         val yamlSource =
             DocumentSource(
-                id = "equivalent-document",
                 file = yamlFile,
                 content =
                     """
@@ -287,7 +270,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/equivalent-document.json")
         val jsonSource =
             DocumentSource(
-                id = "equivalent-document",
                 file = jsonFile,
                 content =
                     """
@@ -340,7 +322,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/invalid-root.yaml")
         val yamlSource =
             DocumentSource(
-                id = "invalid-root",
                 file = yamlFile,
                 content = "12345",
                 format = InputFormat.YAML,
@@ -348,7 +329,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/invalid-root.json")
         val jsonSource =
             DocumentSource(
-                id = "invalid-root",
                 file = jsonFile,
                 content = "12345",
                 format = InputFormat.JSON,
@@ -367,7 +347,6 @@ class DocumentReaderContractTest {
         val yamlFile = TestResources.file("reader/yaml/equivalent-document.yaml")
         val yamlSource =
             DocumentSource(
-                id = "equivalent-document",
                 file = yamlFile,
                 content = yamlFile.readText(),
                 format = InputFormat.YAML,
@@ -375,7 +354,6 @@ class DocumentReaderContractTest {
         val jsonFile = TestResources.file("reader/json/equivalent-document.json")
         val jsonSource =
             DocumentSource(
-                id = "equivalent-document",
                 file = jsonFile,
                 content = jsonFile.readText(),
                 format = InputFormat.JSON,

@@ -23,7 +23,6 @@ class ModelRepositoryTest {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
-                id = "identity",
                 file = File("identity.yaml").canonicalFile,
                 content =
                     """

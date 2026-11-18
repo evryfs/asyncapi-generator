@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.source.DocumentArray
 import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.source.toValue
 import java.io.File
@@ -66,7 +67,7 @@ internal class ModelRepository(
                 ?: sourceRepository.findNearestLocation(node.address)
 
         if (model is Reference) {
-            val sourcePathId = node.address.sourceId
+            val sourcePathId = node.address.sourceId.value
             model.sourceId = sourcePathId
             sourceRepository.findFileById(sourcePathId)?.let { sourceFile ->
                 referenceOrigins[model] =
@@ -242,6 +243,6 @@ internal class ModelRepository(
                 sourceRepository.findIdByFile(targetFile) ?: return null
             }
         val segments = parsed.pointerSegments()
-        return sourceRepository.resolveAddress(fileId, segments)
+        return sourceRepository.resolveAddress(SourceId(fileId), segments)
     }
 }

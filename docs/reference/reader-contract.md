@@ -43,9 +43,8 @@ The immutable product of the reader stage. The `root` is a `DocumentNode` tree t
 | `DocumentNull` | Explicit null (distinct from absent member) |
 
 Every node carries a `SourceLocation` with:
-- `sourceId` — stable identity of the input source
 - `file` — source file for diagnostics and reference resolution
-- `path` — dot-separated path within the source (e.g., `root.channels.userEvents`)
+- `path` — the node's `NodePath` within the source (e.g., `root.channels.userEvents`, `root.servers[0]`, `root["channel.name"]`)
 - `line` — one-based source line
 - `column` — one-based source column
 
