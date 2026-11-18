@@ -1,18 +1,27 @@
 package dev.banking.asyncapi.generator.core.parser.version
 
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
-/** Parser behavior implemented for one AsyncAPI major/minor specification line. */
+/**
+ * Parser behavior implemented for one AsyncAPI major/minor specification line.
+ *
+ * @param displayName the specification line, such as `3.0.x`
+ */
 internal enum class AsyncApiParserProfile(
     val displayName: String,
 ) {
     V3_0(displayName = "3.0.x"),
 }
 
-/** Published AsyncAPI specification lines known to this parser. */
+/**
+ * Published AsyncAPI specification lines known to this parser.
+ *
+ * @param major the major version
+ * @param minor the minor version
+ * @param parserProfile the profile that parses this line, or `null` when it is not supported
+ */
 internal enum class AsyncApiSpecificationLine(
     val major: Int,
     val minor: Int,
@@ -28,43 +37,41 @@ internal enum class AsyncApiSpecificationLine(
                 .mapNotNull(AsyncApiSpecificationLine::parserProfile)
                 .map(AsyncApiParserProfile::displayName)
 
+        /** [root] with the parser profile of the AsyncAPI version it declares. */
         fun select(root: ParserNode): ParserNode {
             val versionNode = root.expectObject().required("asyncapi")
             val declaredVersion = versionNode.expect<String>()
             val version =
                 AsyncApiSpecificationVersion.parse(declaredVersion)
-                    ?: throw parserFailure(
-                        root = root,
-                        diagnostic =
-                            ParserDiagnostic.InvalidSpecificationVersion(
-                                declaredVersion = declaredVersion,
-                                path = versionNode.path,
-                                sourceLocation = versionNode.sourceLocation,
-                            ),
+                    ?: throw root.context.parserFailure(
+                        ParserDiagnostic.InvalidSpecificationVersion(
+                            declaredVersion = declaredVersion,
+                            path = versionNode.path,
+                            sourceLocation = versionNode.sourceLocation,
+                        ),
                     )
+            return root.withProfile(profile(version, versionNode, declaredVersion))
+        }
+
+        private fun profile(
+            version: AsyncApiSpecificationVersion,
+            versionNode: ParserNode,
+            declaredVersion: String,
+        ): AsyncApiParserProfile {
             val specificationLine =
                 entries.firstOrNull { candidate ->
                     candidate.major == version.major && candidate.minor == version.minor
                 }
-            val profile =
-                specificationLine?.parserProfile
-                    ?: throw parserFailure(
-                        root = root,
-                        diagnostic =
-                            ParserDiagnostic.UnsupportedSpecificationVersion(
-                                declaredVersion = declaredVersion,
-                                knownVersionLine = specificationLine != null,
-                                supportedVersionLines = supportedVersionLines,
-                                path = versionNode.path,
-                                sourceLocation = versionNode.sourceLocation,
-                            ),
-                    )
-            return root.withProfile(profile)
+            return specificationLine?.parserProfile
+                ?: throw versionNode.context.parserFailure(
+                    ParserDiagnostic.UnsupportedSpecificationVersion(
+                        declaredVersion = declaredVersion,
+                        knownVersionLine = specificationLine != null,
+                        supportedVersionLines = supportedVersionLines,
+                        path = versionNode.path,
+                        sourceLocation = versionNode.sourceLocation,
+                    ),
+                )
         }
-
-        private fun parserFailure(
-            root: ParserNode,
-            diagnostic: ParserDiagnostic,
-        ): AsyncApiParseException.ParserDiagnosticFailure = root.context.parserFailure(diagnostic)
     }
 }

@@ -13,14 +13,15 @@ import kotlin.reflect.typeOf
  *
  * Provides type-safe navigation via [expectObject], [expectArray], and [expect].
  *
- * @param name display path of this node (e.g., `root.channels.userEvents`)
+ * @param label how diagnostics name this node: its member name, its index after its parent's label,
+ *   or the display path of a document root
  * @param node the underlying document value
  * @param address collision-safe identity within the source document
  * @param context shared parser context for registration and diagnostics
  * @param profile AsyncAPI version profile for member policy enforcement, or null for default
  */
 internal class ParserNode(
-    val name: String,
+    val label: String,
     val node: DocumentNode,
     val address: NodeAddress,
     val context: AsyncApiContext,
@@ -44,9 +45,9 @@ internal class ParserNode(
     internal fun index(
         index: Int,
         node: DocumentNode,
-    ): ParserNode = ParserNode("$name[$index]", node, address.index(index), context, profile)
+    ): ParserNode = ParserNode("$label[$index]", node, address.index(index), context, profile)
 
-    fun withProfile(profile: AsyncApiParserProfile): ParserNode = ParserNode(name, node, address, context, profile)
+    fun withProfile(profile: AsyncApiParserProfile): ParserNode = ParserNode(label, node, address, context, profile)
 
     fun expectObject(): ParserObjectNode =
         ParserObjectNode(

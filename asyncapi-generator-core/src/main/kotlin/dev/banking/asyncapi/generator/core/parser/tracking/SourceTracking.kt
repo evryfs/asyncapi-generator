@@ -13,6 +13,13 @@ import java.util.UUID
  * its content.
  */
 internal class SourceTracking {
+    /**
+     * One registered document.
+     *
+     * @property id the document's id within the load
+     * @property file the document's canonical file
+     * @property lines the document's content, line by line
+     */
     private class Source(
         val id: SourceId,
         val file: File,

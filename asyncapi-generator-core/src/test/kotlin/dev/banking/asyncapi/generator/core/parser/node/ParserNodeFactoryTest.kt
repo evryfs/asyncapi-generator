@@ -37,7 +37,7 @@ class ParserNodeFactoryTest {
 
         val root = ParserNodeFactory.root(document, context)
 
-        assertEquals("source_map.root", root.name)
+        assertEquals("source_map.root", root.label)
         assertEquals("source_map.root", root.path)
         assertEquals(document.root, root.node)
         assertEquals(context, root.context)

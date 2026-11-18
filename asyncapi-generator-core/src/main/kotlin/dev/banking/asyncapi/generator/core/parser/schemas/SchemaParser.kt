@@ -32,174 +32,108 @@ internal class SchemaParser(
     private val externalDocsParser = ExternalDocsParser()
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
 
-    fun parseElement(parserNode: ParserNode): SchemaInterface {
+    /** Parses a Schema Object, a boolean schema, a Multi Format Schema Object or a `$ref` to a schema. */
+    fun parseElement(parserNode: ParserNode): SchemaInterface =
         if (parserNode.node is DocumentBoolean) {
-            val bool = parserNode.expect<Boolean>()
-            return SchemaInterface
-                .BooleanSchema(
-                    value = bool,
-                ).also { asyncApiContext.register(it, parserNode) }
+            SchemaInterface
+                .BooleanSchema(value = parserNode.expect<Boolean>())
+                .also { asyncApiContext.register(it, parserNode) }
+        } else {
+            parserNode.referenceOrNull(SCHEMA, ::parseElement)?.let(SchemaInterface::SchemaReference)
+                ?: parserNode
+                    .expectObject()
+                    .optional("schemaFormat")
+                    ?.expect<String>()
+                    ?.let { format -> parseMultiFormat(parserNode, format) }
+                ?: parseSchema(parserNode)
         }
-        parserNode.referenceOrNull(SCHEMA, ::parseElement)?.let { return SchemaInterface.SchemaReference(it) }
+
+    private fun parseMultiFormat(
+        parserNode: ParserNode,
+        format: String,
+    ): SchemaInterface {
         val objectNode = parserNode.expectObject()
-        objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
-            objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
-            val schemaFormat =
-                SchemaFormat.fromValue(format)
-                    ?: throw asyncApiContext.parserFailure(
-                        ParserDiagnostic.UnknownSchemaFormat(format, parserNode.path, parserNode.declarationLocation),
-                    )
-            val schemaNode = objectNode.required("schema")
-            if (schemaFormat.isAsyncApiSchemaObject) {
-                return parseElement(schemaNode)
-            }
-            val schemaContent =
-                if (schemaFormat.isNativeAvro || schemaFormat.isNativeProtobuf) {
-                    nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.toPlainValue()
-                } else {
-                    schemaNode.toPlainValue()
-                }
-            val multiFormatSchema =
-                MultiFormatSchema(
-                    schemaFormat = format,
-                    schema = schemaContent,
-                    format = schemaFormat,
+        objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
+        val schemaFormat =
+            SchemaFormat.fromValue(format)
+                ?: throw asyncApiContext.parserFailure(
+                    ParserDiagnostic.UnknownSchemaFormat(format, parserNode.path, parserNode.declarationLocation),
                 )
-            return SchemaInterface
-                .MultiFormatSchemaInline(multiFormatSchema)
-                .also { asyncApiContext.register(multiFormatSchema, parserNode) }
-        }
-        return parseSchema(parserNode)
+        val schemaNode = objectNode.required("schema")
+        if (schemaFormat.isAsyncApiSchemaObject) return parseElement(schemaNode)
+        val schemaContent =
+            if (schemaFormat.isNativeAvro || schemaFormat.isNativeProtobuf) {
+                nativeSchemaAssetReader.readIfExternalReference(schemaNode) ?: schemaNode.toPlainValue()
+            } else {
+                schemaNode.toPlainValue()
+            }
+        val multiFormatSchema = MultiFormatSchema(schemaFormat = format, schema = schemaContent, format = schemaFormat)
+        return SchemaInterface
+            .MultiFormatSchemaInline(multiFormatSchema)
+            .also { asyncApiContext.register(multiFormatSchema, parserNode) }
     }
 
+    /** Parses a Schema Object; its members are read in the order the JSON Schema vocabularies list them. */
     private fun parseSchema(parserNode: ParserNode): SchemaInterface {
         val objectNode = parserNode.expectObject()
-        val id = objectNode.optional($$"$id")?.expect<String>()
-        val schema = objectNode.optional($$"$schema")?.expect<String>()
-        val comment = objectNode.optional($$"$comment")?.expect<String>()
-        val title = objectNode.optional("title")?.expect<String>()
-        val description = objectNode.optional("description")?.expect<String>()
-        val type = objectNode.optional("type")?.let(::parseType)
-        val format = objectNode.optional("format")?.expect<String>()
-
         val defaultNode = objectNode.optional("default")
-        val default = defaultNode?.toPlainValue()
-        val defaultSet = defaultNode != null
-
-        val examples = objectNode.optional("examples")?.expect<List<Any?>>()
-
-        val multipleOf = objectNode.optional("multipleOf")?.expect<Number>()
-        val maximum = objectNode.optional("maximum")?.expect<Number>()
-        val exclusiveMaximum = objectNode.optional("exclusiveMaximum")?.expect<Number>()
-        val minimum = objectNode.optional("minimum")?.expect<Number>()
-        val exclusiveMinimum = objectNode.optional("exclusiveMinimum")?.expect<Number>()
-
-        val maxLength = objectNode.optional("maxLength")?.expect<Number>()
-        val minLength = objectNode.optional("minLength")?.expect<Number>()
-        val pattern = objectNode.optional("pattern")?.expect<String>()
-        val contentEncoding = objectNode.optional("contentEncoding")?.expect<String>()
-        val contentMediaType = objectNode.optional("contentMediaType")?.expect<String>()
-
         val itemsNode = objectNode.optional("items")
-        val items = itemsNode?.takeUnless { it.node is DocumentArray }?.let(::parseElement)
-        val tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.parseList(::parseElement)
-        val additionalItems = objectNode.optional("additionalItems")?.let { parseElement(it) }
-        val maxItems = objectNode.optional("maxItems")?.expect<Number>()
-        val minItems = objectNode.optional("minItems")?.expect<Number>()
-        val uniqueItems = objectNode.optional("uniqueItems")?.expect<Boolean>()
-        val contains = objectNode.optional("contains")?.let { parseElement(it) }
-
-        val properties = objectNode.optional("properties")?.parseMap(::parseElement)
-        val patternProperties = objectNode.optional("patternProperties")?.parseMap(::parseElement)
-        val additionalProperties = objectNode.optional("additionalProperties")?.let(::parseElement)
-        val propertyNames = objectNode.optional("propertyNames")?.let { parseElement(it) }
-
-        val required = objectNode.optional("required")?.expect<List<String>>()
-
-        val dependencies = objectNode.optional("dependencies")?.let(::parseDependencies)
-        val definitions = objectNode.optional("definitions")?.parseMap(::parseElement)
-        val maxProperties = objectNode.optional("maxProperties")?.expect<Number>()
-        val minProperties = objectNode.optional("minProperties")?.expect<Number>()
-
-        val allOf = objectNode.optional("allOf")?.let { it.expectArray().elements().map(::parseElement) }
-        val anyOf = objectNode.optional("anyOf")?.let { it.expectArray().elements().map(::parseElement) }
-        val oneOf = objectNode.optional("oneOf")?.let { it.expectArray().elements().map(::parseElement) }
-
-        val not = objectNode.optional("not")?.let(::parseElement)
-
-        val ifSchema = objectNode.optional("if")?.let { parseElement(it) }
-        val thenSchema = objectNode.optional("then")?.let { parseElement(it) }
-        val elseSchema = objectNode.optional("else")?.let { parseElement(it) }
-
-        val enumValues = objectNode.optional("enum")?.expect<List<Any?>>()
         val constNode = objectNode.optional("const")
-        val constValue = constNode?.toPlainValue()
-        val constSet = constNode != null
-
-        val discriminator = objectNode.optional("discriminator")?.expect<String>()
-        val externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement)
-        val deprecated = objectNode.optional("deprecated")?.expect<Boolean>()
-        val bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SCHEMA_BINDING) }
-        val extensions = objectNode.extensions()
-
-        val readOnly = objectNode.optional("readOnly")?.expect<Boolean>()
-        val writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>()
-
         return SchemaInterface.SchemaInline(
             Schema(
-                id = id,
-                schema = schema,
-                comment = comment,
-                title = title,
-                description = description,
-                type = type,
-                format = format,
-                default = default,
-                defaultSet = defaultSet,
-                examples = examples,
-                multipleOf = multipleOf,
-                maximum = maximum,
-                exclusiveMaximum = exclusiveMaximum,
-                minimum = minimum,
-                exclusiveMinimum = exclusiveMinimum,
-                maxLength = maxLength,
-                minLength = minLength,
-                pattern = pattern,
-                contentEncoding = contentEncoding,
-                contentMediaType = contentMediaType,
-                items = items,
-                tupleItems = tupleItems,
-                additionalItems = additionalItems,
-                maxItems = maxItems,
-                minItems = minItems,
-                uniqueItems = uniqueItems,
-                contains = contains,
-                properties = properties,
-                patternProperties = patternProperties,
-                required = required,
-                additionalProperties = additionalProperties,
-                propertyNames = propertyNames,
-                dependencies = dependencies,
-                definitions = definitions,
-                maxProperties = maxProperties,
-                minProperties = minProperties,
-                enum = enumValues,
-                const = constValue,
-                constSet = constSet,
-                allOf = allOf,
-                anyOf = anyOf,
-                oneOf = oneOf,
-                not = not,
-                ifSchema = ifSchema,
-                thenSchema = thenSchema,
-                elseSchema = elseSchema,
-                readOnly = readOnly,
-                writeOnly = writeOnly,
-                discriminator = discriminator,
-                deprecated = deprecated,
-                externalDocs = externalDocs,
-                bindings = bindings,
-                extensions = extensions,
+                id = objectNode.optional($$"$id")?.expect<String>(),
+                schema = objectNode.optional($$"$schema")?.expect<String>(),
+                comment = objectNode.optional($$"$comment")?.expect<String>(),
+                title = objectNode.optional("title")?.expect<String>(),
+                description = objectNode.optional("description")?.expect<String>(),
+                type = objectNode.optional("type")?.let(::parseType),
+                format = objectNode.optional("format")?.expect<String>(),
+                default = defaultNode?.toPlainValue(),
+                defaultSet = defaultNode != null,
+                examples = objectNode.optional("examples")?.expect<List<Any?>>(),
+                multipleOf = objectNode.optional("multipleOf")?.expect<Number>(),
+                maximum = objectNode.optional("maximum")?.expect<Number>(),
+                exclusiveMaximum = objectNode.optional("exclusiveMaximum")?.expect<Number>(),
+                minimum = objectNode.optional("minimum")?.expect<Number>(),
+                exclusiveMinimum = objectNode.optional("exclusiveMinimum")?.expect<Number>(),
+                maxLength = objectNode.optional("maxLength")?.expect<Number>(),
+                minLength = objectNode.optional("minLength")?.expect<Number>(),
+                pattern = objectNode.optional("pattern")?.expect<String>(),
+                contentEncoding = objectNode.optional("contentEncoding")?.expect<String>(),
+                contentMediaType = objectNode.optional("contentMediaType")?.expect<String>(),
+                items = itemsNode?.takeUnless { it.node is DocumentArray }?.let(::parseElement),
+                tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.parseList(::parseElement),
+                additionalItems = objectNode.optional("additionalItems")?.let(::parseElement),
+                maxItems = objectNode.optional("maxItems")?.expect<Number>(),
+                minItems = objectNode.optional("minItems")?.expect<Number>(),
+                uniqueItems = objectNode.optional("uniqueItems")?.expect<Boolean>(),
+                contains = objectNode.optional("contains")?.let(::parseElement),
+                properties = objectNode.optional("properties")?.parseMap(::parseElement),
+                patternProperties = objectNode.optional("patternProperties")?.parseMap(::parseElement),
+                additionalProperties = objectNode.optional("additionalProperties")?.let(::parseElement),
+                propertyNames = objectNode.optional("propertyNames")?.let(::parseElement),
+                required = objectNode.optional("required")?.expect<List<String>>(),
+                dependencies = objectNode.optional("dependencies")?.let(::parseDependencies),
+                definitions = objectNode.optional("definitions")?.parseMap(::parseElement),
+                maxProperties = objectNode.optional("maxProperties")?.expect<Number>(),
+                minProperties = objectNode.optional("minProperties")?.expect<Number>(),
+                allOf = objectNode.optional("allOf")?.parseList(::parseElement),
+                anyOf = objectNode.optional("anyOf")?.parseList(::parseElement),
+                oneOf = objectNode.optional("oneOf")?.parseList(::parseElement),
+                not = objectNode.optional("not")?.let(::parseElement),
+                ifSchema = objectNode.optional("if")?.let(::parseElement),
+                thenSchema = objectNode.optional("then")?.let(::parseElement),
+                elseSchema = objectNode.optional("else")?.let(::parseElement),
+                enum = objectNode.optional("enum")?.expect<List<Any?>>(),
+                const = constNode?.toPlainValue(),
+                constSet = constNode != null,
+                discriminator = objectNode.optional("discriminator")?.expect<String>(),
+                externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                deprecated = objectNode.optional("deprecated")?.expect<Boolean>(),
+                bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, SCHEMA_BINDING) },
+                extensions = objectNode.extensions(),
+                readOnly = objectNode.optional("readOnly")?.expect<Boolean>(),
+                writeOnly = objectNode.optional("writeOnly")?.expect<Boolean>(),
             ).also { asyncApiContext.register(it, parserNode) },
         )
     }
@@ -211,21 +145,11 @@ internal class SchemaParser(
             else -> parserNode.expect<String>()
         }
 
-    private fun parseDependencies(parserNode: ParserNode): Map<String, Any> {
-        val objectNode = parserNode.expectObject()
-        return objectNode.members().associate { dependency ->
-            val parsedValue: Any =
-                when (dependency.node) {
-                    is DocumentArray ->
-                        dependency.expect<List<String>>().also {
-                            asyncApiContext.register(
-                                it,
-                                dependency,
-                            )
-                        }
-                    else -> parseElement(dependency)
-                }
-            dependency.name to parsedValue
+    private fun parseDependencies(parserNode: ParserNode): Map<String, Any> =
+        parserNode.expectObject().members().mapValues { (_, dependency) ->
+            when (dependency.node) {
+                is DocumentArray -> dependency.expect<List<String>>().also { asyncApiContext.register(it, dependency) }
+                else -> parseElement(dependency)
+            }
         }
-    }
 }

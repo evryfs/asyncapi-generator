@@ -24,7 +24,6 @@
     <ID>LargeClass:SchemaValidator.kt$SchemaValidator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
-    <ID>LongMethod:AsyncApiParserProfile.kt$AsyncApiSpecificationLine.Companion$fun select(root: ParserNode): ParserNode</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectMessages( asyncApiDocument: AsyncApiDocument, component: Component?, ): List&lt;CollectedMessage&gt;</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
@@ -32,7 +31,6 @@
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:ChannelValidator.kt$ChannelValidator$private fun validateAddress( node: Channel, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
-    <ID>LongMethod:ComponentParser.kt$ComponentParser$fun parse(node: ParserNode): Component</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateBindings( component: Component, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateNames( component: Component, results: ValidationCollector, )</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
@@ -79,7 +77,6 @@
     <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>LongMethod:SchemaKeywordPolicy.kt$SchemaKeywordPolicy$fun classify(keyword: String): SchemaKeywordClassification</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
-    <ID>LongMethod:SchemaParser.kt$SchemaParser$fun parseElement(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, visited: MutableSet&lt;Any&gt;, enclosingDeclarations: Set&lt;String&gt;, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateKeywords( node: Any, contextString: String, results: ValidationCollector, )</ID>
@@ -104,13 +101,11 @@
     <ID>LoopWithTooManyJumpStatements:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer$while</ID>
     <ID>LoopWithTooManyJumpStatements:ReferenceAnalyzer.kt$ReferenceAnalyzer$while</ID>
     <ID>MagicNumber:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$3</ID>
-    <ID>MagicNumber:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$3</ID>
     <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$16</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$4</ID>
-    <ID>MatchingDeclarationName:AsyncApiObjectMemberPolicy.kt$AsyncApiObjectType</ID>
     <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey."</ID>
@@ -125,8 +120,6 @@
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
     <ID>MaxLineLength:KafkaBindingValidator.kt$KafkaBindingValidator$"Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' and/or 'compact'."</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
-    <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: AsyncAPI uses JSON-compatible booleans. Use true or false for booleans; values like yes, no, on, and off are strings."</ID>
-    <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."</ID>
     <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
@@ -146,7 +139,6 @@
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun Reference.localComponentName(category: String): String?</ID>
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectFromReference( reference: Reference, sink: MutableSet&lt;String&gt;, visitedRefs: MutableSet&lt;String&gt;, ): Boolean</ID>
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun componentMessagePayloadIdentity( messageName: String, componentMessages: Map&lt;String, MessageInterface&gt;, visitedNames: Set&lt;String&gt; = emptySet(), ): ContractDeclarationIdentity</ID>
-    <ID>ReturnCount:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$fun parse(value: String): AsyncApiSpecificationVersion?</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
@@ -163,7 +155,6 @@
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun mapObject( propertyName: String, schema: Schema, ): TypeRef?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
-    <ID>ReturnCount:NativeSchemaAssetReader.kt$NativeSchemaAssetReader$fun readIfExternalReference(schemaNode: ParserNode): String?</ID>
     <ID>ReturnCount:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
     <ID>ReturnCount:OperationBoundaryValidator.kt$OperationBoundaryValidator$private fun inRoot( rootChannels: Map&lt;String, ChannelInterface&gt;, channelRef: Reference, ): Boolean</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
@@ -171,7 +162,6 @@
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
     <ID>ReturnCount:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
     <ID>ReturnCount:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
-    <ID>ReturnCount:SchemaParser.kt$SchemaParser$fun parseElement(parserNode: ParserNode): SchemaInterface</ID>
     <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateDialect( node: Schema, contextString: String, results: ValidationCollector, )</ID>
     <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
     <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>

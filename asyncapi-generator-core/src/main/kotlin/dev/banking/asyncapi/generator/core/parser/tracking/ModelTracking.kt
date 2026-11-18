@@ -39,6 +39,12 @@ internal class ModelTracking(
         val profile: AsyncApiParserProfile?,
     )
 
+    /**
+     * The node a model was built from.
+     *
+     * @property address the node's address
+     * @property node the node's value
+     */
     private class Origin(
         val address: NodeAddress,
         val node: DocumentNode,

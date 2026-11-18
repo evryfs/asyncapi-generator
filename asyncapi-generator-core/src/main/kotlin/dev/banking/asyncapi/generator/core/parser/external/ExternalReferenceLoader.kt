@@ -29,6 +29,14 @@ import java.net.URISyntaxException
 internal class ExternalReferenceLoader(
     private val context: AsyncApiContext,
 ) {
+    /**
+     * What makes two fragment loads the same: the same node parsed as the same kind with the same profile.
+     *
+     * @property file the canonical path of the fragment's file
+     * @property pointer the JSON pointer of the fragment
+     * @property category the kind of object the fragment is parsed as
+     * @property parserProfile the parser profile the fragment is parsed with
+     */
     private data class FragmentIdentity(
         val file: String,
         val pointer: String,
@@ -36,6 +44,13 @@ internal class ExternalReferenceLoader(
         val parserProfile: String,
     )
 
+    /**
+     * The document and node a reference points at.
+     *
+     * @property documentKey the canonical path of the document
+     * @property pointer the JSON pointer within the document
+     * @property root the root node of the document
+     */
     private class Target(
         val documentKey: String,
         val pointer: JsonPointer,
@@ -93,7 +108,7 @@ internal class ExternalReferenceLoader(
         if (!loadedFragments.add(identity)) return
         context.sourceBudget.withinExternalReference(context.referenceLocation(reference)) {
             val model = withNewReferences { entry.parseTarget(node) }
-            loaded += LoadedTarget.Fragment(category, node.name, model)
+            loaded += LoadedTarget.Fragment(category, node.label, model)
         }
     }
 

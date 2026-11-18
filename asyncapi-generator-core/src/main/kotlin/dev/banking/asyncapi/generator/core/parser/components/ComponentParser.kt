@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.components
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAGE
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
@@ -13,6 +14,7 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
 import dev.banking.asyncapi.generator.core.parser.messages.MessageTraitParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.node.ParserObjectNode
 import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.parser.node.parseObject
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
@@ -52,48 +54,40 @@ internal class ComponentParser(
     private val operationTraitParser = OperationTraitParser(asyncApiContext)
     private val operationReplyAddressParser = OperationReplyAddressParser()
 
+    /** Parses the Components Object. */
     fun parse(node: ParserNode): Component =
         node.parseObject(COMPONENTS) { objectNode ->
             Component(
-                schemas = objectNode.optional("schemas")?.parseMap(schemaParser::parseElement),
-                servers = objectNode.optional("servers")?.parseMap(serverParser::parseElement),
-                channels = objectNode.optional("channels")?.parseMap(channelParser::parseElement),
-                operations = objectNode.optional("operations")?.parseMap(operationParser::parseElement),
-                messages = objectNode.optional("messages")?.parseMap(messageParser::parseElement),
-                securitySchemes = objectNode.optional("securitySchemes")?.parseMap(securitySchemeParser::parseElement),
-                serverVariables = objectNode.optional("serverVariables")?.parseMap(serverVariableParser::parseElement),
-                parameters = objectNode.optional("parameters")?.parseMap(parameterParser::parseElement),
-                correlationIds = objectNode.optional("correlationIds")?.parseMap(correlationIdParser::parseElement),
-                replies = objectNode.optional("replies")?.parseMap(operationReplyParser::parseElement),
-                replyAddresses =
-                    objectNode
-                        .optional(
-                            "replyAddresses",
-                        )?.parseMap(operationReplyAddressParser::parseElement),
-                externalDocs = objectNode.optional("externalDocs")?.parseMap(externalDocsParser::parseElement),
-                tags = objectNode.optional("tags")?.parseMap(tagParser::parseElement),
-                operationTraits = objectNode.optional("operationTraits")?.parseMap(operationTraitParser::parseElement),
-                messageTraits = objectNode.optional("messageTraits")?.parseMap(messageTraitParser::parseElement),
-                serverBindings =
-                    objectNode
-                        .optional(
-                            "serverBindings",
-                        )?.let { bindingParser.parseComponentMap(it, SERVER) },
-                channelBindings =
-                    objectNode
-                        .optional(
-                            "channelBindings",
-                        )?.let { bindingParser.parseComponentMap(it, CHANNEL) },
-                operationBindings =
-                    objectNode.optional("operationBindings")?.let {
-                        bindingParser.parseComponentMap(it, OPERATION)
-                    },
-                messageBindings =
-                    objectNode
-                        .optional(
-                            "messageBindings",
-                        )?.let { bindingParser.parseComponentMap(it, MESSAGE) },
+                schemas = objectNode.map("schemas", schemaParser::parseElement),
+                servers = objectNode.map("servers", serverParser::parseElement),
+                channels = objectNode.map("channels", channelParser::parseElement),
+                operations = objectNode.map("operations", operationParser::parseElement),
+                messages = objectNode.map("messages", messageParser::parseElement),
+                securitySchemes = objectNode.map("securitySchemes", securitySchemeParser::parseElement),
+                serverVariables = objectNode.map("serverVariables", serverVariableParser::parseElement),
+                parameters = objectNode.map("parameters", parameterParser::parseElement),
+                correlationIds = objectNode.map("correlationIds", correlationIdParser::parseElement),
+                replies = objectNode.map("replies", operationReplyParser::parseElement),
+                replyAddresses = objectNode.map("replyAddresses", operationReplyAddressParser::parseElement),
+                externalDocs = objectNode.map("externalDocs", externalDocsParser::parseElement),
+                tags = objectNode.map("tags", tagParser::parseElement),
+                operationTraits = objectNode.map("operationTraits", operationTraitParser::parseElement),
+                messageTraits = objectNode.map("messageTraits", messageTraitParser::parseElement),
+                serverBindings = objectNode.bindings("serverBindings", SERVER),
+                channelBindings = objectNode.bindings("channelBindings", CHANNEL),
+                operationBindings = objectNode.bindings("operationBindings", OPERATION),
+                messageBindings = objectNode.bindings("messageBindings", MESSAGE),
                 extensions = objectNode.extensions(),
             )
         }
+
+    private fun <T> ParserObjectNode.map(
+        name: String,
+        parseMember: (ParserNode) -> T,
+    ): Map<String, T>? = optional(name)?.parseMap(parseMember)
+
+    private fun ParserObjectNode.bindings(
+        name: String,
+        location: BindingLocation,
+    ) = optional(name)?.let { bindingParser.parseComponentMap(it, location) }
 }

@@ -85,10 +85,12 @@ internal object ParserDiagnosticFormatter {
         val expected = expectedType.lowercase().removeSuffix("?")
         return when (expected) {
             "boolean" if actualValue is String && actualValue.isJsonBooleanText() ->
-                "Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."
+                "Hint: quoted booleans are strings in YAML. " +
+                    "Use true or false without quotes when the field expects a boolean."
 
             "boolean" if actualValue is String && actualValue.isYaml11BooleanWord() ->
-                "Hint: AsyncAPI uses JSON-compatible booleans. Use true or false for booleans; values like yes, no, on, and off are strings."
+                "Hint: AsyncAPI uses JSON-compatible booleans. " +
+                    "Use true or false for booleans; values like yes, no, on, and off are strings."
 
             "number" if actualValue is String && actualValue.isNumberText() ->
                 "Hint: quoted numbers are strings in YAML. Remove the quotes when the field expects a number."

@@ -39,21 +39,17 @@ internal class ParserObjectNode(
         return parserNode.member(memberName, member)
     }
 
-    fun members(): List<ParserNode> =
-        documentObject.members.map { (memberName, member) ->
-            parserNode.member(
-                name = memberName,
-                node = member.value,
-            )
+    /** The members of this object keyed by name, in document order. */
+    fun members(): Map<String, ParserNode> =
+        documentObject.members.entries.associate { (memberName, member) ->
+            memberName to parserNode.member(name = memberName, node = member.value)
         }
-
-    fun membersStartingWith(prefix: String): List<ParserNode> =
-        members().filter { member -> member.name.startsWith(prefix) }
 
     /** The `x-` specification extensions of this object as plain values, or `null` when it has none. */
     fun extensions(): Map<String, Any?>? =
-        membersStartingWith("x-")
-            .associateTo(linkedMapOf()) { member -> member.name to member.toPlainValue() }
+        members()
+            .filterKeys { memberName -> memberName.startsWith("x-") }
+            .mapValues { (_, member) -> member.toPlainValue() }
             .takeIf { it.isNotEmpty() }
 
     /** Throws if the object contains members not in [allowedMembers]. */
