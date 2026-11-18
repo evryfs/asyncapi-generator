@@ -29,7 +29,6 @@
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
-    <ID>LongMethod:ChannelValidator.kt$ChannelValidator$private fun validateAddress( node: Channel, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateBindings( component: Component, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateNames( component: Component, results: ValidationCollector, )</ID>
@@ -75,11 +74,9 @@
     <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateArray( schema: Schema, value: List&lt;*&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
-    <ID>LongMethod:SchemaKeywordPolicy.kt$SchemaKeywordPolicy$fun classify(keyword: String): SchemaKeywordClassification</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, enclosingDeclarations: Set&lt;String&gt;, )</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateKeywords( node: Any, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateNumericConstraints( node: Schema, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateStringLength( node: Schema, contextString: String, results: ValidationCollector, )</ID>

@@ -14,7 +14,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DIALECT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_PROPERTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DISCRIMINATOR_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_EMPTY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_NONEMPTY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_KEYWORD_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_MULTIPLE_OF
@@ -587,11 +587,11 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         val enumEmpty =
             results.findings.single {
-                it.code == SCHEMA_ENUM_EMPTY.code
+                it.code == SCHEMA_ENUM_NONEMPTY.code
             }
-        assertEquals(SCHEMA_ENUM_EMPTY.code, enumEmpty.code)
-        assertEquals(SCHEMA_ENUM_EMPTY.severity, enumEmpty.severity)
-        assertEquals(SCHEMA_ENUM_EMPTY.concern, enumEmpty.concern)
+        assertEquals(SCHEMA_ENUM_NONEMPTY.code, enumEmpty.code)
+        assertEquals(SCHEMA_ENUM_NONEMPTY.severity, enumEmpty.severity)
+        assertEquals(SCHEMA_ENUM_NONEMPTY.concern, enumEmpty.concern)
         assertEquals(
             "asyncapi_validator_schema_collection_rules_invalid.root.components.schemas.EmptyEnumString.enum",
             enumEmpty.path,

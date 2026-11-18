@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.validator.info
 
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_EMAIL_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_OF_SERVICE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_URI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TITLE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.LICENSE_NAME_REQUIRED
@@ -87,9 +87,9 @@ class InfoValidatorTest : AbstractValidatorTest() {
 
         assertEquals(1, results.findings.size)
 
-        val termsUri = results.findings.single { it.code == INFO_TERMS_OF_SERVICE_FORMAT.code }
-        assertEquals(INFO_TERMS_OF_SERVICE_FORMAT.severity, termsUri.severity)
-        assertEquals(INFO_TERMS_OF_SERVICE_FORMAT.concern, termsUri.concern)
+        val termsUri = results.findings.single { it.code == INFO_TERMS_URI.code }
+        assertEquals(INFO_TERMS_URI.severity, termsUri.severity)
+        assertEquals(INFO_TERMS_URI.concern, termsUri.concern)
         assertEquals(
             "asyncapi_validator_info_diagnostics.yaml",
             termsUri.sourceLocation?.file?.name,

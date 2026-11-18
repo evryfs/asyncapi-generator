@@ -3,13 +3,13 @@ package dev.banking.asyncapi.generator.core.validator.bindings
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.BINDING_PROTOCOL_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_TYPE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CHANNEL_POSITIVE_INTEGER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CLEANUP_POLICY
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_URL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_NUMERIC_RANGE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -39,7 +39,7 @@ class BindingValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/bindings/asyncapi_validator_kafka_registry_relationship_invalid.yaml")
 
         assertEquals(5, results.errors.size)
-        assertEquals(5, results.findings.count { it.code == KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED.code })
+        assertEquals(5, results.findings.count { it.code == KAFKA_MESSAGE_SCHEMA_REGISTRY_URL.code })
 
         val directChannel =
             results.findings.single {
@@ -83,9 +83,9 @@ class BindingValidatorTest : AbstractValidatorTest() {
 
         assertEquals(1, results.errors.size)
         val external = results.findings.single()
-        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED.code, external.code)
-        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED.severity, external.severity)
-        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED.concern, external.concern)
+        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_URL.code, external.code)
+        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_URL.severity, external.severity)
+        assertEquals(KAFKA_MESSAGE_SCHEMA_REGISTRY_URL.concern, external.concern)
         assertEquals("kafka_registry_external_message.yaml", external.sourceLocation?.file?.name)
         assertEquals("kafka_registry_external_message.root.bindings.kafka.schemaIdLocation", external.path)
         assertEquals(3, external.line)
@@ -109,10 +109,10 @@ class BindingValidatorTest : AbstractValidatorTest() {
 
         val protocolRegistryUrl =
             results.findings.single {
-                it.code == KAFKA_SCHEMA_REGISTRY_URL_FORMAT.code
+                it.code == KAFKA_SCHEMA_REGISTRY_URL.code
             }
-        assertEquals(KAFKA_SCHEMA_REGISTRY_URL_FORMAT.severity, protocolRegistryUrl.severity)
-        assertEquals(KAFKA_SCHEMA_REGISTRY_URL_FORMAT.concern, protocolRegistryUrl.concern)
+        assertEquals(KAFKA_SCHEMA_REGISTRY_URL.severity, protocolRegistryUrl.severity)
+        assertEquals(KAFKA_SCHEMA_REGISTRY_URL.concern, protocolRegistryUrl.concern)
         assertEquals(
             "asyncapi_validator_binding_invalid.root.components.serverBindings.InvalidServer.kafka.schemaRegistryUrl",
             protocolRegistryUrl.path,
@@ -121,10 +121,10 @@ class BindingValidatorTest : AbstractValidatorTest() {
 
         val vendorRequiresUrl =
             results.findings.single {
-                it.code == KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL.code
+                it.code == KAFKA_SCHEMA_REGISTRY_VENDOR_URL.code
             }
-        assertEquals(KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL.severity, vendorRequiresUrl.severity)
-        assertEquals(KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL.concern, vendorRequiresUrl.concern)
+        assertEquals(KAFKA_SCHEMA_REGISTRY_VENDOR_URL.severity, vendorRequiresUrl.severity)
+        assertEquals(KAFKA_SCHEMA_REGISTRY_VENDOR_URL.concern, vendorRequiresUrl.concern)
         assertEquals(
             "asyncapi_validator_binding_invalid.root.components.serverBindings.MissingRegistryUrl.kafka.schemaRegistryVendor",
             vendorRequiresUrl.path,
@@ -200,10 +200,10 @@ class BindingValidatorTest : AbstractValidatorTest() {
 
         val unsupportedVersion =
             results.findings.single {
-                it.code == KAFKA_BINDING_VERSION_UNSUPPORTED.code
+                it.code == KAFKA_BINDING_VERSION.code
             }
-        assertEquals(KAFKA_BINDING_VERSION_UNSUPPORTED.severity, unsupportedVersion.severity)
-        assertEquals(KAFKA_BINDING_VERSION_UNSUPPORTED.concern, unsupportedVersion.concern)
+        assertEquals(KAFKA_BINDING_VERSION.severity, unsupportedVersion.severity)
+        assertEquals(KAFKA_BINDING_VERSION.concern, unsupportedVersion.concern)
         assertEquals(
             "asyncapi_validator_binding_invalid.root.components.messageBindings.InvalidMessage.kafka.bindingVersion",
             unsupportedVersion.path,

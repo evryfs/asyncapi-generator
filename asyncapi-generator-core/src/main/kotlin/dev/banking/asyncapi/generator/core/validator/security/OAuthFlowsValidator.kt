@@ -4,13 +4,13 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.security.OAuthFlow
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_REFRESH_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_SCOPE_AVAILABLE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_AUTHORIZATION_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_AUTHORIZATION_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_REFRESH_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_SCOPE_AVAILABLE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_TOKEN_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_TOKEN_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
@@ -35,7 +35,7 @@ internal class OAuthFlowsValidator(
             )
         ) {
             results.error(
-                SECURITY_OAUTH_FLOWS_REQUIRED,
+                SECURITY_OAUTH_FLOWS,
                 "$contextString of type 'oauth2' requires at least one OAuth2 flow.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(node, node::flows)
@@ -98,8 +98,8 @@ internal class OAuthFlowsValidator(
                 flow,
                 flow.authorizationUrl,
                 "authorizationUrl",
-                SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED,
-                SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT,
+                OAUTH_AUTHORIZATION_URL_REQUIRED,
+                OAUTH_AUTHORIZATION_URL_FORMAT,
                 contextString,
                 results,
             )
@@ -109,8 +109,8 @@ internal class OAuthFlowsValidator(
                 flow,
                 flow.tokenUrl,
                 "tokenUrl",
-                SECURITY_OAUTH_TOKEN_URL_REQUIRED,
-                SECURITY_OAUTH_TOKEN_URL_FORMAT,
+                OAUTH_TOKEN_URL_REQUIRED,
+                OAUTH_TOKEN_URL_FORMAT,
                 contextString,
                 results,
             )
@@ -118,7 +118,7 @@ internal class OAuthFlowsValidator(
         flow.refreshUrl?.let { refreshUrl ->
             if (ValidationFormats.absoluteUri(refreshUrl) == null) {
                 results.error(
-                    SECURITY_OAUTH_REFRESH_URL_FORMAT,
+                    OAUTH_REFRESH_URL_FORMAT,
                     "$contextString 'refreshUrl' must be an absolute URL.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, flow::refreshUrl),
                 )
@@ -168,7 +168,7 @@ internal class OAuthFlowsValidator(
         val unknownScopes = requestedScopes.filterNot(availableScopes::contains)
         if (unknownScopes.isNotEmpty()) {
             results.error(
-                SECURITY_OAUTH_SCOPE_AVAILABLE,
+                OAUTH_SCOPE_AVAILABLE,
                 "OAuth2 requested scopes $unknownScopes are not declared by any configured flow.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::scopes),
             )

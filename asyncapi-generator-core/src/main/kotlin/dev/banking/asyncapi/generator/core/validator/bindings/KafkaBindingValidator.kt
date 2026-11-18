@@ -5,12 +5,12 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
 import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_FIELD_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_TYPE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_BINDING_VERSION_UNSUPPORTED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CHANNEL_POSITIVE_INTEGER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CLEANUP_POLICY
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_URL
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
@@ -58,7 +58,7 @@ internal class KafkaBindingValidator(
         }
         if (value !in SUPPORTED_VERSIONS) {
             results.error(
-                KAFKA_BINDING_VERSION_UNSUPPORTED,
+                KAFKA_BINDING_VERSION,
                 "Kafka binding version '$value' is not supported; supported versions are " +
                     SUPPORTED_VERSIONS.joinToString(),
                 sourceLocation = location(binding, "bindingVersion"),
@@ -89,14 +89,14 @@ internal class KafkaBindingValidator(
         val url = properties["schemaRegistryUrl"]
         if (url is String && ValidationFormats.absoluteUri(url) == null) {
             results.error(
-                KAFKA_SCHEMA_REGISTRY_URL_FORMAT,
+                KAFKA_SCHEMA_REGISTRY_URL,
                 "Kafka server binding 'schemaRegistryUrl' must be an absolute URI.",
                 sourceLocation = location(binding, "schemaRegistryUrl"),
             )
         }
         if (properties.containsKey("schemaRegistryVendor") && !properties.containsKey("schemaRegistryUrl")) {
             results.error(
-                KAFKA_SCHEMA_REGISTRY_VENDOR_REQUIRES_URL,
+                KAFKA_SCHEMA_REGISTRY_VENDOR_URL,
                 "Kafka server binding 'schemaRegistryVendor' requires 'schemaRegistryUrl'.",
                 sourceLocation = location(binding, "schemaRegistryVendor"),
             )

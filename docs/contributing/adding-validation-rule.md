@@ -13,7 +13,7 @@ Add an entry to `ValidationRule` in
 next to related rules:
 
 ```kotlin
-REFERENCE_CYCLE("AAS3-REFERENCE-CYCLE", SPECIFICATION, ERROR, ASYNCAPI_SPEC),
+REFERENCE_CYCLE("AAS3-REFERENCE-CYCLE", SPECIFICATION, ERROR, spec("referenceObject")),
 ```
 
 - The code is stable public identity; never reuse or rename a published code.
@@ -22,12 +22,18 @@ REFERENCE_CYCLE("AAS3-REFERENCE-CYCLE", SPECIFICATION, ERROR, ASYNCAPI_SPEC),
 - The prefix states the authority: `AAS3-` for the AsyncAPI 3.0
   specification, `JSONSCHEMA-` for JSON Schema Draft 7, `GEN-` for generator
   capability limits, and `ADV-` for project advisories.
-  `ValidationRuleTest` enforces unique codes and these prefixes.
+  The enum name is the code without its prefix (`JSONSCHEMA-` codes keep a
+  `SCHEMA_` prefix). `ValidationRuleTest` enforces unique codes, these
+  prefixes, and the names.
 - Choose the concern (`SPECIFICATION`, `GENERATOR_CAPABILITY`, or `ADVISORY`)
   and the severity. Errors stop the pipeline; warnings are reported and
   generation continues.
-- Point the documentation link at the specification section, or at the
-  project's validation rule inventory for project rules.
+- The rule owns its documentation link, and every finding of the rule uses it.
+  `AAS3-` rules pass the anchored specification section (`spec("...")` or
+  `kafkaBinding("...")`), and `JSONSCHEMA-` rules the keyword page
+  (`jsonSchema("...")`). `GEN-` and `ADV-` rules pass nothing: they link to
+  their row in `docs/reference/validation-rules.md`, which needs an
+  `<a id="<code in lower case>"></a>` anchor.
 
 ## 2. Report the finding
 

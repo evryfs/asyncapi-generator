@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.validator
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_CONTENT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN
 import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistryValidator
 import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
 import dev.banking.asyncapi.generator.core.validator.components.ComponentValidator
@@ -75,7 +75,7 @@ internal class AsyncApiValidator(
             )
         } else if (!uri.scheme.equals("urn", ignoreCase = true)) {
             results.warn(
-                DOCUMENT_ID_URN_RECOMMENDED,
+                DOCUMENT_ID_URN,
                 "It is RECOMMENDED to use a URN for the 'id' field to ensure global uniqueness.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::id),
             )
@@ -89,7 +89,7 @@ internal class AsyncApiValidator(
         val contentType = node.defaultContentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
-                DOCUMENT_DEFAULT_CONTENT_TYPE_FORMAT,
+                DOCUMENT_CONTENT_TYPE,
                 "Invalid 'defaultContentType' format '$contentType'. Expected a MIME type (e.g., 'application/json').",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::defaultContentType),
             )

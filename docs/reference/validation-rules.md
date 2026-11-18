@@ -5,7 +5,7 @@ This reference records implemented validation rules and their ownership.
 | Code | Condition | Authority | Concern / severity |
 |---|---|---|---|
 | `AAS3-DOCUMENT-ID-FORMAT` | Document `id` is not a URI. | AsyncAPI 3.0 | specification / error |
-| `ADV-DOCUMENT-ID-URN` | Document `id` is not a URN. | Project guidance | advisory / warning |
+| <a id="adv-document-id-urn"></a>`ADV-DOCUMENT-ID-URN` | Document `id` is not a URN. | Project guidance | advisory / warning |
 | `AAS3-DOCUMENT-CONTENT-TYPE` | `defaultContentType` is not a specific media type. | AsyncAPI 3.0 | specification / error |
 | `AAS3-INFO-TITLE-REQUIRED` | `info.title` is empty. | AsyncAPI 3.0 Info Object | specification / error |
 | `AAS3-INFO-VERSION-REQUIRED` | `info.version` is empty. | AsyncAPI 3.0 Info Object | specification / error |
@@ -20,24 +20,24 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-SERVER-HOST-REQUIRED` | Server host is empty. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-NAME-FORMAT` | Server map key uses unsupported characters. | AsyncAPI 3.0 Servers Object | specification / error |
 | `AAS3-COMPONENT-NAME-FORMAT` | Component map key uses unsupported characters (letters, digits, `.`, `-`, `_` allowed). | AsyncAPI 3.0 Components Object | specification / error |
-| `ADV-SERVER-HOST-PROTOCOL` | Host contains a protocol scheme. | Project guidance | advisory / warning |
+| <a id="adv-server-host-protocol"></a>`ADV-SERVER-HOST-PROTOCOL` | Host contains a protocol scheme. | Project guidance | advisory / warning |
 | `AAS3-SERVER-VARIABLE-UNDEFINED` | Host or pathname variable lacks a definition. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-PROTOCOL-REQUIRED` | Server protocol is empty. | AsyncAPI 3.0 Server Object | specification / error |
 | `AAS3-SERVER-VARIABLE-ENUM-UNIQUE` | Server-variable enum repeats values. | AsyncAPI 3.0 Server Variable Object | specification / error |
-| `ADV-SERVER-VARIABLE-DEFAULT-ENUM` | Default is outside enum. | Project guidance | advisory / warning |
-| `ADV-SERVER-VARIABLE-EXAMPLES-ENUM` | Example is outside enum. | Project guidance | advisory / warning |
+| <a id="adv-server-variable-default-enum"></a>`ADV-SERVER-VARIABLE-DEFAULT-ENUM` | Default is outside enum. | Project guidance | advisory / warning |
+| <a id="adv-server-variable-examples-enum"></a>`ADV-SERVER-VARIABLE-EXAMPLES-ENUM` | Example is outside enum. | Project guidance | advisory / warning |
 | `AAS3-CHANNEL-ADDRESS-SUFFIX` | Channel address contains a query or fragment suffix. | AsyncAPI 3.0 Channel Object | specification / error |
 | `AAS3-CHANNEL-PARAMETER-UNDEFINED` | Channel address parameter is undefined. | AsyncAPI 3.0 Channel Object | specification / error |
 | `AAS3-CHANNEL-PARAMETER-UNUSED` | Parameters are present without matching address expressions. | AsyncAPI 3.0 Channel Object | specification / error |
 | `AAS3-MESSAGE-CONTENT-TYPE` | Message or message-trait content type is not a specific media type. | AsyncAPI 3.0 Message Object | specification / error |
 | `AAS3-MESSAGE-EXAMPLE-CONTENT` | Message example contains neither headers nor payload. | AsyncAPI 3.0 Message Example Object | specification / error |
 | `AAS3-MESSAGE-EXAMPLE-SCHEMA` | Message example does not satisfy its AsyncAPI Schema Object. | AsyncAPI 3.0 Message/Schema Object | specification / error |
-| `GEN-MESSAGE-EXAMPLE-FORMAT` | Multi Format Schema example has no proven instance validator. | Generator behavior | capability / warning |
-| `GEN-MESSAGE-HEADER-FORMAT` | Message header schema form is unsupported. | Generator behavior | capability / warning |
+| <a id="gen-message-example-format"></a>`GEN-MESSAGE-EXAMPLE-FORMAT` | Multi Format Schema example has no proven instance validator. | Generator behavior | capability / warning |
+| <a id="gen-message-header-format"></a>`GEN-MESSAGE-HEADER-FORMAT` | Message header schema form is unsupported. | Generator behavior | capability / warning |
 | `AAS3-PARAMETER-ENUM-UNIQUE` | Parameter enum repeats values. | AsyncAPI 3.0 Parameter Object | specification / error |
 | `AAS3-PARAMETER-NAME-FORMAT` | Parameter map key uses unsupported characters. | AsyncAPI 3.0 Parameters Object | specification / error |
-| `ADV-PARAMETER-DEFAULT-ENUM` | Parameter default is outside enum. | Project guidance | advisory / warning |
-| `ADV-PARAMETER-EXAMPLES-ENUM` | Parameter example is outside enum. | Project guidance | advisory / warning |
+| <a id="adv-parameter-default-enum"></a>`ADV-PARAMETER-DEFAULT-ENUM` | Parameter default is outside enum. | Project guidance | advisory / warning |
+| <a id="adv-parameter-examples-enum"></a>`ADV-PARAMETER-EXAMPLES-ENUM` | Parameter example is outside enum. | Project guidance | advisory / warning |
 | `AAS3-PARAMETER-LOCATION` | Parameter location expression is malformed. | AsyncAPI 3.0 Parameter Object | specification / error |
 | `AAS3-CORRELATION-LOCATION-REQUIRED` | Correlation location is empty. | AsyncAPI 3.0 Correlation ID Object | specification / error |
 | `AAS3-CORRELATION-LOCATION-FORMAT` | Correlation location expression is malformed. | AsyncAPI 3.0 Runtime Expressions | specification / error |
@@ -69,7 +69,7 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-SECURITY-OPENID-URL-FORMAT` | OpenID Connect URL is not absolute. | AsyncAPI 3.0 Security Scheme Object | specification / error |
 | `AAS3-BINDING-PROTOCOL-TYPE` | Binding protocol value is not an object with string property names. | AsyncAPI 3.0 Binding Objects | specification / error |
 | `AAS3-KAFKA-BINDING-VERSION-TYPE` | Kafka `bindingVersion` is not a string. | Kafka binding | specification / error |
-| `GEN-KAFKA-BINDING-VERSION` | Kafka binding version is outside supported versions. | Kafka binding / generator behavior | capability / error |
+| <a id="gen-kafka-binding-version"></a>`GEN-KAFKA-BINDING-VERSION` | Kafka binding version is outside supported versions. | Kafka binding / generator behavior | capability / error |
 | `AAS3-KAFKA-BINDING-FIELD` | Kafka binding contains a field not defined at the current location. | Kafka binding | specification / error |
 | `AAS3-KAFKA-BINDING-FIELD-TYPE` | Kafka binding field has the wrong type. | Kafka binding | specification / error |
 | `AAS3-KAFKA-CHANNEL-POSITIVE-INTEGER` | Kafka channel binding numeric fields are not positive integers. | Kafka binding | specification / error |
@@ -78,32 +78,32 @@ This reference records implemented validation rules and their ownership.
 | `AAS3-KAFKA-MESSAGE-SCHEMA-REGISTRY-URL` | Message schema-ID field requires schema-registry URL on applicable servers. | Kafka binding | specification / error |
 | `AAS3-KAFKA-CLEANUP-POLICY` | Kafka cleanup policy is invalid. | Kafka channel binding | specification / error |
 | `AAS3-REFERENCE-UNRESOLVED` | Reference cannot resolve. | AsyncAPI reference objects | specification / error |
-| `GEN-REFERENCE-CATEGORY-REQUIRED` | Parsed reference is missing required concrete category. | Parser and generator contract | capability / error |
+| <a id="gen-reference-category-required"></a>`GEN-REFERENCE-CATEGORY-REQUIRED` | Parsed reference is missing required concrete category. | Parser and generator contract | capability / error |
 | `AAS3-REFERENCE-TARGET-CATEGORY` | Reference resolves to mismatched target category. | AsyncAPI reference objects | specification / error |
 | `AAS3-REFERENCE-CYCLE` | A chain of references only points at other references and never reaches an object, for example `A -> B -> A`. | AsyncAPI reference objects | specification / error |
-| `GEN-SCHEMA-KEYWORD-UNSUPPORTED` | Unsupported Schema keyword for this generator. | Generator behavior | capability / error |
-| `GEN-SCHEMA-ANNOTATION-IGNORED` | Known Schema annotation keyword is ignored by generated runtimes. | Generator behavior | capability / warning |
+| <a id="gen-schema-keyword-unsupported"></a>`GEN-SCHEMA-KEYWORD-UNSUPPORTED` | Unsupported Schema keyword for this generator. | Generator behavior | capability / error |
+| <a id="gen-schema-annotation-ignored"></a>`GEN-SCHEMA-ANNOTATION-IGNORED` | Known Schema annotation keyword is ignored by generated runtimes. | Generator behavior | capability / warning |
 | `JSONSCHEMA-DEPENDENCY-ARRAY-UNIQUE` | Property dependency array repeats a property name. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-DIALECT` | Schema `$schema` is not the supported Draft 7 dialect. | JSON Schema Draft 7 / generator behavior | capability / error |
+| <a id="gen-schema-dialect"></a>`GEN-SCHEMA-DIALECT` | Schema `$schema` is not the supported Draft 7 dialect. | JSON Schema Draft 7 / generator behavior | capability / error |
 | `JSONSCHEMA-TYPE` | Schema `type` is not an exact supported string or array member. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-TYPE-ARRAY-NONEMPTY` | Type array is empty. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-TYPE-ARRAY-UNIQUE` | Type array contains duplicates. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-ENUM-NONEMPTY` | Enum is empty. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-ENUM-UNIQUE` | Enum repeats JSON-equal duplicate values. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-CONST-TYPE` | `const` cannot be represented by generator model type. | Generator behavior | capability / error |
-| `GEN-SCHEMA-NUMERIC-RANGE` | Numeric lower bound is greater than upper bound or invalid. | Generator constraint mapping | capability / error |
+| <a id="gen-schema-const-type"></a>`GEN-SCHEMA-CONST-TYPE` | `const` cannot be represented by generator model type. | Generator behavior | capability / error |
+| <a id="gen-schema-numeric-range"></a>`GEN-SCHEMA-NUMERIC-RANGE` | Numeric lower bound is greater than upper bound or invalid. | Generator constraint mapping | capability / error |
 | `JSONSCHEMA-MULTIPLE-OF` | `multipleOf` is not positive. | JSON Schema Draft 7 | specification / error |
 | `JSONSCHEMA-STRING-LENGTH` | String length bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-STRING-LENGTH-RANGE` | Minimum string length exceeds maximum length. | Generator constraint mapping | capability / error |
+| <a id="gen-schema-string-length-range"></a>`GEN-SCHEMA-STRING-LENGTH-RANGE` | Minimum string length exceeds maximum length. | Generator constraint mapping | capability / error |
 | `JSONSCHEMA-ARRAY-SIZE` | Array size bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-ARRAY-SIZE-RANGE` | Minimum array size exceeds maximum size. | Generator behavior | capability / error |
+| <a id="gen-schema-array-size-range"></a>`GEN-SCHEMA-ARRAY-SIZE-RANGE` | Minimum array size exceeds maximum size. | Generator behavior | capability / error |
 | `JSONSCHEMA-OBJECT-SIZE` | Object size bound is not a nonnegative integer. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-OBJECT-SIZE-RANGE` | Minimum object size exceeds maximum size. | Generator behavior | capability / error |
+| <a id="gen-schema-object-size-range"></a>`GEN-SCHEMA-OBJECT-SIZE-RANGE` | Minimum object size exceeds maximum size. | Generator behavior | capability / error |
 | `JSONSCHEMA-REQUIRED-UNIQUE` | `required` list contains duplicates. | JSON Schema Draft 7 | specification / error |
-| `GEN-SCHEMA-REQUIRED-UNDECLARED` | Required property is missing from declaration scope. | Generator behavior | capability / warning |
-| `GEN-SCHEMA-DEFAULT-TYPE` | `default` cannot be represented by declared generator type. | Generator behavior | capability / error |
+| <a id="gen-schema-required-undeclared"></a>`GEN-SCHEMA-REQUIRED-UNDECLARED` | Required property is missing from declaration scope. | Generator behavior | capability / warning |
+| <a id="gen-schema-default-type"></a>`GEN-SCHEMA-DEFAULT-TYPE` | `default` cannot be represented by declared generator type. | Generator behavior | capability / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-REQUIRED` | Discriminator property is not locally required. | AsyncAPI Schema Object | specification / error |
 | `AAS3-SCHEMA-DISCRIMINATOR-PROPERTY` | Discriminator property is not locally declared. | AsyncAPI Schema Object | specification / error |
-| `ADV-UNION-INDISTINGUISHABLE-MEMBERS` | `oneOf`/`anyOf` members without a discriminator declare the same property names, so generated code cannot tell them apart. | Project guidance | advisory / warning |
+| <a id="adv-union-indistinguishable-members"></a>`ADV-UNION-INDISTINGUISHABLE-MEMBERS` | `oneOf`/`anyOf` members without a discriminator declare the same property names, so generated code cannot tell them apart. | Project guidance | advisory / warning |
 
 Output-specific incompatibilities of schema features, such as tuple items, untyped enums and patterns, are reported by generation compatibility exceptions.

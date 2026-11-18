@@ -56,7 +56,6 @@ internal class CorrelationIdValidator(
                 CORRELATION_LOCATION_FORMAT,
                 "$contextString 'location' ('$location') does not follow valid runtime expression.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#correlationIdObject",
             )
         }
     }

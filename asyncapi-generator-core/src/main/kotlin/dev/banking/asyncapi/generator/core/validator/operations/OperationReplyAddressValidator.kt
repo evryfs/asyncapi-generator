@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_ADDRESS_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_ADDRESS_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
@@ -46,16 +46,15 @@ internal class OperationReplyAddressValidator(
         val location = node.location
         if (location.isEmpty()) {
             results.error(
-                OPERATION_REPLY_ADDRESS_REQUIRED,
+                REPLY_ADDRESS_REQUIRED,
                 "$contextString 'location' is required and cannot be empty.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationReplyAddressObject",
             )
             return
         }
         if (!ValidationFormats.isRuntimeExpression(location)) {
             results.error(
-                OPERATION_REPLY_ADDRESS_FORMAT,
+                REPLY_ADDRESS_FORMAT,
                 "$contextString 'location' ('$location') must be a valid runtime expression.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
             )

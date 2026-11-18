@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_PROTOCOL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_PROTOCOL_REQUIRED
@@ -70,11 +70,11 @@ class ServerValidatorTest : AbstractValidatorTest() {
 
         val hostProtocol =
             results.findings.single {
-                it.code == SERVER_HOST_CONTAINS_PROTOCOL.code
+                it.code == SERVER_HOST_PROTOCOL.code
             }
-        assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.code, hostProtocol.code)
-        assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.severity, hostProtocol.severity)
-        assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.concern, hostProtocol.concern)
+        assertEquals(SERVER_HOST_PROTOCOL.code, hostProtocol.code)
+        assertEquals(SERVER_HOST_PROTOCOL.severity, hostProtocol.severity)
+        assertEquals(SERVER_HOST_PROTOCOL.concern, hostProtocol.concern)
         assertEquals("asyncapi_validator_server_invalid.yaml", hostProtocol.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_server_invalid.root.servers.invalidHostServer.host",
