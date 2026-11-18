@@ -83,7 +83,7 @@ internal class SecuritySchemeValidator(
                 "gssapi",
             )
         val type = node.type
-        if (type.isEmpty()) {
+        if (type.isBlank()) {
             results.error(
                 SECURITY_TYPE_REQUIRED,
                 "$contextString 'type' field in SecurityScheme is required.",
@@ -103,7 +103,7 @@ internal class SecuritySchemeValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        if (node.type == "httpApiKey" && node.name.isNullOrEmpty()) {
+        if (node.type == "httpApiKey" && node.name.isNullOrBlank()) {
             results.error(
                 SECURITY_NAME_REQUIRED,
                 "$contextString of type 'httpApiKey' requires non-empty 'name'.",
@@ -126,7 +126,7 @@ internal class SecuritySchemeValidator(
                 else -> null
             } ?: return
         val inField = node.inField
-        if (inField.isNullOrEmpty()) {
+        if (inField.isNullOrBlank()) {
             results.error(
                 SECURITY_IN_REQUIRED,
                 "$contextString of type '${node.type}' requires a non-empty 'in' field.",
@@ -149,7 +149,7 @@ internal class SecuritySchemeValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        if (node.type == "http" && node.scheme.isNullOrEmpty()) {
+        if (node.type == "http" && node.scheme.isNullOrBlank()) {
             results.error(
                 SECURITY_SCHEME_REQUIRED,
                 "$contextString of type 'http' requires non-empty 'scheme'.",
@@ -167,7 +167,7 @@ internal class SecuritySchemeValidator(
     ) {
         if (node.type == "openIdConnect") {
             val url = node.openIdConnectUrl
-            if (url.isNullOrEmpty()) {
+            if (url.isNullOrBlank()) {
                 results.error(
                     SECURITY_OPENID_URL_REQUIRED,
                     "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'.",

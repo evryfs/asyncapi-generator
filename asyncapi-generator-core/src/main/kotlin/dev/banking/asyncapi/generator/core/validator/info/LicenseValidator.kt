@@ -6,6 +6,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.LICENS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.LICENSE_URL_FORMAT
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class LicenseValidator(
     val asyncApiContext: AsyncApiContext,
@@ -16,22 +18,19 @@ internal class LicenseValidator(
         results: ValidationCollector,
     ) {
         if (!results.visit(node)) return
-        val name = node.name
-        if (name.isBlank()) {
-            results.error(
-                LICENSE_NAME_REQUIRED,
-                "$contextString 'name' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name),
-            )
-        }
-        node.url?.let { url ->
-            if (ValidationFormats.absoluteUri(url) == null) {
-                results.error(
-                    LICENSE_URL_FORMAT,
-                    "$contextString 'url' field must be a valid absolute URL.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
-                )
-            }
-        }
+        results.requireNonBlank(
+            node.name,
+            "name",
+            contextString,
+            LICENSE_NAME_REQUIRED,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::name),
+        )
+        results.requireAbsoluteUri(
+            node.url,
+            "url",
+            contextString,
+            LICENSE_URL_FORMAT,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::url),
+        )
     }
 }
