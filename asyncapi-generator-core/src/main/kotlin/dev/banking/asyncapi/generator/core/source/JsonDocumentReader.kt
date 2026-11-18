@@ -48,15 +48,13 @@ internal class JsonDocumentReader(
                 }
                 root
             }
-        } catch (ex: DocumentReadException) {
-            throw ex
-        } catch (ex: StreamConstraintsException) {
-            throw resourceLimitExceeded(source, ex)
-        } catch (ex: JsonProcessingException) {
+        } catch (exception: StreamConstraintsException) {
+            throw resourceLimitExceeded(source, exception)
+        } catch (exception: JsonProcessingException) {
             throw DocumentReadException.MalformedDocument(
                 file = source.file,
-                cause = ex,
-                location = ex.location?.let { locationOf(source, NodePath.ROOT, it) },
+                cause = exception,
+                location = exception.location?.let { locationOf(source, NodePath.ROOT, it) },
             )
         }
 
@@ -74,23 +72,25 @@ internal class JsonDocumentReader(
             JsonToken.VALUE_TRUE -> DocumentBoolean(true, location)
             JsonToken.VALUE_FALSE -> DocumentBoolean(false, location)
             JsonToken.VALUE_NUMBER_INT ->
-                DocumentNumber(
-                    value =
-                        DocumentNumberParser.parseInteger(parser.text)
-                            ?: throw malformed(source, parser, "Invalid JSON integer"),
-                    location = location,
-                )
+                parseNumber(parser, source, location, "Invalid JSON integer", DocumentNumberParser::parseInteger)
             JsonToken.VALUE_NUMBER_FLOAT ->
-                DocumentNumber(
-                    value =
-                        DocumentNumberParser.parseDecimal(parser.text)
-                            ?: throw malformed(source, parser, "Invalid JSON decimal"),
-                    location = location,
-                )
+                parseNumber(parser, source, location, "Invalid JSON decimal", DocumentNumberParser::parseDecimal)
             JsonToken.VALUE_NULL -> DocumentNull(location)
             else -> throw malformed(source, parser, "Unexpected JSON token: $token")
         }
     }
+
+    private fun parseNumber(
+        parser: JsonParser,
+        source: DocumentSource,
+        location: SourceLocation,
+        invalidMessage: String,
+        parse: (String) -> Number?,
+    ): DocumentNumber =
+        DocumentNumber(
+            value = parse(parser.text) ?: throw malformed(source, parser, invalidMessage),
+            location = location,
+        )
 
     private fun parseObject(
         parser: JsonParser,
@@ -113,13 +113,20 @@ internal class JsonDocumentReader(
             val key = parser.currentName()
             val keyPath = path.member(key)
             val keyLocation = locationOf(source, keyPath, parser.currentTokenLocation())
-            members.add(key, keyLocation) {
-                val valueToken =
-                    parser.nextToken()
-                        ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
-                parseNode(parser, valueToken, keyPath, source)
-            }
+            members.add(key, keyLocation) { parseMemberValue(parser, key, keyPath, source) }
         }
+    }
+
+    private fun parseMemberValue(
+        parser: JsonParser,
+        key: String,
+        path: NodePath,
+        source: DocumentSource,
+    ): DocumentNode {
+        val valueToken =
+            parser.nextToken()
+                ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
+        return parseNode(parser, valueToken, path, source)
     }
 
     private fun parseArray(

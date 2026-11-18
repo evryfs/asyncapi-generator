@@ -159,8 +159,6 @@
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>NestedBlockDepth:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
     <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
-    <ID>OutdatedDocumentation:DocumentNode.kt$DocumentNode</ID>
-    <ID>OutdatedDocumentation:DocumentReadException.kt$DocumentReadException$MalformedDocument : DocumentReadException</ID>
     <ID>OutdatedDocumentation:EnumLiteralNormalizer.kt$EnumConstant</ID>
     <ID>OutdatedDocumentation:JsonPropertyAccessAnnotationMapper.kt$JsonPropertyAccessAnnotationMapper$fun annotationFor( schema: Schema?, wireName: String?, namedTarget: String, ): String?</ID>
     <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
@@ -171,7 +169,6 @@
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun TypeRef.imports( modelPackage: String, declaringType: String, listImport: String? = null, mapImport: String? = null, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
-    <ID>OutdatedDocumentation:YamlDocumentReader.kt$YamlDocumentReader$private fun parseNode( node: Node, path: NodePath, source: DocumentSource, ancestors: MutableSet&lt;Node&gt; = Collections.newSetFromMap(IdentityHashMap()), ): DocumentNode</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
     <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun resolveReference( reference: Reference, sourceFile: File, ): ExternalReferencePathResolver.ResolvedReference?</ID>
@@ -222,8 +219,6 @@
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
     <ID>ThrowsCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
-    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: NodePath, source: DocumentSource, ): DocumentNode</ID>
-    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: NodePath, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
     <ID>ThrowsCount:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
@@ -317,14 +312,6 @@
     <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface</ID>
     <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdInline : CorrelationIdInterface</ID>
     <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdReference : CorrelationIdInterface</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$DuplicateKey : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$EmptyDocument : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$InvalidMappingKey : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$MissingDocument : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$NotAFile : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$ResourceLimitExceeded : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$UnreadableDocument : DocumentReadException</ID>
-    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$UnsupportedFormat : DocumentReadException</ID>
     <ID>UndocumentedPublicClass:ExternalDoc.kt$ExternalDoc</ID>
     <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface</ID>
     <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface$ExternalDocInline : ExternalDocInterface</ID>

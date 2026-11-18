@@ -10,6 +10,7 @@ internal object DocumentNumberParser {
     private val minLong = BigInteger.valueOf(Long.MIN_VALUE)
     private val maxLong = BigInteger.valueOf(Long.MAX_VALUE)
 
+    /** Parses an integer as `Int`, `Long`, or `BigInteger`, whichever is the smallest that fits. */
     fun parseInteger(value: String): Number? {
         val integer = value.toBigIntegerOrNull() ?: return null
         return when (integer) {
@@ -19,6 +20,7 @@ internal object DocumentNumberParser {
         }
     }
 
+    /** Parses a decimal as `Double` when that is exact, and as `BigDecimal` otherwise. */
     fun parseDecimal(value: String): Number? {
         val decimal = value.toBigDecimalOrNull() ?: return null
         val double = value.toDoubleOrNull()

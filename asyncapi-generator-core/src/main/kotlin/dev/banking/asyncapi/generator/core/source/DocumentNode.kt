@@ -12,10 +12,9 @@ import java.util.Collections
  *
  * Object members additionally retain the location of their key so diagnostics
  * can distinguish a member declaration from its value.
- *
- * @property location source file, parser path, line, and column for this value
  */
 internal sealed interface DocumentNode {
+    /** Where the value begins in its source. */
     val location: SourceLocation
 }
 
@@ -79,24 +78,37 @@ internal class DocumentArray(
     operator fun get(index: Int): DocumentNode = elements[index]
 }
 
-/** A string value and its source [location]. */
+/**
+ * A string value.
+ *
+ * @property value the string
+ * @property location where the value begins in its source
+ */
 internal data class DocumentString(
     val value: String,
     override val location: SourceLocation,
 ) : DocumentNode
 
 /**
- * A numeric value and its source [location].
+ * A numeric value.
  *
  * Equivalent YAML and JSON numbers use the same runtime [Number]
  * representation so parsers do not depend on reader-specific number types.
+ *
+ * @property value the number, as produced by [DocumentNumberParser]
+ * @property location where the value begins in its source
  */
 internal data class DocumentNumber(
     val value: Number,
     override val location: SourceLocation,
 ) : DocumentNode
 
-/** A boolean value and its source [location]. */
+/**
+ * A boolean value.
+ *
+ * @property value the boolean
+ * @property location where the value begins in its source
+ */
 internal data class DocumentBoolean(
     val value: Boolean,
     override val location: SourceLocation,
@@ -107,6 +119,8 @@ internal data class DocumentBoolean(
  *
  * This node is present in the document tree and is therefore distinct from an
  * absent object member or unavailable array element.
+ *
+ * @property location where the value begins in its source
  */
 internal data class DocumentNull(
     override val location: SourceLocation,

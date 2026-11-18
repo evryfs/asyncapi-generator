@@ -11,6 +11,7 @@ import java.nio.charset.CharacterCodingException
  * delegates to the reader for that format.
  */
 internal object SourceReader {
+    /** Reads [file] as YAML or JSON, depending on its extension, within [limits]. */
     fun read(
         file: File,
         limits: SourceLimits = SourceLimits(),
@@ -34,6 +35,7 @@ internal object SourceReader {
         if (!file.isFile) throw DocumentReadException.NotAFile(file)
     }
 
+    /** Reads already loaded [source] content in its format, within [limits]. */
     fun read(
         source: DocumentSource,
         limits: SourceLimits = SourceLimits(),

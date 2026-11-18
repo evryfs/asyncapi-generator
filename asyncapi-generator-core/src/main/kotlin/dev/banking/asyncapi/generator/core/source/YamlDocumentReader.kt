@@ -46,20 +46,20 @@ internal class YamlDocumentReader(
         val rootNode =
             try {
                 yaml.compose(content.reader())
-            } catch (ex: MarkedYAMLException) {
+            } catch (exception: MarkedYAMLException) {
                 throw DocumentReadException.MalformedDocument(
                     file = source.file,
-                    cause = ex,
-                    location = ex.problemMark?.let { locationOf(source, NodePath.ROOT, it) },
+                    cause = exception,
+                    location = exception.problemMark?.let { locationOf(source, NodePath.ROOT, it) },
                 )
-            } catch (ex: ReaderException) {
+            } catch (exception: ReaderException) {
                 throw DocumentReadException.MalformedDocument(
                     file = source.file,
-                    cause = ex,
-                    location = locationAtOffset(source, content, ex.position),
+                    cause = exception,
+                    location = locationAtOffset(source, content, exception.position),
                 )
-            } catch (ex: YAMLException) {
-                throw normalizeYamlException(source, ex)
+            } catch (exception: YAMLException) {
+                throw normalizeYamlException(source, exception)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
         return parseNode(
@@ -70,6 +70,9 @@ internal class YamlDocumentReader(
     }
 
     /**
+     * @param node the YAML node to convert
+     * @param path path of [node] in the document
+     * @param source the document being read
      * @param ancestors YAML nodes on the path from the root to [node]. An alias can point at one of
      *   its own ancestors, which makes the YAML graph infinite; that is rejected here.
      */
