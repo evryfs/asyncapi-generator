@@ -29,27 +29,22 @@ internal class BindingParser(
         parserNode: ParserNode,
         location: BindingLocation,
     ): Map<String, BindingInterface> =
-        parserNode
-            .expectObject()
-            .members()
-            .associate { protocolNode ->
-                protocolNode.name to parseProtocol(protocolNode, location)
-            }
+        parserNode.expectObject().members().mapValues { (protocol, protocolNode) ->
+            parseProtocol(protocolNode, location, protocol)
+        }
 
     /** Parses a component registry whose values are complete Bindings Objects. */
     fun parseComponentMap(
         parserNode: ParserNode,
         location: BindingLocation,
     ): Map<String, BindingInterface> =
-        parserNode.expectObject().members().associate { componentNode ->
-            componentNode.name to parseComponent(componentNode, location)
-        }
+        parserNode.expectObject().members().mapValues { (_, componentNode) -> parseComponent(componentNode, location) }
 
-    /** Parses the binding of one [protocol], which defaults to the node's member name. */
+    /** Parses the binding of one [protocol]. */
     fun parseProtocol(
         parserNode: ParserNode,
         location: BindingLocation,
-        protocol: String = parserNode.name,
+        protocol: String,
     ): BindingInterface {
         parseReference(parserNode, location, protocol)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
@@ -65,8 +60,8 @@ internal class BindingParser(
         parseReference(parserNode, location, null)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
         val protocolBindings =
-            parserNode.expectObject().members().map { protocolNode ->
-                parseProtocolBinding(protocolNode, location, protocolNode.name, content[protocolNode.name])
+            parserNode.expectObject().members().map { (protocol, protocolNode) ->
+                parseProtocolBinding(protocolNode, location, protocol, content[protocol])
             }
         return inlineBinding(parserNode, content, protocolBindings)
     }

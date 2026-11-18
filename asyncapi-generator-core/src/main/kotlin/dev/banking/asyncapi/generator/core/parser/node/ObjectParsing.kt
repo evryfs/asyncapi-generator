@@ -52,7 +52,7 @@ internal fun <T : Any, M : Any> ParserNode.parseReferenceable(
 
 /** Parses every member of this object node with [parseMember], keyed by member name. */
 internal inline fun <T> ParserNode.parseMap(parseMember: (ParserNode) -> T): Map<String, T> =
-    expectObject().members().associate { member -> member.name to parseMember(member) }
+    expectObject().members().mapValues { (_, member) -> parseMember(member) }
 
 /** Parses every element of this array node with [parseElement]. */
 internal inline fun <T> ParserNode.parseList(parseElement: (ParserNode) -> T): List<T> =

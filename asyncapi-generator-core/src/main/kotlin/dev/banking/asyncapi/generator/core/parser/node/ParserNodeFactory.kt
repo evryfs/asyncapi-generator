@@ -36,7 +36,7 @@ internal object ParserNodeFactory {
         )
 
         return ParserNode(
-            name = rootAddress.displayPath,
+            label = rootAddress.displayPath,
             node = document.root,
             address = rootAddress,
             context = context,

@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.source.DocumentObject
+import java.io.File
 import java.io.IOException
 
 /**
@@ -14,21 +15,41 @@ import java.io.IOException
  *
  * Native schema assets are not AsyncAPI documents, so they are read as text
  * instead of being routed through the YAML/JSON document reader.
+ *
+ * @param asyncApiContext the load whose budget the assets count against
  */
 internal class NativeSchemaAssetReader(
     private val asyncApiContext: AsyncApiContext,
 ) {
+    /**
+     * The content of the file the `$ref` of [schemaNode] points at, or `null` when the node has no
+     * `$ref` to a file.
+     */
     fun readIfExternalReference(schemaNode: ParserNode): String? {
-        val referenceMember = (schemaNode.node as? DocumentObject)?.member("\$ref") ?: return null
-        val referenceNode = schemaNode.member("\$ref", referenceMember.value)
-        val reference = referenceNode.expect<String>().takeIf { it.isNotBlank() } ?: return null
-        val sourceFile =
-            checkNotNull(asyncApiContext.sourceTracking.file(schemaNode.address.sourceId)) {
-                "Source ${schemaNode.address.sourceId} is not registered"
+        val referenceNode =
+            (schemaNode.node as? DocumentObject)?.member($$"$ref")?.let { member ->
+                schemaNode.member($$"$ref", member.value)
             }
-        val file = reference.parseReference().resolveDocumentAgainst(sourceFile) ?: return null
+        val reference = referenceNode?.expect<String>()?.takeIf(String::isNotBlank)
+        val file = reference?.parseReference()?.resolveDocumentAgainst(sourceFile(schemaNode))
+        return if (referenceNode != null && reference != null && file != null) {
+            read(referenceNode, reference, file)
+        } else {
+            null
+        }
+    }
 
-        return try {
+    private fun sourceFile(schemaNode: ParserNode): File =
+        checkNotNull(asyncApiContext.sourceTracking.file(schemaNode.address.sourceId)) {
+            "Source ${schemaNode.address.sourceId} is not registered"
+        }
+
+    private fun read(
+        referenceNode: ParserNode,
+        reference: String,
+        file: File,
+    ): String =
+        try {
             asyncApiContext.sourceBudget.readNativeSchemaAsset(
                 file = file,
                 location = referenceNode.sourceLocation,
@@ -39,7 +60,6 @@ internal class NativeSchemaAssetReader(
         } catch (exception: SecurityException) {
             throw unreadable(referenceNode, reference, exception)
         }
-    }
 
     private fun unreadable(
         referenceNode: ParserNode,

@@ -18,7 +18,7 @@ internal sealed interface LoadedTarget {
      * A fragment of a non-AsyncAPI file, parsed as the kind of object its reference expects.
      *
      * @property category the kind of object the fragment was parsed as
-     * @property name the name of the fragment node in diagnostics
+     * @property name the label of the fragment node in diagnostics
      * @property model the parsed object, a reference or an inline model
      */
     data class Fragment(

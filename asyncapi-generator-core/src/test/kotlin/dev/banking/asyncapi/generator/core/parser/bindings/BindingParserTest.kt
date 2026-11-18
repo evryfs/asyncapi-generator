@@ -135,7 +135,10 @@ class BindingParserTest {
                 .expectObject()
                 .required("kafka")
 
-        val binding = assertIs<BindingInterface.BindingInline>(parser.parseProtocol(kafkaBindingNode, MESSAGE)).binding
+        val binding =
+            assertIs<BindingInterface.BindingInline>(
+                parser.parseProtocol(kafkaBindingNode, MESSAGE, "kafka"),
+            ).binding
 
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
     }

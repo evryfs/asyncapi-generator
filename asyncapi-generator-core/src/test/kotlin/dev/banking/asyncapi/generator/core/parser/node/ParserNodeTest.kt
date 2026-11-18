@@ -48,6 +48,7 @@ class ParserNodeTest {
                 .required("object")
                 .expectObject()
                 .members()
+                .values
                 .single()
                 .profile,
         )
@@ -173,7 +174,11 @@ class ParserNodeTest {
 
         assertEquals(
             listOf("object.root.first", "object.root.second"),
-            objectNode.expectObject().members().map(ParserNode::path),
+            objectNode
+                .expectObject()
+                .members()
+                .values
+                .map(ParserNode::path),
         )
         assertEquals(
             listOf("array.root[0]", "array.root[1]"),
@@ -205,7 +210,7 @@ class ParserNodeTest {
     }
 
     @Test
-    fun `object view selects members by prefix without changing their paths`() {
+    fun `object view collects specification extensions as plain values`() {
         val context = AsyncApiContext()
         val source =
             DocumentSource(
@@ -221,13 +226,9 @@ class ParserNodeTest {
         val document = SourceReader.read(source)
         val node = ParserNodeFactory.root(document, context)
 
-        val extensions = node.expectObject().membersStartingWith("x-")
+        val extensions = node.expectObject().extensions()
 
-        assertEquals(listOf("x-owner", "x-null"), extensions.map(ParserNode::name))
-        assertEquals(
-            listOf("asyncapi.root.x-owner", "asyncapi.root.x-null"),
-            extensions.map(ParserNode::path),
-        )
+        assertEquals(mapOf("x-owner" to "team", "x-null" to null), extensions)
     }
 
     @Test

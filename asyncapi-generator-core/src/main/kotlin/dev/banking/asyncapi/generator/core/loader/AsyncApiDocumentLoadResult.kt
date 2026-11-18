@@ -13,6 +13,11 @@ import java.util.Collections.unmodifiableSet
  * available to the caller and can be rendered with their source snippets by
  * calling [formatWarnings]. [sourceFiles] contains the canonical root,
  * external-document, and native-schema files consumed by this load.
+ *
+ * @property document the validated root document
+ * @param warnings the validation warnings of the load
+ * @param sourceFiles the files the load read
+ * @param formattedWarnings the warnings rendered with their source snippets
  */
 class AsyncApiDocumentLoadResult internal constructor(
     val document: AsyncApiDocument,
