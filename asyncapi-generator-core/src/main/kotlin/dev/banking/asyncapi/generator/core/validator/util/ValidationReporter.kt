@@ -13,7 +13,14 @@ internal class ValidationReporter(
 
     fun throwErrors(report: ValidationReport) {
         if (report.errors.isNotEmpty()) {
-            throw AsyncApiValidateException.ValidateError(report.errors, context)
+            throw AsyncApiValidateException.ValidateError(
+                report.errors,
+                ValidationFindingFormatter.format(
+                    title = "Validation failed with ${report.errors.size} error(s):",
+                    findings = report.errors,
+                    asyncApiContext = context,
+                ),
+            )
         }
     }
 

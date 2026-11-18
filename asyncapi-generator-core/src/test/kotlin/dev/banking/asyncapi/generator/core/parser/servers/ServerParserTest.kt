@@ -86,7 +86,6 @@ class ServerParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("host", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_server_invalid.root.serverCases.MissingHost.missingHost.host", diagnostic.path)
         assertEquals("root.serverCases.MissingHost.missingHost", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)

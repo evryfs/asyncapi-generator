@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.parser.version.allowedMembers
@@ -24,14 +24,12 @@ internal class ParserObjectNode(
         val memberAddress = parserNode.address.member(memberName)
         val member =
             documentObject[memberName]
-                ?: throw AsyncApiParseException.ParserDiagnosticFailure(
-                    diagnostic =
-                        ParserDiagnostic.MissingRequiredMember(
-                            memberName = memberName,
-                            path = memberAddress.displayPath,
-                            sourceLocation = documentObject.location.copy(path = parserNode.address.documentPath),
-                        ),
-                    context = parserNode.context,
+                ?: throw parserNode.context.parserFailure(
+                    ParserDiagnostic.MissingRequiredMember(
+                        memberName = memberName,
+                        path = memberAddress.displayPath,
+                        sourceLocation = documentObject.location.copy(path = parserNode.address.documentPath),
+                    ),
                 )
         return parserNode.member(memberName, member)
     }
@@ -71,16 +69,14 @@ internal class ParserObjectNode(
             } ?: return
         val (memberName, member) = unexpectedMember
         val memberPath = parserNode.address.member(memberName).displayPath
-        throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic =
-                ParserDiagnostic.UnexpectedObjectMember(
-                    memberName = memberName,
-                    objectType = objectType,
-                    specificationExtensionsAllowed = specificationExtensionsAllowed,
-                    path = memberPath,
-                    sourceLocation = member.keyLocation.copy(path = parserNode.address.member(memberName).documentPath),
-                ),
-            context = parserNode.context,
+        throw parserNode.context.parserFailure(
+            ParserDiagnostic.UnexpectedObjectMember(
+                memberName = memberName,
+                objectType = objectType,
+                specificationExtensionsAllowed = specificationExtensionsAllowed,
+                path = memberPath,
+                sourceLocation = member.keyLocation.copy(path = parserNode.address.member(memberName).documentPath),
+            ),
         )
     }
 

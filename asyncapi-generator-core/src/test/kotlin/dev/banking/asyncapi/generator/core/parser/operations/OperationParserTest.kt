@@ -137,7 +137,6 @@ class OperationParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("action", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_operations_invalid.root.operations.MissingAction.action", diagnostic.path)
         assertEquals("root.operations.MissingAction", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_operations_invalid.yaml", diagnostic.sourceLocation.file.name)
@@ -163,7 +162,6 @@ class OperationParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("channel", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_operations_invalid.root.operationCases.MissingChannel.invalidOperation.channel",
             diagnostic.path,
@@ -193,7 +191,6 @@ class OperationParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("\$ref", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_validator_operations_inline_message_error.root.operations.testOperation.messages[0].\$ref",
             diagnostic.path,

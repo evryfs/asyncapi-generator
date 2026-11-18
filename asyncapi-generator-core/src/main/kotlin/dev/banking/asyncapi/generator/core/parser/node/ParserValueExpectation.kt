@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.node
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.source.DocumentArray
 import dev.banking.asyncapi.generator.core.source.DocumentBoolean
 import dev.banking.asyncapi.generator.core.source.DocumentNode
@@ -108,16 +108,14 @@ internal object ParserValueExpectation {
         address: NodeAddress,
         context: AsyncApiContext,
     ): Nothing =
-        throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic =
-                ParserDiagnostic.UnexpectedValueType(
-                    expectedType = renderType(expectedType),
-                    actualType = actualType(node),
-                    actualValue = node.toValue(),
-                    path = address.displayPath,
-                    sourceLocation = node.location.copy(path = address.documentPath),
-                ),
-            context = context,
+        throw context.parserFailure(
+            ParserDiagnostic.UnexpectedValueType(
+                expectedType = renderType(expectedType),
+                actualType = actualType(node),
+                actualValue = node.toValue(),
+                path = address.displayPath,
+                sourceLocation = node.location.copy(path = address.documentPath),
+            ),
         )
 
     private fun actualType(node: DocumentNode): ParserValueType =

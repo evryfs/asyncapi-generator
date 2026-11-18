@@ -1,8 +1,9 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.NativeSchemaAssetReadFailure
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.references.parseReference
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.source.DocumentObject
 import java.io.IOException
@@ -22,8 +23,9 @@ internal class NativeSchemaAssetReader(
         val referenceNode = schemaNode.member("\$ref", referenceMember.value)
         val reference = referenceNode.expect<String>().takeIf { it.isNotBlank() } ?: return null
         val sourceFile =
-            asyncApiContext.sourceTracking.file(schemaNode.address.sourceId)
-                ?: asyncApiContext.sourceTracking.currentFile()
+            checkNotNull(asyncApiContext.sourceTracking.file(schemaNode.address.sourceId)) {
+                "Source ${schemaNode.address.sourceId} is not registered"
+            }
         val file = reference.parseReference().resolveDocumentAgainst(sourceFile) ?: return null
 
         return try {
@@ -33,21 +35,23 @@ internal class NativeSchemaAssetReader(
                 path = referenceNode.path,
             )
         } catch (exception: IOException) {
-            throw NativeSchemaAssetReadFailure(
-                reference = reference,
-                path = referenceNode.path,
-                sourceLocation = referenceNode.sourceLocation,
-                context = asyncApiContext,
-                reason = exception.message ?: exception::class.simpleName.orEmpty(),
-            )
+            throw unreadable(referenceNode, reference, exception)
         } catch (exception: SecurityException) {
-            throw NativeSchemaAssetReadFailure(
-                reference = reference,
-                path = referenceNode.path,
-                sourceLocation = referenceNode.sourceLocation,
-                context = asyncApiContext,
-                reason = exception.message ?: exception::class.simpleName.orEmpty(),
-            )
+            throw unreadable(referenceNode, reference, exception)
         }
     }
+
+    private fun unreadable(
+        referenceNode: ParserNode,
+        reference: String,
+        cause: Exception,
+    ) = asyncApiContext
+        .parserFailure(
+            ParserDiagnostic.NativeSchemaAssetUnreadable(
+                reference = reference,
+                reason = cause.message ?: cause::class.simpleName.orEmpty(),
+                path = referenceNode.path,
+                sourceLocation = referenceNode.declarationLocation,
+            ),
+        ).also { failure -> failure.initCause(cause) }
 }

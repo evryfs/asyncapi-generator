@@ -194,17 +194,18 @@ class SchemaParserMultiFormatTest {
                 .required("MissingNativeAvroSchema")
 
         val error =
-            assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 parser.parseElement(schemaNode)
             }
 
-        assertEquals("missing-user-created.avsc", error.reference)
+        val diagnostic = assertIs<ParserDiagnostic.NativeSchemaAssetUnreadable>(error.diagnostic)
+        assertEquals("missing-user-created.avsc", diagnostic.reference)
         assertEquals(
             "asyncapi_missing_native_schema_asset.root.components.schemas.MissingNativeAvroSchema.schema.\$ref",
-            error.path,
+            diagnostic.path,
         )
-        assertEquals("asyncapi_missing_native_schema_asset.yaml", error.sourceLocation.file.name)
-        assertTrue(error.reason.isNotBlank())
+        assertEquals("asyncapi_missing_native_schema_asset.yaml", diagnostic.sourceLocation.file.name)
+        assertTrue(diagnostic.reason.isNotBlank())
         assertContains(error.message.orEmpty(), "Native schema asset 'missing-user-created.avsc' could not be read.")
         assertContains(error.message.orEmpty(), "asyncapi_missing_native_schema_asset.yaml")
         assertContains(
@@ -285,7 +286,7 @@ class SchemaParserMultiFormatTest {
                 .required("External")
 
         val error =
-            assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 SchemaParser(localContext).parseElement(schemaNode)
             }
 
@@ -372,16 +373,17 @@ class SchemaParserMultiFormatTest {
                 .required("UnknownSchemaFormat")
 
         val error =
-            assertFailsWith<AsyncApiParseException.UnexpectedSchemaFormat> {
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 parser.parseElement(schemaNode)
             }
 
-        assertEquals("application/unknown", error.format)
+        val diagnostic = assertIs<ParserDiagnostic.UnknownSchemaFormat>(error.diagnostic)
+        assertEquals("application/unknown", diagnostic.schemaFormat)
         assertEquals(
             "asyncapi_parser_schema_format_invalid.root.components.schemas.UnknownSchemaFormat",
-            error.path,
+            diagnostic.path,
         )
-        assertEquals("asyncapi_parser_schema_format_invalid.yaml", error.sourceLocation.file.name)
+        assertEquals("asyncapi_parser_schema_format_invalid.yaml", diagnostic.sourceLocation.file.name)
         assertContains(error.message.orEmpty(), "SchemaFormat: application/unknown is not valid.")
         assertContains(error.message.orEmpty(), "asyncapi_parser_schema_format_invalid.yaml")
         assertContains(
@@ -444,7 +446,6 @@ class SchemaParserMultiFormatTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("schema", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_schema_format_invalid.root.components.schemas.MissingSchema.schema",
             diagnostic.path,

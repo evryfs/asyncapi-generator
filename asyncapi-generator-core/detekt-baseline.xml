@@ -68,10 +68,8 @@
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>LongMethod:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
-    <ID>LongMethod:NativeSchemaAssetReader.kt$NativeSchemaAssetReader$fun readIfExternalReference(schemaNode: ParserNode): String?</ID>
     <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowName: String, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
-    <ID>LongMethod:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$fun format( diagnostic: ParserDiagnostic, context: AsyncApiContext, ): String</ID>
     <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
     <ID>LongMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
     <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, context: BundlingContext, ): SchemaInterface</ID>
@@ -242,12 +240,6 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$NativeSchemaAssetReadFailure : AsyncApiParseException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$ParserDiagnosticFailure : AsyncApiParseException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$UnexpectedSchemaFormat : AsyncApiParseException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException$ValidateError : AsyncApiValidateException</ID>
     <ID>UndocumentedPublicClass:Binding.kt$Binding</ID>
     <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface</ID>
     <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingInline : BindingInterface</ID>
@@ -324,15 +316,6 @@
     <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface</ID>
     <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterInline : ParameterInterface</ID>
     <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterReference : ParameterInterface</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$InvalidReference : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$InvalidSpecificationVersion : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$LoadResourceLimitExceeded : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$MissingRequiredMember : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$ReferenceDocumentNotFound : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$ReferenceTargetNotFound : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedObjectMember : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedValueType : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnsupportedSpecificationVersion : ParserDiagnostic</ID>
     <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$AvroProjection : SchemaGeneration</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$JsonSchema : SchemaGeneration</ID>

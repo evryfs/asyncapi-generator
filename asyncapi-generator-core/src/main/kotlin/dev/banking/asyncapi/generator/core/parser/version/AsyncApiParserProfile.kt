@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.parser.version
 
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /** Parser behavior implemented for one AsyncAPI major/minor specification line. */
@@ -64,7 +65,6 @@ internal enum class AsyncApiSpecificationLine(
         private fun parserFailure(
             root: ParserNode,
             diagnostic: ParserDiagnostic,
-        ): AsyncApiParseException.ParserDiagnosticFailure =
-            AsyncApiParseException.ParserDiagnosticFailure(diagnostic, root.context)
+        ): AsyncApiParseException.ParserDiagnosticFailure = root.context.parserFailure(diagnostic)
     }
 }

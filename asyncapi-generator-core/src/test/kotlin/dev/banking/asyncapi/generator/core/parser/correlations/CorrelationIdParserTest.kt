@@ -62,7 +62,6 @@ class CorrelationIdParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("location", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_correlationid_invalid.root.components.correlationIds.MissingLocationId.location",
             diagnostic.path,

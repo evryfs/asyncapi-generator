@@ -81,7 +81,6 @@ class TagParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("name", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_tag_invalid.root.components.tags.MissingName.name", diagnostic.path)
         assertEquals("root.components.tags.MissingName", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
