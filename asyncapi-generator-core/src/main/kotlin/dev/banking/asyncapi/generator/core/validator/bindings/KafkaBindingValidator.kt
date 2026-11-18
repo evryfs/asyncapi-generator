@@ -11,30 +11,31 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_CLEANUP_POLICY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_URL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_SCHEMA_REGISTRY_VENDOR_URL
-import dev.banking.asyncapi.generator.core.validator.schemas.SchemaValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 import java.math.BigDecimal
 import java.math.BigInteger
 
 internal class KafkaBindingValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    private val schemaValidator by lazy { SchemaValidator(asyncApiContext) }
-
     fun validate(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
-        val version = validateVersion(binding, properties, results)
-        validateSchemaFields(binding, results)
+        val results = walk.results
+        val version = validateVersion(binding, properties, path, results)
+        validateSchemaFields(binding, path, walk)
 
         when (binding.location) {
-            BindingLocation.SERVER -> validateServer(binding, properties, results)
-            BindingLocation.CHANNEL -> validateChannel(binding, properties, version, results)
-            BindingLocation.OPERATION -> validateOperation(binding, properties, results)
-            BindingLocation.MESSAGE -> validateMessage(binding, properties, results)
+            BindingLocation.SERVER -> validateServer(binding, properties, path, results)
+            BindingLocation.CHANNEL -> validateChannel(binding, properties, version, path, results)
+            BindingLocation.OPERATION -> validateOperation(binding, properties, path, results)
+            BindingLocation.MESSAGE -> validateMessage(binding, properties, path, results)
             BindingLocation.SCHEMA,
             BindingLocation.UNKNOWN,
             -> Unit
@@ -44,6 +45,7 @@ internal class KafkaBindingValidator(
     private fun validateVersion(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
+        path: ValidationPath,
         results: ValidationCollector,
     ): String? {
         if (!properties.containsKey("bindingVersion")) return LATEST_SUPPORTED_VERSION
@@ -51,7 +53,7 @@ internal class KafkaBindingValidator(
         if (value !is String) {
             results.error(
                 KAFKA_BINDING_VERSION_TYPE,
-                "Kafka binding 'bindingVersion' must be a string.",
+                "$path Kafka binding 'bindingVersion' must be a string.",
                 sourceLocation = location(binding, "bindingVersion"),
             )
             return null
@@ -59,7 +61,7 @@ internal class KafkaBindingValidator(
         if (value !in SUPPORTED_VERSIONS) {
             results.error(
                 KAFKA_BINDING_VERSION,
-                "Kafka binding version '$value' is not supported; supported versions are " +
+                "$path Kafka binding version '$value' is not supported; supported versions are " +
                     SUPPORTED_VERSIONS.joinToString(),
                 sourceLocation = location(binding, "bindingVersion"),
             )
@@ -70,34 +72,36 @@ internal class KafkaBindingValidator(
 
     private fun validateSchemaFields(
         binding: ProtocolBinding,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
         binding.schemaFields.forEach { (fieldName, schema) ->
-            schemaValidator.validateInterface(schema, "Kafka binding '$fieldName'", results)
+            walk.schema(schema, path.named("Kafka binding", fieldName))
         }
     }
 
     private fun validateServer(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
-        validateAllowedFields(binding, properties, SERVER_FIELDS, results)
-        validateString(binding, properties, "schemaRegistryUrl", results)
-        validateString(binding, properties, "schemaRegistryVendor", results)
+        validateAllowedFields(binding, properties, SERVER_FIELDS, path, results)
+        validateString(binding, properties, "schemaRegistryUrl", path, results)
+        validateString(binding, properties, "schemaRegistryVendor", path, results)
 
         val url = properties["schemaRegistryUrl"]
         if (url is String && ValidationFormats.absoluteUri(url) == null) {
             results.error(
                 KAFKA_SCHEMA_REGISTRY_URL,
-                "Kafka server binding 'schemaRegistryUrl' must be an absolute URI.",
+                "$path Kafka server binding 'schemaRegistryUrl' must be an absolute URI.",
                 sourceLocation = location(binding, "schemaRegistryUrl"),
             )
         }
         if (properties.containsKey("schemaRegistryVendor") && !properties.containsKey("schemaRegistryUrl")) {
             results.error(
                 KAFKA_SCHEMA_REGISTRY_VENDOR_URL,
-                "Kafka server binding 'schemaRegistryVendor' requires 'schemaRegistryUrl'.",
+                "$path Kafka server binding 'schemaRegistryVendor' requires 'schemaRegistryUrl'.",
                 sourceLocation = location(binding, "schemaRegistryVendor"),
             )
         }
@@ -107,44 +111,46 @@ internal class KafkaBindingValidator(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         version: String?,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
-        validateAllowedFields(binding, properties, CHANNEL_FIELDS, results)
-        validateString(binding, properties, "topic", results)
-        validatePositiveInteger(binding, properties, "partitions", results)
-        validatePositiveInteger(binding, properties, "replicas", results)
+        validateAllowedFields(binding, properties, CHANNEL_FIELDS, path, results)
+        validateString(binding, properties, "topic", path, results)
+        validatePositiveInteger(binding, properties, "partitions", path, results)
+        validatePositiveInteger(binding, properties, "replicas", path, results)
 
         if (!properties.containsKey("topicConfiguration")) return
         val configuration = properties["topicConfiguration"]
         if (configuration !is Map<*, *> || configuration.keys.any { it !is String }) {
-            typeError(binding, "topicConfiguration", "an object", results)
+            typeError(binding, "topicConfiguration", "an object", path, results)
             return
         }
         @Suppress("UNCHECKED_CAST")
-        validateTopicConfiguration(binding, configuration as Map<String, Any?>, version, results)
+        validateTopicConfiguration(binding, configuration as Map<String, Any?>, version, path, results)
     }
 
     private fun validateTopicConfiguration(
         binding: ProtocolBinding,
         configuration: Map<String, Any?>,
         version: String?,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val parent = "topicConfiguration"
         if (version == VERSION_0_4) {
-            validateAllowedFields(binding, configuration, TOPIC_CONFIGURATION_0_4_FIELDS, results, parent)
+            validateAllowedFields(binding, configuration, TOPIC_CONFIGURATION_0_4_FIELDS, path, results, parent)
         }
         TOPIC_CONFIGURATION_INTEGER_FIELDS.forEach { field ->
-            validateInteger(binding, configuration, field, results, parent)
+            validateType(binding, configuration, field, "an integer", path, results, parent, ::isInteger)
         }
-        validateCleanupPolicy(binding, configuration, results, parent)
+        validateCleanupPolicy(binding, configuration, path, results, parent)
 
         if (version == VERSION_0_5) {
             TOPIC_CONFIGURATION_BOOLEAN_FIELDS.forEach { field ->
-                validateType(binding, configuration, field, "a boolean", results, parent) { it is Boolean }
+                validateType(binding, configuration, field, "a boolean", path, results, parent) { it is Boolean }
             }
             TOPIC_CONFIGURATION_STRING_FIELDS.forEach { field ->
-                validateType(binding, configuration, field, "a string", results, parent) { it is String }
+                validateType(binding, configuration, field, "a string", path, results, parent) { it is String }
             }
         }
     }
@@ -152,6 +158,7 @@ internal class KafkaBindingValidator(
     private fun validateCleanupPolicy(
         binding: ProtocolBinding,
         configuration: Map<String, Any?>,
+        path: ValidationPath,
         results: ValidationCollector,
         parent: String,
     ) {
@@ -161,7 +168,8 @@ internal class KafkaBindingValidator(
         if (!valid) {
             results.error(
                 KAFKA_CLEANUP_POLICY,
-                "Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' and/or 'compact'.",
+                "$path Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' " +
+                    "and/or 'compact'.",
                 sourceLocation = location(binding, parent, CLEANUP_POLICY),
             )
         }
@@ -170,33 +178,36 @@ internal class KafkaBindingValidator(
     private fun validateOperation(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
-        validateAllowedFields(binding, properties, OPERATION_FIELDS, results)
-        validateParsedSchemaField(binding, properties, "groupId", results)
-        validateParsedSchemaField(binding, properties, "clientId", results)
+        validateAllowedFields(binding, properties, OPERATION_FIELDS, path, results)
+        validateParsedSchemaField(binding, properties, "groupId", path, results)
+        validateParsedSchemaField(binding, properties, "clientId", path, results)
     }
 
     private fun validateMessage(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
-        validateAllowedFields(binding, properties, MESSAGE_FIELDS, results)
-        validateParsedSchemaField(binding, properties, "key", results)
-        validateString(binding, properties, "schemaIdLocation", results)
-        validateString(binding, properties, "schemaIdPayloadEncoding", results)
-        validateString(binding, properties, "schemaLookupStrategy", results)
+        validateAllowedFields(binding, properties, MESSAGE_FIELDS, path, results)
+        validateParsedSchemaField(binding, properties, "key", path, results)
+        validateString(binding, properties, "schemaIdLocation", path, results)
+        validateString(binding, properties, "schemaIdPayloadEncoding", path, results)
+        validateString(binding, properties, "schemaLookupStrategy", path, results)
     }
 
     private fun validateParsedSchemaField(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         field: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (properties.containsKey(field) && field !in binding.schemaFields) {
-            typeError(binding, field, "a Schema Object or Reference Object", results)
+            typeError(binding, field, "a Schema Object or Reference Object", path, results)
         }
     }
 
@@ -204,6 +215,7 @@ internal class KafkaBindingValidator(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         allowedFields: Set<String>,
+        path: ValidationPath,
         results: ValidationCollector,
         parent: String? = null,
     ) {
@@ -212,7 +224,7 @@ internal class KafkaBindingValidator(
             .forEach { field ->
                 results.error(
                     KAFKA_BINDING_FIELD,
-                    "Kafka ${binding.location.name.lowercase()} binding does not define property '$field'.",
+                    "$path Kafka ${binding.location.name.lowercase()} binding does not define property '$field'.",
                     sourceLocation = location(binding, parent, field),
                 )
             }
@@ -222,38 +234,33 @@ internal class KafkaBindingValidator(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         field: String,
+        path: ValidationPath,
         results: ValidationCollector,
-    ) = validateType(binding, properties, field, "a string", results) { it is String }
+    ) = validateType(binding, properties, field, "a string", path, results) { it is String }
 
     private fun validatePositiveInteger(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         field: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (!properties.containsKey(field)) return
         if (!isInteger(properties[field]) || decimal(properties[field])?.signum() != 1) {
             results.error(
                 KAFKA_CHANNEL_POSITIVE_INTEGER,
-                "Kafka channel binding '$field' must be a positive integer.",
+                "$path Kafka channel binding '$field' must be a positive integer.",
                 sourceLocation = location(binding, field),
             )
         }
     }
-
-    private fun validateInteger(
-        binding: ProtocolBinding,
-        properties: Map<String, Any?>,
-        field: String,
-        results: ValidationCollector,
-        parent: String,
-    ) = validateType(binding, properties, field, "an integer", results, parent, ::isInteger)
 
     private fun validateType(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         field: String,
         expected: String,
+        path: ValidationPath,
         results: ValidationCollector,
         parent: String? = null,
         predicate: (Any?) -> Boolean,
@@ -261,7 +268,7 @@ internal class KafkaBindingValidator(
         if (properties.containsKey(field) && !predicate(properties[field])) {
             results.error(
                 KAFKA_BINDING_FIELD_TYPE,
-                "Kafka ${binding.location.name.lowercase()} binding '$field' must be $expected.",
+                "$path Kafka ${binding.location.name.lowercase()} binding '$field' must be $expected.",
                 sourceLocation = location(binding, parent, field),
             )
         }
@@ -271,11 +278,12 @@ internal class KafkaBindingValidator(
         binding: ProtocolBinding,
         field: String,
         expected: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         results.error(
             KAFKA_BINDING_FIELD_TYPE,
-            "Kafka ${binding.location.name.lowercase()} binding '$field' must be $expected.",
+            "$path Kafka ${binding.location.name.lowercase()} binding '$field' must be $expected.",
             sourceLocation = location(binding, field),
         )
     }

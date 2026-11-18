@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAG
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaInstanceValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
 /** Validates rules owned by the AsyncAPI Message Example Object. */
 internal class MessageExampleValidator(
@@ -19,7 +20,7 @@ internal class MessageExampleValidator(
         examples: List<MessageExample>,
         headersSchema: SchemaInterface?,
         payloadSchema: SchemaInterface?,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         examples.forEachIndexed { index, example ->
@@ -31,16 +32,16 @@ internal class MessageExampleValidator(
             if (!containsHeaders && !containsPayload) {
                 results.error(
                     MESSAGE_EXAMPLE_CONTENT,
-                    "$contextString Example[$index] must contain 'headers', 'payload', or both.",
+                    "$path Example[$index] must contain 'headers', 'payload', or both.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(example),
                 )
             }
 
             if (containsHeaders && headersSchema != null) {
-                validateValue(example, "headers", example.headers, headersSchema, contextString, index, results)
+                validateValue(example, "headers", example.headers, headersSchema, path, index, results)
             }
             if (containsPayload && payloadSchema != null) {
-                validateValue(example, "payload", example.payload, payloadSchema, contextString, index, results)
+                validateValue(example, "payload", example.payload, payloadSchema, path, index, results)
             }
         }
     }
@@ -50,7 +51,7 @@ internal class MessageExampleValidator(
         field: String,
         value: Any?,
         schema: SchemaInterface,
-        contextString: String,
+        path: ValidationPath,
         index: Int,
         results: ValidationCollector,
     ) {
@@ -62,14 +63,14 @@ internal class MessageExampleValidator(
         evaluation.violations.distinct().forEach { violation ->
             results.error(
                 MESSAGE_EXAMPLE_SCHEMA,
-                "$contextString Example[$index] '$field' ${violation.message}.",
+                "$path Example[$index] '$field' ${violation.message}.",
                 sourceLocation = sourceLocation(violation.path, basePath),
             )
         }
         evaluation.unsupportedFormats.distinct().forEach { unsupported ->
             results.warn(
                 MESSAGE_EXAMPLE_FORMAT,
-                "$contextString Example[$index] '$field' cannot be validated because schema format " +
+                "$path Example[$index] '$field' cannot be validated because schema format " +
                     "'${unsupported.schemaFormat}' has no proven instance validator.",
                 sourceLocation = sourceLocation(unsupported.path, basePath),
             )

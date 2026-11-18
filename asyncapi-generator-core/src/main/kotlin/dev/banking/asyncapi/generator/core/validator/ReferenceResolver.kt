@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
 import dev.banking.asyncapi.generator.core.parser.linking.ReferenceLink
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
 /**
  * Reports where a reference leads and queues its target for validation.
@@ -29,7 +30,7 @@ internal class ReferenceResolver(
      *
      * @param reference the reference
      * @param expectedCategory the kind of object the reference must point at
-     * @param contextString the object that holds the reference, as named in findings
+     * @param path the reference as findings name it
      * @param results the collector findings are reported to
      * @param targetCategoryRule the rule reported when the reference reaches another kind of object
      * @return the model the reference leads to, or `null` when it leads to none
@@ -37,14 +38,14 @@ internal class ReferenceResolver(
     fun resolve(
         reference: Reference,
         expectedCategory: ReferenceCategoryKey,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
         targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY,
     ): Any? {
         if (reference.referenceCategoryKey != expectedCategory) {
             results.error(
                 REFERENCE_CATEGORY_REQUIRED,
-                "$contextString reference '${reference.ref}' was created for category " +
+                "$path reference '${reference.ref}' was created for category " +
                     "'${reference.referenceCategoryKey}' instead of '$expectedCategory'.",
                 sourceLocation = location(reference),
             )
@@ -59,16 +60,16 @@ internal class ReferenceResolver(
                     results.enqueueReferenceTarget(
                         expectedCategory,
                         it,
-                        contextString,
+                        path,
                     )
                 }
-            is ReferenceLink.Unresolved -> reportUnresolved(link, contextString, results)
-            is ReferenceLink.Cycle -> reportCycle(link, expectedCategory, contextString, results)
-            is ReferenceLink.CategoryMismatch -> reportCategoryMismatch(link, expectedCategory, contextString, results)
+            is ReferenceLink.Unresolved -> reportUnresolved(link, path, results)
+            is ReferenceLink.Cycle -> reportCycle(link, expectedCategory, path, results)
+            is ReferenceLink.CategoryMismatch -> reportCategoryMismatch(link, expectedCategory, path, results)
             is ReferenceLink.WrongTarget -> {
                 results.error(
                     targetCategoryRule,
-                    "$contextString reference '${reference.ref}' must resolve to ${expectedCategory.displayName}; " +
+                    "$path reference '${reference.ref}' must resolve to ${expectedCategory.displayName}; " +
                         "found ${link.target::class.simpleName}.",
                     sourceLocation = location(reference),
                 )
@@ -79,13 +80,13 @@ internal class ReferenceResolver(
 
     private fun reportUnresolved(
         link: ReferenceLink.Unresolved,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ): Any? {
         val unresolved = link.chain.last()
         results.error(
             REFERENCE_UNRESOLVED,
-            "$contextString reference '${unresolved.ref}' could not be resolved",
+            "$path reference '${unresolved.ref}' could not be resolved",
             sourceLocation = location(unresolved),
         )
         return null
@@ -94,7 +95,7 @@ internal class ReferenceResolver(
     private fun reportCycle(
         link: ReferenceLink.Cycle,
         expectedCategory: ReferenceCategoryKey,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ): Any? {
         results.process(link.target)
@@ -103,7 +104,7 @@ internal class ReferenceResolver(
         val cycle = (link.chain.drop(cycleStart).map { it.ref } + link.target.ref).joinToString(" -> ")
         results.error(
             REFERENCE_CYCLE,
-            "$contextString reference '${reference.ref}' never reaches ${expectedCategory.displayName}: " +
+            "$path reference '${reference.ref}' never reaches ${expectedCategory.displayName}: " +
                 "its references form a cycle ($cycle).",
             sourceLocation = location(reference),
         )
@@ -113,13 +114,13 @@ internal class ReferenceResolver(
     private fun reportCategoryMismatch(
         link: ReferenceLink.CategoryMismatch,
         expectedCategory: ReferenceCategoryKey,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ): Any? {
         results.process(link.target)
         results.error(
             REFERENCE_CATEGORY_REQUIRED,
-            "$contextString reference '${link.target.ref}' was created for category " +
+            "$path reference '${link.target.ref}' was created for category " +
                 "'${link.target.referenceCategoryKey}' instead of '$expectedCategory'.",
             sourceLocation = location(link.target),
         )
