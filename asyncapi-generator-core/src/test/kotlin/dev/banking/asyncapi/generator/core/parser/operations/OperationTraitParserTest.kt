@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -29,7 +30,7 @@ class OperationTraitParserTest {
                 .expectObject()
                 .required("operationTraits")
 
-        val traits = parser.parseMap(traitsNode)
+        val traits = traitsNode.parseMap(parser::parseElement)
 
         val kafka = assertIs<OperationTraitInterface.OperationTraitInline>(traits["kafka"]).operationTrait
         assertEquals("Kafka operation defaults", kafka.title)

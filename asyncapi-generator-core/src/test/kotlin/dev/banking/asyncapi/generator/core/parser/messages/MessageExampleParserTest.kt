@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.messages
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseList
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -10,7 +11,7 @@ import kotlin.test.assertNotNull
 
 class MessageExampleParserTest {
     private val context = AsyncApiContext()
-    private val parser = MessageExampleParser(context)
+    private val parser = MessageExampleParser()
 
     @Test
     fun `parses every message example field`() {
@@ -28,7 +29,7 @@ class MessageExampleParserTest {
                 .expectObject()
                 .required("examples")
 
-        val examples = parser.parseList(examplesNode)
+        val examples = examplesNode.parseList(parser::parseElement)
 
         assertEquals(2, examples.size)
         val example = examples.first()

@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -17,7 +18,7 @@ import kotlin.test.assertNotNull
 
 class SecuritySchemeParserTest {
     private val context = AsyncApiContext()
-    private val parser = SecuritySchemeParser(context)
+    private val parser = SecuritySchemeParser()
 
     @Test
     fun `parse SCRAM certificate and basic authentication schemes`() {
@@ -31,7 +32,7 @@ class SecuritySchemeParserTest {
                 .expectObject()
                 .required("securitySchemes")
 
-        val result = parser.parseMap(securitySchemesNode)
+        val result = securitySchemesNode.parseMap(parser::parseElement)
 
         val saslScram = assertIs<SecuritySchemeInterface.SecuritySchemeInline>(result["saslScram"]).security
         assertEquals("scramSha256", saslScram.type)
@@ -64,7 +65,7 @@ class SecuritySchemeParserTest {
                 .expectObject()
                 .required("securitySchemes")
 
-        val result = parser.parseMap(securitySchemesNode)
+        val result = securitySchemesNode.parseMap(parser::parseElement)
 
         val bearerAuth = assertIs<SecuritySchemeInterface.SecuritySchemeInline>(result["bearerAuth"]).security
         assertEquals("http", bearerAuth.type)
@@ -97,7 +98,7 @@ class SecuritySchemeParserTest {
                 .expectObject()
                 .required("securitySchemes")
 
-        val result = parser.parseMap(securitySchemesNode)
+        val result = securitySchemesNode.parseMap(parser::parseElement)
 
         val openIdConnect =
             assertIs<SecuritySchemeInterface.SecuritySchemeInline>(result["openIdConnectExample"]).security

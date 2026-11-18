@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -12,7 +13,7 @@ import kotlin.test.assertIs
 
 class ServerVariableParserTest {
     private val context = AsyncApiContext()
-    private val parser = ServerVariableParser(context)
+    private val parser = ServerVariableParser()
 
     @Test
     fun `parse server variables`() {
@@ -28,7 +29,7 @@ class ServerVariableParserTest {
                 .expectObject()
                 .required("variables")
 
-        val variables = parser.parseMap(variablesNode)
+        val variables = variablesNode.parseMap(parser::parseElement)
 
         val port = assertIs<ServerVariableInterface.ServerVariableInline>(variables["port"]).serverVariable
         assertEquals(listOf("18092", "28092"), port.enum)
@@ -49,7 +50,7 @@ class ServerVariableParserTest {
                 .expectObject()
                 .required("serverVariables")
 
-        val variables = parser.parseMap(variablesNode)
+        val variables = variablesNode.parseMap(parser::parseElement)
 
         val reference =
             assertIs<ServerVariableInterface.ServerVariableReference>(variables["referencedPort"])

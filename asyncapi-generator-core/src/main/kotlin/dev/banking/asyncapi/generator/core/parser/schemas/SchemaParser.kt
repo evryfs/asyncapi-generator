@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -11,6 +10,9 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.node.parseList
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
+import dev.banking.asyncapi.generator.core.parser.node.referenceOrNull
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
 import dev.banking.asyncapi.generator.core.source.DocumentArray
 import dev.banking.asyncapi.generator.core.source.DocumentBoolean
@@ -19,21 +21,15 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA
 
 /**
  * Parses AsyncAPI schema objects from parser nodes.
+ *
+ * @param asyncApiContext shared context for source tracking, model registration, and diagnostics
  */
 internal class SchemaParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
     private val bindingParser = BindingParser(asyncApiContext)
-    private val externalDocsParser = ExternalDocsParser(asyncApiContext)
+    private val externalDocsParser = ExternalDocsParser()
     private val nativeSchemaAssetReader = NativeSchemaAssetReader(asyncApiContext)
-
-    fun parseMap(parserNode: ParserNode): Map<String, SchemaInterface> =
-        parserNode.expectObject().members().associate { node ->
-            node.name to parseElement(node)
-        }
-
-    fun parseList(parserNode: ParserNode): List<SchemaInterface> =
-        parserNode.expectArray().elements().map(::parseElement)
 
     fun parseElement(parserNode: ParserNode): SchemaInterface {
         if (parserNode.node is DocumentBoolean) {
@@ -43,16 +39,8 @@ internal class SchemaParser(
                     value = bool,
                 ).also { asyncApiContext.register(it, parserNode) }
         }
+        parserNode.referenceOrNull(SCHEMA)?.let { return SchemaInterface.SchemaReference(it) }
         val objectNode = parserNode.expectObject()
-        objectNode.optional($$"$ref")?.expect<String>()?.let { reference ->
-            return SchemaInterface
-                .SchemaReference(
-                    Reference(
-                        ref = reference,
-                        referenceCategoryKey = SCHEMA,
-                    ),
-                ).also { asyncApiContext.register(it.reference, parserNode) }
-        }
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
             val schemaFormat =
@@ -116,22 +104,22 @@ internal class SchemaParser(
 
         val itemsNode = objectNode.optional("items")
         val items = itemsNode?.takeUnless { it.node is DocumentArray }?.let(::parseElement)
-        val tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.let(::parseList)
+        val tupleItems = itemsNode?.takeIf { it.node is DocumentArray }?.parseList(::parseElement)
         val additionalItems = objectNode.optional("additionalItems")?.let { parseElement(it) }
         val maxItems = objectNode.optional("maxItems")?.expect<Number>()
         val minItems = objectNode.optional("minItems")?.expect<Number>()
         val uniqueItems = objectNode.optional("uniqueItems")?.expect<Boolean>()
         val contains = objectNode.optional("contains")?.let { parseElement(it) }
 
-        val properties = objectNode.optional("properties")?.let(::parseMap)
-        val patternProperties = objectNode.optional("patternProperties")?.let(::parseMap)
+        val properties = objectNode.optional("properties")?.parseMap(::parseElement)
+        val patternProperties = objectNode.optional("patternProperties")?.parseMap(::parseElement)
         val additionalProperties = objectNode.optional("additionalProperties")?.let(::parseElement)
         val propertyNames = objectNode.optional("propertyNames")?.let { parseElement(it) }
 
         val required = objectNode.optional("required")?.expect<List<String>>()
 
         val dependencies = objectNode.optional("dependencies")?.let(::parseDependencies)
-        val definitions = objectNode.optional("definitions")?.let(::parseMap)
+        val definitions = objectNode.optional("definitions")?.parseMap(::parseElement)
         val maxProperties = objectNode.optional("maxProperties")?.expect<Number>()
         val minProperties = objectNode.optional("minProperties")?.expect<Number>()
 

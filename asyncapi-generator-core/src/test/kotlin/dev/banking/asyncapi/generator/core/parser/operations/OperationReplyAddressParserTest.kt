@@ -16,7 +16,7 @@ import kotlin.test.assertIs
 
 class OperationReplyAddressParserTest {
     private val context = AsyncApiContext()
-    private val parser = OperationReplyAddressParser(context)
+    private val parser = OperationReplyAddressParser()
 
     @Test
     fun `parses an inline operation reply address`() {

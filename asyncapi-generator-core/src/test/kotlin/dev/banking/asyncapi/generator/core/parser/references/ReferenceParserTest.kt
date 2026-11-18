@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
@@ -32,10 +32,10 @@ class ReferenceParserTest {
                 .expectObject()
                 .required("channel")
 
-        val reference = parser.parseElement(referenceNode, REFERENCE)
+        val reference = parser.parseElement(referenceNode, SERVER)
 
         assertEquals("#/channels/lightingMeasured", reference.ref)
-        assertEquals(REFERENCE, reference.referenceCategoryKey)
+        assertEquals(SERVER, reference.referenceCategoryKey)
     }
 
     @Test
@@ -52,33 +52,10 @@ class ReferenceParserTest {
                 .expectObject()
                 .required("messages")
 
-        val references = parser.parseList(referencesNode, REFERENCE)
+        val references = parser.parseList(referencesNode, SERVER)
 
         assertEquals(listOf("#/components/messages/lightMeasured"), references.map { it.ref })
-        assertEquals(listOf(REFERENCE), references.map { it.referenceCategoryKey })
-    }
-
-    @Test
-    fun `rejects a generic category when loading an external fragment`() {
-        val file = TestResources.file("parser/references/external/category-main.yaml")
-        val document = SourceReader.read(file)
-        val referenceNode =
-            ParserNodeFactory
-                .root(document, context)
-                .expectObject()
-                .required("components")
-                .expectObject()
-                .required("schemas")
-                .expectObject()
-                .required("ExternalSchema")
-
-        val error =
-            assertFailsWith<IllegalArgumentException> {
-                parser.parseElement(referenceNode, REFERENCE)
-            }
-
-        assertContains(error.message.orEmpty(), "Generic reference category 'REFERENCE' is not supported")
-        assertContains(error.message.orEmpty(), "Assign a concrete ReferenceCategoryKey")
+        assertEquals(listOf(SERVER), references.map { it.referenceCategoryKey })
     }
 
     @Test
@@ -97,7 +74,7 @@ class ReferenceParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseList(referencesNode, REFERENCE)
+                parser.parseList(referencesNode, SERVER)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 

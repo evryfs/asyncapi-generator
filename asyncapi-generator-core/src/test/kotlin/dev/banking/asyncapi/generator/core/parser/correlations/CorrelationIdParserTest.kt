@@ -15,7 +15,7 @@ import kotlin.test.assertIs
 
 class CorrelationIdParserTest {
     private val context = AsyncApiContext()
-    private val parser = CorrelationIdParser(context)
+    private val parser = CorrelationIdParser()
 
     @Test
     fun `parse inline correlation ID`() {

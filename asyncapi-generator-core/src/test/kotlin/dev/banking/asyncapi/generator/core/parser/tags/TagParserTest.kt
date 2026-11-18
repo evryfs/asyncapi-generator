@@ -9,6 +9,8 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseList
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -17,7 +19,7 @@ import kotlin.test.assertIs
 
 class TagParserTest {
     private val context = AsyncApiContext()
-    private val parser = TagParser(context)
+    private val parser = TagParser()
 
     @Test
     fun `parse tag map and list in source order`() {
@@ -30,7 +32,7 @@ class TagParserTest {
                 .required("components")
                 .expectObject()
 
-        val tags = parser.parseMap(components.required("tags"))
+        val tags = components.required("tags").parseMap(parser::parseElement)
 
         assertEquals(listOf("inlineTag", "refTag"), tags.keys.toList())
         val inlineTag = assertIs<TagInterface.TagInline>(tags["inlineTag"]).tag
@@ -48,7 +50,7 @@ class TagParserTest {
                 .required("tagLists")
                 .expectObject()
                 .required("orderedTags")
-        val tagList = parser.parseList(orderedTags)
+        val tagList = orderedTags.parseList(parser::parseElement)
         val listInlineTag = assertIs<TagInterface.TagInline>(tagList[0]).tag
         assertEquals("user", listInlineTag.name)
         assertEquals("User related operations", listInlineTag.description)

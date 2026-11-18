@@ -28,6 +28,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.source.SourceLimits
@@ -62,7 +63,7 @@ class ExternalReferenceLoadingTest {
                 .required("components")
                 .expectObject()
                 .required("schemas")
-        val schemas = schemaParser.parseMap(schemasNode)
+        val schemas = schemasNode.parseMap(schemaParser::parseElement)
 
         val escapedReference =
             assertIs<SchemaInterface.SchemaReference>(
@@ -134,7 +135,7 @@ class ExternalReferenceLoadingTest {
                 .required("components")
                 .expectObject()
                 .required("schemas")
-        val schemas = schemaParser.parseMap(schemasNode)
+        val schemas = schemasNode.parseMap(schemaParser::parseElement)
 
         val leftReference =
             assertIs<SchemaInterface.SchemaReference>(

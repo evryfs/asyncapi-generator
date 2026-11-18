@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -32,7 +33,7 @@ class ChannelParserTest {
                 .expectObject()
                 .required("channels")
 
-        val result = parser.parseMap(channelsNode)
+        val result = channelsNode.parseMap(parser::parseElement)
 
         val lightingMeasured = assertIs<ChannelInterface.ChannelInline>(result["lightingMeasured"]).channel
         assertEquals(
@@ -119,7 +120,7 @@ class ChannelParserTest {
                 .expectObject()
                 .required("channels")
 
-        val result = parser.parseMap(channelsNode)
+        val result = channelsNode.parseMap(parser::parseElement)
 
         val lightStatus = assertIs<ChannelInterface.ChannelInline>(result["lightStatus"]).channel
         assertEquals("smartylighting.streetlights.1.0.event.{city}.status", lightStatus.address)
@@ -180,7 +181,7 @@ class ChannelParserTest {
                 .expectObject()
                 .required("channels")
 
-        val result = parser.parseMap(channelsNode)
+        val result = channelsNode.parseMap(parser::parseElement)
 
         val reference = assertIs<ChannelInterface.ChannelReference>(result["referencedChannel"]).reference
         assertEquals("#/channels/lightingMeasured", reference.ref)
@@ -198,7 +199,7 @@ class ChannelParserTest {
 
         val channel =
             assertIs<ChannelInterface.ChannelInline>(
-                parser.parseMap(channelsNode).getValue("unknownAddress"),
+                channelsNode.parseMap(parser::parseElement).getValue("unknownAddress"),
             ).channel
 
         assertNull(channel.address)

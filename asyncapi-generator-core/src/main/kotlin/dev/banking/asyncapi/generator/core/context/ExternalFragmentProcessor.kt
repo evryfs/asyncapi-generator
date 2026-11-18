@@ -24,7 +24,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
@@ -106,11 +105,6 @@ internal class ExternalFragmentProcessor(
             EXTERNAL_DOC -> parseExternalDoc(targetNode)
             TAG -> parseTag(targetNode)
             BINDING -> parseBinding(targetNode, reference)
-            REFERENCE -> throw IllegalArgumentException(
-                "Generic reference category 'REFERENCE' is not supported for external fragment parsing: " +
-                    "'${reference.ref}'. " +
-                    "Assign a concrete ReferenceCategoryKey at parser creation site.",
-            )
         }
     }
 
@@ -195,7 +189,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseOperationReplyAddress(targetNode: ParserNode): () -> Unit {
-        val parsed: OperationReplyAddressInterface = OperationReplyAddressParser(context).parseElement(targetNode)
+        val parsed: OperationReplyAddressInterface = OperationReplyAddressParser().parseElement(targetNode)
         return deferredValidation { results ->
             OperationReplyAddressValidator(context).validateInterface(
                 parsed,
@@ -217,7 +211,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseServerVariable(targetNode: ParserNode): () -> Unit {
-        val parsed: ServerVariableInterface = ServerVariableParser(context).parseElement(targetNode)
+        val parsed: ServerVariableInterface = ServerVariableParser().parseElement(targetNode)
         return deferredValidation { results ->
             val validationContext = "External ServerVariable '${targetNode.name}'"
             when (parsed) {
@@ -236,7 +230,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseParameter(targetNode: ParserNode): () -> Unit {
-        val parsed: ParameterInterface = ParameterParser(context).parseElement(targetNode)
+        val parsed: ParameterInterface = ParameterParser().parseElement(targetNode)
         return deferredValidation { results ->
             ParameterValidator(context).validateInterface(
                 parsed,
@@ -247,7 +241,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseSecurityScheme(targetNode: ParserNode): () -> Unit {
-        val parsed: SecuritySchemeInterface = SecuritySchemeParser(context).parseElement(targetNode)
+        val parsed: SecuritySchemeInterface = SecuritySchemeParser().parseElement(targetNode)
         return deferredValidation { results ->
             val validationContext = "External SecurityScheme '${targetNode.name}'"
             when (parsed) {
@@ -266,7 +260,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseCorrelationId(targetNode: ParserNode): () -> Unit {
-        val parsed: CorrelationIdInterface = CorrelationIdParser(context).parseElement(targetNode)
+        val parsed: CorrelationIdInterface = CorrelationIdParser().parseElement(targetNode)
         return deferredValidation { results ->
             CorrelationIdValidator(context).validateInterface(
                 parsed,
@@ -277,7 +271,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseExternalDoc(targetNode: ParserNode): () -> Unit {
-        val parsed: ExternalDocInterface = ExternalDocsParser(context).parseElement(targetNode)
+        val parsed: ExternalDocInterface = ExternalDocsParser().parseElement(targetNode)
         return deferredValidation { results ->
             ExternalDocsValidator(context).validateInterface(
                 parsed,
@@ -288,7 +282,7 @@ internal class ExternalFragmentProcessor(
     }
 
     private fun parseTag(targetNode: ParserNode): () -> Unit {
-        val parsed: TagInterface = TagParser(context).parseElement(targetNode)
+        val parsed: TagInterface = TagParser().parseElement(targetNode)
         return deferredValidation { results ->
             TagValidator(context).validateInterface(
                 parsed,

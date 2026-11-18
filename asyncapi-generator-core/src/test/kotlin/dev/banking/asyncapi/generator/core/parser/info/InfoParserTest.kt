@@ -18,7 +18,7 @@ import kotlin.test.assertNull
 
 class InfoParserTest {
     private val context = AsyncApiContext()
-    private val parser = InfoParser(context)
+    private val parser = InfoParser()
 
     @Test
     fun `parses every info field and extension`() {
@@ -30,7 +30,7 @@ class InfoParserTest {
                 .expectObject()
                 .required("info")
 
-        val result = parser.parseMap(infoNode)
+        val result = parser.parse(infoNode)
 
         assertEquals("Simple Info Test", result.title)
         assertEquals("1.2.3", result.version)
@@ -64,7 +64,7 @@ class InfoParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(infoNode)
+                parser.parse(infoNode)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -88,7 +88,7 @@ class InfoParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(infoNode)
+                parser.parse(infoNode)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -112,7 +112,7 @@ class InfoParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(infoNode)
+                parser.parse(infoNode)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -134,7 +134,7 @@ class InfoParserTest {
                 .expectObject()
                 .required("infoWithExtensions")
 
-        val extensions = parser.parseMap(infoNode).extensions
+        val extensions = parser.parse(infoNode).extensions
 
         assertEquals(
             linkedMapOf(
@@ -164,6 +164,6 @@ class InfoParserTest {
                 .expectObject()
                 .required("infoWithoutExtensions")
 
-        assertNull(parser.parseMap(infoNode).extensions)
+        assertNull(parser.parse(infoNode).extensions)
     }
 }

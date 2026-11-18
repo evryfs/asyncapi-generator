@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -16,7 +17,7 @@ import kotlin.test.assertIs
 
 class ExternalDocsParserTest {
     private val context = AsyncApiContext()
-    private val parser = ExternalDocsParser(context)
+    private val parser = ExternalDocsParser()
 
     @Test
     fun `parses inline and referenced external documentation`() {
@@ -30,7 +31,7 @@ class ExternalDocsParserTest {
                 .expectObject()
                 .required("externalDocs")
 
-        val result = parser.parseMap(externalDocsNode)
+        val result = externalDocsNode.parseMap(parser::parseElement)
 
         val externalDoc = assertIs<ExternalDocInterface.ExternalDocInline>(result["MyExternalDocs"]).externalDoc
         assertEquals("My API Documentation", externalDoc.description)

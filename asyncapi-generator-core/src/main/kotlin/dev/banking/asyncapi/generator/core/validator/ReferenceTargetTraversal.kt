@@ -25,7 +25,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
@@ -123,7 +122,6 @@ internal class ReferenceTargetTraversal(
                     (target as? ExternalDoc)?.let { externalDocsValidator.validate(it, contextString, results) }
                 TAG -> (target as? Tag)?.let { tagValidator.validate(it, contextString, results) }
                 BINDING -> (target as? Binding)?.let { bindingValidator.validate(it, contextString, results) }
-                REFERENCE -> Unit
             }
         }
     }

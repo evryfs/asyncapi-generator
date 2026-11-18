@@ -16,6 +16,8 @@ import dev.banking.asyncapi.generator.core.source.DocumentObject
 /**
  * Parses raw binding content while retaining its protocol, location, version,
  * and schema-valued fields for semantic validation.
+ *
+ * @param asyncApiContext shared context for source tracking, model registration, and diagnostics
  */
 internal class BindingParser(
     private val asyncApiContext: AsyncApiContext,

@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
@@ -327,7 +328,7 @@ class SchemaParserMultiFormatTest {
                 .expectObject()
                 .required("schemas")
 
-        val schemas = SchemaParser(exactContext).parseMap(schemasNode)
+        val schemas = schemasNode.parseMap(SchemaParser(exactContext)::parseElement)
 
         assertEquals(2, schemas.size)
 
@@ -347,7 +348,7 @@ class SchemaParserMultiFormatTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                SchemaParser(limitedContext).parseMap(limitedSchemasNode)
+                limitedSchemasNode.parseMap(SchemaParser(limitedContext)::parseElement)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
