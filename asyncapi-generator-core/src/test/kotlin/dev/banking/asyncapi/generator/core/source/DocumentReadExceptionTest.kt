@@ -101,6 +101,5 @@ class DocumentReadExceptionTest {
         assertEquals(DocumentResourceLimit.NUMBER_CHARACTERS, failure.limit)
         assertEquals(4L, failure.maximum)
         assertEquals(1, assertNotNull(failure.location).line)
-        assertIs<IllegalArgumentException>(failure.cause)
     }
 }

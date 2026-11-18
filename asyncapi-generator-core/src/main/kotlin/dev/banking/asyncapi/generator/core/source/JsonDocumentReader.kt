@@ -19,8 +19,8 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException
  * @param limits resource limits enforced during parsing
  */
 internal class JsonDocumentReader(
-    private val limits: SourceLimits = SourceLimits(),
-) {
+    override val limits: SourceLimits = SourceLimits(),
+) : DocumentReader {
     private val jsonFactory: JsonFactory =
         JsonFactoryBuilder()
             .streamReadConstraints(
@@ -32,14 +32,11 @@ internal class JsonDocumentReader(
                     .build(),
             ).build()
 
-    fun read(source: DocumentSource): InputDocument {
-        limits.requireDocumentSize(source)
-        val content = source.content.removePrefix(UTF_8_BOM)
-        if (content.isBlank()) {
-            throw DocumentReadException.EmptyDocument(source.file)
-        }
-
-        return try {
+    override fun readRoot(
+        source: DocumentSource,
+        content: String,
+    ): DocumentNode =
+        try {
             jsonFactory.createParser(content).use { parser ->
                 val rootToken =
                     parser.nextToken()
@@ -49,10 +46,7 @@ internal class JsonDocumentReader(
                 if (trailingToken != null) {
                     throw malformed(source, parser, "Unexpected content after JSON root")
                 }
-                InputDocument(
-                    source = source,
-                    root = root,
-                )
+                root
             }
         } catch (ex: DocumentReadException) {
             throw ex
@@ -65,7 +59,6 @@ internal class JsonDocumentReader(
                 location = ex.location?.let { locationOf(source, NodePath.ROOT, it) },
             )
         }
-    }
 
     private fun parseNode(
         parser: JsonParser,
@@ -105,13 +98,13 @@ internal class JsonDocumentReader(
         source: DocumentSource,
         location: SourceLocation,
     ): DocumentObject {
-        val result = linkedMapOf<String, DocumentMember>()
+        val members = DocumentObjectBuilder(source.file)
         while (true) {
             val token =
                 parser.nextToken()
                     ?: throw malformed(source, parser, "Unexpected end of JSON object")
             if (token == JsonToken.END_OBJECT) {
-                return DocumentObject(result, location)
+                return members.build(location)
             }
             if (token != JsonToken.FIELD_NAME) {
                 throw malformed(source, parser, "Expected JSON field name, found $token")
@@ -120,22 +113,12 @@ internal class JsonDocumentReader(
             val key = parser.currentName()
             val keyPath = path.member(key)
             val keyLocation = locationOf(source, keyPath, parser.currentTokenLocation())
-            if (result.containsKey(key)) {
-                throw DocumentReadException.DuplicateKey(
-                    file = source.file,
-                    memberName = key,
-                    location = keyLocation,
-                )
+            members.add(key, keyLocation) {
+                val valueToken =
+                    parser.nextToken()
+                        ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
+                parseNode(parser, valueToken, keyPath, source)
             }
-
-            val valueToken =
-                parser.nextToken()
-                    ?: throw malformed(source, parser, "Missing value for JSON field '$key'")
-            result[key] =
-                DocumentMember(
-                    keyLocation = keyLocation,
-                    value = parseNode(parser, valueToken, keyPath, source),
-                )
         }
     }
 
@@ -201,9 +184,5 @@ internal class JsonDocumentReader(
             cause = exception,
             location = exception.location?.let { locationOf(source, NodePath.ROOT, it) },
         )
-    }
-
-    private companion object {
-        const val UTF_8_BOM = "\uFEFF"
     }
 }

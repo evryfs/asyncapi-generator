@@ -122,12 +122,7 @@ class YamlDocumentReaderTest {
 
             assertEquals(source.file, failure.file)
             assertEquals(1, failure.location?.line)
-            assertTrue(
-                failure.cause
-                    ?.message
-                    .orEmpty()
-                    .contains("Unsupported YAML"),
-            )
+            assertTrue(failure.message.orEmpty().contains("Unsupported YAML"))
         }
     }
 
@@ -177,12 +172,7 @@ class YamlDocumentReaderTest {
                 }
 
             assertEquals("root.value", failure.location?.path)
-            assertTrue(
-                failure.cause
-                    ?.message
-                    .orEmpty()
-                    .contains("JSON-compatible number"),
-            )
+            assertTrue(failure.message.orEmpty().contains("JSON-compatible number"))
         }
     }
 

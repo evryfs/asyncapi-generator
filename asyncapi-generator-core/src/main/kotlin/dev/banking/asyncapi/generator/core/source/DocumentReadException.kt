@@ -54,7 +54,7 @@ sealed class DocumentReadException(
     /** @param reason What is wrong, when the reader knows it better than the underlying parser error. */
     class MalformedDocument(
         file: File,
-        cause: Throwable,
+        cause: Throwable? = null,
         location: SourceLocation? = null,
         reason: String? = null,
     ) : DocumentReadException(
@@ -64,7 +64,15 @@ sealed class DocumentReadException(
             file = file,
             location = location,
             cause = cause,
-        )
+        ) {
+        companion object {
+            /** A malformed document at [location], described by [reason]. */
+            fun at(
+                location: SourceLocation,
+                reason: String,
+            ): MalformedDocument = MalformedDocument(file = location.file, location = location, reason = reason)
+        }
+    }
 
     class UnreadableDocument(
         file: File,
@@ -79,7 +87,7 @@ sealed class DocumentReadException(
         file: File,
         val limit: DocumentResourceLimit,
         val maximum: Long,
-        cause: Throwable,
+        cause: Throwable? = null,
         location: SourceLocation? = null,
     ) : DocumentReadException(
             message =
