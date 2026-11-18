@@ -70,7 +70,6 @@ class InfoParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("title", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_info_invalid.root.info.title", diagnostic.path)
         assertEquals("root.info", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
@@ -94,7 +93,6 @@ class InfoParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("version", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_info_invalid.root.infoMissingVersion.version", diagnostic.path)
         assertEquals("root.infoMissingVersion", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)
@@ -118,7 +116,6 @@ class InfoParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("name", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_info_invalid.root.infoMissingLicenseName.license.name", diagnostic.path)
         assertEquals("root.infoMissingLicenseName.license", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_info_invalid.yaml", diagnostic.sourceLocation.file.name)

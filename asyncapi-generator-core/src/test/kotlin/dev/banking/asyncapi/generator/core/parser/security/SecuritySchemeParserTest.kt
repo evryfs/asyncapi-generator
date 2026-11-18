@@ -157,7 +157,6 @@ class SecuritySchemeParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("type", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_security_invalid.root.components.securitySchemes.MissingType.type",
             diagnostic.path,

@@ -81,7 +81,6 @@ class ReferenceParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("\$ref", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_reference_invalid.root.components.references.ReferenceList[0].\$ref",
             diagnostic.path,

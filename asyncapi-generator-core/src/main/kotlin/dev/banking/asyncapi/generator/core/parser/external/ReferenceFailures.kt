@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import java.io.File
 import java.io.IOException
@@ -74,6 +75,5 @@ private fun AsyncApiContext.failure(
     diagnostic: ParserDiagnostic,
     cause: Exception? = null,
 ): AsyncApiParseException =
-    AsyncApiParseException
-        .ParserDiagnosticFailure(diagnostic, this)
+    parserFailure(diagnostic)
         .also { failure -> cause?.let(failure::initCause) }

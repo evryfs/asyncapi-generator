@@ -32,6 +32,10 @@ internal class ParserNode(
     internal val sourceLocation
         get() = node.location.copy(path = address.documentPath)
 
+    /** Where this node is declared: the key line of a member, the start of any other node. */
+    internal val declarationLocation
+        get() = context.nodeLocations.location(address)?.copy(path = address.documentPath) ?: sourceLocation
+
     internal fun member(
         name: String,
         node: DocumentNode,

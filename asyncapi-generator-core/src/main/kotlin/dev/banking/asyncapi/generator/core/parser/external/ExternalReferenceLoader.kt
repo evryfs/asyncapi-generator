@@ -143,7 +143,9 @@ internal class ExternalReferenceLoader(
         }
 
     private fun sourceFile(reference: Reference): File =
-        context.modelTracking.getReferenceOrigin(reference)?.file ?: context.sourceTracking.currentFile()
+        checkNotNull(context.modelTracking.getReferenceOrigin(reference)) {
+            "Reference '${reference.ref}' was not registered"
+        }.file
 
     /**
      * The document of a local reference written in a fragment file, or `null` when the reference is

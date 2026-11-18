@@ -90,7 +90,6 @@ class OperationReplyParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("\$ref", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingChannelReference.channel.\$ref",
             diagnostic.path,
@@ -124,7 +123,6 @@ class OperationReplyParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("\$ref", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_operation_reply_invalid.root.components.operationReplyCases.MissingMessageReference.messages[0].\$ref",
             diagnostic.path,

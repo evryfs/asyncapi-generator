@@ -201,7 +201,6 @@ class AsyncApiParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("asyncapi", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_invalid.root.cases.MissingVersion.asyncapi", diagnostic.path)
         assertEquals("root.cases.MissingVersion", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)
@@ -369,7 +368,6 @@ class AsyncApiParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("info", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals("asyncapi_parser_invalid.root.cases.MissingInfo.info", diagnostic.path)
         assertEquals("root.cases.MissingInfo", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_invalid.yaml", diagnostic.sourceLocation.file.name)

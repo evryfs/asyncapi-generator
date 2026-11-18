@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.external.ParsedReferences
 import dev.banking.asyncapi.generator.core.parser.linking.ReferenceLinker
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
@@ -32,7 +32,7 @@ internal class AsyncApiContext(
     val referenceLinker = ReferenceLinker(modelTracking)
     val sourceBudget =
         SourceBudget(sourceLimits) { diagnostic ->
-            throw AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
+            throw parserFailure(diagnostic)
         }
 
     /** Records that [model] was parsed from [node]. */

@@ -1,13 +1,14 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.diagnostics.parserFailure
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.parseList
@@ -45,11 +46,8 @@ internal class SchemaParser(
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
             val schemaFormat =
                 SchemaFormat.fromValue(format)
-                    ?: throw UnexpectedSchemaFormat(
-                        format,
-                        parserNode.path,
-                        parserNode.sourceLocation,
-                        asyncApiContext,
+                    ?: throw asyncApiContext.parserFailure(
+                        ParserDiagnostic.UnknownSchemaFormat(format, parserNode.path, parserNode.declarationLocation),
                     )
             val schemaNode = objectNode.required("schema")
             if (schemaFormat.isAsyncApiSchemaObject) {

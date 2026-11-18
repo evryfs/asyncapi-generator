@@ -21,7 +21,6 @@ internal class SourceTracking {
 
     private val sourcesByPath = mutableMapOf<String, Source>()
     private val sourcesById = mutableMapOf<SourceId, Source>()
-    private lateinit var current: Source
 
     /** Registers [file] with its [content] and returns its id; registering a file again returns the same id. */
     fun registerSource(
@@ -34,7 +33,6 @@ internal class SourceTracking {
                 Source(uniqueId(canonicalFile), canonicalFile, content.lines())
                     .also { sourcesById[it.id] = it }
             }
-        current = source
         return source.id
     }
 
@@ -44,16 +42,13 @@ internal class SourceTracking {
     /** The id of [file], or `null` when it was not registered. */
     fun sourceId(file: File): SourceId? = sourcesByPath[file.canonicalFile.absolutePath]?.id
 
-    /** The most recently registered file. */
-    fun currentFile(): File = current.file
-
     /** A snippet of the source around [location], labelled with [label]. */
     fun snippet(
         location: SourceLocation,
         label: String = location.path,
         contextLines: Int = DEFAULT_CONTEXT_LINES,
     ): String {
-        val source = sourcesByPath[location.file.canonicalFile.absolutePath] ?: current
+        val source = sourcesByPath[location.file.canonicalFile.absolutePath] ?: return "${location.file.name} ($label)"
         val center = location.line
         val start = maxOf(0, center - contextLines - 1)
         val end = minOf(source.lines.size, center + contextLines)

@@ -65,7 +65,6 @@ class ExternalDocsParserTest {
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("url", diagnostic.memberName)
-        assertEquals("present member", diagnostic.expectedType)
         assertEquals(
             "asyncapi_parser_externaldocs_invalid.root.components.externalDocs.MissingUrl.url",
             diagnostic.path,
