@@ -83,7 +83,6 @@ class ValidationReportTest {
                 line = 1,
                 column = 1,
             )
-        context.sourceTracking.registerLocation(sourceLocation.path, sourceLocation)
         val collector = ValidationCollector()
         collector.error(DOCUMENT_ID_FORMAT, "Unsupported AsyncAPI version.", sourceLocation)
         val report = collector.report()

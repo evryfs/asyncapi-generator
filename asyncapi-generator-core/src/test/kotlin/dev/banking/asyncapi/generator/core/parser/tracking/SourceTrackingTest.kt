@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.repository
+package dev.banking.asyncapi.generator.core.parser.tracking
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
@@ -10,7 +10,7 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class SourceRepositoryTest {
+class SourceTrackingTest {
     @Test
     fun `same named files retain distinct source owned addresses`() {
         val context = AsyncApiContext()
@@ -23,12 +23,20 @@ class SourceRepositoryTest {
         assertEquals("right", right.expectObject().required("name").expect<String>())
         assertEquals(
             left.address.member("name"),
-            context.sourceRepository.resolveAddress(left.address.sourceId, listOf("name")),
+            context.nodeLocations.resolveAddress(left.address.sourceId, listOf("name")),
         )
         assertEquals(
             right.address.member("name"),
-            context.sourceRepository.resolveAddress(right.address.sourceId, listOf("name")),
+            context.nodeLocations.resolveAddress(right.address.sourceId, listOf("name")),
         )
+    }
+
+    @Test
+    fun `registering a file again keeps its id`() {
+        val tracking = SourceTracking()
+        val file = File("same/file.yaml")
+
+        assertEquals(tracking.registerSource(file, "a"), tracking.registerSource(file, "b"))
     }
 
     private fun parserRoot(

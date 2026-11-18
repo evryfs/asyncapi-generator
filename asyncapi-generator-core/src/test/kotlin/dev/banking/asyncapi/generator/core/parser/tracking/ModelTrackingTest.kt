@@ -1,6 +1,7 @@
-package dev.banking.asyncapi.generator.core.repository
+package dev.banking.asyncapi.generator.core.parser.tracking
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.fixtures.modelAt
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -15,9 +16,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
-class ModelRepositoryTest {
+class ModelTrackingTest {
     @Test
     fun `references resolve through typed addresses for adversarial member names`() {
         val context = AsyncApiContext()
@@ -92,14 +92,11 @@ class ModelRepositoryTest {
             context.modelTracking.getSourceLocation(nested)?.path,
         )
 
-        val modelsByPath = context.modelRepository.getModelsByPath()
         val nestedPath = "identity.root.components.schemas.A.properties.x"
         val dottedPath = "identity.root.components.schemas[\"A.properties.x\"]"
-        assertTrue(nestedPath in modelsByPath)
-        assertTrue(dottedPath in modelsByPath)
-        assertNotEquals(modelsByPath.getValue(nestedPath), modelsByPath.getValue(dottedPath))
-        assertTrue("identity.root.components.schemas[\"bracket[name]\"]" in modelsByPath)
-        assertTrue("identity.root.components.schemas.0" in modelsByPath)
-        assertTrue("identity.root.components.schemas.Tuple.items[0]" in modelsByPath)
+        assertNotEquals(context.modelAt(nestedPath), context.modelAt(dottedPath))
+        assertIs<Schema>(context.modelAt("identity.root.components.schemas[\"bracket[name]\"]"))
+        assertIs<Schema>(context.modelAt("identity.root.components.schemas.0"))
+        assertIs<Schema>(context.modelAt("identity.root.components.schemas.Tuple.items[0]"))
     }
 }

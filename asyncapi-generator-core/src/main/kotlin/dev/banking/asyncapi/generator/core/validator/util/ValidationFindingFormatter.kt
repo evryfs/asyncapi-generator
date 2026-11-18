@@ -25,8 +25,8 @@ internal object ValidationFindingFormatter {
         finding: ValidationFinding,
         asyncApiContext: AsyncApiContext,
     ): String {
-        finding.sourceLocation?.let { return asyncApiContext.sourceTracking.sourceSnippet(it) }
-        finding.path?.let { return asyncApiContext.sourceTracking.pathSnippet(it) }
+        finding.sourceLocation?.let { return asyncApiContext.sourceTracking.snippet(it) }
+        finding.path?.let { return asyncApiContext.snippet(it) }
         return "(no source location available)"
     }
 }

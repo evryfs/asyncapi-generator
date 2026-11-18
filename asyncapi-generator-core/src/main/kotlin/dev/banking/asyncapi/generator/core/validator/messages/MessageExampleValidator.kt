@@ -79,7 +79,6 @@ internal class MessageExampleValidator(
     private fun sourceLocation(
         path: String,
         fallbackPath: String,
-    ) = asyncApiContext.sourceRepository.getLocation(path)
-        ?: asyncApiContext.sourceRepository.findNearestLocation(path)
-        ?: asyncApiContext.sourceRepository.findNearestLocation(fallbackPath)
+    ) = asyncApiContext.nodeLocations.location(path)
+        ?: asyncApiContext.nodeLocations.location(fallbackPath)
 }

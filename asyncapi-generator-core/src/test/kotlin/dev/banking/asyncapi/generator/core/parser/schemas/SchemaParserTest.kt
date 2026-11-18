@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.fixtures.modelAt
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
@@ -291,9 +292,8 @@ class SchemaParserTest {
                 .required("schemas")
 
         parser.parseMap(schemasNode)
-        val models = context.modelRepository.getModelsByPath()
-        val main = assertIs<Schema>(models["main.root.components.schemas.MainObject"])
-        val level2 = assertIs<Schema>(models["level2.root.components.schemas.Level2Object"])
+        val main = assertIs<Schema>(context.modelAt("main.root.components.schemas.MainObject"))
+        val level2 = assertIs<Schema>(context.modelAt("level2.root.components.schemas.Level2Object"))
 
         assertEquals("I am level 2 deep", level2.description)
         val mainLocation = assertNotNull(context.modelTracking.getSourceLocation(main))
@@ -306,9 +306,9 @@ class SchemaParserTest {
         val descriptionLocation = assertNotNull(context.modelTracking.getSourceLocation(level2, level2::description))
         assertEquals("level2.root.components.schemas.Level2Object.description", descriptionLocation.path)
         assertEquals(9, descriptionLocation.line)
-        assertEquals(9, context.modelTracking.getLine(level2, level2::description))
-        assertTrue(context.sourceTracking.pathSnippet(mainLocation.path).contains("main.yaml"))
-        assertTrue(context.sourceTracking.pathSnippet(descriptionLocation.path).contains("level2.yaml"))
+        assertEquals(9, context.modelTracking.getSourceLocation(level2, level2::description)?.line)
+        assertTrue(context.sourceTracking.snippet(mainLocation).contains("main.yaml"))
+        assertTrue(context.sourceTracking.snippet(descriptionLocation).contains("level2.yaml"))
     }
 
     @Test
@@ -332,7 +332,7 @@ class SchemaParserTest {
         val nestedAllOf = assertNotNull(nested.allOf)
         assertEquals(2, nestedAllOf.size)
         val registeredInline = assertIs<SchemaInterface.SchemaInline>(nestedAllOf[0]).schema
-        assertTrue(context.modelRepository.getModelsByInstance().containsKey(registeredInline))
+        assertTrue(context.modelTracking.getSourceLocation(registeredInline) != null)
 
         val mixed = assertIs<SchemaInterface.SchemaInline>(schemas["MixedComposition"]).schema
         val mixedOptions = assertNotNull(mixed.anyOf)
@@ -491,10 +491,6 @@ class SchemaParserTest {
         assertEquals(2, tupleItems.size)
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(tupleItems[0]).schema.type)
         assertEquals("number", assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
-        assertEquals(
-            listOf(mapOf("type" to "string"), mapOf("type" to "number")),
-            context.modelTracking.getFieldValue(schema, "items"),
-        )
         assertEquals(
             "asyncapi_parser_schema_negative_test.root.components.schemas.TupleItemsSchema.items",
             context.modelTracking.getSourceLocation(schema, "items")?.path,

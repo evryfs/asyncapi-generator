@@ -27,3 +27,7 @@ internal class ParserFixtures(
 
     fun document(file: File): AsyncApiDocument = parser.parse(root(file))
 }
+
+/** The model registered at the node whose display path is [displayPath], or `null` when there is none. */
+internal fun AsyncApiContext.modelAt(displayPath: String): Any? =
+    nodeLocations.address(displayPath)?.let(modelTracking::modelAt)

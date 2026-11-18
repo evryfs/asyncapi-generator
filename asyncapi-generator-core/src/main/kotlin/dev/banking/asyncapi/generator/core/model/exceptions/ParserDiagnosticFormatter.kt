@@ -113,9 +113,7 @@ internal object ParserDiagnosticFormatter {
         context: AsyncApiContext,
     ): String {
         val snippet =
-            context.sourceTracking.sourceSnippet(
-                diagnostic.sourceLocation.copy(path = diagnostic.path),
-            )
+            context.sourceTracking.snippet(diagnostic.sourceLocation, label = diagnostic.path)
         return buildString {
             appendLine(header)
             appendLine()

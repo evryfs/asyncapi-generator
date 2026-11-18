@@ -5,9 +5,11 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.repository.ModelRepository
-import dev.banking.asyncapi.generator.core.repository.SourceRepository
+import dev.banking.asyncapi.generator.core.parser.tracking.ModelTracking
+import dev.banking.asyncapi.generator.core.parser.tracking.NodeLocations
+import dev.banking.asyncapi.generator.core.parser.tracking.SourceTracking
 import dev.banking.asyncapi.generator.core.source.SourceBudget
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.source.SourceReader
@@ -26,7 +28,8 @@ internal class AsyncApiContext(
     val sourceLimits: SourceLimits = SourceLimits(),
 ) {
     val sourceTracking = SourceTracking()
-    val modelTracking = ModelTracking(sourceTracking)
+    val nodeLocations = NodeLocations()
+    val modelTracking = ModelTracking(sourceTracking, nodeLocations)
     val sourceBudget =
         SourceBudget(sourceLimits) { diagnostic ->
             throw AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
@@ -50,9 +53,6 @@ internal class AsyncApiContext(
             readDocument = { file -> ParserNodeFactory.root(SourceReader.read(file, sourceLimits), this) },
         )
 
-    val sourceRepository: SourceRepository get() = sourceTracking.repository
-    val modelRepository: ModelRepository get() = modelTracking.repository
-
     fun register(
         model: Any,
         node: ParserNode,
@@ -68,9 +68,13 @@ internal class AsyncApiContext(
         file: File,
         content: String,
         location: SourceLocation,
-    ): String {
-        val sourceId = sourceTracking.registerSourceAndGetPathId(file, content)
+    ): SourceId {
+        val sourceId = sourceTracking.registerSource(file, content)
         sourceBudget.registerDocument(file, content, location)
         return sourceId
     }
+
+    /** A snippet of the source around the node whose display path is [displayPath]. */
+    fun snippet(displayPath: String): String =
+        nodeLocations.location(displayPath)?.let(sourceTracking::snippet) ?: "(no line found for $displayPath)"
 }
