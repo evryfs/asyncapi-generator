@@ -14,9 +14,12 @@ val sourceFiles = result.sourceFiles
 ```
 
 Each call creates an isolated `AsyncApiContext`. The loader accepts `.yaml`,
-`.yml`, and `.json` files, reads and structurally parses the root document,
-eagerly loads supported external references, and runs semantic validation.
-Reader, parser, external-reference, and validation errors are thrown. A
+`.yml`, and `.json` files and runs four steps in order: it parses the root
+document, loads the documents and fragments its references point at, links
+every reference to its target, and validates. Each loaded document and fragment
+is validated on its own first, then the root document. Reader, parser,
+external-reference, and validation errors are thrown; every parse and load
+failure is reported before any validation finding. A
 successful result contains the existing `AsyncApiDocument` domain model and an
 immutable list of validation warnings. Warnings found while validating external
 documents or selected fragments are returned with root warnings, deduplicated
@@ -30,7 +33,7 @@ native Avro or Protobuf schema asset. Canonical files appear once even when
 multiple references or cycles reach them. Build frontends use this set for
 incremental input tracking.
 
-The loader is stateless. Every call owns a new context, repositories, warning
+The loader is stateless. Every call owns a new context, tracking, warning
 collector, resource budget, and reader instances. Repeated and concurrent calls
 therefore cannot share parser state.
 
@@ -38,9 +41,9 @@ Bundling and generation are not performed by this API.
 
 The loader, load result, domain model, validation findings, source locations,
 and caller-relevant diagnostics and exceptions form the supported API. The
-document tree, concrete readers, cursor types, contexts, repositories,
-registries, resolvers, version implementations, individual parsers, and
-individual validators are internal to the core module.
+document tree, concrete readers, cursor types, contexts, tracking, the
+external reference loader, the reference linker, version implementations,
+individual parsers, and individual validators are internal to the core module.
 
 ## Reader contract
 
@@ -152,8 +155,8 @@ navigation is available only after selecting an object or array view.
 | `ParserNode`       | `toPlainValue()`              | Recursively removes source metadata and returns maps, lists, scalars, or null           |
 | `ParserObjectNode` | `required(name)`              | Requires the named member to be present and returns its cursor                          |
 | `ParserObjectNode` | `optional(name)`              | Returns the member cursor or `null` when absent                                         |
-| `ParserObjectNode` | `members()`                   | Returns one cursor per member, preserving names and paths                               |
-| `ParserObjectNode` | `membersStartingWith(prefix)` | Returns matching member cursors with their original names and paths                     |
+| `ParserObjectNode` | `members()`                   | Returns one cursor per member, keyed by member name, in document order                  |
+| `ParserObjectNode` | `extensions()`                | Returns the `x-` members as plain values, or `null` when there are none                 |
 | `ParserObjectNode` | `expectOnlyMembers(...)`      | Rejects members outside an object's supported set and allowed specification extensions  |
 | `ParserArrayNode`  | `elements()`                  | Returns one cursor per element with indexed paths                                       |
 
@@ -216,11 +219,12 @@ data; the exception message is a human-readable rendering with a source snippet.
 Every `ParserDiagnostic` exposes:
 
 - a stable category and string code;
-- expected type or condition;
-- actual value category and actual plain value when applicable;
-- parser path; and
+- the display path of the node the failure is about; and
 - `SourceLocation`, containing file, path, one-based line, and one-based
   column.
+
+Each diagnostic adds the fields of its kind, such as the missing member, the
+expected and actual type of a value, or the reference that cannot be loaded.
 
 Current categories are:
 
@@ -235,6 +239,8 @@ Current categories are:
 | `parser.reference-document-not-found`      | The external document does not exist or is unreadable                    |
 | `parser.reference-target-not-found`        | The JSON Pointer target does not exist in the loaded document            |
 | `parser.load-resource-limit-exceeded`      | One complete load exceeded a configured source/reference resource budget |
+| `parser.unknown-schema-format`             | A Multi Format Schema declares a `schemaFormat` that is not known        |
+| `parser.native-schema-asset-unreadable`    | The file a native Avro or Protobuf schema references cannot be read      |
 
 Diagnostic messages may include targeted hints for common quoted scalar
 mistakes. The category and structured fields, rather than rendered prose, are
@@ -242,7 +248,7 @@ the stable surface for programmatic assertions.
 
 ## Internal identity and display paths
 
-Repositories identify nodes with a `NodeAddress`: the `SourceId` of the
+Tracking identifies nodes with a `NodeAddress`: the `SourceId` of the
 document, unique within one load, and the node's `NodePath`. A rendered dot path is never parsed to recover identity.
 This distinguishes a component named `A.properties.x` from property `x` below
 component `A`, and distinguishes an object member named `"0"` from array index
@@ -258,8 +264,8 @@ contract.root.values["0"]
 contract.root.values[0]
 ```
 
-`SourceLocation.path` and parser diagnostic paths are presentation values. The
-source and model repositories use the segment-aware address directly.
+`SourceLocation.path` and parser diagnostic paths are presentation values.
+`NodeLocations` and `ModelTracking` use the segment-aware address directly.
 
 ## Reference behavior
 
@@ -269,9 +275,9 @@ is required; an explicit null or a non-string value produces an
 unexpected-value-type diagnostic at `$ref`. For reference-versus-inline fields,
 a present `$ref` controls discrimination. Once it is a valid string, sibling
 members are ignored as required by AsyncAPI 3.0 and are not checked against the
-inline object's member policy. Domain parsers attach the concrete
-`ReferenceCategoryKey` used to parse external fragments; the category is not
-inferred from substrings in the reference path.
+inline object's member policy. Every parsed reference carries the concrete
+`ReferenceCategoryKey` of its target and records how to parse that target; the
+category is not inferred from substrings in the reference path.
 
 Internal references do not load a file. Local relative paths and `file:` URIs
 are resolved relative to the source document that owns the reference. HTTP and
@@ -306,8 +312,14 @@ cycles are deduplicated by file, pointer, category, and parser profile. A
 missing same-file target is reported at the nested reference in the raw
 fragment that owns it.
 
-Loading is eager and deduplicated. It preserves each file's source locations and
-does not bundle or inline the model.
+Loading follows references depth first, in the order the parser met them, and
+deduplicates documents and targets. It preserves each file's source locations
+and does not bundle or inline the model.
+
+After loading, every reference is linked: `Reference.model` points at the model
+or reference it targets. A link that never reaches a model of the expected kind
+(unresolved, a cycle, or a target of another kind) is reported by the validator,
+which never changes the model.
 
 One loader call applies these additional load-wide defaults:
 
@@ -347,8 +359,8 @@ shapes that ordinary AsyncAPI objects do not:
   `SchemaParser`.
 - The current domain model represents `items` as one schema. Tuple validation
   expressed as an array of schemas is not represented in `Schema.items`; the
-  parser retains the original field value and location in the model repository
-  so `SchemaValidator` can report the unsupported form with a source-aware
+  parser retains the original field location in model tracking so
+  `SchemaValidator` can report the unsupported form with a source-aware
   diagnostic.
 - Property dependencies are lists of strings; schema dependencies are parsed as
   schemas.
@@ -358,8 +370,7 @@ shapes that ordinary AsyncAPI objects do not:
   Known native or other Multi Format Schema values are preserved as
   `MultiFormatSchema`; native Avro and Protobuf schemas may load supported
   external schema assets.
-- Unknown `schemaFormat` values are rejected by the existing schema-format
-  contract.
+- Unknown `schemaFormat` values fail with `parser.unknown-schema-format`.
 
 Schema Objects are not subject to ordinary AsyncAPI fixed-member rejection.
 Unknown and unsupported keywords remain registered with their original values
@@ -383,7 +394,8 @@ Specification extensions are kept on the objects the specification marks as
 extensible (the root document, Info, Contact, License, Server, Server Variable,
 Channel, Parameter, Message, Message Trait, Operation, Operation Trait,
 Operation Reply, Reply Address, Tag, External Documentation, Correlation ID,
-Security Scheme, Components, and Schema). `ParserObjectNode.extensions()`
+Security Scheme, OAuth Flows, OAuth Flow, Message Example, Components, and
+Schema). `ParserObjectNode.extensions()`
 collects them into the model's `extensions` field, and bundled output writes
 them back.
 
