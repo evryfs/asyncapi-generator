@@ -31,7 +31,7 @@ class AsyncApiBundler {
         val bundledServers = serverBundler.bundleServers(document.servers, context)
         val bundledChannels = channelBundler.bundleMap(document.channels, context)
         val bundledOperations = operationBundler.bundleMap(document.operations, context)
-        val bundledComponents = componentBundler.bundleComponents(document.components, context)
+        val bundledComponents = document.components?.let { componentBundler.bundleComponent(it, context) }
         val componentsWithPromotedSchemas =
             componentBundler.mergeSchemas(
                 components = bundledComponents,

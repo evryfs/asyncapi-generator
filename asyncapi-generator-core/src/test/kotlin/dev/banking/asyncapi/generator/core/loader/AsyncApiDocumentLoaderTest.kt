@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.loader
 
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.fixtures.writeTestFile
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
@@ -42,7 +41,7 @@ class AsyncApiDocumentLoaderTest {
     fun `loads and resolves external schema references`() {
         val result = loader.load(TestResources.file("parser/references/external/main.yaml"))
         val components =
-            (result.document.components as ComponentInterface.ComponentInline).component
+            result.document.components!!
         val schemas = requireNotNull(components.schemas)
         val reference =
             (schemas.getValue("RootReference") as SchemaInterface.SchemaReference).reference
@@ -54,7 +53,7 @@ class AsyncApiDocumentLoaderTest {
     fun `loads valid source incompatible Draft 7 schema constructs`() {
         val result = loader.load(TestResources.file("generator/source-incompatible-schema-features.yaml"))
         val components =
-            (result.document.components as ComponentInterface.ComponentInline).component
+            result.document.components!!
         val schemas = requireNotNull(components.schemas)
         val tupleItems = (schemas.getValue("TupleItems") as SchemaInterface.SchemaInline).schema
         val falseItems = (schemas.getValue("FalseItems") as SchemaInterface.SchemaInline).schema

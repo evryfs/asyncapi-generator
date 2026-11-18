@@ -52,7 +52,7 @@ internal class AsyncApiValidator(
             )
         }
         asyncApiDocument.components?.let { components ->
-            componentValidator.validateInterface(components, "Component", results)
+            componentValidator.validate(components, "Component", results)
         }
 
         referenceTargetTraversal.drain(results)

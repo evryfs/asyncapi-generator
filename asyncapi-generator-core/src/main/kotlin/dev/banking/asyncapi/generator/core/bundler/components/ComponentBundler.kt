@@ -20,7 +20,6 @@ import dev.banking.asyncapi.generator.core.bundler.servers.ServerVariableBundler
 import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
@@ -43,31 +42,6 @@ internal class ComponentBundler {
     private val operationReplyAddressBundler = OperationReplyAddressBundler()
     private val bindingBundler = BindingBundler()
     private val serverVariableBundler = ServerVariableBundler()
-
-    fun bundleComponents(
-        components: ComponentInterface?,
-        context: BundlingContext,
-    ): ComponentInterface? {
-        if (components == null) return null
-        return when (components) {
-            is ComponentInterface.ComponentInline ->
-                ComponentInterface.ComponentInline(
-                    bundleComponent(components.component, context),
-                )
-
-            is ComponentInterface.ComponentReference -> {
-                components.copy(
-                    reference =
-                        ReferenceBundler.bundleReferencedModel<Component>(
-                            reference = components.reference,
-                            context = context,
-                        ) { component, nextContext ->
-                            bundleComponent(component, nextContext)
-                        },
-                )
-            }
-        }
-    }
 
     fun bundleComponent(
         component: Component,
@@ -115,48 +89,14 @@ internal class ComponentBundler {
         )
     }
 
-    internal fun schemas(components: ComponentInterface?): Map<String, SchemaInterface> =
-        when (components) {
-            null -> emptyMap()
-            is ComponentInterface.ComponentInline -> components.component.schemas.orEmpty()
-            is ComponentInterface.ComponentReference ->
-                components.reference
-                    .requireModel<Component>()
-                    .schemas
-                    .orEmpty()
-        }
+    internal fun schemas(components: Component?): Map<String, SchemaInterface> = components?.schemas.orEmpty()
 
     internal fun mergeSchemas(
-        components: ComponentInterface?,
+        components: Component?,
         schemas: Map<String, SchemaInterface>,
-    ): ComponentInterface? {
+    ): Component? {
         if (schemas.isEmpty()) return components
 
-        return when (components) {
-            null ->
-                ComponentInterface.ComponentInline(
-                    Component(schemas = schemas),
-                )
-
-            is ComponentInterface.ComponentInline ->
-                ComponentInterface.ComponentInline(
-                    components.component.copy(
-                        schemas = components.component.schemas.orEmpty() + schemas,
-                    ),
-                )
-
-            is ComponentInterface.ComponentReference -> {
-                val component = components.reference.requireModel<Component>()
-                components.copy(
-                    reference =
-                        components.reference.withModel(
-                            component.copy(
-                                schemas =
-                                    component.schemas.orEmpty() + schemas,
-                            ),
-                        ),
-                )
-            }
-        }
+        return components?.copy(schemas = components.schemas.orEmpty() + schemas) ?: Component(schemas = schemas)
     }
 }

@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -471,7 +470,7 @@ class AsyncApiSchemaLoaderTest {
             info =
                 dev.banking.asyncapi.generator.core.model.info
                     .Info("T", "1"),
-            components = ComponentInterface.ComponentInline(component),
+            components = component,
         )
 
     private fun nativeAvroSchema(): MultiFormatSchema =

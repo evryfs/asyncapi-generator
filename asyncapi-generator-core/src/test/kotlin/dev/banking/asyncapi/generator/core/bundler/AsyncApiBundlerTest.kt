@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -142,23 +141,21 @@ class AsyncApiBundlerTest {
                 asyncapi = "3.0.0",
                 info = Info(title = "Boolean schema API", version = "1.0.0"),
                 components =
-                    ComponentInterface.ComponentInline(
-                        Component(
-                            schemas =
-                                mapOf(
-                                    "Nothing" to booleanSchema,
-                                    "Wrapper" to
-                                        SchemaInterface.SchemaInline(
-                                            Schema(
-                                                type = "object",
-                                                properties =
-                                                    mapOf(
-                                                        "denied" to SchemaInterface.SchemaReference(schemaReference),
-                                                    ),
-                                            ),
+                    Component(
+                        schemas =
+                            mapOf(
+                                "Nothing" to booleanSchema,
+                                "Wrapper" to
+                                    SchemaInterface.SchemaInline(
+                                        Schema(
+                                            type = "object",
+                                            properties =
+                                                mapOf(
+                                                    "denied" to SchemaInterface.SchemaReference(schemaReference),
+                                                ),
                                         ),
-                                ),
-                        ),
+                                    ),
+                            ),
                     ),
             )
         val bundled = bundler.bundle(document).document
@@ -175,14 +172,14 @@ class AsyncApiBundlerTest {
     fun `bundling circular references should not cause stack overflow`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/circular/asyncapi_bundler_circular.yaml").document
 
-        val components = bundled.components as ComponentInterface.ComponentInline
-        val nodeA = components.component.schemas!!["NodeA"] as SchemaInterface.SchemaInline
+        val components = bundled.components!!
+        val nodeA = components.schemas!!["NodeA"] as SchemaInterface.SchemaInline
         val child = nodeA.schema.properties!!["child"] as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/NodeB", child.reference.ref)
         assertIs<Schema>(child.reference.model)
         assertFalse(child.reference.inline, "a root component schema reference keeps its \$ref")
 
-        val schemas = components.component.schemas!!
+        val schemas = components.schemas!!
         val nodeB = schemas["NodeB"] as SchemaInterface.SchemaInline
         val parent = nodeB.schema.properties!!["parent"] as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/NodeA", parent.reference.ref)
@@ -201,8 +198,8 @@ class AsyncApiBundlerTest {
         val payload = message.message.payload as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/TreeNode", payload.reference.ref)
 
-        val components = bundled.components as ComponentInterface.ComponentInline
-        val treeNode = components.component.schemas!!["TreeNode"] as SchemaInterface.SchemaInline
+        val components = bundled.components!!
+        val treeNode = components.schemas!!["TreeNode"] as SchemaInterface.SchemaInline
         val children = treeNode.schema.properties!!["children"] as SchemaInterface.SchemaInline
         val childItems = children.schema.items as SchemaInterface.SchemaReference
         assertEquals("#/components/schemas/TreeNode", childItems.reference.ref)
@@ -223,8 +220,8 @@ class AsyncApiBundlerTest {
     fun `bundling promotes mutually recursive schemas from an external schema document`() {
         val bundled = bundlerFixtures.bundledDocument("bundler/recursive-external-mutual/asyncapi.yaml").document
 
-        val components = bundled.components as ComponentInterface.ComponentInline
-        val schemas = components.component.schemas!!
+        val components = bundled.components!!
+        val schemas = components.schemas!!
         assertEquals(setOf("ParentNode", "ChildNode"), schemas.keys)
 
         val parent = schemas["ParentNode"] as SchemaInterface.SchemaInline

@@ -1,7 +1,5 @@
 package dev.banking.asyncapi.generator.core.model.schemas
 
-import dev.banking.asyncapi.generator.core.constants.AsyncApiConstants
-
 /**
  * Known AsyncAPI `schemaFormat` values grouped by their semantic schema family.
  *
@@ -14,59 +12,59 @@ enum class SchemaFormat(
     val family: SchemaFormatFamily,
 ) {
     ASYNCAPI_3_0_0(
-        value = AsyncApiConstants.ASYNCAPI_V_3_0_0,
+        value = "application/vnd.aai.asyncapi;version=3.0.0",
         family = SchemaFormatFamily.ASYNCAPI,
     ),
     ASYNCAPI_3_0_0_JSON(
-        value = AsyncApiConstants.ASYNCAPI_V_3_0_0_JSON,
+        value = "application/vnd.aai.asyncapi+json;version=3.0.0",
         family = SchemaFormatFamily.ASYNCAPI,
     ),
     ASYNCAPI_3_0_0_YAML(
-        value = AsyncApiConstants.ASYNCAPI_V_3_0_0_YAML,
+        value = "application/vnd.aai.asyncapi+yaml;version=3.0.0",
         family = SchemaFormatFamily.ASYNCAPI,
     ),
     JSON_SCHEMA_DRAFT_07_JSON(
-        value = AsyncApiConstants.JSON_SCHEMA_DRAFT_07_JSON,
+        value = "application/schema+json;version=draft-07",
         family = SchemaFormatFamily.JSON_SCHEMA_DRAFT_07,
     ),
     JSON_SCHEMA_DRAFT_07_YAML(
-        value = AsyncApiConstants.JSON_SCHEMA_DRAFT_07_YAML,
+        value = "application/schema+yaml;version=draft-07",
         family = SchemaFormatFamily.JSON_SCHEMA_DRAFT_07,
     ),
     AVRO_1_9_0(
-        value = AsyncApiConstants.AVRO_V_1_9_0,
+        value = "application/vnd.apache.avro;version=1.9.0",
         family = SchemaFormatFamily.AVRO,
     ),
     AVRO_1_9_0_JSON(
-        value = AsyncApiConstants.AVRO_V_1_9_0_JSON,
+        value = "application/vnd.apache.avro+json;version=1.9.0",
         family = SchemaFormatFamily.AVRO,
     ),
     AVRO_1_9_0_YAML(
-        value = AsyncApiConstants.AVRO_V_1_9_0_YAML,
+        value = "application/vnd.apache.avro+yaml;version=1.9.0",
         family = SchemaFormatFamily.AVRO,
     ),
     OPENAPI_3_0_0(
-        value = AsyncApiConstants.OPENAPI_V_3_0_0,
+        value = "application/vnd.oai.openapi;version=3.0.0",
         family = SchemaFormatFamily.OPENAPI,
     ),
     OPENAPI_3_0_0_JSON(
-        value = AsyncApiConstants.OPENAPI_V_3_0_0_JSON,
+        value = "application/vnd.oai.openapi+json;version=3.0.0",
         family = SchemaFormatFamily.OPENAPI,
     ),
     OPENAPI_3_0_0_YAML(
-        value = AsyncApiConstants.OPENAPI_V_3_0_0_YAML,
+        value = "application/vnd.oai.openapi+yaml;version=3.0.0",
         family = SchemaFormatFamily.OPENAPI,
     ),
     RAML_1_0_YAML(
-        value = AsyncApiConstants.RAML_V_1_0_YAML,
+        value = "application/raml+yaml;version=1.0",
         family = SchemaFormatFamily.RAML,
     ),
     PROTOBUF_2(
-        value = AsyncApiConstants.PROTOBUF_V_2,
+        value = "application/vnd.google.protobuf;version=2",
         family = SchemaFormatFamily.PROTOBUF,
     ),
     PROTOBUF_3(
-        value = AsyncApiConstants.PROTOBUF_V_3,
+        value = "application/vnd.google.protobuf;version=3",
         family = SchemaFormatFamily.PROTOBUF,
     ),
     ;

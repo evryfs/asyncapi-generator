@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.parser.asyncapi
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.fixtures.modelAt
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
@@ -43,7 +42,7 @@ class AsyncApiParserTest {
         assertEquals(8, assertNotNull(result.channels).size)
         assertEquals(4, assertNotNull(result.operations).size)
 
-        val components = assertIs<ComponentInterface.ComponentInline>(result.components).component
+        val components = assertNotNull(result.components)
         assertEquals(15, assertNotNull(components.schemas).size)
         assertEquals(4, assertNotNull(components.messages).size)
         assertEquals(8, assertNotNull(components.securitySchemes).size)
@@ -127,7 +126,7 @@ class AsyncApiParserTest {
         val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
         val asyncApi = parser.parse(rootNode)
-        val components = assertIs<ComponentInterface.ComponentInline>(asyncApi.components).component
+        val components = assertNotNull(asyncApi.components)
         val schemas = assertNotNull(components.schemas)
 
         val lightMeasuredPayloadSchema =

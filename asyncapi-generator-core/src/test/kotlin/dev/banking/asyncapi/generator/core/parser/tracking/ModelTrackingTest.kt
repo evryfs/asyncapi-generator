@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.parser.tracking
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.modelAt
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -67,7 +66,7 @@ class ModelTrackingTest {
             )
         val root = ParserNodeFactory.root(SourceReader.read(source), context)
         val document = AsyncApiParser(context).parse(root)
-        val components = assertIs<ComponentInterface.ComponentInline>(document.components).component
+        val components = assertNotNull(document.components)
         val schemas = assertNotNull(components.schemas)
 
         fun resolvedSchema(referenceName: String): Schema {

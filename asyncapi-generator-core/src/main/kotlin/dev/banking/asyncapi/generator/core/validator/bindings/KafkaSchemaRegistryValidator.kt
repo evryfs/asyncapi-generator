@@ -153,8 +153,8 @@ internal class KafkaSchemaRegistryValidator(
 
     private fun resolveMessageTrait(trait: MessageTraitInterface): MessageTrait? =
         when (trait) {
-            is MessageTraitInterface.InlineMessageTrait -> trait.trait
-            is MessageTraitInterface.ReferenceMessageTrait -> resolveReference(trait.reference) as? MessageTrait
+            is MessageTraitInterface.MessageTraitInline -> trait.messageTrait
+            is MessageTraitInterface.MessageTraitReference -> resolveReference(trait.reference) as? MessageTrait
         }
 
     private fun resolveServer(server: ServerInterface): Server? =

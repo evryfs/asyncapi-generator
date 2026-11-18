@@ -31,10 +31,10 @@ internal class MessageTraitValidator(
         results: ValidationCollector,
     ) {
         when (node) {
-            is MessageTraitInterface.InlineMessageTrait ->
-                validate(node.trait, contextString, results)
+            is MessageTraitInterface.MessageTraitInline ->
+                validate(node.messageTrait, contextString, results)
 
-            is MessageTraitInterface.ReferenceMessageTrait ->
+            is MessageTraitInterface.MessageTraitReference ->
                 referenceResolver.resolve(node.reference, MESSAGE_TRAIT, contextString, results)
         }
     }

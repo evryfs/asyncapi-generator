@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.bundler.components
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -50,27 +49,5 @@ class ComponentBundlerTest {
             ).reference.inline,
         )
         assertFalse(correlationIdReference.inline, "the input reference is not changed")
-    }
-
-    @Test
-    fun `bundleComponents bundles and inlines an unvisited component reference`() {
-        val schemaReference = Reference("#/components/schemas/User", model = Schema(type = "object"))
-        val component =
-            Component(
-                schemas = mapOf("User" to SchemaInterface.SchemaReference(schemaReference)),
-            )
-        val componentReference = Reference("#/components", model = component)
-        val componentInterface = ComponentInterface.ComponentReference(componentReference)
-
-        val bundled =
-            assertIs<ComponentInterface.ComponentReference>(
-                bundler.bundleComponents(componentInterface, BundlingContext.empty()),
-            )
-
-        assertTrue(bundled.reference.inline)
-        val bundledComponent = assertIs<Component>(bundled.reference.model)
-        val bundledSchema = assertIs<SchemaInterface.SchemaReference>(bundledComponent.schemas!!["User"])
-        assertFalse(bundledSchema.reference.inline, "a component schema reference keeps its \$ref")
-        assertFalse(componentReference.inline, "the input reference is not changed")
     }
 }

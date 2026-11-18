@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.constants.RegexPatterns.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDER
 
 /** Spring-resolvable Kafka topic address used by generated client contracts. */
 @ConsistentCopyVisibility

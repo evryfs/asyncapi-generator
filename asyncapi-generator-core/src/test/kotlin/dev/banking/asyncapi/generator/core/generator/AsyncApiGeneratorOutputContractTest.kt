@@ -26,7 +26,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -511,35 +510,33 @@ class AsyncApiGeneratorOutputContractTest {
                 asyncapi = "3.0.0",
                 info = Info(title = "Schema collision", version = "1.0.0"),
                 components =
-                    ComponentInterface.ComponentInline(
-                        Component(
-                            schemas =
-                                mapOf(
-                                    "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
-                                ),
-                            messages =
-                                mapOf(
-                                    "account" to
-                                        MessageInterface.MessageInline(
-                                            Message(
-                                                name = "Account",
-                                                bindings =
-                                                    mapOf(
-                                                        "kafka" to
-                                                            BindingInterface.BindingInline(
-                                                                Binding(
-                                                                    content = emptyMap(),
-                                                                    kafkaKeySchema =
-                                                                        SchemaInterface.SchemaInline(
-                                                                            Schema(type = "object"),
-                                                                        ),
-                                                                ),
+                    Component(
+                        schemas =
+                            mapOf(
+                                "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                            ),
+                        messages =
+                            mapOf(
+                                "account" to
+                                    MessageInterface.MessageInline(
+                                        Message(
+                                            name = "Account",
+                                            bindings =
+                                                mapOf(
+                                                    "kafka" to
+                                                        BindingInterface.BindingInline(
+                                                            Binding(
+                                                                content = emptyMap(),
+                                                                kafkaKeySchema =
+                                                                    SchemaInterface.SchemaInline(
+                                                                        Schema(type = "object"),
+                                                                    ),
                                                             ),
-                                                    ),
-                                            ),
+                                                        ),
+                                                ),
                                         ),
-                                ),
-                        ),
+                                    ),
+                            ),
                     ),
             )
 
@@ -930,34 +927,32 @@ class AsyncApiGeneratorOutputContractTest {
             asyncapi = "3.0.0",
             info = Info(title = "Render order", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            linkedMapOf(
-                                "Task" to
-                                    SchemaInterface.SchemaInline(
-                                        Schema(
-                                            type = "object",
-                                            properties =
-                                                mapOf(
-                                                    "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
-                                                ),
-                                        ),
+                Component(
+                    schemas =
+                        linkedMapOf(
+                            "Task" to
+                                SchemaInterface.SchemaInline(
+                                    Schema(
+                                        type = "object",
+                                        properties =
+                                            mapOf(
+                                                "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                            ),
                                     ),
-                                "InvalidNative" to
-                                    SchemaInterface.MultiFormatSchemaInline(
-                                        MultiFormatSchema(
-                                            schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
-                                            schema =
-                                                mapOf(
-                                                    "type" to "record",
-                                                    "name" to "InvalidNative",
-                                                    "fields" to "not-a-field-list",
-                                                ),
-                                        ),
+                                ),
+                            "InvalidNative" to
+                                SchemaInterface.MultiFormatSchemaInline(
+                                    MultiFormatSchema(
+                                        schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
+                                        schema =
+                                            mapOf(
+                                                "type" to "record",
+                                                "name" to "InvalidNative",
+                                                "fields" to "not-a-field-list",
+                                            ),
                                     ),
-                            ),
-                    ),
+                                ),
+                        ),
                 ),
         )
 
@@ -966,13 +961,11 @@ class AsyncApiGeneratorOutputContractTest {
             asyncapi = "3.0.0",
             info = Info(title = "Scalar schema", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            mapOf(
-                                "Status" to SchemaInterface.SchemaInline(Schema(type = "string")),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        mapOf(
+                            "Status" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        ),
                 ),
         )
 
@@ -1019,14 +1012,12 @@ class AsyncApiGeneratorOutputContractTest {
             asyncapi = "3.0.0",
             info = Info(title = "Boolean schemas", version = "1.0.0"),
             components =
-                ComponentInterface.ComponentInline(
-                    Component(
-                        schemas =
-                            linkedMapOf(
-                                "AllowAnything" to SchemaInterface.BooleanSchema(true),
-                                "DenyAnything" to SchemaInterface.BooleanSchema(false),
-                            ),
-                    ),
+                Component(
+                    schemas =
+                        linkedMapOf(
+                            "AllowAnything" to SchemaInterface.BooleanSchema(true),
+                            "DenyAnything" to SchemaInterface.BooleanSchema(false),
+                        ),
                 ),
         )
 

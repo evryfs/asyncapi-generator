@@ -27,8 +27,8 @@ internal object MessageHeaderAnalyzer {
         message.traits?.forEach { traitInterface ->
             val trait =
                 when (traitInterface) {
-                    is MessageTraitInterface.InlineMessageTrait -> traitInterface.trait
-                    is MessageTraitInterface.ReferenceMessageTrait -> traitInterface.reference.model as? MessageTrait
+                    is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
+                    is MessageTraitInterface.MessageTraitReference -> traitInterface.reference.model as? MessageTrait
                 }
             trait?.headers?.let { headers.putAll(extractProperties(it)) }
         }
@@ -44,8 +44,8 @@ internal object MessageHeaderAnalyzer {
         message.traits?.forEach { traitInterface ->
             val trait =
                 when (traitInterface) {
-                    is MessageTraitInterface.InlineMessageTrait -> traitInterface.trait
-                    is MessageTraitInterface.ReferenceMessageTrait -> traitInterface.reference.model as? MessageTrait
+                    is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
+                    is MessageTraitInterface.MessageTraitReference -> traitInterface.reference.model as? MessageTrait
                 }
             trait?.headers?.let { required.addAll(extractRequiredProperties(it)) }
         }

@@ -6,7 +6,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -47,18 +46,16 @@ class AsyncApiDocumentSerializerTest {
                             ),
                     ),
                 components =
-                    ComponentInterface.ComponentInline(
-                        Component(
-                            schemas =
-                                linkedMapOf(
-                                    "SampleSchema" to
-                                        SchemaInterface.SchemaInline(
-                                            Schema(
-                                                type = listOf("string", "null"),
-                                            ),
+                    Component(
+                        schemas =
+                            linkedMapOf(
+                                "SampleSchema" to
+                                    SchemaInterface.SchemaInline(
+                                        Schema(
+                                            type = listOf("string", "null"),
                                         ),
-                                ),
-                        ),
+                                    ),
+                            ),
                     ),
             )
 

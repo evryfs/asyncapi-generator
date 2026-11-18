@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
@@ -27,7 +26,7 @@ internal object AsyncApiSchemaLoader {
     fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas {
         val sourceModels = SourceModelRegistry()
         val contractDeclarations = ContractDeclarationRegistry()
-        val componentNode = resolveComponent(asyncApiDocument.components)
+        val componentNode = asyncApiDocument.components
         val usageIndex = collectSchemaUsage(asyncApiDocument)
         componentNode?.schemas?.forEach { (name, schemaInterface) ->
             val schemaName = MapperUtil.toPascalCase(name)
@@ -161,13 +160,6 @@ internal object AsyncApiSchemaLoader {
                 ),
         )
     }
-
-    private fun resolveComponent(componentInterface: ComponentInterface?): Component? =
-        when (componentInterface) {
-            is ComponentInterface.ComponentInline -> componentInterface.component
-            is ComponentInterface.ComponentReference -> componentInterface.reference.model as? Component
-            null -> null
-        }
 
     private fun collectMessages(
         asyncApiDocument: AsyncApiDocument,
@@ -328,8 +320,8 @@ internal object AsyncApiSchemaLoader {
                 message.traits?.forEach { traitInterface ->
                     val trait =
                         when (traitInterface) {
-                            is MessageTraitInterface.InlineMessageTrait -> traitInterface.trait
-                            is MessageTraitInterface.ReferenceMessageTrait ->
+                            is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
+                            is MessageTraitInterface.MessageTraitReference ->
                                 traitInterface.reference.model as? MessageTrait
                         } ?: return@forEach
                     trait.headers?.let { collectFromSchemaInterface(it, headerNames, mutableSetOf()) }

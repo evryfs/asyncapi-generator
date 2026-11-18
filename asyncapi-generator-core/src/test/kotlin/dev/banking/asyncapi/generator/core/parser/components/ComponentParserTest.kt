@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.parser.components
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
-import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
@@ -24,7 +23,7 @@ class ComponentParserTest {
                 .expectObject()
                 .required("components")
 
-        val component = assertIs<ComponentInterface.ComponentInline>(parser.parseElement(componentsNode)).component
+        val component = assertNotNull(parser.parse(componentsNode))
 
         assertNotNull(component.schemas, "Schemas should be parsed")
         assertTrue(component.schemas.containsKey("MySchema"))
