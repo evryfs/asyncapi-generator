@@ -11,8 +11,8 @@ val document = SourceReader.read(file)
 `SourceReader.read(file)` is the reader-stage entry point. It:
 
 1. Detects the format from the file extension (`.yaml`/`.yml` → YAML, `.json` → JSON).
-2. Reads the content within `DocumentReaderLimits.DEFAULT` byte limits.
-3. Creates a `DocumentSource` with the file's identity and content.
+2. Reads the content within the document byte limit from `SourceLimits`.
+3. Creates a `DocumentSource` with the file, content, and format.
 4. Delegates to `YamlDocumentReader` or `JsonDocumentReader`.
 5. Returns an `InputDocument` containing the source and root node tree.
 

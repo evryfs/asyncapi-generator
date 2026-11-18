@@ -116,7 +116,7 @@ class JsonDocumentReaderTest {
     fun `normalizes nesting limit failures`() {
         val constrainedReader =
             JsonDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
+                SourceLimits(maxNestingDepth = 2),
             )
         val file = TestResources.file("reader/json/invalid-root.json")
         val source =

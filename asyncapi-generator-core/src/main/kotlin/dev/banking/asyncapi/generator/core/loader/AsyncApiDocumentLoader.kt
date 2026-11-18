@@ -29,7 +29,7 @@ class AsyncApiDocumentLoader {
 
     fun load(file: File): AsyncApiDocumentLoadResult {
         val context = AsyncApiContext()
-        val inputDocument = SourceReader.read(file)
+        val inputDocument = SourceReader.read(file, context.sourceLimits)
         val root = ParserNodeFactory.root(inputDocument, context)
         val document = AsyncApiParser(context).parse(root)
         val validationResults = AsyncApiValidator(context).validate(document)
@@ -50,7 +50,7 @@ class AsyncApiDocumentLoader {
         return AsyncApiDocumentLoadResult(
             document = document,
             warnings = warnings,
-            sourceFiles = context.resourceBudget.sourceFiles(),
+            sourceFiles = context.sourceBudget.sourceFiles(),
             formattedWarnings = formattedWarnings,
         )
     }

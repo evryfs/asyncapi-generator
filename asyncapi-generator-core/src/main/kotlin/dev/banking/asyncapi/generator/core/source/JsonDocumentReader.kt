@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.exc.StreamConstraintsException
  * @param limits resource limits enforced during parsing
  */
 internal class JsonDocumentReader(
-    private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
+    private val limits: SourceLimits = SourceLimits(),
 ) {
     private val jsonFactory: JsonFactory =
         JsonFactoryBuilder()

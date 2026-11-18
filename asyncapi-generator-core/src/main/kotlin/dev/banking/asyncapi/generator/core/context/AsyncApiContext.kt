@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -8,6 +7,8 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.registry.AsyncApiRegistry
 import dev.banking.asyncapi.generator.core.repository.ModelRepository
 import dev.banking.asyncapi.generator.core.repository.SourceRepository
+import dev.banking.asyncapi.generator.core.source.SourceBudget
+import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
@@ -18,16 +19,17 @@ import java.io.File
  *
  * A new context is created for each call to [dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader.load].
  *
- * @param loadResourceLimits configurable thresholds for document sizes, external references, and schema reads
+ * @param sourceLimits limits for reading the documents and native schema assets of this load
  */
-internal class AsyncApiContext internal constructor(
-    loadResourceLimits: ParserLoadResourceLimits,
+internal class AsyncApiContext(
+    val sourceLimits: SourceLimits = SourceLimits(),
 ) {
-    constructor() : this(ParserLoadResourceLimits())
-
     val sourceTracking = SourceTracking()
     val modelTracking = ModelTracking(sourceTracking)
-    val resourceBudget = ResourceBudget(loadResourceLimits)
+    val sourceBudget =
+        SourceBudget(sourceLimits) { diagnostic ->
+            throw AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
+        }
     val bindingRegistry = BindingReferenceRegistry()
     val warningCollector = ValidationWarningCollector()
 
@@ -36,9 +38,7 @@ internal class AsyncApiContext internal constructor(
             sourceTracking = sourceTracking,
             modelTracking = modelTracking,
             warningCollector = warningCollector,
-            registerExternalDocument = { file, location -> registerExternalDocument(file, location) },
-            registerReferenceTarget = { file, pointer, location -> registerReferenceTarget(file, pointer, location) },
-            withinExternalReference = { location, block -> withinExternalReference(location, block) },
+            sourceBudget = sourceBudget,
             createParser = { AsyncApiParser(this) },
             createValidator = { AsyncApiValidator(this) },
             createReporter = { ValidationReporter(this) },
@@ -69,65 +69,7 @@ internal class AsyncApiContext internal constructor(
         location: SourceLocation,
     ): String {
         val sourceId = sourceTracking.registerSourceAndGetPathId(file, content)
-        val result = resourceBudget.registerDocument(file, content, location)
-        enforceBudgetResult(result, location)
+        sourceBudget.registerDocument(file, content, location)
         return sourceId
     }
-
-    internal fun registerExternalDocument(
-        file: File,
-        location: SourceLocation,
-    ) {
-        val result = resourceBudget.registerExternalDocument(file, location)
-        enforceBudgetResult(result, location)
-    }
-
-    internal fun registerReferenceTarget(
-        file: File,
-        pointer: String,
-        location: SourceLocation,
-    ) {
-        val result = resourceBudget.registerReferenceTarget(file, pointer, location)
-        enforceBudgetResult(result, location)
-    }
-
-    internal fun <T> withinExternalReference(
-        location: SourceLocation,
-        block: () -> T,
-    ): T =
-        when (val result = resourceBudget.withinExternalReference(location, block)) {
-            is ResourceBudgetResult.Success -> result.value
-            is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
-        }
-
-    @Throws(java.io.IOException::class)
-    internal fun readNativeSchemaAsset(
-        file: File,
-        location: SourceLocation,
-        path: String,
-    ): String =
-        when (val result = resourceBudget.readNativeSchemaAsset(file, location, path)) {
-            is ResourceBudgetResult.Success -> result.value
-            is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
-        }
-
-    private fun enforceBudgetResult(
-        result: ResourceBudgetResult<Unit>,
-        location: SourceLocation,
-    ) {
-        if (result is ResourceBudgetResult.LimitExceeded) throwBudgetLimit(result)
-    }
-
-    private fun throwBudgetLimit(result: ResourceBudgetResult.LimitExceeded): Nothing =
-        throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic =
-                ParserDiagnostic.LoadResourceLimitExceeded(
-                    limit = result.limit,
-                    maximum = result.maximum,
-                    observed = result.observed,
-                    path = result.path,
-                    sourceLocation = result.sourceLocation,
-                ),
-            context = this,
-        )
 }

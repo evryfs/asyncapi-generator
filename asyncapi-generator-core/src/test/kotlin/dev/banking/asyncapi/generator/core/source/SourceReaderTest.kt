@@ -90,4 +90,19 @@ class SourceReaderTest {
         assertNotNull(failure.cause)
         assertTrue(failure.message.orEmpty().endsWith(file.absolutePath))
     }
+
+    @Test
+    fun `stops reading a file that exceeds the document byte limit`() {
+        val file = tempDir.resolve("oversized.yaml").toFile()
+        file.writeText("123456789")
+
+        val failure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                SourceReader.read(file, SourceLimits(maxDocumentBytes = 8, maxDocumentCharacters = 8))
+            }
+        assertEquals(file, failure.file)
+        assertEquals(DocumentResourceLimit.DOCUMENT_BYTES, failure.limit)
+        assertEquals(8L, failure.maximum)
+        assertTrue(failure.message.orEmpty().contains(file.absolutePath))
+    }
 }

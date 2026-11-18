@@ -26,7 +26,7 @@ import java.util.IdentityHashMap
  * @param limits resource limits enforced during parsing
  */
 internal class YamlDocumentReader(
-    private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
+    private val limits: SourceLimits = SourceLimits(),
 ) {
     private val yaml =
         Yaml(

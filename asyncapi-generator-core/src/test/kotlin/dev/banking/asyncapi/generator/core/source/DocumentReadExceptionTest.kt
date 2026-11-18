@@ -89,7 +89,7 @@ class DocumentReadExceptionTest {
             )
         val constrainedReader =
             YamlDocumentReader(
-                DocumentReaderLimits.DEFAULT.copy(maxNumberCharacters = 4),
+                SourceLimits(maxNumberCharacters = 4),
             )
 
         val failure =
