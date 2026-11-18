@@ -3,6 +3,9 @@
 # Size and documentation rules apply to production code only; tests follow
 # their own structure (given/when/then, approval fixtures).
 complexity:
+  CyclomaticComplexMethod:
+    # A `when` whose branches are single expressions is a lookup, not branching logic.
+    ignoreSimpleWhenEntries: true
   LargeClass:
     threshold: 250
     excludes: ['**/test/**']

@@ -31,8 +31,8 @@ internal class OperationReplyParser(
         ) { objectNode ->
             OperationReply(
                 address = objectNode.optional("address")?.let(operationReplyAddressParser::parseElement),
-                channel = objectNode.optional("channel")?.let { referenceParser.parseElement(it, CHANNEL) },
-                messages = objectNode.optional("messages")?.let { referenceParser.parseList(it, MESSAGE) },
+                channel = objectNode.optional("channel")?.let(referenceParser::parseChannel),
+                messages = objectNode.optional("messages")?.let(referenceParser::parseMessages),
                 extensions = objectNode.extensions(),
             )
         }

@@ -2,9 +2,8 @@ package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.external.ParsedReferences
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.tracking.ModelTracking
 import dev.banking.asyncapi.generator.core.parser.tracking.NodeLocations
 import dev.banking.asyncapi.generator.core.parser.tracking.SourceTracking
@@ -12,13 +11,11 @@ import dev.banking.asyncapi.generator.core.source.SourceBudget
 import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceLocation
-import dev.banking.asyncapi.generator.core.source.SourceReader
-import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
 /**
- * Mutable context shared across the parser, external loader, and validator stages.
+ * The state of one load: its sources, the location of every node and model, its references and its
+ * resource budget.
  *
  * A new context is created for each call to [dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader.load].
  *
@@ -30,41 +27,32 @@ internal class AsyncApiContext(
     val sourceTracking = SourceTracking()
     val nodeLocations = NodeLocations()
     val modelTracking = ModelTracking(sourceTracking, nodeLocations)
+    val parsedReferences = ParsedReferences()
     val sourceBudget =
         SourceBudget(sourceLimits) { diagnostic ->
             throw AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
         }
-    val bindingRegistry = BindingReferenceRegistry()
-    val warningCollector = ValidationWarningCollector()
 
-    val externalLoader =
-        AsyncApiExternalContext(
-            sourceTracking = sourceTracking,
-            modelTracking = modelTracking,
-            warningCollector = warningCollector,
-            sourceBudget = sourceBudget,
-            createParser = { AsyncApiParser(this) },
-            createValidator = { AsyncApiValidator(this) },
-            createReporter = { ValidationReporter(this) },
-            createFragmentProcessor = { ExternalFragmentProcessor(this) },
-            createDiagnosticException = { diagnostic ->
-                AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
-            },
-            readDocument = { file -> ParserNodeFactory.root(SourceReader.read(file, sourceLimits), this) },
-        )
-
+    /** Records that [model] was parsed from [node]. */
     fun register(
         model: Any,
         node: ParserNode,
     ) {
         modelTracking.register(model, node)
-
-        if (model is Reference) {
-            externalLoader.loadExternal(model)
-        }
     }
 
-    internal fun registerDocumentSource(
+    /** Records that [reference] was parsed from [node] and that [parseTarget] parses the node it points at. */
+    fun registerReference(
+        reference: Reference,
+        node: ParserNode,
+        parseTarget: (ParserNode) -> Any,
+    ) {
+        modelTracking.register(reference, node)
+        parsedReferences.add(reference, parseTarget)
+    }
+
+    /** Registers a source document of this load and returns its id. */
+    fun registerDocumentSource(
         file: File,
         content: String,
         location: SourceLocation,

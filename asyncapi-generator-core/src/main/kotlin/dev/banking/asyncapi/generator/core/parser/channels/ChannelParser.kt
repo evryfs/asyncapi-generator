@@ -46,7 +46,7 @@ internal class ChannelParser(
                 title = objectNode.optional("title")?.expect<String>(),
                 summary = objectNode.optional("summary")?.expect<String>(),
                 description = objectNode.optional("description")?.expect<String>(),
-                servers = objectNode.optional("servers")?.let { referenceParser.parseList(it, SERVER) },
+                servers = objectNode.optional("servers")?.let(referenceParser::parseServers),
                 parameters = objectNode.optional("parameters")?.parseMap(parameterParser::parseElement),
                 tags = objectNode.optional("tags")?.parseList(tagParser::parseElement),
                 externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),

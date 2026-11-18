@@ -1,5 +1,6 @@
-package dev.banking.asyncapi.generator.core.context
+package dev.banking.asyncapi.generator.core.parser.external
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.fixtures.modelAt
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
@@ -27,12 +28,14 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import dev.banking.asyncapi.generator.core.source.SourceLimits
 import dev.banking.asyncapi.generator.core.source.SourceReader
+import dev.banking.asyncapi.generator.core.validator.LoadedTargetValidator
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -44,13 +47,12 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ExternalReferenceLoadingTest {
+class ExternalReferenceLoaderTest {
     @TempDir
     lateinit var tempDir: Path
 
     private val context = AsyncApiContext()
     private val schemaParser = SchemaParser(context)
-    private val documentParser = AsyncApiParser(context)
 
     @Test
     fun `loads escaped pointers root schemas and equivalent yaml and json fragments`() {
@@ -64,6 +66,7 @@ class ExternalReferenceLoadingTest {
                 .expectObject()
                 .required("schemas")
         val schemas = schemasNode.parseMap(schemaParser::parseElement)
+        ExternalReferenceLoader(context).loadAll()
 
         val escapedReference =
             assertIs<SchemaInterface.SchemaReference>(
@@ -136,6 +139,7 @@ class ExternalReferenceLoadingTest {
                 .expectObject()
                 .required("schemas")
         val schemas = schemasNode.parseMap(schemaParser::parseElement)
+        ExternalReferenceLoader(context).loadAll()
 
         val leftReference =
             assertIs<SchemaInterface.SchemaReference>(
@@ -166,7 +170,7 @@ class ExternalReferenceLoadingTest {
         val file = TestResources.file("parser/references/external/message-main.yaml")
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
-        documentParser.parse(root)
+        load(root)
 
         val reference =
             assertIs<Reference>(
@@ -195,7 +199,7 @@ class ExternalReferenceLoadingTest {
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
-        documentParser.parse(root)
+        load(root)
         assertIs<Schema>(context.modelAt("category_fragments.root.schema"))
         assertIs<Channel>(context.modelAt("category_fragments.root.channel"))
         assertIs<Message>(context.modelAt("category_fragments.root.message"))
@@ -227,7 +231,7 @@ class ExternalReferenceLoadingTest {
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
-        documentParser.parse(root)
+        load(root)
 
         val binding =
             assertIs<Binding>(
@@ -252,7 +256,7 @@ class ExternalReferenceLoadingTest {
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
 
-        documentParser.parse(root)
+        load(root)
         val selected = assertIs<Schema>(context.modelAt("heterogeneous_fragments.root.selectedSchema"))
         assertEquals("Only this selected schema should be parsed", selected.description)
         assertFalse((context.modelAt("heterogeneous_fragments.root.notASchema") != null))
@@ -276,7 +280,7 @@ class ExternalReferenceLoadingTest {
         val file = TestResources.file("parser/references/external/external-fragment-cycle-main.yaml")
         val root = ParserNodeFactory.root(SourceReader.read(file), context)
 
-        val error = assertFailsWith<AsyncApiValidateException.ValidateError> { documentParser.parse(root) }
+        val error = assertFailsWith<AsyncApiValidateException.ValidateError> { load(root) }
 
         assertTrue("cycle" in error.message.orEmpty(), error.message)
     }
@@ -289,7 +293,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                documentParser.parse(root)
+                load(root)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceTargetNotFound>(error.diagnostic)
@@ -304,7 +308,7 @@ class ExternalReferenceLoadingTest {
         val file = TestResources.file("parser/references/external/message-root-main.yaml")
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
-        documentParser.parse(root)
+        load(root)
 
         val reference =
             assertIs<Reference>(
@@ -326,7 +330,7 @@ class ExternalReferenceLoadingTest {
         val file = TestResources.file("parser/references/external/server-root-main.yaml")
         val document = SourceReader.read(file)
         val root = ParserNodeFactory.root(document, context)
-        documentParser.parse(root)
+        load(root)
 
         val reference =
             assertIs<Reference>(
@@ -351,7 +355,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                documentParser.parse(root)
+                load(root)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
@@ -378,6 +382,7 @@ class ExternalReferenceLoadingTest {
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 schemaParser.parseElement(schemaNode)
+                ExternalReferenceLoader(context).loadAll()
             }
 
         val diagnostic = assertIs<ParserDiagnostic.InvalidReference>(error.diagnostic)
@@ -407,6 +412,7 @@ class ExternalReferenceLoadingTest {
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 schemaParser.parseElement(schemaNode)
+                ExternalReferenceLoader(context).loadAll()
             }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceDocumentNotFound>(error.diagnostic)
@@ -436,6 +442,7 @@ class ExternalReferenceLoadingTest {
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
                 schemaParser.parseElement(schemaNode)
+                ExternalReferenceLoader(context).loadAll()
             }
 
         val diagnostic = assertIs<ParserDiagnostic.ReferenceTargetNotFound>(error.diagnostic)
@@ -473,7 +480,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                AsyncApiParser(limitedContext).parse(root)
+                load(root, limitedContext)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
@@ -526,7 +533,7 @@ class ExternalReferenceLoadingTest {
                 repeatedContext,
             )
 
-        AsyncApiParser(repeatedContext).parse(repeatedRoot)
+        load(repeatedRoot, repeatedContext)
 
         val distinctMain = tempDir.resolve("distinct-main.yaml").toFile()
         distinctMain.writeText(
@@ -547,7 +554,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                AsyncApiParser(distinctContext).parse(distinctRoot)
+                load(distinctRoot, distinctContext)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
@@ -586,7 +593,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                AsyncApiParser(limitedContext).parse(limitedRoot)
+                load(limitedRoot, limitedContext)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
@@ -608,7 +615,7 @@ class ExternalReferenceLoadingTest {
         val cyclicRoot = ParserNodeFactory.root(SourceReader.read(main), cyclicContext)
 
         val cycle =
-            assertFailsWith<AsyncApiValidateException.ValidateError> { AsyncApiParser(cyclicContext).parse(cyclicRoot) }
+            assertFailsWith<AsyncApiValidateException.ValidateError> { load(cyclicRoot, cyclicContext) }
         assertTrue("cycle" in cycle.message.orEmpty(), cycle.message)
     }
 
@@ -641,7 +648,7 @@ class ExternalReferenceLoadingTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                AsyncApiParser(limitedContext).parse(root)
+                load(root, limitedContext)
             }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
@@ -649,5 +656,14 @@ class ExternalReferenceLoadingTest {
         assertEquals(mainBytes + fragmentBytes - 1, diagnostic.maximum)
         assertEquals(mainBytes + fragmentBytes, diagnostic.observed)
         assertEquals("aggregate_main.root.components.schemas.External.\$ref", diagnostic.path)
+    }
+
+    /** Parses [root], loads the targets of its references and validates them, as a load does. */
+    private fun load(
+        root: ParserNode,
+        loadContext: AsyncApiContext = context,
+    ) {
+        AsyncApiParser(loadContext).parse(root)
+        LoadedTargetValidator(loadContext).validate(ExternalReferenceLoader(loadContext).loadAll())
     }
 }

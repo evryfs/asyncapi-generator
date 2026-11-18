@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.LoadedTargetValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
@@ -19,9 +20,14 @@ internal class ValidatorFixtures(
     private val parserFixtures = ParserFixtures(context)
     private val validator = AsyncApiValidator(context)
 
-    fun document(path: String): AsyncApiDocument = parserFixtures.document(path)
+    fun document(path: String): AsyncApiDocument = document(TestResources.file(path))
 
-    fun document(file: File): AsyncApiDocument = parserFixtures.document(file)
+    /** Parses [file], loads the targets of its references and validates those targets. */
+    fun document(file: File): AsyncApiDocument {
+        val (document, targets) = parserFixtures.loaded(file)
+        LoadedTargetValidator(context).validate(targets)
+        return document
+    }
 
     fun validate(document: AsyncApiDocument): ValidationReport = validator.validate(document)
 
