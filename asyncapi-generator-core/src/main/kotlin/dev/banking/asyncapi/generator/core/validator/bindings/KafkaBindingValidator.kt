@@ -130,21 +130,21 @@ internal class KafkaBindingValidator(
         version: String?,
         results: ValidationCollector,
     ) {
-        val sourceModel = configuration
+        val parent = "topicConfiguration"
         if (version == VERSION_0_4) {
-            validateAllowedFields(binding, configuration, TOPIC_CONFIGURATION_0_4_FIELDS, results, sourceModel)
+            validateAllowedFields(binding, configuration, TOPIC_CONFIGURATION_0_4_FIELDS, results, parent)
         }
         TOPIC_CONFIGURATION_INTEGER_FIELDS.forEach { field ->
-            validateInteger(binding, configuration, field, results, sourceModel)
+            validateInteger(binding, configuration, field, results, parent)
         }
-        validateCleanupPolicy(binding, configuration, results, sourceModel)
+        validateCleanupPolicy(binding, configuration, results, parent)
 
         if (version == VERSION_0_5) {
             TOPIC_CONFIGURATION_BOOLEAN_FIELDS.forEach { field ->
-                validateType(binding, configuration, field, "a boolean", results, sourceModel) { it is Boolean }
+                validateType(binding, configuration, field, "a boolean", results, parent) { it is Boolean }
             }
             TOPIC_CONFIGURATION_STRING_FIELDS.forEach { field ->
-                validateType(binding, configuration, field, "a string", results, sourceModel) { it is String }
+                validateType(binding, configuration, field, "a string", results, parent) { it is String }
             }
         }
     }
@@ -153,7 +153,7 @@ internal class KafkaBindingValidator(
         binding: ProtocolBinding,
         configuration: Map<String, Any?>,
         results: ValidationCollector,
-        sourceModel: Any,
+        parent: String,
     ) {
         if (!configuration.containsKey(CLEANUP_POLICY)) return
         val value = configuration[CLEANUP_POLICY]
@@ -162,7 +162,7 @@ internal class KafkaBindingValidator(
             results.error(
                 KAFKA_CLEANUP_POLICY,
                 "Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' and/or 'compact'.",
-                sourceLocation = location(sourceModel, binding, CLEANUP_POLICY),
+                sourceLocation = location(binding, parent, CLEANUP_POLICY),
             )
         }
     }
@@ -205,7 +205,7 @@ internal class KafkaBindingValidator(
         properties: Map<String, Any?>,
         allowedFields: Set<String>,
         results: ValidationCollector,
-        sourceModel: Any = binding,
+        parent: String? = null,
     ) {
         properties.keys
             .filterNot { it in allowedFields || it.startsWith("x-") }
@@ -213,7 +213,7 @@ internal class KafkaBindingValidator(
                 results.error(
                     KAFKA_BINDING_FIELD,
                     "Kafka ${binding.location.name.lowercase()} binding does not define property '$field'.",
-                    sourceLocation = location(sourceModel, binding, field),
+                    sourceLocation = location(binding, parent, field),
                 )
             }
     }
@@ -246,8 +246,8 @@ internal class KafkaBindingValidator(
         properties: Map<String, Any?>,
         field: String,
         results: ValidationCollector,
-        sourceModel: Any,
-    ) = validateType(binding, properties, field, "an integer", results, sourceModel, ::isInteger)
+        parent: String,
+    ) = validateType(binding, properties, field, "an integer", results, parent, ::isInteger)
 
     private fun validateType(
         binding: ProtocolBinding,
@@ -255,14 +255,14 @@ internal class KafkaBindingValidator(
         field: String,
         expected: String,
         results: ValidationCollector,
-        sourceModel: Any = binding,
+        parent: String? = null,
         predicate: (Any?) -> Boolean,
     ) {
         if (properties.containsKey(field) && !predicate(properties[field])) {
             results.error(
                 KAFKA_BINDING_FIELD_TYPE,
                 "Kafka ${binding.location.name.lowercase()} binding '$field' must be $expected.",
-                sourceLocation = location(sourceModel, binding, field),
+                sourceLocation = location(binding, parent, field),
             )
         }
     }
@@ -283,15 +283,17 @@ internal class KafkaBindingValidator(
     private fun location(
         binding: ProtocolBinding,
         field: String,
-    ) = asyncApiContext.modelTracking.getSourceLocation(binding, field)
-        ?: asyncApiContext.modelTracking.getSourceLocation(binding)
+    ) = location(binding, null, field)
 
     private fun location(
-        sourceModel: Any,
         binding: ProtocolBinding,
+        parent: String?,
         field: String,
-    ) = asyncApiContext.modelTracking.getSourceLocation(sourceModel, field)
-        ?: location(binding, "topicConfiguration")
+    ) = if (parent == null) {
+        asyncApiContext.modelTracking.getSourceLocation(binding, field)
+    } else {
+        asyncApiContext.modelTracking.getSourceLocation(binding, parent, field)
+    }
 
     private fun isInteger(value: Any?): Boolean = decimal(value)?.stripTrailingZeros()?.scale()?.let { it <= 0 } == true
 

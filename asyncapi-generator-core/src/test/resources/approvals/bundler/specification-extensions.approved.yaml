@@ -33,6 +33,10 @@ channels:
         payload:
           type: string
         name: Created
+        examples:
+          - payload: created
+            name: created
+            x-message-example: example-value
         x-message: message-value
     parameters:
       region:
@@ -69,6 +73,15 @@ components:
       type: apiKey
       in: user
       x-security-scheme: scheme-value
+    oauth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/token
+          availableScopes:
+            orders:read: Read orders
+          x-oauth-flow: flow-value
+        x-oauth-flows: flows-value
   correlationIds:
     traceId:
       location: $message.header#/traceId

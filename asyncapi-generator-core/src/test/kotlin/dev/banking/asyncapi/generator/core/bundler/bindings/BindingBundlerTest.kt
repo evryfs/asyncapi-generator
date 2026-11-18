@@ -153,7 +153,6 @@ class BindingBundlerTest {
         val key = schemaReference("key-schemas.yaml#/AccountKey", type = "object")
         return Binding(
             content = content,
-            kafkaKeySchema = key,
             protocolBindings =
                 listOf(
                     ProtocolBinding(

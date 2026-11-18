@@ -16,6 +16,7 @@ internal class MessageExampleParser {
                 payload = objectNode.optional("payload")?.toPlainValue(),
                 name = objectNode.optional("name")?.expect<String>(),
                 summary = objectNode.optional("summary")?.expect<String>(),
+                extensions = objectNode.extensions(),
             )
         }
 }

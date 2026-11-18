@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.fixtures.kafkaKeyBinding
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
@@ -401,10 +402,7 @@ class ChannelAnalyzerTest {
         mapOf(
             "kafka" to
                 BindingInterface.BindingInline(
-                    Binding(
-                        content = emptyMap(),
-                        kafkaKeySchema = SchemaInterface.SchemaInline(schema),
-                    ),
+                    kafkaKeyBinding(SchemaInterface.SchemaInline(schema)),
                 ),
         )
 }

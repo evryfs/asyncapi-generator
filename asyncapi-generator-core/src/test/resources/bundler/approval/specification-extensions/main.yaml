@@ -62,6 +62,15 @@ components:
       type: apiKey
       in: user
       x-security-scheme: scheme-value
+    oauth:
+      type: oauth2
+      flows:
+        x-oauth-flows: flows-value
+        clientCredentials:
+          tokenUrl: https://auth.example.com/token
+          availableScopes:
+            orders:read: Read orders
+          x-oauth-flow: flow-value
   messageTraits:
     Audited:
       x-message-trait: message-trait-value

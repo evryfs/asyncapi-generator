@@ -29,7 +29,6 @@
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectMessages( asyncApiDocument: AsyncApiDocument, component: Component?, ): List&lt;CollectedMessage&gt;</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
-    <ID>LongMethod:BindingBundler.kt$BindingBundler$private fun bundleBinding( binding: Binding, context: BundlingContext, ): Binding</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:ChannelValidator.kt$ChannelValidator$private fun validateAddress( node: Channel, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
@@ -93,7 +92,7 @@
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
     <ID>LongMethod:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
-    <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, sourceModel: Any = binding, predicate: (Any?) -&gt; Boolean, )</ID>
+    <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, parent: String? = null, predicate: (Any?) -&gt; Boolean, )</ID>
     <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, contextString: String, index: Int, results: ValidationCollector, )</ID>
     <ID>LongParameterList:OAuthFlowsValidator.kt$OAuthFlowsValidator$( flow: OAuthFlow, value: String?, fieldName: String, requiredRule: ValidationRule, formatRule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongParameterList:SchemaValidator.kt$SchemaValidator$( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
@@ -150,7 +149,6 @@
     <ID>ReturnCount:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$fun parse(value: String): AsyncApiSpecificationVersion?</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
-    <ID>ReturnCount:BindingParser.kt$BindingParser$private fun registerKafkaTopicConfiguration( content: Any?, parserNode: ParserNode, location: BindingLocation, protocol: String, )</ID>
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
@@ -240,7 +238,6 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:Binding.kt$Binding</ID>
     <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface</ID>
     <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingInline : BindingInterface</ID>
     <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingReference : BindingInterface</ID>
