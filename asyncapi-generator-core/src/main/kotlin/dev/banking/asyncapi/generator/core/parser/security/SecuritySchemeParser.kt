@@ -44,6 +44,7 @@ internal class SecuritySchemeParser {
                 password = objectNode.optional("password")?.let(::parseFlow),
                 clientCredentials = objectNode.optional("clientCredentials")?.let(::parseFlow),
                 authorizationCode = objectNode.optional("authorizationCode")?.let(::parseFlow),
+                extensions = objectNode.extensions(),
             )
         }
 
@@ -54,6 +55,7 @@ internal class SecuritySchemeParser {
                 tokenUrl = objectNode.optional("tokenUrl")?.expect<String>(),
                 refreshUrl = objectNode.optional("refreshUrl")?.expect<String>(),
                 availableScopes = objectNode.required("availableScopes").expect<Map<String, String>>(),
+                extensions = objectNode.extensions(),
             )
         }
 }

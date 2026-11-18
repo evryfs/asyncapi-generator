@@ -5,3 +5,7 @@ components:
       x-message: message-value
       payload:
         type: string
+      examples:
+        - name: created
+          payload: created
+          x-message-example: example-value
