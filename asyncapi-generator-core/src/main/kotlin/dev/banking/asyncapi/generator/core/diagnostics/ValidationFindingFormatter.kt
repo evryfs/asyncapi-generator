@@ -1,13 +1,9 @@
-package dev.banking.asyncapi.generator.core.validator.util
+package dev.banking.asyncapi.generator.core.diagnostics
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 
-/**
- * Formats validation findings for exceptions and logs.
- *
- * - validator package tests
- */
+/** Formats validation findings, each with a snippet of its source, for exceptions and logs. */
 internal object ValidationFindingFormatter {
     fun format(
         title: String,
@@ -24,9 +20,5 @@ internal object ValidationFindingFormatter {
     private fun snippet(
         finding: ValidationFinding,
         asyncApiContext: AsyncApiContext,
-    ): String {
-        finding.sourceLocation?.let { return asyncApiContext.sourceTracking.snippet(it) }
-        finding.path?.let { return asyncApiContext.snippet(it) }
-        return "(no source location available)"
-    }
+    ): String = finding.sourceLocation?.let(asyncApiContext.sourceTracking::snippet) ?: "(no source location available)"
 }
