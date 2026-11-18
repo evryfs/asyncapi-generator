@@ -3,6 +3,8 @@ package dev.banking.asyncapi.generator.core.model.references
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import java.util.Collections
+import java.util.IdentityHashMap
 
 /**
  * A `$ref` and, once resolved, the model it points at.
@@ -45,11 +47,19 @@ data class Reference(
 
     override fun toString(): String = "Reference(ref=$ref)"
 
-    inline fun <reified T> requireModel(): T {
-        var current: Any? = this.model
-        while (current is Reference) {
+    /** The model at the end of this reference's chain, or `null` when the chain is not linked or never ends. */
+    fun finalModel(): Any? {
+        val followed = Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
+        var current: Any? = this
+        while (current is Reference && followed.add(current)) {
             current = current.model
         }
-        return checkNotNull(current) { "Reference '$ref' is not linked to a model" } as T
+        return current?.takeUnless { it is Reference }
     }
+
+    /** The model at the end of this reference's chain; fails when the reference is not linked to a model. */
+    inline fun <reified T> requireModel(): T =
+        checkNotNull(finalModel()) {
+            "Reference '$ref' is not linked to a model"
+        } as T
 }

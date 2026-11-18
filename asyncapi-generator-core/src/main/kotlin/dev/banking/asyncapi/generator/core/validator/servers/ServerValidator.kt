@@ -36,15 +36,10 @@ internal class ServerValidator(
         name: String? = null,
     ) {
         if (name != null && !ValidationFormats.isReusableObjectName(name)) {
-            val model =
-                when (node) {
-                    is ServerInterface.ServerInline -> node.server
-                    is ServerInterface.ServerReference -> node.reference
-                }
             results.error(
                 SERVER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node.held()),
             )
         }
         when (node) {

@@ -17,7 +17,6 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_URL
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import java.util.Collections
 import java.util.IdentityHashMap
 
 /** Validates Kafka constraints that depend on the relationship between channels, messages, and servers. */
@@ -30,7 +29,7 @@ internal class KafkaSchemaRegistryValidator(
     ) {
         val rootServers =
             document.servers.orEmpty().mapNotNull { (name, server) ->
-                resolveServer(server)?.let { ApplicableServer(name, it) }
+                server.resolvedOrNull()?.let { ApplicableServer(name, it) }
             }
         val rootServerNames =
             IdentityHashMap<Server, String>().apply {
@@ -38,7 +37,7 @@ internal class KafkaSchemaRegistryValidator(
             }
 
         document.channels.orEmpty().forEach channels@{ (channelName, channelInterface) ->
-            val channel = resolveChannel(channelInterface) ?: return@channels
+            val channel = channelInterface.resolvedOrNull() ?: return@channels
             val applicableServers = applicableServers(channel, rootServers, rootServerNames)
             val missingRegistry =
                 applicableServers
@@ -50,7 +49,7 @@ internal class KafkaSchemaRegistryValidator(
             if (missingRegistry.isEmpty()) return@channels
 
             channel.messages.orEmpty().forEach messages@{ (messageName, messageInterface) ->
-                val message = resolveMessage(messageInterface) ?: return@messages
+                val message = messageInterface.resolvedOrNull() ?: return@messages
                 validateMessage(
                     message = message,
                     contextString = "Channel '$channelName' Message '$messageName'",
@@ -70,7 +69,7 @@ internal class KafkaSchemaRegistryValidator(
         if (selectedServers.isNullOrEmpty()) return rootServers
 
         return selectedServers.mapNotNull { reference ->
-            val server = resolveReference(reference) as? Server ?: return@mapNotNull null
+            val server = reference.finalModel() as? Server ?: return@mapNotNull null
             ApplicableServer(rootServerNames[server] ?: reference.ref, server)
         }
     }
@@ -107,13 +106,14 @@ internal class KafkaSchemaRegistryValidator(
         sequence {
             kafkaMessageBinding(message.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
             message.traits.orEmpty().forEach traits@{ traitInterface ->
-                val trait = resolveMessageTrait(traitInterface) ?: return@traits
+                val trait = traitInterface.resolvedOrNull() ?: return@traits
                 kafkaMessageBinding(trait.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
             }
         }
 
     private fun kafkaMessageBinding(bindingInterface: BindingInterface?): ProtocolBinding? =
-        resolveBinding(bindingInterface)
+        bindingInterface
+            ?.resolvedOrNull()
             ?.protocolBindings
             ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.MESSAGE }
 
@@ -122,7 +122,7 @@ internal class KafkaSchemaRegistryValidator(
             server.bindings?.get(KAFKA_BINDING)
                 ?: return SchemaRegistryStatus.ABSENT
         val binding =
-            resolveBinding(bindingInterface)
+            bindingInterface?.resolvedOrNull()
                 ?: return SchemaRegistryStatus.UNKNOWN
         val kafkaBinding =
             binding
@@ -137,46 +137,6 @@ internal class KafkaSchemaRegistryValidator(
         } else {
             SchemaRegistryStatus.ABSENT
         }
-    }
-
-    private fun resolveChannel(channel: ChannelInterface): Channel? =
-        when (channel) {
-            is ChannelInterface.ChannelInline -> channel.channel
-            is ChannelInterface.ChannelReference -> resolveReference(channel.reference) as? Channel
-        }
-
-    private fun resolveMessage(message: MessageInterface): Message? =
-        when (message) {
-            is MessageInterface.MessageInline -> message.message
-            is MessageInterface.MessageReference -> resolveReference(message.reference) as? Message
-        }
-
-    private fun resolveMessageTrait(trait: MessageTraitInterface): MessageTrait? =
-        when (trait) {
-            is MessageTraitInterface.MessageTraitInline -> trait.messageTrait
-            is MessageTraitInterface.MessageTraitReference -> resolveReference(trait.reference) as? MessageTrait
-        }
-
-    private fun resolveServer(server: ServerInterface): Server? =
-        when (server) {
-            is ServerInterface.ServerInline -> server.server
-            is ServerInterface.ServerReference -> resolveReference(server.reference) as? Server
-        }
-
-    private fun resolveBinding(binding: BindingInterface?): Binding? =
-        when (binding) {
-            is BindingInterface.BindingInline -> binding.binding
-            is BindingInterface.BindingReference -> resolveReference(binding.reference) as? Binding
-            null -> null
-        }
-
-    private fun resolveReference(reference: Reference): Any? {
-        val visited = Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
-        var target: Any? = reference
-        while (target is Reference && visited.add(target)) {
-            target = target.model ?: asyncApiContext.modelTracking.findReference(target)
-        }
-        return target?.takeUnless { it is Reference }
     }
 
     private data class ApplicableServer(

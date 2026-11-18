@@ -9,7 +9,7 @@ internal object OperationReferenceBoundary {
     fun containsChannel(
         channels: Map<String, ChannelInterface>,
         directTarget: Any?,
-    ): Boolean = channels.values.any { channel -> channel.ownedTarget() === directTarget }
+    ): Boolean = channels.values.any { channel -> channel.held() === directTarget }
 
     fun containsMessage(
         channel: Channel,
@@ -18,17 +18,5 @@ internal object OperationReferenceBoundary {
         channel.messages
             .orEmpty()
             .values
-            .any { message -> message.ownedTarget() === directTarget }
-
-    private fun ChannelInterface.ownedTarget(): Any =
-        when (this) {
-            is ChannelInterface.ChannelInline -> channel
-            is ChannelInterface.ChannelReference -> reference
-        }
-
-    private fun MessageInterface.ownedTarget(): Any =
-        when (this) {
-            is MessageInterface.MessageInline -> message
-            is MessageInterface.MessageReference -> reference
-        }
+            .any { message -> message.held() === directTarget }
 }

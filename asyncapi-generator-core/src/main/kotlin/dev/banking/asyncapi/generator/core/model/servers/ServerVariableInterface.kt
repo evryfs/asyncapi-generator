@@ -2,15 +2,35 @@ package dev.banking.asyncapi.generator.core.model.servers
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
-sealed interface ServerVariableInterface {
+/** A Server Variable Object written inline or as a `$ref`. */
+sealed interface ServerVariableInterface : ReferenceOr<ServerVariable> {
+    /**
+     * A Server Variable Object written inline.
+     *
+     * @property serverVariable the object
+     */
     data class ServerVariableInline(
         @get:JsonUnwrapped
         val serverVariable: ServerVariable,
-    ) : ServerVariableInterface
+    ) : ServerVariableInterface {
+        override fun resolvedOrNull(): ServerVariable = serverVariable
 
+        override fun held(): Any = serverVariable
+    }
+
+    /**
+     * A `$ref` to a Server Variable Object.
+     *
+     * @property reference the reference
+     */
     data class ServerVariableReference(
         @get:JsonUnwrapped
         val reference: Reference,
-    ) : ServerVariableInterface
+    ) : ServerVariableInterface {
+        override fun resolvedOrNull(): ServerVariable? = reference.finalModel() as? ServerVariable
+
+        override fun held(): Any = reference
+    }
 }
