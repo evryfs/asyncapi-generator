@@ -1,13 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentNumber
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -27,7 +19,7 @@ class JsonDocumentReaderTest {
                 id = "semantic-scalars",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
@@ -56,7 +48,7 @@ class JsonDocumentReaderTest {
                 id = "malformed",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
 
         val failure =
@@ -76,7 +68,7 @@ class JsonDocumentReaderTest {
                 id = "invalid-root",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
         val document = reader.read(source)
 
@@ -95,7 +87,7 @@ class JsonDocumentReaderTest {
                 id = "empty",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
 
         assertFailsWith<DocumentReadException.EmptyDocument> {
@@ -111,7 +103,7 @@ class JsonDocumentReaderTest {
                 id = "duplicate-key",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
         val failure =
             assertFailsWith<DocumentReadException.DuplicateKey> {
@@ -137,7 +129,7 @@ class JsonDocumentReaderTest {
                 id = "invalid-root",
                 file = file,
                 content = """{"root":{"child":{"leaf":true}}}""",
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
 
         val failure =
@@ -157,7 +149,7 @@ class JsonDocumentReaderTest {
                 id = "source-map",
                 file = file,
                 content = file.readText(),
-                format = DocumentFormat.JSON,
+                format = InputFormat.JSON,
             )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)

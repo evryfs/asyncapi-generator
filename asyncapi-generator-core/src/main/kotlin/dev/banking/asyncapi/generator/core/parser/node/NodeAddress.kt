@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
-import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
-import dev.banking.asyncapi.generator.core.document.appendDocumentMember
+import dev.banking.asyncapi.generator.core.source.appendDocumentIndex
+import dev.banking.asyncapi.generator.core.source.appendDocumentMember
 
 /**
  * Collision-safe identity of one document node within one registered source.

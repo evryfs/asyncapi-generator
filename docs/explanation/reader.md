@@ -19,7 +19,7 @@ The reader converts YAML or JSON files into a format-independent document tree. 
 
 The reader stage has three layers:
 
-**`DocumentReaderRegistry`** is the entry point. It detects the input format from the file extension, reads the content within byte limits, creates a `DocumentSource`, and delegates to the format-specific reader.
+**`SourceReader`** is the entry point. It detects the input format from the file extension, reads the content within byte limits, creates a `DocumentSource`, and delegates to the format-specific reader.
 
 **`YamlDocumentReader`** and **`JsonDocumentReader`** parse the content into a tree of `DocumentNode` values. Each node type — `DocumentObject`, `DocumentArray`, `DocumentString`, `DocumentNumber`, `DocumentBoolean`, `DocumentNull` — maps directly to a JSON or YAML value kind. The readers attach `SourceLocation` to every node during parsing.
 

@@ -1,18 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentMember
-import dev.banking.asyncapi.generator.core.document.DocumentNode
-import dev.banking.asyncapi.generator.core.document.DocumentNull
-import dev.banking.asyncapi.generator.core.document.DocumentNumber
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentSource
-import dev.banking.asyncapi.generator.core.document.DocumentString
-import dev.banking.asyncapi.generator.core.document.InputDocument
-import dev.banking.asyncapi.generator.core.document.SourceLocation
-import dev.banking.asyncapi.generator.core.document.appendDocumentIndex
-import dev.banking.asyncapi.generator.core.document.appendDocumentMember
 import org.yaml.snakeyaml.DumperOptions.ScalarStyle.PLAIN
 import org.yaml.snakeyaml.LoaderOptions
 import org.yaml.snakeyaml.Yaml

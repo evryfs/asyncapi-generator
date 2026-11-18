@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -28,7 +28,7 @@ class SchemaParserTest {
     @Test
     fun `parse representative component schemas`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemasNode =
             ParserNodeFactory
                 .root(document, context)
@@ -136,7 +136,7 @@ class SchemaParserTest {
     @Test
     fun `parse nested composition and dependency schema forms`() {
         val file = TestResources.file("schemas/asyncapi_schema_parser_assertion.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemas =
             ParserNodeFactory
                 .root(document, context)
@@ -256,7 +256,7 @@ class SchemaParserTest {
     @Test
     fun `parse schema with property and schema dependencies`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_dependencies.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val productNode =
             ParserNodeFactory
                 .root(document, context)
@@ -281,7 +281,7 @@ class SchemaParserTest {
     @Test
     fun `parse recursive external references with their original source locations`() {
         val file = TestResources.file("parser/schemas/references/main.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemasNode =
             ParserNodeFactory
                 .root(document, context)
@@ -314,7 +314,7 @@ class SchemaParserTest {
     @Test
     fun `parse recursive mixed and empty composition forms`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemasNode =
             ParserNodeFactory
                 .root(document, context)
@@ -352,7 +352,7 @@ class SchemaParserTest {
     @Test
     fun `parse schema preserves an explicit null default`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -372,7 +372,7 @@ class SchemaParserTest {
     @Test
     fun `parse schema preserves an explicit null const`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -392,7 +392,7 @@ class SchemaParserTest {
     @Test
     fun `parse enum without type does not infer a string schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -412,7 +412,7 @@ class SchemaParserTest {
     @Test
     fun `parses the remaining supported schema keywords`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -448,7 +448,7 @@ class SchemaParserTest {
             val sourceParser = SchemaParser(sourceContext)
             val schemas =
                 ParserNodeFactory
-                    .root(DocumentReaderRegistry.read(TestResources.file(path)), sourceContext)
+                    .root(SourceReader.read(TestResources.file(path)), sourceContext)
                     .expectObject()
 
             val booleanSchema =
@@ -473,7 +473,7 @@ class SchemaParserTest {
     @Test
     fun `retains unsupported tuple items for source-aware validation`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -504,7 +504,7 @@ class SchemaParserTest {
     @Test
     fun `rejects scalar items with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -535,7 +535,7 @@ class SchemaParserTest {
     @Test
     fun `rejects a scalar schema dependency with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)
@@ -564,7 +564,7 @@ class SchemaParserTest {
     @Test
     fun `rejects a quoted numeric constraint with a source-aware type diagnostic`() {
         val file = TestResources.file("schemas/asyncapi_schema_parser_assertion.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemaNode =
             ParserNodeFactory
                 .root(document, context)

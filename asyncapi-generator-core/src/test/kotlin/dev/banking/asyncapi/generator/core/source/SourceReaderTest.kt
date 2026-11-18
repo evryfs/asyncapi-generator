@@ -1,8 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -13,17 +10,17 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class DocumentReaderRegistryTest {
+class SourceReaderTest {
     @TempDir
     lateinit var tempDir: Path
 
     @Test
     fun `reads yaml files through the registry`() {
         val file = TestResources.file("reader/yaml/registry-asyncapi.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = assertIs<DocumentObject>(document.root)
 
-        assertEquals(DocumentFormat.YAML, document.source.format)
+        assertEquals(InputFormat.YAML, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
         assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
@@ -31,18 +28,18 @@ class DocumentReaderRegistryTest {
     @Test
     fun `reads yml files through the registry`() {
         val file = TestResources.file("reader/yaml/registry-contract.yml")
-        val document = DocumentReaderRegistry.read(file)
-        assertEquals(DocumentFormat.YAML, document.source.format)
+        val document = SourceReader.read(file)
+        assertEquals(InputFormat.YAML, document.source.format)
         assertEquals("registry-contract", document.source.id)
     }
 
     @Test
     fun `reads json files through the registry`() {
         val file = TestResources.file("reader/json/registry-asyncapi.json")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val root = assertIs<DocumentObject>(document.root)
 
-        assertEquals(DocumentFormat.JSON, document.source.format)
+        assertEquals(InputFormat.JSON, document.source.format)
         assertEquals("registry-asyncapi", document.source.id)
         assertEquals("3.0.0", assertIs<DocumentString>(root["asyncapi"]).value)
     }
@@ -54,7 +51,7 @@ class DocumentReaderRegistryTest {
 
         val failure =
             assertFailsWith<DocumentReadException.UnsupportedFormat> {
-                DocumentReaderRegistry.read(file)
+                SourceReader.read(file)
             }
         assertEquals(file, failure.file)
         assertEquals("txt", failure.format)
@@ -66,7 +63,7 @@ class DocumentReaderRegistryTest {
 
         val failure =
             assertFailsWith<DocumentReadException.MissingDocument> {
-                DocumentReaderRegistry.read(file)
+                SourceReader.read(file)
             }
         assertEquals(file, failure.file)
         assertTrue("does not exist" in failure.message.orEmpty())
@@ -78,7 +75,7 @@ class DocumentReaderRegistryTest {
         val directory = tempDir.resolve("contract.yaml").toFile().apply { mkdirs() }
 
         assertFailsWith<DocumentReadException.NotAFile> {
-            DocumentReaderRegistry.read(directory)
+            SourceReader.read(directory)
         }
     }
 
@@ -89,7 +86,7 @@ class DocumentReaderRegistryTest {
 
         val failure =
             assertFailsWith<DocumentReadException.MalformedDocument> {
-                DocumentReaderRegistry.read(file)
+                SourceReader.read(file)
             }
         assertEquals(file, failure.file)
         assertEquals(null, failure.location)

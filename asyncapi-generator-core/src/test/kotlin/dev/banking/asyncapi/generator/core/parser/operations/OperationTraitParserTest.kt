@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -20,7 +20,7 @@ class OperationTraitParserTest {
     @Test
     fun `parses all operation trait fields`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val traitsNode =
             ParserNodeFactory
                 .root(document, context)

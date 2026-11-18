@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -20,7 +20,7 @@ class CorrelationIdParserTest {
     @Test
     fun `parse inline correlation ID`() {
         val file = TestResources.file("parser/correlations/asyncapi_parser_correlationid_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val correlationIdNode =
             ParserNodeFactory
                 .root(document, context)
@@ -43,7 +43,7 @@ class CorrelationIdParserTest {
     @Test
     fun `parse correlation ID reports missing location`() {
         val file = TestResources.file("parser/correlations/asyncapi_parser_correlationid_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val correlationIdNode =
             ParserNodeFactory
                 .root(document, context)

@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentNode
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.toValue
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import dev.banking.asyncapi.generator.core.source.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentNode
+import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.toValue
 import kotlin.reflect.typeOf
 
 /**

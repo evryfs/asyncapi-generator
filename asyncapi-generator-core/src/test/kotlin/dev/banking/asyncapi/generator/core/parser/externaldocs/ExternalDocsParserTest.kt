@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -21,7 +21,7 @@ class ExternalDocsParserTest {
     @Test
     fun `parses inline and referenced external documentation`() {
         val file = TestResources.file("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val externalDocsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -45,7 +45,7 @@ class ExternalDocsParserTest {
     @Test
     fun `parse external docs reports missing url`() {
         val file = TestResources.file("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val externalDocsNode =
             ParserNodeFactory
                 .root(document, context)

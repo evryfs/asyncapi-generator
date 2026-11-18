@@ -1,6 +1,5 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 
 /** Reader resource whose configured maximum was exceeded. */

@@ -227,7 +227,7 @@
     <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: URISyntaxException</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
     <ID>ThrowsCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
-    <ID>ThrowsCount:DocumentReaderRegistry.kt$DocumentReaderRegistry$fun read(file: File): InputDocument</ID>
+    <ID>ThrowsCount:SourceReader.kt$SourceReader$fun read(file: File): InputDocument</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
     <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
     <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: String, source: DocumentSource, ): DocumentNode</ID>

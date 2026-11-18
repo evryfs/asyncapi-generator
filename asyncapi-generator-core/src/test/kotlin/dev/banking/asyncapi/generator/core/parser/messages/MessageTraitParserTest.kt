@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -21,7 +21,7 @@ class MessageTraitParserTest {
     @Test
     fun `parses all message trait fields`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val traitsNode =
             ParserNodeFactory
                 .root(document, context)

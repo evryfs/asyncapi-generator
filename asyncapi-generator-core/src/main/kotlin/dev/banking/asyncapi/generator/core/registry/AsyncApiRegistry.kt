@@ -8,7 +8,7 @@ import com.fasterxml.jackson.dataformat.yaml.util.StringQuotingChecker
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.yaml.snakeyaml.nodes.NodeId
 import org.yaml.snakeyaml.nodes.Tag
 import org.yaml.snakeyaml.resolver.Resolver
@@ -25,7 +25,7 @@ internal object AsyncApiRegistry {
         asyncApiContext: AsyncApiContext,
     ): ParserNode =
         ParserNodeFactory.root(
-            document = DocumentReaderRegistry.read(file),
+            document = SourceReader.read(file),
             context = asyncApiContext,
         )
 

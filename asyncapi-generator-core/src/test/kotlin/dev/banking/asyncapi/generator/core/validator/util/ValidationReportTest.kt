@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.util
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.ADVISORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.SPECIFICATION
@@ -9,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUME
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertContains

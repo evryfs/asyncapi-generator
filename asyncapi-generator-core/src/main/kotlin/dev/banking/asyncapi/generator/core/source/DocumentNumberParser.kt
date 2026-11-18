@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.reader
+package dev.banking.asyncapi.generator.core.source
 
 import java.math.BigDecimal
 import java.math.BigInteger

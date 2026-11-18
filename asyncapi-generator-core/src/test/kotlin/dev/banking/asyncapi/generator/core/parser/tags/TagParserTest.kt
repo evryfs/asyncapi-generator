@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,7 +22,7 @@ class TagParserTest {
     @Test
     fun `parse tag map and list in source order`() {
         val file = TestResources.file("parser/tags/asyncapi_parser_tag_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val components =
             ParserNodeFactory
                 .root(document, context)
@@ -60,7 +60,7 @@ class TagParserTest {
     @Test
     fun `parse tag reports missing name`() {
         val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val tagNode =
             ParserNodeFactory
                 .root(document, context)

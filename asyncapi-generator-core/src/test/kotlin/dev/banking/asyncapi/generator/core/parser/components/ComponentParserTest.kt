@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -17,7 +17,7 @@ class ComponentParserTest {
     @Test
     fun `parses every supported component category`() {
         val file = TestResources.file("parser/components/asyncapi_parser_components_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val componentsNode =
             ParserNodeFactory
                 .root(document, context)

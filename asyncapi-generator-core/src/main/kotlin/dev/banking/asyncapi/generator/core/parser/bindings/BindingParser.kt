@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.bindings
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
@@ -12,6 +10,8 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
+import dev.banking.asyncapi.generator.core.source.DocumentBoolean
+import dev.banking.asyncapi.generator.core.source.DocumentObject
 
 /**
  * Parses raw binding content while retaining its protocol, location, version,

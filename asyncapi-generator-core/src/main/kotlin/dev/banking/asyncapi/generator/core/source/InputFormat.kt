@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.document
+package dev.banking.asyncapi.generator.core.source
 
 import java.io.File
 
@@ -7,7 +7,7 @@ import java.io.File
  *
  * @property extensions recognized lowercase file extensions without a leading dot
  */
-internal enum class DocumentFormat(
+internal enum class InputFormat(
     val extensions: Set<String>,
 ) {
     YAML(setOf("yaml", "yml")),
@@ -15,7 +15,7 @@ internal enum class DocumentFormat(
     ;
 
     companion object {
-        fun fromFile(file: File): DocumentFormat? {
+        fun fromFile(file: File): InputFormat? {
             val extension = file.extension.lowercase()
             return entries.firstOrNull { extension in it.extensions }
         }

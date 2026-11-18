@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.repository
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentFormat
-import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.DocumentSource
+import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
@@ -36,12 +36,12 @@ class SourceRepositoryTest {
         file: File,
         content: String,
     ) = ParserNodeFactory.root(
-        DocumentReaderRegistry.read(
+        SourceReader.read(
             DocumentSource(
                 id = file.nameWithoutExtension,
                 file = file.canonicalFile,
                 content = content,
-                format = DocumentFormat.YAML,
+                format = InputFormat.YAML,
             ),
         ),
         context,

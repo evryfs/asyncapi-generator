@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.context
 
-import dev.banking.asyncapi.generator.core.document.SourceLocation
+import dev.banking.asyncapi.generator.core.source.SourceLocation
 import java.io.File
 import java.io.IOException
 

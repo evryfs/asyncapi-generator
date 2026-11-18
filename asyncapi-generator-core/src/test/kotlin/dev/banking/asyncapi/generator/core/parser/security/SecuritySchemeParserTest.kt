@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseExcepti
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,7 +22,7 @@ class SecuritySchemeParserTest {
     @Test
     fun `parse SCRAM certificate and basic authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val securitySchemesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -55,7 +55,7 @@ class SecuritySchemeParserTest {
     @Test
     fun `parse bearer and API key authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val securitySchemesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -88,7 +88,7 @@ class SecuritySchemeParserTest {
     @Test
     fun `parse OpenID Connect and OAuth2 authentication schemes`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val securitySchemesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -137,7 +137,7 @@ class SecuritySchemeParserTest {
     @Test
     fun `parse security scheme missing type reports the required member and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemeNode =
             ParserNodeFactory
                 .root(document, context)
@@ -168,7 +168,7 @@ class SecuritySchemeParserTest {
     @Test
     fun `parse OAuth flow missing available scopes reports the required member and source`() {
         val file = TestResources.file("parser/security/asyncapi_parser_security_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val schemeNode =
             ParserNodeFactory
                 .root(document, context)

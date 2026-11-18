@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -31,7 +31,7 @@ class OperationParserTest {
     @Test
     fun `parse inline operations`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val operationsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -104,7 +104,7 @@ class OperationParserTest {
     @Test
     fun `parses a referenced operation with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val operationsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -121,7 +121,7 @@ class OperationParserTest {
     @Test
     fun `parse operation missing action reports the required member and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val operationsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -145,7 +145,7 @@ class OperationParserTest {
     @Test
     fun `parse operation missing channel reports the required member and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val operationsNode =
             ParserNodeFactory
                 .root(document, context)
@@ -177,7 +177,7 @@ class OperationParserTest {
     @Test
     fun `parse operation with inline message reports missing ref`() {
         val file = TestResources.file("parser/operations/asyncapi_validator_operations_inline_message_error.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val operationsNode =
             ParserNodeFactory
                 .root(document, context)

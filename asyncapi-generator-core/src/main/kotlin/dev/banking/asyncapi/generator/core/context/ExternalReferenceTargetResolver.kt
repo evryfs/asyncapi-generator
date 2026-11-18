@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.context
 
 import com.fasterxml.jackson.core.JsonPointer
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.source.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentObject
 
 /**
  * Resolves a JSON pointer against a parsed document tree to find the target node.

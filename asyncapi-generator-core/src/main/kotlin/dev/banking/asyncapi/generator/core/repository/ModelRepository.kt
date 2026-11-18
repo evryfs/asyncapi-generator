@@ -1,14 +1,14 @@
 package dev.banking.asyncapi.generator.core.repository
 
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentObject
-import dev.banking.asyncapi.generator.core.document.SourceLocation
-import dev.banking.asyncapi.generator.core.document.toValue
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.parser.node.NodeAddress
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
+import dev.banking.asyncapi.generator.core.source.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentObject
+import dev.banking.asyncapi.generator.core.source.SourceLocation
+import dev.banking.asyncapi.generator.core.source.toValue
 import java.io.File
 import java.util.IdentityHashMap
 import kotlin.reflect.KProperty0

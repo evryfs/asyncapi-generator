@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -32,7 +32,7 @@ class MessageParserTest {
     @Test
     fun `parse inline and referenced messages`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messagesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -129,7 +129,7 @@ class MessageParserTest {
     @Test
     fun `parse messages with referenced payload and correlation ID`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_edge_cases.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messagesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -157,7 +157,7 @@ class MessageParserTest {
     @Test
     fun `parse reference object ignores sibling members`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messagesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -178,7 +178,7 @@ class MessageParserTest {
     @Test
     fun `parse message with empty payload and inline trait`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_edge_cases.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messagesNode =
             ParserNodeFactory
                 .root(document, context)
@@ -206,7 +206,7 @@ class MessageParserTest {
     @Test
     fun `rejects unknown message members and accepts specification extensions`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_member_policy.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val messageCases =
             ParserNodeFactory
                 .root(document, context)

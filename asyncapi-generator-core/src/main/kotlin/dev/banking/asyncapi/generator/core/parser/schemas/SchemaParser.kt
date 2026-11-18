@@ -1,9 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentArray
-import dev.banking.asyncapi.generator.core.document.DocumentBoolean
-import dev.banking.asyncapi.generator.core.document.DocumentNull
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException.UnexpectedSchemaFormat
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
@@ -15,6 +12,9 @@ import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.MULTI_FORMAT_SCHEMA
+import dev.banking.asyncapi.generator.core.source.DocumentArray
+import dev.banking.asyncapi.generator.core.source.DocumentBoolean
+import dev.banking.asyncapi.generator.core.source.DocumentNull
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SCHEMA as SCHEMA_BINDING
 
 /**

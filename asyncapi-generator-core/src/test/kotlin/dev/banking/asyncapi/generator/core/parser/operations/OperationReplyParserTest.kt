@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
-import dev.banking.asyncapi.generator.core.reader.DocumentReaderRegistry
+import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -22,7 +22,7 @@ class OperationReplyParserTest {
     @Test
     fun `parses an inline operation reply with address channel and messages`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val replyNode =
             ParserNodeFactory
                 .root(document, context)
@@ -49,7 +49,7 @@ class OperationReplyParserTest {
     @Test
     fun `parses a referenced operation reply with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val replyNode =
             ParserNodeFactory
                 .root(document, context)
@@ -71,7 +71,7 @@ class OperationReplyParserTest {
     @Test
     fun `parse operation reply reports missing channel ref`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operation_reply_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val replyNode =
             ParserNodeFactory
                 .root(document, context)
@@ -105,7 +105,7 @@ class OperationReplyParserTest {
     @Test
     fun `parse operation reply reports missing message ref at indexed path`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operation_reply_invalid.yaml")
-        val document = DocumentReaderRegistry.read(file)
+        val document = SourceReader.read(file)
         val replyNode =
             ParserNodeFactory
                 .root(document, context)
