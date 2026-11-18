@@ -39,8 +39,8 @@ sealed class AsyncApiParseException(
             path: String,
             context: AsyncApiContext,
         ): String {
-            val snippet = context.sourceTracking.pathSnippet(path)
-            val file = context.sourceTracking.getCurrentFile()
+            val snippet = context.snippet(path)
+            val file = context.sourceTracking.currentFile()
             val fileName = file.name ?: "(unknown)"
             return buildString {
                 appendLine(header)

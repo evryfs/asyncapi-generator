@@ -7,8 +7,11 @@ import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.tracking.ModelTracking
+import dev.banking.asyncapi.generator.core.parser.tracking.SourceTracking
 import dev.banking.asyncapi.generator.core.source.DocumentObject
 import dev.banking.asyncapi.generator.core.source.SourceBudget
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
@@ -60,8 +63,8 @@ internal class AsyncApiExternalContext(
         val referenceOrigin = modelTracking.getReferenceOrigin(reference)
         val sourceFile =
             referenceOrigin?.file
-                ?: reference.sourceId?.let(sourceTracking::findFileById)
-                ?: sourceTracking.getCurrentFile()
+                ?: reference.sourceId?.let { sourceTracking.file(SourceId(it)) }
+                ?: sourceTracking.currentFile()
         val resolved =
             try {
                 resolveReference(reference, sourceFile)
@@ -119,7 +122,7 @@ internal class AsyncApiExternalContext(
                 warningCollector.collect(result.warnings)
             }
         } else {
-            val parserProfile = referenceOrigin?.parserProfile
+            val parserProfile = referenceOrigin?.profile
             val profiledRoot = parserProfile?.let(rootNode::withProfile) ?: rootNode
             val target =
                 ExternalReferenceTargetResolver.resolve(profiledRoot, resolved.pointer)

@@ -538,7 +538,7 @@ internal class SchemaValidator(
                     SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
                     "$contextString dependency '$propertyName' contains duplicate property names.",
                     sourceLocation =
-                        asyncApiContext.modelTracking.getSourceLocation(dependency, "[$duplicateIndex]") ?: location,
+                        asyncApiContext.modelTracking.getElementLocation(dependency, duplicateIndex) ?: location,
                     doc = JSON_SCHEMA_DEPENDENCIES_DOC,
                 )
             }

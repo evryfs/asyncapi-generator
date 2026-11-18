@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.fixtures.modelAt
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -154,8 +155,8 @@ class ExternalReferenceLoadingTest {
         assertEquals("shared.yaml", rightLocation.file.name)
         assertNotEquals(leftLocation.file.canonicalPath, rightLocation.file.canonicalPath)
         assertNotEquals(
-            context.sourceRepository.findIdByFile(leftLocation.file),
-            context.sourceRepository.findIdByFile(rightLocation.file),
+            context.sourceTracking.sourceId(leftLocation.file),
+            context.sourceTracking.sourceId(rightLocation.file),
         )
     }
 
@@ -168,17 +169,15 @@ class ExternalReferenceLoadingTest {
 
         val reference =
             assertIs<Reference>(
-                context.modelRepository.getModelsByPath()[
-                    "message_main.root.components.messages.ExternalEvent",
-                ],
+                context.modelAt("message_main.root.components.messages.ExternalEvent"),
             )
         assertEquals(
             AsyncApiParserProfile.V3_0,
-            context.modelRepository.getReferenceOrigin(reference)?.parserProfile,
+            context.modelTracking.getReferenceOrigin(reference)?.profile,
         )
         val message =
             assertNotNull(
-                context.modelRepository.getModelsByPath()["messages.root.ExternalEvent"],
+                context.modelAt("messages.root.ExternalEvent"),
             )
         assertEquals(
             "messages.yaml",
@@ -196,24 +195,22 @@ class ExternalReferenceLoadingTest {
         val root = ParserNodeFactory.root(document, context)
 
         documentParser.parse(root)
-
-        val models = context.modelRepository.getModelsByPath()
-        assertIs<Schema>(models["category_fragments.root.schema"])
-        assertIs<Channel>(models["category_fragments.root.channel"])
-        assertIs<Message>(models["category_fragments.root.message"])
-        assertIs<MessageTrait>(models["category_fragments.root.messageTrait"])
-        assertIs<Operation>(models["category_fragments.root.operation"])
-        assertIs<OperationTrait>(models["category_fragments.root.operationTrait"])
-        assertIs<OperationReply>(models["category_fragments.root.operationReply"])
-        assertIs<OperationReplyAddress>(models["category_fragments.root.operationReplyAddress"])
-        assertIs<Server>(models["category_fragments.root.server"])
-        assertIs<ServerVariable>(models["category_fragments.root.serverVariable"])
-        assertIs<Parameter>(models["category_fragments.root.parameter"])
-        assertIs<SecurityScheme>(models["category_fragments.root.securityScheme"])
-        assertIs<CorrelationId>(models["category_fragments.root.correlationId"])
-        assertIs<ExternalDoc>(models["category_fragments.root.externalDoc"])
-        assertIs<Tag>(models["category_fragments.root.tag"])
-        val binding = assertIs<Binding>(models["category_fragments.root.binding"])
+        assertIs<Schema>(context.modelAt("category_fragments.root.schema"))
+        assertIs<Channel>(context.modelAt("category_fragments.root.channel"))
+        assertIs<Message>(context.modelAt("category_fragments.root.message"))
+        assertIs<MessageTrait>(context.modelAt("category_fragments.root.messageTrait"))
+        assertIs<Operation>(context.modelAt("category_fragments.root.operation"))
+        assertIs<OperationTrait>(context.modelAt("category_fragments.root.operationTrait"))
+        assertIs<OperationReply>(context.modelAt("category_fragments.root.operationReply"))
+        assertIs<OperationReplyAddress>(context.modelAt("category_fragments.root.operationReplyAddress"))
+        assertIs<Server>(context.modelAt("category_fragments.root.server"))
+        assertIs<ServerVariable>(context.modelAt("category_fragments.root.serverVariable"))
+        assertIs<Parameter>(context.modelAt("category_fragments.root.parameter"))
+        assertIs<SecurityScheme>(context.modelAt("category_fragments.root.securityScheme"))
+        assertIs<CorrelationId>(context.modelAt("category_fragments.root.correlationId"))
+        assertIs<ExternalDoc>(context.modelAt("category_fragments.root.externalDoc"))
+        assertIs<Tag>(context.modelAt("category_fragments.root.tag"))
+        val binding = assertIs<Binding>(context.modelAt("category_fragments.root.binding"))
         assertEquals(
             "category-fragments.yaml",
             context.modelTracking
@@ -233,7 +230,7 @@ class ExternalReferenceLoadingTest {
 
         val binding =
             assertIs<Binding>(
-                context.modelRepository.getModelsByPath()["binding_fragments.root.channelKafka"],
+                context.modelAt("binding_fragments.root.channelKafka"),
             )
         val protocolBinding = binding.protocolBindings.single()
         assertEquals("kafka", protocolBinding.protocol)
@@ -255,13 +252,11 @@ class ExternalReferenceLoadingTest {
         val root = ParserNodeFactory.root(document, context)
 
         documentParser.parse(root)
-
-        val models = context.modelRepository.getModelsByPath()
-        val selected = assertIs<Schema>(models["heterogeneous_fragments.root.selectedSchema"])
+        val selected = assertIs<Schema>(context.modelAt("heterogeneous_fragments.root.selectedSchema"))
         assertEquals("Only this selected schema should be parsed", selected.description)
-        assertFalse(models.containsKey("heterogeneous_fragments.root.notASchema"))
+        assertFalse((context.modelAt("heterogeneous_fragments.root.notASchema") != null))
 
-        val first = assertIs<Reference>(models["heterogeneous_fragments.root.firstSchema"])
+        val first = assertIs<Reference>(context.modelAt("heterogeneous_fragments.root.firstSchema"))
         val second = assertIs<Reference>(context.modelTracking.findReference(first))
         val third = assertIs<Schema>(context.modelTracking.findReference(second))
         assertEquals("End of the same-file reference chain", third.description)
@@ -312,9 +307,7 @@ class ExternalReferenceLoadingTest {
 
         val reference =
             assertIs<Reference>(
-                context.modelRepository.getModelsByPath()[
-                    "message_root_main.root.components.messages.RootEvent",
-                ],
+                context.modelAt("message_root_main.root.components.messages.RootEvent"),
             )
         val message = assertIs<Message>(context.modelTracking.findReference(reference))
         assertEquals("RootEvent", message.name)
@@ -336,9 +329,7 @@ class ExternalReferenceLoadingTest {
 
         val reference =
             assertIs<Reference>(
-                context.modelRepository.getModelsByPath()[
-                    "server_root_main.root.components.servers.RootServer",
-                ],
+                context.modelAt("server_root_main.root.components.servers.RootServer"),
             )
         val server = assertIs<Server>(context.modelTracking.findReference(reference))
         assertEquals("events.example.com", server.host)

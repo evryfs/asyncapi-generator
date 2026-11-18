@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.parser.asyncapi
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.fixtures.modelAt
 import dev.banking.asyncapi.generator.core.model.components.ComponentInterface
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
@@ -121,7 +122,7 @@ class AsyncApiParserTest {
     }
 
     @Test
-    fun `parsed schema is registered in model repository`() {
+    fun `parsed models are tracked at their source paths`() {
         val file = TestResources.file("asyncapi_kafka_single_file_example.yaml")
         val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
@@ -133,34 +134,18 @@ class AsyncApiParserTest {
             assertIs<SchemaInterface.SchemaInline>(schemas["lightMeasuredPayload"]).schema
         val referencedSchema =
             assertIs<SchemaInterface.SchemaReference>(schemas["referencedSchema"]).reference
-        val modelRepositoryModels = context.modelRepository.getModelsByInstance()
-
-        assertNotNull(
-            modelRepositoryModels[lightMeasuredPayloadSchema],
-            "lightMeasuredPayload Schema should be registered",
-        )
-        assertNotNull(
-            modelRepositoryModels[referencedSchema],
-            "referencedSchema Reference should be registered",
-        )
         val properties = assertNotNull(lightMeasuredPayloadSchema.properties)
         val nestedLumensSchema = assertIs<SchemaInterface.SchemaInline>(properties["lumens"]).schema
-        assertNotNull(
-            modelRepositoryModels[nestedLumensSchema],
-            "Nested lumens schema should be registered",
+        val schemasPath = "asyncapi_kafka_single_file_example.root.components.schemas"
+
+        assertEquals(
+            "$schemasPath.lightMeasuredPayload",
+            context.modelTracking.getSourceLocation(lightMeasuredPayloadSchema)?.path,
         )
-        val modelRepositoryPaths = context.modelRepository.getModelsByPath()
-        val expectedPathForLightMeasuredPayload =
-            "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.lightMeasuredPayload"
-        assertTrue(
-            modelRepositoryPaths.containsKey(expectedPathForLightMeasuredPayload),
-            "Path for lightMeasuredPayload should be registered",
-        )
-        val expectedPathForReferencedSchema =
-            "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.referencedSchema"
-        assertTrue(
-            modelRepositoryPaths.containsKey(expectedPathForReferencedSchema),
-            "Path for referencedSchema should be registered",
+        assertEquals("$schemasPath.referencedSchema", context.modelTracking.getSourceLocation(referencedSchema)?.path)
+        assertEquals(
+            "$schemasPath.lightMeasuredPayload.properties.lumens",
+            context.modelTracking.getSourceLocation(nestedLumensSchema)?.path,
         )
     }
 
@@ -170,9 +155,8 @@ class AsyncApiParserTest {
         val document = SourceReader.read(file)
         val rootNode = ParserNodeFactory.root(document, context)
         parser.parse(rootNode)
-        val schemaPath =
-            "${context.sourceRepository.getCurrentFile().nameWithoutExtension}.root.components.schemas.simpleString"
-        val simpleStringSchema = assertIs<Schema>(context.modelRepository.getModelsByPath()[schemaPath])
+        val simpleStringSchema =
+            assertIs<Schema>(context.modelAt("asyncapi_kafka_single_file_example.root.components.schemas.simpleString"))
 
         val schemaLocation = assertNotNull(context.modelTracking.getSourceLocation(simpleStringSchema))
         assertEquals("asyncapi_kafka_single_file_example.yaml", schemaLocation.file.name)
@@ -191,8 +175,11 @@ class AsyncApiParserTest {
         )
         assertEquals(416, titleLocation.line)
         assertTrue(titleLocation.column > 0)
-        assertEquals(417, context.modelTracking.getLine(simpleStringSchema, simpleStringSchema::description))
-        assertEquals(418, context.modelTracking.getLine(simpleStringSchema, simpleStringSchema::type))
+        assertEquals(
+            417,
+            context.modelTracking.getSourceLocation(simpleStringSchema, simpleStringSchema::description)?.line,
+        )
+        assertEquals(418, context.modelTracking.getSourceLocation(simpleStringSchema, simpleStringSchema::type)?.line)
     }
 
     @Test

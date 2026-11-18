@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.source.DocumentSource
 import dev.banking.asyncapi.generator.core.source.InputFormat
+import dev.banking.asyncapi.generator.core.source.SourceId
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import java.io.File
@@ -63,11 +64,11 @@ class ParserNodeFactoryTest {
 
         ParserNodeFactory.root(document, context)
 
-        assertEquals(1, context.sourceRepository.getLine("source_map.root"))
-        assertEquals(2, context.sourceRepository.getLine("source_map.root.info"))
-        assertEquals(3, context.sourceRepository.getLine("source_map.root.info.title"))
-        assertEquals(5, context.sourceRepository.getLine("source_map.root.info.tags[0]"))
-        assertEquals(file, context.sourceTracking.findFileById("source_map"))
+        assertEquals(1, context.nodeLocations.location("source_map.root")?.line)
+        assertEquals(2, context.nodeLocations.location("source_map.root.info")?.line)
+        assertEquals(3, context.nodeLocations.location("source_map.root.info.title")?.line)
+        assertEquals(5, context.nodeLocations.location("source_map.root.info.tags[0]")?.line)
+        assertEquals(file, context.sourceTracking.file(SourceId("source_map")))
     }
 
     @Test
@@ -93,7 +94,7 @@ class ParserNodeFactoryTest {
 
         val titleLocation =
             assertNotNull(
-                context.sourceRepository.getLocation("source_map.root.info.title"),
+                context.nodeLocations.location("source_map.root.info.title"),
             )
         assertEquals(file, titleLocation.file)
         assertEquals("source_map.root.info.title", titleLocation.path)
@@ -102,7 +103,7 @@ class ParserNodeFactoryTest {
 
         val arrayLocation =
             assertNotNull(
-                context.sourceRepository.getLocation("source_map.root.info.tags[0]"),
+                context.nodeLocations.location("source_map.root.info.tags[0]"),
             )
         assertEquals("source_map.root.info.tags[0]", arrayLocation.path)
         assertEquals(5, arrayLocation.line)
@@ -142,14 +143,14 @@ class ParserNodeFactoryTest {
         assertEquals("identity.root.items[0]", numericIndex.path)
         assertEquals(
             numericMember.address,
-            context.sourceRepository.resolveAddress(root.address.sourceId, listOf("0")),
+            context.nodeLocations.resolveAddress(root.address.sourceId, listOf("0")),
         )
         assertEquals(
             numericIndex.address,
-            context.sourceRepository.resolveAddress(root.address.sourceId, listOf("items", "0")),
+            context.nodeLocations.resolveAddress(root.address.sourceId, listOf("items", "0")),
         )
-        assertNotNull(context.sourceRepository.getLocation(dotted.address))
-        assertNotNull(context.sourceRepository.getLocation(bracketed.address))
+        assertNotNull(context.nodeLocations.location(dotted.address))
+        assertNotNull(context.nodeLocations.location(bracketed.address))
     }
 
     @Test

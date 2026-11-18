@@ -80,7 +80,6 @@
     <ID>LongMethod:MessagePayloadResolver.kt$MessagePayloadResolver$fun resolvePayload( message: Message, messageId: String, ): ResolvedMessagePayload?</ID>
     <ID>LongMethod:MessageTraitParser.kt$MessageTraitParser$fun parseElement(parserNode: ParserNode): MessageTraitInterface</ID>
     <ID>LongMethod:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun create( name: String, schema: Schema, ): ModelDefinition?</ID>
-    <ID>LongMethod:ModelRepository.kt$ModelRepository$fun register( model: Any, node: ParserNode, )</ID>
     <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
@@ -134,7 +133,6 @@
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$16</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$4</ID>
-    <ID>MagicNumber:SourceRepository.kt$SourceRepository$4</ID>
     <ID>MatchingDeclarationName:AsyncApiObjectMemberPolicy.kt$AsyncApiObjectType</ID>
     <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
@@ -191,7 +189,6 @@
     <ID>ReturnCount:KafkaScalarTypeResolver.kt$KafkaScalarTypeResolver$private fun resolveInteger(schema: Schema): KafkaScalarType</ID>
     <ID>ReturnCount:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator$private fun schemaRegistryStatus(server: Server): SchemaRegistryStatus</ID>
     <ID>ReturnCount:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun defaultValue( schema: Schema, type: TypeRef, ): DefaultValue?</ID>
-    <ID>ReturnCount:ModelRepository.kt$ModelRepository$private fun normalize(reference: Reference): NodeAddress?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun mapObject( propertyName: String, schema: Schema, ): TypeRef?</ID>
@@ -209,7 +206,6 @@
     <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
     <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
-    <ID>ReturnCount:SourceRepository.kt$SourceRepository$internal fun resolveAddress( sourceId: SourceId, pointerSegments: List&lt;String&gt;, ): NodeAddress?</ID>
     <ID>ReturnCount:ValidationFindingFormatter.kt$ValidationFindingFormatter$private fun snippet( finding: ValidationFinding, asyncApiContext: AsyncApiContext, ): String</ID>
     <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
     <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IOException</ID>
@@ -243,13 +239,11 @@
     <ID>TooManyFunctions:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator</ID>
     <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:MessageValidator.kt$MessageValidator</ID>
-    <ID>TooManyFunctions:ModelRepository.kt$ModelRepository</ID>
     <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
     <ID>TooManyFunctions:OperationValidator.kt$OperationValidator</ID>
     <ID>TooManyFunctions:SchemaBundler.kt$SchemaBundler</ID>
     <ID>TooManyFunctions:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
     <ID>TooManyFunctions:SchemaValidator.kt$SchemaValidator</ID>
-    <ID>TooManyFunctions:SourceRepository.kt$SourceRepository</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$ExternalSchemaNameUnavailable : AsyncApiBundlingException</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>
