@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.loader
 
+import dev.banking.asyncapi.generator.core.fixtures.kafkaKeyBinding
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
@@ -658,10 +659,7 @@ class SchemaNameCollisionTest {
                     mapOf(
                         "kafka" to
                             BindingInterface.BindingInline(
-                                Binding(
-                                    content = emptyMap(),
-                                    kafkaKeySchema = keySchema,
-                                ),
+                                kafkaKeyBinding(keySchema),
                             ),
                     ),
             ),

@@ -67,13 +67,16 @@ internal class ModelTracking(
     /** The location of [model], or of its closest registered ancestor node. */
     fun getSourceLocation(model: Any): SourceLocation? = origins[model]?.address?.let(locations::nearestLocation)
 
-    /** The location of the member [fieldName] of [model], or of [model] itself when the member is absent. */
+    /**
+     * The location of the member at [fieldPath] below [model], or of its closest ancestor that is
+     * written in the source.
+     */
     fun getSourceLocation(
         model: Any,
-        fieldName: String,
+        vararg fieldPath: String,
     ): SourceLocation? {
         val address = origins[model]?.address ?: return null
-        return locations.location(address.member(fieldName)) ?: locations.nearestLocation(address)
+        return locations.nearestLocation(fieldPath.fold(address, NodeAddress::member))
     }
 
     /** The location of element [index] of the array [model] was built from, or of [model] itself when absent. */

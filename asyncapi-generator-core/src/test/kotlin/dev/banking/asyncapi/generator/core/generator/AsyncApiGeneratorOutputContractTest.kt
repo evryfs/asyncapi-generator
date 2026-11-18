@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.BundlerFixtures
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
+import dev.banking.asyncapi.generator.core.fixtures.kafkaKeyBinding
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
@@ -525,12 +526,10 @@ class AsyncApiGeneratorOutputContractTest {
                                                 mapOf(
                                                     "kafka" to
                                                         BindingInterface.BindingInline(
-                                                            Binding(
-                                                                content = emptyMap(),
-                                                                kafkaKeySchema =
-                                                                    SchemaInterface.SchemaInline(
-                                                                        Schema(type = "object"),
-                                                                    ),
+                                                            kafkaKeyBinding(
+                                                                SchemaInterface.SchemaInline(
+                                                                    Schema(type = "object"),
+                                                                ),
                                                             ),
                                                         ),
                                                 ),

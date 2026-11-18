@@ -412,10 +412,8 @@ internal class GenerationInputFixtures {
                                                         mapOf(
                                                             "kafka" to
                                                                 BindingInterface.BindingInline(
-                                                                    Binding(
-                                                                        content = emptyMap(),
-                                                                        kafkaKeySchema =
-                                                                            SchemaInterface.SchemaInline(keySchema),
+                                                                    kafkaKeyBinding(
+                                                                        SchemaInterface.SchemaInline(keySchema),
                                                                     ),
                                                                 ),
                                                         ),

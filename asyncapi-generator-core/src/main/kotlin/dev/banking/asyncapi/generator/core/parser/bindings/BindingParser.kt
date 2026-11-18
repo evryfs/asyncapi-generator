@@ -53,10 +53,11 @@ internal class BindingParser(
     ): BindingInterface {
         parseReference(parserNode, location, protocol)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
-        val protocolBinding = parseProtocolBinding(parserNode, location, protocol)
+        val protocolBinding = parseProtocolBinding(parserNode, location, protocol, content)
         return inlineBinding(parserNode, content, listOf(protocolBinding))
     }
 
+    /** Parses a Bindings Object: the bindings of several protocols keyed by protocol. */
     fun parseComponent(
         parserNode: ParserNode,
         location: BindingLocation,
@@ -65,7 +66,7 @@ internal class BindingParser(
         val content = parserNode.expect<Map<String, Any?>>()
         val protocolBindings =
             parserNode.expectObject().members().map { protocolNode ->
-                parseProtocolBinding(protocolNode, location, protocolNode.name)
+                parseProtocolBinding(protocolNode, location, protocolNode.name, content[protocolNode.name])
             }
         return inlineBinding(parserNode, content, protocolBindings)
     }
@@ -84,10 +85,9 @@ internal class BindingParser(
         parserNode: ParserNode,
         location: BindingLocation,
         protocol: String,
+        content: Any?,
     ): ProtocolBinding {
-        val content = parserNode.toPlainValue()
         val objectNode = parserNode.takeIf { it.node is DocumentObject }?.expectObject()
-        registerKafkaTopicConfiguration(content, parserNode, location, protocol)
         val schemaFields =
             if (protocol == KAFKA_PROTOCOL && objectNode != null) {
                 kafkaSchemaFieldNames(location)
@@ -109,40 +109,15 @@ internal class BindingParser(
         ).also { asyncApiContext.register(it, parserNode) }
     }
 
-    private fun registerKafkaTopicConfiguration(
-        content: Any?,
-        parserNode: ParserNode,
-        location: BindingLocation,
-        protocol: String,
-    ) {
-        if (protocol != KAFKA_PROTOCOL || location != BindingLocation.CHANNEL) return
-        val properties = content as? Map<*, *> ?: return
-        val topicConfiguration = properties["topicConfiguration"] as? Map<*, *> ?: return
-        val topicConfigurationNode = parserNode.expectObject().optional("topicConfiguration") ?: return
-        asyncApiContext.register(topicConfiguration, topicConfigurationNode)
-        val cleanupPolicy = topicConfiguration["cleanup.policy"] as? List<*> ?: return
-        val cleanupPolicyNode = topicConfigurationNode.expectObject().optional("cleanup.policy") ?: return
-        asyncApiContext.register(cleanupPolicy, cleanupPolicyNode)
-    }
-
     private fun inlineBinding(
         parserNode: ParserNode,
         content: Map<String, Any?>,
         protocolBindings: List<ProtocolBinding>,
-    ): BindingInterface.BindingInline {
-        val kafkaKeySchema =
-            protocolBindings
-                .firstOrNull { it.protocol == KAFKA_PROTOCOL }
-                ?.schemaFields
-                ?.get("key")
-        return BindingInterface.BindingInline(
-            Binding(
-                content = content,
-                kafkaKeySchema = kafkaKeySchema,
-                protocolBindings = protocolBindings,
-            ).also { asyncApiContext.register(it, parserNode) },
+    ): BindingInterface.BindingInline =
+        BindingInterface.BindingInline(
+            Binding(content = content, protocolBindings = protocolBindings)
+                .also { asyncApiContext.register(it, parserNode) },
         )
-    }
 
     private fun kafkaSchemaFieldNames(location: BindingLocation): Set<String> =
         when (location) {

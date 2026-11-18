@@ -47,7 +47,6 @@ internal class BindingBundler {
         context: BundlingContext,
     ): Binding {
         if (binding.protocolBindings.none { it.schemaFields.isNotEmpty() }) return binding
-        var bundledKafkaKey = binding.kafkaKeySchema
         var bundledContent = binding.content
         val bundledProtocolBindings =
             binding.protocolBindings.map { protocolBinding ->
@@ -55,17 +54,11 @@ internal class BindingBundler {
                     protocolBinding.schemaFields.mapValues { (_, schema) ->
                         // The message key becomes a generated type, so it keeps the name of its source pointer.
                         val isKey = schema === binding.kafkaKeySchema
-                        val bundled =
-                            if (isKey) {
-                                schemaBundler.bundleBindingField(
-                                    schema,
-                                    context,
-                                )
-                            } else {
-                                schemaBundler.bundle(schema, context)
-                            }
-                        if (isKey) bundledKafkaKey = bundled
-                        bundled
+                        if (isKey) {
+                            schemaBundler.bundleBindingField(schema, context)
+                        } else {
+                            schemaBundler.bundle(schema, context)
+                        }
                     }
                 // Raw content is only replaced where bundling changed the schema.
                 val changedFields =
@@ -77,7 +70,6 @@ internal class BindingBundler {
             }
         return binding.copy(
             content = bundledContent,
-            kafkaKeySchema = bundledKafkaKey,
             protocolBindings = bundledProtocolBindings,
         )
     }
