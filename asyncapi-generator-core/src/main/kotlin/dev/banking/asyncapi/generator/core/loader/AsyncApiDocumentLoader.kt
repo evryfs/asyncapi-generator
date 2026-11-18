@@ -2,18 +2,22 @@ package dev.banking.asyncapi.generator.core.loader
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.external.ExternalReferenceLoader
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
+import dev.banking.asyncapi.generator.core.validator.LoadedTargetValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
 import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
+import dev.banking.asyncapi.generator.core.validator.util.ValidationWarningCollector
 import java.io.File
 
 /**
  * Public entry point for loading a validated AsyncAPI document from a file.
  *
- * The loader owns reader selection, source tracking, structural parsing,
- * external reference loading, and semantic validation. Bundling and generation
+ * The loader reads and parses the root document, loads the documents and
+ * fragments its references point at, and validates them all: each loaded
+ * target first, then the root document. Bundling and generation
  * are separate downstream stages.
  */
 class AsyncApiDocumentLoader {
@@ -32,10 +36,13 @@ class AsyncApiDocumentLoader {
         val inputDocument = SourceReader.read(file, context.sourceLimits)
         val root = ParserNodeFactory.root(inputDocument, context)
         val document = AsyncApiParser(context).parse(root)
+        val loadedTargets = ExternalReferenceLoader(context).loadAll()
+        val warningCollector = ValidationWarningCollector()
+        warningCollector.collect(LoadedTargetValidator(context).validate(loadedTargets))
         val validationResults = AsyncApiValidator(context).validate(document)
 
         ValidationReporter(context).throwErrors(validationResults)
-        val warnings = context.warningCollector.mergeWith(validationResults.warnings)
+        val warnings = warningCollector.mergeWith(validationResults.warnings)
         val formattedWarnings =
             if (warnings.isEmpty()) {
                 ""

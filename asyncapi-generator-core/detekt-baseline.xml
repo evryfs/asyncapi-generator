@@ -5,20 +5,8 @@
     <ID>ComplexCondition:ConditionalNormalizer.kt$ConditionalNormalizer$thenProperty is SchemaInterface.SchemaReference &amp;&amp; elseProperty is SchemaInterface.SchemaReference &amp;&amp; thenProperty.reference.sourceId == elseProperty.reference.sourceId &amp;&amp; thenProperty.reference.ref == elseProperty.reference.ref</ID>
     <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
     <ID>ComplexCondition:OAuthFlowsValidator.kt$OAuthFlowsValidator$flows == null || ( flows.implicit == null &amp;&amp; flows.password == null &amp;&amp; flows.clientCredentials == null &amp;&amp; flows.authorizationCode == null )</ID>
-    <ID>CyclomaticComplexMethod:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
-    <ID>CyclomaticComplexMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
-    <ID>CyclomaticComplexMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
-    <ID>CyclomaticComplexMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>CyclomaticComplexMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
-    <ID>CyclomaticComplexMethod:ExternalFragmentProcessor.kt$ExternalFragmentProcessor$internal fun parseAndDeferValidation( target: ExternalReferenceTargetResolver.Target, reference: Reference, ): () -&gt; Unit</ID>
-    <ID>CyclomaticComplexMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
-    <ID>CyclomaticComplexMethod:GenerationPlanner.kt$GenerationPlanner$fun plan(configuration: GeneratorConfiguration): GenerationPlan</ID>
-    <ID>CyclomaticComplexMethod:JavaModelEmitter.kt$JavaModelEmitter.Companion$internal fun typeName(type: TypeRef): String</ID>
-    <ID>CyclomaticComplexMethod:KotlinModelEmitter.kt$KotlinModelEmitter.Companion$internal fun typeName(type: TypeRef): String</ID>
-    <ID>CyclomaticComplexMethod:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
-    <ID>CyclomaticComplexMethod:ReferenceResolver.kt$ReferenceResolver$private fun matches( category: ReferenceCategoryKey, target: Any, ): Boolean</ID>
     <ID>CyclomaticComplexMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
-    <ID>CyclomaticComplexMethod:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
@@ -35,7 +23,6 @@
     <ID>LargeClass:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
     <ID>LargeClass:SchemaValidator.kt$SchemaValidator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
-    <ID>LongMethod:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AsyncApiParserProfile.kt$AsyncApiSpecificationLine.Companion$fun select(root: ParserNode): ParserNode</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
@@ -108,7 +95,6 @@
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
     <ID>LongMethod:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
-    <ID>LongParameterList:AsyncApiExternalContext.kt$AsyncApiExternalContext$( private val sourceTracking: SourceTracking, private val modelTracking: ModelTracking, private val warningCollector: ValidationWarningCollector, private val sourceBudget: SourceBudget, private val createParser: () -&gt; AsyncApiParser, private val createValidator: () -&gt; AsyncApiValidator, private val createReporter: () -&gt; ValidationReporter, private val createFragmentProcessor: () -&gt; ExternalFragmentProcessor, private val createDiagnosticException: (ParserDiagnostic) -&gt; AsyncApiParseException, private val readDocument: (File) -&gt; ParserNode, )</ID>
     <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, sourceModel: Any = binding, predicate: (Any?) -&gt; Boolean, )</ID>
     <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, contextString: String, index: Int, results: ValidationCollector, )</ID>
     <ID>LongParameterList:OAuthFlowsValidator.kt$OAuthFlowsValidator$( flow: OAuthFlow, value: String?, fieldName: String, requiredRule: ValidationRule, formatRule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
@@ -145,7 +131,6 @@
     <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: AsyncAPI uses JSON-compatible booleans. Use true or false for booleans; values like yes, no, on, and off are strings."</ID>
     <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."</ID>
     <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
-    <ID>NestedBlockDepth:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun parseFragment( target: ExternalReferenceTargetResolver.Target, reference: Reference, )</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>NestedBlockDepth:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
@@ -161,8 +146,6 @@
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
-    <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
-    <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun resolveReference( reference: Reference, sourceFile: File, ): ExternalReferencePathResolver.ResolvedReference?</ID>
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun Reference.localComponentName(category: String): String?</ID>
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectFromReference( reference: Reference, sink: MutableSet&lt;String&gt;, visitedRefs: MutableSet&lt;String&gt;, ): Boolean</ID>
     <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun componentMessagePayloadIdentity( messageName: String, componentMessages: Map&lt;String, MessageInterface&gt;, visitedNames: Set&lt;String&gt; = emptySet(), ): ContractDeclarationIdentity</ID>
@@ -172,7 +155,6 @@
     <ID>ReturnCount:BindingParser.kt$BindingParser$private fun registerKafkaTopicConfiguration( content: Any?, parserNode: ParserNode, location: BindingLocation, protocol: String, )</ID>
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
-    <ID>ReturnCount:ExternalReferenceTargetResolver.kt$ExternalReferenceTargetResolver$fun resolve( rootNode: ParserNode, pointer: JsonPointer, ): Target?</ID>
     <ID>ReturnCount:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
     <ID>ReturnCount:KafkaBindingValidator.kt$KafkaBindingValidator$private fun validateVersion( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, results: ValidationCollector, ): String?</ID>
     <ID>ReturnCount:KafkaKeySchemaResolver.kt$KafkaKeySchemaResolver$fun resolveObjectModelOrNull( messageName: String, schema: SchemaInterface, ): KafkaKeyObjectModel?</ID>
@@ -200,12 +182,7 @@
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
     <ID>ReturnCount:ValidationFindingFormatter.kt$ValidationFindingFormatter$private fun snippet( finding: ValidationFinding, asyncApiContext: AsyncApiContext, ): String</ID>
     <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
-    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IOException</ID>
-    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IllegalArgumentException</ID>
-    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: SecurityException</ID>
-    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: URISyntaxException</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
-    <ID>ThrowsCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
     <ID>ThrowsCount:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
@@ -221,7 +198,6 @@
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
     <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
     <ID>TooManyFunctions:ComponentValidator.kt$ComponentValidator</ID>
-    <ID>TooManyFunctions:ExternalFragmentProcessor.kt$ExternalFragmentProcessor</ID>
     <ID>TooManyFunctions:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
     <ID>TooManyFunctions:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Companion</ID>
     <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
@@ -322,9 +298,9 @@
     <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageInline : MessageInterface</ID>
     <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageReference : MessageInterface</ID>
     <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitInline : MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitReference : MessageTraitInterface</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:ModelGeneration.kt$ModelGeneration$Enabled : ModelGeneration</ID>
     <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
     <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>
@@ -357,7 +333,6 @@
     <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedObjectMember : ParserDiagnostic</ID>
     <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedValueType : ParserDiagnostic</ID>
     <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnsupportedSpecificationVersion : ParserDiagnostic</ID>
-    <ID>UndocumentedPublicClass:ReferenceCategoryKey.kt$ReferenceCategoryKey</ID>
     <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$AvroProjection : SchemaGeneration</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$JsonSchema : SchemaGeneration</ID>

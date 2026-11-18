@@ -19,26 +19,34 @@ internal inline fun <M : Any> ParserNode.parseObject(
 
 /**
  * The `$ref` of this object node as a registered [Reference] to a [category] object, or `null` when
- * the node has no `$ref`.
+ * the node has no `$ref`. [parseTarget] parses the node the reference points at.
  */
-internal fun ParserNode.referenceOrNull(category: ReferenceCategoryKey): Reference? =
+internal fun ParserNode.referenceOrNull(
+    category: ReferenceCategoryKey,
+    parseTarget: (ParserNode) -> Any,
+): Reference? =
     expectObject().optional($$"$ref")?.expect<String>()?.let { ref ->
-        Reference(ref = ref, referenceCategoryKey = category).also { reference -> context.register(reference, this) }
+        Reference(ref = ref, referenceCategoryKey = category)
+            .also { reference -> context.registerReference(reference, this, parseTarget) }
     }
 
 /**
  * Parses this node as either a `$ref` to a [category] object or an inline [objectType] object.
  *
- * A node with a `$ref` member is a reference, whatever its other members are.
+ * A node with a `$ref` member is a reference, whatever its other members are. The node a reference
+ * points at is parsed the same way.
  */
-internal inline fun <T, M : Any> ParserNode.parseReferenceable(
+internal fun <T : Any, M : Any> ParserNode.parseReferenceable(
     category: ReferenceCategoryKey,
     objectType: AsyncApiObjectType,
     reference: (Reference) -> T,
     inline: (M) -> T,
     build: (ParserObjectNode) -> M,
 ): T {
-    val ref = referenceOrNull(category)
+    val ref =
+        referenceOrNull(
+            category,
+        ) { target -> target.parseReferenceable(category, objectType, reference, inline, build) }
     return if (ref != null) reference(ref) else inline(parseObject(objectType, build))
 }
 

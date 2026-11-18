@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.context
+package dev.banking.asyncapi.generator.core.validator.util
 
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding

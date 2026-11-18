@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.parser.external.ExternalReferenceLoader
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
@@ -293,6 +294,7 @@ class SchemaParserTest {
                 .required("schemas")
 
         schemasNode.parseMap(parser::parseElement)
+        ExternalReferenceLoader(context).loadAll()
         val main = assertIs<Schema>(context.modelAt("main.root.components.schemas.MainObject"))
         val level2 = assertIs<Schema>(context.modelAt("level2.root.components.schemas.Level2Object"))
 

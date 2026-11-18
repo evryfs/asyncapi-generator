@@ -5,7 +5,8 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCategory
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
@@ -19,7 +20,7 @@ class ReferenceParserTest {
     private val parser = ReferenceParser(context)
 
     @Test
-    fun `parses one generic reference`() {
+    fun `parses a channel reference`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = SourceReader.read(file)
         val referenceNode =
@@ -32,14 +33,14 @@ class ReferenceParserTest {
                 .expectObject()
                 .required("channel")
 
-        val reference = parser.parseElement(referenceNode, SERVER)
+        val reference = parser.parseChannel(referenceNode)
 
         assertEquals("#/channels/lightingMeasured", reference.ref)
-        assertEquals(SERVER, reference.referenceCategoryKey)
+        assertEquals(CHANNEL, reference.referenceCategoryKey)
     }
 
     @Test
-    fun `parses a list of generic references`() {
+    fun `parses a list of message references`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = SourceReader.read(file)
         val referencesNode =
@@ -52,10 +53,10 @@ class ReferenceParserTest {
                 .expectObject()
                 .required("messages")
 
-        val references = parser.parseList(referencesNode, SERVER)
+        val references = parser.parseMessages(referencesNode)
 
         assertEquals(listOf("#/components/messages/lightMeasured"), references.map { it.ref })
-        assertEquals(listOf(SERVER), references.map { it.referenceCategoryKey })
+        assertEquals(listOf(MESSAGE), references.map { it.referenceCategoryKey })
     }
 
     @Test
@@ -74,7 +75,7 @@ class ReferenceParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseList(referencesNode, SERVER)
+                parser.parseServers(referencesNode)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 

@@ -3,6 +3,8 @@ package dev.banking.asyncapi.generator.core.fixtures
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
+import dev.banking.asyncapi.generator.core.parser.external.ExternalReferenceLoader
+import dev.banking.asyncapi.generator.core.parser.external.LoadedTarget
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
@@ -25,7 +27,24 @@ internal class ParserFixtures(
 
     fun document(path: String): AsyncApiDocument = document(TestResources.file(path))
 
-    fun document(file: File): AsyncApiDocument = parser.parse(root(file))
+    fun document(file: File): AsyncApiDocument = loaded(file).document
+
+    /** Parses [file] and loads the targets of its references. */
+    fun loaded(file: File): LoadedDocument {
+        val document = parser.parse(root(file))
+        return LoadedDocument(document, ExternalReferenceLoader(context).loadAll())
+    }
+
+    /**
+     * A parsed root document with the targets loaded for its references.
+     *
+     * @property document the root document
+     * @property targets the loaded documents and fragments
+     */
+    data class LoadedDocument(
+        val document: AsyncApiDocument,
+        val targets: List<LoadedTarget>,
+    )
 }
 
 /** The model registered at the node whose display path is [displayPath], or `null` when there is none. */

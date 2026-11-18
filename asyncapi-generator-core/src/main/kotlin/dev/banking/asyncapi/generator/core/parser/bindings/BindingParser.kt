@@ -5,10 +5,10 @@ import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
 import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.node.referenceOrNull
 import dev.banking.asyncapi.generator.core.parser.schemas.SchemaParser
 import dev.banking.asyncapi.generator.core.source.DocumentBoolean
 import dev.banking.asyncapi.generator.core.source.DocumentObject
@@ -45,20 +45,11 @@ internal class BindingParser(
             componentNode.name to parseComponent(componentNode, location)
         }
 
+    /** Parses the binding of one [protocol], which defaults to the node's member name. */
     fun parseProtocol(
         parserNode: ParserNode,
         location: BindingLocation,
-    ): BindingInterface {
-        parseReference(parserNode, location, parserNode.name)?.let { return it }
-        val content = parserNode.expect<Map<String, Any?>>()
-        val protocolBinding = parseProtocolBinding(parserNode, location, parserNode.name)
-        return inlineBinding(parserNode, content, listOf(protocolBinding))
-    }
-
-    internal fun parseProtocol(
-        parserNode: ParserNode,
-        location: BindingLocation,
-        protocol: String,
+        protocol: String = parserNode.name,
     ): BindingInterface {
         parseReference(parserNode, location, protocol)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
@@ -83,19 +74,11 @@ internal class BindingParser(
         parserNode: ParserNode,
         location: BindingLocation,
         protocol: String?,
-    ): BindingInterface.BindingReference? {
-        val reference = parserNode.expectObject().optional($$"$ref")?.expect<String>() ?: return null
-        val model =
-            Reference(
-                ref = reference,
-                referenceCategoryKey = BINDING,
-            )
-        asyncApiContext.bindingRegistry.register(model, location, protocol)
-        asyncApiContext.register(model, parserNode)
-        return BindingInterface.BindingReference(
-            model,
-        )
-    }
+    ): BindingInterface.BindingReference? =
+        parserNode
+            .referenceOrNull(BINDING) { target ->
+                if (protocol != null) parseProtocol(target, location, protocol) else parseComponent(target, location)
+            }?.let(BindingInterface::BindingReference)
 
     private fun parseProtocolBinding(
         parserNode: ParserNode,

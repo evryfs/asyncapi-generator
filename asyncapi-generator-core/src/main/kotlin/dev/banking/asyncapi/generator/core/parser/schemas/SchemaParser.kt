@@ -39,7 +39,7 @@ internal class SchemaParser(
                     value = bool,
                 ).also { asyncApiContext.register(it, parserNode) }
         }
-        parserNode.referenceOrNull(SCHEMA)?.let { return SchemaInterface.SchemaReference(it) }
+        parserNode.referenceOrNull(SCHEMA, ::parseElement)?.let { return SchemaInterface.SchemaReference(it) }
         val objectNode = parserNode.expectObject()
         objectNode.optional("schemaFormat")?.expect<String>()?.let { format ->
             objectNode.expectOnlyMembers(MULTI_FORMAT_SCHEMA)
