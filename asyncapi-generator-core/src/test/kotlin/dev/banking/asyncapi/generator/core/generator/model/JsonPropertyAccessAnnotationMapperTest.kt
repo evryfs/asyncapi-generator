@@ -6,8 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class JsonPropertyAccessAnnotationMapperTest {
-    private fun annotation(schema: Schema?, wireName: String? = null) =
-        JsonPropertyAccessAnnotationMapper.annotationFor(schema, wireName, "@field:JsonProperty")
+    private fun annotation(
+        schema: Schema?,
+        wireName: String? = null,
+    ) = JsonPropertyAccessAnnotationMapper.annotationFor(schema, wireName, "@field:JsonProperty")
 
     @Test
     fun `maps supported JSON property access modes`() {

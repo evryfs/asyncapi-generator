@@ -26,7 +26,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class MessageParserTest {
-
     private val context = AsyncApiContext()
     private val parser = MessageParser(context)
 
@@ -34,9 +33,13 @@ class MessageParserTest {
     fun `parse inline and referenced messages`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messages")
+        val messagesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messages")
 
         val result = parser.parseMap(messagesNode)
 
@@ -63,9 +66,10 @@ class MessageParserTest {
             tags.map { it.description },
         )
 
-        val traitReference = assertIs<MessageTraitInterface.ReferenceMessageTrait>(
-            assertNotNull(lightMeasured.traits).single(),
-        ).reference
+        val traitReference =
+            assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+                assertNotNull(lightMeasured.traits).single(),
+            ).reference
         assertEquals("#/components/messageTraits/commonHeaders", traitReference.ref)
         assertEquals(MESSAGE_TRAIT, traitReference.referenceCategoryKey)
 
@@ -109,9 +113,10 @@ class MessageParserTest {
         )
         val turnOnExample = assertNotNull(turnOnOff.examples).single()
         assertEquals("turnOnExample", turnOnExample.name)
-        val turnOnTrait = assertIs<MessageTraitInterface.ReferenceMessageTrait>(
-            assertNotNull(turnOnOff.traits).single(),
-        ).reference
+        val turnOnTrait =
+            assertIs<MessageTraitInterface.ReferenceMessageTrait>(
+                assertNotNull(turnOnOff.traits).single(),
+            ).reference
         assertEquals("#/components/messageTraits/commonHeaders", turnOnTrait.ref)
         assertEquals(MESSAGE_TRAIT, turnOnTrait.referenceCategoryKey)
 
@@ -125,9 +130,13 @@ class MessageParserTest {
     fun `parse messages with referenced payload and correlation ID`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_edge_cases.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messages")
+        val messagesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messages")
 
         val messages = parser.parseMap(messagesNode)
 
@@ -149,13 +158,18 @@ class MessageParserTest {
     fun `parse reference object ignores sibling members`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messages")
+        val messagesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messages")
 
-        val reference = assertIs<MessageInterface.MessageReference>(
-            parser.parseMap(messagesNode).getValue("referencedMessage"),
-        ).reference
+        val reference =
+            assertIs<MessageInterface.MessageReference>(
+                parser.parseMap(messagesNode).getValue("referencedMessage"),
+            ).reference
 
         assertEquals("#/components/messages/lightMeasured", reference.ref)
         assertEquals(MESSAGE, reference.referenceCategoryKey)
@@ -165,9 +179,13 @@ class MessageParserTest {
     fun `parse message with empty payload and inline trait`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_edge_cases.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messagesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messages")
+        val messagesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messages")
 
         val messages = parser.parseMap(messagesNode)
 
@@ -177,9 +195,10 @@ class MessageParserTest {
 
         val inlineTrait = assertIs<MessageInterface.MessageInline>(messages["InlineTraitMessage"]).message
         assertEquals("InlineTraitMessage", inlineTrait.name)
-        val trait = assertIs<MessageTraitInterface.InlineMessageTrait>(
-            assertNotNull(inlineTrait.traits).single(),
-        ).trait
+        val trait =
+            assertIs<MessageTraitInterface.InlineMessageTrait>(
+                assertNotNull(inlineTrait.traits).single(),
+            ).trait
         val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema
         assertEquals("string", headers.type)
     }
@@ -188,14 +207,19 @@ class MessageParserTest {
     fun `rejects unknown message members and accepts specification extensions`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_member_policy.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messageCases = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageCases")
-            .expectObject()
+        val messageCases =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messageCases")
+                .expectObject()
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(messageCases.required("UnknownMember"))
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(messageCases.required("UnknownMember"))
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_OBJECT_MEMBER, diagnostic.category)
@@ -207,9 +231,10 @@ class MessageParserTest {
         )
         assertEquals("asyncapi_parser_message_member_policy.yaml", diagnostic.sourceLocation.file.name)
 
-        val message = assertIs<MessageInterface.MessageInline>(
-            parser.parseMap(messageCases.required("SpecificationExtension")).getValue("validMessage"),
-        ).message
+        val message =
+            assertIs<MessageInterface.MessageInline>(
+                parser.parseMap(messageCases.required("SpecificationExtension")).getValue("validMessage"),
+            ).message
         assertEquals("valid", message.name)
     }
 }

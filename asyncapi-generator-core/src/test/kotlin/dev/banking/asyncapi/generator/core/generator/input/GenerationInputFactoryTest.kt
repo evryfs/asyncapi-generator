@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertSame
 import kotlin.test.assertFalse
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class GenerationInputFactoryTest {

@@ -7,7 +7,6 @@ import org.approvaltests.core.Options
 import java.nio.file.Files
 
 internal object BundlerApprovals {
-
     fun verify(
         generated: String,
         scenario: String,

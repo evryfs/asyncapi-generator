@@ -6,9 +6,9 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ANNOTATION_IGNORED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ARRAY_SIZE_RANGE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_ANNOTATION_IGNORED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEPENDENCY_ARRAY_UNIQUE
@@ -40,7 +40,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class SchemaValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
@@ -77,9 +76,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/schemas/asyncapi_validator_schema_exact_values_invalid.yaml")
 
         assertEquals(7, results.errors.size)
-        val emptyType = results.findings.single {
-            it.code == SCHEMA_TYPE_ARRAY_NONEMPTY.code
-        }
+        val emptyType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE_ARRAY_NONEMPTY.code
+            }
         assertEquals(SCHEMA_TYPE_ARRAY_NONEMPTY.code, emptyType.code)
         assertEquals(SCHEMA_TYPE_ARRAY_NONEMPTY.severity, emptyType.severity)
         assertEquals(SCHEMA_TYPE_ARRAY_NONEMPTY.concern, emptyType.concern)
@@ -89,9 +89,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(8, emptyType.line)
 
-        val typeUnique = results.findings.single {
-            it.code == SCHEMA_TYPE_ARRAY_UNIQUE.code
-        }
+        val typeUnique =
+            results.findings.single {
+                it.code == SCHEMA_TYPE_ARRAY_UNIQUE.code
+            }
         assertEquals(SCHEMA_TYPE_ARRAY_UNIQUE.code, typeUnique.code)
         assertEquals(SCHEMA_TYPE_ARRAY_UNIQUE.severity, typeUnique.severity)
         assertEquals(SCHEMA_TYPE_ARRAY_UNIQUE.concern, typeUnique.concern)
@@ -101,19 +102,21 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(10, typeUnique.line)
 
-        val explicitStringType = results.findings.single {
-            it.code == SCHEMA_TYPE.code &&
-                it.path ==
-                "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.UnnormalizedType.type"
-        }
+        val explicitStringType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.UnnormalizedType.type"
+            }
         assertEquals(SCHEMA_TYPE.code, explicitStringType.code)
         assertEquals(SCHEMA_TYPE.severity, explicitStringType.severity)
         assertEquals(SCHEMA_TYPE.concern, explicitStringType.concern)
         assertEquals(12, explicitStringType.line)
 
-        val enumUnique = results.findings.single {
-            it.code == SCHEMA_ENUM_UNIQUE.code
-        }
+        val enumUnique =
+            results.findings.single {
+                it.code == SCHEMA_ENUM_UNIQUE.code
+            }
         assertEquals(SCHEMA_ENUM_UNIQUE.code, enumUnique.code)
         assertEquals(SCHEMA_ENUM_UNIQUE.severity, enumUnique.severity)
         assertEquals(SCHEMA_ENUM_UNIQUE.concern, enumUnique.concern)
@@ -123,9 +126,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(15, enumUnique.line)
 
-        val constType = results.findings.single {
-            it.code == SCHEMA_CONST_TYPE.code
-        }
+        val constType =
+            results.findings.single {
+                it.code == SCHEMA_CONST_TYPE.code
+            }
         assertEquals(SCHEMA_CONST_TYPE.code, constType.code)
         assertEquals(SCHEMA_CONST_TYPE.severity, constType.severity)
         assertEquals(SCHEMA_CONST_TYPE.concern, constType.concern)
@@ -135,9 +139,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(18, constType.line)
 
-        val defaultType = results.findings.single {
-            it.code == SCHEMA_DEFAULT_TYPE.code
-        }
+        val defaultType =
+            results.findings.single {
+                it.code == SCHEMA_DEFAULT_TYPE.code
+            }
         assertEquals(SCHEMA_DEFAULT_TYPE.code, defaultType.code)
         assertEquals(SCHEMA_DEFAULT_TYPE.severity, defaultType.severity)
         assertEquals(SCHEMA_DEFAULT_TYPE.concern, defaultType.concern)
@@ -147,11 +152,12 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(21, defaultType.line)
 
-        val explicitNullType = results.findings.single {
-            it.code == SCHEMA_TYPE.code &&
-                it.path ==
-                "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.ExplicitNullType.type"
-        }
+        val explicitNullType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_exact_values_invalid.root.components.schemas.ExplicitNullType.type"
+            }
         assertEquals(SCHEMA_TYPE.code, explicitNullType.code)
         assertEquals(SCHEMA_TYPE.severity, explicitNullType.severity)
         assertEquals(SCHEMA_TYPE.concern, explicitNullType.concern)
@@ -194,43 +200,47 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         assertEquals(4, results.errors.size)
 
-        val propertyType = results.findings.single {
-            it.code == SCHEMA_TYPE.code &&
-            it.path ==
-                "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.patternProperties.^x-.type"
-        }
+        val propertyType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.patternProperties.^x-.type"
+            }
         assertEquals(SCHEMA_TYPE.code, propertyType.code)
         assertEquals(SCHEMA_TYPE.severity, propertyType.severity)
         assertEquals(SCHEMA_TYPE.concern, propertyType.concern)
         assertEquals("asyncapi_validator_schema_recursive_invalid.yaml", propertyType.sourceLocation?.file?.name)
         assertEquals(11, propertyType.line)
 
-        val duplicateDependency = results.findings.single {
-            it.code == SCHEMA_DEPENDENCY_ARRAY_UNIQUE.code &&
-            it.path ==
-                "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.dependencies.duplicate[1]"
-        }
+        val duplicateDependency =
+            results.findings.single {
+                it.code == SCHEMA_DEPENDENCY_ARRAY_UNIQUE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.dependencies.duplicate[1]"
+            }
         assertEquals(SCHEMA_DEPENDENCY_ARRAY_UNIQUE.code, duplicateDependency.code)
         assertEquals(SCHEMA_DEPENDENCY_ARRAY_UNIQUE.severity, duplicateDependency.severity)
         assertEquals(SCHEMA_DEPENDENCY_ARRAY_UNIQUE.concern, duplicateDependency.concern)
         assertEquals(16, duplicateDependency.line)
 
-        val nestedType = results.findings.single {
-            it.code == SCHEMA_TYPE.code &&
-            it.path ==
-                "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.dependencies.nested.properties.value.type"
-        }
+        val nestedType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_recursive_invalid.root.components.schemas.Recursive.dependencies.nested.properties.value.type"
+            }
         assertEquals(SCHEMA_TYPE.code, nestedType.code)
         assertEquals(SCHEMA_TYPE.severity, nestedType.severity)
         assertEquals(SCHEMA_TYPE.concern, nestedType.concern)
         assertEquals("asyncapi_validator_schema_recursive_invalid.yaml", nestedType.sourceLocation?.file?.name)
         assertEquals(21, nestedType.line)
 
-        val tupleItemType = results.findings.single {
-            it.code == SCHEMA_TYPE.code &&
-            it.path ==
-                "asyncapi_validator_schema_recursive_invalid.root.components.schemas.TupleItems.items[1].type"
-        }
+        val tupleItemType =
+            results.findings.single {
+                it.code == SCHEMA_TYPE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_recursive_invalid.root.components.schemas.TupleItems.items[1].type"
+            }
         assertEquals(SCHEMA_TYPE.code, tupleItemType.code)
         assertEquals(SCHEMA_TYPE.severity, tupleItemType.severity)
         assertEquals(SCHEMA_TYPE.concern, tupleItemType.concern)
@@ -243,11 +253,12 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         assertEquals(1, results.warnings.size)
 
-        val nullable = results.findings.singleOrNull {
-            it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedNullable.nullable"
-        }
+        val nullable =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedNullable.nullable"
+            }
         assertNotNull(nullable)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, nullable.code)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, nullable.severity)
@@ -255,51 +266,56 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals("asyncapi_validator_schema_keyword_diagnostics.yaml", nullable.sourceLocation?.file?.name)
         assertEquals(9, nullable.line)
 
-        val newerDefinition = results.findings.singleOrNull {
-            it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDefinitionKeyword.\$defs"
-        }
+        val newerDefinition =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NewerDefinitionKeyword.\$defs"
+            }
         assertNotNull(newerDefinition)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, newerDefinition.code)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, newerDefinition.severity)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.concern, newerDefinition.concern)
         assertEquals(13, newerDefinition.line)
 
-        val unevaluated = results.findings.singleOrNull {
-            it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedStructuralKeyword.unevaluatedProperties"
-        }
+        val unevaluated =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnsupportedStructuralKeyword.unevaluatedProperties"
+            }
         assertNotNull(unevaluated)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, unevaluated.code)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, unevaluated.severity)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.concern, unevaluated.concern)
         assertEquals(19, unevaluated.line)
 
-        val minLenght = results.findings.singleOrNull {
-            it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnknownKeyword.minLenght"
-        }
+        val minLenght =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.UnknownKeyword.minLenght"
+            }
         assertNotNull(minLenght)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, minLenght.code)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, minLenght.severity)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.concern, minLenght.concern)
         assertEquals(23, minLenght.line)
 
-        val dialect = results.findings.singleOrNull {
-            it.code == SCHEMA_DIALECT.code
-        }
+        val dialect =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_DIALECT.code
+            }
         assertNotNull(dialect)
         assertEquals(SCHEMA_DIALECT.code, dialect.code)
         assertEquals(SCHEMA_DIALECT.severity, dialect.severity)
         assertEquals(SCHEMA_DIALECT.concern, dialect.concern)
         assertEquals(26, dialect.line)
 
-        val annotation = results.findings.singleOrNull {
-            it.code == SCHEMA_ANNOTATION_IGNORED.code
-        }
+        val annotation =
+            results.findings.singleOrNull {
+                it.code == SCHEMA_ANNOTATION_IGNORED.code
+            }
         assertNotNull(annotation)
         assertEquals(SCHEMA_ANNOTATION_IGNORED.code, annotation.code)
         assertEquals(SCHEMA_ANNOTATION_IGNORED.severity, annotation.severity)
@@ -310,11 +326,12 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(31, annotation.line)
 
-        val unsupportedNullableReference = results.findings.single {
-            it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
-                it.path ==
-                "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NullableReference.nullable"
-        }
+        val unsupportedNullableReference =
+            results.findings.single {
+                it.code == SCHEMA_KEYWORD_UNSUPPORTED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_keyword_diagnostics.root.components.schemas.NullableReference.nullable"
+            }
         assertNotNull(unsupportedNullableReference)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, unsupportedNullableReference.code)
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.severity, unsupportedNullableReference.severity)
@@ -356,9 +373,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `referenced transitive schemas use the same compatibility policy`() {
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            parse("validator/schemas/external/asyncapi_external_transitive_invalid.yaml")
-        }
+        val exception =
+            assertFailsWith<AsyncApiValidateException.ValidateError> {
+                parse("validator/schemas/external/asyncapi_external_transitive_invalid.yaml")
+            }
 
         val finding = exception.errors.single()
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, finding.code)
@@ -380,9 +398,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `external schema keyword diagnostics point to the external source`() {
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            parse("validator/schemas/external/asyncapi_external_nullable.yaml")
-        }
+        val exception =
+            assertFailsWith<AsyncApiValidateException.ValidateError> {
+                parse("validator/schemas/external/asyncapi_external_nullable.yaml")
+            }
 
         val finding = exception.errors.single()
         assertEquals(SCHEMA_KEYWORD_UNSUPPORTED.code, finding.code)
@@ -403,9 +422,10 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `external json schema explicit null type reports its original source`() {
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            parse("validator/schemas/external/asyncapi_external_null_type.yaml")
-        }
+        val exception =
+            assertFailsWith<AsyncApiValidateException.ValidateError> {
+                parse("validator/schemas/external/asyncapi_external_null_type.yaml")
+            }
 
         val finding = exception.errors.single()
         assertEquals(SCHEMA_TYPE.code, finding.code)
@@ -426,46 +446,52 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(5, results.errors.size)
         assertEquals(5, results.findings.size)
 
-        val minimum = results.findings.single {
-            it.code == SCHEMA_NUMERIC_RANGE.code &&
-                it.path == "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidNumericRange.minimum"
-        }
+        val minimum =
+            results.findings.single {
+                it.code == SCHEMA_NUMERIC_RANGE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidNumericRange.minimum"
+            }
         assertEquals(SCHEMA_NUMERIC_RANGE.code, minimum.code)
         assertEquals(SCHEMA_NUMERIC_RANGE.severity, minimum.severity)
         assertEquals(SCHEMA_NUMERIC_RANGE.concern, minimum.concern)
         assertEquals(9, minimum.line)
 
-        val multipleOf = results.findings.single {
-            it.code == SCHEMA_MULTIPLE_OF.code
-        }
+        val multipleOf =
+            results.findings.single {
+                it.code == SCHEMA_MULTIPLE_OF.code
+            }
         assertEquals(SCHEMA_MULTIPLE_OF.code, multipleOf.code)
         assertEquals(SCHEMA_MULTIPLE_OF.severity, multipleOf.severity)
         assertEquals(SCHEMA_MULTIPLE_OF.concern, multipleOf.concern)
         assertEquals(14, multipleOf.line)
 
-        val minLength = results.findings.single {
-            it.code == SCHEMA_STRING_LENGTH.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.minLength"
-        }
+        val minLength =
+            results.findings.single {
+                it.code == SCHEMA_STRING_LENGTH.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.minLength"
+            }
         assertEquals(SCHEMA_STRING_LENGTH.code, minLength.code)
         assertEquals(SCHEMA_STRING_LENGTH.severity, minLength.severity)
         assertEquals(SCHEMA_STRING_LENGTH.concern, minLength.concern)
         assertEquals(18, minLength.line)
 
-        val maxLength = results.findings.single {
-            it.code == SCHEMA_STRING_LENGTH.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.maxLength"
-        }
+        val maxLength =
+            results.findings.single {
+                it.code == SCHEMA_STRING_LENGTH.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_constraints.root.components.schemas.InvalidStringLength.maxLength"
+            }
         assertEquals(SCHEMA_STRING_LENGTH.code, maxLength.code)
         assertEquals(SCHEMA_STRING_LENGTH.severity, maxLength.severity)
         assertEquals(SCHEMA_STRING_LENGTH.concern, maxLength.concern)
         assertEquals(19, maxLength.line)
 
-        val lengthRange = results.findings.single {
-            it.code == SCHEMA_STRING_LENGTH_RANGE.code
-        }
+        val lengthRange =
+            results.findings.single {
+                it.code == SCHEMA_STRING_LENGTH_RANGE.code
+            }
         assertEquals(SCHEMA_STRING_LENGTH_RANGE.code, lengthRange.code)
         assertEquals(SCHEMA_STRING_LENGTH_RANGE.severity, lengthRange.severity)
         assertEquals(SCHEMA_STRING_LENGTH_RANGE.concern, lengthRange.concern)
@@ -478,30 +504,33 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         assertEquals(4, results.errors.size)
 
-        val requiredMissing = results.findings.single {
-            it.code == SCHEMA_DISCRIMINATOR_REQUIRED.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingRequiredDisc.discriminator"
-        }
+        val requiredMissing =
+            results.findings.single {
+                it.code == SCHEMA_DISCRIMINATOR_REQUIRED.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingRequiredDisc.discriminator"
+            }
         assertEquals(SCHEMA_DISCRIMINATOR_REQUIRED.code, requiredMissing.code)
         assertEquals(SCHEMA_DISCRIMINATOR_REQUIRED.severity, requiredMissing.severity)
         assertEquals(SCHEMA_DISCRIMINATOR_REQUIRED.concern, requiredMissing.concern)
         assertEquals(13, requiredMissing.line)
 
-        val propertyMissing = results.findings.single {
-            it.code == SCHEMA_DISCRIMINATOR_PROPERTY.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingPropertyDisc.discriminator"
-        }
+        val propertyMissing =
+            results.findings.single {
+                it.code == SCHEMA_DISCRIMINATOR_PROPERTY.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingPropertyDisc.discriminator"
+            }
         assertEquals(SCHEMA_DISCRIMINATOR_PROPERTY.code, propertyMissing.code)
         assertEquals(SCHEMA_DISCRIMINATOR_PROPERTY.severity, propertyMissing.severity)
         assertEquals(SCHEMA_DISCRIMINATOR_PROPERTY.concern, propertyMissing.concern)
         assertEquals(22, propertyMissing.line)
 
-        val both = results.findings.filter {
-            it.path ==
-                "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingCollections.discriminator"
-        }
+        val both =
+            results.findings.filter {
+                it.path ==
+                    "asyncapi_validator_schema_invalid_discriminator.root.components.schemas.MissingCollections.discriminator"
+            }
         assertEquals(2, both.size)
         assertEquals(
             28,
@@ -557,18 +586,23 @@ class SchemaValidatorTest : AbstractValidatorTest() {
         assertEquals(2, results.errors.size)
         assertEquals(0, results.warnings.size)
 
-        val enumEmpty = results.findings.single {
-            it.code == SCHEMA_ENUM_EMPTY.code
-        }
+        val enumEmpty =
+            results.findings.single {
+                it.code == SCHEMA_ENUM_EMPTY.code
+            }
         assertEquals(SCHEMA_ENUM_EMPTY.code, enumEmpty.code)
         assertEquals(SCHEMA_ENUM_EMPTY.severity, enumEmpty.severity)
         assertEquals(SCHEMA_ENUM_EMPTY.concern, enumEmpty.concern)
-        assertEquals("asyncapi_validator_schema_collection_rules_invalid.root.components.schemas.EmptyEnumString.enum", enumEmpty.path)
+        assertEquals(
+            "asyncapi_validator_schema_collection_rules_invalid.root.components.schemas.EmptyEnumString.enum",
+            enumEmpty.path,
+        )
         assertEquals(10, enumEmpty.line)
 
-        val requiredUnique = results.findings.single {
-            it.code == SCHEMA_REQUIRED_UNIQUE.code
-        }
+        val requiredUnique =
+            results.findings.single {
+                it.code == SCHEMA_REQUIRED_UNIQUE.code
+            }
         assertEquals(SCHEMA_REQUIRED_UNIQUE.code, requiredUnique.code)
         assertEquals(SCHEMA_REQUIRED_UNIQUE.severity, requiredUnique.severity)
         assertEquals(SCHEMA_REQUIRED_UNIQUE.concern, requiredUnique.concern)
@@ -585,59 +619,67 @@ class SchemaValidatorTest : AbstractValidatorTest() {
 
         assertEquals(6, results.errors.size)
 
-        val invalidMinItems = results.findings.single {
-            it.code == SCHEMA_ARRAY_SIZE.code &&
-                it.path == "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArray.minItems"
-        }
+        val invalidMinItems =
+            results.findings.single {
+                it.code == SCHEMA_ARRAY_SIZE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArray.minItems"
+            }
         assertEquals(SCHEMA_ARRAY_SIZE.code, invalidMinItems.code)
         assertEquals(SCHEMA_ARRAY_SIZE.severity, invalidMinItems.severity)
         assertEquals(SCHEMA_ARRAY_SIZE.concern, invalidMinItems.concern)
         assertEquals(9, invalidMinItems.line)
 
-        val invalidMaxItems = results.findings.single {
-            it.code == SCHEMA_ARRAY_SIZE.code &&
-                it.path == "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArray.maxItems"
-        }
+        val invalidMaxItems =
+            results.findings.single {
+                it.code == SCHEMA_ARRAY_SIZE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArray.maxItems"
+            }
         assertEquals(SCHEMA_ARRAY_SIZE.code, invalidMaxItems.code)
         assertEquals(SCHEMA_ARRAY_SIZE.severity, invalidMaxItems.severity)
         assertEquals(SCHEMA_ARRAY_SIZE.concern, invalidMaxItems.concern)
         assertEquals(10, invalidMaxItems.line)
 
-        val arrayRange = results.findings.single {
-            it.code == SCHEMA_ARRAY_SIZE_RANGE.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArrayRange.minItems"
-        }
+        val arrayRange =
+            results.findings.single {
+                it.code == SCHEMA_ARRAY_SIZE_RANGE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidArrayRange.minItems"
+            }
         assertEquals(SCHEMA_ARRAY_SIZE_RANGE.code, arrayRange.code)
         assertEquals(SCHEMA_ARRAY_SIZE_RANGE.severity, arrayRange.severity)
         assertEquals(SCHEMA_ARRAY_SIZE_RANGE.concern, arrayRange.concern)
         assertEquals(14, arrayRange.line)
 
-        val minProperties = results.findings.single {
-            it.code == SCHEMA_OBJECT_SIZE.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObject.minProperties"
-        }
+        val minProperties =
+            results.findings.single {
+                it.code == SCHEMA_OBJECT_SIZE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObject.minProperties"
+            }
         assertEquals(SCHEMA_OBJECT_SIZE.code, minProperties.code)
         assertEquals(SCHEMA_OBJECT_SIZE.severity, minProperties.severity)
         assertEquals(SCHEMA_OBJECT_SIZE.concern, minProperties.concern)
         assertEquals(19, minProperties.line)
 
-        val maxProperties = results.findings.single {
-            it.code == SCHEMA_OBJECT_SIZE.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObject.maxProperties"
-        }
+        val maxProperties =
+            results.findings.single {
+                it.code == SCHEMA_OBJECT_SIZE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObject.maxProperties"
+            }
         assertEquals(SCHEMA_OBJECT_SIZE.code, maxProperties.code)
         assertEquals(SCHEMA_OBJECT_SIZE.severity, maxProperties.severity)
         assertEquals(SCHEMA_OBJECT_SIZE.concern, maxProperties.concern)
         assertEquals(20, maxProperties.line)
 
-        val objectRange = results.findings.single {
-            it.code == SCHEMA_OBJECT_SIZE_RANGE.code &&
-                it.path ==
-                "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObjectRange.minProperties"
-        }
+        val objectRange =
+            results.findings.single {
+                it.code == SCHEMA_OBJECT_SIZE_RANGE.code &&
+                    it.path ==
+                    "asyncapi_validator_schema_invalid_structure.root.components.schemas.InvalidObjectRange.minProperties"
+            }
         assertEquals(SCHEMA_OBJECT_SIZE_RANGE.code, objectRange.code)
         assertEquals(SCHEMA_OBJECT_SIZE_RANGE.severity, objectRange.severity)
         assertEquals(SCHEMA_OBJECT_SIZE_RANGE.concern, objectRange.concern)

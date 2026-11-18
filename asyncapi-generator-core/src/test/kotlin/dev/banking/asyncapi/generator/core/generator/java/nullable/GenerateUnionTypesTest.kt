@@ -6,16 +6,17 @@ import java.io.File
 import kotlin.test.assertEquals
 
 class GenerateUnionTypesTest : AbstractJavaGeneratorClass() {
-
     @Test
     fun generate_union_types_with_strict_json_schema_semantics() {
-        val generated = generateElement(
-            yaml = File("src/test/resources/generator/asyncapi_union_types.yaml"),
-            generated = "UnionTypes.java",
-            modelPackage = "dev.banking.asyncapi.generator.core.model.generated.union",
-        )
+        val generated =
+            generateElement(
+                yaml = File("src/test/resources/generator/asyncapi_union_types.yaml"),
+                generated = "UnionTypes.java",
+                modelPackage = "dev.banking.asyncapi.generator.core.model.generated.union",
+            )
         val classBody = extractClassBody(generated)
-        val expected = """
+        val expected =
+            """
             public class UnionTypes implements Serializable {
             
                 @NotNull

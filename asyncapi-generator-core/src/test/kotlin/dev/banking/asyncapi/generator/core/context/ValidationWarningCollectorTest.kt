@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ValidationWarningCollectorTest {
-
     private val collector = ValidationWarningCollector()
 
     @Test
@@ -51,11 +50,12 @@ class ValidationWarningCollectorTest {
         assertEquals(1, result.size)
     }
 
-    private fun finding(code: String) = ValidationFinding(
-        code = code,
-        concern = ValidationConcern.SPECIFICATION,
-        severity = ValidationSeverity.WARNING,
-        message = "test",
-        documentation = "test",
-    )
+    private fun finding(code: String) =
+        ValidationFinding(
+            code = code,
+            concern = ValidationConcern.SPECIFICATION,
+            severity = ValidationSeverity.WARNING,
+            message = "test",
+            documentation = "test",
+        )
 }

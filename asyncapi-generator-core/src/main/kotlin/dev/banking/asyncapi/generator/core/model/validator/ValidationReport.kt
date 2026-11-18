@@ -5,7 +5,9 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WA
 import java.util.Collections.unmodifiableList
 
 /** Immutable result of validating one parsed AsyncAPI model graph. */
-class ValidationReport internal constructor(findings: List<ValidationFinding>) {
+class ValidationReport internal constructor(
+    findings: List<ValidationFinding>,
+) {
     val findings: List<ValidationFinding> = unmodifiableList(findings.toList())
     val errors: List<ValidationFinding> =
         unmodifiableList(this.findings.filter { it.severity == ERROR })

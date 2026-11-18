@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class MessageTraitValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
@@ -27,9 +26,10 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(10, contentType.line)
 
-        val example = results.findings.single {
-            it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
-        }
+        val example =
+            results.findings.single {
+                it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
+            }
         assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.severity, example.severity)
         assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.concern, example.concern)
         assertEquals("asyncapi_validator_messagetrait_invalid.yaml", example.sourceLocation?.file?.name)

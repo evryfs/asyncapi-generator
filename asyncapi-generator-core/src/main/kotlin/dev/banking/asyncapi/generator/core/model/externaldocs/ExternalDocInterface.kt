@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
 sealed interface ExternalDocInterface {
-
     data class ExternalDocInline(
         @get:JsonUnwrapped
         val externalDoc: ExternalDoc,
@@ -15,4 +14,3 @@ sealed interface ExternalDocInterface {
         val reference: Reference,
     ) : ExternalDocInterface
 }
-

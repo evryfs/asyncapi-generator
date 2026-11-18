@@ -8,7 +8,6 @@ import java.util.IdentityHashMap
 
 /** Identifies schema models that participate in a reference cycle. */
 internal class SchemaRecursionAnalyzer {
-
     private val results = IdentityHashMap<Any, Boolean>()
 
     fun isRecursive(model: Any): Boolean =
@@ -49,28 +48,32 @@ internal class SchemaRecursionAnalyzer {
             -> false
         }
 
-    private fun Schema.nestedSchemas(): Sequence<SchemaInterface> = sequence {
-        listOfNotNull(
-            items,
-            additionalItems,
-            contains,
-            additionalProperties,
-            propertyNames,
-            not,
-            ifSchema,
-            thenSchema,
-            elseSchema,
-        ).forEach { yield(it) }
-        properties.orEmpty().values.forEach { yield(it) }
-        patternProperties.orEmpty().values.forEach { yield(it) }
-        definitions.orEmpty().values.forEach { yield(it) }
-        dependencies.orEmpty().values.filterIsInstance<SchemaInterface>().forEach { yield(it) }
-        tupleItems.orEmpty().forEach { yield(it) }
-        allOf.orEmpty().forEach { yield(it) }
-        anyOf.orEmpty().forEach { yield(it) }
-        oneOf.orEmpty().forEach { yield(it) }
-    }
+    private fun Schema.nestedSchemas(): Sequence<SchemaInterface> =
+        sequence {
+            listOfNotNull(
+                items,
+                additionalItems,
+                contains,
+                additionalProperties,
+                propertyNames,
+                not,
+                ifSchema,
+                thenSchema,
+                elseSchema,
+            ).forEach { yield(it) }
+            properties.orEmpty().values.forEach { yield(it) }
+            patternProperties.orEmpty().values.forEach { yield(it) }
+            definitions.orEmpty().values.forEach { yield(it) }
+            dependencies
+                .orEmpty()
+                .values
+                .filterIsInstance<SchemaInterface>()
+                .forEach { yield(it) }
+            tupleItems.orEmpty().forEach { yield(it) }
+            allOf.orEmpty().forEach { yield(it) }
+            anyOf.orEmpty().forEach { yield(it) }
+            oneOf.orEmpty().forEach { yield(it) }
+        }
 
-    private fun <T : Any> identitySet(): MutableSet<T> =
-        Collections.newSetFromMap(IdentityHashMap())
+    private fun <T : Any> identitySet(): MutableSet<T> = Collections.newSetFromMap(IdentityHashMap())
 }

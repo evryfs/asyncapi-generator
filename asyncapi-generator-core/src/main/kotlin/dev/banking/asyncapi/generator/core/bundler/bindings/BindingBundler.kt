@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
-
 /**
  * Bundles binding objects and references.
  */
@@ -22,36 +21,60 @@ internal class BindingBundler {
             bundle(binding, context)
         }
 
-    fun bundle(binding: BindingInterface, context: BundlingContext): BindingInterface =
+    fun bundle(
+        binding: BindingInterface,
+        context: BundlingContext,
+    ): BindingInterface =
         when (binding) {
             is BindingInterface.BindingInline ->
                 BindingInterface.BindingInline(bundleBinding(binding.binding, context))
 
             is BindingInterface.BindingReference -> {
-                binding.copy(reference = ReferenceBundler.bundleReferencedModel<Binding>(binding.reference, context) { model, nextContext ->
-                    bundleBinding(model, nextContext)
-                })
+                binding.copy(
+                    reference =
+                        ReferenceBundler.bundleReferencedModel<Binding>(
+                            binding.reference,
+                            context,
+                        ) { model, nextContext ->
+                            bundleBinding(model, nextContext)
+                        },
+                )
             }
         }
 
-    private fun bundleBinding(binding: Binding, context: BundlingContext): Binding {
+    private fun bundleBinding(
+        binding: Binding,
+        context: BundlingContext,
+    ): Binding {
         if (binding.protocolBindings.none { it.schemaFields.isNotEmpty() }) return binding
         var bundledKafkaKey = binding.kafkaKeySchema
         var bundledContent = binding.content
-        val bundledProtocolBindings = binding.protocolBindings.map { protocolBinding ->
-            val bundledFields = protocolBinding.schemaFields.mapValues { (_, schema) ->
-                // The message key becomes a generated type, so it keeps the name of its source pointer.
-                val isKey = schema === binding.kafkaKeySchema
-                val bundled =
-                    if (isKey) schemaBundler.bundleBindingField(schema, context) else schemaBundler.bundle(schema, context)
-                if (isKey) bundledKafkaKey = bundled
-                bundled
+        val bundledProtocolBindings =
+            binding.protocolBindings.map { protocolBinding ->
+                val bundledFields =
+                    protocolBinding.schemaFields.mapValues { (_, schema) ->
+                        // The message key becomes a generated type, so it keeps the name of its source pointer.
+                        val isKey = schema === binding.kafkaKeySchema
+                        val bundled =
+                            if (isKey) {
+                                schemaBundler.bundleBindingField(
+                                    schema,
+                                    context,
+                                )
+                            } else {
+                                schemaBundler.bundle(schema, context)
+                            }
+                        if (isKey) bundledKafkaKey = bundled
+                        bundled
+                    }
+                // Raw content is only replaced where bundling changed the schema.
+                val changedFields =
+                    bundledFields.filter { (name, bundled) ->
+                        bundled != protocolBinding.schemaFields[name]
+                    }
+                bundledContent = bundledContent.withBundledFields(protocolBinding.protocol, changedFields)
+                protocolBinding.copy(schemaFields = bundledFields)
             }
-            // Raw content is only replaced where bundling changed the schema.
-            val changedFields = bundledFields.filter { (name, bundled) -> bundled != protocolBinding.schemaFields[name] }
-            bundledContent = bundledContent.withBundledFields(protocolBinding.protocol, changedFields)
-            protocolBinding.copy(schemaFields = bundledFields)
-        }
         return binding.copy(
             content = bundledContent,
             kafkaKeySchema = bundledKafkaKey,

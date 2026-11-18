@@ -138,8 +138,22 @@ class AsyncApiGeneratorOutputContractTest {
         val expectedEnum = jsonMapper.valueToTree<JsonNode>(listOf("open", 2, true, null))
 
         assertEquals(2, tupleItems.path("items").size())
-        assertEquals("string", tupleItems.path("items").path(0).path("type").textValue())
-        assertEquals("integer", tupleItems.path("items").path(1).path("type").textValue())
+        assertEquals(
+            "string",
+            tupleItems
+                .path("items")
+                .path(0)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "integer",
+            tupleItems
+                .path("items")
+                .path(1)
+                .path("type")
+                .textValue(),
+        )
         assertEquals(false, falseItems.path("items").booleanValue())
         assertEquals(expectedEnum, untypedEnum.path("enum"))
         assertEquals("(?<group_name>a)", ecmaPattern.path("pattern").textValue())
@@ -185,7 +199,9 @@ class AsyncApiGeneratorOutputContractTest {
             resourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
-        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json").exists())
+        assertFalse(
+            sourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json").exists(),
+        )
     }
 
     @Test
@@ -264,8 +280,24 @@ class AsyncApiGeneratorOutputContractTest {
         val expectedEnum = jsonMapper.valueToTree<JsonNode>(listOf("open", 2, true, null))
 
         assertEquals(2, schemas.path("TupleItems").path("items").size())
-        assertEquals("string", schemas.path("TupleItems").path("items").path(0).path("type").textValue())
-        assertEquals("integer", schemas.path("TupleItems").path("items").path(1).path("type").textValue())
+        assertEquals(
+            "string",
+            schemas
+                .path("TupleItems")
+                .path("items")
+                .path(0)
+                .path("type")
+                .textValue(),
+        )
+        assertEquals(
+            "integer",
+            schemas
+                .path("TupleItems")
+                .path("items")
+                .path(1)
+                .path("type")
+                .textValue(),
+        )
         assertEquals(false, schemas.path("FalseItems").path("items").booleanValue())
         assertEquals(expectedEnum, schemas.path("UntypedEnum").path("enum"))
         assertEquals("(?<group_name>a)", schemas.path("EcmaPattern").path("pattern").textValue())
@@ -722,7 +754,9 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(schemaArtifact.readText().contains("package com.example.external.protobuf;"))
         assertTrue(schemaArtifact.readText().contains("message UserCreatedProtobuf"))
         assertFalse(sourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists())
-        assertFalse(javaSourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists())
+        assertFalse(
+            javaSourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists(),
+        )
     }
 
     @Test

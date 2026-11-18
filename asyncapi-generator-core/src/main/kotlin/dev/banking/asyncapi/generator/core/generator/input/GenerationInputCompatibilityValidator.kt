@@ -18,7 +18,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 internal class GenerationInputCompatibilityValidator(
     private val nativeAvroSchemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
 ) {
-
     fun validate(
         generationInput: GenerationInput,
         generationPlan: GenerationPlan,

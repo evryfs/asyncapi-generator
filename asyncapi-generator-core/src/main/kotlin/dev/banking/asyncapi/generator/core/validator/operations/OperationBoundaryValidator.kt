@@ -23,8 +23,10 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 internal class OperationBoundaryValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
-    fun validate(document: AsyncApiDocument, results: ValidationCollector) {
+    fun validate(
+        document: AsyncApiDocument,
+        results: ValidationCollector,
+    ) {
         val rootChannels = document.channels.orEmpty()
         document.operations.orEmpty().forEach { (name, operationInterface) ->
             val operation = resolve(operationInterface) ?: return@forEach
@@ -54,7 +56,10 @@ internal class OperationBoundaryValidator(
     }
 
     /** References that do not resolve to a channel are reported elsewhere; they are treated as in scope here. */
-    private fun inRoot(rootChannels: Map<String, ChannelInterface>, channelRef: Reference): Boolean {
+    private fun inRoot(
+        rootChannels: Map<String, ChannelInterface>,
+        channelRef: Reference,
+    ): Boolean {
         if (finalModel(channelRef) !is Channel) return true
         val target = asyncApiContext.modelTracking.findReference(channelRef) ?: return true
         return OperationReferenceBoundary.containsChannel(rootChannels, target)

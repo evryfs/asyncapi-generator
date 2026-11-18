@@ -13,144 +13,142 @@ import javax.inject.Inject
 
 /**
  * Gradle configuration surface for the AsyncAPI generator.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiExtension @Inject constructor(objects: ObjectFactory) {
-    val clientConfig: AsyncApiClientConfiguration =
-        objects.newInstance(AsyncApiClientConfiguration::class.java)
+abstract class AsyncApiExtension
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val clientConfig: AsyncApiClientConfiguration =
+            objects.newInstance(AsyncApiClientConfiguration::class.java)
 
-    /**
-     * A local `protoc` executable for native Protobuf models. By default `com.google.protobuf:protoc`
-     * is resolved from the project's repositories, and only for executions that generate them.
-     */
-    val protocExecutable: RegularFileProperty = objects.fileProperty()
+        /**
+         * A local `protoc` executable for native Protobuf models. By default `com.google.protobuf:protoc`
+         * is resolved from the project's repositories, and only for executions that generate them.
+         */
+        val protocExecutable: RegularFileProperty = objects.fileProperty()
 
-    /** Configuration warning ids silenced for every execution, for example `unused-client-config`. */
-    val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
+        /** Configuration warning ids silenced for every execution, for example `unused-client-config`. */
+        val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
 
-    val executions: NamedDomainObjectContainer<AsyncApiExecution> =
-        objects.domainObjectContainer(AsyncApiExecution::class.java) { executionName ->
-            objects.newInstance(AsyncApiExecution::class.java, executionName)
+        val executions: NamedDomainObjectContainer<AsyncApiExecution> =
+            objects.domainObjectContainer(AsyncApiExecution::class.java) { executionName ->
+                objects.newInstance(AsyncApiExecution::class.java, executionName)
+            }
+
+        fun clientConfig(action: Action<AsyncApiClientConfiguration>) {
+            action.execute(clientConfig)
         }
 
-    fun clientConfig(action: Action<AsyncApiClientConfiguration>) {
-        action.execute(clientConfig)
+        fun executions(action: Action<NamedDomainObjectContainer<AsyncApiExecution>>) {
+            action.execute(executions)
+        }
     }
-
-    fun executions(action: Action<NamedDomainObjectContainer<AsyncApiExecution>>) {
-        action.execute(executions)
-    }
-}
 
 /**
  * One named AsyncAPI generation request.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiExecution @Inject constructor(
-    private val executionName: String,
-    objects: ObjectFactory,
-) : Named {
-    override fun getName(): String = executionName
+abstract class AsyncApiExecution
+    @Inject
+    constructor(
+        private val executionName: String,
+        objects: ObjectFactory,
+    ) : Named {
+        override fun getName(): String = executionName
 
-    val generatorName: Property<String> = objects.property(String::class.java)
-    val inputSpec: RegularFileProperty = objects.fileProperty()
-    val outputFile: RegularFileProperty = objects.fileProperty()
-    val outputDirectory: DirectoryProperty = objects.directoryProperty()
-    val modelPackage: Property<String> = objects.property(String::class.java)
-    val clientPackage: Property<String> = objects.property(String::class.java)
-    val schemaPackage: Property<String> = objects.property(String::class.java)
+        val generatorName: Property<String> = objects.property(String::class.java)
+        val inputSpec: RegularFileProperty = objects.fileProperty()
+        val outputFile: RegularFileProperty = objects.fileProperty()
+        val outputDirectory: DirectoryProperty = objects.directoryProperty()
+        val modelPackage: Property<String> = objects.property(String::class.java)
+        val clientPackage: Property<String> = objects.property(String::class.java)
+        val schemaPackage: Property<String> = objects.property(String::class.java)
 
-    /** Configuration warning ids silenced for this execution, in addition to the top-level ones. */
-    val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
-    val modelConfig: AsyncApiModelConfiguration =
-        objects.newInstance(AsyncApiModelConfiguration::class.java)
+        /** Configuration warning ids silenced for this execution, in addition to the top-level ones. */
+        val suppressedWarnings: ListProperty<String> = objects.listProperty(String::class.java)
+        val modelConfig: AsyncApiModelConfiguration =
+            objects.newInstance(AsyncApiModelConfiguration::class.java)
 
-    fun modelConfig(action: Action<AsyncApiModelConfiguration>) {
-        action.execute(modelConfig)
+        fun modelConfig(action: Action<AsyncApiModelConfiguration>) {
+            action.execute(modelConfig)
+        }
     }
-}
 
 /**
  * Gradle model generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiModelConfiguration @Inject constructor(objects: ObjectFactory) {
-    val modelAnnotation: Property<String> = objects.property(String::class.java)
-    val modelType: Property<String> = objects.property(String::class.java)
-}
+abstract class AsyncApiModelConfiguration
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val modelAnnotation: Property<String> = objects.property(String::class.java)
+        val modelType: Property<String> = objects.property(String::class.java)
+    }
 
 /**
  * Shared Gradle client generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiClientConfiguration @Inject constructor(objects: ObjectFactory) {
-    val clientType: Property<String> = objects.property(String::class.java)
-    val clientContract: Property<String> = objects.property(String::class.java)
-    val topicParameterProperties: MapProperty<String, String> =
-        objects.mapProperty(String::class.java, String::class.java)
-    val validationAnnotations: AsyncApiValidationAnnotationsConfiguration =
-        objects.newInstance(AsyncApiValidationAnnotationsConfiguration::class.java)
-    val producer: AsyncApiProducerConfiguration =
-        objects.newInstance(AsyncApiProducerConfiguration::class.java)
-    val consumer: AsyncApiConsumerConfiguration =
-        objects.newInstance(AsyncApiConsumerConfiguration::class.java)
+abstract class AsyncApiClientConfiguration
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val clientType: Property<String> = objects.property(String::class.java)
+        val clientContract: Property<String> = objects.property(String::class.java)
+        val topicParameterProperties: MapProperty<String, String> =
+            objects.mapProperty(String::class.java, String::class.java)
+        val validationAnnotations: AsyncApiValidationAnnotationsConfiguration =
+            objects.newInstance(AsyncApiValidationAnnotationsConfiguration::class.java)
+        val producer: AsyncApiProducerConfiguration =
+            objects.newInstance(AsyncApiProducerConfiguration::class.java)
+        val consumer: AsyncApiConsumerConfiguration =
+            objects.newInstance(AsyncApiConsumerConfiguration::class.java)
 
-    fun validationAnnotations(action: Action<AsyncApiValidationAnnotationsConfiguration>) {
-        action.execute(validationAnnotations)
-    }
+        fun validationAnnotations(action: Action<AsyncApiValidationAnnotationsConfiguration>) {
+            action.execute(validationAnnotations)
+        }
 
-    fun producer(action: Action<AsyncApiProducerConfiguration>) {
-        action.execute(producer)
-    }
+        fun producer(action: Action<AsyncApiProducerConfiguration>) {
+            action.execute(producer)
+        }
 
-    fun consumer(action: Action<AsyncApiConsumerConfiguration>) {
-        action.execute(consumer)
+        fun consumer(action: Action<AsyncApiConsumerConfiguration>) {
+            action.execute(consumer)
+        }
     }
-}
 
 /**
  * Validation annotations applied to generated client contracts.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiValidationAnnotationsConfiguration @Inject constructor(objects: ObjectFactory) {
-    val clientContract: Property<String> = objects.property(String::class.java)
-    val payloadParameter: Property<String> = objects.property(String::class.java)
-}
+abstract class AsyncApiValidationAnnotationsConfiguration
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val clientContract: Property<String> = objects.property(String::class.java)
+        val payloadParameter: Property<String> = objects.property(String::class.java)
+    }
 
 /**
  * Gradle producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiProducerConfiguration @Inject constructor(objects: ObjectFactory) {
-    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
-    val additionalPayloadTypes: ListProperty<String> = objects.listProperty(String::class.java)
-}
+abstract class AsyncApiProducerConfiguration
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+        val additionalPayloadTypes: ListProperty<String> = objects.listProperty(String::class.java)
+    }
 
 /**
  * Gradle consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
-abstract class AsyncApiConsumerConfiguration @Inject constructor(objects: ObjectFactory) {
-    val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
-}
+abstract class AsyncApiConsumerConfiguration
+    @Inject
+    constructor(
+        objects: ObjectFactory,
+    ) {
+        val enabled: Property<Boolean> = objects.property(Boolean::class.javaObjectType)
+    }

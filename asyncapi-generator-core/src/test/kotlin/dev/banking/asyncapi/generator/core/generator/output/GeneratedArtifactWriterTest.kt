@@ -420,8 +420,11 @@ class GeneratedArtifactWriterTest {
         )
 
         val file = sourceOutputDirectory.resolve("com/example/User.kt")
-        val knownTimestamp = java.nio.file.attribute.FileTime.fromMillis(1_000_000_000L)
-        java.nio.file.Files.setLastModifiedTime(file.toPath(), knownTimestamp)
+        val knownTimestamp =
+            java.nio.file.attribute.FileTime
+                .fromMillis(1_000_000_000L)
+        java.nio.file.Files
+            .setLastModifiedTime(file.toPath(), knownTimestamp)
 
         writer.write(
             GenerationResult.of(
@@ -433,7 +436,11 @@ class GeneratedArtifactWriterTest {
             ),
         )
 
-        assertEquals(knownTimestamp, java.nio.file.Files.getLastModifiedTime(file.toPath()))
+        assertEquals(
+            knownTimestamp,
+            java.nio.file.Files
+                .getLastModifiedTime(file.toPath()),
+        )
     }
 
     @Test
@@ -476,17 +483,18 @@ class GeneratedArtifactWriterTest {
         sourceOutputDirectory.mkdirs()
         sourceOutputDirectory.resolve("com").writeText("blocking file")
 
-        val error = assertFailsWith<IOException> {
-            writer.write(
-                GenerationResult.of(
-                    GeneratedArtifact(
-                        relativePath = "com/example/User.kt",
-                        content = "data class User(val id: String)",
-                        kind = GeneratedArtifactKind.SOURCE,
+        val error =
+            assertFailsWith<IOException> {
+                writer.write(
+                    GenerationResult.of(
+                        GeneratedArtifact(
+                            relativePath = "com/example/User.kt",
+                            content = "data class User(val id: String)",
+                            kind = GeneratedArtifactKind.SOURCE,
+                        ),
                     ),
-                ),
-            )
-        }
+                )
+            }
 
         assertTrue(error.message!!.contains("com/example/User.kt"))
         assertTrue(error.message!!.contains("SOURCE"))
@@ -580,13 +588,14 @@ class GeneratedArtifactWriterTest {
         }
 
         // No temporary files should remain in the output tree
-        val tempFiles = java.nio.file.Files.walk(sourceOutputDirectory.toPath()).use { paths ->
-            paths
-                .filter { path ->
-                    path.fileName.toString().startsWith(".asyncapi-generator-") && path.fileName.toString().endsWith(".tmp")
-                }
-                .toList()
-        }
+        val tempFiles =
+            java.nio.file.Files.walk(sourceOutputDirectory.toPath()).use { paths ->
+                paths
+                    .filter { path ->
+                        path.fileName.toString().startsWith(".asyncapi-generator-") &&
+                            path.fileName.toString().endsWith(".tmp")
+                    }.toList()
+            }
         assertTrue(tempFiles.isEmpty(), "Found orphan temp files: $tempFiles")
     }
 

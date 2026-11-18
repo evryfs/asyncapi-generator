@@ -10,8 +10,11 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class LicenseValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
-    fun validate(node: License, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: License,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         val name = node.name
         if (name.isBlank()) {

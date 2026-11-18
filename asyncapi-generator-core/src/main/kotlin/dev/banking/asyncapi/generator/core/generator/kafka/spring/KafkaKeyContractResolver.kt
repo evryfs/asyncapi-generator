@@ -27,7 +27,8 @@ internal object KafkaKeyContractResolver {
         }
 
         val keyType =
-            KafkaScalarTypeResolver.resolve(resolvedSchema)
+            KafkaScalarTypeResolver
+                .resolve(resolvedSchema)
                 ?.let { scalarType ->
                     KafkaKeyType(
                         javaTypeName = scalarType.javaTypeName,

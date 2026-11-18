@@ -11,6 +11,17 @@ twenty seconds:
 mvn test -pl asyncapi-generator-core
 ```
 
+## Formatting and static analysis
+
+`mvn verify` runs ktlint and detekt. Format the sources before committing:
+
+```bash
+mvn ktlint:format -pl asyncapi-generator-core
+```
+
+The rules and the detekt baseline policy are described in the
+[code conventions](code-conventions.md).
+
 ## Full check: system tests
 
 The `asyncapi-generator-system-test` module runs every scenario through the

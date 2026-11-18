@@ -21,7 +21,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class BundledDocumentApprovalTest {
-
     private val bundlerFixtures = BundlerFixtures()
 
     @TempDir
@@ -147,7 +146,11 @@ class BundledDocumentApprovalTest {
         val message = assertIs<MessageInterface.MessageInline>(components.messages?.get("MyAccountUpdated")).message
         val kafkaBinding = assertIs<BindingInterface.BindingInline>(message.bindings?.get("kafka")).binding
         val keySchema = assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
-        assertEquals("#/components/schemas/myAccountKey", keySchema.reference.ref, "the key keeps the name of its pointer")
+        assertEquals(
+            "#/components/schemas/myAccountKey",
+            keySchema.reference.ref,
+            "the key keeps the name of its pointer",
+        )
         val promotedKey = assertIs<SchemaInterface.SchemaInline>(assertNotNull(components.schemas)["myAccountKey"])
         assertEquals(setOf("institutionId", "accountId"), promotedKey.schema.properties?.keys)
 
@@ -203,7 +206,10 @@ class BundledDocumentApprovalTest {
         assertIs<SchemaInterface.SchemaReference>(kafkaBinding.kafkaKeySchema)
 
         val components = assertIs<ComponentInterface.ComponentInline>(bundledDocument.components).component
-        assertEquals(setOf("MessageHeaders", "MyAccountUpdatedPayload", "myAccountKey", "ParentNode", "ChildNode"), components.schemas?.keys)
+        assertEquals(
+            setOf("MessageHeaders", "MyAccountUpdatedPayload", "myAccountKey", "ParentNode", "ChildNode"),
+            components.schemas?.keys,
+        )
 
         val bundledText = bundledFile.readText()
         val externalReferences =

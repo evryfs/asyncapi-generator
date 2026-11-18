@@ -22,16 +22,14 @@ internal data class NodeAddress(
     val parent: NodeAddress?
         get() = segments.dropLast(1).takeIf(List<*>::isNotEmpty)?.let { NodeAddress(sourceId, it) }
 
-    fun member(name: String): NodeAddress =
-        NodeAddress(sourceId, segments + NodeAddressSegment.Member(name))
+    fun member(name: String): NodeAddress = NodeAddress(sourceId, segments + NodeAddressSegment.Member(name))
 
     fun index(index: Int): NodeAddress {
         require(index >= 0) { "Document array indexes must be nonnegative" }
         return NodeAddress(sourceId, segments + NodeAddressSegment.Index(index))
     }
 
-    fun ancestors(): Sequence<NodeAddress> =
-        generateSequence(this, NodeAddress::parent)
+    fun ancestors(): Sequence<NodeAddress> = generateSequence(this, NodeAddress::parent)
 
     private fun renderSegments(initialPath: String): String =
         segments.fold(initialPath) { path, segment ->
@@ -42,16 +40,19 @@ internal data class NodeAddress(
         }
 
     companion object {
-        fun root(sourceId: String): NodeAddress =
-            NodeAddress(sourceId, listOf(NodeAddressSegment.Member("root")))
+        fun root(sourceId: String): NodeAddress = NodeAddress(sourceId, listOf(NodeAddressSegment.Member("root")))
     }
 }
 
 /** A single segment in a [NodeAddress] path — either a named member or a numeric index. */
 internal sealed interface NodeAddressSegment {
     /** An object member identified by its key name. */
-    data class Member(val name: String) : NodeAddressSegment
+    data class Member(
+        val name: String,
+    ) : NodeAddressSegment
 
     /** An array element identified by its zero-based index. */
-    data class Index(val index: Int) : NodeAddressSegment
+    data class Index(
+        val index: Int,
+    ) : NodeAddressSegment
 }

@@ -108,7 +108,11 @@ class SourceSchemaCompatibilityValidatorTest {
                                                         anyOf =
                                                             listOf(
                                                                 inline(Schema(type = "string")),
-                                                                inline(Schema(items = SchemaInterface.BooleanSchema(false))),
+                                                                inline(
+                                                                    Schema(
+                                                                        items = SchemaInterface.BooleanSchema(false),
+                                                                    ),
+                                                                ),
                                                             ),
                                                     ),
                                                 ),

@@ -6,12 +6,19 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 
 /** Direct ownership checks required by root operation and channel-subset reference rules. */
 internal object OperationReferenceBoundary {
+    fun containsChannel(
+        channels: Map<String, ChannelInterface>,
+        directTarget: Any?,
+    ): Boolean = channels.values.any { channel -> channel.ownedTarget() === directTarget }
 
-    fun containsChannel(channels: Map<String, ChannelInterface>, directTarget: Any?): Boolean =
-        channels.values.any { channel -> channel.ownedTarget() === directTarget }
-
-    fun containsMessage(channel: Channel, directTarget: Any?): Boolean =
-        channel.messages.orEmpty().values.any { message -> message.ownedTarget() === directTarget }
+    fun containsMessage(
+        channel: Channel,
+        directTarget: Any?,
+    ): Boolean =
+        channel.messages
+            .orEmpty()
+            .values
+            .any { message -> message.ownedTarget() === directTarget }
 
     private fun ChannelInterface.ownedTarget(): Any =
         when (this) {

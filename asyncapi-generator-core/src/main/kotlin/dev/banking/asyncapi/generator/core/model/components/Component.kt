@@ -1,12 +1,11 @@
 package dev.banking.asyncapi.generator.core.model.components
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
-import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
-import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
-import dev.banking.asyncapi.generator.core.model.tags.TagInterface
+import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
@@ -17,6 +16,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
+import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
 data class Component(
     val schemas: Map<String, SchemaInterface>? = null,

@@ -19,7 +19,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 
 class ChannelParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ChannelParser(context)
 
@@ -27,8 +26,11 @@ class ChannelParserTest {
     fun `parses channels with references and all optional metadata`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
+        val channelsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("channels")
 
         val result = parser.parseMap(channelsNode)
 
@@ -111,8 +113,11 @@ class ChannelParserTest {
     fun `parse channels with inline parameters`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
+        val channelsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("channels")
 
         val result = parser.parseMap(channelsNode)
 
@@ -169,8 +174,11 @@ class ChannelParserTest {
     fun `parse referenced channel`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
+        val channelsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("channels")
 
         val result = parser.parseMap(channelsNode)
 
@@ -182,15 +190,18 @@ class ChannelParserTest {
     fun `parse channel preserves an explicit null address as unknown`() {
         val file = TestResources.file("parser/channels/asyncapi_parser_channel_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val channelsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("channels")
+        val channelsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("channels")
 
-        val channel = assertIs<ChannelInterface.ChannelInline>(
-            parser.parseMap(channelsNode).getValue("unknownAddress"),
-        ).channel
+        val channel =
+            assertIs<ChannelInterface.ChannelInline>(
+                parser.parseMap(channelsNode).getValue("unknownAddress"),
+            ).channel
 
         assertNull(channel.address)
         assertEquals("Address is intentionally unknown.", channel.description)
     }
-
 }

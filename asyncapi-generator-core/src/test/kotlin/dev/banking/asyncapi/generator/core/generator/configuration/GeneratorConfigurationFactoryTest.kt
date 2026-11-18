@@ -461,7 +461,11 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        val springKafka = configuration.clients.filterIsInstance<ClientGeneration.Kafka>().single().springKafka
+        val springKafka =
+            configuration.clients
+                .filterIsInstance<ClientGeneration.Kafka>()
+                .single()
+                .springKafka
         assertEquals(
             listOf(
                 AdditionalProducerPayloadType.BYTE_ARRAY,
@@ -494,7 +498,11 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        val springKafka = configuration.clients.filterIsInstance<ClientGeneration.Kafka>().single().springKafka
+        val springKafka =
+            configuration.clients
+                .filterIsInstance<ClientGeneration.Kafka>()
+                .single()
+                .springKafka
         assertEquals(emptySet(), springKafka?.producer?.additionalPayloadTypes)
     }
 
@@ -713,17 +721,20 @@ class GeneratorConfigurationFactoryTest {
     @Test
     fun `create omits suppressed warnings and rejects unknown warning ids`() {
         val unusedClients = GeneratorConfigurationRequest.Clients(kafka = GeneratorConfigurationRequest.Kafka())
-        val modelsRequest = request(
-            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
-            clients = unusedClients,
-        )
+        val modelsRequest =
+            request(
+                models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+                clients = unusedClients,
+            )
 
-        val suppressed = GeneratorConfigurationFactory.create(
-            modelsRequest.copy(suppressedWarnings = listOf("unused-client-config")),
-        )
-        val unknown = assertFailsWith<IllegalArgumentException> {
-            GeneratorConfigurationFactory.create(modelsRequest.copy(suppressedWarnings = listOf("everything")))
-        }
+        val suppressed =
+            GeneratorConfigurationFactory.create(
+                modelsRequest.copy(suppressedWarnings = listOf("unused-client-config")),
+            )
+        val unknown =
+            assertFailsWith<IllegalArgumentException> {
+                GeneratorConfigurationFactory.create(modelsRequest.copy(suppressedWarnings = listOf("everything")))
+            }
 
         assertTrue(suppressed.warnings.isEmpty())
         assertTrue("everything" in unknown.message.orEmpty())

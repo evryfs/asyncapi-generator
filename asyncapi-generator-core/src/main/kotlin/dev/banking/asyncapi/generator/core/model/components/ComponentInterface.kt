@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
 sealed interface ComponentInterface {
-
     data class ComponentInline(
         @get:JsonUnwrapped
         val component: Component,

@@ -11,9 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Resolves individual client contract parameters from AsyncAPI message headers.
  */
 internal object MessageHeaderAnalyzer {
-    fun analyze(
-        message: Message,
-    ): AnalyzedMessageHeaders? {
+    fun analyze(message: Message): AnalyzedMessageHeaders? {
         val properties = collectProperties(message)
         if (properties.isEmpty()) return null
 

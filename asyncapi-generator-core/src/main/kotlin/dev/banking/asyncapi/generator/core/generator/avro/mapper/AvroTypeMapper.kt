@@ -16,7 +16,11 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 internal class AvroTypeMapper(
     val packageName: String,
 ) {
-    fun mapToAvroType(schema: Schema?, isOptional: Boolean, refName: String? = null): String {
+    fun mapToAvroType(
+        schema: Schema?,
+        isOptional: Boolean,
+        refName: String? = null,
+    ): String {
         val type = requiredType(schema, refName)
         if (!isOptional) return type
         // Avro unions cannot nest, so an optional union gets "null" as its first branch.
@@ -24,9 +28,18 @@ internal class AvroTypeMapper(
     }
 
     /** The Avro type of a field that must hold a value; [refName] names a referenced schema. */
-    fun requiredType(schema: Schema?, refName: String? = null): String {
+    fun requiredType(
+        schema: Schema?,
+        refName: String? = null,
+    ): String {
         if (schema != null && !(schema.oneOf ?: schema.anyOf).isNullOrEmpty()) {
-            val unionTypes = (schema.oneOf ?: schema.anyOf).orEmpty().filterIsInstance<SchemaInterface.SchemaReference>().map(::namedType)
+            val unionTypes =
+                (schema.oneOf ?: schema.anyOf)
+                    .orEmpty()
+                    .filterIsInstance<SchemaInterface.SchemaReference>()
+                    .map(
+                        ::namedType,
+                    )
             if (unionTypes.isNotEmpty()) return unionTypes.joinToString(", ", "[", "]")
         }
         // A named scalar or array schema has no .avsc of its own, so it is used in place.

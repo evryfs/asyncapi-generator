@@ -1,19 +1,19 @@
 package dev.banking.asyncapi.generator.core.parser.channels
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.parameters.ParameterParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
-import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL as CHANNEL_BINDING
-import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.parameters.ParameterParser
 import dev.banking.asyncapi.generator.core.parser.references.ReferenceParser
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.CHANNEL as CHANNEL_BINDING
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHANNEL as CHANNEL_OBJECT
 
 /**
@@ -22,7 +22,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.CHA
 internal class ChannelParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagParser: TagParser = TagParser(asyncApiContext)
     private val referenceParser = ReferenceParser(asyncApiContext)
     private val messageParser: MessageParser = MessageParser(asyncApiContext)

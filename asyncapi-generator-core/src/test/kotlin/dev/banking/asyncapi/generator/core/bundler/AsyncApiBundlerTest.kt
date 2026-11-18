@@ -29,16 +29,16 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class AsyncApiBundlerTest {
-
     private val asyncApiContext = AsyncApiContext()
     private val bundler = AsyncApiBundler()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
 
     @Test
     fun `bundling preserves a self-contained single-file document`() {
-        val original = bundlerFixtures.validatedDocument(
-            TestResources.file("asyncapi_kafka_single_file_example.yaml"),
-        )
+        val original =
+            bundlerFixtures.validatedDocument(
+                TestResources.file("asyncapi_kafka_single_file_example.yaml"),
+            )
 
         val bundled = bundler.bundle(original).document
 
@@ -50,13 +50,16 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling is pure and leaves the loaded document untouched`() {
-        val original = bundlerFixtures.validatedDocument(
-            TestResources.file("bundler/multi/asyncapi_multifile_example_main.yaml"),
-        )
+        val original =
+            bundlerFixtures.validatedDocument(
+                TestResources.file("bundler/multi/asyncapi_multifile_example_main.yaml"),
+            )
         val originalYaml = AsyncApiRegistry.serializeYaml(original)
-        val channelReferences = original.channels!!.values
-            .filterIsInstance<ChannelInterface.ChannelReference>()
-            .map { it.reference }
+        val channelReferences =
+            original.channels!!
+                .values
+                .filterIsInstance<ChannelInterface.ChannelReference>()
+                .map { it.reference }
         val channelModels = channelReferences.map { it.model }
 
         val first = AsyncApiRegistry.serializeYaml(bundler.bundle(original).document)
@@ -100,19 +103,22 @@ class AsyncApiBundlerTest {
     fun `bundling preserves the specification server pathname in yaml and json`(
         @TempDir tempDir: Path,
     ) {
-        val document = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info(title = "Pathname API", version = "1.0.0"),
-            servers = mapOf(
-                "production" to ServerInterface.ServerInline(
-                    Server(
-                        host = "api.example.com",
-                        protocol = "https",
-                        pathname = "/{environment}",
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info(title = "Pathname API", version = "1.0.0"),
+                servers =
+                    mapOf(
+                        "production" to
+                            ServerInterface.ServerInline(
+                                Server(
+                                    host = "api.example.com",
+                                    protocol = "https",
+                                    pathname = "/{environment}",
+                                ),
+                            ),
                     ),
-                ),
-            ),
-        )
+            )
         val bundled = bundler.bundle(document).document
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
         val jsonFile = tempDir.resolve("asyncapi.json").toFile()
@@ -132,25 +138,30 @@ class AsyncApiBundlerTest {
     ) {
         val booleanSchema = SchemaInterface.BooleanSchema(false)
         val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
-        val document = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info(title = "Boolean schema API", version = "1.0.0"),
-            components = ComponentInterface.ComponentInline(
-                Component(
-                    schemas = mapOf(
-                        "Nothing" to booleanSchema,
-                        "Wrapper" to SchemaInterface.SchemaInline(
-                            Schema(
-                                type = "object",
-                                properties = mapOf(
-                                    "denied" to SchemaInterface.SchemaReference(schemaReference),
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info(title = "Boolean schema API", version = "1.0.0"),
+                components =
+                    ComponentInterface.ComponentInline(
+                        Component(
+                            schemas =
+                                mapOf(
+                                    "Nothing" to booleanSchema,
+                                    "Wrapper" to
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "denied" to SchemaInterface.SchemaReference(schemaReference),
+                                                    ),
+                                            ),
+                                        ),
                                 ),
-                            ),
                         ),
                     ),
-                ),
-            ),
-        )
+            )
         val bundled = bundler.bundle(document).document
         val yamlFile = tempDir.resolve("asyncapi.yaml").toFile()
 
@@ -228,9 +239,10 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling rejects a promoted schema name that conflicts with a root schema`() {
-        val error = assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
-            bundlerFixtures.bundledDocument("bundler/recursive-external-collision/root-schema-collision.yaml")
-        }
+        val error =
+            assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
+                bundlerFixtures.bundledDocument("bundler/recursive-external-collision/root-schema-collision.yaml")
+            }
         assertTrue(error.message!!.contains("recursive external schema 'TreeNode'"))
         assertTrue(error.message!!.contains("Existing schema: #/components/schemas/TreeNode"))
         assertTrue(error.message!!.contains("external-tree.yaml#/components/schemas/TreeNode"))
@@ -238,9 +250,10 @@ class AsyncApiBundlerTest {
 
     @Test
     fun `bundling rejects distinct promoted schemas with the same name`() {
-        val error = assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
-            bundlerFixtures.bundledDocument("bundler/recursive-external-collision/external-schema-collision.yaml")
-        }
+        val error =
+            assertFailsWith<AsyncApiBundlingException.PromotedSchemaNameCollision> {
+                bundlerFixtures.bundledDocument("bundler/recursive-external-collision/external-schema-collision.yaml")
+            }
         assertTrue(error.message!!.contains("recursive external schema 'SharedNode'"))
         assertTrue(error.message!!.contains("first-node.yaml#/components/schemas/SharedNode"))
         assertTrue(error.message!!.contains("second-node.yaml#/components/schemas/SharedNode"))

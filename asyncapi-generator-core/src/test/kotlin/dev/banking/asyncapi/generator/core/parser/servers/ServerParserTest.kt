@@ -20,7 +20,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class ServerParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ServerParser(context)
 
@@ -28,8 +27,11 @@ class ServerParserTest {
     fun `parses inline and referenced servers with all optional fields`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_servers_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val serversNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("servers")
+        val serversNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("servers")
 
         val result = parser.parseMap(serversNode)
 
@@ -67,13 +69,18 @@ class ServerParserTest {
     fun `parse server missing host reports the required member and source`() {
         val file = TestResources.file("parser/servers/asyncapi_parser_server_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val serversNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("serverCases")
-            .expectObject().required("MissingHost")
+        val serversNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("serverCases")
+                .expectObject()
+                .required("MissingHost")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(serversNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(serversNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -83,5 +90,4 @@ class ServerParserTest {
         assertEquals("root.serverCases.MissingHost.missingHost", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_server_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

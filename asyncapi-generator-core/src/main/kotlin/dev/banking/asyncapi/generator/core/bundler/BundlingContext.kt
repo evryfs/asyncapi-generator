@@ -22,7 +22,6 @@ internal class BundlingContext private constructor(
     internal val externalDocumentScope: Boolean,
     private val rootSchemaDefinition: String?,
 ) {
-
     private data class ReferenceIdentity(
         val sourceId: String?,
         val ref: String,
@@ -45,11 +44,9 @@ internal class BundlingContext private constructor(
             rootSchemaDefinition = null,
         )
 
-    internal fun defineRootSchema(name: String): BundlingContext =
-        copy(rootSchemaDefinition = name)
+    internal fun defineRootSchema(name: String): BundlingContext = copy(rootSchemaDefinition = name)
 
-    internal fun definesRootSchema(name: String): Boolean =
-        rootSchemaDefinition == name
+    internal fun definesRootSchema(name: String): Boolean = rootSchemaDefinition == name
 
     private fun copy(
         visitedReferences: Set<ReferenceIdentity> = this.visitedReferences,
@@ -75,6 +72,5 @@ internal class BundlingContext private constructor(
                 externalDocumentScope = false,
                 rootSchemaDefinition = null,
             )
-
     }
 }

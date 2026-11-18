@@ -17,7 +17,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class MessageTraitValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val schemaValidator = SchemaValidator(asyncApiContext)
     private val correlationIdValidator = CorrelationIdValidator(asyncApiContext)
     private val tagValidator = TagValidator(asyncApiContext)
@@ -26,7 +25,11 @@ internal class MessageTraitValidator(
     private val messageExampleValidator = MessageExampleValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: MessageTraitInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: MessageTraitInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is MessageTraitInterface.InlineMessageTrait ->
                 validate(node.trait, contextString, results)
@@ -36,7 +39,11 @@ internal class MessageTraitValidator(
         }
     }
 
-    fun validate(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validateHeaders(node, contextString, results)
         validateContentType(node, contextString, results)
@@ -48,12 +55,20 @@ internal class MessageTraitValidator(
         node.correlationId?.let { correlationIdValidator.validateInterface(it, contextString, results) }
     }
 
-    private fun validateHeaders(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateHeaders(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val headersSchema = node.headers ?: return
         schemaValidator.validateInterface(headersSchema, "$contextString Headers", results)
     }
 
-    private fun validateContentType(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateContentType(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val contentType = node.contentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
@@ -64,7 +79,11 @@ internal class MessageTraitValidator(
         }
     }
 
-    private fun validateExamples(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateExamples(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         node.examples?.let { examples ->
             messageExampleValidator.validate(
                 examples = examples,
@@ -76,11 +95,19 @@ internal class MessageTraitValidator(
         }
     }
 
-    private fun validateTags(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateTags(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         tagValidator.validateList(node.tags, contextString, results)
     }
 
-    private fun validateExternalDocs(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val externalDocs = node.externalDocs ?: return
         externalDocsValidator.validateInterface(
             externalDocs,
@@ -89,7 +116,11 @@ internal class MessageTraitValidator(
         )
     }
 
-    private fun validateBindings(node: MessageTrait, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        node: MessageTrait,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         bindingValidator.validateMap(node.bindings, contextString, results)
     }
 }

@@ -10,8 +10,11 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class ContactValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
-    fun validate(node: Contact, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: Contact,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         val url = node.url
         val email = node.email

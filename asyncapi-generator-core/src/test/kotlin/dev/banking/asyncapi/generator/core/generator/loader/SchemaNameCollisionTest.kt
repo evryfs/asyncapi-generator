@@ -23,7 +23,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class SchemaNameCollisionTest {
-
     @Test
     fun `rejects component schemas that normalize to the same name`() {
         val error =
@@ -617,7 +616,8 @@ class SchemaNameCollisionTest {
 
         assertEquals(
             listOf("OrderItem", "PaymentMethod", "ShipmentCreatedPayload", "InvoiceCreatedPayload"),
-            loaded.schemaDeclarations.asyncApiSchemas.keys.toList(),
+            loaded.schemaDeclarations.asyncApiSchemas.keys
+                .toList(),
         )
     }
 

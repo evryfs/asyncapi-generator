@@ -33,8 +33,9 @@ internal class EnumLiteralNormalizer(
         val constants =
             rawValues.map { rawValue ->
                 val original = rawValue.toEnumLiteral()
-                val constant = constantName(original)
-                    ?: throw InvalidEnum(schemaName = schemaName, literal = original, packageName = packageName)
+                val constant =
+                    constantName(original)
+                        ?: throw InvalidEnum(schemaName = schemaName, literal = original, packageName = packageName)
                 originalsByConstant.getOrPut(constant) { mutableListOf() }.add(original)
                 EnumConstant(name = constant, jsonValue = original.takeIf { it != constant })
             }

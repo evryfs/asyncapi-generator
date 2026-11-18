@@ -15,17 +15,17 @@ import dev.banking.asyncapi.generator.core.document.SourceLocation
  * locations in the parser context.
  */
 internal object ParserNodeFactory {
-
     /** Creates the root [ParserNode] from a reader-produced [InputDocument]. */
     fun root(
         document: InputDocument,
         context: AsyncApiContext,
     ): ParserNode {
-        val sourceId = context.registerDocumentSource(
-            file = document.source.file,
-            content = document.source.content,
-            location = document.root.location,
-        )
+        val sourceId =
+            context.registerDocumentSource(
+                file = document.source.file,
+                content = document.source.content,
+                location = document.root.location,
+            )
 
         val rootAddress = NodeAddress.root(sourceId)
         registerLocations(
@@ -52,23 +52,25 @@ internal object ParserNodeFactory {
         context.sourceTracking.registerLocation(address, location)
 
         when (node) {
-            is DocumentObject -> node.members.forEach { (name, member) ->
-                registerLocations(
-                    node = member.value,
-                    address = address.member(name),
-                    location = member.keyLocation,
-                    context = context,
-                )
-            }
+            is DocumentObject ->
+                node.members.forEach { (name, member) ->
+                    registerLocations(
+                        node = member.value,
+                        address = address.member(name),
+                        location = member.keyLocation,
+                        context = context,
+                    )
+                }
 
-            is DocumentArray -> node.elements.forEachIndexed { index, element ->
-                registerLocations(
-                    node = element,
-                    address = address.index(index),
-                    location = element.location,
-                    context = context,
-                )
-            }
+            is DocumentArray ->
+                node.elements.forEachIndexed { index, element ->
+                    registerLocations(
+                        node = element,
+                        address = address.index(index),
+                        location = element.location,
+                        context = context,
+                    )
+                }
 
             else -> Unit
         }

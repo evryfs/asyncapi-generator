@@ -24,7 +24,7 @@ internal class ValidationReporter(
                     title = "Validation found ${report.warnings.size} warning(s):",
                     findings = report.warnings,
                     asyncApiContext = context,
-                )
+                ),
             )
         }
     }

@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 internal object ParserDiagnosticFormatter {
-
     fun format(
         diagnostic: ParserDiagnostic,
         context: AsyncApiContext,
@@ -82,9 +81,7 @@ internal object ParserDiagnosticFormatter {
                 )
         }
 
-    private fun unsupportedVersionMessage(
-        diagnostic: ParserDiagnostic.UnsupportedSpecificationVersion,
-    ): String {
+    private fun unsupportedVersionMessage(diagnostic: ParserDiagnostic.UnsupportedSpecificationVersion): String {
         val reason =
             if (diagnostic.knownVersionLine) {
                 "is recognized, but its parser profile is not implemented"
@@ -95,9 +92,7 @@ internal object ParserDiagnosticFormatter {
             "Supported version lines: ${diagnostic.supportedVersionLines.joinToString()}."
     }
 
-    private fun unexpectedValueMessage(
-        diagnostic: ParserDiagnostic.UnexpectedValueType,
-    ): String {
+    private fun unexpectedValueMessage(diagnostic: ParserDiagnostic.UnexpectedValueType): String {
         val actualDescription = diagnostic.actualValue?.let { " ${formatValue(it)}" }.orEmpty()
         val hint = scalarHint(diagnostic.expectedType, diagnostic.actualValue)
         return buildString {
@@ -117,9 +112,10 @@ internal object ParserDiagnosticFormatter {
         diagnostic: ParserDiagnostic,
         context: AsyncApiContext,
     ): String {
-        val snippet = context.sourceTracking.sourceSnippet(
-            diagnostic.sourceLocation.copy(path = diagnostic.path),
-        )
+        val snippet =
+            context.sourceTracking.sourceSnippet(
+                diagnostic.sourceLocation.copy(path = diagnostic.path),
+            )
         return buildString {
             appendLine(header)
             appendLine()
@@ -162,8 +158,7 @@ internal object ParserDiagnosticFormatter {
     private fun String.isJsonBooleanText(): Boolean =
         equals("true", ignoreCase = true) || equals("false", ignoreCase = true)
 
-    private fun String.isYaml11BooleanWord(): Boolean =
-        lowercase() in setOf("yes", "no", "on", "off")
+    private fun String.isYaml11BooleanWord(): Boolean = lowercase() in setOf("yes", "no", "on", "off")
 
     private fun String.isNumberText(): Boolean = toDoubleOrNull() != null
 }

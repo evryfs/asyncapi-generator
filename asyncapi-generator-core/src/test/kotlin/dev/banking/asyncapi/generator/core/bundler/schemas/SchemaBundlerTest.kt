@@ -15,19 +15,20 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class SchemaBundlerTest {
-
     private val bundler = SchemaBundler()
 
     @Test
     fun `bundle keeps an unvisited component schema reference and bundles its model`() {
-        val bindingReference = Reference(
-            "#/components/schemaBindings/kafka",
-            model = Binding(content = emptyMap()),
-        )
-        val schema = Schema(
-            type = "object",
-            bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
-        )
+        val bindingReference =
+            Reference(
+                "#/components/schemaBindings/kafka",
+                model = Binding(content = emptyMap()),
+            )
+        val schema =
+            Schema(
+                type = "object",
+                bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
+            )
         val schemaReference = Reference("#/components/schemas/User", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
@@ -44,14 +45,16 @@ class SchemaBundlerTest {
 
     @Test
     fun `bundle inlines an unvisited non-component schema reference`() {
-        val bindingReference = Reference(
-            "#/components/schemaBindings/kafka",
-            model = Binding(content = emptyMap()),
-        )
-        val schema = Schema(
-            type = "object",
-            bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
-        )
+        val bindingReference =
+            Reference(
+                "#/components/schemaBindings/kafka",
+                model = Binding(content = emptyMap()),
+            )
+        val schema =
+            Schema(
+                type = "object",
+                bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
+            )
         val schemaReference = Reference("schemas.yaml#/shared/User", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
@@ -68,10 +71,11 @@ class SchemaBundlerTest {
     @Test
     fun `bundle does not promote a recursive root component reference`() {
         val nestedReference = Reference("#/components/schemas/Node")
-        val schema = Schema(
-            type = "object",
-            properties = mapOf("next" to SchemaInterface.SchemaReference(nestedReference)),
-        )
+        val schema =
+            Schema(
+                type = "object",
+                properties = mapOf("next" to SchemaInterface.SchemaReference(nestedReference)),
+            )
         nestedReference.model = schema
         val rootReference = Reference("#/components/schemas/Node", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(rootReference)

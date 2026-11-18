@@ -111,7 +111,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertFalse(headerDir.exists(), "Spring Kafka clients should not generate typed header models")
 
         val consumerContent = clientDir.resolve("consumer/UserEventsConsumer.java").readText()
-        assertFalse(consumerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
+        assertFalse(
+            consumerContent.contains(
+                "import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;",
+            ),
+        )
         assertFalse(consumerContent.contains("ConsumerRecord"))
         assertTrue(consumerContent.contains("void listenUserSignup("))
         assertTrue(consumerContent.contains("@Payload UserSignupPayload payload"))
@@ -138,7 +142,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         assertTrue(consumerContent.contains("default void"), "Consumer methods should have no-op defaults")
 
         val producerContent = clientDir.resolve("producer/UserEventsProducer.java").readText()
-        assertFalse(producerContent.contains("import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;"))
+        assertFalse(
+            producerContent.contains(
+                "import dev.banking.test.userservice.v1.client.header.TopicUserEventsHeadersUserSignup;",
+            ),
+        )
         assertTrue(producerContent.contains("import java.util.concurrent.CompletableFuture;"))
         assertTrue(producerContent.contains("import org.apache.kafka.clients.producer.RecordMetadata;"))
         assertFalse(producerContent.contains("import java.nio.charset.StandardCharsets;"))
@@ -304,7 +312,8 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
 
     @Test
     fun `should generate spring kafka client with external native protobuf payload type for Java`() {
-        val yaml = File("src/test/resources/generator/native-assets/asyncapi_external_native_protobuf_schema_assets.yaml")
+        val yaml =
+            File("src/test/resources/generator/native-assets/asyncapi_external_native_protobuf_schema_assets.yaml")
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
 

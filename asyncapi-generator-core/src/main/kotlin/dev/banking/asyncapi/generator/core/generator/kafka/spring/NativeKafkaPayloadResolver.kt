@@ -7,7 +7,8 @@ import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufPayl
 /** Resolves native multi-format payloads into Spring Kafka payload signatures. */
 internal class NativeKafkaPayloadResolver(
     private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),
-    private val nativeProtobufPayloadTypeResolver: NativeProtobufPayloadTypeResolver = NativeProtobufPayloadTypeResolver(),
+    private val nativeProtobufPayloadTypeResolver: NativeProtobufPayloadTypeResolver =
+        NativeProtobufPayloadTypeResolver(),
 ) {
     fun resolve(message: AnalyzedMultiFormatMessage): KafkaPayload? =
         nativeAvroPayloadTypeResolver.resolve(message)?.let { payloadType ->

@@ -97,19 +97,22 @@ internal class ParserLoadResourceBudget(
         )
         requireAggregateCapacity(canonicalFile.absolutePath, sourceBytes)
 
-        val bytes = canonicalFile.inputStream().use { input ->
-            input.readNBytes(limits.maxNativeSchemaAssetBytes + 1)
-        }
+        val bytes =
+            canonicalFile.inputStream().use { input ->
+                input.readNBytes(limits.maxNativeSchemaAssetBytes + 1)
+            }
         requireWithinLimit(
             limit = ParserLoadResourceLimit.NATIVE_SCHEMA_ASSET_BYTES,
             maximum = limits.maxNativeSchemaAssetBytes.toLong(),
             observed = bytes.size.toLong(),
         )
-        val content = UTF_8.newDecoder()
-            .onMalformedInput(REPORT)
-            .onUnmappableCharacter(REPORT)
-            .decode(ByteBuffer.wrap(bytes))
-            .toString()
+        val content =
+            UTF_8
+                .newDecoder()
+                .onMalformedInput(REPORT)
+                .onUnmappableCharacter(REPORT)
+                .decode(ByteBuffer.wrap(bytes))
+                .toString()
 
         requireAggregateCapacity(canonicalFile.absolutePath, bytes.size.toLong())
         registerAggregateSource(canonicalFile.absolutePath, bytes.size.toLong())

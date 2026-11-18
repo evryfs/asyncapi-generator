@@ -22,7 +22,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SchemaParserTest {
-
     private val context = AsyncApiContext()
     private val parser = SchemaParser(context)
 
@@ -30,9 +29,13 @@ class SchemaParserTest {
     fun `parse representative component schemas`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemasNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val schemasNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
 
         val schemas = parser.parseMap(schemasNode)
 
@@ -95,8 +98,10 @@ class SchemaParserTest {
         assertEquals(listOf("name", "age"), complex.required)
         assertEquals(listOf("email"), complex.dependencies?.get("password"))
         assertEquals(false, assertIs<SchemaInterface.BooleanSchema>(complex.additionalProperties).value)
-        assertEquals(listOf("string", "null"),
-            assertIs<SchemaInterface.SchemaInline>(complex.properties?.get("nickname")).schema.type)
+        assertEquals(
+            listOf("string", "null"),
+            assertIs<SchemaInterface.SchemaInline>(complex.properties?.get("nickname")).schema.type,
+        )
 
         val composed = assertIs<SchemaInterface.SchemaInline>(schemas["composedSchema"]).schema
         assertEquals(2, composed.allOf?.size)
@@ -132,38 +137,48 @@ class SchemaParserTest {
     fun `parse nested composition and dependency schema forms`() {
         val file = TestResources.file("schemas/asyncapi_schema_parser_assertion.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemas = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject()
+        val schemas =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
 
-        val simpleObject = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("SimpleObject")),
-        ).schema
+        val simpleObject =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("SimpleObject")),
+            ).schema
         assertEquals("This schema defines the minimal user object used across APIs.", simpleObject.comment)
         assertEquals(listOf("id"), simpleObject.required)
-        assertEquals(true,
-            assertIs<SchemaInterface.SchemaInline>(simpleObject.properties?.get("active")).schema.default)
+        assertEquals(
+            true,
+            assertIs<SchemaInterface.SchemaInline>(simpleObject.properties?.get("active")).schema.default,
+        )
 
-        val nestedObject = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("NestedObject")),
-        ).schema
+        val nestedObject =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("NestedObject")),
+            ).schema
         val user = assertIs<SchemaInterface.SchemaInline>(nestedObject.properties?.get("user")).schema
         val profile = assertIs<SchemaInterface.SchemaInline>(user.properties?.get("profile")).schema
         assertEquals(setOf("age", "city"), profile.properties?.keys)
 
-        val array = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("ArrayOfObjects")),
-        ).schema
+        val array =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("ArrayOfObjects")),
+            ).schema
         val item = assertIs<SchemaInterface.SchemaInline>(array.items).schema
         assertEquals(listOf("id", "score"), item.required)
         val score = assertIs<SchemaInterface.SchemaInline>(item.properties?.get("score")).schema
         assertEquals(0, score.minimum)
         assertEquals(100, score.maximum)
 
-        val enumAndConst = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("EnumAndConst")),
-        ).schema
+        val enumAndConst =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("EnumAndConst")),
+            ).schema
         assertEquals(listOf("red", "green", "blue"), enumAndConst.enum)
         assertEquals("red", enumAndConst.const)
         assertEquals(true, enumAndConst.defaultSet)
@@ -177,49 +192,63 @@ class SchemaParserTest {
             assertIs<SchemaInterface.BooleanSchema>(parser.parseElement(schemas.required("DenyAll"))).value,
         )
 
-        val combined = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("Combined")),
-        ).schema
+        val combined =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("Combined")),
+            ).schema
         assertEquals(2, combined.allOf?.size)
         assertEquals(2, combined.anyOf?.size)
-        assertEquals(listOf(true, false),
-            combined.oneOf?.map { assertIs<SchemaInterface.SchemaInline>(it).schema.const })
+        assertEquals(
+            listOf(true, false),
+            combined.oneOf?.map { assertIs<SchemaInterface.SchemaInline>(it).schema.const },
+        )
 
-        val conditional = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("Conditional")),
-        ).schema
+        val conditional =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("Conditional")),
+            ).schema
         val ifSchema = assertIs<SchemaInterface.SchemaInline>(conditional.ifSchema).schema
         val role = assertIs<SchemaInterface.SchemaInline>(ifSchema.properties?.get("role")).schema
         assertEquals("admin", role.const)
-        assertEquals(listOf("accessLevel"),
-            assertIs<SchemaInterface.SchemaInline>(conditional.thenSchema).schema.required)
+        assertEquals(
+            listOf("accessLevel"),
+            assertIs<SchemaInterface.SchemaInline>(conditional.thenSchema).schema.required,
+        )
         val elseSchema = assertIs<SchemaInterface.SchemaInline>(conditional.elseSchema).schema
         val accessLevel = assertIs<SchemaInterface.SchemaInline>(elseSchema.properties?.get("accessLevel")).schema
         assertEquals(1, accessLevel.const)
 
-        val dependencies = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("ObjectWithDeps")),
-        ).schema
+        val dependencies =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("ObjectWithDeps")),
+            ).schema
         assertEquals(listOf("billing_address"), dependencies.dependencies?.get("credit_card"))
-        assertEquals("string",
-            assertIs<SchemaInterface.SchemaInline>(dependencies.patternProperties?.get("^S_")).schema.type)
+        assertEquals(
+            "string",
+            assertIs<SchemaInterface.SchemaInline>(dependencies.patternProperties?.get("^S_")).schema.type,
+        )
 
-        val withContains = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("ArrayWithContains")),
-        ).schema
+        val withContains =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("ArrayWithContains")),
+            ).schema
         assertEquals("integer", assertIs<SchemaInterface.SchemaInline>(withContains.items).schema.type)
         assertEquals(0, assertIs<SchemaInterface.SchemaInline>(withContains.contains).schema.minimum)
 
-        val flexible = assertIs<SchemaInterface.SchemaInline>(
-            parser.parseElement(schemas.required("FlexibleObject")),
-        ).schema
+        val flexible =
+            assertIs<SchemaInterface.SchemaInline>(
+                parser.parseElement(schemas.required("FlexibleObject")),
+            ).schema
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(flexible.additionalProperties).schema.type)
-        assertEquals("^[a-zA-Z_][a-zA-Z0-9_]*$",
-            assertIs<SchemaInterface.SchemaInline>(flexible.propertyNames).schema.pattern)
+        assertEquals(
+            "^[a-zA-Z_][a-zA-Z0-9_]*$",
+            assertIs<SchemaInterface.SchemaInline>(flexible.propertyNames).schema.pattern,
+        )
 
-        val reference = assertIs<SchemaInterface.SchemaReference>(
-            parser.parseElement(schemas.required("UserRef")),
-        ).reference
+        val reference =
+            assertIs<SchemaInterface.SchemaReference>(
+                parser.parseElement(schemas.required("UserRef")),
+            ).reference
         assertEquals("#/components/schemas/SimpleObject", reference.ref)
         assertEquals(SCHEMA, reference.referenceCategoryKey)
     }
@@ -228,10 +257,15 @@ class SchemaParserTest {
     fun `parse schema with property and schema dependencies`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_dependencies.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val productNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("Product")
+        val productNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("Product")
 
         val product = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(productNode)).schema
         val dependencies = assertNotNull(product.dependencies)
@@ -248,9 +282,13 @@ class SchemaParserTest {
     fun `parse recursive external references with their original source locations`() {
         val file = TestResources.file("parser/schemas/references/main.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemasNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val schemasNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
 
         parser.parseMap(schemasNode)
         val models = context.modelRepository.getModelsByPath()
@@ -277,9 +315,13 @@ class SchemaParserTest {
     fun `parse recursive mixed and empty composition forms`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_composition_edge_cases.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemasNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val schemasNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
 
         val schemas = parser.parseMap(schemasNode)
 
@@ -295,7 +337,10 @@ class SchemaParserTest {
         val mixed = assertIs<SchemaInterface.SchemaInline>(schemas["MixedComposition"]).schema
         val mixedOptions = assertNotNull(mixed.anyOf)
         assertIs<SchemaInterface.SchemaReference>(mixedOptions[0])
-        assertEquals("Inline boolean schema", assertIs<SchemaInterface.SchemaInline>(mixedOptions[1]).schema.description)
+        assertEquals(
+            "Inline boolean schema",
+            assertIs<SchemaInterface.SchemaInline>(mixedOptions[1]).schema.description,
+        )
 
         val emptyAllOf = assertIs<SchemaInterface.SchemaInline>(schemas["EmptyAllOf"]).schema
         assertEquals(emptyList(), emptyAllOf.allOf)
@@ -308,10 +353,15 @@ class SchemaParserTest {
     fun `parse schema preserves an explicit null default`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("explicitNullDefault")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("explicitNullDefault")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -323,10 +373,15 @@ class SchemaParserTest {
     fun `parse schema preserves an explicit null const`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("explicitNullConst")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("explicitNullConst")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -338,10 +393,15 @@ class SchemaParserTest {
     fun `parse enum without type does not infer a string schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("untypedEnum")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("untypedEnum")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -353,10 +413,15 @@ class SchemaParserTest {
     fun `parses the remaining supported schema keywords`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("keywordCoverage")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("keywordCoverage")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -381,17 +446,21 @@ class SchemaParserTest {
         ).forEach { path ->
             val sourceContext = AsyncApiContext()
             val sourceParser = SchemaParser(sourceContext)
-            val schemas = ParserNodeFactory.root(DocumentReaderRegistry.read(TestResources.file(path)), sourceContext)
-                .expectObject()
+            val schemas =
+                ParserNodeFactory
+                    .root(DocumentReaderRegistry.read(TestResources.file(path)), sourceContext)
+                    .expectObject()
 
-            val booleanSchema = assertIs<SchemaInterface.BooleanSchema>(
-                sourceParser.parseElement(schemas.required("actualBoolean")),
-            )
+            val booleanSchema =
+                assertIs<SchemaInterface.BooleanSchema>(
+                    sourceParser.parseElement(schemas.required("actualBoolean")),
+                )
             assertEquals(true, booleanSchema.value)
 
-            val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                sourceParser.parseElement(schemas.required("quotedBoolean"))
-            }
+            val error =
+                assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                    sourceParser.parseElement(schemas.required("quotedBoolean"))
+                }
             val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
             assertEquals("Map<String, Any?>", diagnostic.expectedType)
@@ -405,10 +474,15 @@ class SchemaParserTest {
     fun `retains unsupported tuple items for source-aware validation`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("TupleItemsSchema")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("TupleItemsSchema")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -431,14 +505,20 @@ class SchemaParserTest {
     fun `rejects scalar items with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("InvalidItemsScalar")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("InvalidItemsScalar")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemaNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
@@ -456,43 +536,60 @@ class SchemaParserTest {
     fun `rejects a scalar schema dependency with a source-aware type diagnostic`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_negative_test.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("InvalidDependencyScalar")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("InvalidDependencyScalar")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemaNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals("Map<String, Any?>", diagnostic.expectedType)
         assertEquals(ParserValueType.STRING, diagnostic.actualType)
         assertEquals("not-a-schema-or-property-list", diagnostic.actualValue)
-        assertEquals("root.components.schemas.InvalidDependencyScalar.dependencies.name", diagnostic.sourceLocation.path)
+        assertEquals(
+            "root.components.schemas.InvalidDependencyScalar.dependencies.name",
+            diagnostic.sourceLocation.path,
+        )
     }
 
     @Test
     fun `rejects a quoted numeric constraint with a source-aware type diagnostic`() {
         val file = TestResources.file("schemas/asyncapi_schema_parser_assertion.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("InvalidCoercions")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("InvalidCoercions")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemaNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
         assertEquals("Number", diagnostic.expectedType)
         assertEquals(ParserValueType.STRING, diagnostic.actualType)
         assertEquals("10", diagnostic.actualValue)
-        assertEquals("asyncapi_schema_parser_assertion.root.components.schemas.InvalidCoercions.maxLength", diagnostic.path)
+        assertEquals(
+            "asyncapi_schema_parser_assertion.root.components.schemas.InvalidCoercions.maxLength",
+            diagnostic.path,
+        )
         assertEquals("root.components.schemas.InvalidCoercions.maxLength", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_schema_parser_assertion.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

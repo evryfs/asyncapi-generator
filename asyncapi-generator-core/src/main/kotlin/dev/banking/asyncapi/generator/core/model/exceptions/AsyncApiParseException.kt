@@ -4,8 +4,9 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
-sealed class AsyncApiParseException(message: String) : Exception(message) {
-
+sealed class AsyncApiParseException(
+    message: String,
+) : Exception(message) {
     class ParserDiagnosticFailure internal constructor(
         val diagnostic: ParserDiagnostic,
         context: AsyncApiContext,
@@ -33,7 +34,11 @@ sealed class AsyncApiParseException(message: String) : Exception(message) {
         )
 
     companion object {
-        private fun buildMessage(header: String, path: String, context: AsyncApiContext): String {
+        private fun buildMessage(
+            header: String,
+            path: String,
+            context: AsyncApiContext,
+        ): String {
             val snippet = context.sourceTracking.pathSnippet(path)
             val file = context.sourceTracking.getCurrentFile()
             val fileName = file.name ?: "(unknown)"

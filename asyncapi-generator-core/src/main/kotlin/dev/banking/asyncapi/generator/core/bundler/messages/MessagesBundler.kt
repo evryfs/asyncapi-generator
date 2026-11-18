@@ -15,36 +15,49 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
  * Bundles message objects and references.
  */
 internal class MessagesBundler {
-
     private val schemaBundler = SchemaBundler()
     private val correlationIdBundler = CorrelationIdBundler()
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val bindingBundler = BindingBundler()
     private val messageTraitBundler = MessageTraitBundler()
-    fun bundleMap(messages: Map<String, MessageInterface>?, context: BundlingContext): Map<String, MessageInterface>? =
+
+    fun bundleMap(
+        messages: Map<String, MessageInterface>?,
+        context: BundlingContext,
+    ): Map<String, MessageInterface>? =
         messages?.mapValues { (_, message) ->
             bundle(message, context)
         }
-    fun bundle(message: MessageInterface, context: BundlingContext): MessageInterface =
+
+    fun bundle(
+        message: MessageInterface,
+        context: BundlingContext,
+    ): MessageInterface =
         when (message) {
             is MessageInterface.MessageInline -> {
                 MessageInterface.MessageInline(
-                    bundleMessage(message.message, context)
+                    bundleMessage(message.message, context),
                 )
             }
             is MessageInterface.MessageReference -> {
-                message.copy(reference = ReferenceBundler.bundleReferencedModel<Message>(
-                    reference = message.reference,
-                    context = context,
-                ) { messageModel, nextContext ->
-                    bundleMessage(messageModel, nextContext)
-                })
+                message.copy(
+                    reference =
+                        ReferenceBundler.bundleReferencedModel<Message>(
+                            reference = message.reference,
+                            context = context,
+                        ) { messageModel, nextContext ->
+                            bundleMessage(messageModel, nextContext)
+                        },
+                )
             }
         }
 
-    private fun bundleMessage(message: Message, context: BundlingContext): Message {
-        val bundledHeaders =  message.headers?.let { schemaBundler.bundle(it, context) }
+    private fun bundleMessage(
+        message: Message,
+        context: BundlingContext,
+    ): Message {
+        val bundledHeaders = message.headers?.let { schemaBundler.bundle(it, context) }
         val bundledPayload = message.payload?.let { schemaBundler.bundle(it, context) }
         val bundledCorrelationId = message.correlationId?.let { correlationIdBundler.bundle(it, context) }
         val bundledTags: List<TagInterface>? = tagBundler.bundleList(message.tags, context)

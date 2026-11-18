@@ -101,22 +101,23 @@ class KafkaHeaderPropertyFactoryTest {
         val referencedSchema = Schema(type = "string", format = "uuid")
 
         val property =
-            KafkaHeaderPropertyFactory.create(
-                AnalyzedMessageHeaders(
-                    properties =
-                        mapOf(
-                            "requestId" to
-                                SchemaInterface.SchemaReference(
-                                    Reference(
-                                        ref = "./headers.yaml#/requestId",
-                                        model = referencedSchema,
+            KafkaHeaderPropertyFactory
+                .create(
+                    AnalyzedMessageHeaders(
+                        properties =
+                            mapOf(
+                                "requestId" to
+                                    SchemaInterface.SchemaReference(
+                                        Reference(
+                                            ref = "./headers.yaml#/requestId",
+                                            model = referencedSchema,
+                                        ),
                                     ),
-                                ),
-                        ),
-                    requiredProperties = listOf("requestId"),
-                ),
-                messageName = "AccountEvent",
-            ).single()
+                            ),
+                        requiredProperties = listOf("requestId"),
+                    ),
+                    messageName = "AccountEvent",
+                ).single()
 
         assertEquals("UUID", property.javaTypeName)
         assertEquals("UUID", property.kotlinTypeName)
@@ -151,5 +152,4 @@ class KafkaHeaderPropertyFactoryTest {
             assertTrue(error.message!!.contains("'$expectedType'"))
         }
     }
-
 }

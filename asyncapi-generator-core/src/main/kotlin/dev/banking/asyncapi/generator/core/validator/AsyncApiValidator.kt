@@ -22,7 +22,6 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val infoValidator = InfoValidator(asyncApiContext)
     private val channelValidator = ChannelValidator(asyncApiContext)
     private val serverValidator = ServerValidator(asyncApiContext)
@@ -62,7 +61,10 @@ internal class AsyncApiValidator(
         return results.report()
     }
 
-    private fun validateIdentifier(node: AsyncApiDocument, results: ValidationCollector) {
+    private fun validateIdentifier(
+        node: AsyncApiDocument,
+        results: ValidationCollector,
+    ) {
         val id = node.id ?: return
         val uri = ValidationFormats.absoluteUri(id)
         if (uri == null) {
@@ -80,7 +82,10 @@ internal class AsyncApiValidator(
         }
     }
 
-    private fun validateDefaultContentType(node: AsyncApiDocument, results: ValidationCollector) {
+    private fun validateDefaultContentType(
+        node: AsyncApiDocument,
+        results: ValidationCollector,
+    ) {
         val contentType = node.defaultContentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(

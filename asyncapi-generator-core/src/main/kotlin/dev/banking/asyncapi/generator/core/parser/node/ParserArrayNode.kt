@@ -15,7 +15,6 @@ internal class ParserArrayNode(
     private val parserNode: ParserNode,
     private val documentArray: DocumentArray,
 ) {
-
     fun elements(): List<ParserNode> =
         documentArray.elements.mapIndexed { index, element ->
             parserNode.index(

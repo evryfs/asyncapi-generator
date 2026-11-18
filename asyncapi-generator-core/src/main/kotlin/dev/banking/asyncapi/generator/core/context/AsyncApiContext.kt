@@ -31,20 +31,23 @@ internal class AsyncApiContext internal constructor(
     val bindingRegistry = BindingReferenceRegistry()
     val warningCollector = ValidationWarningCollector()
 
-    val externalLoader = AsyncApiExternalContext(
-        sourceTracking = sourceTracking,
-        modelTracking = modelTracking,
-        warningCollector = warningCollector,
-        registerExternalDocument = { file, location -> registerExternalDocument(file, location) },
-        registerReferenceTarget = { file, pointer, location -> registerReferenceTarget(file, pointer, location) },
-        withinExternalReference = { location, block -> withinExternalReference(location, block) },
-        createParser = { AsyncApiParser(this) },
-        createValidator = { AsyncApiValidator(this) },
-        createReporter = { ValidationReporter(this) },
-        createFragmentProcessor = { ExternalFragmentProcessor(this) },
-        createDiagnosticException = { diagnostic -> AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this) },
-        readDocument = { file -> AsyncApiRegistry.read(file, this) },
-    )
+    val externalLoader =
+        AsyncApiExternalContext(
+            sourceTracking = sourceTracking,
+            modelTracking = modelTracking,
+            warningCollector = warningCollector,
+            registerExternalDocument = { file, location -> registerExternalDocument(file, location) },
+            registerReferenceTarget = { file, pointer, location -> registerReferenceTarget(file, pointer, location) },
+            withinExternalReference = { location, block -> withinExternalReference(location, block) },
+            createParser = { AsyncApiParser(this) },
+            createValidator = { AsyncApiValidator(this) },
+            createReporter = { ValidationReporter(this) },
+            createFragmentProcessor = { ExternalFragmentProcessor(this) },
+            createDiagnosticException = { diagnostic ->
+                AsyncApiParseException.ParserDiagnosticFailure(diagnostic, this)
+            },
+            readDocument = { file -> AsyncApiRegistry.read(file, this) },
+        )
 
     val sourceRepository: SourceRepository get() = sourceTracking.repository
     val modelRepository: ModelRepository get() = modelTracking.repository
@@ -91,20 +94,22 @@ internal class AsyncApiContext internal constructor(
     internal fun <T> withinExternalReference(
         location: SourceLocation,
         block: () -> T,
-    ): T = when (val result = resourceBudget.withinExternalReference(location, block)) {
-        is ResourceBudgetResult.Success -> result.value
-        is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
-    }
+    ): T =
+        when (val result = resourceBudget.withinExternalReference(location, block)) {
+            is ResourceBudgetResult.Success -> result.value
+            is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
+        }
 
     @Throws(java.io.IOException::class)
     internal fun readNativeSchemaAsset(
         file: File,
         location: SourceLocation,
         path: String,
-    ): String = when (val result = resourceBudget.readNativeSchemaAsset(file, location, path)) {
-        is ResourceBudgetResult.Success -> result.value
-        is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
-    }
+    ): String =
+        when (val result = resourceBudget.readNativeSchemaAsset(file, location, path)) {
+            is ResourceBudgetResult.Success -> result.value
+            is ResourceBudgetResult.LimitExceeded -> throwBudgetLimit(result)
+        }
 
     private fun enforceBudgetResult(
         result: ResourceBudgetResult<Unit>,
@@ -113,16 +118,16 @@ internal class AsyncApiContext internal constructor(
         if (result is ResourceBudgetResult.LimitExceeded) throwBudgetLimit(result)
     }
 
-    private fun throwBudgetLimit(result: ResourceBudgetResult.LimitExceeded): Nothing {
+    private fun throwBudgetLimit(result: ResourceBudgetResult.LimitExceeded): Nothing =
         throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic = ParserDiagnostic.LoadResourceLimitExceeded(
-                limit = result.limit,
-                maximum = result.maximum,
-                observed = result.observed,
-                path = result.path,
-                sourceLocation = result.sourceLocation,
-            ),
+            diagnostic =
+                ParserDiagnostic.LoadResourceLimitExceeded(
+                    limit = result.limit,
+                    maximum = result.maximum,
+                    observed = result.observed,
+                    path = result.path,
+                    sourceLocation = result.sourceLocation,
+                ),
             context = this,
         )
-    }
 }

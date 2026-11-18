@@ -82,7 +82,10 @@ internal class JavaModelEmitter(
                 properties.mapIndexed { index, property ->
                     val last = index == properties.lastIndex
                     property.templateFields(last) +
-                        mapOf("componentSeparator" to if (last) "" else ",", "componentSpacer" to if (last) "" else "\n")
+                        mapOf(
+                            "componentSeparator" to if (last) "" else ",",
+                            "componentSpacer" to if (last) "" else "\n",
+                        )
                 },
             imports = imports(model, properties),
             implementsClause = implementsClause(model),
@@ -93,7 +96,13 @@ internal class JavaModelEmitter(
     private fun property(definition: PropertyDefinition): JavaProperty {
         // Java generates no type for an open object, so a reference to one has no schema to read.
         val property =
-            if ((definition.type as? TypeRef.Named)?.isOpenObject == true) definition.copy(schema = null) else definition
+            if ((definition.type as? TypeRef.Named)?.isOpenObject ==
+                true
+            ) {
+                definition.copy(schema = null)
+            } else {
+                definition
+            }
         val type = property.type.withoutOpenObjects()
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forJava)
         val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.schema, wireName, "@JsonProperty")
@@ -121,8 +130,11 @@ internal class JavaModelEmitter(
         val typeImports =
             properties.flatMap { it.type.imports(model.packageName, model.name, "java.util.List", "java.util.Map") }
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@", "access = Access.") }
-        return (fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports(model))
-            .distinct()
+        return (
+            fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports +
+                listOfNotNull(model.annotation?.value) +
+                emptyClassImports(model)
+        ).distinct()
             .sorted()
     }
 
@@ -130,7 +142,8 @@ internal class JavaModelEmitter(
     private fun emptyClassImports(model: ObjectModel): List<String> =
         if (model.properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
 
-    private fun implementsClause(model: ObjectModel): String = " implements " + (model.unions + "Serializable").joinToString(", ")
+    private fun implementsClause(model: ObjectModel): String =
+        " implements " + (model.unions + "Serializable").joinToString(", ")
 
     private fun classAnnotations(model: ObjectModel): List<String> =
         listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) +

@@ -8,9 +8,6 @@ import org.gradle.api.tasks.TaskProvider
 
 /**
  * Registers generated output directories with the Gradle main source set.
- *
- * Expected behavior is covered by:
- * - `GradleGeneratedOutputRegistrarTest`
  */
 internal class GradleGeneratedOutputRegistrar(
     private val project: Project,

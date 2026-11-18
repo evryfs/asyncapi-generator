@@ -11,5 +11,4 @@ enum class ProtobufModelType(
 ) {
     JAVA("java"),
     KOTLIN("kotlin"),
-    ;
 }

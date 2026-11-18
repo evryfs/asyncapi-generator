@@ -18,54 +18,54 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ModelRepositoryTest {
-
     @Test
     fun `references resolve through typed addresses for adversarial member names`() {
         val context = AsyncApiContext()
-        val source = DocumentSource(
-            id = "identity",
-            file = File("identity.yaml").canonicalFile,
-            content =
-                """
-                asyncapi: 3.0.0
-                info:
-                  title: Collision-safe identity
-                  version: 1.0.0
-                components:
-                  schemas:
-                    A:
-                      type: object
-                      properties:
-                        x:
+        val source =
+            DocumentSource(
+                id = "identity",
+                file = File("identity.yaml").canonicalFile,
+                content =
+                    """
+                    asyncapi: 3.0.0
+                    info:
+                      title: Collision-safe identity
+                      version: 1.0.0
+                    components:
+                      schemas:
+                        A:
+                          type: object
+                          properties:
+                            x:
+                              type: string
+                        "A.properties.x":
+                          type: integer
+                        "slash/name~":
+                          type: boolean
+                        "bracket[name]":
+                          type: number
+                        "0":
                           type: string
-                    "A.properties.x":
-                      type: integer
-                    "slash/name~":
-                      type: boolean
-                    "bracket[name]":
-                      type: number
-                    "0":
-                      type: string
-                    Tuple:
-                      type: array
-                      items:
-                        - type: string
-                        - type: number
-                    DottedReference:
-                      ${'$'}ref: '#/components/schemas/A.properties.x'
-                    NestedReference:
-                      ${'$'}ref: '#/components/schemas/A/properties/x'
-                    EscapedReference:
-                      ${'$'}ref: '#/components/schemas/slash~1name~0'
-                    BracketReference:
-                      ${'$'}ref: '#/components/schemas/bracket%5Bname%5D'
-                    NumericMemberReference:
-                      ${'$'}ref: '#/components/schemas/0'
-                    NumericIndexReference:
-                      ${'$'}ref: '#/components/schemas/Tuple/items/0'
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+                        Tuple:
+                          type: array
+                          items:
+                            - type: string
+                            - type: number
+                        DottedReference:
+                          ${'$'}ref: '#/components/schemas/A.properties.x'
+                        NestedReference:
+                          ${'$'}ref: '#/components/schemas/A/properties/x'
+                        EscapedReference:
+                          ${'$'}ref: '#/components/schemas/slash~1name~0'
+                        BracketReference:
+                          ${'$'}ref: '#/components/schemas/bracket%5Bname%5D'
+                        NumericMemberReference:
+                          ${'$'}ref: '#/components/schemas/0'
+                        NumericIndexReference:
+                          ${'$'}ref: '#/components/schemas/Tuple/items/0'
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
         val root = ParserNodeFactory.root(DocumentReaderRegistry.read(source), context)
         val document = AsyncApiParser(context).parse(root)
         val components = assertIs<ComponentInterface.ComponentInline>(document.components).component

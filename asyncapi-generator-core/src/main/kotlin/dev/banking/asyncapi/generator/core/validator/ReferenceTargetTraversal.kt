@@ -14,7 +14,23 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.*
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -42,7 +58,9 @@ import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 /** Drains reachable, type-checked reference targets through their ordinary domain validators. */
-internal class ReferenceTargetTraversal(context: AsyncApiContext) {
+internal class ReferenceTargetTraversal(
+    context: AsyncApiContext,
+) {
     private val schemaValidator = SchemaValidator(context)
     private val channelValidator = ChannelValidator(context)
     private val messageValidator = MessageValidator(context)
@@ -67,15 +85,21 @@ internal class ReferenceTargetTraversal(context: AsyncApiContext) {
             val contextString = "${pending.contextString} target"
             when (pending.category) {
                 SCHEMA -> validateSchema(target, contextString, results)
-                CHANNEL -> (target as? Channel)?.let {
-                    channelValidator.validateInterface(ChannelInterface.ChannelInline(it), contextString, results)
-                }
+                CHANNEL ->
+                    (target as? Channel)?.let {
+                        channelValidator.validateInterface(ChannelInterface.ChannelInline(it), contextString, results)
+                    }
                 MESSAGE -> (target as? Message)?.let { messageValidator.validate(it, contextString, results) }
                 MESSAGE_TRAIT ->
                     (target as? MessageTrait)?.let { messageTraitValidator.validate(it, contextString, results) }
-                OPERATION -> (target as? Operation)?.let {
-                    operationValidator.validateInterface(OperationInterface.OperationInline(it), contextString, results)
-                }
+                OPERATION ->
+                    (target as? Operation)?.let {
+                        operationValidator.validateInterface(
+                            OperationInterface.OperationInline(it),
+                            contextString,
+                            results,
+                        )
+                    }
                 OPERATION_TRAIT ->
                     (target as? OperationTrait)?.let { operationTraitValidator.validate(it, contextString, results) }
                 OPERATION_REPLY ->
@@ -84,9 +108,10 @@ internal class ReferenceTargetTraversal(context: AsyncApiContext) {
                     (target as? OperationReplyAddress)?.let {
                         operationReplyAddressValidator.validate(it, contextString, results)
                     }
-                SERVER -> (target as? Server)?.let {
-                    serverValidator.validateInterface(ServerInterface.ServerInline(it), contextString, results)
-                }
+                SERVER ->
+                    (target as? Server)?.let {
+                        serverValidator.validateInterface(ServerInterface.ServerInline(it), contextString, results)
+                    }
                 SERVER_VARIABLE ->
                     (target as? ServerVariable)?.let { serverVariableValidator.validate(it, contextString, results) }
                 PARAMETER -> (target as? Parameter)?.let { parameterValidator.validate(it, contextString, results) }
@@ -103,7 +128,11 @@ internal class ReferenceTargetTraversal(context: AsyncApiContext) {
         }
     }
 
-    private fun validateSchema(target: Any, contextString: String, results: ValidationCollector) {
+    private fun validateSchema(
+        target: Any,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (target) {
             is Schema -> schemaValidator.validate(target, contextString, results)
             is MultiFormatSchema ->

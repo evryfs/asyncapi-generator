@@ -40,7 +40,8 @@ internal sealed interface GeneratorItem {
         val hasSingleContractPayloadMethod: Boolean get() =
             hasSinglePayloadMethod && sendMethods.single().additionalPayloadType == null
         val additionalPayloadExampleMethods: List<SendMethod> get() =
-            sendMethods.filter { method -> method.additionalPayloadType != null }
+            sendMethods
+                .filter { method -> method.additionalPayloadType != null }
                 .takeIf { methods ->
                     sendMethods.map { method -> method.messageName }.distinct().size == 1 &&
                         methods.size == 1
@@ -85,9 +86,10 @@ internal sealed interface GeneratorItem {
         val hasPayload: Boolean get() = payloadType != null
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
         val hasAdditionalParameters: Boolean get() = keyParameter != null || hasHeaders
-        val hasParameterDocumentation: Boolean get() = payloadDescription.isNotEmpty() ||
-            keyParameter?.description?.isNotEmpty() == true ||
-            headerProperties.any { it.description.isNotEmpty() }
+        val hasParameterDocumentation: Boolean get() =
+            payloadDescription.isNotEmpty() ||
+                keyParameter?.description?.isNotEmpty() == true ||
+                headerProperties.any { it.description.isNotEmpty() }
         val payloadDescriptionFirstLine: String? get() = payloadDescription.firstOrNull()
         val payloadDescriptionTailLines: List<String> get() = payloadDescription.drop(1)
     }

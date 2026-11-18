@@ -54,5 +54,6 @@ nav:
           - Documentation: contributing/documentation.md
           - Release documentation: contributing/release-readiness.md
           - Publish a release: contributing/releasing.md
+          - Code conventions: contributing/code-conventions.md
           - KDoc style guide: contributing/kdoc-style-guide.md
       - Coverage: coverage/index.md

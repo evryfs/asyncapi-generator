@@ -37,6 +37,5 @@ internal class NativeAvroSchemaParser(
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema)
     }
 
-    private fun String.startsWithJsonContainer(): Boolean =
-        startsWith("{") || startsWith("[") || startsWith("\"")
+    private fun String.startsWithJsonContainer(): Boolean = startsWith("{") || startsWith("[") || startsWith("\"")
 }

@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.validator.servers
 
 import dev.banking.asyncapi.generator.core.model.servers.Server
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_PROTOCOL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_VARIABLE_DEFAULT_ENUM
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ServerValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
@@ -30,9 +29,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         assertEquals(2, results.errors.size, "Expected 2 validation errors.")
         assertEquals(3, results.warnings.size, "Expected 3 validation warnings.")
 
-        val hostRequired = results.findings.single {
-            it.code == SERVER_HOST_REQUIRED.code
-        }
+        val hostRequired =
+            results.findings.single {
+                it.code == SERVER_HOST_REQUIRED.code
+            }
         assertEquals(SERVER_HOST_REQUIRED.code, hostRequired.code)
         assertEquals(SERVER_HOST_REQUIRED.severity, hostRequired.severity)
         assertEquals(SERVER_HOST_REQUIRED.concern, hostRequired.concern)
@@ -40,9 +40,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         assertEquals("asyncapi_validator_server_invalid.root.servers.emptyHostServer.host", hostRequired.path)
         assertEquals(7, hostRequired.line)
 
-        val protocolRequired = results.findings.single {
-            it.code == SERVER_PROTOCOL_REQUIRED.code
-        }
+        val protocolRequired =
+            results.findings.single {
+                it.code == SERVER_PROTOCOL_REQUIRED.code
+            }
         assertEquals(SERVER_PROTOCOL_REQUIRED.code, protocolRequired.code)
         assertEquals(SERVER_PROTOCOL_REQUIRED.severity, protocolRequired.severity)
         assertEquals(SERVER_PROTOCOL_REQUIRED.concern, protocolRequired.concern)
@@ -53,9 +54,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(13, protocolRequired.line)
 
-        val defaultEnum = results.findings.single {
-            it.code == SERVER_VARIABLE_DEFAULT_ENUM.code
-        }
+        val defaultEnum =
+            results.findings.single {
+                it.code == SERVER_VARIABLE_DEFAULT_ENUM.code
+            }
         assertEquals(SERVER_VARIABLE_DEFAULT_ENUM.code, defaultEnum.code)
         assertEquals(SERVER_VARIABLE_DEFAULT_ENUM.severity, defaultEnum.severity)
         assertEquals(SERVER_VARIABLE_DEFAULT_ENUM.concern, defaultEnum.concern)
@@ -66,9 +68,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(27, defaultEnum.line)
 
-        val hostProtocol = results.findings.single {
-            it.code == SERVER_HOST_CONTAINS_PROTOCOL.code
-        }
+        val hostProtocol =
+            results.findings.single {
+                it.code == SERVER_HOST_CONTAINS_PROTOCOL.code
+            }
         assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.code, hostProtocol.code)
         assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.severity, hostProtocol.severity)
         assertEquals(SERVER_HOST_CONTAINS_PROTOCOL.concern, hostProtocol.concern)
@@ -79,9 +82,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(17, hostProtocol.line)
 
-        val examplesEnum = results.findings.single {
-            it.code == SERVER_VARIABLE_EXAMPLES_ENUM.code
-        }
+        val examplesEnum =
+            results.findings.single {
+                it.code == SERVER_VARIABLE_EXAMPLES_ENUM.code
+            }
         assertEquals(SERVER_VARIABLE_EXAMPLES_ENUM.code, examplesEnum.code)
         assertEquals(SERVER_VARIABLE_EXAMPLES_ENUM.severity, examplesEnum.severity)
         assertEquals(SERVER_VARIABLE_EXAMPLES_ENUM.concern, examplesEnum.concern)
@@ -100,22 +104,24 @@ class ServerValidatorTest : AbstractValidatorTest() {
 
         assertEquals(2, results.errors.size)
 
-        val missingHostVariable = results.findings.single {
-            it.code == SERVER_VARIABLE_UNDEFINED.code &&
-                it.path ==
-                "asyncapi_validator_server_variable_mismatch.root.servers.missingVariableDefServer.host"
-        }
+        val missingHostVariable =
+            results.findings.single {
+                it.code == SERVER_VARIABLE_UNDEFINED.code &&
+                    it.path ==
+                    "asyncapi_validator_server_variable_mismatch.root.servers.missingVariableDefServer.host"
+            }
         assertEquals(SERVER_VARIABLE_UNDEFINED.code, missingHostVariable.code)
         assertEquals(SERVER_VARIABLE_UNDEFINED.severity, missingHostVariable.severity)
         assertEquals(SERVER_VARIABLE_UNDEFINED.concern, missingHostVariable.concern)
         assertEquals(8, missingHostVariable.line)
         assertEquals("asyncapi_validator_server_variable_mismatch.yaml", missingHostVariable.sourceLocation?.file?.name)
 
-        val missingPathnameVariable = results.findings.single {
-            it.code == SERVER_VARIABLE_UNDEFINED.code &&
-                it.path ==
-                "asyncapi_validator_server_variable_mismatch.root.servers.missingPathnameVariableDefServer.pathname"
-        }
+        val missingPathnameVariable =
+            results.findings.single {
+                it.code == SERVER_VARIABLE_UNDEFINED.code &&
+                    it.path ==
+                    "asyncapi_validator_server_variable_mismatch.root.servers.missingPathnameVariableDefServer.pathname"
+            }
         assertEquals(SERVER_VARIABLE_UNDEFINED.code, missingPathnameVariable.code)
         assertEquals(SERVER_VARIABLE_UNDEFINED.severity, missingPathnameVariable.severity)
         assertEquals(SERVER_VARIABLE_UNDEFINED.concern, missingPathnameVariable.concern)
@@ -138,9 +144,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/servers/asyncapi_validator_server_variable_duplicate_enum.yaml")
 
         assertEquals(1, results.errors.size)
-        val duplicateEnum = results.findings.single {
-            it.code == SERVER_VARIABLE_ENUM_UNIQUE.code
-        }
+        val duplicateEnum =
+            results.findings.single {
+                it.code == SERVER_VARIABLE_ENUM_UNIQUE.code
+            }
         assertEquals(SERVER_VARIABLE_ENUM_UNIQUE.code, duplicateEnum.code)
         assertEquals(SERVER_VARIABLE_ENUM_UNIQUE.severity, duplicateEnum.severity)
         assertEquals(SERVER_VARIABLE_ENUM_UNIQUE.concern, duplicateEnum.concern)
@@ -160,9 +167,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/servers/asyncapi_validator_server_name_invalid.yaml")
 
         assertEquals(1, results.errors.size)
-        val invalidName = results.findings.single {
-            it.code == SERVER_NAME_FORMAT.code
-        }
+        val invalidName =
+            results.findings.single {
+                it.code == SERVER_NAME_FORMAT.code
+            }
         assertEquals(SERVER_NAME_FORMAT.code, invalidName.code)
         assertEquals(SERVER_NAME_FORMAT.severity, invalidName.severity)
         assertEquals(SERVER_NAME_FORMAT.concern, invalidName.concern)
@@ -173,16 +181,19 @@ class ServerValidatorTest : AbstractValidatorTest() {
 
     @Test
     fun `recognizes server variables used in pathname`() {
-        val server = Server(
-            host = "api.example.com",
-            pathname = "/{environment}",
-            protocol = "https",
-            variables = mapOf(
-                "environment" to ServerVariableInterface.ServerVariableInline(
-                    ServerVariable(),
-                ),
-            ),
-        )
+        val server =
+            Server(
+                host = "api.example.com",
+                pathname = "/{environment}",
+                protocol = "https",
+                variables =
+                    mapOf(
+                        "environment" to
+                            ServerVariableInterface.ServerVariableInline(
+                                ServerVariable(),
+                            ),
+                    ),
+            )
         val collector = ValidationCollector()
 
         ServerValidator(asyncApiContext).validateInterface(

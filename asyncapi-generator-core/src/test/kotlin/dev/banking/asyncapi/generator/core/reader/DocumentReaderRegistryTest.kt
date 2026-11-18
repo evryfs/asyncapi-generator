@@ -14,7 +14,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DocumentReaderRegistryTest {
-
     @TempDir
     lateinit var tempDir: Path
 
@@ -53,9 +52,10 @@ class DocumentReaderRegistryTest {
         val file = tempDir.resolve("contract.txt").toFile()
         file.writeText("asyncapi: '3.0.0'")
 
-        val failure = assertFailsWith<DocumentReadException.UnsupportedFormat> {
-            DocumentReaderRegistry.read(file)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.UnsupportedFormat> {
+                DocumentReaderRegistry.read(file)
+            }
         assertEquals(file, failure.file)
         assertEquals("txt", failure.format)
     }
@@ -64,9 +64,10 @@ class DocumentReaderRegistryTest {
     fun `reports a missing file as not existing`() {
         val file = tempDir.resolve("missing.yaml").toFile()
 
-        val failure = assertFailsWith<DocumentReadException.MissingDocument> {
-            DocumentReaderRegistry.read(file)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MissingDocument> {
+                DocumentReaderRegistry.read(file)
+            }
         assertEquals(file, failure.file)
         assertTrue("does not exist" in failure.message.orEmpty())
         assertTrue(failure.message.orEmpty().endsWith(file.absolutePath))
@@ -86,9 +87,10 @@ class DocumentReaderRegistryTest {
         val file = tempDir.resolve("malformed-utf8.yaml").toFile()
         file.writeBytes(byteArrayOf(0xC3.toByte(), 0x28))
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            DocumentReaderRegistry.read(file)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                DocumentReaderRegistry.read(file)
+            }
         assertEquals(file, failure.file)
         assertEquals(null, failure.location)
         assertNotNull(failure.cause)

@@ -26,7 +26,6 @@ internal class ParserNode(
     val context: AsyncApiContext,
     val profile: AsyncApiParserProfile? = null,
 ) {
-
     val path: String
         get() = address.displayPath
 
@@ -43,31 +42,32 @@ internal class ParserNode(
         node: DocumentNode,
     ): ParserNode = ParserNode("$name[$index]", node, address.index(index), context, profile)
 
-    fun withProfile(profile: AsyncApiParserProfile): ParserNode =
-        ParserNode(name, node, address, context, profile)
+    fun withProfile(profile: AsyncApiParserProfile): ParserNode = ParserNode(name, node, address, context, profile)
 
     fun expectObject(): ParserObjectNode =
         ParserObjectNode(
             parserNode = this,
-            documentObject = node as? DocumentObject
-                ?: ParserValueExpectation.unexpectedType(
-                    node = node,
-                    expectedType = typeOf<Map<String, Any?>>(),
-                    address = address,
-                    context = context,
-                ),
+            documentObject =
+                node as? DocumentObject
+                    ?: ParserValueExpectation.unexpectedType(
+                        node = node,
+                        expectedType = typeOf<Map<String, Any?>>(),
+                        address = address,
+                        context = context,
+                    ),
         )
 
     fun expectArray(): ParserArrayNode =
         ParserArrayNode(
             parserNode = this,
-            documentArray = node as? DocumentArray
-                ?: ParserValueExpectation.unexpectedType(
-                    node = node,
-                    expectedType = typeOf<List<Any?>>(),
-                    address = address,
-                    context = context,
-                ),
+            documentArray =
+                node as? DocumentArray
+                    ?: ParserValueExpectation.unexpectedType(
+                        node = node,
+                        expectedType = typeOf<List<Any?>>(),
+                        address = address,
+                        context = context,
+                    ),
         )
 
     @Suppress("UNCHECKED_CAST")

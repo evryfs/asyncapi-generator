@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
+import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import java.io.StringWriter
 
 internal class KotlinSpringKafkaProducerGenerator {

@@ -5,13 +5,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ModelTrackingTest {
-
     private val sourceTracking = SourceTracking()
     private val tracking = ModelTracking(sourceTracking)
 
     @Test
     fun `findReference returns null for unregistered reference`() {
-        val reference = dev.banking.asyncapi.generator.core.model.references.Reference("#/components/schemas/User")
+        val reference =
+            dev.banking.asyncapi.generator.core.model.references
+                .Reference("#/components/schemas/User")
 
         assertNull(tracking.findReference(reference))
     }

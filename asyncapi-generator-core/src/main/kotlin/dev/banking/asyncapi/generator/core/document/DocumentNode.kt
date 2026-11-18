@@ -120,9 +120,10 @@ internal data class DocumentNull(
  */
 internal fun DocumentNode.toValue(): Any? =
     when (this) {
-        is DocumentObject -> members.mapValuesTo(linkedMapOf()) { (_, member) ->
-            member.value.toValue()
-        }
+        is DocumentObject ->
+            members.mapValuesTo(linkedMapOf()) { (_, member) ->
+                member.value.toValue()
+            }
 
         is DocumentArray -> elements.map(DocumentNode::toValue)
         is DocumentString -> value

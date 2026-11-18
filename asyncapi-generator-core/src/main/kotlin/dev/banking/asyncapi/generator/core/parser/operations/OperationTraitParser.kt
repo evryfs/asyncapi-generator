@@ -1,16 +1,16 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
-import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
-import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
-import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION_TRAIT as OPERATION_TRAIT_OBJECT
 
 /**
@@ -19,7 +19,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
 internal class OperationTraitParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagParser = TagParser(asyncApiContext)
     private val bindingParser = BindingParser(asyncApiContext)
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)
@@ -36,28 +35,29 @@ internal class OperationTraitParser(
     fun parseElement(parserNode: ParserNode): OperationTraitInterface {
         val objectNode = parserNode.expectObject()
         val reference = objectNode.optional($$"$ref")?.expect<String>()
-        val operationTraitInterface = if (reference != null) {
-            OperationTraitInterface.OperationTraitReference(
-                Reference(
-                    ref = reference,
-                    referenceCategoryKey = OPERATION_TRAIT,
-                ).also { asyncApiContext.register(it, parserNode) }
-            )
-        } else {
-            objectNode.expectOnlyMembers(OPERATION_TRAIT_OBJECT)
-            OperationTraitInterface.OperationTraitInline(
-                OperationTrait(
-                    title = objectNode.optional("title")?.expect<String>(),
-                    summary = objectNode.optional("summary")?.expect<String>(),
-                    description = objectNode.optional("description")?.expect<String>(),
-                    tags = objectNode.optional("tags")?.let(tagParser::parseList),
-                    externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
-                    bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION) },
-                    security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
-                    extensions = objectNode.extensions(),
-                ).also { asyncApiContext.register(it, parserNode) }
-            )
-        }
+        val operationTraitInterface =
+            if (reference != null) {
+                OperationTraitInterface.OperationTraitReference(
+                    Reference(
+                        ref = reference,
+                        referenceCategoryKey = OPERATION_TRAIT,
+                    ).also { asyncApiContext.register(it, parserNode) },
+                )
+            } else {
+                objectNode.expectOnlyMembers(OPERATION_TRAIT_OBJECT)
+                OperationTraitInterface.OperationTraitInline(
+                    OperationTrait(
+                        title = objectNode.optional("title")?.expect<String>(),
+                        summary = objectNode.optional("summary")?.expect<String>(),
+                        description = objectNode.optional("description")?.expect<String>(),
+                        tags = objectNode.optional("tags")?.let(tagParser::parseList),
+                        externalDocs = objectNode.optional("externalDocs")?.let(externalDocsParser::parseElement),
+                        bindings = objectNode.optional("bindings")?.let { bindingParser.parseMap(it, OPERATION) },
+                        security = objectNode.optional("security")?.let(securitySchemeParser::parseList),
+                        extensions = objectNode.extensions(),
+                    ).also { asyncApiContext.register(it, parserNode) },
+                )
+            }
         return operationTraitInterface
     }
 }

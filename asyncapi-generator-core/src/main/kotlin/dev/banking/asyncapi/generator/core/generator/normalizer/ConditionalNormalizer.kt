@@ -88,7 +88,10 @@ internal class ConditionalNormalizer {
                         thenProperty = thenProperty,
                         elseProperty = elseProperty,
                     )
-                else -> checkNotNull(thenProperty ?: elseProperty) { "Property $propertyName is missing on every branch" }
+                else ->
+                    checkNotNull(
+                        thenProperty ?: elseProperty,
+                    ) { "Property $propertyName is missing on every branch" }
             }
         }
     }
@@ -121,9 +124,10 @@ internal class ConditionalNormalizer {
     private fun openProperty(properties: List<SchemaInterface>): SchemaInterface =
         SchemaInterface.SchemaInline(
             Schema(
-                description = properties.firstNotNullOfOrNull { property ->
-                    property.resolvedSchema()?.description
-                },
+                description =
+                    properties.firstNotNullOfOrNull { property ->
+                        property.resolvedSchema()?.description
+                    },
             ),
         )
 

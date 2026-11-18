@@ -18,15 +18,11 @@ internal class ParserFixtures(
 ) {
     private val parser = AsyncApiParser(context)
 
-    fun root(path: String): ParserNode =
-        root(TestResources.file(path))
+    fun root(path: String): ParserNode = root(TestResources.file(path))
 
-    fun root(file: File): ParserNode =
-        AsyncApiRegistry.read(file, context)
+    fun root(file: File): ParserNode = AsyncApiRegistry.read(file, context)
 
-    fun document(path: String): AsyncApiDocument =
-        document(TestResources.file(path))
+    fun document(path: String): AsyncApiDocument = document(TestResources.file(path))
 
-    fun document(file: File): AsyncApiDocument =
-        parser.parse(root(file))
+    fun document(file: File): AsyncApiDocument = parser.parse(root(file))
 }

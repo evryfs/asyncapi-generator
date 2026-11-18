@@ -24,7 +24,10 @@ data class UnionSubtype(
  * generated type and are skipped.
  */
 internal object UnionSubtypes {
-    fun of(schema: Schema, context: GeneratorContext): List<UnionSubtype> {
+    fun of(
+        schema: Schema,
+        context: GeneratorContext,
+    ): List<UnionSubtype> {
         val discriminator = schema.discriminator
         return (schema.oneOf ?: schema.anyOf ?: emptyList())
             .filterIsInstance<SchemaInterface.SchemaReference>()
@@ -33,7 +36,8 @@ internal object UnionSubtypes {
                 val childSchemaName = MapperUtil.toPascalCase(rawName)
                 val discriminatorValue =
                     discriminator?.let { property ->
-                        context.findSchemaByName(childSchemaName)
+                        context
+                            .findSchemaByName(childSchemaName)
                             ?.properties
                             ?.get(property)
                             ?.let { property ->
@@ -43,11 +47,13 @@ internal object UnionSubtypes {
                                     // Through a reference only a one-value enum identifies the member;
                                     // a shared enum of all values does not.
                                     is SchemaInterface.SchemaReference ->
-                                        (property.reference.model as? Schema)?.takeIf { it.const != null || it.enum?.size == 1 }
+                                        (property.reference.model as? Schema)?.takeIf {
+                                            it.const != null ||
+                                                it.enum?.size == 1
+                                        }
                                     else -> null
                                 }
-                            }
-                            ?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
+                            }?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
                             ?.removeSurrounding("\"")
                     }
                 UnionSubtype(name = discriminatorValue ?: rawName, type = childSchemaName)

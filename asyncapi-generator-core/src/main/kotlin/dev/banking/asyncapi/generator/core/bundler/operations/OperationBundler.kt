@@ -13,13 +13,13 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
  * Bundles operation objects and references.
  */
 internal class OperationBundler {
-
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val securitySchemeBundler = SecuritySchemeBundler()
     private val bindingBundler = BindingBundler()
     private val operationTraitBundler = OperationTraitBundler()
     private val operationReplyBundler = OperationReplyBundler()
+
     fun bundleMap(
         operations: Map<String, OperationInterface>?,
         context: BundlingContext,
@@ -29,23 +29,34 @@ internal class OperationBundler {
             bundle(opInterface, context)
         }
     }
-    fun bundle(operationInterface: OperationInterface, context: BundlingContext): OperationInterface =
+
+    fun bundle(
+        operationInterface: OperationInterface,
+        context: BundlingContext,
+    ): OperationInterface =
         when (operationInterface) {
             is OperationInterface.OperationInline ->
                 OperationInterface.OperationInline(
-                    bundleOperation(operationInterface.operation, context)
+                    bundleOperation(operationInterface.operation, context),
                 )
 
             is OperationInterface.OperationReference -> {
-                operationInterface.copy(reference = ReferenceBundler.bundleReferencedModel<Operation>(
-                    reference = operationInterface.reference,
-                    context = context,
-                ) { operation, nextContext ->
-                    bundleOperation(operation, nextContext)
-                })
+                operationInterface.copy(
+                    reference =
+                        ReferenceBundler.bundleReferencedModel<Operation>(
+                            reference = operationInterface.reference,
+                            context = context,
+                        ) { operation, nextContext ->
+                            bundleOperation(operation, nextContext)
+                        },
+                )
             }
         }
-    fun bundleOperation(operation: Operation, context: BundlingContext): Operation {
+
+    fun bundleOperation(
+        operation: Operation,
+        context: BundlingContext,
+    ): Operation {
         val bundledBindings = bindingBundler.bundleMap(operation.bindings, context)
         val bundledTraits = operationTraitBundler.bundleList(operation.traits, context)
         val bundledTags = tagBundler.bundleList(operation.tags, context)

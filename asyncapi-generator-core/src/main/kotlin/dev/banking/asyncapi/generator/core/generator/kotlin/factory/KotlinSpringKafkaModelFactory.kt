@@ -12,11 +12,11 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPay
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContractFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
+import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.kotlin.model.GeneratorItem
-import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toKDocLines
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 
 internal class KotlinSpringKafkaModelFactory(
     private val clientPackage: String,
@@ -220,7 +220,8 @@ internal class KotlinSpringKafkaModelFactory(
             listOfNotNull(
                 message.payload.kotlinImportName,
                 message.keyContract?.importName,
-            ) + message.payload.kotlinImports + message.payload.headerProperties.mapNotNull { header -> header.importName }
+            ) + message.payload.kotlinImports +
+                message.payload.headerProperties.mapNotNull { header -> header.importName }
         }
 
     private fun KafkaHeaderProperty.parameterDescription(): List<String> =
@@ -247,7 +248,8 @@ internal class KotlinSpringKafkaModelFactory(
                     .ifEmpty { listOf(defaultDescription) },
             required = !nullable,
             annotations =
-                constraintMapper.buildAnnotations(schema)
+                constraintMapper
+                    .buildAnnotations(schema)
                     .map { annotation -> annotation.replace("@field:", "@") } +
                     listOfNotNull(
                         validationAnnotations.payloadParameter

@@ -12,7 +12,8 @@ internal object SpringKafkaClientMethodNameValidator {
     ) {
         channels.forEach { channel ->
             val collision =
-                channel.messageIdentities()
+                channel
+                    .messageIdentities()
                     .flatMap { message -> message.generatedMethods(task) }
                     .groupBy { method -> method.scope to method.name }
                     .asSequence()
@@ -22,8 +23,7 @@ internal object SpringKafkaClientMethodNameValidator {
                             { (method, _) -> method.first.ordinal },
                             { (method, _) -> method.second },
                         ),
-                    )
-                    .firstOrNull()
+                    ).firstOrNull()
                     ?: return@forEach
 
             throw SpringKafkaClientMethodNameCollision(
@@ -34,9 +34,7 @@ internal object SpringKafkaClientMethodNameValidator {
         }
     }
 
-    private fun MessageIdentity.generatedMethods(
-        task: GenerationTask.SpringKafkaClient,
-    ): List<GeneratedMethod> =
+    private fun MessageIdentity.generatedMethods(task: GenerationTask.SpringKafkaClient): List<GeneratedMethod> =
         buildList {
             if (task.generateProducers) {
                 producerPayloadMethods(
@@ -75,8 +73,7 @@ internal object SpringKafkaClientMethodNameValidator {
             multiFormatMessages
                 .filter { message ->
                     message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf
-                }
-                .map { message ->
+                }.map { message ->
                     MessageIdentity(
                         messageId = message.messageId,
                         generatedName = message.messageName,

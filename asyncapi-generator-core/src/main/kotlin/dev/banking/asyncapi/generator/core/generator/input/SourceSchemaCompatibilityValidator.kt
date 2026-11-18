@@ -77,7 +77,15 @@ internal object SourceSchemaCompatibilityValidator {
         }
 
         schema.items?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.items", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.items",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
         schema.tupleItems?.forEachIndexed { index, child ->
             validateInterface(
@@ -102,7 +110,15 @@ internal object SourceSchemaCompatibilityValidator {
             )
         }
         schema.contains?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.contains", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.contains",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
         schema.properties?.forEach { (name, child) ->
             validateInterface(
@@ -172,20 +188,79 @@ internal object SourceSchemaCompatibilityValidator {
                 visited,
             )
         }
-        validateList(output, rootSchemaName, path, "allOf", schema.allOf, checkStructuralModels, checkJavaPatterns, visited)
-        validateList(output, rootSchemaName, path, "anyOf", schema.anyOf, checkStructuralModels, checkJavaPatterns, visited)
-        validateList(output, rootSchemaName, path, "oneOf", schema.oneOf, checkStructuralModels, checkJavaPatterns, visited)
+        validateList(
+            output,
+            rootSchemaName,
+            path,
+            "allOf",
+            schema.allOf,
+            checkStructuralModels,
+            checkJavaPatterns,
+            visited,
+        )
+        validateList(
+            output,
+            rootSchemaName,
+            path,
+            "anyOf",
+            schema.anyOf,
+            checkStructuralModels,
+            checkJavaPatterns,
+            visited,
+        )
+        validateList(
+            output,
+            rootSchemaName,
+            path,
+            "oneOf",
+            schema.oneOf,
+            checkStructuralModels,
+            checkJavaPatterns,
+            visited,
+        )
         schema.not?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.not", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.not",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
         schema.ifSchema?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.if", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.if",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
         schema.thenSchema?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.then", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.then",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
         schema.elseSchema?.let { child ->
-            validateInterface(output, rootSchemaName, "$path.else", child, checkStructuralModels, checkJavaPatterns, visited)
+            validateInterface(
+                output,
+                rootSchemaName,
+                "$path.else",
+                child,
+                checkStructuralModels,
+                checkJavaPatterns,
+                visited,
+            )
         }
     }
 

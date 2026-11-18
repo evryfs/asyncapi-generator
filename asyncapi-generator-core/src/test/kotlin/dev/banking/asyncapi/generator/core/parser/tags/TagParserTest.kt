@@ -16,7 +16,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class TagParserTest {
-
     private val context = AsyncApiContext()
     private val parser = TagParser(context)
 
@@ -24,9 +23,12 @@ class TagParserTest {
     fun `parse tag map and list in source order`() {
         val file = TestResources.file("parser/tags/asyncapi_parser_tag_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val components = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject()
+        val components =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
 
         val tags = parser.parseMap(components.required("tags"))
 
@@ -41,8 +43,11 @@ class TagParserTest {
         assertEquals("#/components/tags/inlineTag", tagReference.ref)
         assertEquals(TAG, tagReference.referenceCategoryKey)
 
-        val orderedTags = components.required("tagLists")
-            .expectObject().required("orderedTags")
+        val orderedTags =
+            components
+                .required("tagLists")
+                .expectObject()
+                .required("orderedTags")
         val tagList = parser.parseList(orderedTags)
         val listInlineTag = assertIs<TagInterface.TagInline>(tagList[0]).tag
         assertEquals("user", listInlineTag.name)
@@ -56,14 +61,20 @@ class TagParserTest {
     fun `parse tag reports missing name`() {
         val file = TestResources.file("parser/tags/asyncapi_parser_tag_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val tagNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("tags")
-            .expectObject().required("MissingName")
+        val tagNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("tags")
+                .expectObject()
+                .required("MissingName")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(tagNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(tagNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -73,5 +84,4 @@ class TagParserTest {
         assertEquals("root.components.tags.MissingName", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_tag_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

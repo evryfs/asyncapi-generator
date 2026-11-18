@@ -7,7 +7,6 @@ import java.net.URI
 
 /** Exact-value format checks shared by semantic validators. */
 internal object ValidationFormats {
-
     fun absoluteUri(value: String): URI? =
         runCatching { URI(value) }
             .getOrNull()
@@ -41,10 +40,11 @@ internal object ValidationFormats {
         return runCatching { JsonPointer.compile(fragment) }.isSuccess
     }
 
-    private val RUNTIME_EXPRESSION_PREFIXES = listOf(
-        "\$message.header",
-        "\$message.payload",
-    )
+    private val RUNTIME_EXPRESSION_PREFIXES =
+        listOf(
+            "\$message.header",
+            "\$message.payload",
+        )
     private val INVALID_JSON_POINTER_ESCAPE = Regex("~(?![01])")
     private val COMPONENT_NAME = Regex("^[a-zA-Z0-9.\\-_]+$")
     private val REUSABLE_OBJECT_NAME = Regex("^[A-Za-z0-9_-]+$")

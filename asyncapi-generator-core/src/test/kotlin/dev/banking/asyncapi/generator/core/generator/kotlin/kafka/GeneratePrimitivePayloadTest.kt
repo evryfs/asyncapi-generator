@@ -34,9 +34,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             )
         val result = generator.emit(listOf(channel))
         val content =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.kt"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.kt"
+                }.content
         assertTrue(
             content.contains("fun listenSimpleStringMessage("),
             "Consumer should expose the contract method",
@@ -45,9 +46,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
         assertFalse(content.contains("receivedKey:"), "Consumer should omit a key not declared by the contract")
         assertFalse(content.contains("ConsumerRecord"), "Consumer contract should not own listener record mapping")
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/producer/SimpleTopicProducer.kt"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/producer/SimpleTopicProducer.kt"
+                }.content
         assertTrue(
             producerContent.contains("interface SimpleTopicProducer {"),
             "Producer should be generated as a contract interface",
@@ -101,9 +103,10 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
             )
         val result = generator.emit(listOf(channel))
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.kt"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.kt"
+                }.content
         assertTrue(
             producerContent.contains("interface MultiTopicProducer {"),
             "Channel producer should be generated as a contract interface",

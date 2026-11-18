@@ -4,5 +4,5 @@ internal data class AvroRecord(
     val namespace: String,
     val name: String,
     val doc: String?,
-    val fields: List<AvroField>
+    val fields: List<AvroField>,
 ) : AvroSchema

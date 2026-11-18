@@ -1,0 +1,444 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues/>
+  <CurrentIssues>
+    <ID>ComplexCondition:ConditionalNormalizer.kt$ConditionalNormalizer$thenProperty is SchemaInterface.SchemaReference &amp;&amp; elseProperty is SchemaInterface.SchemaReference &amp;&amp; thenProperty.reference.sourceId == elseProperty.reference.sourceId &amp;&amp; thenProperty.reference.ref == elseProperty.reference.ref</ID>
+    <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
+    <ID>ComplexCondition:OAuthFlowsValidator.kt$OAuthFlowsValidator$flows == null || ( flows.implicit == null &amp;&amp; flows.password == null &amp;&amp; flows.clientCredentials == null &amp;&amp; flows.authorizationCode == null )</ID>
+    <ID>CyclomaticComplexMethod:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
+    <ID>CyclomaticComplexMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
+    <ID>CyclomaticComplexMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
+    <ID>CyclomaticComplexMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
+    <ID>CyclomaticComplexMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
+    <ID>CyclomaticComplexMethod:ExternalFragmentProcessor.kt$ExternalFragmentProcessor$internal fun parseAndDeferValidation( target: ExternalReferenceTargetResolver.Target, reference: Reference, ): () -&gt; Unit</ID>
+    <ID>CyclomaticComplexMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
+    <ID>CyclomaticComplexMethod:GenerationPlanner.kt$GenerationPlanner$fun plan(configuration: GeneratorConfiguration): GenerationPlan</ID>
+    <ID>CyclomaticComplexMethod:JavaModelEmitter.kt$JavaModelEmitter.Companion$internal fun typeName(type: TypeRef): String</ID>
+    <ID>CyclomaticComplexMethod:KotlinModelEmitter.kt$KotlinModelEmitter.Companion$internal fun typeName(type: TypeRef): String</ID>
+    <ID>CyclomaticComplexMethod:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
+    <ID>CyclomaticComplexMethod:ReferenceResolver.kt$ReferenceResolver$private fun matches( category: ReferenceCategoryKey, target: Any, ): Boolean</ID>
+    <ID>CyclomaticComplexMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
+    <ID>CyclomaticComplexMethod:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
+    <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
+    <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
+    <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
+    <ID>CyclomaticComplexMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, visited: MutableSet&lt;Any&gt;, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
+    <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
+    <ID>LargeClass:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
+    <ID>LargeClass:ComponentValidator.kt$ComponentValidator</ID>
+    <ID>LargeClass:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator</ID>
+    <ID>LargeClass:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
+    <ID>LargeClass:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
+    <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
+    <ID>LargeClass:KafkaBindingValidator.kt$KafkaBindingValidator</ID>
+    <ID>LargeClass:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
+    <ID>LargeClass:SchemaValidator.kt$SchemaValidator</ID>
+    <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
+    <ID>LongMethod:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
+    <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
+    <ID>LongMethod:AsyncApiParserProfile.kt$AsyncApiSpecificationLine.Companion$fun select(root: ParserNode): ParserNode</ID>
+    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
+    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectMessages( asyncApiDocument: AsyncApiDocument, component: Component?, ): List&lt;CollectedMessage&gt;</ID>
+    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
+    <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
+    <ID>LongMethod:BindingBundler.kt$BindingBundler$private fun bundleBinding( binding: Binding, context: BundlingContext, ): Binding</ID>
+    <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
+    <ID>LongMethod:ChannelValidator.kt$ChannelValidator$private fun validateAddress( node: Channel, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
+    <ID>LongMethod:ComponentParser.kt$ComponentParser$fun parseElement(node: ParserNode): ComponentInterface</ID>
+    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$fun validateInterface( node: ComponentInterface, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateBindings( component: Component, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateNames( component: Component, results: ValidationCollector, )</ID>
+    <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
+    <ID>LongMethod:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
+    <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
+    <ID>LongMethod:DocumentationUtils.kt$DocumentationUtils$fun wrapForParamDoc( paramName: String, text: String, ): List&lt;String&gt;</ID>
+    <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
+    <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
+    <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
+    <ID>LongMethod:GenerationPlanner.kt$GenerationPlanner$fun plan(configuration: GeneratorConfiguration): GenerationPlan</ID>
+    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$fun create(configuredRequest: GeneratorConfigurationRequest): GeneratorConfiguration</ID>
+    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun GeneratorConfigurationRequest.schemaGeneration( modelType: ModelType?, protobufModels: ProtobufModelGeneration?, ): List&lt;SchemaGeneration&gt;</ID>
+    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun validate(request: GeneratorConfigurationRequest)</ID>
+    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun validateProfileConfiguration(request: GeneratorConfigurationRequest)</ID>
+    <ID>LongMethod:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest.Companion$fun clients( clientType: String?, clientContract: String?, clientPackage: String?, modelPackage: String?, producerEnabled: Boolean? = null, producerAdditionalPayloadTypes: List&lt;String&gt;? = null, consumerEnabled: Boolean? = null, topicParameterProperties: Map&lt;String, String&gt; = emptyMap(), validationClientContract: String? = null, validationPayloadParameter: String? = null, ): Clients</ID>
+    <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemaInterfacesPrinter(schemaInterfacesMap: Map&lt;String, SchemaInterface&gt;)</ID>
+    <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
+    <ID>LongMethod:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
+    <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
+    <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
+    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
+    <ID>LongMethod:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: String, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
+    <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
+    <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$private fun normalizeAsyncApiSchemaNode( schemaNode: ObjectNode, schema: Schema, )</ID>
+    <ID>LongMethod:KafkaHeaderParameterNames.kt$KafkaHeaderParameterNames$fun resolve( headerContractName: String, wireNames: Collection&lt;String&gt;, ): Map&lt;String, String&gt;</ID>
+    <ID>LongMethod:KafkaKeyContractResolver.kt$KafkaKeyContractResolver$fun resolve( messageName: String, schema: SchemaInterface?, modelPackage: String? = null, ): KafkaKeyContract?</ID>
+    <ID>LongMethod:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator$fun validate( document: AsyncApiDocument, results: ValidationCollector, )</ID>
+    <ID>LongMethod:KotlinModelEmitter.kt$KotlinModelEmitter$private fun dataClass(model: ObjectModel): KotlinClassTemplate</ID>
+    <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
+    <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
+    <ID>LongMethod:MessageParser.kt$MessageParser$fun parseElement(parserNode: ParserNode): MessageInterface</ID>
+    <ID>LongMethod:MessagePayloadResolver.kt$MessagePayloadResolver$fun resolvePayload( message: Message, messageId: String, ): ResolvedMessagePayload?</ID>
+    <ID>LongMethod:MessageTraitParser.kt$MessageTraitParser$fun parseElement(parserNode: ParserNode): MessageTraitInterface</ID>
+    <ID>LongMethod:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun create( name: String, schema: Schema, ): ModelDefinition?</ID>
+    <ID>LongMethod:ModelRepository.kt$ModelRepository$fun register( model: Any, node: ParserNode, )</ID>
+    <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
+    <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
+    <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
+    <ID>LongMethod:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
+    <ID>LongMethod:NativeSchemaAssetReader.kt$NativeSchemaAssetReader$fun readIfExternalReference(schemaNode: ParserNode): String?</ID>
+    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowName: String, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
+    <ID>LongMethod:OperationParser.kt$OperationParser$fun parseElement(parserNode: ParserNode): OperationInterface</ID>
+    <ID>LongMethod:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$fun format( diagnostic: ParserDiagnostic, context: AsyncApiContext, ): String</ID>
+    <ID>LongMethod:ParserLoadResourceBudget.kt$ParserLoadResourceBudget$@Throws(IOException::class) fun readNativeSchemaAsset(file: File): String</ID>
+    <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
+    <ID>LongMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, context: BundlingContext, ): SchemaInterface</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleSchema( schema: Schema, context: BundlingContext, ): Schema</ID>
+    <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateArray( schema: Schema, value: List&lt;*&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
+    <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
+    <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
+    <ID>LongMethod:SchemaKeywordPolicy.kt$SchemaKeywordPolicy$fun classify(keyword: String): SchemaKeywordClassification</ID>
+    <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
+    <ID>LongMethod:SchemaParser.kt$SchemaParser$fun parseElement(parserNode: ParserNode): SchemaInterface</ID>
+    <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, visited: MutableSet&lt;Any&gt;, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateKeywords( node: Any, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateNumericConstraints( node: Schema, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateStringLength( node: Schema, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateType( node: Schema, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SecuritySchemeParser.kt$SecuritySchemeParser$fun parseElement(parserNode: ParserNode): SecuritySchemeInterface</ID>
+    <ID>LongMethod:SecuritySchemeValidator.kt$SecuritySchemeValidator$private fun validateType( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ServerParser.kt$ServerParser$fun parseElement(parserNode: ParserNode): ServerInterface</ID>
+    <ID>LongMethod:ServerValidator.kt$ServerValidator$private fun validateHost( node: Server, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
+    <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
+    <ID>LongMethod:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
+    <ID>LongMethod:YamlDocumentReader.kt$YamlDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
+    <ID>LongParameterList:AsyncApiExternalContext.kt$AsyncApiExternalContext$( private val sourceTracking: SourceTracking, private val modelTracking: ModelTracking, private val warningCollector: ValidationWarningCollector, private val registerExternalDocument: (File, SourceLocation) -&gt; Unit, private val registerReferenceTarget: (File, String, SourceLocation) -&gt; Unit, private val withinExternalReference: (SourceLocation, () -&gt; Unit) -&gt; Unit, private val createParser: () -&gt; AsyncApiParser, private val createValidator: () -&gt; AsyncApiValidator, private val createReporter: () -&gt; ValidationReporter, private val createFragmentProcessor: () -&gt; ExternalFragmentProcessor, private val createDiagnosticException: (ParserDiagnostic) -&gt; AsyncApiParseException, private val readDocument: (File) -&gt; ParserNode, )</ID>
+    <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, sourceModel: Any = binding, predicate: (Any?) -&gt; Boolean, )</ID>
+    <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, contextString: String, index: Int, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:OAuthFlowsValidator.kt$OAuthFlowsValidator$( flow: OAuthFlow, value: String?, fieldName: String, requiredRule: ValidationRule, formatRule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:SchemaValidator.kt$SchemaValidator$( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:SchemaValidator.kt$SchemaValidator$( node: Schema, lowerKeyword: String, lower: Number?, upperKeyword: String, upper: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, field: String, schemas: List&lt;SchemaInterface&gt;?, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
+    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
+    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: SchemaInterface, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
+    <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
+    <ID>LoopWithTooManyJumpStatements:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer$while</ID>
+    <ID>LoopWithTooManyJumpStatements:ReferenceAnalyzer.kt$ReferenceAnalyzer$while</ID>
+    <ID>MagicNumber:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$3</ID>
+    <ID>MagicNumber:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$3</ID>
+    <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
+    <ID>MagicNumber:ParserLoadResourceLimits.kt$ParserLoadResourceLimits$20</ID>
+    <ID>MagicNumber:ParserLoadResourceLimits.kt$ParserLoadResourceLimits$64L</ID>
+    <ID>MagicNumber:ReferencePointer.kt$3</ID>
+    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
+    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$16</ID>
+    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$4</ID>
+    <ID>MagicNumber:SourceRepository.kt$SourceRepository$4</ID>
+    <ID>MatchingDeclarationName:AsyncApiObjectMemberPolicy.kt$AsyncApiObjectType</ID>
+    <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey."</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Use distinct header names that remain unique after non-identifier characters are replaced with underscores."</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
+    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
+    <ID>MaxLineLength:BindingBundler.kt$BindingBundler$/** A protocol-keyed binding content holds the fields under the protocol; a single protocol's content holds them directly. */</ID>
+    <ID>MaxLineLength:ChannelValidator.kt$ChannelValidator$"$contextString address uses parameters $missingDefinitions which are not defined in channel parameters map."</ID>
+    <ID>MaxLineLength:ConfigurationWarning.kt$"https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/generator-configuration.md#configuration-warnings"</ID>
+    <ID>MaxLineLength:DiagnosticLayout.kt$DiagnosticLayout$"---------------------------------------------------------------------------------------------------------------------"</ID>
+    <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
+    <ID>MaxLineLength:KafkaBindingValidator.kt$KafkaBindingValidator$"Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' and/or 'compact'."</ID>
+    <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
+    <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: AsyncAPI uses JSON-compatible booleans. Use true or false for booleans; values like yes, no, on, and off are strings."</ID>
+    <ID>MaxLineLength:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$"Hint: quoted booleans are strings in YAML. Use true or false without quotes when the field expects a boolean."</ID>
+    <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
+    <ID>MaxLineLength:RegexPatterns.kt$RegexPatterns$*</ID>
+    <ID>NestedBlockDepth:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun parseFragment( target: ExternalReferenceTargetResolver.Target, reference: Reference, )</ID>
+    <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
+    <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
+    <ID>NestedBlockDepth:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
+    <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
+    <ID>OutdatedDocumentation:DocumentNode.kt$DocumentNode</ID>
+    <ID>OutdatedDocumentation:DocumentReadException.kt$DocumentReadException$MalformedDocument : DocumentReadException</ID>
+    <ID>OutdatedDocumentation:EnumLiteralNormalizer.kt$EnumConstant</ID>
+    <ID>OutdatedDocumentation:JsonPropertyAccessAnnotationMapper.kt$JsonPropertyAccessAnnotationMapper$fun annotationFor( schema: Schema?, wireName: String?, namedTarget: String, ): String?</ID>
+    <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
+    <ID>OutdatedDocumentation:ModelDefinition.kt$ModelDefinition</ID>
+    <ID>OutdatedDocumentation:ModelDefinition.kt$ObjectModel : ModelDefinition</ID>
+    <ID>OutdatedDocumentation:ModelDefinition.kt$PropertyDefinition</ID>
+    <ID>OutdatedDocumentation:ModelDefinition.kt$UnionModel : ModelDefinition</ID>
+    <ID>OutdatedDocumentation:TypeImports.kt$internal fun TypeRef.imports( modelPackage: String, declaringType: String, listImport: String? = null, mapImport: String? = null, ): List&lt;String&gt;</ID>
+    <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
+    <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
+    <ID>OutdatedDocumentation:YamlDocumentReader.kt$YamlDocumentReader$private fun parseNode( node: Node, path: String, source: DocumentSource, ancestors: MutableSet&lt;Node&gt; = Collections.newSetFromMap(IdentityHashMap()), ): DocumentNode</ID>
+    <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
+    <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
+    <ID>ReturnCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$private fun resolveReference( reference: Reference, sourceFile: File, ): ExternalReferencePathResolver.ResolvedReference?</ID>
+    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun Reference.localComponentName(category: String): String?</ID>
+    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectFromReference( reference: Reference, sink: MutableSet&lt;String&gt;, visitedRefs: MutableSet&lt;String&gt;, ): Boolean</ID>
+    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun componentMessagePayloadIdentity( messageName: String, componentMessages: Map&lt;String, MessageInterface&gt;, visitedNames: Set&lt;String&gt; = emptySet(), ): ContractDeclarationIdentity</ID>
+    <ID>ReturnCount:AsyncApiSpecificationVersion.kt$AsyncApiSpecificationVersion.Companion$fun parse(value: String): AsyncApiSpecificationVersion?</ID>
+    <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
+    <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
+    <ID>ReturnCount:BindingParser.kt$BindingParser$private fun registerKafkaTopicConfiguration( content: Any?, parserNode: ParserNode, location: BindingLocation, protocol: String, )</ID>
+    <ID>ReturnCount:ComponentValidator.kt$ComponentValidator$fun validateInterface( node: ComponentInterface, contextString: String, results: ValidationCollector, )</ID>
+    <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
+    <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
+    <ID>ReturnCount:ExternalReferenceTargetResolver.kt$ExternalReferenceTargetResolver$fun resolve( rootNode: ParserNode, pointer: JsonPointer, ): Target?</ID>
+    <ID>ReturnCount:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
+    <ID>ReturnCount:KafkaBindingValidator.kt$KafkaBindingValidator$private fun validateVersion( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, results: ValidationCollector, ): String?</ID>
+    <ID>ReturnCount:KafkaKeySchemaResolver.kt$KafkaKeySchemaResolver$fun resolveObjectModelOrNull( messageName: String, schema: SchemaInterface, ): KafkaKeyObjectModel?</ID>
+    <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveJavaTypeName(message: AnalyzedMessage): String?</ID>
+    <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveKotlinTypeName(message: AnalyzedMessage): String?</ID>
+    <ID>ReturnCount:KafkaScalarTypeResolver.kt$KafkaScalarTypeResolver$private fun resolveInteger(schema: Schema): KafkaScalarType</ID>
+    <ID>ReturnCount:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator$private fun schemaRegistryStatus(server: Server): SchemaRegistryStatus</ID>
+    <ID>ReturnCount:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun defaultValue( schema: Schema, type: TypeRef, ): DefaultValue?</ID>
+    <ID>ReturnCount:ModelRepository.kt$ModelRepository$private fun normalize(reference: Reference): NodeAddress?</ID>
+    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
+    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
+    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun mapObject( propertyName: String, schema: Schema, ): TypeRef?</ID>
+    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
+    <ID>ReturnCount:NativeSchemaAssetReader.kt$NativeSchemaAssetReader$fun readIfExternalReference(schemaNode: ParserNode): String?</ID>
+    <ID>ReturnCount:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
+    <ID>ReturnCount:OperationBoundaryValidator.kt$OperationBoundaryValidator$private fun inRoot( rootChannels: Map&lt;String, ChannelInterface&gt;, channelRef: Reference, ): Boolean</ID>
+    <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
+    <ID>ReturnCount:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
+    <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
+    <ID>ReturnCount:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
+    <ID>ReturnCount:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
+    <ID>ReturnCount:SchemaParser.kt$SchemaParser$fun parseElement(parserNode: ParserNode): SchemaInterface</ID>
+    <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateDialect( node: Schema, contextString: String, results: ValidationCollector, )</ID>
+    <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
+    <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>
+    <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
+    <ID>ReturnCount:SourceRepository.kt$SourceRepository$internal fun resolveAddress( sourceId: String, pointerSegments: List&lt;String&gt;, ): NodeAddress?</ID>
+    <ID>ReturnCount:ValidationFindingFormatter.kt$ValidationFindingFormatter$private fun snippet( finding: ValidationFinding, asyncApiContext: AsyncApiContext, ): String</ID>
+    <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
+    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IOException</ID>
+    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: IllegalArgumentException</ID>
+    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: SecurityException</ID>
+    <ID>SwallowedException:AsyncApiExternalContext.kt$AsyncApiExternalContext$exception: URISyntaxException</ID>
+    <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
+    <ID>ThrowsCount:AsyncApiExternalContext.kt$AsyncApiExternalContext$fun loadExternal(reference: Reference)</ID>
+    <ID>ThrowsCount:DocumentReaderRegistry.kt$DocumentReaderRegistry$fun read(file: File): InputDocument</ID>
+    <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
+    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
+    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseNode( parser: JsonParser, token: JsonToken, path: String, source: DocumentSource, ): DocumentNode</ID>
+    <ID>ThrowsCount:JsonDocumentReader.kt$JsonDocumentReader$private fun parseObject( parser: JsonParser, path: String, source: DocumentSource, location: SourceLocation, ): DocumentObject</ID>
+    <ID>ThrowsCount:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
+    <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
+    <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
+    <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
+    <ID>ThrowsCount:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
+    <ID>ThrowsCount:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
+    <ID>ThrowsCount:TopicParameterProperties.kt$TopicParameterProperties.Companion$fun fromConfigurationValues( values: Map&lt;String, String&gt;, path: String, ): TopicParameterProperties</ID>
+    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$fun read(source: DocumentSource): InputDocument</ID>
+    <ID>ThrowsCount:YamlDocumentReader.kt$YamlDocumentReader$private fun parseMapping( node: MappingNode, path: String, source: DocumentSource, location: SourceLocation, ancestors: MutableSet&lt;Node&gt;, ): DocumentObject</ID>
+    <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
+    <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
+    <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
+    <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
+    <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
+    <ID>TooManyFunctions:ComponentValidator.kt$ComponentValidator</ID>
+    <ID>TooManyFunctions:ExternalFragmentProcessor.kt$ExternalFragmentProcessor</ID>
+    <ID>TooManyFunctions:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
+    <ID>TooManyFunctions:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Companion</ID>
+    <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
+    <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
+    <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
+    <ID>TooManyFunctions:KafkaBindingValidator.kt$KafkaBindingValidator</ID>
+    <ID>TooManyFunctions:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator</ID>
+    <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
+    <ID>TooManyFunctions:MessageValidator.kt$MessageValidator</ID>
+    <ID>TooManyFunctions:ModelRepository.kt$ModelRepository</ID>
+    <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
+    <ID>TooManyFunctions:OperationValidator.kt$OperationValidator</ID>
+    <ID>TooManyFunctions:SchemaBundler.kt$SchemaBundler</ID>
+    <ID>TooManyFunctions:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
+    <ID>TooManyFunctions:SchemaValidator.kt$SchemaValidator</ID>
+    <ID>TooManyFunctions:SourceRepository.kt$SourceRepository</ID>
+    <ID>TooManyFunctions:YamlDocumentReader.kt$YamlDocumentReader</ID>
+    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException : Exception</ID>
+    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$ExternalSchemaNameUnavailable : AsyncApiBundlingException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EmptyLanguageList : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$GeneratedArtifactCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidAvroName : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidEnum : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidJsonSchema : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidKafkaHeaderName : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidNativeAvroSchema : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidNativeProtobufSchema : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$KafkaHeaderParameterNameCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$MissingSchemaGenerationInput : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeAvroModelPackageMismatch : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeAvroSpecificRecordGenerationFailed : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeProtobufModelGenerationFailed : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NoArtifactsGenerated : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NullComponents : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SchemaNameCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutAddress : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutMessages : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientContractNameCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientMethodNameCollision : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaHeaderSchema : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaKeySchema : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedLanguage : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeAvroPayloadType : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException : Exception</ID>
+    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$NativeSchemaAssetReadFailure : AsyncApiParseException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$ParserDiagnosticFailure : AsyncApiParseException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiParseException.kt$AsyncApiParseException$UnexpectedSchemaFormat : AsyncApiParseException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiReadException.kt$AsyncApiReadException : Exception</ID>
+    <ID>UndocumentedPublicClass:AsyncApiReadException.kt$AsyncApiReadException$InvalidYaml : AsyncApiReadException</ID>
+    <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException : Exception</ID>
+    <ID>UndocumentedPublicClass:AsyncApiValidateException.kt$AsyncApiValidateException$ValidateError : AsyncApiValidateException</ID>
+    <ID>UndocumentedPublicClass:Binding.kt$Binding</ID>
+    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface</ID>
+    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingInline : BindingInterface</ID>
+    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingReference : BindingInterface</ID>
+    <ID>UndocumentedPublicClass:Channel.kt$Channel</ID>
+    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface</ID>
+    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface$ChannelInline : ChannelInterface</ID>
+    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface$ChannelReference : ChannelInterface</ID>
+    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Consumer</ID>
+    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Kafka : ClientGeneration</ID>
+    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Producer</ID>
+    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$SpringKafka</ID>
+    <ID>UndocumentedPublicClass:Component.kt$Component</ID>
+    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface</ID>
+    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface$ComponentInline : ComponentInterface</ID>
+    <ID>UndocumentedPublicClass:ComponentInterface.kt$ComponentInterface$ComponentReference : ComponentInterface</ID>
+    <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
+    <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
+    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface</ID>
+    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdInline : CorrelationIdInterface</ID>
+    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdReference : CorrelationIdInterface</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$DuplicateKey : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$EmptyDocument : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$InvalidMappingKey : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$MissingDocument : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$NotAFile : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$ResourceLimitExceeded : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$UnreadableDocument : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:DocumentReadException.kt$DocumentReadException$UnsupportedFormat : DocumentReadException</ID>
+    <ID>UndocumentedPublicClass:ExternalDoc.kt$ExternalDoc</ID>
+    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface</ID>
+    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface$ExternalDocInline : ExternalDocInterface</ID>
+    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface$ExternalDocReference : ExternalDocInterface</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$AvroSchemaArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$DocumentArtifact : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$JsonSchemaArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$KafkaKeyModelArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$ModelArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeAvroArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeProtobufArtifacts : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$SpringKafkaClient : GenerationTask</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$AvroProjection</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Clients</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Kafka</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaConsumer</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaProducer</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaSpringKafka</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Models</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$NativeAvro</ID>
+    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Schemas</ID>
+    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Document : GeneratorProfile</ID>
+    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Schema : GeneratorProfile</ID>
+    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Source : GeneratorProfile</ID>
+    <ID>UndocumentedPublicClass:Info.kt$Info</ID>
+    <ID>UndocumentedPublicClass:License.kt$License</ID>
+    <ID>UndocumentedPublicClass:Message.kt$Message</ID>
+    <ID>UndocumentedPublicClass:MessageExample.kt$MessageExample</ID>
+    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface</ID>
+    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageInline : MessageInterface</ID>
+    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageReference : MessageInterface</ID>
+    <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$InlineMessageTrait : MessageTraitInterface</ID>
+    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$ReferenceMessageTrait : MessageTraitInterface</ID>
+    <ID>UndocumentedPublicClass:ModelGeneration.kt$ModelGeneration$Enabled : ModelGeneration</ID>
+    <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
+    <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>
+    <ID>UndocumentedPublicClass:Operation.kt$Operation</ID>
+    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface</ID>
+    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface$OperationInline : OperationInterface</ID>
+    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface$OperationReference : OperationInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReply.kt$OperationReply</ID>
+    <ID>UndocumentedPublicClass:OperationReplyAddress.kt$OperationReplyAddress</ID>
+    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface$OperationReplyAddressInline : OperationReplyAddressInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface$OperationReplyAddressReference : OperationReplyAddressInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface$OperationReplyInline : OperationReplyInterface</ID>
+    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface$OperationReplyReference : OperationReplyInterface</ID>
+    <ID>UndocumentedPublicClass:OperationTrait.kt$OperationTrait</ID>
+    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface</ID>
+    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface$OperationTraitInline : OperationTraitInterface</ID>
+    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface$OperationTraitReference : OperationTraitInterface</ID>
+    <ID>UndocumentedPublicClass:Parameter.kt$Parameter</ID>
+    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface</ID>
+    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterInline : ParameterInterface</ID>
+    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterReference : ParameterInterface</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$InvalidReference : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$InvalidSpecificationVersion : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$LoadResourceLimitExceeded : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$MissingRequiredMember : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$ReferenceDocumentNotFound : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$ReferenceTargetNotFound : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedObjectMember : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnexpectedValueType : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ParserDiagnostic.kt$ParserDiagnostic$UnsupportedSpecificationVersion : ParserDiagnostic</ID>
+    <ID>UndocumentedPublicClass:ReferenceCategoryKey.kt$ReferenceCategoryKey</ID>
+    <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
+    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$AvroProjection : SchemaGeneration</ID>
+    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$JsonSchema : SchemaGeneration</ID>
+    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$NativeAvro : SchemaGeneration</ID>
+    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$NativeProtobuf : SchemaGeneration</ID>
+    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface</ID>
+    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$BooleanSchema : SchemaInterface</ID>
+    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$MultiFormatSchemaInline : SchemaInterface</ID>
+    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaInline : SchemaInterface</ID>
+    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaReference : SchemaInterface</ID>
+    <ID>UndocumentedPublicClass:SecurityScheme.kt$SecurityScheme</ID>
+    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface</ID>
+    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface$SecuritySchemeInline : SecuritySchemeInterface</ID>
+    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface$SecuritySchemeReference : SecuritySchemeInterface</ID>
+    <ID>UndocumentedPublicClass:Server.kt$Server</ID>
+    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface</ID>
+    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface$ServerInline : ServerInterface</ID>
+    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface$ServerReference : ServerInterface</ID>
+    <ID>UndocumentedPublicClass:ServerVariable.kt$ServerVariable</ID>
+    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface</ID>
+    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface$ServerVariableInline : ServerVariableInterface</ID>
+    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface$ServerVariableReference : ServerVariableInterface</ID>
+    <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
+    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface</ID>
+    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagInline : TagInterface</ID>
+    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagReference : TagInterface</ID>
+    <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
+    <ID>UnusedParameter:AsyncApiContext.kt$AsyncApiContext$location: SourceLocation</ID>
+    <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
+    <ID>UnusedPrivateProperty:BindingBundlerTest.kt$BindingBundlerTest$val originalKey = assertIs&lt;SchemaInterface.SchemaReference&gt;(binding.kafkaKeySchema)</ID>
+    <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
+    <ID>UseRequire:GeneratorName.kt$GeneratorName.Companion$throw IllegalArgumentException("$path is required")</ID>
+    <ID>UseRequire:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$throw IllegalArgumentException("Missing Avro schema content")</ID>
+    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path cannot contain an empty parameter name")</ID>
+    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path.$parameterName cannot be empty")</ID>
+    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path.$parameterName cannot contain whitespace")</ID>
+  </CurrentIssues>
+</SmellBaseline>

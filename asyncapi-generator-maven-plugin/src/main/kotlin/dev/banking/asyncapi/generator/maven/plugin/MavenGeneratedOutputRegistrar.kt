@@ -11,9 +11,6 @@ import java.io.File
 
 /**
  * Registers generated source and schema directories with the Maven project.
- *
- * Expected behavior is covered by:
- * - `MavenGeneratedOutputRegistrarTest`
  */
 internal class MavenGeneratedOutputRegistrar(
     private val project: MavenProject,
@@ -69,14 +66,15 @@ internal class MavenGeneratedOutputRegistrar(
             is GenerationTask.NativeAvroArtifacts ->
                 listOfNotNull(output.javaSourceOutputDirectory.takeIf { generateSpecificRecords })
             is GenerationTask.NativeProtobufArtifacts ->
-                models?.let { modelGeneration ->
-                    buildList {
-                        add(output.javaSourceOutputDirectory)
-                        if (modelGeneration.modelType == ProtobufModelType.KOTLIN) {
-                            add(output.sourceOutputDirectory)
+                models
+                    ?.let { modelGeneration ->
+                        buildList {
+                            add(output.javaSourceOutputDirectory)
+                            if (modelGeneration.modelType == ProtobufModelType.KOTLIN) {
+                                add(output.sourceOutputDirectory)
+                            }
                         }
-                    }
-                }.orEmpty()
+                    }.orEmpty()
             is GenerationTask.AvroSchemaArtifacts,
             is GenerationTask.DocumentArtifact,
             is GenerationTask.JsonSchemaArtifacts,
@@ -97,9 +95,7 @@ internal class MavenGeneratedOutputRegistrar(
             -> false
         }
 
-    private fun File.normalizedAbsolutePath(): String =
-        toPath().toAbsolutePath().normalize().toString()
+    private fun File.normalizedAbsolutePath(): String = toPath().toAbsolutePath().normalize().toString()
 
-    private fun String.normalizedAbsolutePath(): String =
-        File(this).normalizedAbsolutePath()
+    private fun String.normalizedAbsolutePath(): String = File(this).normalizedAbsolutePath()
 }

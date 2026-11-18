@@ -59,7 +59,12 @@ class KotlinModelEmitterTest {
                 unions = emptyList(),
             )
 
-        val content = emitter.emit(listOf(order)).artifacts.single().content
+        val content =
+            emitter
+                .emit(listOf(order))
+                .artifacts
+                .single()
+                .content
 
         assertTrue(content.contains("import java.util.UUID"))
         assertTrue(content.contains("import com.example.model.Item"))

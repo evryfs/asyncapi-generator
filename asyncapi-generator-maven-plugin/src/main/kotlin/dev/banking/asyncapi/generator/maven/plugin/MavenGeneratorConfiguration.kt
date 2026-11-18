@@ -4,10 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 
 /**
  * Maven model generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class MavenModelConfiguration {
     var modelAnnotation: String? = null
@@ -24,10 +20,6 @@ class MavenModelConfiguration {
 
 /**
  * Maven producer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class MavenProducerConfiguration {
     var enabled: Boolean? = null
@@ -36,10 +28,6 @@ class MavenProducerConfiguration {
 
 /**
  * Maven consumer generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class MavenConsumerConfiguration {
     var enabled: Boolean? = null
@@ -47,10 +35,6 @@ class MavenConsumerConfiguration {
 
 /**
  * Maven client generation configuration.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class MavenClientConfiguration {
     var clientType: String? = null
@@ -83,10 +67,6 @@ class MavenClientConfiguration {
  *
  * Annotation values must be fully qualified so generated imports do not depend on
  * framework or validation-library aliases maintained by the generator.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorMojoTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class MavenValidationAnnotationsConfiguration {
     var clientContract: String? = null

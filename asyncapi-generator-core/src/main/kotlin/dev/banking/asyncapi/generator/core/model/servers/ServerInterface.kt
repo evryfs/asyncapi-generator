@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
 sealed interface ServerInterface {
-
     data class ServerInline(
         @get:JsonUnwrapped
         val server: Server,

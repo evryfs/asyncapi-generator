@@ -9,18 +9,19 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class PolymorphicAnalyzerTest {
-
     private val analyzer = PolymorphicAnalyzer()
 
     @Test
     fun `analyze should map oneOf children to parent`() {
         // Arrange
-        val parent = Schema(
-            oneOf = listOf(
-                SchemaInterface.SchemaReference(Reference("#/c/s/ChildA")),
-                SchemaInterface.SchemaReference(Reference("#/c/s/ChildB"))
+        val parent =
+            Schema(
+                oneOf =
+                    listOf(
+                        SchemaInterface.SchemaReference(Reference("#/c/s/ChildA")),
+                        SchemaInterface.SchemaReference(Reference("#/c/s/ChildB")),
+                    ),
             )
-        )
         val input = mapOf("Parent" to parent, "ChildA" to Schema(), "ChildB" to Schema())
 
         // Act
@@ -35,11 +36,13 @@ class PolymorphicAnalyzerTest {
     @Test
     fun `analyze should map anyOf children to parent`() {
         // Arrange
-        val parent = Schema(
-            anyOf = listOf(
-                SchemaInterface.SchemaReference(Reference("#/c/s/ChildA"))
+        val parent =
+            Schema(
+                anyOf =
+                    listOf(
+                        SchemaInterface.SchemaReference(Reference("#/c/s/ChildA")),
+                    ),
             )
-        )
         val input = mapOf("Parent" to parent, "ChildA" to Schema())
 
         // Act

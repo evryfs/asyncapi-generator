@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.parser.bindings
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
+import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
@@ -23,20 +23,30 @@ internal class BindingParser(
     private val schemaParser by lazy { SchemaParser(asyncApiContext) }
 
     /** Parses the protocol-keyed `bindings` property of an AsyncAPI object. */
-    fun parseMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> =
-        parserNode.expectObject()
+    fun parseMap(
+        parserNode: ParserNode,
+        location: BindingLocation,
+    ): Map<String, BindingInterface> =
+        parserNode
+            .expectObject()
             .members()
             .associate { protocolNode ->
                 protocolNode.name to parseProtocol(protocolNode, location)
             }
 
     /** Parses a component registry whose values are complete Bindings Objects. */
-    fun parseComponentMap(parserNode: ParserNode, location: BindingLocation): Map<String, BindingInterface> =
+    fun parseComponentMap(
+        parserNode: ParserNode,
+        location: BindingLocation,
+    ): Map<String, BindingInterface> =
         parserNode.expectObject().members().associate { componentNode ->
             componentNode.name to parseComponent(componentNode, location)
         }
 
-    fun parseProtocol(parserNode: ParserNode, location: BindingLocation): BindingInterface {
+    fun parseProtocol(
+        parserNode: ParserNode,
+        location: BindingLocation,
+    ): BindingInterface {
         parseReference(parserNode, location, parserNode.name)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
         val protocolBinding = parseProtocolBinding(parserNode, location, parserNode.name)
@@ -54,12 +64,16 @@ internal class BindingParser(
         return inlineBinding(parserNode, content, listOf(protocolBinding))
     }
 
-    fun parseComponent(parserNode: ParserNode, location: BindingLocation): BindingInterface {
+    fun parseComponent(
+        parserNode: ParserNode,
+        location: BindingLocation,
+    ): BindingInterface {
         parseReference(parserNode, location, null)?.let { return it }
         val content = parserNode.expect<Map<String, Any?>>()
-        val protocolBindings = parserNode.expectObject().members().map { protocolNode ->
-            parseProtocolBinding(protocolNode, location, protocolNode.name)
-        }
+        val protocolBindings =
+            parserNode.expectObject().members().map { protocolNode ->
+                parseProtocolBinding(protocolNode, location, protocolNode.name)
+            }
         return inlineBinding(parserNode, content, protocolBindings)
     }
 
@@ -69,10 +83,11 @@ internal class BindingParser(
         protocol: String?,
     ): BindingInterface.BindingReference? {
         val reference = parserNode.expectObject().optional($$"$ref")?.expect<String>() ?: return null
-        val model = Reference(
-            ref = reference,
-            referenceCategoryKey = BINDING,
-        )
+        val model =
+            Reference(
+                ref = reference,
+                referenceCategoryKey = BINDING,
+            )
         asyncApiContext.bindingRegistry.register(model, location, protocol)
         asyncApiContext.register(model, parserNode)
         return BindingInterface.BindingReference(
@@ -90,11 +105,13 @@ internal class BindingParser(
         registerKafkaTopicConfiguration(content, parserNode, location, protocol)
         val schemaFields =
             if (protocol == KAFKA_PROTOCOL && objectNode != null) {
-                kafkaSchemaFieldNames(location).mapNotNull { fieldName ->
-                    objectNode.optional(fieldName)
-                        ?.takeIf { it.node is DocumentObject || it.node is DocumentBoolean }
-                        ?.let { fieldName to schemaParser.parseElement(it) }
-                }.toMap()
+                kafkaSchemaFieldNames(location)
+                    .mapNotNull { fieldName ->
+                        objectNode
+                            .optional(fieldName)
+                            ?.takeIf { it.node is DocumentObject || it.node is DocumentBoolean }
+                            ?.let { fieldName to schemaParser.parseElement(it) }
+                    }.toMap()
             } else {
                 emptyMap()
             }
@@ -128,10 +145,11 @@ internal class BindingParser(
         content: Map<String, Any?>,
         protocolBindings: List<ProtocolBinding>,
     ): BindingInterface.BindingInline {
-        val kafkaKeySchema = protocolBindings
-            .firstOrNull { it.protocol == KAFKA_PROTOCOL }
-            ?.schemaFields
-            ?.get("key")
+        val kafkaKeySchema =
+            protocolBindings
+                .firstOrNull { it.protocol == KAFKA_PROTOCOL }
+                ?.schemaFields
+                ?.get("key")
         return BindingInterface.BindingInline(
             Binding(
                 content = content,

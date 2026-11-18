@@ -10,10 +10,6 @@ import org.gradle.kotlin.dsl.register
 
 /**
  * Registers the AsyncAPI generator extension and one task for each named execution.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 class AsyncApiPlugin : Plugin<Project> {
     override fun apply(project: Project) {
@@ -67,13 +63,14 @@ class AsyncApiPlugin : Plugin<Project> {
                     executionName.set(execution.name)
                     // Resolved only for executions that run protoc, so others never need to download it.
                     protoc.from(
-                        execution.modelConfig.modelType.map { modelType ->
-                            when {
-                                modelType != PROTOBUF_MESSAGE -> emptyList<Any>()
-                                extension.protocExecutable.isPresent -> listOf(extension.protocExecutable)
-                                else -> listOf(protocConfiguration)
-                            }
-                        }.orElse(emptyList()),
+                        execution.modelConfig.modelType
+                            .map { modelType ->
+                                when {
+                                    modelType != PROTOBUF_MESSAGE -> emptyList<Any>()
+                                    extension.protocExecutable.isPresent -> listOf(extension.protocExecutable)
+                                    else -> listOf(protocConfiguration)
+                                }
+                            }.orElse(emptyList()),
                     )
                     suppressedWarnings.addAll(execution.suppressedWarnings)
 

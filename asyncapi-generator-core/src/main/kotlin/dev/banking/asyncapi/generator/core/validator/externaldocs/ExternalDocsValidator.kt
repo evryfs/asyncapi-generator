@@ -13,10 +13,13 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class ExternalDocsValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: ExternalDocInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: ExternalDocInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is ExternalDocInterface.ExternalDocInline -> {
                 validate(node.externalDoc, contextString, results)
@@ -26,7 +29,11 @@ internal class ExternalDocsValidator(
         }
     }
 
-    fun validate(node: ExternalDoc, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: ExternalDoc,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         val url = node.url
         if (url.isBlank()) {
@@ -40,7 +47,7 @@ internal class ExternalDocsValidator(
             if (ValidationFormats.absoluteUri(url) == null) {
                 results.error(
                     EXTERNAL_DOC_URL_FORMAT,
-                    "ExternalDoc '${contextString}' 'url' must be a valid absolute URL.",
+                    "ExternalDoc '$contextString' 'url' must be a valid absolute URL.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
                     doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#externalDocumentationObject",
                 )

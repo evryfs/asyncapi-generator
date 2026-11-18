@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.util
 
 internal object DocumentationUtils {
-
     private const val WRAP_WIDTH = 120
 
     fun toKDocLines(raw: String?): List<String> {
@@ -24,8 +23,7 @@ internal object DocumentationUtils {
                 } else {
                     wrapLine(logicalLine)
                 }
-            }
-            .filter { it.isNotBlank() }
+            }.filter { it.isNotBlank() }
             .map(::escapeKotlinComment)
     }
 
@@ -37,8 +35,7 @@ internal object DocumentationUtils {
             .lines()
             .flatMap { logicalLine ->
                 wrapLine(logicalLine)
-            }
-            .filter { it.isNotBlank() }
+            }.filter { it.isNotBlank() }
             .map { stripMarkdownPrefixes(it) }
             .map(::escapeJavaComment)
     }
@@ -49,7 +46,6 @@ internal object DocumentationUtils {
     /** Kotlin block comments nest, so an opening `/` + `*` in a KDoc line must not start a new one either. */
     private fun escapeKotlinComment(line: String): String = escapeJavaComment(line).replace("/*", "&#47;*")
 
-
     fun toAvroDocLines(raw: String?): String? {
         if (raw.isNullOrBlank()) return null
         return raw
@@ -59,13 +55,12 @@ internal object DocumentationUtils {
             .trim()
     }
 
-    private fun cleanAndUnescape(raw: String): String {
-        return unescapeBasicHtml(raw)
+    private fun cleanAndUnescape(raw: String): String =
+        unescapeBasicHtml(raw)
             .replace("\r\n", "\n")
             .trim()
             .removePrefix("\"")
             .removeSuffix("\"")
-    }
 
     private fun stripMarkdownPrefixes(line: String): String {
         val trimmedRight = line.trimEnd()
@@ -107,7 +102,10 @@ internal object DocumentationUtils {
         return result
     }
 
-    fun wrapForParamDoc(paramName: String, text: String): List<String> {
+    fun wrapForParamDoc(
+        paramName: String,
+        text: String,
+    ): List<String> {
         val cleaned = text.trim()
         if (cleaned.length <= WRAP_WIDTH) return listOf(cleaned)
 
@@ -145,12 +143,11 @@ internal object DocumentationUtils {
         return result
     }
 
-    private fun unescapeBasicHtml(input: String): String {
-        return input
+    private fun unescapeBasicHtml(input: String): String =
+        input
             .replace("&lt;", "<")
             .replace("&gt;", ">")
             .replace("&quot;", "\"")
             .replace("&apos;", "'")
             .replace("&amp;", "&")
-    }
 }

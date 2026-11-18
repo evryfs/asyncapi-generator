@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonValue
 import dev.banking.asyncapi.generator.core.model.references.Reference
 
 sealed interface SchemaInterface {
-
     data class SchemaInline(
         @get:JsonUnwrapped
         val schema: Schema,

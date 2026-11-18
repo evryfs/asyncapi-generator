@@ -60,9 +60,10 @@ sealed class AsyncApiGeneratorException(
                 "Avro names must match [A-Za-z_][A-Za-z0-9_]*. Rename it in the contract.",
         )
 
-    class NoArtifactsGenerated : AsyncApiGeneratorException(
-        "Generation completed without producing any artifacts.",
-    )
+    class NoArtifactsGenerated :
+        AsyncApiGeneratorException(
+            "Generation completed without producing any artifacts.",
+        )
 
     class InvalidEnum(
         schemaName: String,
@@ -85,13 +86,16 @@ sealed class AsyncApiGeneratorException(
     ) : AsyncApiGeneratorException(
             buildString {
                 appendLine()
-                appendLine("Enum generation failed for schema '$schemaName'. Target output: $packageName.$schemaName.kt")
+                appendLine(
+                    "Enum generation failed for schema '$schemaName'. Target output: $packageName.$schemaName.kt",
+                )
                 appendLine("Enum literals collide after normalization: ${formatOriginals(originals)} -> '$normalized'")
                 appendLine()
             }.trimEnd(),
         ) {
         companion object {
-            private fun formatOriginals(values: List<String>): String = values.joinToString(prefix = "[", postfix = "]") { "'$it'" }
+            private fun formatOriginals(values: List<String>): String =
+                values.joinToString(prefix = "[", postfix = "]") { "'$it'" }
         }
     }
 
@@ -124,10 +128,14 @@ sealed class AsyncApiGeneratorException(
                         "Header name $names becomes the parameter '$parameterName', which the generated " +
                             "method already declares for the payload, topic, or key.",
                     )
-                    appendLine("Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey.")
+                    appendLine(
+                        "Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey.",
+                    )
                 } else {
                     appendLine("Header names collide after source-parameter normalization: $names -> '$parameterName'")
-                    appendLine("Use distinct header names that remain unique after non-identifier characters are replaced with underscores.")
+                    appendLine(
+                        "Use distinct header names that remain unique after non-identifier characters are replaced with underscores.",
+                    )
                 }
                 appendLine()
             }.trimEnd(),
@@ -237,7 +245,9 @@ sealed class AsyncApiGeneratorException(
                     "Generated Kafka key parameters support scalar string, integer, number, and boolean schemas, " +
                         "and object schemas represented by generated key models.",
                 )
-                appendLine("Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.")
+                appendLine(
+                    "Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key.",
+                )
                 appendLine()
             }.trimEnd(),
         )
@@ -249,9 +259,13 @@ sealed class AsyncApiGeneratorException(
     ) : AsyncApiGeneratorException(
             buildString {
                 appendLine()
-                appendLine("$output cannot consume payload '$payloadName' because it uses schemaFormat '$schemaFormat'.")
+                appendLine(
+                    "$output cannot consume payload '$payloadName' because it uses schemaFormat '$schemaFormat'.",
+                )
                 appendLine("This output currently supports AsyncAPI Schema Object payloads only.")
-                appendLine("Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities.")
+                appendLine(
+                    "Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities.",
+                )
                 appendLine()
             }.trimEnd(),
         )
@@ -281,7 +295,9 @@ sealed class AsyncApiGeneratorException(
                 appendLine("$output cannot represent schema '$rootSchemaName'.")
                 appendLine("Incompatible schema path: $schemaPath")
                 appendLine("Incompatible feature: $feature.")
-                appendLine("Use a compatible schema shape for this output, or remove the output from generator configuration.")
+                appendLine(
+                    "Use a compatible schema shape for this output, or remove the output from generator configuration.",
+                )
                 appendLine()
             }.trimEnd(),
         )
@@ -390,7 +406,9 @@ sealed class AsyncApiGeneratorException(
             buildString {
                 appendLine()
                 appendLine("Native Protobuf generation failed for payload '$payloadName'.")
-                appendLine("The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content.")
+                appendLine(
+                    "The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content.",
+                )
                 appendLine("Reason: $reason")
                 appendLine()
             }.trimEnd(),

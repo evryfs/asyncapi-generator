@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class ChannelValidatorTest : AbstractValidatorTest() {
-
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test
@@ -18,9 +17,10 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val validationResults = asyncApiValidator.validate(document)
 
         assertEquals(2, validationResults.errors.size)
-        val missing = validationResults.findings.single { finding ->
-            finding.code == CHANNEL_PARAMETER_UNDEFINED.code
-        }
+        val missing =
+            validationResults.findings.single { finding ->
+                finding.code == CHANNEL_PARAMETER_UNDEFINED.code
+            }
         assertEquals(
             "asyncapi_validator_channel_parameter_mismatch.yaml",
             missing.sourceLocation?.file?.name,
@@ -30,9 +30,10 @@ class ChannelValidatorTest : AbstractValidatorTest() {
             missing.path,
         )
         assertEquals(7, missing.line)
-        val unused = validationResults.findings.single { finding ->
-            finding.code == CHANNEL_PARAMETER_UNUSED.code
-        }
+        val unused =
+            validationResults.findings.single { finding ->
+                finding.code == CHANNEL_PARAMETER_UNUSED.code
+            }
         assertEquals(CHANNEL_PARAMETER_UNUSED.severity, unused.severity)
         assertEquals(CHANNEL_PARAMETER_UNUSED.concern, unused.concern)
         assertEquals(
@@ -108,18 +109,20 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         assertEquals(2, results.errors.size)
         val suffixErrors = results.findings.filter { it.code == CHANNEL_ADDRESS_QUERY_OR_FRAGMENT.code }
         assertEquals(2, suffixErrors.size)
-        val queryError = suffixErrors.single {
-            it.path == "asyncapi_validator_channel_address_suffix.root.channels.query.address"
-        }
+        val queryError =
+            suffixErrors.single {
+                it.path == "asyncapi_validator_channel_address_suffix.root.channels.query.address"
+            }
         assertEquals(
             "asyncapi_validator_channel_address_suffix.yaml",
             queryError.sourceLocation?.file?.name,
         )
         assertEquals("asyncapi_validator_channel_address_suffix.root.channels.query.address", queryError.path)
         assertEquals(7, queryError.line)
-        val fragmentError = suffixErrors.single {
-            it.path == "asyncapi_validator_channel_address_suffix.root.channels.fragment.address"
-        }
+        val fragmentError =
+            suffixErrors.single {
+                it.path == "asyncapi_validator_channel_address_suffix.root.channels.fragment.address"
+            }
         assertEquals(
             "asyncapi_validator_channel_address_suffix.yaml",
             fragmentError.sourceLocation?.file?.name,

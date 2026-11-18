@@ -49,8 +49,22 @@ internal class KotlinModelEmitter : ModelEmitter {
         val properties = model.properties.map(::property)
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@field:", "Access.") }
         // Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own.
-        val emptyClassImports = if (properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
-        val emptyClassAnnotations = if (properties.isEmpty()) listOf("@JsonIgnoreProperties(ignoreUnknown = true)") else emptyList()
+        val emptyClassImports =
+            if (properties.isEmpty()) {
+                listOf(
+                    "com.fasterxml.jackson.annotation.JsonIgnoreProperties",
+                )
+            } else {
+                emptyList()
+            }
+        val emptyClassAnnotations =
+            if (properties.isEmpty()) {
+                listOf(
+                    "@JsonIgnoreProperties(ignoreUnknown = true)",
+                )
+            } else {
+                emptyList()
+            }
         val typeImports = model.properties.flatMap { it.type.imports(model.packageName, model.name) }
         return KotlinClassTemplate(
             packageName = model.packageName,
@@ -73,7 +87,11 @@ internal class KotlinModelEmitter : ModelEmitter {
                 (typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports)
                     .distinct()
                     .sorted(),
-            implementsClause = model.unions.takeIf { it.isNotEmpty() }?.joinToString(", ", prefix = " : ").orEmpty(),
+            implementsClause =
+                model.unions
+                    .takeIf { it.isNotEmpty() }
+                    ?.joinToString(", ", prefix = " : ")
+                    .orEmpty(),
             classAnnotations = listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) + emptyClassAnnotations,
         )
     }

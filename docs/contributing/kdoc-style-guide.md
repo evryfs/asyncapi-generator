@@ -1,6 +1,7 @@
 # KDoc style guide
 
-This guide defines the KDoc conventions for asyncapi-generator-core.
+This guide defines the KDoc conventions for the core, CLI, Maven plugin, and
+Gradle plugin modules. It is part of the [code conventions](code-conventions.md).
 
 ## Template
 
@@ -71,7 +72,7 @@ enum class Example {
 
 2. **Data classes** get `@property` for every property. The description should explain what the property holds, not restate its type.
 
-3. **Non-data classes** get `@param` for every constructor parameter, regardless of visibility. This keeps the style consistent across the codebase.
+3. **Non-data classes** get `@param` for every constructor parameter, regardless of visibility, including private ones that look self-explanatory. This keeps the style consistent across the codebase, and detekt (`OutdatedDocumentation`) fails when the `@param` list no longer matches the parameters.
 
 4. **Methods** get KDoc only when the name alone doesn't explain the behavior. If the code is self-documenting, don't add KDoc to fill space. A good method name is better than a redundant comment.
 
@@ -83,6 +84,6 @@ enum class Example {
 
 8. **Internal classes** follow the same rules but can be more concise. They don't need to explain API design decisions.
 
-9. **No "covered by" references.** Test traceability is handled by test class naming conventions and IDE navigation.
+9. **No references to tests, callers, or history.** Do not list the tests that cover a type, the classes that use it, or how it changed. That information goes stale with every change; test class names and IDE navigation provide it.
 
 10. **Link related types** with `[ClassName]` syntax. This creates clickable references in IDE and generated docs.

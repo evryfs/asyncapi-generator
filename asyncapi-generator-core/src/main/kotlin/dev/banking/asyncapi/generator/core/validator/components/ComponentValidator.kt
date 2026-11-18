@@ -32,7 +32,6 @@ import kotlin.collections.forEach
 internal class ComponentValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val schemaValidator = SchemaValidator(asyncApiContext)
     private val messageValidator = MessageValidator(asyncApiContext)
     private val parameterValidator = ParameterValidator(asyncApiContext)
@@ -51,16 +50,21 @@ internal class ComponentValidator(
     private val messageTraitValidator = MessageTraitValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: ComponentInterface, contextString: String, results: ValidationCollector) {
-        val component: Component? = when (node) {
-            is ComponentInterface.ComponentInline ->
-                node.component
+    fun validateInterface(
+        node: ComponentInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
+        val component: Component? =
+            when (node) {
+                is ComponentInterface.ComponentInline ->
+                    node.component
 
-            is ComponentInterface.ComponentReference -> {
-                referenceResolver.resolve(node.reference, REFERENCE, contextString, results)
-                return
+                is ComponentInterface.ComponentReference -> {
+                    referenceResolver.resolve(node.reference, REFERENCE, contextString, results)
+                    return
+                }
             }
-        }
         if (component == null) return
         if (!results.visit(component)) return
 
@@ -83,28 +87,32 @@ internal class ComponentValidator(
         validateBindings(component, contextString, results)
     }
 
-    private fun validateNames(component: Component, results: ValidationCollector) {
-        val maps = listOf(
-            component::schemas,
-            component::servers,
-            component::channels,
-            component::operations,
-            component::messages,
-            component::securitySchemes,
-            component::serverVariables,
-            component::parameters,
-            component::correlationIds,
-            component::replies,
-            component::replyAddresses,
-            component::externalDocs,
-            component::tags,
-            component::operationTraits,
-            component::messageTraits,
-            component::serverBindings,
-            component::channelBindings,
-            component::operationBindings,
-            component::messageBindings,
-        )
+    private fun validateNames(
+        component: Component,
+        results: ValidationCollector,
+    ) {
+        val maps =
+            listOf(
+                component::schemas,
+                component::servers,
+                component::channels,
+                component::operations,
+                component::messages,
+                component::securitySchemes,
+                component::serverVariables,
+                component::parameters,
+                component::correlationIds,
+                component::replies,
+                component::replyAddresses,
+                component::externalDocs,
+                component::tags,
+                component::operationTraits,
+                component::messageTraits,
+                component::serverBindings,
+                component::channelBindings,
+                component::operationBindings,
+                component::messageBindings,
+            )
         maps.forEach { property ->
             property.get()?.keys?.filterNot(ValidationFormats::isComponentName)?.forEach { name ->
                 results.error(
@@ -117,111 +125,175 @@ internal class ComponentValidator(
         }
     }
 
-    private fun validateSchemas(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateSchemas(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.schemas?.let { schemas ->
             schemaValidator.validateMap(schemas, contextString, results)
         }
     }
 
-    private fun validateMessages(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateMessages(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.messages?.forEach { (messageName, messageInterface) ->
             val messageContext = "$contextString Message '$messageName'"
             messageValidator.validateInterface(messageInterface, messageContext, results)
         }
     }
 
-    private fun validateParameters(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateParameters(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.parameters?.forEach { (parameterName, parameterInterface) ->
             val contextString = "$contextString Parameter '$parameterName'"
             parameterValidator.validateInterface(parameterInterface, contextString, results)
         }
     }
 
-    private fun validateSecuritySchemes(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateSecuritySchemes(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.securitySchemes?.forEach { (securitySchemeName, securitySchemeInterface) ->
             val context = "$contextString Security Scheme '$securitySchemeName'"
             securitySchemeValidator.validateInterface(securitySchemeInterface, context, results)
         }
     }
 
-    private fun validateOperations(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateOperations(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.operations?.forEach { (operationName, operationInterface) ->
             val contextString = "$contextString Operation '$operationName'"
             operationValidator.validateInterface(operationInterface, contextString, results)
         }
     }
 
-    private fun validateServers(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateServers(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.servers?.forEach { (serverName, serverInterface) ->
             val contextString = "$contextString Server '$serverName'"
             serverValidator.validateInterface(serverInterface, contextString, results)
         }
     }
 
-    private fun validateServerVariables(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateServerVariables(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.serverVariables?.forEach { (serverVariableName, serverVariableInterface) ->
             val context = "$contextString Server Variable '$serverVariableName'"
             serverVariableValidator.validateInterface(serverVariableInterface, context, results)
         }
     }
 
-    private fun validateCorrelationIds(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateCorrelationIds(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.correlationIds?.forEach { (correlationIdName, correlationIdInterface) ->
             val contextString = "$contextString Correlation ID '$correlationIdName'"
             correlationIdValidator.validateInterface(correlationIdInterface, contextString, results)
         }
     }
 
-    private fun validateReplies(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateReplies(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.replies?.forEach { (operationReplyName, operationReplyInterface) ->
             val contextString = "$contextString Operation Reply '$operationReplyName'"
             operationReplyValidator.validateInterface(operationReplyInterface, contextString, results)
         }
     }
 
-    private fun validateChannels(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateChannels(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.channels?.forEach { (channelName, channelInterface) ->
             val contextString = "$contextString Channel '$channelName'"
             channelValidator.validateInterface(channelInterface, contextString, results)
         }
     }
 
-    private fun validateExternalDocs(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateExternalDocs(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.externalDocs?.forEach { (externalDocName, externalDocInterface) ->
             val contextString = "$contextString External Doc '$externalDocName'"
             externalDocsValidator.validateInterface(externalDocInterface, contextString, results)
         }
     }
 
-    private fun validateTags(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateTags(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.tags?.forEach { (tagName, tagInterface) ->
             val contextString = "$contextString Tag '$tagName'"
             tagValidator.validateInterface(tagInterface, contextString, results)
         }
     }
 
-    private fun validateOperationReplyAddresses(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateOperationReplyAddresses(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.replyAddresses?.forEach { (operationReplyAddressName, operationReplyAddressInterface) ->
             val contextString = "$contextString Operation Reply Address '$operationReplyAddressName'"
             operationReplyAddressValidator.validateInterface(operationReplyAddressInterface, contextString, results)
         }
     }
 
-    private fun validateOperationTraits(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateOperationTraits(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.operationTraits?.forEach { (operationTraitName, operationTraitInterface) ->
             val contextString = "$contextString Operation Trait '$operationTraitName'"
             operationTraitValidator.validateInterface(operationTraitInterface, contextString, results)
         }
     }
 
-    private fun validateMessageTraits(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateMessageTraits(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.messageTraits?.forEach { (messageTraitName, messageTraitInterface) ->
             val contextString = "$contextString Message Trait '$messageTraitName'"
             messageTraitValidator.validateInterface(messageTraitInterface, contextString, results)
         }
     }
 
-    private fun validateBindings(component: Component, contextString: String, results: ValidationCollector) {
+    private fun validateBindings(
+        component: Component,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         component.serverBindings?.forEach { (bindingName, bindingInterface) ->
             bindingValidator.validateInterface(
                 bindingInterface,

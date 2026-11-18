@@ -292,7 +292,10 @@ class GenerationInputCompatibilityValidatorTest {
                     generationInput =
                         GenerationInput(
                             schemas = emptyMap(),
-                            schemaDeclarations = SchemaDeclarationCatalog(multiFormatSchemas = mapOf("Event" to schema)),
+                            schemaDeclarations =
+                                SchemaDeclarationCatalog(
+                                    multiFormatSchemas = mapOf("Event" to schema),
+                                ),
                             polymorphicRelationships = emptyMap(),
                             channels =
                                 listOf(
@@ -459,7 +462,7 @@ class GenerationInputCompatibilityValidatorTest {
                             schemaPackageName = "com.example.avro",
                         ),
                     ),
-            ),
+                ),
         )
     }
 
@@ -1170,9 +1173,7 @@ class GenerationInputCompatibilityValidatorTest {
         assertTrue(error.message!!.contains("generated client method 'sendMyMessageV1ByteArray'"))
     }
 
-    private fun generationInputWithMultiFormatSchema(
-        namespace: String? = null,
-    ): GenerationInput =
+    private fun generationInputWithMultiFormatSchema(namespace: String? = null): GenerationInput =
         GenerationInput(
             schemas = emptyMap(),
             schemaDeclarations =
@@ -1262,9 +1263,7 @@ class GenerationInputCompatibilityValidatorTest {
             generateConsumers = generateConsumers,
         )
 
-    private fun nativeAvroSchema(
-        namespace: String? = null,
-    ): MultiFormatSchema =
+    private fun nativeAvroSchema(namespace: String? = null): MultiFormatSchema =
         MultiFormatSchema(
             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
             schema =

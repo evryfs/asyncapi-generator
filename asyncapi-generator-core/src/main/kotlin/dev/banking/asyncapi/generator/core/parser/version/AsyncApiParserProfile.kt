@@ -23,35 +23,41 @@ internal enum class AsyncApiSpecificationLine(
 
     companion object {
         val supportedVersionLines: List<String> =
-            entries.mapNotNull(AsyncApiSpecificationLine::parserProfile)
+            entries
+                .mapNotNull(AsyncApiSpecificationLine::parserProfile)
                 .map(AsyncApiParserProfile::displayName)
 
         fun select(root: ParserNode): ParserNode {
             val versionNode = root.expectObject().required("asyncapi")
             val declaredVersion = versionNode.expect<String>()
-            val version = AsyncApiSpecificationVersion.parse(declaredVersion)
-                ?: throw parserFailure(
-                    root = root,
-                    diagnostic = ParserDiagnostic.InvalidSpecificationVersion(
-                        declaredVersion = declaredVersion,
-                        path = versionNode.path,
-                        sourceLocation = versionNode.sourceLocation,
-                    ),
-                )
-            val specificationLine = entries.firstOrNull { candidate ->
-                candidate.major == version.major && candidate.minor == version.minor
-            }
-            val profile = specificationLine?.parserProfile
-                ?: throw parserFailure(
-                    root = root,
-                    diagnostic = ParserDiagnostic.UnsupportedSpecificationVersion(
-                        declaredVersion = declaredVersion,
-                        knownVersionLine = specificationLine != null,
-                        supportedVersionLines = supportedVersionLines,
-                        path = versionNode.path,
-                        sourceLocation = versionNode.sourceLocation,
-                    ),
-                )
+            val version =
+                AsyncApiSpecificationVersion.parse(declaredVersion)
+                    ?: throw parserFailure(
+                        root = root,
+                        diagnostic =
+                            ParserDiagnostic.InvalidSpecificationVersion(
+                                declaredVersion = declaredVersion,
+                                path = versionNode.path,
+                                sourceLocation = versionNode.sourceLocation,
+                            ),
+                    )
+            val specificationLine =
+                entries.firstOrNull { candidate ->
+                    candidate.major == version.major && candidate.minor == version.minor
+                }
+            val profile =
+                specificationLine?.parserProfile
+                    ?: throw parserFailure(
+                        root = root,
+                        diagnostic =
+                            ParserDiagnostic.UnsupportedSpecificationVersion(
+                                declaredVersion = declaredVersion,
+                                knownVersionLine = specificationLine != null,
+                                supportedVersionLines = supportedVersionLines,
+                                path = versionNode.path,
+                                sourceLocation = versionNode.sourceLocation,
+                            ),
+                    )
             return root.withProfile(profile)
         }
 

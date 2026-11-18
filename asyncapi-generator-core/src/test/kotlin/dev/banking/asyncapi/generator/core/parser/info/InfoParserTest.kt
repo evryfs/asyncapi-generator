@@ -17,7 +17,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class InfoParserTest {
-
     private val context = AsyncApiContext()
     private val parser = InfoParser(context)
 
@@ -25,8 +24,11 @@ class InfoParserTest {
     fun `parses every info field and extension`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("info")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("info")
 
         val result = parser.parseMap(infoNode)
 
@@ -54,12 +56,16 @@ class InfoParserTest {
     fun `parse info reports missing title`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("info")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("info")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(infoNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -74,12 +80,16 @@ class InfoParserTest {
     fun `parse info reports missing version`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoMissingVersion")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("infoMissingVersion")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(infoNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -94,12 +104,16 @@ class InfoParserTest {
     fun `parse info reports missing license name`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoMissingLicenseName")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("infoMissingLicenseName")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(infoNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(infoNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -114,19 +128,24 @@ class InfoParserTest {
     fun `parse info preserves nested and null extensions in source order`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoWithExtensions")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("infoWithExtensions")
 
         val extensions = parser.parseMap(infoNode).extensions
 
         assertEquals(
             linkedMapOf(
-                "x-object" to mapOf(
-                    "items" to listOf(
-                        "alpha",
-                        mapOf("enabled" to true, "limit" to 2),
-                    )
-                ),
+                "x-object" to
+                    mapOf(
+                        "items" to
+                            listOf(
+                                "alpha",
+                                mapOf("enabled" to true, "limit" to 2),
+                            ),
+                    ),
                 "x-null" to null,
                 "x-array" to listOf(1, "two", false),
             ),
@@ -139,10 +158,12 @@ class InfoParserTest {
     fun `parse info without extensions returns null extensions`() {
         val file = TestResources.file("parser/info/asyncapi_parser_info_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val infoNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("infoWithoutExtensions")
+        val infoNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("infoWithoutExtensions")
 
         assertNull(parser.parseMap(infoNode).extensions)
     }
-
 }

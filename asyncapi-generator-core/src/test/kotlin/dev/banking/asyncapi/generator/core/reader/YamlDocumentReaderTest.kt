@@ -16,18 +16,18 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class YamlDocumentReaderTest {
-
     private val reader = YamlDocumentReader()
 
     @Test
     fun `reads semantic scalar values without yaml style markers`() {
         val file = TestResources.file("reader/yaml/semantic-scalars.yaml")
-        val source = DocumentSource(
-            id = "semantic-scalars",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "semantic-scalars",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
         val document = reader.read(source)
         val root = assertIs<DocumentObject>(document.root)
         val info = assertIs<DocumentObject>(root["info"])
@@ -50,16 +50,18 @@ class YamlDocumentReaderTest {
     @Test
     fun `fails when yaml is malformed`() {
         val file = TestResources.file("reader/yaml/malformed.yaml")
-        val source = DocumentSource(
-            id = "malformed",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "malformed",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                reader.read(source)
+            }
         assertEquals(source.file, failure.file)
         assertTrue(failure.location?.line ?: 0 > 0)
         assertTrue(failure.location?.column ?: 0 > 0)
@@ -69,16 +71,18 @@ class YamlDocumentReaderTest {
     @Test
     fun `normalizes invalid yaml characters as malformed input`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content = "value: \u0001",
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content = "value: \u0001",
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                reader.read(source)
+            }
         assertEquals(source.file, failure.file)
         assertEquals(1, failure.location?.line)
         assertTrue(failure.location?.column ?: 0 > 0)
@@ -88,16 +92,18 @@ class YamlDocumentReaderTest {
     @Test
     fun `rejects additional yaml documents`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "multiple-documents",
-            file = file,
-            content = "value: first\n---\nvalue: second\n",
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "multiple-documents",
+                file = file,
+                content = "value: first\n---\nvalue: second\n",
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                reader.read(source)
+            }
 
         assertEquals(2, failure.location?.line)
         assertTrue(failure.cause is org.yaml.snakeyaml.composer.ComposerException)
@@ -114,39 +120,47 @@ class YamlDocumentReaderTest {
             )
 
         taggedDocuments.forEach { content ->
-            val source = DocumentSource(
-                id = "custom-tag",
-                file = file,
-                content = content,
-                format = DocumentFormat.YAML,
-            )
+            val source =
+                DocumentSource(
+                    id = "custom-tag",
+                    file = file,
+                    content = content,
+                    format = DocumentFormat.YAML,
+                )
 
-            val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-                reader.read(source)
-            }
+            val failure =
+                assertFailsWith<DocumentReadException.MalformedDocument> {
+                    reader.read(source)
+                }
 
             assertEquals(source.file, failure.file)
             assertEquals(1, failure.location?.line)
-            assertTrue(failure.cause?.message.orEmpty().contains("Unsupported YAML"))
+            assertTrue(
+                failure.cause
+                    ?.message
+                    .orEmpty()
+                    .contains("Unsupported YAML"),
+            )
         }
     }
 
     @Test
     fun `preserves yaml words and dates as strings`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "yaml-words",
-            file = file,
-            content =
-                """
-                yesValue: yes
-                noValue: no
-                onValue: on
-                offValue: off
-                dateValue: 2026-08-03
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "yaml-words",
+                file = file,
+                content =
+                    """
+                    yesValue: yes
+                    noValue: no
+                    onValue: on
+                    offValue: off
+                    dateValue: 2026-08-03
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
         val root = assertIs<DocumentObject>(reader.read(source).root)
 
@@ -164,31 +178,39 @@ class YamlDocumentReaderTest {
             listOf("+1", "01", "0x10", "0o10", ".5", "1.", "1_000", ".inf", "-.Inf", ".nan")
 
         yamlOnlyNumbers.forEach { value ->
-            val source = DocumentSource(
-                id = "yaml-number",
-                file = file,
-                content = "value: $value",
-                format = DocumentFormat.YAML,
-            )
+            val source =
+                DocumentSource(
+                    id = "yaml-number",
+                    file = file,
+                    content = "value: $value",
+                    format = DocumentFormat.YAML,
+                )
 
-            val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-                reader.read(source)
-            }
+            val failure =
+                assertFailsWith<DocumentReadException.MalformedDocument> {
+                    reader.read(source)
+                }
 
             assertEquals("root.value", failure.location?.path)
-            assertTrue(failure.cause?.message.orEmpty().contains("JSON-compatible number"))
+            assertTrue(
+                failure.cause
+                    ?.message
+                    .orEmpty()
+                    .contains("JSON-compatible number"),
+            )
         }
     }
 
     @Test
     fun `reads an array root without applying AsyncAPI rules`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
         val document = reader.read(source)
 
         val root = assertIs<DocumentArray>(document.root)
@@ -201,16 +223,18 @@ class YamlDocumentReaderTest {
     @Test
     fun `fails when mapping key is not scalar`() {
         val file = TestResources.file("reader/yaml/non-scalar-key.yaml")
-        val source = DocumentSource(
-            id = "non-scalar-key",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "non-scalar-key",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.InvalidMappingKey> {
+                reader.read(source)
+            }
         assertEquals(source.file, failure.file)
         assertEquals("root", failure.location?.path)
         assertEquals(1, failure.location?.line)
@@ -221,16 +245,18 @@ class YamlDocumentReaderTest {
     fun `fails when mapping key is a non-string scalar`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
         listOf("true", "42", "null").forEach { key ->
-            val source = DocumentSource(
-                id = "invalid-root",
-                file = file,
-                content = "  $key: value",
-                format = DocumentFormat.YAML,
-            )
+            val source =
+                DocumentSource(
+                    id = "invalid-root",
+                    file = file,
+                    content = "  $key: value",
+                    format = DocumentFormat.YAML,
+                )
 
-            val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
-                reader.read(source)
-            }
+            val failure =
+                assertFailsWith<DocumentReadException.InvalidMappingKey> {
+                    reader.read(source)
+                }
 
             assertEquals(source.file, failure.file)
             assertEquals("root.$key", failure.location?.path)
@@ -243,17 +269,18 @@ class YamlDocumentReaderTest {
     @Test
     fun `accepts quoted keys that resemble non-string scalars`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content =
-                """
-                "true": boolean-shaped
-                "42": number-shaped
-                "null": null-shaped
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content =
+                    """
+                    "true": boolean-shaped
+                    "42": number-shaped
+                    "null": null-shaped
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
         val root = assertIs<DocumentObject>(reader.read(source).root)
         assertEquals("boolean-shaped", assertIs<DocumentString>(root["true"]).value)
@@ -264,22 +291,24 @@ class YamlDocumentReaderTest {
     @Test
     fun `fails instead of exposing a yaml merge key as a literal member`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content =
-                """
-                base: &base
-                  enabled: true
-                merged:
-                  <<: *base
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content =
+                    """
+                    base: &base
+                      enabled: true
+                    merged:
+                      <<: *base
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.InvalidMappingKey> {
-            reader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.InvalidMappingKey> {
+                reader.read(source)
+            }
 
         assertTrue(failure.message.orEmpty().contains("line 4, column 3"))
         assertTrue(failure.message.orEmpty().contains("expected string key"))
@@ -292,21 +321,23 @@ class YamlDocumentReaderTest {
                 DocumentReaderLimits.DEFAULT.copy(maxNestingDepth = 2),
             )
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content =
-                """
-                root:
-                  child:
-                    leaf: true
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content =
+                    """
+                    root:
+                      child:
+                        leaf: true
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            constrainedReader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                constrainedReader.read(source)
+            }
         assertEquals(DocumentResourceLimit.NESTING_DEPTH, failure.limit)
         assertEquals(2L, failure.maximum)
         assertTrue(failure.message.orEmpty().contains(source.file.absolutePath))
@@ -319,22 +350,24 @@ class YamlDocumentReaderTest {
                 DocumentReaderLimits.DEFAULT.copy(maxAliasesForCollections = 1),
             )
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "invalid-root",
-            file = file,
-            content =
-                """
-                base: &base
-                  value: true
-                first: *base
-                second: *base
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "invalid-root",
+                file = file,
+                content =
+                    """
+                    base: &base
+                      value: true
+                    first: *base
+                    second: *base
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
-            constrainedReader.read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.ResourceLimitExceeded> {
+                constrainedReader.read(source)
+            }
         assertEquals(DocumentResourceLimit.COLLECTION_ALIASES, failure.limit)
         assertEquals(1L, failure.maximum)
     }
@@ -342,35 +375,44 @@ class YamlDocumentReaderTest {
     @Test
     fun `rejects an alias that contains itself`() {
         val file = TestResources.file("reader/yaml/invalid-root.yaml")
-        val source = DocumentSource(
-            id = "recursive-alias",
-            file = file,
-            content =
-                """
-                loop: &loop
-                  type: object
-                  properties:
-                    self: *loop
-                """.trimIndent(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "recursive-alias",
+                file = file,
+                content =
+                    """
+                    loop: &loop
+                      type: object
+                      properties:
+                        self: *loop
+                    """.trimIndent(),
+                format = DocumentFormat.YAML,
+            )
 
-        val failure = assertFailsWith<DocumentReadException.MalformedDocument> {
-            YamlDocumentReader().read(source)
-        }
+        val failure =
+            assertFailsWith<DocumentReadException.MalformedDocument> {
+                YamlDocumentReader().read(source)
+            }
         assertTrue("Recursive YAML alias" in failure.message.orEmpty(), failure.message)
-        assertTrue(failure.location?.path.orEmpty().endsWith("self"), failure.location?.path)
+        assertTrue(
+            failure.location
+                ?.path
+                .orEmpty()
+                .endsWith("self"),
+            failure.location?.path,
+        )
     }
 
     @Test
     fun `returns linked map preserving input order`() {
         val file = TestResources.file("reader/yaml/order-preservation.yaml")
-        val source = DocumentSource(
-            id = "order-preservation",
-            file = file,
-            content = file.readText(),
-            format = DocumentFormat.YAML,
-        )
+        val source =
+            DocumentSource(
+                id = "order-preservation",
+                file = file,
+                content = file.readText(),
+                format = DocumentFormat.YAML,
+            )
         val root = assertIs<DocumentObject>(reader.read(source).root)
 
         assertEquals(listOf("asyncapi", "info", "channels"), root.members.keys.toList())

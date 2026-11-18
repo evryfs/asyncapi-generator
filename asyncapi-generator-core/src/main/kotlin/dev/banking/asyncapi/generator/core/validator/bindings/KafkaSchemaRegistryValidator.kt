@@ -24,25 +24,29 @@ import java.util.IdentityHashMap
 internal class KafkaSchemaRegistryValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
-    fun validate(document: AsyncApiDocument, results: ValidationCollector) {
-        val rootServers = document.servers.orEmpty().mapNotNull { (name, server) ->
-            resolveServer(server)?.let { ApplicableServer(name, it) }
-        }
-        val rootServerNames = IdentityHashMap<Server, String>().apply {
-            rootServers.forEach { put(it.server, it.name) }
-        }
+    fun validate(
+        document: AsyncApiDocument,
+        results: ValidationCollector,
+    ) {
+        val rootServers =
+            document.servers.orEmpty().mapNotNull { (name, server) ->
+                resolveServer(server)?.let { ApplicableServer(name, it) }
+            }
+        val rootServerNames =
+            IdentityHashMap<Server, String>().apply {
+                rootServers.forEach { put(it.server, it.name) }
+            }
 
         document.channels.orEmpty().forEach channels@{ (channelName, channelInterface) ->
             val channel = resolveChannel(channelInterface) ?: return@channels
             val applicableServers = applicableServers(channel, rootServers, rootServerNames)
-            val missingRegistry = applicableServers
-                .filter {
-                    it.server.protocol in KAFKA_PROTOCOLS &&
-                        schemaRegistryStatus(it.server) == SchemaRegistryStatus.ABSENT
-                }
-                .map(ApplicableServer::name)
-                .distinct()
+            val missingRegistry =
+                applicableServers
+                    .filter {
+                        it.server.protocol in KAFKA_PROTOCOLS &&
+                            schemaRegistryStatus(it.server) == SchemaRegistryStatus.ABSENT
+                    }.map(ApplicableServer::name)
+                    .distinct()
             if (missingRegistry.isEmpty()) return@channels
 
             channel.messages.orEmpty().forEach messages@{ (messageName, messageInterface) ->
@@ -92,19 +96,21 @@ internal class KafkaSchemaRegistryValidator(
                 KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
                 "$contextString Kafka binding '$field' requires 'schemaRegistryUrl' on every applicable " +
                     "Kafka server; missing on ${missingRegistry.joinToString()}.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(binding, field)
-                    ?: asyncApiContext.modelTracking.getSourceLocation(binding),
+                sourceLocation =
+                    asyncApiContext.modelTracking.getSourceLocation(binding, field)
+                        ?: asyncApiContext.modelTracking.getSourceLocation(binding),
             )
         }
     }
 
-    private fun kafkaMessageBindings(message: Message): Sequence<ProtocolBinding> = sequence {
-        kafkaMessageBinding(message.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
-        message.traits.orEmpty().forEach traits@{ traitInterface ->
-            val trait = resolveMessageTrait(traitInterface) ?: return@traits
-            kafkaMessageBinding(trait.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
+    private fun kafkaMessageBindings(message: Message): Sequence<ProtocolBinding> =
+        sequence {
+            kafkaMessageBinding(message.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
+            message.traits.orEmpty().forEach traits@{ traitInterface ->
+                val trait = resolveMessageTrait(traitInterface) ?: return@traits
+                kafkaMessageBinding(trait.bindings?.get(KAFKA_BINDING))?.let { yield(it) }
+            }
         }
-    }
 
     private fun kafkaMessageBinding(bindingInterface: BindingInterface?): ProtocolBinding? =
         resolveBinding(bindingInterface)
@@ -112,16 +118,20 @@ internal class KafkaSchemaRegistryValidator(
             ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.MESSAGE }
 
     private fun schemaRegistryStatus(server: Server): SchemaRegistryStatus {
-        val bindingInterface = server.bindings?.get(KAFKA_BINDING)
-            ?: return SchemaRegistryStatus.ABSENT
-        val binding = resolveBinding(bindingInterface)
-            ?: return SchemaRegistryStatus.UNKNOWN
-        val kafkaBinding = binding
-            .protocolBindings
-            ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.SERVER }
-            ?: return SchemaRegistryStatus.UNKNOWN
-        val properties = kafkaBinding.content as? Map<*, *>
-            ?: return SchemaRegistryStatus.UNKNOWN
+        val bindingInterface =
+            server.bindings?.get(KAFKA_BINDING)
+                ?: return SchemaRegistryStatus.ABSENT
+        val binding =
+            resolveBinding(bindingInterface)
+                ?: return SchemaRegistryStatus.UNKNOWN
+        val kafkaBinding =
+            binding
+                .protocolBindings
+                ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.SERVER }
+                ?: return SchemaRegistryStatus.UNKNOWN
+        val properties =
+            kafkaBinding.content as? Map<*, *>
+                ?: return SchemaRegistryStatus.UNKNOWN
         return if (properties.containsKey(SCHEMA_REGISTRY_URL)) {
             SchemaRegistryStatus.PRESENT
         } else {
@@ -184,10 +194,11 @@ internal class KafkaSchemaRegistryValidator(
         const val KAFKA_BINDING = "kafka"
         const val SCHEMA_REGISTRY_URL = "schemaRegistryUrl"
         val KAFKA_PROTOCOLS = setOf("kafka", "kafka-secure")
-        val SCHEMA_REGISTRY_FIELDS = setOf(
-            "schemaIdLocation",
-            "schemaIdPayloadEncoding",
-            "schemaLookupStrategy",
-        )
+        val SCHEMA_REGISTRY_FIELDS =
+            setOf(
+                "schemaIdLocation",
+                "schemaIdPayloadEncoding",
+                "schemaLookupStrategy",
+            )
     }
 }

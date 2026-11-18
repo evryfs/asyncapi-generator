@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -105,13 +105,15 @@ class SpringKafkaClientGenerationTest {
             )
 
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/client/producer/UserEventsProducer.kt"
+                }.content
         val consumerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/consumer/UserEventsConsumer.kt"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/client/consumer/UserEventsConsumer.kt"
+                }.content
 
         listOf(producerContent, consumerContent).forEach { content ->
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract"))
@@ -134,13 +136,15 @@ class SpringKafkaClientGenerationTest {
             )
 
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/producer/UserEventsProducer.java"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/client/producer/UserEventsProducer.java"
+                }.content
         val consumerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/client/consumer/UserEventsConsumer.java"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/client/consumer/UserEventsConsumer.java"
+                }.content
 
         listOf(producerContent, consumerContent).forEach { content ->
             assertTrue(content.contains("import com.example.validation.ValidatedClientContract;"))
@@ -211,7 +215,10 @@ class SpringKafkaClientGenerationTest {
                                                 properties =
                                                     linkedMapOf(
                                                         "occurredAt" to
-                                                            SchemaFixtures.inline(type = "string", format = "date-time"),
+                                                            SchemaFixtures.inline(
+                                                                type = "string",
+                                                                format = "date-time",
+                                                            ),
                                                         "attempt" to
                                                             SchemaFixtures.inline(type = "integer", format = "int32"),
                                                         "retryEnabled" to SchemaFixtures.inline(type = "boolean"),
@@ -244,9 +251,10 @@ class SpringKafkaClientGenerationTest {
             val generatedContracts =
                 listOf("producer/UserEventsProducer", "consumer/UserEventsConsumer")
                     .map { relativePath ->
-                        result.artifacts.single {
-                            it.relativePath == "com/example/client/$relativePath.$extension"
-                        }.content
+                        result.artifacts
+                            .single {
+                                it.relativePath == "com/example/client/$relativePath.$extension"
+                            }.content
                     }
 
             generatedContracts.forEach { content ->
@@ -300,9 +308,10 @@ class SpringKafkaClientGenerationTest {
 
             val extension = if (language == SourceLanguage.KOTLIN) "kt" else "java"
             val consumerContent =
-                result.artifacts.single {
-                    it.relativePath == "com/example/client/consumer/UserEventsConsumer.$extension"
-                }.content
+                result.artifacts
+                    .single {
+                        it.relativePath == "com/example/client/consumer/UserEventsConsumer.$extension"
+                    }.content
 
             assertTrue(consumerContent.contains("listenUserSignedUp"))
             assertTrue(consumerContent.contains("listenUserProfileUpdated"))

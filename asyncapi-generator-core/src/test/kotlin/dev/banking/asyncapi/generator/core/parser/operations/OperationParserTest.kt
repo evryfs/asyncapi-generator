@@ -25,7 +25,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
 class OperationParserTest {
-
     private val context = AsyncApiContext()
     private val parser = OperationParser(context)
 
@@ -33,8 +32,11 @@ class OperationParserTest {
     fun `parse inline operations`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
+        val operationsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
 
         val result = parser.parseMap(operationsNode)
 
@@ -54,9 +56,10 @@ class OperationParserTest {
         assertEquals(listOf("#/components/messages/lightMeasured"), receive.messages?.map { it.ref })
         assertEquals(listOf(MESSAGE), receive.messages?.map { it.referenceCategoryKey })
 
-        val receiveTrait = assertIs<OperationTraitInterface.OperationTraitReference>(
-            assertNotNull(receive.traits).single(),
-        ).reference
+        val receiveTrait =
+            assertIs<OperationTraitInterface.OperationTraitReference>(
+                assertNotNull(receive.traits).single(),
+            ).reference
         assertEquals("#/components/operationTraits/kafka", receiveTrait.ref)
         assertEquals(OPERATION_TRAIT, receiveTrait.referenceCategoryKey)
 
@@ -77,9 +80,10 @@ class OperationParserTest {
         val amqpBinding = assertIs<BindingInterface.BindingInline>(turnOn.bindings?.get("amqp")).binding
         assertEquals(mapOf("ack" to false), amqpBinding.content)
 
-        val turnOnTrait = assertIs<OperationTraitInterface.OperationTraitReference>(
-            assertNotNull(turnOn.traits).single(),
-        ).reference
+        val turnOnTrait =
+            assertIs<OperationTraitInterface.OperationTraitReference>(
+                assertNotNull(turnOn.traits).single(),
+            ).reference
         assertEquals("#/components/operationTraits/kafka", turnOnTrait.ref)
         assertEquals(OPERATION_TRAIT, turnOnTrait.referenceCategoryKey)
 
@@ -101,8 +105,11 @@ class OperationParserTest {
     fun `parses a referenced operation with its concrete category`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
+        val operationsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
 
         val result = parser.parseMap(operationsNode)
 
@@ -115,12 +122,16 @@ class OperationParserTest {
     fun `parse operation missing action reports the required member and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
+        val operationsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(operationsNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -135,13 +146,18 @@ class OperationParserTest {
     fun `parse operation missing channel reports the required member and source`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operationCases")
-            .expectObject().required("MissingChannel")
+        val operationsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operationCases")
+                .expectObject()
+                .required("MissingChannel")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(operationsNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -162,12 +178,16 @@ class OperationParserTest {
     fun `parse operation with inline message reports missing ref`() {
         val file = TestResources.file("parser/operations/asyncapi_validator_operations_inline_message_error.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val operationsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
+        val operationsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseMap(operationsNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseMap(operationsNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)

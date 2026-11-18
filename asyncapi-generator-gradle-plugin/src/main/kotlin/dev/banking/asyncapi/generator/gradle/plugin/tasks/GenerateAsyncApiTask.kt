@@ -33,10 +33,6 @@ import org.gradle.work.DisableCachingByDefault
 
 /**
  * Generates the outputs configured by one named AsyncAPI execution.
- *
- * Expected behavior is covered by:
- * - `AsyncApiPluginTest`
- * - `asyncapi-generator-system-test` scenarios
  */
 @DisableCachingByDefault(because = "Code generation output is not yet configured for the Gradle build cache")
 abstract class GenerateAsyncApiTask : DefaultTask() {
@@ -128,7 +124,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
-        logger.lifecycle("AsyncAPI generation '${name}' started")
+        logger.lifecycle("AsyncAPI generation '$name' started")
 
         val generatorConfiguration =
             GradleGeneratorConfigurationMapper.map(
@@ -155,7 +151,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         AsyncApiGenerator(ProtocProvider { protoc.singleFile.toPath().also { it.toFile().setExecutable(true) } })
             .generate(bundled, generatorConfiguration)
 
-        logger.lifecycle("AsyncAPI generation '${name}' completed")
+        logger.lifecycle("AsyncAPI generation '$name' completed")
     }
 
     private fun modelConfiguration(): GradleModelConfiguration? =

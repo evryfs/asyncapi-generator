@@ -81,22 +81,22 @@ internal object SchemaKeywordPolicy {
         mapOf(
             "nullable" to
                 "is not supported by the AsyncAPI 3.0 Schema Object semantics used by the generator. Express " +
-                    """nullability with a type array, for example type: ["string", "null"].""",
+                """nullability with a type array, for example type: ["string", "null"].""",
             "xml" to
                 "is not supported by the AsyncAPI 3.0 Schema Object semantics used by the generator. Remove it " +
-                    "or represent transport-specific behavior outside the payload Schema Object.",
+                "or represent transport-specific behavior outside the payload Schema Object.",
             $$"$defs" to
                 "is not supported under the generator's JSON Schema Draft 7 semantics. Use the 'definitions' " +
-                    "keyword instead.",
+                "keyword instead.",
             "dependentRequired" to
                 "is not supported under the generator's JSON Schema Draft 7 semantics. Use the 'dependencies' " +
-                    "keyword instead.",
+                "keyword instead.",
             "dependentSchemas" to
                 "is not supported under the generator's JSON Schema Draft 7 semantics. Use the 'dependencies' " +
-                    "keyword instead.",
+                "keyword instead.",
             "prefixItems" to
                 "is not supported under the generator's JSON Schema Draft 7 semantics. Use a single Schema " +
-                    "Object in 'items'.",
+                "Object in 'items'.",
             "unevaluatedItems" to
                 "is not supported under the generator's JSON Schema Draft 7 semantics.",
             "unevaluatedProperties" to

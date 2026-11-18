@@ -18,8 +18,14 @@ class GenerateReferencedPrimitiveTypeTest : AbstractJavaGeneratorClass() {
             )
 
         assertTrue(generated.contains("private String myField;"), "Expected primitive ref type for myField")
-        assertTrue(generated.contains("@Pattern(regexp = \"^[0-9]{4,35}$\")"), "Expected constraints from referenced primitive schema")
-        assertFalse(generated.contains("import $modelPackage.MyField;"), "Primitive ref should not import model type MyField")
+        assertTrue(
+            generated.contains("@Pattern(regexp = \"^[0-9]{4,35}$\")"),
+            "Expected constraints from referenced primitive schema",
+        )
+        assertFalse(
+            generated.contains("import $modelPackage.MyField;"),
+            "Primitive ref should not import model type MyField",
+        )
 
         assertTrue(generated.contains("private MyEnum myEnum;"), "Enum ref should stay named")
         assertTrue(generated.contains("private MyObject myObject;"), "Object ref should stay named")

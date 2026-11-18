@@ -13,38 +13,47 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterf
  * Bundles operation trait objects and references.
  */
 internal class OperationTraitBundler {
-
     private val tagBundler = TagBundler()
     private val externalDocsBundler = ExternalDocsBundler()
     private val securitySchemeBundler = SecuritySchemeBundler()
     private val bindingBundler = BindingBundler()
+
     fun bundleMap(
         traits: Map<String, OperationTraitInterface>?,
         context: BundlingContext,
-    ): Map<String, OperationTraitInterface>? =
-        traits?.mapValues { (_, trait) -> bundle(trait, context) }
+    ): Map<String, OperationTraitInterface>? = traits?.mapValues { (_, trait) -> bundle(trait, context) }
+
     fun bundleList(
         traits: List<OperationTraitInterface>?,
         context: BundlingContext,
-    ): List<OperationTraitInterface>? =
-        traits?.map { trait -> bundle(trait, context) }
-    fun bundle(traitInterface: OperationTraitInterface, context: BundlingContext): OperationTraitInterface =
+    ): List<OperationTraitInterface>? = traits?.map { trait -> bundle(trait, context) }
+
+    fun bundle(
+        traitInterface: OperationTraitInterface,
+        context: BundlingContext,
+    ): OperationTraitInterface =
         when (traitInterface) {
             is OperationTraitInterface.OperationTraitInline ->
                 OperationTraitInterface.OperationTraitInline(
-                    bundleTrait(traitInterface.operationTrait, context)
+                    bundleTrait(traitInterface.operationTrait, context),
                 )
             is OperationTraitInterface.OperationTraitReference -> {
-                traitInterface.copy(reference = ReferenceBundler.bundleReferencedModel<OperationTrait>(
-                    reference = traitInterface.reference,
-                    context = context,
-                ) { trait, nextContext ->
-                    bundleTrait(trait, nextContext)
-                })
+                traitInterface.copy(
+                    reference =
+                        ReferenceBundler.bundleReferencedModel<OperationTrait>(
+                            reference = traitInterface.reference,
+                            context = context,
+                        ) { trait, nextContext ->
+                            bundleTrait(trait, nextContext)
+                        },
+                )
             }
         }
 
-    private fun bundleTrait(trait: OperationTrait, context: BundlingContext): OperationTrait {
+    private fun bundleTrait(
+        trait: OperationTrait,
+        context: BundlingContext,
+    ): OperationTrait {
         val bundledTags = tagBundler.bundleList(trait.tags, context)
         val bundledExternalDocs = trait.externalDocs?.let { externalDocsBundler.bundle(it, context) }
         val bundledSecurity = securitySchemeBundler.bundleList(trait.security, context)
@@ -53,7 +62,7 @@ internal class OperationTraitBundler {
             tags = bundledTags,
             externalDocs = bundledExternalDocs,
             security = bundledSecurity,
-            bindings = bundledBindings
+            bindings = bundledBindings,
         )
     }
 }

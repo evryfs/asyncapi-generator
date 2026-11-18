@@ -36,10 +36,10 @@ abstract class AbstractJavaGeneratorClass {
             GeneratorConfiguration(
                 profile = GeneratorProfile.Source(SourceLanguage.JAVA),
                 output =
-                GeneratorOutputConfiguration(
-                    sourceOutputDirectory = codegenOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
+                    GeneratorOutputConfiguration(
+                        sourceOutputDirectory = codegenOutputDirectory,
+                        resourceOutputDirectory = resourceOutputDirectory,
+                    ),
                 models =
                     if (generateModels) {
                         ModelGeneration.Enabled(
@@ -80,7 +80,7 @@ abstract class AbstractJavaGeneratorClass {
     fun loadGeneratedClassContent(
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
         generated: String? = null,
-        modelPackage: String
+        modelPackage: String,
     ): String {
         if (generated != null) {
             val modelPath = modelPackage.replace('.', '/')

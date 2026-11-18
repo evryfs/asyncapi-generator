@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.document.DocumentSource
 import dev.banking.asyncapi.generator.core.document.SourceLocation
 import java.io.File
 import java.nio.ByteBuffer
-import java.nio.charset.CodingErrorAction.REPORT
 import java.nio.charset.CharacterCodingException
+import java.nio.charset.CodingErrorAction.REPORT
 import java.nio.charset.StandardCharsets.UTF_8
 
 /**
@@ -25,9 +25,10 @@ internal data class DocumentReaderLimits(
     val maxNumberCharacters: Int,
 ) {
     fun readContent(file: File): String {
-        val bytes = file.inputStream().use { input ->
-            input.readNBytes(maxDocumentBytes + 1)
-        }
+        val bytes =
+            file.inputStream().use { input ->
+                input.readNBytes(maxDocumentBytes + 1)
+            }
         if (bytes.size > maxDocumentBytes) {
             throw limitExceeded(
                 file = file,
@@ -36,7 +37,8 @@ internal data class DocumentReaderLimits(
             )
         }
         return try {
-            UTF_8.newDecoder()
+            UTF_8
+                .newDecoder()
                 .onMalformedInput(REPORT)
                 .onUnmappableCharacter(REPORT)
                 .decode(ByteBuffer.wrap(bytes))
@@ -73,9 +75,10 @@ internal data class DocumentReaderLimits(
                 file = location.file,
                 limit = DocumentResourceLimit.NUMBER_CHARACTERS,
                 maximum = maxNumberCharacters.toLong(),
-                cause = IllegalArgumentException(
-                    "Maximum numeric token length is $maxNumberCharacters characters",
-                ),
+                cause =
+                    IllegalArgumentException(
+                        "Maximum numeric token length is $maxNumberCharacters characters",
+                    ),
                 location = location,
             )
         }
@@ -90,9 +93,10 @@ internal data class DocumentReaderLimits(
             file = file,
             limit = limit,
             maximum = maximum.toLong(),
-            cause = IllegalArgumentException(
-                "Maximum ${limit.description} is $maximum",
-            ),
+            cause =
+                IllegalArgumentException(
+                    "Maximum ${limit.description} is $maximum",
+                ),
         )
 
     companion object {

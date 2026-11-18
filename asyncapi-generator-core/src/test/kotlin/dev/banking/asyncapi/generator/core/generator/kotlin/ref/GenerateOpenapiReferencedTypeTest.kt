@@ -3,19 +3,21 @@ package dev.banking.asyncapi.generator.core.generator.kotlin.ref
 import dev.banking.asyncapi.generator.core.generator.AbstractKotlinGeneratorClass
 import org.junit.jupiter.api.Test
 import java.io.File
-import kotlin.test.assertTrue
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
-    private val actionTypeClassBody = """
+    private val actionTypeClassBody =
+        """
         enum class ActionType {
             CREATE,
             UPDATE,
             DELETE,
         }
-    """.trimIndent()
+        """.trimIndent()
 
-    private val messageClassBody = """
+    private val messageClassBody =
+        """
         data class Message(
 
             val text: String? = null,
@@ -23,7 +25,7 @@ class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
             val actionType: ActionType? = null
         ) {
         }
-    """.trimIndent()
+        """.trimIndent()
 
     @Test
     fun `openapi refs should be completely parsed`() {
@@ -32,13 +34,14 @@ class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-example.yml"),
                 generated = "EventMessagePayload.kt",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.kt",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.kt",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("val actionType: ActionType? = null"), "Expected enum ref type for actionType")
         assertEquals(actionTypeClassBody, extractElement(actionTypeGenerated))
@@ -51,18 +54,20 @@ class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-nested-example.yml"),
                 generated = "EventMessagePayload.kt",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.kt",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.kt",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.kt",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.kt",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("val message: Message? = null"), "Expected complex ref type for message")
         assertEquals(messageClassBody, extractElement(messageGenerated))
@@ -76,18 +81,20 @@ class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-allof-example.yml"),
                 generated = "EventMessagePayload.kt",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.kt",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.kt",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.kt",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.kt",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("val message: Message"), "Expected complex ref type for message")
         assertTrue(generated.contains("val entityType: String"), "Expected entityType property")
@@ -106,21 +113,23 @@ class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
             generateElement(
                 yaml = File("src/test/resources/parser/openapi/asyncapi-single-external-refs-example.yml"),
                 generated = "EventMessagePayload.kt",
-                modelPackage = modelPackage
+                modelPackage = modelPackage,
             )
 
-        val messageGenerated = loadGeneratedClassContent(
-            generated = "Message.kt",
-            modelPackage = modelPackage
-        )
+        val messageGenerated =
+            loadGeneratedClassContent(
+                generated = "Message.kt",
+                modelPackage = modelPackage,
+            )
 
-        val actionTypeGenerated = loadGeneratedClassContent(
-            generated = "ActionType.kt",
-            modelPackage = modelPackage
-        )
+        val actionTypeGenerated =
+            loadGeneratedClassContent(
+                generated = "ActionType.kt",
+                modelPackage = modelPackage,
+            )
 
         assertTrue(generated.contains("val message: Message? = null"), "Expected complex ref type for message")
         assertEquals(messageClassBody, extractElement(messageGenerated))
-        assertEquals(actionTypeClassBody,  extractElement(actionTypeGenerated))
+        assertEquals(actionTypeClassBody, extractElement(actionTypeGenerated))
     }
 }

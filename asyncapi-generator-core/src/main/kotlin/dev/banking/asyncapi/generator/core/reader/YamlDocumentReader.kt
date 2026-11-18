@@ -41,7 +41,6 @@ import java.util.IdentityHashMap
 internal class YamlDocumentReader(
     private val limits: DocumentReaderLimits = DocumentReaderLimits.DEFAULT,
 ) {
-
     private val yaml =
         Yaml(
             LoaderOptions().apply {
@@ -78,11 +77,12 @@ internal class YamlDocumentReader(
                 throw normalizeYamlException(source, ex)
             } ?: throw DocumentReadException.EmptyDocument(source.file)
 
-        val root = parseNode(
-            node = rootNode,
-            path = ROOT_PATH,
-            source = source,
-        )
+        val root =
+            parseNode(
+                node = rootNode,
+                path = ROOT_PATH,
+                source = source,
+            )
 
         return InputDocument(
             source = source,
@@ -131,9 +131,10 @@ internal class YamlDocumentReader(
     ): DocumentArray {
         requireYamlTag(node, Tag.SEQ, location)
         return DocumentArray(
-            elements = node.value.mapIndexed { index, child ->
-                parseNode(child, appendDocumentIndex(path, index), source, ancestors)
-            },
+            elements =
+                node.value.mapIndexed { index, child ->
+                    parseNode(child, appendDocumentIndex(path, index), source, ancestors)
+                },
             location = location,
         )
     }
@@ -148,8 +149,9 @@ internal class YamlDocumentReader(
         requireYamlTag(node, Tag.MAP, location)
         val result = linkedMapOf<String, DocumentMember>()
         node.value.forEach { tuple ->
-            val keyNode = tuple.keyNode as? ScalarNode
-                ?: throw invalidMappingKey(source, path, tuple.keyNode.startMark)
+            val keyNode =
+                tuple.keyNode as? ScalarNode
+                    ?: throw invalidMappingKey(source, path, tuple.keyNode.startMark)
             if (keyNode.tag != Tag.STR) {
                 throw invalidMappingKey(source, appendDocumentMember(path, keyNode.value), keyNode.startMark)
             }
@@ -159,10 +161,11 @@ internal class YamlDocumentReader(
             if (result.containsKey(key)) {
                 throw DocumentReadException.DuplicateKey(source.file, key, keyLocation)
             }
-            result[key] = DocumentMember(
-                keyLocation = keyLocation,
-                value = parseNode(tuple.valueNode, keyPath, source, ancestors),
-            )
+            result[key] =
+                DocumentMember(
+                    keyLocation = keyLocation,
+                    value = parseNode(tuple.valueNode, keyPath, source, ancestors),
+                )
         }
         return DocumentObject(result, location)
     }

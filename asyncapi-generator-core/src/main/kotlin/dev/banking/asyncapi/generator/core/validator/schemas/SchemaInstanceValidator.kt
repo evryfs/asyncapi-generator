@@ -11,8 +11,16 @@ import java.util.regex.Pattern
 internal class SchemaInstanceValidator(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    data class Violation(val path: String, val message: String)
-    data class UnsupportedFormat(val path: String, val schemaFormat: String)
+    data class Violation(
+        val path: String,
+        val message: String,
+    )
+
+    data class UnsupportedFormat(
+        val path: String,
+        val schemaFormat: String,
+    )
+
     data class Evaluation(
         val violations: List<Violation> = emptyList(),
         val unsupportedFormats: List<UnsupportedFormat> = emptyList(),
@@ -24,8 +32,11 @@ internal class SchemaInstanceValidator(
             Evaluation(violations + other.violations, unsupportedFormats + other.unsupportedFormats)
     }
 
-    fun validate(schema: SchemaInterface, value: Any?, path: String): Evaluation =
-        evaluate(schema, value, path, mutableSetOf())
+    fun validate(
+        schema: SchemaInterface,
+        value: Any?,
+        path: String,
+    ): Evaluation = evaluate(schema, value, path, mutableSetOf())
 
     private fun evaluate(
         schema: Any,
@@ -88,24 +99,35 @@ internal class SchemaInstanceValidator(
         schema.oneOf?.let { alternatives -> result += evaluateOneOf(alternatives, value, path, visited) }
         schema.not?.let { prohibited ->
             val prohibitedResult = evaluate(prohibited, value, path, visited.toMutableSet())
-            result += when {
-                prohibitedResult.valid -> violation(path, "matches a schema prohibited by 'not'")
-                prohibitedResult.indeterminate -> Evaluation(unsupportedFormats = prohibitedResult.unsupportedFormats)
-                else -> Evaluation()
-            }
+            result +=
+                when {
+                    prohibitedResult.valid -> violation(path, "matches a schema prohibited by 'not'")
+                    prohibitedResult.indeterminate ->
+                        Evaluation(
+                            unsupportedFormats = prohibitedResult.unsupportedFormats,
+                        )
+                    else -> Evaluation()
+                }
         }
         schema.ifSchema?.let { condition ->
             val conditionResult = evaluate(condition, value, path, visited.toMutableSet())
-            result += when {
-                conditionResult.valid -> schema.thenSchema?.let { evaluate(it, value, path, visited) } ?: Evaluation()
-                conditionResult.indeterminate -> Evaluation(unsupportedFormats = conditionResult.unsupportedFormats)
-                else -> schema.elseSchema?.let { evaluate(it, value, path, visited) } ?: Evaluation()
-            }
+            result +=
+                when {
+                    conditionResult.valid ->
+                        schema.thenSchema?.let { evaluate(it, value, path, visited) }
+                            ?: Evaluation()
+                    conditionResult.indeterminate -> Evaluation(unsupportedFormats = conditionResult.unsupportedFormats)
+                    else -> schema.elseSchema?.let { evaluate(it, value, path, visited) } ?: Evaluation()
+                }
         }
         return result
     }
 
-    private fun evaluateNumber(schema: Schema, value: Number, path: String): Evaluation {
+    private fun evaluateNumber(
+        schema: Schema,
+        value: Number,
+        path: String,
+    ): Evaluation {
         val number = SchemaValueSemantics.decimal(value) ?: return Evaluation()
         var result = Evaluation()
         schema.minimum?.let(SchemaValueSemantics::decimal)?.takeIf { number < it }?.let {
@@ -120,15 +142,21 @@ internal class SchemaInstanceValidator(
         schema.exclusiveMaximum?.let(SchemaValueSemantics::decimal)?.takeIf { number >= it }?.let {
             result += violation(path, "is not lower than the exclusive maximum $it")
         }
-        schema.multipleOf?.let(SchemaValueSemantics::decimal)?.takeIf { divisor ->
-            divisor.signum() > 0 && number.remainder(divisor).compareTo(java.math.BigDecimal.ZERO) != 0
-        }?.let { divisor ->
-            result += violation(path, "is not a multiple of $divisor")
-        }
+        schema.multipleOf
+            ?.let(SchemaValueSemantics::decimal)
+            ?.takeIf { divisor ->
+                divisor.signum() > 0 && number.remainder(divisor).compareTo(java.math.BigDecimal.ZERO) != 0
+            }?.let { divisor ->
+                result += violation(path, "is not a multiple of $divisor")
+            }
         return result
     }
 
-    private fun evaluateString(schema: Schema, value: String, path: String): Evaluation {
+    private fun evaluateString(
+        schema: Schema,
+        value: String,
+        path: String,
+    ): Evaluation {
         val length = value.codePointCount(0, value.length).toBigDecimal()
         var result = Evaluation()
         schema.minLength?.let(SchemaValueSemantics::decimal)?.takeIf { length < it }?.let {
@@ -174,16 +202,18 @@ internal class SchemaInstanceValidator(
             }
         }
         schema.contains?.let { containedSchema ->
-            val evaluations = value.mapIndexed { index, item ->
-                evaluate(containedSchema, item, "$path[$index]", visited.toMutableSet())
-            }
+            val evaluations =
+                value.mapIndexed { index, item ->
+                    evaluate(containedSchema, item, "$path[$index]", visited.toMutableSet())
+                }
             if (evaluations.none(Evaluation::valid)) {
                 val unsupported = evaluations.flatMap(Evaluation::unsupportedFormats)
-                result += if (unsupported.isNotEmpty()) {
-                    Evaluation(unsupportedFormats = unsupported)
-                } else {
-                    violation(path, "does not contain an item matching the 'contains' schema")
-                }
+                result +=
+                    if (unsupported.isNotEmpty()) {
+                        Evaluation(unsupportedFormats = unsupported)
+                    } else {
+                        violation(path, "does not contain an item matching the 'contains' schema")
+                    }
             }
         }
         return result
@@ -208,9 +238,10 @@ internal class SchemaInstanceValidator(
             result += violation(path, "is missing required property '$required'")
         }
 
-        val propertyPatterns = schema.patternProperties.orEmpty().mapNotNull { (regex, propertySchema) ->
-            runCatching { Pattern.compile(regex) }.getOrNull()?.let { it to propertySchema }
-        }
+        val propertyPatterns =
+            schema.patternProperties.orEmpty().mapNotNull { (regex, propertySchema) ->
+                runCatching { Pattern.compile(regex) }.getOrNull()?.let { it to propertySchema }
+            }
         properties.forEach { (name, propertyValue) ->
             val propertyPath = "$path.$name"
             schema.properties?.get(name)?.let { propertySchema ->
@@ -233,9 +264,10 @@ internal class SchemaInstanceValidator(
         schema.dependencies.orEmpty().forEach { (property, dependency) ->
             if (property !in properties) return@forEach
             when (dependency) {
-                is List<*> -> dependency.filterIsInstance<String>().filterNot(properties::containsKey).forEach { name ->
-                    result += violation(path, "property '$property' requires property '$name'")
-                }
+                is List<*> ->
+                    dependency.filterIsInstance<String>().filterNot(properties::containsKey).forEach { name ->
+                        result += violation(path, "property '$property' requires property '$name'")
+                    }
                 is SchemaInterface -> result += evaluate(dependency, value, path, visited)
             }
         }
@@ -275,13 +307,22 @@ internal class SchemaInstanceValidator(
         }
     }
 
-    private fun violation(path: String, message: String) = Evaluation(listOf(Violation(path, message)))
+    private fun violation(
+        path: String,
+        message: String,
+    ) = Evaluation(listOf(Violation(path, message)))
 
-    private fun unsupported(path: String, schema: MultiFormatSchema) =
-        Evaluation(unsupportedFormats = listOf(UnsupportedFormat(path, schema.schemaFormat)))
+    private fun unsupported(
+        path: String,
+        schema: MultiFormatSchema,
+    ) = Evaluation(unsupportedFormats = listOf(UnsupportedFormat(path, schema.schemaFormat)))
 
-    private class Visit(private val schema: Any, private val path: String) {
+    private class Visit(
+        private val schema: Any,
+        private val path: String,
+    ) {
         override fun equals(other: Any?): Boolean = other is Visit && schema === other.schema && path == other.path
+
         override fun hashCode(): Int = 31 * System.identityHashCode(schema) + path.hashCode()
     }
 }

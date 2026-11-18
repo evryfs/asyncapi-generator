@@ -4,9 +4,7 @@ import org.apache.maven.plugin.Mojo
 import java.io.File
 
 object MavenTestHelper {
-
-    fun outputPath(path: String): File =
-        File(path).apply { mkdirs() }
+    fun outputPath(path: String): File = File(path).apply { mkdirs() }
 
     fun inputPath(path: String): File =
         File("src/test/resources/$path").also {
@@ -53,7 +51,10 @@ object MavenTestHelper {
         writeField("generatorName", value)
     }
 
-    private fun Mojo.writeField(name: String, value: Any?) {
+    private fun Mojo.writeField(
+        name: String,
+        value: Any?,
+    ) {
         val field = this.javaClass.getDeclaredField(name)
         field.isAccessible = true
         field.set(this, value)

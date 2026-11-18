@@ -6,21 +6,27 @@ import java.io.File
 import kotlin.test.assertTrue
 
 class AvroEnumTest : AbstractAvroGeneratorClass() {
-
     @Test
     fun `should generate strict avro enums`() {
-        val content = generateAvro(
-            yaml = File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
-            packageName = "com.example.avro",
-            schema = "Task.avsc"
-        )
+        val content =
+            generateAvro(
+                yaml = File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
+                packageName = "com.example.avro",
+                schema = "Task.avsc",
+            )
 
         assertTrue(content.isNotEmpty())
 
         // Fields with an enum default list the enum first, because a union's default matches its first branch.
-        assertTrue(content.contains("\"type\": [\"com.example.avro.TaskStatus\", \"null\"]"), "TaskStatus reference missing")
+        assertTrue(
+            content.contains("\"type\": [\"com.example.avro.TaskStatus\", \"null\"]"),
+            "TaskStatus reference missing",
+        )
         assertTrue(content.contains("\"default\": \"IN_PROGRESS\""), "TaskStatus default missing")
-        assertTrue(content.contains("\"type\": [\"com.example.avro.Priority\", \"null\"]"), "Priority reference missing")
+        assertTrue(
+            content.contains("\"type\": [\"com.example.avro.Priority\", \"null\"]"),
+            "Priority reference missing",
+        )
 
         val statusFile = File("target/generated-resources/asyncapi/com/example/avro/TaskStatus.avsc")
         assertTrue(statusFile.exists(), "TaskStatus.avsc missing")

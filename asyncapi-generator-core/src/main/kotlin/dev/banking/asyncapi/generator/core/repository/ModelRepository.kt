@@ -1,13 +1,13 @@
 package dev.banking.asyncapi.generator.core.repository
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.references.parseReference
-import dev.banking.asyncapi.generator.core.parser.node.NodeAddress
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.SourceLocation
 import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.parseReference
+import dev.banking.asyncapi.generator.core.parser.node.NodeAddress
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiParserProfile
 import java.io.File
 import java.util.IdentityHashMap
@@ -19,7 +19,6 @@ import kotlin.reflect.KProperty0
 internal class ModelRepository(
     private val sourceRepository: SourceRepository,
 ) {
-
     data class Model(
         val model: Any,
         val sourceLocation: SourceLocation?,
@@ -46,32 +45,38 @@ internal class ModelRepository(
     private val modelsByPath = LinkedHashMap<String, Any>()
     private val referenceOrigins = IdentityHashMap<Reference, ReferenceOrigin>()
 
-    fun register(model: Any, node: ParserNode) {
+    fun register(
+        model: Any,
+        node: ParserNode,
+    ) {
         val fieldNames = collectFieldNames(node)
         val fieldValues = collectFieldValues(node)
         val fieldLocations = collectFieldLocations(node)
-        val fieldLines = if (fieldLocations.isNotEmpty()) {
-            fieldLocations.mapValues { (_, location) -> location.line }
-        } else {
-            collectFieldLines(node)
-        }
+        val fieldLines =
+            if (fieldLocations.isNotEmpty()) {
+                fieldLocations.mapValues { (_, location) -> location.line }
+            } else {
+                collectFieldLines(node)
+            }
         val fieldName = node.name
         val parentPath = node.address.parent?.displayPath
         val path = node.path
-        val sourceLocation = sourceRepository.getLocation(node.address)
-            ?: sourceRepository.findNearestLocation(node.address)
+        val sourceLocation =
+            sourceRepository.getLocation(node.address)
+                ?: sourceRepository.findNearestLocation(node.address)
 
         if (model is Reference) {
             val sourcePathId = node.address.sourceId
             model.sourceId = sourcePathId
             sourceRepository.findFileById(sourcePathId)?.let { sourceFile ->
-                referenceOrigins[model] = ReferenceOrigin(
-                    file = sourceFile,
-                    sourcePathId = sourcePathId,
-                    parserPath = path,
-                    sourceLocation = sourceLocation,
-                    parserProfile = node.profile,
-                )
+                referenceOrigins[model] =
+                    ReferenceOrigin(
+                        file = sourceFile,
+                        sourcePathId = sourcePathId,
+                        parserPath = path,
+                        sourceLocation = sourceLocation,
+                        parserProfile = node.profile,
+                    )
             }
         }
 
@@ -92,7 +97,10 @@ internal class ModelRepository(
         modelsByPath[path] = model
     }
 
-    fun <R> getLine(model: Any, property: KProperty0<R>): Int? {
+    fun <R> getLine(
+        model: Any,
+        property: KProperty0<R>,
+    ): Int? {
         val fieldName = property.name
         val entry = modelsByInstance[model] ?: return null
         return entry.fieldLocations[fieldName]?.line
@@ -105,12 +113,18 @@ internal class ModelRepository(
         return getSourceLocation(model)?.line
     }
 
-    fun <R> getSourceLocation(model: Any, property: KProperty0<R>): SourceLocation? {
+    fun <R> getSourceLocation(
+        model: Any,
+        property: KProperty0<R>,
+    ): SourceLocation? {
         val fieldName = property.name
         return modelsByInstance[model]?.fieldLocations?.get(fieldName)
     }
 
-    fun getSourceLocation(model: Any, fieldName: String): SourceLocation? {
+    fun getSourceLocation(
+        model: Any,
+        fieldName: String,
+    ): SourceLocation? {
         val entry = modelsByInstance[model] ?: return null
         return entry.fieldLocations[fieldName]
             ?: addressesByInstance[model]?.member(fieldName)?.let(sourceRepository::getLocation)
@@ -122,17 +136,18 @@ internal class ModelRepository(
             ?: addressesByInstance[model]?.let(sourceRepository::findNearestLocation)
     }
 
-    fun getFieldNames(model: Any): Set<String> =
-        modelsByInstance[model]?.fieldNames.orEmpty()
+    fun getFieldNames(model: Any): Set<String> = modelsByInstance[model]?.fieldNames.orEmpty()
 
-    fun getFieldValue(model: Any, fieldName: String): Any? =
-        modelsByInstance[model]?.fieldValues?.get(fieldName)
+    fun getFieldValue(
+        model: Any,
+        fieldName: String,
+    ): Any? = modelsByInstance[model]?.fieldValues?.get(fieldName)
 
     fun getModelsByInstance(): Map<Any, Model> = IdentityHashMap(modelsByInstance)
+
     fun getModelsByPath() = modelsByPath.toMap()
 
-    internal fun getReferenceOrigin(reference: Reference): ReferenceOrigin? =
-        referenceOrigins[reference]
+    internal fun getReferenceOrigin(reference: Reference): ReferenceOrigin? = referenceOrigins[reference]
 
     fun findByReference(reference: Reference): Any? {
         val normalized = normalize(reference) ?: return null
@@ -145,8 +160,9 @@ internal class ModelRepository(
             is DocumentObject -> {
                 for ((key, member) in raw.members) {
                     val address = node.address.member(key)
-                    val location = sourceRepository.getLocation(address)
-                        ?: member.keyLocation
+                    val location =
+                        sourceRepository.getLocation(address)
+                            ?: member.keyLocation
                     result[key] = location.copy(path = address.displayPath)
                 }
             }
@@ -154,14 +170,16 @@ internal class ModelRepository(
             is DocumentArray -> {
                 raw.elements.forEachIndexed { index, element ->
                     val address = node.address.index(index)
-                    val location = sourceRepository.getLocation(address)
-                        ?: element.location
+                    val location =
+                        sourceRepository.getLocation(address)
+                            ?: element.location
                     result["[$index]"] = location.copy(path = address.displayPath)
                 }
             }
 
             else -> {
-                sourceRepository.getLocation(node.address)
+                sourceRepository
+                    .getLocation(node.address)
                     ?.let { location -> result["<value>"] = location }
             }
         }
@@ -202,7 +220,9 @@ internal class ModelRepository(
             }
 
             else -> {
-                sourceRepository.getLocation(node.address)?.line
+                sourceRepository
+                    .getLocation(node.address)
+                    ?.line
                     ?.let { line -> result["<value>"] = line }
             }
         }

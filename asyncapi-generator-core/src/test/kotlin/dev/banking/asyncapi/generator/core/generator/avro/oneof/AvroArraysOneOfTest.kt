@@ -7,13 +7,12 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class AvroArraysOneOfTest : AbstractAvroGeneratorClass() {
-
     @Test
     fun `should generate individual records for polymorphic types`() {
         generateAvro(
             yaml = File("src/test/resources/generator/asyncapi_oneof_arrays_composition.yaml"),
             packageName = "com.example.poly.arrays",
-            schema = null
+            schema = null,
         )
 
         val outputDir = File("target/generated-resources/asyncapi")

@@ -39,39 +39,61 @@ data class GeneratedOutputManifest(
      * [outputRoots] or anything above it. A stale file outside every output root is deleted
      * without removing any directory.
      */
-    fun update(generatedFiles: Collection<File>, outputRoots: Collection<File> = emptyList()) {
+    fun update(
+        generatedFiles: Collection<File>,
+        outputRoots: Collection<File> = emptyList(),
+    ) {
         val manifestPath = file.toPath().toAbsolutePath().normalize()
         val base = manifestPath.parent
         Files.createDirectories(base)
         // Threads of one JVM (parallel Gradle tasks) wait on the monitor; separate processes on the file lock.
         synchronized(monitors.computeIfAbsent(manifestPath) { Any() }) {
-            updateLocked(manifestPath, base, generatedFiles, outputRoots.map { it.toPath().toAbsolutePath().normalize() })
+            updateLocked(
+                manifestPath,
+                base,
+                generatedFiles,
+                outputRoots.map { it.toPath().toAbsolutePath().normalize() },
+            )
         }
     }
 
-    private fun updateLocked(manifestPath: Path, base: Path, generatedFiles: Collection<File>, roots: List<Path>) {
-        FileChannel.open(
-            base.resolve("${manifestPath.fileName}.lock"),
-            StandardOpenOption.CREATE,
-            StandardOpenOption.WRITE,
-        ).use { lockChannel ->
-            lockChannel.lock().use {
-                val entries = read(manifestPath)
-                val current = generatedFiles.map { base.relativize(it.toPath().toAbsolutePath().normalize()).toString() }.toSet()
-                val previous = entries.filter { it.owner == owner }.map(Entry::path).toSet()
-                val claimedByOthers = entries.filter { it.owner != owner }.map(Entry::path).toSet()
+    private fun updateLocked(
+        manifestPath: Path,
+        base: Path,
+        generatedFiles: Collection<File>,
+        roots: List<Path>,
+    ) {
+        FileChannel
+            .open(
+                base.resolve("${manifestPath.fileName}.lock"),
+                StandardOpenOption.CREATE,
+                StandardOpenOption.WRITE,
+            ).use { lockChannel ->
+                lockChannel.lock().use {
+                    val entries = read(manifestPath)
+                    val current =
+                        generatedFiles
+                            .map {
+                                base
+                                    .relativize(
+                                        it.toPath().toAbsolutePath().normalize(),
+                                    ).toString()
+                            }.toSet()
+                    val previous = entries.filter { it.owner == owner }.map(Entry::path).toSet()
+                    val claimedByOthers = entries.filter { it.owner != owner }.map(Entry::path).toSet()
 
-                (previous - current - claimedByOthers).forEach { stale -> delete(base, stale, roots) }
+                    (previous - current - claimedByOthers).forEach { stale -> delete(base, stale, roots) }
 
-                val updated = entries.filter { it.owner != owner } + current.map { Entry(owner, it) }
-                write(manifestPath, updated)
+                    val updated = entries.filter { it.owner != owner } + current.map { Entry(owner, it) }
+                    write(manifestPath, updated)
+                }
             }
-        }
     }
 
     private fun read(manifestPath: Path): List<Entry> {
         if (!Files.isRegularFile(manifestPath)) return emptyList()
-        return Files.readAllLines(manifestPath)
+        return Files
+            .readAllLines(manifestPath)
             .filter { line -> line.isNotBlank() && !line.startsWith("#") }
             .mapNotNull { line ->
                 val separator = line.indexOf('\t')
@@ -79,11 +101,17 @@ data class GeneratedOutputManifest(
             }
     }
 
-    private fun write(manifestPath: Path, entries: List<Entry>) {
+    private fun write(
+        manifestPath: Path,
+        entries: List<Entry>,
+    ) {
         val content =
             buildString {
                 appendLine(HEADER)
-                entries.sortedWith(compareBy(Entry::owner, Entry::path)).forEach { appendLine("${it.owner}\t${it.path}") }
+                entries
+                    .sortedWith(
+                        compareBy(Entry::owner, Entry::path),
+                    ).forEach { appendLine("${it.owner}\t${it.path}") }
             }
         val temporary = Files.createTempFile(manifestPath.parent, ".asyncapi-generator-", ".tmp")
         try {
@@ -95,13 +123,19 @@ data class GeneratedOutputManifest(
     }
 
     /** Deletes one stale generated file, then the directories it leaves empty. */
-    private fun delete(base: Path, stale: String, roots: List<Path>) {
+    private fun delete(
+        base: Path,
+        stale: String,
+        roots: List<Path>,
+    ) {
         val target = base.resolve(stale).normalize()
         if (!Files.isRegularFile(target)) return
         try {
             Files.delete(target)
             var directory = target.parent
-            while (directory != null && directory != base && isBelowRoot(directory, roots) && isEmptyDirectory(directory)) {
+            while (directory != null && directory != base && isBelowRoot(directory, roots) &&
+                isEmptyDirectory(directory)
+            ) {
                 Files.delete(directory)
                 directory = directory.parent
             }
@@ -111,16 +145,22 @@ data class GeneratedOutputManifest(
     }
 
     /** True when [directory] lies strictly inside one of the output [roots]. */
-    private fun isBelowRoot(directory: Path, roots: List<Path>): Boolean =
-        roots.any { root -> directory != root && directory.startsWith(root) }
+    private fun isBelowRoot(
+        directory: Path,
+        roots: List<Path>,
+    ): Boolean = roots.any { root -> directory != root && directory.startsWith(root) }
 
     private fun isEmptyDirectory(directory: Path): Boolean =
         Files.isDirectory(directory) && Files.list(directory).use { it.findAny().isEmpty }
 
-    private data class Entry(val owner: String, val path: String)
+    private data class Entry(
+        val owner: String,
+        val path: String,
+    )
 
     private companion object {
         val monitors = ConcurrentHashMap<Path, Any>()
-        const val HEADER = "# Files generated by asyncapi-generator, by execution. Used to remove stale generated files."
+        const val HEADER =
+            "# Files generated by asyncapi-generator, by execution. Used to remove stale generated files."
     }
 }

@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SERVER_VARIABLE as SERVER_VARIABLE_OBJECT
 
 /**
@@ -14,7 +14,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
 internal class ServerVariableParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun parseMap(parserNode: ParserNode): Map<String, ServerVariableInterface> =
         parserNode.expectObject().members().associate { node ->
             node.name to parseElement(node)

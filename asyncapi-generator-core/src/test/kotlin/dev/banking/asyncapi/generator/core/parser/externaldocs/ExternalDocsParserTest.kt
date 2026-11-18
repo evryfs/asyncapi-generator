@@ -15,7 +15,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class ExternalDocsParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ExternalDocsParser(context)
 
@@ -23,9 +22,13 @@ class ExternalDocsParserTest {
     fun `parses inline and referenced external documentation`() {
         val file = TestResources.file("parser/externaldocs/asyncapi_parser_externaldocs_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val externalDocsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("externalDocs")
+        val externalDocsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("externalDocs")
 
         val result = parser.parseMap(externalDocsNode)
 
@@ -43,14 +46,20 @@ class ExternalDocsParserTest {
     fun `parse external docs reports missing url`() {
         val file = TestResources.file("parser/externaldocs/asyncapi_parser_externaldocs_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val externalDocsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("externalDocs")
-            .expectObject().required("MissingUrl")
+        val externalDocsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("externalDocs")
+                .expectObject()
+                .required("MissingUrl")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(externalDocsNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(externalDocsNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -63,5 +72,4 @@ class ExternalDocsParserTest {
         assertEquals("root.components.externalDocs.MissingUrl", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_externaldocs_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

@@ -15,7 +15,6 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
 class ReferenceParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ReferenceParser(context)
 
@@ -23,10 +22,15 @@ class ReferenceParserTest {
     fun `parses one generic reference`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val referenceNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
-            .expectObject().required("receiveLightMeasurement")
-            .expectObject().required("channel")
+        val referenceNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
+                .expectObject()
+                .required("receiveLightMeasurement")
+                .expectObject()
+                .required("channel")
 
         val reference = parser.parseElement(referenceNode, REFERENCE)
 
@@ -38,10 +42,15 @@ class ReferenceParserTest {
     fun `parses a list of generic references`() {
         val file = TestResources.file("parser/operations/asyncapi_parser_operations_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val referencesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("operations")
-            .expectObject().required("receiveLightMeasurement")
-            .expectObject().required("messages")
+        val referencesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("operations")
+                .expectObject()
+                .required("receiveLightMeasurement")
+                .expectObject()
+                .required("messages")
 
         val references = parser.parseList(referencesNode, REFERENCE)
 
@@ -53,14 +62,20 @@ class ReferenceParserTest {
     fun `rejects a generic category when loading an external fragment`() {
         val file = TestResources.file("parser/references/external/category-main.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val referenceNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("ExternalSchema")
+        val referenceNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("ExternalSchema")
 
-        val error = assertFailsWith<IllegalArgumentException> {
-            parser.parseElement(referenceNode, REFERENCE)
-        }
+        val error =
+            assertFailsWith<IllegalArgumentException> {
+                parser.parseElement(referenceNode, REFERENCE)
+            }
 
         assertContains(error.message.orEmpty(), "Generic reference category 'REFERENCE' is not supported")
         assertContains(error.message.orEmpty(), "Assign a concrete ReferenceCategoryKey")
@@ -70,14 +85,20 @@ class ReferenceParserTest {
     fun `parse reference list reports missing ref at element path`() {
         val file = TestResources.file("parser/references/asyncapi_parser_reference_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val referencesNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("references")
-            .expectObject().required("ReferenceList")
+        val referencesNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("references")
+                .expectObject()
+                .required("ReferenceList")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseList(referencesNode, REFERENCE)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseList(referencesNode, REFERENCE)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
@@ -90,5 +111,4 @@ class ReferenceParserTest {
         assertEquals("root.components.references.ReferenceList[0]", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_reference_invalid.yaml", diagnostic.sourceLocation.file.name)
     }
-
 }

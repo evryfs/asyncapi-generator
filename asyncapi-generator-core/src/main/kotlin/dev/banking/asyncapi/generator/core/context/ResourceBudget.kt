@@ -12,50 +12,54 @@ import java.io.IOException
 internal class ResourceBudget(
     private val limits: ParserLoadResourceLimits,
 ) {
-
     private val budget = ParserLoadResourceBudget(limits)
 
     fun registerDocument(
         file: File,
         content: String,
         location: SourceLocation,
-    ): ResourceBudgetResult<Unit> = enforceLimits(location) {
-        budget.registerDocument(
-            file = file,
-            sourceBytes = content.toByteArray(Charsets.UTF_8).size.toLong(),
-        )
-    }
+    ): ResourceBudgetResult<Unit> =
+        enforceLimits(location) {
+            budget.registerDocument(
+                file = file,
+                sourceBytes = content.toByteArray(Charsets.UTF_8).size.toLong(),
+            )
+        }
 
     fun registerExternalDocument(
         file: File,
         location: SourceLocation,
-    ): ResourceBudgetResult<Unit> = enforceLimits(location) {
-        budget.registerExternalDocument(file)
-    }
+    ): ResourceBudgetResult<Unit> =
+        enforceLimits(location) {
+            budget.registerExternalDocument(file)
+        }
 
     fun registerReferenceTarget(
         file: File,
         pointer: String,
         location: SourceLocation,
-    ): ResourceBudgetResult<Unit> = enforceLimits(location) {
-        budget.registerReferenceTarget(file, pointer)
-    }
+    ): ResourceBudgetResult<Unit> =
+        enforceLimits(location) {
+            budget.registerReferenceTarget(file, pointer)
+        }
 
     fun <T> withinExternalReference(
         location: SourceLocation,
         block: () -> T,
-    ): ResourceBudgetResult<T> = enforceLimits(location) {
-        budget.withinExternalReference(block)
-    }
+    ): ResourceBudgetResult<T> =
+        enforceLimits(location) {
+            budget.withinExternalReference(block)
+        }
 
     @Throws(IOException::class)
     fun readNativeSchemaAsset(
         file: File,
         location: SourceLocation,
         path: String,
-    ): ResourceBudgetResult<String> = enforceLimits(location, path) {
-        budget.readNativeSchemaAsset(file)
-    }
+    ): ResourceBudgetResult<String> =
+        enforceLimits(location, path) {
+            budget.readNativeSchemaAsset(file)
+        }
 
     fun sourceFiles(): Set<File> = budget.sourceFiles()
 

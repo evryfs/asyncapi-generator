@@ -15,7 +15,11 @@ internal class CorrelationIdBundler {
         correlationIds?.mapValues { (_, correlationId) ->
             bundle(correlationId, context)
         }
-    fun bundle(correlationId: CorrelationIdInterface, context: BundlingContext): CorrelationIdInterface =
+
+    fun bundle(
+        correlationId: CorrelationIdInterface,
+        context: BundlingContext,
+    ): CorrelationIdInterface =
         when (correlationId) {
             is CorrelationIdInterface.CorrelationIdReference -> {
                 correlationId.copy(reference = ReferenceBundler.inlineIfUnvisited(correlationId.reference, context))

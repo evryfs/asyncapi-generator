@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.parser.operations
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddress
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddressInterface
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPERATION_REPLY_ADDRESS as REPLY_ADDRESS_OBJECT
 
 /**
@@ -14,7 +14,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.OPE
 internal class OperationReplyAddressParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun parseMap(parserNode: ParserNode): Map<String, OperationReplyAddressInterface> =
         parserNode.expectObject().members().associate { node ->
             node.name to parseElement(node)
@@ -26,8 +25,8 @@ internal class OperationReplyAddressParser(
             return OperationReplyAddressInterface.OperationReplyAddressReference(
                 Reference(
                     ref = reference,
-                    referenceCategoryKey = OPERATION_REPLY_ADDRESS
-                ).also { asyncApiContext.register(it, parserNode) }
+                    referenceCategoryKey = OPERATION_REPLY_ADDRESS,
+                ).also { asyncApiContext.register(it, parserNode) },
             )
         }
         objectNode.expectOnlyMembers(REPLY_ADDRESS_OBJECT)
@@ -36,7 +35,7 @@ internal class OperationReplyAddressParser(
                 location = objectNode.required("location").expect<String>(),
                 description = objectNode.optional("description")?.expect<String>(),
                 extensions = objectNode.extensions(),
-            ).also { asyncApiContext.register(it, parserNode) }
+            ).also { asyncApiContext.register(it, parserNode) },
         )
     }
 }

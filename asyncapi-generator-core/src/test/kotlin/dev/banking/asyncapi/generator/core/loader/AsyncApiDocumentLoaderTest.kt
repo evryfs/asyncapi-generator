@@ -23,7 +23,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class AsyncApiDocumentLoaderTest {
-
     @TempDir
     lateinit var tempDir: Path
 
@@ -73,9 +72,10 @@ class AsyncApiDocumentLoaderTest {
 
     @Test
     fun `returns every canonical document and native schema source once`() {
-        val result = loader.load(
-            TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml"),
-        )
+        val result =
+            loader.load(
+                TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml"),
+            )
 
         assertEquals(
             setOf(
@@ -85,7 +85,13 @@ class AsyncApiDocumentLoaderTest {
             ),
             result.sourceFiles.mapTo(mutableSetOf()) { it.name },
         )
-        assertEquals(result.sourceFiles.size, result.sourceFiles.map { it.canonicalPath }.distinct().size)
+        assertEquals(
+            result.sourceFiles.size,
+            result.sourceFiles
+                .map { it.canonicalPath }
+                .distinct()
+                .size,
+        )
         assertTrue(result.sourceFiles.all { it == it.canonicalFile })
         assertFailsWith<UnsupportedOperationException> {
             (result.sourceFiles as MutableSet<File>).add(tempDir.resolve("unexpected.yaml").toFile())
@@ -142,9 +148,10 @@ class AsyncApiDocumentLoaderTest {
                 """.trimIndent(),
             )
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            loader.load(file)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                loader.load(file)
+            }
 
         assertEquals("invalid_type.root.asyncapi", exception.diagnostic.path)
         assertEquals("invalid-type.yaml", exception.diagnostic.sourceLocation.file.name)
@@ -164,9 +171,10 @@ class AsyncApiDocumentLoaderTest {
                 """.trimIndent(),
             )
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            loader.load(file)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                loader.load(file)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnsupportedSpecificationVersion>(exception.diagnostic)
 
         assertTrue(diagnostic.knownVersionLine)
@@ -186,9 +194,10 @@ class AsyncApiDocumentLoaderTest {
                 """.trimIndent(),
             )
 
-        val exception = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            loader.load(file)
-        }
+        val exception =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                loader.load(file)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(exception.diagnostic)
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
@@ -204,16 +213,21 @@ class AsyncApiDocumentLoaderTest {
 
     @Test
     fun `throws source aware semantic validation failures`() {
-        val exception = assertFailsWith<AsyncApiValidateException.ValidateError> {
-            loader.load(
-                TestResources.file("validator/asyncapi/asyncapi_validator_document_invalid.yaml"),
-            )
-        }
+        val exception =
+            assertFailsWith<AsyncApiValidateException.ValidateError> {
+                loader.load(
+                    TestResources.file("validator/asyncapi/asyncapi_validator_document_invalid.yaml"),
+                )
+            }
 
         assertEquals(2, exception.errors.size)
         assertEquals(
             "asyncapi_validator_document_invalid.yaml",
-            exception.errors.first().sourceLocation?.file?.name,
+            exception.errors
+                .first()
+                .sourceLocation
+                ?.file
+                ?.name,
         )
         assertTrue(exception.message.orEmpty().contains("Validation failed with 2 error(s)"))
     }
@@ -235,7 +249,14 @@ class AsyncApiDocumentLoaderTest {
         val result = loader.load(file)
 
         assertEquals(1, result.warnings.size)
-        assertEquals("warning.yaml", result.warnings.single().sourceLocation?.file?.name)
+        assertEquals(
+            "warning.yaml",
+            result.warnings
+                .single()
+                .sourceLocation
+                ?.file
+                ?.name,
+        )
         assertEquals("warning.root.id", result.warnings.single().path)
         assertTrue(result.formatWarnings().contains("warning.yaml (warning.root.id)"))
         assertTrue(result.formatWarnings().contains("https://example.com/events"))
@@ -276,11 +297,12 @@ class AsyncApiDocumentLoaderTest {
         val executor = Executors.newFixedThreadPool(4)
 
         try {
-            val futures = (0 until 20).map { index ->
-                executor.submit<AsyncApiDocumentLoadResult> {
-                    loader.load(if (index % 2 == 0) yamlFile else jsonFile)
+            val futures =
+                (0 until 20).map { index ->
+                    executor.submit<AsyncApiDocumentLoadResult> {
+                        loader.load(if (index % 2 == 0) yamlFile else jsonFile)
+                    }
                 }
-            }
             val results = futures.map { future -> future.get(30, TimeUnit.SECONDS) }
 
             assertTrue(results.all { it.document == results.first().document })

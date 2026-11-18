@@ -5,7 +5,6 @@ import java.math.BigInteger
 
 /** Exact JSON-compatible value operations shared by Schema Object rules. */
 internal object SchemaValueSemantics {
-
     fun decimal(value: Number): BigDecimal? =
         when (value) {
             is BigDecimal -> value
@@ -23,7 +22,10 @@ internal object SchemaValueSemantics {
             }
         }
 
-    fun isCompatible(value: Any?, type: Any?): Boolean {
+    fun isCompatible(
+        value: Any?,
+        type: Any?,
+    ): Boolean {
         if (type == null) return true
         if (type is List<*>) {
             val declaredTypes = type.filterIsInstance<String>()
@@ -41,7 +43,10 @@ internal object SchemaValueSemantics {
         }
     }
 
-    fun equal(left: Any?, right: Any?): Boolean =
+    fun equal(
+        left: Any?,
+        right: Any?,
+    ): Boolean =
         when {
             left is Number && right is Number -> {
                 val leftDecimal = decimal(left)

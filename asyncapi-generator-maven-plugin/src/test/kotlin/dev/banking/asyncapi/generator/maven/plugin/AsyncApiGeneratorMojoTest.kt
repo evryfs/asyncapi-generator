@@ -29,16 +29,16 @@ import org.junit.jupiter.api.assertThrows
 import java.io.File
 
 class AsyncApiGeneratorMojoTest {
-
     @Test
     fun `should generate kotlin models when model package is configured`() {
-        AsyncApiGeneratorMojo().apply {
-            project(MavenProject())
-            inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
-            outputDirectory(outputPath("target/generated-sources/asyncapi"))
-            modelPackage("com.example.model")
-            generatorName("kotlin")
-        }.execute()
+        AsyncApiGeneratorMojo()
+            .apply {
+                project(MavenProject())
+                inputSpec(inputPath("asyncapi_valid_content_kotlin.yaml"))
+                outputDirectory(outputPath("target/generated-sources/asyncapi"))
+                modelPackage("com.example.model")
+                generatorName("kotlin")
+            }.execute()
 
         val output = File("target/generated-sources/asyncapi/com/example/model")
         assertTrue(output.exists(), "Output directory should exist")

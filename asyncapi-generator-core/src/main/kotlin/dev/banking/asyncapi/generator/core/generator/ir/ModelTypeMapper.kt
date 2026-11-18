@@ -32,7 +32,8 @@ internal class ModelTypeMapper(
         }
         if (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty()) {
             return named(
-                schema.title?.takeIf { it.isNotBlank() }
+                schema.title
+                    ?.takeIf { it.isNotBlank() }
                     ?.let(MapperUtil::toPascalCase)
                     ?: MapperUtil.toPascalCase(propertyName),
             )
@@ -53,7 +54,10 @@ internal class ModelTypeMapper(
      * The type a reference stands for. A named scalar or array schema generates no type of its own,
      * so a reference to it becomes that scalar or list; anything else is the generated model.
      */
-    fun resolveReference(propertyName: String, reference: Reference): TypeRef {
+    fun resolveReference(
+        propertyName: String,
+        reference: Reference,
+    ): TypeRef {
         val raw = reference.ref.substringAfterLast("/")
         val target = context.findSchemaByName(raw) ?: reference.model as? Schema
         if (target == null || !target.isAlias() || !resolvingAliases.add(raw)) return mapReference(reference)
@@ -81,7 +85,8 @@ internal class ModelTypeMapper(
         }
     }
 
-    private fun Schema.isAlias(): Boolean = isScalarAlias() || (type.getPrimaryType() == "array" && enum.isNullOrEmpty())
+    private fun Schema.isAlias(): Boolean =
+        isScalarAlias() || (type.getPrimaryType() == "array" && enum.isNullOrEmpty())
 
     /** The generated model a reference points to; marked when it is an open object. */
     fun mapReference(reference: Reference): TypeRef.Named {
@@ -98,7 +103,8 @@ internal class ModelTypeMapper(
     private fun isModel(name: String): Boolean {
         if (name in builtInTypeNames) return false
         val schema = context.findSchemaByName(name) ?: return name.firstOrNull()?.isUpperCase() == true
-        return schema.type.getPrimaryType() == "object" || !schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty()
+        return schema.type.getPrimaryType() == "object" || !schema.oneOf.isNullOrEmpty() ||
+            !schema.anyOf.isNullOrEmpty()
     }
 
     private fun mapString(schema: Schema): TypeRef =
@@ -156,7 +162,11 @@ internal class ModelTypeMapper(
                 null -> TypeRef.Scalar.ANY
                 is SchemaInterface.BooleanSchema -> if (additionalProperties.value) TypeRef.Scalar.ANY else return null
                 is SchemaInterface.SchemaInline -> map(propertyName + "Value", additionalProperties.schema)
-                is SchemaInterface.SchemaReference -> resolveReference(propertyName + "Value", additionalProperties.reference)
+                is SchemaInterface.SchemaReference ->
+                    resolveReference(
+                        propertyName + "Value",
+                        additionalProperties.reference,
+                    )
                 else -> TypeRef.Scalar.ANY
             }
         return TypeRef.MapOf(value)

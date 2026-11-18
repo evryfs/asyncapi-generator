@@ -12,8 +12,8 @@ import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -21,7 +21,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ChannelAnalyzerTest {
-
     private val analyzer = ChannelAnalyzer()
 
     @Test
@@ -57,31 +56,37 @@ class ChannelAnalyzerTest {
 
     @Test
     fun `should analyze channel contracts independently of operations`() {
-        val channelObj = Channel(
-            messages = mapOf(
-                "msg" to MessageInterface.MessageInline(
-                    Message(
-                        name = "MyMessage",
-                        payload = SchemaInterface.SchemaInline(
-                            Schema(title = "MyPayload", type = "object")
-                        )
-                    )
-                )
+        val channelObj =
+            Channel(
+                messages =
+                    mapOf(
+                        "msg" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "MyMessage",
+                                    payload =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(title = "MyPayload", type = "object"),
+                                        ),
+                                ),
+                            ),
+                    ),
             )
-        )
         val channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channelObj))
 
-        val op = Operation(
-            action = "send",
-            channel = Reference(ref = "#/channels/myChannel", model = channelObj)
-        )
+        val op =
+            Operation(
+                action = "send",
+                channel = Reference(ref = "#/channels/myChannel", model = channelObj),
+            )
 
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = channels,
-            operations = mapOf("myOp" to OperationInterface.OperationInline(op))
-        )
+        val doc =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = channels,
+                operations = mapOf("myOp" to OperationInterface.OperationInline(op)),
+            )
 
         val withoutOperations = analyzer.analyze(doc.copy(operations = null))
         val withSendOperation = analyzer.analyze(doc)
@@ -91,35 +96,54 @@ class ChannelAnalyzerTest {
 
     @Test
     fun `should analyze generated header type for messages with headers`() {
-        val channel = Channel(
-            messages = mapOf(
-                "UserSignup" to MessageInterface.MessageInline(
-                    Message(
-                        name = "UserSignup",
-                        headers =
-                            SchemaInterface.SchemaInline(
-                                Schema(
-                                    type = "object",
-                                    properties =
-                                        mapOf(
-                                            "correlationId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "UserSignup" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "UserSignup",
+                                    headers =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(
+                                                type = "object",
+                                                properties =
+                                                    mapOf(
+                                                        "correlationId" to
+                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                    ),
+                                            ),
+                                        ),
+                                    payload =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(title = "MyPayload", type = "object"),
                                         ),
                                 ),
                             ),
-                        payload = SchemaInterface.SchemaInline(Schema(title = "MyPayload", type = "object")),
                     ),
-                ),
-            ),
-        )
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("userEvents" to ChannelInterface.ChannelInline(channel)),
-        )
+            )
+        val doc =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("userEvents" to ChannelInterface.ChannelInline(channel)),
+            )
 
-        val analyzed = analyzer.analyze(doc).single().messages.single()
+        val analyzed =
+            analyzer
+                .analyze(doc)
+                .single()
+                .messages
+                .single()
 
-        assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
+        assertEquals(
+            listOf("correlationId"),
+            analyzed.headers
+                ?.properties
+                ?.keys
+                ?.toList(),
+        )
     }
 
     @Test
@@ -165,7 +189,12 @@ class ChannelAnalyzerTest {
                 channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
             )
 
-        val analyzed = analyzer.analyze(document).single().messages.single()
+        val analyzed =
+            analyzer
+                .analyze(document)
+                .single()
+                .messages
+                .single()
 
         assertEquals("accountUpdateAlias", analyzed.messageId)
         assertEquals("AccountUpdatedV1", analyzed.messageName)
@@ -175,24 +204,33 @@ class ChannelAnalyzerTest {
     @Test
     fun `should preserve Kafka key schema from message binding`() {
         val keySchema = Schema(type = "integer", format = "int64")
-        val channel = Channel(
-            messages = mapOf(
-                "AccountUpdated" to MessageInterface.MessageInline(
-                    Message(
-                        name = "AccountUpdated",
-                        payload = SchemaInterface.SchemaInline(Schema(type = "object")),
-                        bindings = kafkaKeyBinding(keySchema),
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "AccountUpdated" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "AccountUpdated",
+                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    bindings = kafkaKeyBinding(keySchema),
+                                ),
+                            ),
                     ),
-                ),
-            ),
-        )
-        val document = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
-        )
+            )
+        val document =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("accountEvents" to ChannelInterface.ChannelInline(channel)),
+            )
 
-        val analyzed = analyzer.analyze(document).single().messages.single()
+        val analyzed =
+            analyzer
+                .analyze(document)
+                .single()
+                .messages
+                .single()
 
         assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
     }
@@ -233,36 +271,51 @@ class ChannelAnalyzerTest {
                 channels = mapOf("cacheEvents" to ChannelInterface.ChannelInline(channel)),
             )
 
-        val analyzed = analyzer.analyze(document).single().messages.single()
+        val analyzed =
+            analyzer
+                .analyze(document)
+                .single()
+                .messages
+                .single()
 
         assertEquals("CacheInvalidatedV1", analyzed.messageName)
         assertEquals(false, analyzed.hasPayload)
         assertEquals(null, analyzed.payloadTypeName)
         assertEquals(null, analyzed.schema)
         assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
-        assertEquals(listOf("correlationId"), analyzed.headers?.properties?.keys?.toList())
+        assertEquals(
+            listOf("correlationId"),
+            analyzed.headers
+                ?.properties
+                ?.keys
+                ?.toList(),
+        )
     }
 
     @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
         val keySchema = Schema(type = "integer", format = "int64")
-        val channel = Channel(
-            messages = mapOf(
-                "msg" to MessageInterface.MessageInline(
-                    Message(
-                        name = "MyMessage",
-                        payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
-                        bindings = kafkaKeyBinding(keySchema),
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "msg" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "MyMessage",
+                                    payload = SchemaInterface.MultiFormatSchemaInline(avroSchema),
+                                    bindings = kafkaKeyBinding(keySchema),
+                                ),
+                            ),
                     ),
-                ),
-            ),
-        )
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
-        )
+            )
+        val doc =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
+            )
 
         val analyzed = analyzer.analyze(doc).single()
 
@@ -278,26 +331,31 @@ class ChannelAnalyzerTest {
     @Test
     fun `should preserve referenced multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
-        val channel = Channel(
-            messages = mapOf(
-                "msg" to MessageInterface.MessageInline(
-                    Message(
-                        name = "MyMessage",
-                        payload = SchemaInterface.SchemaReference(
-                            Reference(
-                                ref = "#/components/schemas/UserCreated",
-                                model = avroSchema,
+        val channel =
+            Channel(
+                messages =
+                    mapOf(
+                        "msg" to
+                            MessageInterface.MessageInline(
+                                Message(
+                                    name = "MyMessage",
+                                    payload =
+                                        SchemaInterface.SchemaReference(
+                                            Reference(
+                                                ref = "#/components/schemas/UserCreated",
+                                                model = avroSchema,
+                                            ),
+                                        ),
+                                ),
                             ),
-                        ),
                     ),
-                ),
-            ),
-        )
-        val doc = AsyncApiDocument(
-            asyncapi = "3.0.0",
-            info = Info("Title", "1.0"),
-            channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
-        )
+            )
+        val doc =
+            AsyncApiDocument(
+                asyncapi = "3.0.0",
+                info = Info("Title", "1.0"),
+                channels = mapOf("myChannel" to ChannelInterface.ChannelInline(channel)),
+            )
 
         val analyzed = analyzer.analyze(doc).single()
 

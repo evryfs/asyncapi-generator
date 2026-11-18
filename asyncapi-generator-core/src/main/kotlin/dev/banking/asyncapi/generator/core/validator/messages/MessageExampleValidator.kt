@@ -54,8 +54,9 @@ internal class MessageExampleValidator(
         index: Int,
         results: ValidationCollector,
     ) {
-        val fieldLocation = asyncApiContext.modelTracking.getSourceLocation(example, field)
-            ?: asyncApiContext.modelTracking.getSourceLocation(example)
+        val fieldLocation =
+            asyncApiContext.modelTracking.getSourceLocation(example, field)
+                ?: asyncApiContext.modelTracking.getSourceLocation(example)
         val basePath = fieldLocation?.path ?: field
         val evaluation = schemaInstanceValidator.validate(schema, value, basePath)
         evaluation.violations.distinct().forEach { violation ->
@@ -75,8 +76,10 @@ internal class MessageExampleValidator(
         }
     }
 
-    private fun sourceLocation(path: String, fallbackPath: String) =
-        asyncApiContext.sourceRepository.getLocation(path)
-            ?: asyncApiContext.sourceRepository.findNearestLocation(path)
-            ?: asyncApiContext.sourceRepository.findNearestLocation(fallbackPath)
+    private fun sourceLocation(
+        path: String,
+        fallbackPath: String,
+    ) = asyncApiContext.sourceRepository.getLocation(path)
+        ?: asyncApiContext.sourceRepository.findNearestLocation(path)
+        ?: asyncApiContext.sourceRepository.findNearestLocation(fallbackPath)
 }

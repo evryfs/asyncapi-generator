@@ -12,22 +12,23 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class MessagesBundlerTest {
-
     private val bundler = MessagesBundler()
 
     @Test
     fun `bundle bundles and inlines an unvisited message reference`() {
         val payloadReference = Reference("#/components/schemas/User", model = Schema(type = "object"))
-        val message = Message(
-            name = "userUpdated",
-            payload = SchemaInterface.SchemaReference(payloadReference),
-        )
+        val message =
+            Message(
+                name = "userUpdated",
+                payload = SchemaInterface.SchemaReference(payloadReference),
+            )
         val messageReference = Reference("#/components/messages/userUpdated", model = message)
         val messageInterface = MessageInterface.MessageReference(messageReference)
 
-        val bundled = assertIs<MessageInterface.MessageReference>(
-            bundler.bundle(messageInterface, BundlingContext.empty()),
-        )
+        val bundled =
+            assertIs<MessageInterface.MessageReference>(
+                bundler.bundle(messageInterface, BundlingContext.empty()),
+            )
 
         assertTrue(bundled.reference.inline)
         val bundledMessage = assertIs<Message>(bundled.reference.model)

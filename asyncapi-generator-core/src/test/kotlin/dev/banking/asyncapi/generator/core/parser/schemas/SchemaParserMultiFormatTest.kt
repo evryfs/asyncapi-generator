@@ -25,7 +25,6 @@ class SchemaParserMultiFormatTest {
     @TempDir
     lateinit var tempDir: Path
 
-
     private val context = AsyncApiContext()
     private val parser = SchemaParser(context)
 
@@ -33,10 +32,15 @@ class SchemaParserMultiFormatTest {
     fun `parse supported AsyncAPI schema format`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("AsyncApiYamlSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("AsyncApiYamlSchemaFormat")
 
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
@@ -48,14 +52,20 @@ class SchemaParserMultiFormatTest {
     fun `parse JSON Schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("JsonSchemaDraftSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("JsonSchemaDraftSchemaFormat")
 
-        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
-            parser.parseElement(schemaNode),
-        ).multiFormatSchema
+        val schema =
+            assertIs<SchemaInterface.MultiFormatSchemaInline>(
+                parser.parseElement(schemaNode),
+            ).multiFormatSchema
         val rawSchema = assertIs<Map<*, *>>(schema.schema)
 
         assertEquals("application/schema+json;version=draft-07", schema.schemaFormat)
@@ -67,14 +77,20 @@ class SchemaParserMultiFormatTest {
     fun `parse native Avro schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("NativeAvroSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("NativeAvroSchemaFormat")
 
-        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
-            parser.parseElement(schemaNode),
-        ).multiFormatSchema
+        val schema =
+            assertIs<SchemaInterface.MultiFormatSchemaInline>(
+                parser.parseElement(schemaNode),
+            ).multiFormatSchema
         val rawSchema = assertIs<Map<*, *>>(schema.schema)
 
         assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.schemaFormat)
@@ -88,14 +104,20 @@ class SchemaParserMultiFormatTest {
     fun `parse native Protobuf schema format as multi-format schema`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("NativeProtobufSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("NativeProtobufSchemaFormat")
 
-        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
-            parser.parseElement(schemaNode),
-        ).multiFormatSchema
+        val schema =
+            assertIs<SchemaInterface.MultiFormatSchemaInline>(
+                parser.parseElement(schemaNode),
+            ).multiFormatSchema
         val rawSchema = assertIs<String>(schema.schema)
 
         assertEquals("application/vnd.google.protobuf;version=3", schema.schemaFormat)
@@ -108,14 +130,20 @@ class SchemaParserMultiFormatTest {
     fun `parse external native Avro schema asset as schema text`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("ExternalNativeAvroSchema")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("ExternalNativeAvroSchema")
 
-        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
-            parser.parseElement(schemaNode),
-        ).multiFormatSchema
+        val schema =
+            assertIs<SchemaInterface.MultiFormatSchemaInline>(
+                parser.parseElement(schemaNode),
+            ).multiFormatSchema
         val schemaText = assertIs<String>(schema.schema)
 
         assertEquals("application/vnd.apache.avro+json;version=1.9.0", schema.schemaFormat)
@@ -128,14 +156,20 @@ class SchemaParserMultiFormatTest {
     fun `parse external native Protobuf schema asset as schema text`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_external_native_schema_assets.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("ExternalNativeProtobufSchema")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("ExternalNativeProtobufSchema")
 
-        val schema = assertIs<SchemaInterface.MultiFormatSchemaInline>(
-            parser.parseElement(schemaNode),
-        ).multiFormatSchema
+        val schema =
+            assertIs<SchemaInterface.MultiFormatSchemaInline>(
+                parser.parseElement(schemaNode),
+            ).multiFormatSchema
         val schemaText = assertIs<String>(schema.schema)
 
         assertEquals("application/vnd.google.protobuf;version=3", schema.schemaFormat)
@@ -148,14 +182,20 @@ class SchemaParserMultiFormatTest {
     fun `parse external native schema asset reports unreadable file`() {
         val file = TestResources.file("parser/schemas/native-assets/asyncapi_missing_native_schema_asset.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("MissingNativeAvroSchema")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("MissingNativeAvroSchema")
 
-        val error = assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+                parser.parseElement(schemaNode)
+            }
 
         assertEquals("missing-user-created.avsc", error.reference)
         assertEquals(
@@ -187,19 +227,26 @@ class SchemaParserMultiFormatTest {
                     ${'$'}ref: ./schema.proto
             """.trimIndent(),
         )
-        val limitedContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxNativeSchemaAssetBytes = 4,
-            ),
-        )
-        val schemaNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), limitedContext)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("External")
+        val limitedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxNativeSchemaAssetBytes = 4,
+                ),
+            )
+        val schemaNode =
+            ParserNodeFactory
+                .root(DocumentReaderRegistry.read(file), limitedContext)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("External")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            SchemaParser(limitedContext).parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                SchemaParser(limitedContext).parseElement(schemaNode)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserDiagnosticCategory.LOAD_RESOURCE_LIMIT_EXCEEDED, diagnostic.category)
@@ -226,14 +273,20 @@ class SchemaParserMultiFormatTest {
             """.trimIndent(),
         )
         val localContext = AsyncApiContext()
-        val schemaNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), localContext)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("External")
+        val schemaNode =
+            ParserNodeFactory
+                .root(DocumentReaderRegistry.read(file), localContext)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("External")
 
-        val error = assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
-            SchemaParser(localContext).parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.NativeSchemaAssetReadFailure> {
+                SchemaParser(localContext).parseElement(schemaNode)
+            }
 
         assertContains(error.message.orEmpty(), "invalid.proto")
         assertContains(error.message.orEmpty(), "External.schema.\$ref")
@@ -260,31 +313,42 @@ class SchemaParserMultiFormatTest {
         )
         val sourceBytes = file.readBytes().size.toLong()
         val assetBytes = asset.readBytes().size.toLong()
-        val exactContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxAggregateSourceBytes = sourceBytes + assetBytes,
-            ),
-        )
-        val schemasNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), exactContext)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val exactContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxAggregateSourceBytes = sourceBytes + assetBytes,
+                ),
+            )
+        val schemasNode =
+            ParserNodeFactory
+                .root(DocumentReaderRegistry.read(file), exactContext)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
 
         val schemas = SchemaParser(exactContext).parseMap(schemasNode)
 
         assertEquals(2, schemas.size)
 
-        val limitedContext = AsyncApiContext(
-            ParserLoadResourceLimits(
-                maxAggregateSourceBytes = sourceBytes + assetBytes - 1,
-            ),
-        )
-        val limitedSchemasNode = ParserNodeFactory.root(DocumentReaderRegistry.read(file), limitedContext)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
+        val limitedContext =
+            AsyncApiContext(
+                ParserLoadResourceLimits(
+                    maxAggregateSourceBytes = sourceBytes + assetBytes - 1,
+                ),
+            )
+        val limitedSchemasNode =
+            ParserNodeFactory
+                .root(DocumentReaderRegistry.read(file), limitedContext)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            SchemaParser(limitedContext).parseMap(limitedSchemasNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                SchemaParser(limitedContext).parseMap(limitedSchemasNode)
+            }
 
         val diagnostic = assertIs<ParserDiagnostic.LoadResourceLimitExceeded>(error.diagnostic)
         assertEquals(ParserLoadResourceLimit.AGGREGATE_SOURCE_BYTES, diagnostic.limit)
@@ -296,14 +360,20 @@ class SchemaParserMultiFormatTest {
     fun `parse unknown schema format reports the format and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("UnknownSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("UnknownSchemaFormat")
 
-        val error = assertFailsWith<AsyncApiParseException.UnexpectedSchemaFormat> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.UnexpectedSchemaFormat> {
+                parser.parseElement(schemaNode)
+            }
 
         assertEquals("application/unknown", error.format)
         assertEquals(
@@ -323,14 +393,20 @@ class SchemaParserMultiFormatTest {
     fun `parse non-string schema format reports its expected type and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("NonStringSchemaFormat")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("NonStringSchemaFormat")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemaNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedValueType>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.UNEXPECTED_VALUE_TYPE, diagnostic.category)
@@ -349,20 +425,29 @@ class SchemaParserMultiFormatTest {
     fun `parse multi-format schema missing schema content reports the required member and source`() {
         val file = TestResources.file("parser/schemas/asyncapi_parser_schema_format_invalid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val schemaNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("schemas")
-            .expectObject().required("MissingSchema")
+        val schemaNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("schemas")
+                .expectObject()
+                .required("MissingSchema")
 
-        val error = assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-            parser.parseElement(schemaNode)
-        }
+        val error =
+            assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
+                parser.parseElement(schemaNode)
+            }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
         assertEquals(ParserDiagnosticCategory.MISSING_REQUIRED_MEMBER, diagnostic.category)
         assertEquals("schema", diagnostic.memberName)
         assertEquals("present member", diagnostic.expectedType)
-        assertEquals("asyncapi_parser_schema_format_invalid.root.components.schemas.MissingSchema.schema", diagnostic.path)
+        assertEquals(
+            "asyncapi_parser_schema_format_invalid.root.components.schemas.MissingSchema.schema",
+            diagnostic.path,
+        )
         assertEquals("root.components.schemas.MissingSchema", diagnostic.sourceLocation.path)
         assertEquals("asyncapi_parser_schema_format_invalid.yaml", diagnostic.sourceLocation.file.name)
     }

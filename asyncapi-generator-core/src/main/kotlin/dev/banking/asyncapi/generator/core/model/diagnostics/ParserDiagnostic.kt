@@ -18,7 +18,9 @@ enum class ParserDiagnosticCategory(
 }
 
 /** Load-scoped resource controlled by the parser loading boundary. */
-enum class ParserLoadResourceLimit(val displayName: String) {
+enum class ParserLoadResourceLimit(
+    val displayName: String,
+) {
     SOURCE_DOCUMENTS("source documents"),
     REFERENCE_TARGETS("resolved reference targets"),
     EXTERNAL_REFERENCE_DEPTH("external reference depth"),

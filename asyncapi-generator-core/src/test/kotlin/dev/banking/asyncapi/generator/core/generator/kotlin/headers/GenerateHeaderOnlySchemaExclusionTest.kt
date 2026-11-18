@@ -7,7 +7,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateHeaderOnlySchemaExclusionTest : AbstractKotlinGeneratorClass() {
-
     @Test
     fun `should not generate model class for schema used only in message headers`() {
         val modelPackage = "dev.banking.asyncapi.generator.core.model.generated.headerexclusion"
@@ -19,6 +18,9 @@ class GenerateHeaderOnlySchemaExclusionTest : AbstractKotlinGeneratorClass() {
         val outputDir = File("target/generated-sources/asyncapi")
         val modelDir = outputDir.resolve(modelPackage.replace('.', '/'))
         assertTrue(modelDir.resolve("GenericMessagePayload.kt").exists(), "Payload model should be generated")
-        assertFalse(modelDir.resolve("CommonHeaders.kt").exists(), "Header-only schema should not be generated as model")
+        assertFalse(
+            modelDir.resolve("CommonHeaders.kt").exists(),
+            "Header-only schema should not be generated as model",
+        )
     }
 }

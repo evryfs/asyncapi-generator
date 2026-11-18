@@ -12,20 +12,21 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ServerBundlerTest {
-
     private val bundler = ServerBundler()
 
     @Test
     fun `bundleServers bundles and inlines an unvisited server reference`() {
-        val bindingReference = Reference(
-            "#/components/serverBindings/kafka",
-            model = Binding(content = emptyMap()),
-        )
-        val server = Server(
-            host = "kafka.example.com",
-            protocol = "kafka",
-            bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
-        )
+        val bindingReference =
+            Reference(
+                "#/components/serverBindings/kafka",
+                model = Binding(content = emptyMap()),
+            )
+        val server =
+            Server(
+                host = "kafka.example.com",
+                protocol = "kafka",
+                bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
+            )
         val serverReference = Reference("#/components/servers/production", model = server)
         val serverInterface = ServerInterface.ServerReference(serverReference)
 

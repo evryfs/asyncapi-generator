@@ -11,7 +11,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class ComponentParserTest {
-
     private val context = AsyncApiContext()
     private val parser = ComponentParser(context)
 
@@ -19,8 +18,11 @@ class ComponentParserTest {
     fun `parses every supported component category`() {
         val file = TestResources.file("parser/components/asyncapi_parser_components_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val componentsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
+        val componentsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
 
         val component = assertIs<ComponentInterface.ComponentInline>(parser.parseElement(componentsNode)).component
 

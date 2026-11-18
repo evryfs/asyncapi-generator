@@ -1,9 +1,6 @@
 package dev.banking.asyncapi.generator.core.parser.node
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
-import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.document.DocumentArray
 import dev.banking.asyncapi.generator.core.document.DocumentBoolean
 import dev.banking.asyncapi.generator.core.document.DocumentNode
@@ -12,6 +9,9 @@ import dev.banking.asyncapi.generator.core.document.DocumentNumber
 import dev.banking.asyncapi.generator.core.document.DocumentObject
 import dev.banking.asyncapi.generator.core.document.DocumentString
 import dev.banking.asyncapi.generator.core.document.toValue
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
+import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.reflect.typeOf
@@ -20,7 +20,6 @@ import kotlin.reflect.typeOf
  * Extracts typed values from [DocumentNode] trees, producing clear diagnostics on type mismatches.
  */
 internal object ParserValueExpectation {
-
     /** Extracts a value of the expected type from the node, or throws a diagnostic. */
     internal fun expect(
         node: DocumentNode,
@@ -49,8 +48,9 @@ internal object ParserValueExpectation {
         address: NodeAddress,
         context: AsyncApiContext,
     ): List<Any?> {
-        val array = node as? DocumentArray
-            ?: unexpectedType(node, expectedType, address, context)
+        val array =
+            node as? DocumentArray
+                ?: unexpectedType(node, expectedType, address, context)
         val elementType = expectedType.arguments.singleOrNull()?.type ?: typeOf<Any?>()
         return array.elements.mapIndexed { index, element ->
             expect(element, elementType, address.index(index), context)
@@ -63,18 +63,20 @@ internal object ParserValueExpectation {
         address: NodeAddress,
         context: AsyncApiContext,
     ): Map<Any?, Any?> {
-        val objectNode = node as? DocumentObject
-            ?: unexpectedType(node, expectedType, address, context)
+        val objectNode =
+            node as? DocumentObject
+                ?: unexpectedType(node, expectedType, address, context)
         val keyType = expectedType.arguments.getOrNull(0)?.type ?: typeOf<Any?>()
         val valueType = expectedType.arguments.getOrNull(1)?.type ?: typeOf<Any?>()
         return buildMap {
             objectNode.members.forEach { (name, member) ->
-                val parsedKey = expect(
-                    node = DocumentString(name, member.keyLocation),
-                    expectedType = keyType,
-                    address = address.member(name),
-                    context = context,
-                )
+                val parsedKey =
+                    expect(
+                        node = DocumentString(name, member.keyLocation),
+                        expectedType = keyType,
+                        address = address.member(name),
+                        context = context,
+                    )
                 put(
                     parsedKey,
                     expect(member.value, valueType, address.member(name), context),
@@ -89,10 +91,12 @@ internal object ParserValueExpectation {
         address: NodeAddress,
         context: AsyncApiContext,
     ): Any {
-        val value = node.toValue()
-            ?: unexpectedType(node, expectedType, address, context)
-        val expectedClass = expectedType.classifier as? KClass<*>
-            ?: unexpectedType(node, expectedType, address, context)
+        val value =
+            node.toValue()
+                ?: unexpectedType(node, expectedType, address, context)
+        val expectedClass =
+            expectedType.classifier as? KClass<*>
+                ?: unexpectedType(node, expectedType, address, context)
         return value.takeIf(expectedClass::isInstance)
             ?: unexpectedType(node, expectedType, address, context)
     }
@@ -105,13 +109,14 @@ internal object ParserValueExpectation {
         context: AsyncApiContext,
     ): Nothing =
         throw AsyncApiParseException.ParserDiagnosticFailure(
-            diagnostic = ParserDiagnostic.UnexpectedValueType(
-                expectedType = renderType(expectedType),
-                actualType = actualType(node),
-                actualValue = node.toValue(),
-                path = address.displayPath,
-                sourceLocation = node.location.copy(path = address.documentPath),
-            ),
+            diagnostic =
+                ParserDiagnostic.UnexpectedValueType(
+                    expectedType = renderType(expectedType),
+                    actualType = actualType(node),
+                    actualValue = node.toValue(),
+                    path = address.displayPath,
+                    sourceLocation = node.location.copy(path = address.documentPath),
+                ),
             context = context,
         )
 
@@ -126,7 +131,8 @@ internal object ParserValueExpectation {
         }
 
     private fun renderType(type: KType): String =
-        type.toString()
+        type
+            .toString()
             .replace("kotlin.collections.", "")
             .replace("kotlin.", "")
 }

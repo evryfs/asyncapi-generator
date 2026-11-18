@@ -9,7 +9,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GenerateJavaPrimitivePayloadTest {
-
     @Test
     fun `should generate producer contract for single string payload`() {
         val packageName = "com.example.primitive"
@@ -23,8 +22,8 @@ class GenerateJavaPrimitivePayloadTest {
                         AnalyzedMessage(
                             messageName = "SimpleStringMessage",
                             payloadTypeName = "SimpleStringMessagePayload",
-                            schema = stringSchema
-                        )
+                            schema = stringSchema,
+                        ),
                     ),
             )
         val generator =
@@ -34,9 +33,10 @@ class GenerateJavaPrimitivePayloadTest {
             )
         val result = generator.emit(listOf(channel))
         val consumerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.java"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/consumer/SimpleTopicConsumer.java"
+                }.content
         assertTrue(
             consumerContent.contains("void listenSimpleStringMessage("),
             "Consumer should expose the contract method",
@@ -51,13 +51,14 @@ class GenerateJavaPrimitivePayloadTest {
         )
         assertFalse(
             consumerContent.contains("ConsumerRecord"),
-            "Consumer contract should not own listener record mapping"
+            "Consumer contract should not own listener record mapping",
         )
 
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/producer/SimpleTopicProducer.java"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/producer/SimpleTopicProducer.java"
+                }.content
         assertTrue(
             producerContent.contains("interface SimpleTopicProducer {"),
             "Producer should be generated as a contract interface",
@@ -107,9 +108,10 @@ class GenerateJavaPrimitivePayloadTest {
             )
         val result = generator.emit(listOf(channel))
         val producerContent =
-            result.artifacts.single {
-                it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.java"
-            }.content
+            result.artifacts
+                .single {
+                    it.relativePath == "com/example/primitive/multi/producer/MultiTopicProducer.java"
+                }.content
         assertTrue(
             producerContent.contains("interface MultiTopicProducer {"),
             "Channel producer should be generated as a contract interface",

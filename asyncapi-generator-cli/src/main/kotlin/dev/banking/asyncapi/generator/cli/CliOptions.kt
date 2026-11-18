@@ -18,9 +18,6 @@ import java.io.File
 
 /**
  * Selects the AsyncAPI contract and generator profile for one CLI invocation.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorCliTest`
  */
 internal class CliGenerationOptions : OptionGroup(name = "Generation") {
     val inputSpec by option(
@@ -45,8 +42,9 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
 
     val protocExecutable by option(
         "--protoc",
-        help = "Local protoc executable for native Protobuf models. By default protoc is taken from the " +
-            "local Maven repository or downloaded from Maven Central.",
+        help =
+            "Local protoc executable for native Protobuf models. By default protoc is taken from the " +
+                "local Maven repository or downloaded from Maven Central.",
     ).file(mustExist = true, canBeDir = false)
 
     val suppressedWarnings by option(
@@ -57,9 +55,6 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
 
 /**
  * Selects generated outputs and their packages.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorCliTest`
  */
 internal class CliOutputOptions : OptionGroup(name = "Outputs") {
     val outputDirectory by option(
@@ -92,9 +87,6 @@ internal class CliOutputOptions : OptionGroup(name = "Outputs") {
 
 /**
  * Configures generated payload models.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorCliTest`
  */
 internal class CliModelOptions : OptionGroup(name = "Models") {
     val modelAnnotation by option(
@@ -124,9 +116,6 @@ internal class CliModelOptions : OptionGroup(name = "Models") {
 
 /**
  * Configures generated client contracts.
- *
- * Expected behavior is covered by:
- * - `AsyncApiGeneratorCliTest`
  */
 internal class CliClientOptions : OptionGroup(name = "Clients") {
     private val clientType by option(

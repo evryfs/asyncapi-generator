@@ -13,10 +13,13 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class OperationReplyAddressValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationReplyAddressInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: OperationReplyAddressInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is OperationReplyAddressInterface.OperationReplyAddressInline ->
                 validate(node.operationReplyAddress, contextString, results)
@@ -26,12 +29,20 @@ internal class OperationReplyAddressValidator(
         }
     }
 
-    fun validate(node: OperationReplyAddress, contextString: String, results: ValidationCollector) {
+    fun validate(
+        node: OperationReplyAddress,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         if (!results.visit(node)) return
         validateLocation(node, contextString, results)
     }
 
-    private fun validateLocation(node: OperationReplyAddress, contextString: String, results: ValidationCollector) {
+    private fun validateLocation(
+        node: OperationReplyAddress,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val location = node.location
         if (location.isEmpty()) {
             results.error(

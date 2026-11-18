@@ -18,11 +18,14 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 internal class OperationReplyValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-
     private val operationReplyAddressValidator = OperationReplyAddressValidator(asyncApiContext)
     private val referenceResolver = ReferenceResolver(asyncApiContext)
 
-    fun validateInterface(node: OperationReplyInterface, contextString: String, results: ValidationCollector) {
+    fun validateInterface(
+        node: OperationReplyInterface,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         when (node) {
             is OperationReplyInterface.OperationReplyInline ->
                 validate(node.operationReply, contextString, results)
@@ -44,7 +47,11 @@ internal class OperationReplyValidator(
         validateMessages(node, channel, contextString, results)
     }
 
-    private fun validateAddress(node: OperationReply, contextString: String, results: ValidationCollector) {
+    private fun validateAddress(
+        node: OperationReply,
+        contextString: String,
+        results: ValidationCollector,
+    ) {
         val address = node.address ?: return
         val contextString = "$contextString Operation Reply Address"
         when (address) {
@@ -109,12 +116,19 @@ internal class OperationReplyValidator(
             if (
                 target != null &&
                 channel != null &&
-                !OperationReferenceBoundary.containsMessage(channel, asyncApiContext.modelTracking.findReference(messageReference))
+                !OperationReferenceBoundary.containsMessage(
+                    channel,
+                    asyncApiContext.modelTracking.findReference(messageReference),
+                )
             ) {
                 results.error(
                     OPERATION_REPLY_MESSAGE_REFERENCE,
                     "$contextString must reference a message from the reply channel's 'messages' object.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(messageReference, messageReference::ref),
+                    sourceLocation =
+                        asyncApiContext.modelTracking.getSourceLocation(
+                            messageReference,
+                            messageReference::ref,
+                        ),
                 )
             }
         }

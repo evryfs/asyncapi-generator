@@ -16,7 +16,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 class BindingParserTest {
-
     private val context = AsyncApiContext()
     private val parser = BindingParser(context)
 
@@ -24,9 +23,13 @@ class BindingParserTest {
     fun `parse channel bindings with nested values and references`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val channelBindingsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("channelBindings")
+        val channelBindingsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("channelBindings")
 
         val bindings = parser.parseComponentMap(channelBindingsNode, CHANNEL)
 
@@ -36,19 +39,21 @@ class BindingParserTest {
         assertEquals("0.5.0", kafka.protocolBindings.single().bindingVersion)
         assertEquals(
             mapOf(
-                "kafka" to mapOf(
-                    "topic" to "my-specific-topic-name",
-                    "partitions" to 20,
-                    "replicas" to 3,
-                    "topicConfiguration" to mapOf(
-                        "cleanup.policy" to listOf("delete", "compact"),
-                        "retention.ms" to 604800000,
-                        "retention.bytes" to 1000000000,
-                        "delete.retention.ms" to 86400000,
-                        "max.message.bytes" to 1048588,
+                "kafka" to
+                    mapOf(
+                        "topic" to "my-specific-topic-name",
+                        "partitions" to 20,
+                        "replicas" to 3,
+                        "topicConfiguration" to
+                            mapOf(
+                                "cleanup.policy" to listOf("delete", "compact"),
+                                "retention.ms" to 604800000,
+                                "retention.bytes" to 1000000000,
+                                "delete.retention.ms" to 86400000,
+                                "max.message.bytes" to 1048588,
+                            ),
+                        "bindingVersion" to "0.5.0",
                     ),
-                    "bindingVersion" to "0.5.0",
-                ),
             ),
             kafka.content,
         )
@@ -56,12 +61,13 @@ class BindingParserTest {
         val plain = assertIs<BindingInterface.BindingInline>(bindings["plainChannel"]).binding
         assertEquals(
             mapOf(
-                "custom" to mapOf(
-                    "enabled" to true,
-                    "attempts" to 3,
-                    "values" to listOf("primary", 7, false, null),
-                    "metadata" to mapOf("nullable" to null),
-                ),
+                "custom" to
+                    mapOf(
+                        "enabled" to true,
+                        "attempts" to 3,
+                        "values" to listOf("primary", 7, false, null),
+                        "metadata" to mapOf("nullable" to null),
+                    ),
             ),
             plain.content,
         )
@@ -75,26 +81,36 @@ class BindingParserTest {
     fun `parse message bindings including Kafka key schema`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val messageBindingsNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageBindings")
+        val messageBindingsNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messageBindings")
 
         val bindings = parser.parseComponentMap(messageBindingsNode, MESSAGE)
 
         val amqp = assertIs<BindingInterface.BindingInline>(bindings["userSignedUpMessage"]).binding
         assertEquals(
             mapOf(
-                "amqp" to mapOf(
-                    "contentEncoding" to "gzip",
-                    "messageType" to "user.signup",
-                ),
+                "amqp" to
+                    mapOf(
+                        "contentEncoding" to "gzip",
+                        "messageType" to "user.signup",
+                    ),
             ),
             amqp.content,
         )
 
         val kafka = assertIs<BindingInterface.BindingInline>(bindings["accountUpdatedMessage"]).binding
         assertEquals(MESSAGE, kafka.protocolBindings.single().location)
-        assertEquals(setOf("key"), kafka.protocolBindings.single().schemaFields.keys)
+        assertEquals(
+            setOf("key"),
+            kafka.protocolBindings
+                .single()
+                .schemaFields.keys,
+        )
         val keySchema = assertIs<SchemaInterface.SchemaInline>(kafka.kafkaKeySchema).schema
         assertEquals("integer", keySchema.type)
         assertEquals("int64", keySchema.format)
@@ -105,12 +121,19 @@ class BindingParserTest {
     fun `parses a direct Kafka binding key schema`() {
         val file = TestResources.file("parser/messages/asyncapi_parser_message_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val kafkaBindingNode = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject().required("messageTraits")
-            .expectObject().required("commonHeaders")
-            .expectObject().required("bindings")
-            .expectObject().required("kafka")
+        val kafkaBindingNode =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
+                .required("messageTraits")
+                .expectObject()
+                .required("commonHeaders")
+                .expectObject()
+                .required("bindings")
+                .expectObject()
+                .required("kafka")
 
         val binding = assertIs<BindingInterface.BindingInline>(parser.parseProtocol(kafkaBindingNode, MESSAGE)).binding
 
@@ -121,9 +144,12 @@ class BindingParserTest {
     fun `parse server and operation bindings`() {
         val file = TestResources.file("parser/bindings/asyncapi_parser_bindings_valid.yaml")
         val document = DocumentReaderRegistry.read(file)
-        val components = ParserNodeFactory.root(document, context)
-            .expectObject().required("components")
-            .expectObject()
+        val components =
+            ParserNodeFactory
+                .root(document, context)
+                .expectObject()
+                .required("components")
+                .expectObject()
 
         val serverBindings = parser.parseComponentMap(components.required("serverBindings"), SERVER)
         val mqtt = assertIs<BindingInterface.BindingInline>(serverBindings["myServerBinding"]).binding
@@ -139,5 +165,4 @@ class BindingParserTest {
             http.content,
         )
     }
-
 }

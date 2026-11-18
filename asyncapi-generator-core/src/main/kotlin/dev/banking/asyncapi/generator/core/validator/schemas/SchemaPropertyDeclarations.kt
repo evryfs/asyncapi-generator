@@ -11,8 +11,7 @@ import java.util.IdentityHashMap
 internal class SchemaPropertyDeclarations(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    fun collect(schema: Schema): Set<String> =
-        buildSet { collectSchema(schema, this, newVisitedSet()) }
+    fun collect(schema: Schema): Set<String> = buildSet { collectSchema(schema, this, newVisitedSet()) }
 
     private fun collectSchema(
         schema: Schema,
@@ -51,6 +50,5 @@ internal class SchemaPropertyDeclarations(
         }
     }
 
-    private fun newVisitedSet(): MutableSet<Any> =
-        Collections.newSetFromMap(IdentityHashMap())
+    private fun newVisitedSet(): MutableSet<Any> = Collections.newSetFromMap(IdentityHashMap())
 }

@@ -3,8 +3,20 @@ package dev.banking.asyncapi.generator.core.generator.ir
 /** Names a model cannot have without shadowing a Kotlin or Java built-in type. */
 internal val builtInTypeNames =
     setOf(
-        "String", "Int", "Integer", "Long", "Boolean", "Double", "Float", "Any", "Object",
-        "UUID", "LocalDate", "LocalTime", "OffsetDateTime", "BigDecimal",
+        "String",
+        "Int",
+        "Integer",
+        "Long",
+        "Boolean",
+        "Double",
+        "Float",
+        "Any",
+        "Object",
+        "UUID",
+        "LocalDate",
+        "LocalTime",
+        "OffsetDateTime",
+        "BigDecimal",
     )
 
 /** The JVM class a scalar is imported from; null for implicitly imported types. */
@@ -38,9 +50,10 @@ internal fun TypeRef.imports(
         is TypeRef.MapOf ->
             listOfNotNull(mapImport) + value.imports(modelPackage, declaringType, listImport, mapImport)
         is TypeRef.Named ->
-            listOf("$modelPackage.$name").takeIf {
-                name != declaringType && name !in builtInTypeNames && '.' !in name && name.first().isUpperCase()
-            }.orEmpty()
+            listOf("$modelPackage.$name")
+                .takeIf {
+                    name != declaringType && name !in builtInTypeNames && '.' !in name && name.first().isUpperCase()
+                }.orEmpty()
     }
 
 /**

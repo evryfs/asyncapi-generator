@@ -1,15 +1,15 @@
 package dev.banking.asyncapi.generator.core.parser.servers
 
+import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
-import dev.banking.asyncapi.generator.core.parser.tags.TagParser
-import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
-import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
+import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.security.SecuritySchemeParser
+import dev.banking.asyncapi.generator.core.parser.tags.TagParser
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER as SERVER_BINDING
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SERVER as SERVER_OBJECT
 
@@ -19,7 +19,6 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.SER
 internal class ServerParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     private val tagParser = TagParser(asyncApiContext)
     private val bindingParser = BindingParser(asyncApiContext)
     private val externalDocsParser = ExternalDocsParser(asyncApiContext)

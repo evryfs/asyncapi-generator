@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class OperationTraitValidatorTest : AbstractValidatorTest() {
-
     @Test
     fun `accepts operation trait security alternatives and references`() {
         val results = validate("validator/operations/asyncapi_validator_operation_trait_security_valid.yaml")

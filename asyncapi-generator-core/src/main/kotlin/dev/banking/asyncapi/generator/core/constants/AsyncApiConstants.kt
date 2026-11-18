@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.constants
 
 object AsyncApiConstants {
-
     // Path constants
     const val ROOT = "root"
 

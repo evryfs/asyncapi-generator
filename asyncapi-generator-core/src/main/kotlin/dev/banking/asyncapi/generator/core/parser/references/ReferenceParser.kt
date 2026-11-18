@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.parser.references
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
+import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /**
  * Parses generic AsyncAPI reference objects from parser nodes.
@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 internal class ReferenceParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-
     fun parseList(
         parserNode: ParserNode,
         category: ReferenceCategoryKey,

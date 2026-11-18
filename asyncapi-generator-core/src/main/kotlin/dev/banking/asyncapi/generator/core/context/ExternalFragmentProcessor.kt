@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.context
 
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
+import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.UNKNOWN
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
@@ -12,14 +13,29 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.*
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_TRAIT
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.PARAMETER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.REFERENCE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER_VARIABLE
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.TAG
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.bindings.BindingParser
-import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.UNKNOWN
 import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.correlations.CorrelationIdParser
 import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParser
@@ -69,8 +85,9 @@ internal class ExternalFragmentProcessor(
         target: ExternalReferenceTargetResolver.Target,
         reference: Reference,
     ): () -> Unit {
-        val category = reference.referenceCategoryKey
-            ?: throw IllegalArgumentException("Missing referenceCategoryKey for ref '${reference.ref}'")
+        val category =
+            reference.referenceCategoryKey
+                ?: throw IllegalArgumentException("Missing referenceCategoryKey for ref '${reference.ref}'")
         val targetNode = target.node
         return when (category) {
             SCHEMA -> parseSchema(targetNode)
@@ -90,8 +107,9 @@ internal class ExternalFragmentProcessor(
             TAG -> parseTag(targetNode)
             BINDING -> parseBinding(targetNode, reference)
             REFERENCE -> throw IllegalArgumentException(
-                "Generic reference category 'REFERENCE' is not supported for external fragment parsing: '${reference.ref}'. " +
-                    "Assign a concrete ReferenceCategoryKey at parser creation site."
+                "Generic reference category 'REFERENCE' is not supported for external fragment parsing: " +
+                    "'${reference.ref}'. " +
+                    "Assign a concrete ReferenceCategoryKey at parser creation site.",
             )
         }
     }
@@ -280,13 +298,17 @@ internal class ExternalFragmentProcessor(
         }
     }
 
-    private fun parseBinding(targetNode: ParserNode, reference: Reference): () -> Unit {
+    private fun parseBinding(
+        targetNode: ParserNode,
+        reference: Reference,
+    ): () -> Unit {
         val origin = context.bindingRegistry.getOrigin(reference)
-        val parsed: BindingInterface = if (origin?.protocol != null) {
-            BindingParser(context).parseProtocol(targetNode, origin.location, origin.protocol)
-        } else {
-            BindingParser(context).parseComponent(targetNode, origin?.location ?: UNKNOWN)
-        }
+        val parsed: BindingInterface =
+            if (origin?.protocol != null) {
+                BindingParser(context).parseProtocol(targetNode, origin.location, origin.protocol)
+            } else {
+                BindingParser(context).parseComponent(targetNode, origin?.location ?: UNKNOWN)
+            }
         return deferredValidation { results ->
             val validationContext = "External Binding '${targetNode.name}'"
             when (parsed) {
@@ -299,12 +321,13 @@ internal class ExternalFragmentProcessor(
         }
     }
 
-    private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit = {
-        val results = ValidationCollector()
-        validate(results)
-        ReferenceTargetTraversal(context).drain(results)
-        val report = results.report()
-        ValidationReporter(context).throwErrors(report)
-        context.warningCollector.collect(report.warnings)
-    }
+    private fun deferredValidation(validate: (ValidationCollector) -> Unit): () -> Unit =
+        {
+            val results = ValidationCollector()
+            validate(results)
+            ReferenceTargetTraversal(context).drain(results)
+            val report = results.report()
+            ValidationReporter(context).throwErrors(report)
+            context.warningCollector.collect(report.warnings)
+        }
 }

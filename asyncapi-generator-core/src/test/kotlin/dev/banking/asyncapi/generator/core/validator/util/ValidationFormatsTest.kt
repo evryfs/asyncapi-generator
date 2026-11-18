@@ -5,7 +5,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ValidationFormatsTest {
-
     @Test
     fun `email validation accepts exact addr specs without normalizing invalid values`() {
         assertTrue(ValidationFormats.isEmailAddress("first.last+events@example.com"))

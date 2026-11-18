@@ -13,7 +13,8 @@ data class MultiFormatSchema(
     val schemaFormat: String,
     val schema: Any?,
     @get:JsonIgnore
-    val format: SchemaFormat = requireNotNull(SchemaFormat.fromValue(schemaFormat)) {
-        "Unknown schemaFormat '$schemaFormat'"
-    },
+    val format: SchemaFormat =
+        requireNotNull(SchemaFormat.fromValue(schemaFormat)) {
+            "Unknown schemaFormat '$schemaFormat'"
+        },
 )

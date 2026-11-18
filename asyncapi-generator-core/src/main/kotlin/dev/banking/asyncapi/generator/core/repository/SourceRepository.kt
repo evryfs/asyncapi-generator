@@ -57,12 +57,13 @@ internal class SourceRepository {
 
         val preferredId = canonicalFile.nameWithoutExtension.replace(Regex("[^A-Za-z0-9_]"), "_")
         val pathId = uniquePathId(preferredId, canonicalFile)
-        val src = Source(
-            file = canonicalFile,
-            id = preferredId,
-            pathId = pathId,
-            lines = content.lines(),
-        )
+        val src =
+            Source(
+                file = canonicalFile,
+                id = preferredId,
+                pathId = pathId,
+                lines = content.lines(),
+            )
         sources[canonicalFile.absolutePath] = src
         sourcesByPathId[pathId] = src
         current = src
@@ -100,8 +101,7 @@ internal class SourceRepository {
         addressesByDisplayPath[path]?.let(locationsByAddress::get)
             ?: standaloneLocationsByPath[path]
 
-    internal fun getLocation(address: NodeAddress): SourceLocation? =
-        locationsByAddress[address]
+    internal fun getLocation(address: NodeAddress): SourceLocation? = locationsByAddress[address]
 
     fun getCurrentFile(): File = current.file
 
@@ -120,8 +120,7 @@ internal class SourceRepository {
         return lineMap[path]
     }
 
-    fun findNearestLocation(path: String): SourceLocation? =
-        getLocation(path)
+    fun findNearestLocation(path: String): SourceLocation? = getLocation(path)
 
     internal fun findNearestLocation(address: NodeAddress): SourceLocation? =
         address.ancestors().mapNotNull(locationsByAddress::get).firstOrNull()
@@ -135,15 +134,17 @@ internal class SourceRepository {
 
         pointerSegments.forEach { pointerSegment ->
             val memberAddress = address.member(pointerSegment)
-            val indexAddress = pointerSegment
-                .takeIf(JSON_ARRAY_INDEX::matches)
-                ?.toIntOrNull()
-                ?.let(address::index)
-            address = when {
-                memberAddress in locationsByAddress -> memberAddress
-                indexAddress != null && indexAddress in locationsByAddress -> indexAddress
-                else -> return null
-            }
+            val indexAddress =
+                pointerSegment
+                    .takeIf(JSON_ARRAY_INDEX::matches)
+                    ?.toIntOrNull()
+                    ?.let(address::index)
+            address =
+                when {
+                    memberAddress in locationsByAddress -> memberAddress
+                    indexAddress != null && indexAddress in locationsByAddress -> indexAddress
+                    else -> return null
+                }
         }
         return address
     }
@@ -191,13 +192,19 @@ internal class SourceRepository {
             ?: sourcesByPathId[location.sourceId]
             ?: current
 
-    private fun uniquePathId(preferredId: String, file: File): String {
+    private fun uniquePathId(
+        preferredId: String,
+        file: File,
+    ): String {
         val existing = sourcesByPathId[preferredId]
         if (existing == null || existing.file == file) return preferredId
 
-        val suffix = UUID.nameUUIDFromBytes(
-            file.absolutePath.toByteArray(StandardCharsets.UTF_8),
-        ).toString().substringBefore('-')
+        val suffix =
+            UUID
+                .nameUUIDFromBytes(
+                    file.absolutePath.toByteArray(StandardCharsets.UTF_8),
+                ).toString()
+                .substringBefore('-')
         val base = "${preferredId}_$suffix"
         var candidate = base
         var discriminator = 2
