@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInter
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CORRELATION_ID
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_REQUIRED
-import dev.banking.asyncapi.generator.core.resolver.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 

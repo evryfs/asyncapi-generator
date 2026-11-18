@@ -1,9 +1,11 @@
 package dev.banking.asyncapi.generator.core.bundler.info
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.tags.Tag
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -16,8 +18,9 @@ class InfoBundlerTest {
 
     @Test
     fun `bundle marks unvisited info references as inline`() {
-        val tagReference = Reference("#/components/tags/public")
-        val externalDocReference = Reference("#/components/externalDocs/api")
+        val tagReference = Reference("#/components/tags/public", model = Tag(name = "public"))
+        val externalDocReference =
+            Reference("#/components/externalDocs/api", model = ExternalDoc(url = "https://example.com"))
         val info =
             Info(
                 title = "User API",

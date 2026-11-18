@@ -16,8 +16,8 @@ import java.io.File
  * Public entry point for loading a validated AsyncAPI document from a file.
  *
  * The loader reads and parses the root document, loads the documents and
- * fragments its references point at, and validates them all: each loaded
- * target first, then the root document. Bundling and generation
+ * fragments its references point at, links every reference to its target,
+ * and validates them all: each loaded target first, then the root document. Bundling and generation
  * are separate downstream stages.
  */
 class AsyncApiDocumentLoader {
@@ -37,6 +37,7 @@ class AsyncApiDocumentLoader {
         val root = ParserNodeFactory.root(inputDocument, context)
         val document = AsyncApiParser(context).parse(root)
         val loadedTargets = ExternalReferenceLoader(context).loadAll()
+        context.referenceLinker.linkAll(context.parsedReferences.since(0).map { it.reference })
         val warningCollector = ValidationWarningCollector()
         warningCollector.collect(LoadedTargetValidator(context).validate(loadedTargets))
         val validationResults = AsyncApiValidator(context).validate(document)

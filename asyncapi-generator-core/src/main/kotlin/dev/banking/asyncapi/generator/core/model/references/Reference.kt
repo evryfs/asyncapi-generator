@@ -50,6 +50,6 @@ data class Reference(
         while (current is Reference) {
             current = current.model
         }
-        return current as T
+        return checkNotNull(current) { "Reference '$ref' is not linked to a model" } as T
     }
 }
