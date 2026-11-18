@@ -7,6 +7,8 @@ import dev.banking.asyncapi.generator.core.parser.node.ParserNode
 
 /**
  * Parses generic AsyncAPI reference objects from parser nodes.
+ *
+ * @param asyncApiContext shared context for source tracking, model registration, and diagnostics
  */
 internal class ReferenceParser(
     private val asyncApiContext: AsyncApiContext,

@@ -17,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -38,7 +39,7 @@ class OperationParserTest {
                 .expectObject()
                 .required("operations")
 
-        val result = parser.parseMap(operationsNode)
+        val result = operationsNode.parseMap(parser::parseElement)
 
         val receive = assertIs<OperationInterface.OperationInline>(result["receiveLightMeasurement"]).operation
         assertEquals("Receive lighting measurement", receive.title)
@@ -111,7 +112,7 @@ class OperationParserTest {
                 .expectObject()
                 .required("operations")
 
-        val result = parser.parseMap(operationsNode)
+        val result = operationsNode.parseMap(parser::parseElement)
 
         val reference = assertIs<OperationInterface.OperationReference>(result["referencedOperation"]).reference
         assertEquals("#/operations/receiveLightMeasurement", reference.ref)
@@ -130,7 +131,7 @@ class OperationParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(operationsNode)
+                operationsNode.parseMap(parser::parseElement)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -156,7 +157,7 @@ class OperationParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(operationsNode)
+                operationsNode.parseMap(parser::parseElement)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 
@@ -186,7 +187,7 @@ class OperationParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(operationsNode)
+                operationsNode.parseMap(parser::parseElement)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 

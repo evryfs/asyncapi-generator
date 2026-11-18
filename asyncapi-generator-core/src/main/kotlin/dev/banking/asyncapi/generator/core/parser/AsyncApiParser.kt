@@ -6,6 +6,8 @@ import dev.banking.asyncapi.generator.core.parser.channels.ChannelParser
 import dev.banking.asyncapi.generator.core.parser.components.ComponentParser
 import dev.banking.asyncapi.generator.core.parser.info.InfoParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
+import dev.banking.asyncapi.generator.core.parser.node.parseObject
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.servers.ServerParser
 import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.ASYNC_API
@@ -24,26 +26,24 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiSpecificationL
 internal class AsyncApiParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    private val infoParser = InfoParser(asyncApiContext)
+    private val infoParser = InfoParser()
     private val serverParser = ServerParser(asyncApiContext)
     private val channelParser = ChannelParser(asyncApiContext)
     private val operationParser = OperationParser(asyncApiContext)
     private val componentParser = ComponentParser(asyncApiContext)
 
-    fun parse(parserNode: ParserNode): AsyncApiDocument {
-        val root = AsyncApiSpecificationLine.select(parserNode)
-        val rootObject = root.expectObject()
-        rootObject.expectOnlyMembers(ASYNC_API)
-        return AsyncApiDocument(
-            asyncapi = rootObject.required("asyncapi").expect<String>(),
-            id = rootObject.optional("id")?.expect<String>(),
-            info = rootObject.required("info").let(infoParser::parseMap),
-            servers = rootObject.optional("servers")?.let(serverParser::parseMap),
-            defaultContentType = rootObject.optional("defaultContentType")?.expect<String>(),
-            channels = rootObject.optional("channels")?.let(channelParser::parseMap),
-            operations = rootObject.optional("operations")?.let(operationParser::parseMap),
-            components = rootObject.optional("components")?.let(componentParser::parse),
-            extensions = rootObject.extensions(),
-        ).also { asyncApiContext.register(it, root) }
-    }
+    fun parse(parserNode: ParserNode): AsyncApiDocument =
+        AsyncApiSpecificationLine.select(parserNode).parseObject(ASYNC_API) { rootObject ->
+            AsyncApiDocument(
+                asyncapi = rootObject.required("asyncapi").expect<String>(),
+                id = rootObject.optional("id")?.expect<String>(),
+                info = rootObject.required("info").let(infoParser::parse),
+                servers = rootObject.optional("servers")?.parseMap(serverParser::parseElement),
+                defaultContentType = rootObject.optional("defaultContentType")?.expect<String>(),
+                channels = rootObject.optional("channels")?.parseMap(channelParser::parseElement),
+                operations = rootObject.optional("operations")?.parseMap(operationParser::parseElement),
+                components = rootObject.optional("components")?.let(componentParser::parse),
+                extensions = rootObject.extensions(),
+            )
+        }
 }

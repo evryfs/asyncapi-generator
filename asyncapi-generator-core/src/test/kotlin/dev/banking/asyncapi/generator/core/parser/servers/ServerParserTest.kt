@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -33,7 +34,7 @@ class ServerParserTest {
                 .expectObject()
                 .required("servers")
 
-        val result = parser.parseMap(serversNode)
+        val result = serversNode.parseMap(parser::parseElement)
 
         val scram = assertIs<ServerInterface.ServerInline>(result["scram-connections"]).server
         assertEquals("test.mykafkacluster.org:{port}/{environment}", scram.host)
@@ -79,7 +80,7 @@ class ServerParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(serversNode)
+                serversNode.parseMap(parser::parseElement)
             }
         val diagnostic = assertIs<ParserDiagnostic.MissingRequiredMember>(error.diagnostic)
 

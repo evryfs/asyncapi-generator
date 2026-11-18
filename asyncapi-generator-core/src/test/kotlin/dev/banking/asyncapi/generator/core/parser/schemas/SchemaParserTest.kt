@@ -13,6 +13,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -38,7 +39,7 @@ class SchemaParserTest {
                 .expectObject()
                 .required("schemas")
 
-        val schemas = parser.parseMap(schemasNode)
+        val schemas = schemasNode.parseMap(parser::parseElement)
 
         val lightMeasured = assertIs<SchemaInterface.SchemaInline>(schemas["lightMeasuredPayload"]).schema
         assertEquals("object", lightMeasured.type)
@@ -291,7 +292,7 @@ class SchemaParserTest {
                 .expectObject()
                 .required("schemas")
 
-        parser.parseMap(schemasNode)
+        schemasNode.parseMap(parser::parseElement)
         val main = assertIs<Schema>(context.modelAt("main.root.components.schemas.MainObject"))
         val level2 = assertIs<Schema>(context.modelAt("level2.root.components.schemas.Level2Object"))
 
@@ -323,7 +324,7 @@ class SchemaParserTest {
                 .expectObject()
                 .required("schemas")
 
-        val schemas = parser.parseMap(schemasNode)
+        val schemas = schemasNode.parseMap(parser::parseElement)
 
         val recursive = assertIs<SchemaInterface.SchemaInline>(schemas["RecursiveComposition"]).schema
         val recursiveOptions = assertNotNull(recursive.oneOf)

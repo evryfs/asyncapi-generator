@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -11,7 +12,7 @@ import kotlin.test.assertIs
 
 class ParameterParserTest {
     private val context = AsyncApiContext()
-    private val parser = ParameterParser(context)
+    private val parser = ParameterParser()
 
     @Test
     fun `parses every parameter field`() {
@@ -27,7 +28,7 @@ class ParameterParserTest {
                 .expectObject()
                 .required("parameters")
 
-        val parameters = parser.parseMap(parametersNode)
+        val parameters = parametersNode.parseMap(parser::parseElement)
 
         val city = assertIs<ParameterInterface.ParameterInline>(parameters["city"]).parameter
         assertEquals("The city where the streetlights are located.", city.description)

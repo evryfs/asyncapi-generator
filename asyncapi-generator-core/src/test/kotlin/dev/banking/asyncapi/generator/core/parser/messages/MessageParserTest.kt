@@ -17,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -41,7 +42,7 @@ class MessageParserTest {
                 .expectObject()
                 .required("messages")
 
-        val result = parser.parseMap(messagesNode)
+        val result = messagesNode.parseMap(parser::parseElement)
 
         val lightMeasured = assertIs<MessageInterface.MessageInline>(result["lightMeasured"]).message
         assertEquals("lightMeasured", lightMeasured.name)
@@ -138,7 +139,7 @@ class MessageParserTest {
                 .expectObject()
                 .required("messages")
 
-        val messages = parser.parseMap(messagesNode)
+        val messages = messagesNode.parseMap(parser::parseElement)
 
         val refPayload = assertIs<MessageInterface.MessageInline>(messages["RefPayload"]).message
         assertEquals("RefPayload", refPayload.name)
@@ -168,7 +169,7 @@ class MessageParserTest {
 
         val reference =
             assertIs<MessageInterface.MessageReference>(
-                parser.parseMap(messagesNode).getValue("referencedMessage"),
+                messagesNode.parseMap(parser::parseElement).getValue("referencedMessage"),
             ).reference
 
         assertEquals("#/components/messages/lightMeasured", reference.ref)
@@ -187,7 +188,7 @@ class MessageParserTest {
                 .expectObject()
                 .required("messages")
 
-        val messages = parser.parseMap(messagesNode)
+        val messages = messagesNode.parseMap(parser::parseElement)
 
         val emptyPayload = assertIs<MessageInterface.MessageInline>(messages["EmptyPayloadMessage"]).message
         assertEquals("empty", emptyPayload.name)
@@ -218,7 +219,7 @@ class MessageParserTest {
 
         val error =
             assertFailsWith<AsyncApiParseException.ParserDiagnosticFailure> {
-                parser.parseMap(messageCases.required("UnknownMember"))
+                messageCases.required("UnknownMember").parseMap(parser::parseElement)
             }
         val diagnostic = assertIs<ParserDiagnostic.UnexpectedObjectMember>(error.diagnostic)
 
@@ -233,7 +234,7 @@ class MessageParserTest {
 
         val message =
             assertIs<MessageInterface.MessageInline>(
-                parser.parseMap(messageCases.required("SpecificationExtension")).getValue("validMessage"),
+                messageCases.required("SpecificationExtension").parseMap(parser::parseElement).getValue("validMessage"),
             ).message
         assertEquals("valid", message.name)
     }

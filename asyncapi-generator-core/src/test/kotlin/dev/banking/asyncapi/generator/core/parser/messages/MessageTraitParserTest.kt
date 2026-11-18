@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -30,7 +31,7 @@ class MessageTraitParserTest {
                 .expectObject()
                 .required("messageTraits")
 
-        val traits = parser.parseMap(traitsNode)
+        val traits = traitsNode.parseMap(parser::parseElement)
 
         val trait = assertIs<MessageTraitInterface.MessageTraitInline>(traits["commonHeaders"]).messageTrait
         val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema

@@ -13,6 +13,8 @@ import dev.banking.asyncapi.generator.core.parser.externaldocs.ExternalDocsParse
 import dev.banking.asyncapi.generator.core.parser.messages.MessageParser
 import dev.banking.asyncapi.generator.core.parser.messages.MessageTraitParser
 import dev.banking.asyncapi.generator.core.parser.node.ParserNode
+import dev.banking.asyncapi.generator.core.parser.node.parseMap
+import dev.banking.asyncapi.generator.core.parser.node.parseObject
 import dev.banking.asyncapi.generator.core.parser.operations.OperationParser
 import dev.banking.asyncapi.generator.core.parser.operations.OperationReplyAddressParser
 import dev.banking.asyncapi.generator.core.parser.operations.OperationReplyParser
@@ -27,54 +29,71 @@ import dev.banking.asyncapi.generator.core.parser.version.AsyncApiObjectType.COM
 
 /**
  * Parses AsyncAPI component objects from parser nodes.
+ *
+ * @param asyncApiContext shared context for source tracking, model registration, and diagnostics
  */
 internal class ComponentParser(
     private val asyncApiContext: AsyncApiContext,
 ) {
-    private val tagParser = TagParser(asyncApiContext)
+    private val tagParser = TagParser()
     private val schemaParser = SchemaParser(asyncApiContext)
     private val serverParser = ServerParser(asyncApiContext)
     private val channelParser = ChannelParser(asyncApiContext)
     private val messageParser = MessageParser(asyncApiContext)
     private val bindingParser = BindingParser(asyncApiContext)
     private val operationParser = OperationParser(asyncApiContext)
-    private val parameterParser = ParameterParser(asyncApiContext)
-    private val externalDocsParser = ExternalDocsParser(asyncApiContext)
+    private val parameterParser = ParameterParser()
+    private val externalDocsParser = ExternalDocsParser()
     private val messageTraitParser = MessageTraitParser(asyncApiContext)
-    private val correlationIdParser = CorrelationIdParser(asyncApiContext)
-    private val securitySchemeParser = SecuritySchemeParser(asyncApiContext)
-    private val serverVariableParser = ServerVariableParser(asyncApiContext)
+    private val correlationIdParser = CorrelationIdParser()
+    private val securitySchemeParser = SecuritySchemeParser()
+    private val serverVariableParser = ServerVariableParser()
     private val operationReplyParser = OperationReplyParser(asyncApiContext)
     private val operationTraitParser = OperationTraitParser(asyncApiContext)
-    private val operationReplyAddressParser = OperationReplyAddressParser(asyncApiContext)
+    private val operationReplyAddressParser = OperationReplyAddressParser()
 
     fun parse(node: ParserNode): Component =
-        with(node.expectObject()) {
-            expectOnlyMembers(COMPONENTS)
+        node.parseObject(COMPONENTS) { objectNode ->
             Component(
-                schemas = optional("schemas")?.let(schemaParser::parseMap),
-                servers = optional("servers")?.let(serverParser::parseMap),
-                channels = optional("channels")?.let(channelParser::parseMap),
-                operations = optional("operations")?.let(operationParser::parseMap),
-                messages = optional("messages")?.let(messageParser::parseMap),
-                securitySchemes = optional("securitySchemes")?.let(securitySchemeParser::parseMap),
-                serverVariables = optional("serverVariables")?.let(serverVariableParser::parseMap),
-                parameters = optional("parameters")?.let(parameterParser::parseMap),
-                correlationIds = optional("correlationIds")?.let(correlationIdParser::parseMap),
-                replies = optional("replies")?.let(operationReplyParser::parseMap),
-                replyAddresses = optional("replyAddresses")?.let(operationReplyAddressParser::parseMap),
-                externalDocs = optional("externalDocs")?.let(externalDocsParser::parseMap),
-                tags = optional("tags")?.let(tagParser::parseMap),
-                operationTraits = optional("operationTraits")?.let(operationTraitParser::parseMap),
-                messageTraits = optional("messageTraits")?.let(messageTraitParser::parseMap),
-                serverBindings = optional("serverBindings")?.let { bindingParser.parseComponentMap(it, SERVER) },
-                channelBindings = optional("channelBindings")?.let { bindingParser.parseComponentMap(it, CHANNEL) },
+                schemas = objectNode.optional("schemas")?.parseMap(schemaParser::parseElement),
+                servers = objectNode.optional("servers")?.parseMap(serverParser::parseElement),
+                channels = objectNode.optional("channels")?.parseMap(channelParser::parseElement),
+                operations = objectNode.optional("operations")?.parseMap(operationParser::parseElement),
+                messages = objectNode.optional("messages")?.parseMap(messageParser::parseElement),
+                securitySchemes = objectNode.optional("securitySchemes")?.parseMap(securitySchemeParser::parseElement),
+                serverVariables = objectNode.optional("serverVariables")?.parseMap(serverVariableParser::parseElement),
+                parameters = objectNode.optional("parameters")?.parseMap(parameterParser::parseElement),
+                correlationIds = objectNode.optional("correlationIds")?.parseMap(correlationIdParser::parseElement),
+                replies = objectNode.optional("replies")?.parseMap(operationReplyParser::parseElement),
+                replyAddresses =
+                    objectNode
+                        .optional(
+                            "replyAddresses",
+                        )?.parseMap(operationReplyAddressParser::parseElement),
+                externalDocs = objectNode.optional("externalDocs")?.parseMap(externalDocsParser::parseElement),
+                tags = objectNode.optional("tags")?.parseMap(tagParser::parseElement),
+                operationTraits = objectNode.optional("operationTraits")?.parseMap(operationTraitParser::parseElement),
+                messageTraits = objectNode.optional("messageTraits")?.parseMap(messageTraitParser::parseElement),
+                serverBindings =
+                    objectNode
+                        .optional(
+                            "serverBindings",
+                        )?.let { bindingParser.parseComponentMap(it, SERVER) },
+                channelBindings =
+                    objectNode
+                        .optional(
+                            "channelBindings",
+                        )?.let { bindingParser.parseComponentMap(it, CHANNEL) },
                 operationBindings =
-                    optional("operationBindings")?.let {
+                    objectNode.optional("operationBindings")?.let {
                         bindingParser.parseComponentMap(it, OPERATION)
                     },
-                messageBindings = optional("messageBindings")?.let { bindingParser.parseComponentMap(it, MESSAGE) },
-                extensions = extensions(),
-            ).also { asyncApiContext.register(it, node) }
+                messageBindings =
+                    objectNode
+                        .optional(
+                            "messageBindings",
+                        )?.let { bindingParser.parseComponentMap(it, MESSAGE) },
+                extensions = objectNode.extensions(),
+            )
         }
 }

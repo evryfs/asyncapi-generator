@@ -75,9 +75,7 @@
     <ID>LongMethod:KotlinModelEmitter.kt$KotlinModelEmitter$private fun dataClass(model: ObjectModel): KotlinClassTemplate</ID>
     <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
     <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
-    <ID>LongMethod:MessageParser.kt$MessageParser$fun parseElement(parserNode: ParserNode): MessageInterface</ID>
     <ID>LongMethod:MessagePayloadResolver.kt$MessagePayloadResolver$fun resolvePayload( message: Message, messageId: String, ): ResolvedMessagePayload?</ID>
-    <ID>LongMethod:MessageTraitParser.kt$MessageTraitParser$fun parseElement(parserNode: ParserNode): MessageTraitInterface</ID>
     <ID>LongMethod:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun create( name: String, schema: Schema, ): ModelDefinition?</ID>
     <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
@@ -86,7 +84,6 @@
     <ID>LongMethod:NativeSchemaAssetReader.kt$NativeSchemaAssetReader$fun readIfExternalReference(schemaNode: ParserNode): String?</ID>
     <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowName: String, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
-    <ID>LongMethod:OperationParser.kt$OperationParser$fun parseElement(parserNode: ParserNode): OperationInterface</ID>
     <ID>LongMethod:ParserDiagnosticFormatter.kt$ParserDiagnosticFormatter$fun format( diagnostic: ParserDiagnostic, context: AsyncApiContext, ): String</ID>
     <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
     <ID>LongMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
@@ -106,9 +103,7 @@
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateStringLength( node: Schema, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateType( node: Schema, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:SecuritySchemeParser.kt$SecuritySchemeParser$fun parseElement(parserNode: ParserNode): SecuritySchemeInterface</ID>
     <ID>LongMethod:SecuritySchemeValidator.kt$SecuritySchemeValidator$private fun validateType( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:ServerParser.kt$ServerParser$fun parseElement(parserNode: ParserNode): ServerInterface</ID>
     <ID>LongMethod:ServerValidator.kt$ServerValidator$private fun validateHost( node: Server, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
