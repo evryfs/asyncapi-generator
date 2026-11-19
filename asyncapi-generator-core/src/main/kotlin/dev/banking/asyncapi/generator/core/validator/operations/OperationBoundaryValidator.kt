@@ -29,7 +29,7 @@ internal class OperationBoundaryValidator(
     ) {
         val rootChannels = document.channels.orEmpty()
         document.operations.orEmpty().forEach { (name, operationInterface) ->
-            val operation = resolve(operationInterface) ?: return@forEach
+            val operation = operationInterface.resolvedOrNull() ?: return@forEach
             val contextString = "Operation '$name'"
 
             operation.channel?.let { channelRef ->
@@ -42,7 +42,7 @@ internal class OperationBoundaryValidator(
                 }
             }
 
-            val reply = operation.reply?.let(::resolve) ?: return@forEach
+            val reply = operation.reply?.resolvedOrNull() ?: return@forEach
             reply.channel?.let { channelRef ->
                 if (!inRoot(rootChannels, channelRef)) {
                     results.error(
@@ -60,26 +60,8 @@ internal class OperationBoundaryValidator(
         rootChannels: Map<String, ChannelInterface>,
         channelRef: Reference,
     ): Boolean {
-        if (finalModel(channelRef) !is Channel) return true
+        if (channelRef.finalModel() !is Channel) return true
         val target = asyncApiContext.modelTracking.findReference(channelRef) ?: return true
         return OperationReferenceBoundary.containsChannel(rootChannels, target)
-    }
-
-    private fun resolve(node: OperationInterface): Operation? =
-        when (node) {
-            is OperationInterface.OperationInline -> node.operation
-            is OperationInterface.OperationReference -> finalModel(node.reference) as? Operation
-        }
-
-    private fun resolve(node: OperationReplyInterface): OperationReply? =
-        when (node) {
-            is OperationReplyInterface.OperationReplyInline -> node.operationReply
-            is OperationReplyInterface.OperationReplyReference -> finalModel(node.reference) as? OperationReply
-        }
-
-    private fun finalModel(reference: Reference): Any? {
-        var current: Any? = reference.model
-        while (current is Reference) current = current.model
-        return current
     }
 }

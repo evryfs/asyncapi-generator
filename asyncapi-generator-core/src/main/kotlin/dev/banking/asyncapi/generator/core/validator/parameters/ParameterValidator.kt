@@ -29,15 +29,10 @@ internal class ParameterValidator(
         name: String? = null,
     ) {
         if (name != null && !ValidationFormats.isReusableObjectName(name)) {
-            val model =
-                when (parameterInterface) {
-                    is ParameterInterface.ParameterInline -> parameterInterface.parameter
-                    is ParameterInterface.ParameterReference -> parameterInterface.reference
-                }
             results.error(
                 PARAMETER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
+                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(parameterInterface.held()),
             )
         }
         when (parameterInterface) {
