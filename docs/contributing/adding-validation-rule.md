@@ -37,27 +37,35 @@ REFERENCE_CYCLE("AAS3-REFERENCE-CYCLE", SPECIFICATION, ERROR, spec("referenceObj
 
 ## 2. Report the finding
 
-Report the finding from the validator that owns the object, under
+Report the finding from the rule set that owns the object (`ChannelRules`,
+`MessageRules`, …), under
 `asyncapi-generator-core/src/main/kotlin/dev/banking/asyncapi/generator/core/validator/`.
-Pass the source location of the offending field so users see the file, line,
-and snippet:
+Start the message with the object's `ValidationPath` and pass the source
+location of the offending field so users see the file, line, and snippet:
 
 ```kotlin
-results.error(
+walk.results.error(
     LICENSE_NAME_REQUIRED,
-    "$contextString 'name' field is required and cannot be empty.",
-    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name),
+    "$path 'name' is required and cannot be empty.",
+    asyncApiContext.modelTracking.getSourceLocation(node, node::name),
 )
 ```
 
-Use `results.warn(...)` for warning rules. Validators do not modify the
-model.
+Use `warn(...)` for warning rules. Prefer the shared helpers in
+`validator/util` (`requireNonBlank`, `requireAbsoluteUri`,
+`EnumConstrainedValueRules`) when a rule has their shape. A rule that relates
+objects across the whole document is a `DocumentRule`, and a rule for one
+protocol's bindings belongs to its `ProtocolBindingRules`. Rule sets never
+change the model, resolve references, or build other rule sets; children are
+checked through the `ValidationWalk`. See the
+[validator architecture](../explanation/validator.md).
 
 ## 3. Test it
 
 Add a fixture under
 `asyncapi-generator-core/src/test/resources/validator/<area>/` and a case to
-the validator test for that area, such as `InfoValidatorTest`. Assert the
+the validator test for that area, such as `InfoValidatorTest`, which validates
+the fixture through `AsyncApiValidator`. Assert the
 finding code, severity, path, and source line, not the message text. Keep one
 focused failing case and rely on the existing valid fixtures for the passing
 case.

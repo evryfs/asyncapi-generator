@@ -3,7 +3,14 @@ package dev.banking.asyncapi.generator.core.model.validator
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 /**
- * Structured validation diagnostic produced by the validator stage.
+ * One validation finding.
+ *
+ * @property code the code of the rule that produced it
+ * @property concern who owns the rule
+ * @property severity whether it fails the load
+ * @property message what is wrong, starting with the object it is about
+ * @property sourceLocation where in the source it is, when known
+ * @property documentation where the rule is documented
  */
 data class ValidationFinding(
     val code: String,

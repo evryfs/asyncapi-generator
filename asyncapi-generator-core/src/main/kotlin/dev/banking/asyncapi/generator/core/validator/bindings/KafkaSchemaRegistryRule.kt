@@ -146,16 +146,29 @@ internal class KafkaSchemaRegistryRule(
         }
     }
 
+    /**
+     * A server a channel is available on.
+     *
+     * @property name the server's name in the root `servers` object, or its reference
+     * @property server the server
+     */
     private data class ApplicableServer(
         val name: String,
         val server: Server,
     )
 
+    /**
+     * The servers of the root `servers` object.
+     *
+     * @property servers the servers
+     * @property names each server's name, by identity
+     */
     private class RootServers(
         val servers: List<ApplicableServer>,
         val names: IdentityHashMap<Server, String>,
     )
 
+    /** Whether a Kafka server declares a schema registry URL. */
     private enum class SchemaRegistryStatus {
         PRESENT,
         ABSENT,

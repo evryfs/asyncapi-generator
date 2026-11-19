@@ -4,7 +4,11 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import java.util.Collections.unmodifiableList
 
-/** Immutable result of validating one parsed AsyncAPI model graph. */
+/**
+ * The findings of validating one document, in document order.
+ *
+ * @param findings the findings
+ */
 class ValidationReport internal constructor(
     findings: List<ValidationFinding>,
 ) {

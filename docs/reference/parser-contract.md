@@ -360,7 +360,7 @@ shapes that ordinary AsyncAPI objects do not:
 - The current domain model represents `items` as one schema. Tuple validation
   expressed as an array of schemas is not represented in `Schema.items`; the
   parser retains the original field location in model tracking so
-  `SchemaValidator` can report the unsupported form with a source-aware
+  `SchemaRules` can report the unsupported form with a source-aware
   diagnostic.
 - Property dependencies are lists of strings; schema dependencies are parsed as
   schemas.
@@ -374,13 +374,13 @@ shapes that ordinary AsyncAPI objects do not:
 
 Schema Objects are not subject to ordinary AsyncAPI fixed-member rejection.
 Unknown and unsupported keywords remain registered with their original values
-and locations so `SchemaValidator` can issue dialect or capability findings.
+and locations so `SchemaRules` can issue dialect or capability findings.
 Referencing a fragment from an OpenAPI-like or otherwise heterogeneous file
 does not switch parser dialects: the selected fragment still follows AsyncAPI
 3.0 Schema Object and JSON Schema Draft 7 behavior, while unrelated surrounding
 content is ignored.
 
-The schema parser constructs model shape. `SchemaValidator` remains responsible
+The schema parser constructs model shape. `SchemaRules` remains responsible
 for semantic keyword policy and combinations.
 
 ## Extensions and free-form values

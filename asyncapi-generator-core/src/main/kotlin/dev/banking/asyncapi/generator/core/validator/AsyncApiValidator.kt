@@ -20,7 +20,10 @@ import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 
 /**
- * Validates a parsed [AsyncApiDocument] and returns validation results.
+ * Validates a linked [AsyncApiDocument]: the root object's own rules, then every object it reaches through a
+ * [ValidationWalk], then the [DocumentRule]s.
+ *
+ * @param asyncApiContext the load the document belongs to
  */
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
