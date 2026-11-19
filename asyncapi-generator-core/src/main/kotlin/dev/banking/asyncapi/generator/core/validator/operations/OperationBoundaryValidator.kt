@@ -12,13 +12,14 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_SCOPE
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
 /**
  * Checks that root operations, and their replies, point to channels of the root `channels` object,
  * whether the operation or reply is written inline or reached through a `$ref`.
  *
  * Runs after the document walk, so every reference has been resolved. Message subset rules apply to
- * every operation and reply, so they stay with [OperationValidator] and [OperationReplyValidator].
+ * every operation and reply, so they stay with [OperationRules] and [OperationReplyRules].
  */
 internal class OperationBoundaryValidator(
     private val asyncApiContext: AsyncApiContext,
@@ -30,13 +31,13 @@ internal class OperationBoundaryValidator(
         val rootChannels = document.channels.orEmpty()
         document.operations.orEmpty().forEach { (name, operationInterface) ->
             val operation = operationInterface.resolvedOrNull() ?: return@forEach
-            val contextString = "Operation '$name'"
+            val path = ValidationPath.named("Operation", name)
 
             operation.channel?.let { channelRef ->
                 if (!inRoot(rootChannels, channelRef)) {
                     results.error(
                         OPERATION_CHANNEL_SCOPE,
-                        "$contextString must reference a channel from the root 'channels' object.",
+                        "$path must reference a channel from the root 'channels' object.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
                     )
                 }
@@ -47,7 +48,7 @@ internal class OperationBoundaryValidator(
                 if (!inRoot(rootChannels, channelRef)) {
                     results.error(
                         REPLY_CHANNEL_SCOPE,
-                        "$contextString Reply Channel must reference a channel from the root 'channels' object.",
+                        "$path Reply Channel must reference a channel from the root 'channels' object.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
                     )
                 }

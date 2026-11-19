@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.validator.util
 
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.parser.tracking.ModelTracking
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
 /**
  * The rules of a value constrained by `enum`, with a `default` and `examples`, as Parameter and Server Variable
@@ -21,14 +22,14 @@ internal class EnumConstrainedValueRules(
      *
      * @param model the object the members belong to
      * @param value the members' values
-     * @param contextString the object as named in findings
+     * @param path the object as named in findings
      * @param results the collector findings are reported to
      * @param modelTracking where the members are written
      */
     fun validate(
         model: Any,
         value: EnumConstrainedValue,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
         modelTracking: ModelTracking,
     ) {
@@ -36,21 +37,21 @@ internal class EnumConstrainedValueRules(
         if (enum.distinct().size != enum.size) {
             results.error(
                 uniqueRule,
-                "$contextString 'enum' contains duplicate values.",
+                "$path 'enum' contains duplicate values.",
                 modelTracking.getSourceLocation(model, "enum"),
             )
         }
         value.default?.takeIf { it !in enum }?.let { default ->
             results.warn(
                 defaultRule,
-                "$contextString 'default' ('$default') is not one of the 'enum' values.",
+                "$path 'default' ('$default') is not one of the 'enum' values.",
                 modelTracking.getSourceLocation(model, "default"),
             )
         }
         if (value.examples.orEmpty().any { it !in enum }) {
             results.warn(
                 examplesRule,
-                "$contextString 'examples' contain values that are not in 'enum'.",
+                "$path 'examples' contain values that are not in 'enum'.",
                 modelTracking.getSourceLocation(model, "examples"),
             )
         }

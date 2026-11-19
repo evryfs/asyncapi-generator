@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.servers
 
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariable
@@ -15,6 +16,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -196,10 +199,10 @@ class ServerValidatorTest : AbstractValidatorTest() {
             )
         val collector = ValidationCollector()
 
-        ServerValidator(asyncApiContext).validateInterface(
+        ValidationWalk(asyncApiContext, collector).member(
             ServerInterface.ServerInline(server),
-            "Server 'production'",
-            collector,
+            SERVER,
+            ValidationPath.named("Server", "production"),
         )
 
         assertEquals(emptyList(), collector.report().findings)

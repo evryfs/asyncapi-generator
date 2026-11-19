@@ -3,7 +3,9 @@ package dev.banking.asyncapi.generator.core.validator.schemas
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.EXTERNAL_DOC
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
@@ -33,148 +35,147 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
-import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
-import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
-import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 import java.math.BigDecimal
 
-internal class SchemaValidator(
-    val asyncApiContext: AsyncApiContext,
+/**
+ * Validates Schema Objects, boolean schemas and Multi Format Schema Objects, and walks the schemas nested in
+ * them, their external documentation and their bindings.
+ *
+ * @param asyncApiContext the load the schemas belong to
+ */
+internal class SchemaRules(
+    private val asyncApiContext: AsyncApiContext,
 ) {
-    private val bindingValidator = BindingValidator(asyncApiContext)
-    private val externalDocsValidator = ExternalDocsValidator(asyncApiContext)
-    private val referenceResolver = ReferenceResolver(asyncApiContext)
     private val propertyDeclarations = SchemaPropertyDeclarations(asyncApiContext)
 
-    fun validateInterface(
-        schemaInterface: SchemaInterface,
-        contextString: String,
-        results: ValidationCollector,
+    /** Checks a Schema Object, a boolean schema, a Multi Format Schema Object or a `$ref` to a schema. */
+    fun checkInterface(
+        schema: SchemaInterface,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
-        validateInterface(schemaInterface, contextString, results, emptySet())
+        checkInterface(schema, path, walk, emptySet())
     }
 
-    fun validateMap(
+    /** Checks the schemas of a `schemas` map, each named `Schema 'name'` below [path]. */
+    fun checkMap(
         schemas: Map<String, SchemaInterface>,
-        contextString: String,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
         schemas.forEach { (name, schema) ->
-            validateInterface(schema, "$contextString Schema '$name'", results, emptySet())
+            checkInterface(schema, path.named("Schema", name), walk, emptySet())
         }
     }
 
-    private fun validateInterface(
+    /** Checks the schema [model] a reference led to. */
+    fun checkModel(
+        model: Any,
+        path: ValidationPath,
+        walk: ValidationWalk,
+    ) {
+        when (model) {
+            is Schema -> check(model, path, walk, emptySet())
+            is MultiFormatSchema -> checkInterface(SchemaInterface.MultiFormatSchemaInline(model), path, walk)
+            is SchemaInterface.BooleanSchema -> checkInterface(model, path, walk)
+        }
+    }
+
+    private fun checkInterface(
         schemaInterface: SchemaInterface,
-        contextString: String,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
         enclosingDeclarations: Set<String>,
     ) {
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
-                validate(schemaInterface.schema, contextString, results, enclosingDeclarations)
+                check(schemaInterface.schema, path, walk, enclosingDeclarations)
 
             is SchemaInterface.SchemaReference ->
-                validateReference(schemaInterface.reference, contextString, results)
+                checkReference(schemaInterface.reference, path, walk)
 
-            is SchemaInterface.MultiFormatSchemaInline -> results.visit(schemaInterface.multiFormatSchema)
-            is SchemaInterface.BooleanSchema -> results.visit(schemaInterface)
+            is SchemaInterface.MultiFormatSchemaInline -> walk.results.visit(schemaInterface.multiFormatSchema)
+            is SchemaInterface.BooleanSchema -> walk.results.visit(schemaInterface)
         }
     }
 
-    fun validate(
+    private fun check(
         node: Schema,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        validate(node, contextString, results, emptySet())
-    }
-
-    private fun validate(
-        node: Schema,
-        contextString: String,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
         enclosingDeclarations: Set<String>,
     ) {
+        val results = walk.results
         if (!results.visit(node)) return
         val applicableDeclarations = enclosingDeclarations + propertyDeclarations.collect(node)
-        validateKeywords(node, contextString, results)
-        validateDialect(node, contextString, results)
-        validateType(node, contextString, results)
-        validateEnum(node, contextString, results)
-        validateConst(node, contextString, results)
-        validateNumericConstraints(node, contextString, results)
-        validateStringLength(node, contextString, results)
-        validateArray(node, contextString, results)
-        validateObject(node, applicableDeclarations, contextString, results)
-        validateDependencies(node, contextString, results)
-        validateDefaultValue(node, contextString, results)
-        validateDiscriminator(node, contextString, results)
-        validateExternalDocs(node, contextString, results)
-        validateBindings(node, contextString, results)
+        validateKeywords(node, path, results)
+        validateDialect(node, path, results)
+        validateType(node, path, results)
+        validateEnum(node, path, results)
+        validateConst(node, path, results)
+        validateNumericConstraints(node, path, results)
+        validateStringLength(node, path, results)
+        validateArray(node, path, results)
+        validateObject(node, applicableDeclarations, path, results)
+        validateDependencies(node, path, results)
+        validateDefaultValue(node, path, results)
+        validateDiscriminator(node, path, results)
+        node.externalDocs?.let { walk.member(it, EXTERNAL_DOC, path.child("ExternalDocs")) }
+        walk.bindings(node.bindings, path)
 
         // Recursive validation for nested schemas
         node.properties?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, emptySet())
+            checkInterface(subSchema, path.named("Property", name), walk, emptySet())
         }
         node.patternProperties?.forEach { (pattern, subSchema) ->
-            validateInterface(subSchema, "Pattern property '$pattern'", results, emptySet())
+            checkInterface(subSchema, path.named("Pattern property", pattern), walk, emptySet())
         }
         node.definitions?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, emptySet())
+            checkInterface(subSchema, path.named("Definition", name), walk, emptySet())
         }
-        node.items?.let { validateInterface(it, contextString, results, emptySet()) }
+        node.items?.let { checkInterface(it, path, walk, emptySet()) }
         node.tupleItems?.forEachIndexed { index, subSchema ->
-            validateInterface(subSchema, "$contextString tuple item $index", results, emptySet())
+            checkInterface(subSchema, path.child("tuple item $index"), walk, emptySet())
         }
-        node.additionalItems?.let { validateInterface(it, contextString, results, emptySet()) }
-        node.additionalProperties?.let { validateInterface(it, contextString, results, emptySet()) }
-        node.contains?.let { validateInterface(it, contextString, results, emptySet()) }
-        node.propertyNames?.let { validateInterface(it, contextString, results, emptySet()) }
+        node.additionalItems?.let { checkInterface(it, path, walk, emptySet()) }
+        node.additionalProperties?.let { checkInterface(it, path, walk, emptySet()) }
+        node.contains?.let { checkInterface(it, path, walk, emptySet()) }
+        node.propertyNames?.let { checkInterface(it, path, walk, emptySet()) }
         node.dependencies?.forEach { (name, dependency) ->
             if (dependency is SchemaInterface) {
-                validateInterface(
-                    dependency,
-                    "$contextString dependency '$name'",
-                    results,
-                    applicableDeclarations,
-                )
+                checkInterface(dependency, path.named("dependency", name), walk, applicableDeclarations)
             }
         }
 
-        node.allOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, applicableDeclarations)
-        }
-        node.anyOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, applicableDeclarations)
-        }
-        node.oneOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, applicableDeclarations)
-        }
+        node.allOf?.forEach { subSchema -> checkInterface(subSchema, path, walk, applicableDeclarations) }
+        node.anyOf?.forEach { subSchema -> checkInterface(subSchema, path, walk, applicableDeclarations) }
+        node.oneOf?.forEach { subSchema -> checkInterface(subSchema, path, walk, applicableDeclarations) }
 
-        node.not?.let { validateInterface(it, contextString, results, applicableDeclarations) }
-        node.ifSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
-        node.thenSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
-        node.elseSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
+        node.not?.let { checkInterface(it, path, walk, applicableDeclarations) }
+        node.ifSchema?.let { checkInterface(it, path, walk, applicableDeclarations) }
+        node.thenSchema?.let { checkInterface(it, path, walk, applicableDeclarations) }
+        node.elseSchema?.let { checkInterface(it, path, walk, applicableDeclarations) }
 
         // Members are resolved by the recursion above.
-        validateUnionMembers(node, contextString, results)
+        validateUnionMembers(node, path, results)
     }
 
-    private fun validateReference(
+    private fun checkReference(
         reference: Reference,
-        contextString: String,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
-        if (!results.visit(reference)) return
-        validateKeywords(reference, contextString, results)
-        referenceResolver.resolve(reference, SCHEMA, contextString, results)
+        if (!walk.results.visit(reference)) return
+        validateKeywords(reference, path, walk.results)
+        walk.reference(reference, SCHEMA, path)
     }
 
     private fun validateKeywords(
         node: Any,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         asyncApiContext.modelTracking.getFieldNames(node).forEach { keyword ->
@@ -182,7 +183,7 @@ internal class SchemaValidator(
             val severity = classification.severity ?: return@forEach
             val explanation = classification.explanation ?: return@forEach
             val sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, keyword)
-            val message = "$contextString Schema Object keyword '$keyword' $explanation"
+            val message = "$path Schema Object keyword '$keyword' $explanation"
             val rule: ValidationRule =
                 if (classification.category == SchemaKeywordCategory.IGNORED_ANNOTATION) {
                     SCHEMA_ANNOTATION_IGNORED
@@ -210,7 +211,7 @@ internal class SchemaValidator(
 
     private fun validateDialect(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if ("\$schema" !in asyncApiContext.modelTracking.getFieldNames(node)) return
@@ -218,7 +219,7 @@ internal class SchemaValidator(
         if (dialect == null) {
             results.error(
                 SCHEMA_DIALECT,
-                "$contextString Schema Object keyword '\$schema' must contain a schema dialect URI.",
+                "$path Schema Object keyword '\$schema' must contain a schema dialect URI.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "\$schema"),
             )
             return
@@ -227,7 +228,7 @@ internal class SchemaValidator(
 
         results.error(
             SCHEMA_DIALECT,
-            "$contextString declares schema dialect '$dialect', but the generator supports AsyncAPI 3.0 Schema " +
+            "$path declares schema dialect '$dialect', but the generator supports AsyncAPI 3.0 Schema " +
                 "Object semantics based on JSON Schema Draft 7. Remove '\$schema' or declare the Draft 7 dialect.",
             sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "\$schema"),
         )
@@ -235,7 +236,7 @@ internal class SchemaValidator(
 
     private fun validateType(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val type = node.type
@@ -243,20 +244,20 @@ internal class SchemaValidator(
             if ("type" in asyncApiContext.modelTracking.getFieldNames(node)) {
                 results.error(
                     SCHEMA_TYPE,
-                    "$contextString Schema 'type' field must be a string or an array of strings. Found: null",
+                    "$path Schema 'type' field must be a string or an array of strings. Found: null",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, "type"),
                 )
             }
             return
         }
         val allowedTypes = setOf("string", "number", "integer", "boolean", "array", "object", "null")
-        val contextString = "$contextString Schema"
+        val typePath = path.child("Schema")
         when (type) {
             is String -> {
                 if (type !in allowedTypes) {
                     results.error(
                         SCHEMA_TYPE,
-                        "$contextString type '$type' is not valid. Must be one of: ${allowedTypes.joinToString()}",
+                        "$typePath type '$type' is not valid. Must be one of: ${allowedTypes.joinToString()}",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     )
                 }
@@ -266,7 +267,7 @@ internal class SchemaValidator(
                 if (type.isEmpty()) {
                     results.error(
                         SCHEMA_TYPE_ARRAY_NONEMPTY,
-                        "$contextString 'type' array must contain at least one type.",
+                        "$typePath 'type' array must contain at least one type.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     )
                 }
@@ -274,7 +275,7 @@ internal class SchemaValidator(
                 if (typeList.size != type.size) {
                     results.error(
                         SCHEMA_TYPE,
-                        "$contextString all elements in 'type' array must be strings. Found non-string elements.",
+                        "$typePath all elements in 'type' array must be strings. Found non-string elements.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     )
                 }
@@ -282,7 +283,7 @@ internal class SchemaValidator(
                 if (invalidTypes.isNotEmpty()) {
                     results.error(
                         SCHEMA_TYPE,
-                        "$contextString types ${invalidTypes.joinToString()} are not valid. Must be one " +
+                        "$typePath types ${invalidTypes.joinToString()} are not valid. Must be one " +
                             "of: ${allowedTypes.joinToString()}",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     )
@@ -290,7 +291,7 @@ internal class SchemaValidator(
                 if (typeList.distinct().size != typeList.size) {
                     results.error(
                         SCHEMA_TYPE_ARRAY_UNIQUE,
-                        "$contextString 'type' array must contain unique values.",
+                        "$typePath 'type' array must contain unique values.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                     )
                 }
@@ -300,7 +301,7 @@ internal class SchemaValidator(
                 val invalidType = type::class.simpleName
                 results.error(
                     SCHEMA_TYPE,
-                    "$contextString 'type' field must be a string or an array of strings. Found: $invalidType",
+                    "$typePath 'type' field must be a string or an array of strings. Found: $invalidType",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
                 )
             }
@@ -309,21 +310,21 @@ internal class SchemaValidator(
 
     private fun validateEnum(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val enum = node.enum ?: return
         if (enum.isEmpty()) {
             results.error(
                 SCHEMA_ENUM_NONEMPTY,
-                "$contextString 'enum' must be a non-empty array of unique values.",
+                "$path 'enum' must be a non-empty array of unique values.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
             )
         }
         if (SchemaValueSemantics.hasDuplicates(enum)) {
             results.error(
                 SCHEMA_ENUM_UNIQUE,
-                "$contextString 'enum' contains duplicate values.",
+                "$path 'enum' contains duplicate values.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
             )
         }
@@ -331,7 +332,7 @@ internal class SchemaValidator(
 
     private fun validateConst(
         node: Schema,
-        schemaName: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (!node.constSet && node.const == null) return
@@ -340,7 +341,7 @@ internal class SchemaValidator(
         if (!SchemaValueSemantics.isCompatible(const, type)) {
             results.error(
                 SCHEMA_CONST_TYPE,
-                "$schemaName 'const' value '$const' does not match declared type '$type'.",
+                "$path 'const' value '$const' does not match declared type '$type'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::const),
             )
         }
@@ -348,7 +349,7 @@ internal class SchemaValidator(
 
     private fun validateNumericConstraints(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         validateOrderedRange(
@@ -358,7 +359,7 @@ internal class SchemaValidator(
             "maximum",
             node.maximum,
             SCHEMA_NUMERIC_RANGE,
-            contextString,
+            path,
             results,
         )
         validateOrderedRange(
@@ -368,14 +369,14 @@ internal class SchemaValidator(
             "exclusiveMaximum",
             node.exclusiveMaximum,
             SCHEMA_NUMERIC_RANGE,
-            contextString,
+            path,
             results,
         )
         node.multipleOf?.let {
             if (SchemaValueSemantics.decimal(it)?.signum() != 1) {
                 results.error(
                     SCHEMA_MULTIPLE_OF,
-                    "$contextString 'multipleOf' must be greater than zero.",
+                    "$path 'multipleOf' must be greater than zero.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::multipleOf),
                 )
             }
@@ -384,7 +385,7 @@ internal class SchemaValidator(
 
     private fun validateStringLength(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val minimum =
@@ -393,7 +394,7 @@ internal class SchemaValidator(
                 "minLength",
                 node.minLength,
                 SCHEMA_STRING_LENGTH,
-                contextString,
+                path,
                 results,
             )
         val maximum =
@@ -402,7 +403,7 @@ internal class SchemaValidator(
                 "maxLength",
                 node.maxLength,
                 SCHEMA_STRING_LENGTH,
-                contextString,
+                path,
                 results,
             )
         validateOrderedRange(
@@ -412,20 +413,20 @@ internal class SchemaValidator(
             "maxLength",
             maximum,
             SCHEMA_STRING_LENGTH_RANGE,
-            contextString,
+            path,
             results,
         )
     }
 
     private fun validateArray(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val minimum =
-            validateNonNegativeInteger(node, "minItems", node.minItems, SCHEMA_ARRAY_SIZE, contextString, results)
+            validateNonNegativeInteger(node, "minItems", node.minItems, SCHEMA_ARRAY_SIZE, path, results)
         val maximum =
-            validateNonNegativeInteger(node, "maxItems", node.maxItems, SCHEMA_ARRAY_SIZE, contextString, results)
+            validateNonNegativeInteger(node, "maxItems", node.maxItems, SCHEMA_ARRAY_SIZE, path, results)
         validateOrderedRange(
             node,
             "minItems",
@@ -433,7 +434,7 @@ internal class SchemaValidator(
             "maxItems",
             maximum,
             SCHEMA_ARRAY_SIZE_RANGE,
-            contextString,
+            path,
             results,
         )
     }
@@ -441,7 +442,7 @@ internal class SchemaValidator(
     private fun validateObject(
         node: Schema,
         applicableDeclarations: Set<String>,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val minimum =
@@ -450,7 +451,7 @@ internal class SchemaValidator(
                 "minProperties",
                 node.minProperties,
                 SCHEMA_OBJECT_SIZE,
-                contextString,
+                path,
                 results,
             )
         val maximum =
@@ -459,7 +460,7 @@ internal class SchemaValidator(
                 "maxProperties",
                 node.maxProperties,
                 SCHEMA_OBJECT_SIZE,
-                contextString,
+                path,
                 results,
             )
         validateOrderedRange(
@@ -469,14 +470,14 @@ internal class SchemaValidator(
             "maxProperties",
             maximum,
             SCHEMA_OBJECT_SIZE_RANGE,
-            contextString,
+            path,
             results,
         )
         val required = node.required ?: return
         if (required.distinct().size != required.size) {
             results.error(
                 SCHEMA_REQUIRED_UNIQUE,
-                "$contextString 'required' contains duplicate property names.",
+                "$path 'required' contains duplicate property names.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::required),
             )
         }
@@ -484,7 +485,7 @@ internal class SchemaValidator(
         if (missing.isNotEmpty()) {
             results.warn(
                 SCHEMA_REQUIRED_UNDECLARED,
-                "$contextString lists required properties $missing that are not declared in this object or its " +
+                "$path lists required properties $missing that are not declared in this object or its " +
                     "'allOf' composition. Define them explicitly, otherwise generation may fail.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::required),
             )
@@ -493,7 +494,7 @@ internal class SchemaValidator(
 
     private fun validateDependencies(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         node.dependencies?.forEach { (propertyName, dependency) ->
@@ -506,7 +507,7 @@ internal class SchemaValidator(
             if (duplicateIndex != null) {
                 results.error(
                     SCHEMA_DEPENDENCY_ARRAY_UNIQUE,
-                    "$contextString dependency '$propertyName' contains duplicate property names.",
+                    "$path dependency '$propertyName' contains duplicate property names.",
                     sourceLocation =
                         asyncApiContext.modelTracking.getElementLocation(dependency, duplicateIndex) ?: location,
                 )
@@ -516,7 +517,7 @@ internal class SchemaValidator(
 
     private fun validateDefaultValue(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (!node.defaultSet && node.default == null) return
@@ -525,7 +526,7 @@ internal class SchemaValidator(
         if (!SchemaValueSemantics.isCompatible(default, type)) {
             results.error(
                 SCHEMA_DEFAULT_TYPE,
-                "$contextString default value '$default' does not match declared type '$type'.",
+                "$path default value '$default' does not match declared type '$type'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
             )
         }
@@ -533,21 +534,21 @@ internal class SchemaValidator(
 
     private fun validateDiscriminator(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val discriminator = node.discriminator ?: return
         if (discriminator !in node.required.orEmpty()) {
             results.error(
                 SCHEMA_DISCRIMINATOR_REQUIRED,
-                "$contextString discriminator property '$discriminator' must be listed in 'required'.",
+                "$path discriminator property '$discriminator' must be listed in 'required'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::discriminator),
             )
         }
         if (discriminator !in node.properties.orEmpty()) {
             results.error(
                 SCHEMA_DISCRIMINATOR_PROPERTY,
-                "$contextString discriminator property '$discriminator' must exist in 'properties'.",
+                "$path discriminator property '$discriminator' must exist in 'properties'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::discriminator),
             )
         }
@@ -559,7 +560,7 @@ internal class SchemaValidator(
      */
     private fun validateUnionMembers(
         node: Schema,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (node.discriminator != null) return
@@ -579,7 +580,7 @@ internal class SchemaValidator(
             ?.let { names ->
                 results.warn(
                     UNION_INDISTINGUISHABLE_MEMBERS,
-                    "$contextString union members ${names.joinToString { "'$it'" }} declare the same property names " +
+                    "$path union members ${names.joinToString { "'$it'" }} declare the same property names " +
                         "and have no discriminator, so a payload cannot be told apart between them. " +
                         "Add a 'discriminator' or give the members different properties.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::oneOf),
@@ -601,31 +602,12 @@ internal class SchemaValidator(
                 }
             }
 
-    private fun validateExternalDocs(
-        node: Schema,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        val contextString = "$contextString ExternalDocs"
-        node.externalDocs?.let { docs ->
-            externalDocsValidator.validateInterface(docs, contextString, results)
-        }
-    }
-
-    private fun validateBindings(
-        node: Schema,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        bindingValidator.validateMap(node.bindings, contextString, results)
-    }
-
     private fun validateNonNegativeInteger(
         node: Schema,
         keyword: String,
         value: Number?,
         rule: ValidationRule,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ): BigDecimal? {
         if (value == null) return null
@@ -633,7 +615,7 @@ internal class SchemaValidator(
         if (decimal == null || decimal.signum() < 0 || decimal.stripTrailingZeros().scale() > 0) {
             results.error(
                 rule,
-                "$contextString '$keyword' must be a non-negative integer. Found: $value.",
+                "$path '$keyword' must be a non-negative integer. Found: $value.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, keyword),
             )
             return null
@@ -648,7 +630,7 @@ internal class SchemaValidator(
         upperKeyword: String,
         upper: Number?,
         rule: ValidationRule,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val lowerDecimal = lower?.let(SchemaValueSemantics::decimal) ?: return
@@ -656,7 +638,7 @@ internal class SchemaValidator(
         if (lowerDecimal.compareTo(upperDecimal) > 0) {
             results.error(
                 rule,
-                "$contextString '$lowerKeyword' ($lower) cannot be greater than '$upperKeyword' ($upper) " +
+                "$path '$lowerKeyword' ($lower) cannot be greater than '$upperKeyword' ($upper) " +
                     "because the generator would emit contradictory constraints.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, lowerKeyword),
             )

@@ -6,22 +6,20 @@
     <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
     <ID>ComplexCondition:OAuthFlowsValidator.kt$OAuthFlowsValidator$flows == null || ( flows.implicit == null &amp;&amp; flows.password == null &amp;&amp; flows.clientCredentials == null &amp;&amp; flows.authorizationCode == null )</ID>
     <ID>CyclomaticComplexMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
-    <ID>CyclomaticComplexMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
-    <ID>CyclomaticComplexMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>CyclomaticComplexMethod:SchemaRules.kt$SchemaRules$private fun check( node: Schema, path: ValidationPath, walk: ValidationWalk, enclosingDeclarations: Set&lt;String&gt;, )</ID>
     <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
     <ID>LargeClass:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
-    <ID>LargeClass:ComponentValidator.kt$ComponentValidator</ID>
     <ID>LargeClass:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator</ID>
     <ID>LargeClass:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
     <ID>LargeClass:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>LargeClass:KafkaBindingValidator.kt$KafkaBindingValidator</ID>
     <ID>LargeClass:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
-    <ID>LargeClass:SchemaValidator.kt$SchemaValidator</ID>
+    <ID>LargeClass:SchemaRules.kt$SchemaRules</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
@@ -30,8 +28,7 @@
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
-    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateBindings( component: Component, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:ComponentValidator.kt$ComponentValidator$private fun validateNames( component: Component, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ComponentRules.kt$ComponentRules$private fun validateNames( component: Component, walk: ValidationWalk, )</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
@@ -64,10 +61,9 @@
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>LongMethod:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
-    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowName: String, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
-    <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
-    <ID>LongMethod:ReferenceTargetTraversal.kt$ReferenceTargetTraversal$fun drain(results: ValidationCollector)</ID>
+    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:OAuthFlowsValidator.kt$OAuthFlowsValidator$private fun validateFlow( flow: OAuthFlow, flowPath: ValidationPath, requiresAuthorizationUrl: Boolean, requiresTokenUrl: Boolean, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, path: ValidationPath, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
     <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, context: BundlingContext, ): SchemaInterface</ID>
     <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
     <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleSchema( schema: Schema, context: BundlingContext, ): Schema</ID>
@@ -76,21 +72,21 @@
     <ID>LongMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, enclosingDeclarations: Set&lt;String&gt;, )</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateNumericConstraints( node: Schema, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateStringLength( node: Schema, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateType( node: Schema, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:SecuritySchemeValidator.kt$SecuritySchemeValidator$private fun validateType( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongMethod:ServerValidator.kt$ServerValidator$private fun validateHost( node: Server, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaRules.kt$SchemaRules$private fun check( node: Schema, path: ValidationPath, walk: ValidationWalk, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>LongMethod:SchemaRules.kt$SchemaRules$private fun validateNumericConstraints( node: Schema, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaRules.kt$SchemaRules$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaRules.kt$SchemaRules$private fun validateStringLength( node: Schema, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SchemaRules.kt$SchemaRules$private fun validateType( node: Schema, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:SecuritySchemeRules.kt$SecuritySchemeRules$private fun validateType( node: SecurityScheme, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongMethod:ServerRules.kt$ServerRules$private fun validateHost( node: Server, path: ValidationPath, walk: ValidationWalk, )</ID>
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongMethod:SpringKafkaChannelContractFactory.kt$SpringKafkaChannelContractFactory$fun create(channel: AnalyzedChannel): SpringKafkaChannelContract</ID>
     <ID>LongMethod:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
-    <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, results: ValidationCollector, parent: String? = null, predicate: (Any?) -&gt; Boolean, )</ID>
-    <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, contextString: String, index: Int, results: ValidationCollector, )</ID>
-    <ID>LongParameterList:OAuthFlowsValidator.kt$OAuthFlowsValidator$( flow: OAuthFlow, value: String?, fieldName: String, requiredRule: ValidationRule, formatRule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongParameterList:SchemaValidator.kt$SchemaValidator$( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
-    <ID>LongParameterList:SchemaValidator.kt$SchemaValidator$( node: Schema, lowerKeyword: String, lower: Number?, upperKeyword: String, upper: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:KafkaBindingValidator.kt$KafkaBindingValidator$( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, field: String, expected: String, path: ValidationPath, results: ValidationCollector, parent: String? = null, predicate: (Any?) -&gt; Boolean, )</ID>
+    <ID>LongParameterList:MessageExampleValidator.kt$MessageExampleValidator$( example: MessageExample, field: String, value: Any?, schema: SchemaInterface, path: ValidationPath, index: Int, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:OAuthFlowsValidator.kt$OAuthFlowsValidator$( flow: OAuthFlow, value: String?, fieldName: String, requiredRule: ValidationRule, formatRule: ValidationRule, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:SchemaRules.kt$SchemaRules$( node: Schema, keyword: String, value: Number?, rule: ValidationRule, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>LongParameterList:SchemaRules.kt$SchemaRules$( node: Schema, lowerKeyword: String, lower: Number?, upperKeyword: String, upper: Number?, rule: ValidationRule, path: ValidationPath, results: ValidationCollector, )</ID>
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, field: String, schemas: List&lt;SchemaInterface&gt;?, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: SchemaInterface, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
@@ -111,11 +107,9 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
     <ID>MaxLineLength:BindingBundler.kt$BindingBundler$/** A protocol-keyed binding content holds the fields under the protocol; a single protocol's content holds them directly. */</ID>
-    <ID>MaxLineLength:ChannelValidator.kt$ChannelValidator$"$contextString address uses parameters $missingDefinitions which are not defined in channel parameters map."</ID>
     <ID>MaxLineLength:ConfigurationWarning.kt$"https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/generator-configuration.md#configuration-warnings"</ID>
     <ID>MaxLineLength:DiagnosticLayout.kt$DiagnosticLayout$"---------------------------------------------------------------------------------------------------------------------"</ID>
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
-    <ID>MaxLineLength:KafkaBindingValidator.kt$KafkaBindingValidator$"Kafka topic configuration '$CLEANUP_POLICY' must be an array containing only 'delete' and/or 'compact'."</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
     <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
@@ -141,7 +135,7 @@
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>ReturnCount:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
-    <ID>ReturnCount:KafkaBindingValidator.kt$KafkaBindingValidator$private fun validateVersion( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, results: ValidationCollector, ): String?</ID>
+    <ID>ReturnCount:KafkaBindingValidator.kt$KafkaBindingValidator$private fun validateVersion( binding: ProtocolBinding, properties: Map&lt;String, Any?&gt;, path: ValidationPath, results: ValidationCollector, ): String?</ID>
     <ID>ReturnCount:KafkaKeySchemaResolver.kt$KafkaKeySchemaResolver$fun resolveObjectModelOrNull( messageName: String, schema: SchemaInterface, ): KafkaKeyObjectModel?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveJavaTypeName(message: AnalyzedMessage): String?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveKotlinTypeName(message: AnalyzedMessage): String?</ID>
@@ -152,15 +146,15 @@
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun mapObject( propertyName: String, schema: Schema, ): TypeRef?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
-    <ID>ReturnCount:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, contextString: String, results: ValidationCollector, )</ID>
+    <ID>ReturnCount:OAuthFlowsValidator.kt$OAuthFlowsValidator$fun validate( node: SecurityScheme, path: ValidationPath, results: ValidationCollector, )</ID>
     <ID>ReturnCount:OperationBoundaryValidator.kt$OperationBoundaryValidator$private fun inRoot( rootChannels: Map&lt;String, ChannelInterface&gt;, channelRef: Reference, ): Boolean</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
-    <ID>ReturnCount:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, contextString: String, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
+    <ID>ReturnCount:ReferenceResolver.kt$ReferenceResolver$fun resolve( reference: Reference, expectedCategory: ReferenceCategoryKey, path: ValidationPath, results: ValidationCollector, targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY, ): Any?</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
     <ID>ReturnCount:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
     <ID>ReturnCount:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
-    <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateDialect( node: Schema, contextString: String, results: ValidationCollector, )</ID>
-    <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
+    <ID>ReturnCount:SchemaRules.kt$SchemaRules$private fun validateDialect( node: Schema, path: ValidationPath, results: ValidationCollector, )</ID>
+    <ID>ReturnCount:SchemaRules.kt$SchemaRules$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, path: ValidationPath, results: ValidationCollector, ): BigDecimal?</ID>
     <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
     <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
@@ -179,7 +173,6 @@
     <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
     <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
-    <ID>TooManyFunctions:ComponentValidator.kt$ComponentValidator</ID>
     <ID>TooManyFunctions:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
     <ID>TooManyFunctions:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Companion</ID>
     <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
@@ -187,12 +180,10 @@
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>TooManyFunctions:KafkaBindingValidator.kt$KafkaBindingValidator</ID>
     <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
-    <ID>TooManyFunctions:MessageValidator.kt$MessageValidator</ID>
     <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
-    <ID>TooManyFunctions:OperationValidator.kt$OperationValidator</ID>
     <ID>TooManyFunctions:SchemaBundler.kt$SchemaBundler</ID>
     <ID>TooManyFunctions:SchemaInstanceValidator.kt$SchemaInstanceValidator</ID>
-    <ID>TooManyFunctions:SchemaValidator.kt$SchemaValidator</ID>
+    <ID>TooManyFunctions:SchemaRules.kt$SchemaRules</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$ExternalSchemaNameUnavailable : AsyncApiBundlingException</ID>
     <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>

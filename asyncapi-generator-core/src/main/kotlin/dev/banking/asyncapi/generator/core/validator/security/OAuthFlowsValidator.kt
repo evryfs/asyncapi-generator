@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
 /** Validates the OAuth Flows Object and its flow-specific requirements. */
 internal class OAuthFlowsValidator(
@@ -21,7 +22,7 @@ internal class OAuthFlowsValidator(
 ) {
     fun validate(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (node.type != "oauth2") return
@@ -37,7 +38,7 @@ internal class OAuthFlowsValidator(
         ) {
             results.error(
                 SECURITY_OAUTH_FLOWS,
-                "$contextString of type 'oauth2' requires at least one OAuth2 flow.",
+                "$path of type 'oauth2' requires at least one OAuth2 flow.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(node, node::flows)
                         ?: asyncApiContext.modelTracking.getSourceLocation(node),
@@ -49,7 +50,7 @@ internal class OAuthFlowsValidator(
         flows.implicit?.let { flow ->
             validateFlow(
                 flow,
-                "$contextString Implicit",
+                path.child("Implicit"),
                 requiresAuthorizationUrl = true,
                 requiresTokenUrl = false,
                 results = results,
@@ -58,7 +59,7 @@ internal class OAuthFlowsValidator(
         flows.password?.let { flow ->
             validateFlow(
                 flow,
-                "$contextString Password",
+                path.child("Password"),
                 requiresAuthorizationUrl = false,
                 requiresTokenUrl = true,
                 results = results,
@@ -67,7 +68,7 @@ internal class OAuthFlowsValidator(
         flows.clientCredentials?.let { flow ->
             validateFlow(
                 flow,
-                "$contextString Client Credentials",
+                path.child("Client Credentials"),
                 requiresAuthorizationUrl = false,
                 requiresTokenUrl = true,
                 results = results,
@@ -76,7 +77,7 @@ internal class OAuthFlowsValidator(
         flows.authorizationCode?.let { flow ->
             validateFlow(
                 flow,
-                "$contextString Authorization Code",
+                path.child("Authorization Code"),
                 requiresAuthorizationUrl = true,
                 requiresTokenUrl = true,
                 results = results,
@@ -87,13 +88,13 @@ internal class OAuthFlowsValidator(
 
     private fun validateFlow(
         flow: OAuthFlow,
-        flowName: String,
+        flowPath: ValidationPath,
         requiresAuthorizationUrl: Boolean,
         requiresTokenUrl: Boolean,
         results: ValidationCollector,
     ) {
         if (!results.visit(flow)) return
-        val contextString = "$flowName OAuth2 flow"
+        val path = flowPath.child("OAuth2 flow")
         if (requiresAuthorizationUrl) {
             validateRequiredUrl(
                 flow,
@@ -101,7 +102,7 @@ internal class OAuthFlowsValidator(
                 "authorizationUrl",
                 OAUTH_AUTHORIZATION_URL_REQUIRED,
                 OAUTH_AUTHORIZATION_URL_FORMAT,
-                contextString,
+                path,
                 results,
             )
         }
@@ -112,14 +113,14 @@ internal class OAuthFlowsValidator(
                 "tokenUrl",
                 OAUTH_TOKEN_URL_REQUIRED,
                 OAUTH_TOKEN_URL_FORMAT,
-                contextString,
+                path,
                 results,
             )
         }
         results.requireAbsoluteUri(
             flow.refreshUrl,
             "refreshUrl",
-            contextString,
+            path,
             OAUTH_REFRESH_URL_FORMAT,
             asyncApiContext.modelTracking.getSourceLocation(flow, flow::refreshUrl),
         )
@@ -131,13 +132,13 @@ internal class OAuthFlowsValidator(
         fieldName: String,
         requiredRule: ValidationRule,
         formatRule: ValidationRule,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (value.isNullOrBlank()) {
             results.error(
                 requiredRule,
-                "$contextString must define '$fieldName'.",
+                "$path must define '$fieldName'.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(flow, fieldName)
                         ?: asyncApiContext.modelTracking.getSourceLocation(flow),
@@ -146,7 +147,7 @@ internal class OAuthFlowsValidator(
             results.requireAbsoluteUri(
                 value,
                 fieldName,
-                contextString,
+                path,
                 formatRule,
                 asyncApiContext.modelTracking.getSourceLocation(flow, fieldName),
             )
