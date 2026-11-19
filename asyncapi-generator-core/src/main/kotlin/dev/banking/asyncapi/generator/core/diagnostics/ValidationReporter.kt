@@ -5,7 +5,11 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateExce
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import org.slf4j.LoggerFactory
 
-/** Formats and delivers an immutable validation report at an application boundary. */
+/**
+ * Fails on the errors of a validation report and logs its warnings, each rendered with a source snippet.
+ *
+ * @param context the load whose sources the snippets come from
+ */
 internal class ValidationReporter(
     private val context: AsyncApiContext,
 ) {

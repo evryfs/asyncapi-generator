@@ -7,7 +7,11 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.util.Collections
 import java.util.IdentityHashMap
 
-/** Finds statically declared properties that compose one object through `allOf`. */
+/**
+ * Finds statically declared properties that compose one object through `allOf`.
+ *
+ * @param asyncApiContext the load whose schemas are read
+ */
 internal class SchemaPropertyDeclarations(
     private val asyncApiContext: AsyncApiContext,
 ) {
