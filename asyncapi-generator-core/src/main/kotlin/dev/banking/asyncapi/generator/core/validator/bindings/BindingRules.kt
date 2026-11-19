@@ -16,18 +16,13 @@ import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 internal class BindingRules(
     private val asyncApiContext: AsyncApiContext,
 ) : ObjectRules<Binding> {
-    private val kafkaBindingValidator = KafkaBindingValidator(asyncApiContext)
+    private val protocolRules = listOf(KafkaBindingRules(asyncApiContext)).associateBy(ProtocolBindingRules::protocol)
 
     override fun check(
         node: Binding,
         path: ValidationPath,
         walk: ValidationWalk,
     ) {
-        if (node.protocolBindings.isEmpty()) {
-            node.kafkaKeySchema?.let { schema -> walk.schema(schema, path.child("Kafka key")) }
-            return
-        }
-
         node.protocolBindings.forEach { protocolBinding ->
             validateProtocol(protocolBinding, path, walk)
         }
@@ -50,8 +45,6 @@ internal class BindingRules(
 
         @Suppress("UNCHECKED_CAST")
         val stringProperties = properties as Map<String, Any?>
-        if (binding.protocol == "kafka") {
-            kafkaBindingValidator.validate(binding, stringProperties, path, walk)
-        }
+        protocolRules[binding.protocol]?.check(binding, stringProperties, path, walk)
     }
 }

@@ -18,10 +18,17 @@ import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 import java.math.BigDecimal
 import java.math.BigInteger
 
-internal class KafkaBindingValidator(
+/**
+ * The rules of Kafka bindings, by the Kafka binding specification versions 0.4.0 and 0.5.0.
+ *
+ * @param asyncApiContext the load whose models are checked
+ */
+internal class KafkaBindingRules(
     private val asyncApiContext: AsyncApiContext,
-) {
-    fun validate(
+) : ProtocolBindingRules {
+    override val protocol: String = "kafka"
+
+    override fun check(
         binding: ProtocolBinding,
         properties: Map<String, Any?>,
         path: ValidationPath,

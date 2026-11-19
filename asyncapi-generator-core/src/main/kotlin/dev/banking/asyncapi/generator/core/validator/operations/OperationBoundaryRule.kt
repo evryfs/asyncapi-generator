@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterf
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_SCOPE
+import dev.banking.asyncapi.generator.core.validator.DocumentRule
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 
@@ -20,11 +21,13 @@ import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
  *
  * Runs after the document walk, so every reference has been resolved. Message subset rules apply to
  * every operation and reply, so they stay with [OperationRules] and [OperationReplyRules].
+ *
+ * @param asyncApiContext the load whose models are checked
  */
-internal class OperationBoundaryValidator(
+internal class OperationBoundaryRule(
     private val asyncApiContext: AsyncApiContext,
-) {
-    fun validate(
+) : DocumentRule {
+    override fun check(
         document: AsyncApiDocument,
         results: ValidationCollector,
     ) {
