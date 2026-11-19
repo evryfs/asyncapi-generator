@@ -32,12 +32,14 @@ internal object ValidationFormats {
 
     fun isRuntimeExpression(value: String): Boolean {
         val prefix = RUNTIME_EXPRESSION_PREFIXES.firstOrNull(value::startsWith) ?: return false
-        if (value == prefix) return true
-        if (!value.startsWith("$prefix#")) return false
+        return value == prefix || (value.startsWith("$prefix#") && hasValidFragment(value.substring(prefix.length)))
+    }
 
-        val fragment = runCatching { URI(value.substring(prefix.length)).fragment }.getOrNull() ?: return false
-        if (INVALID_JSON_POINTER_ESCAPE.containsMatchIn(fragment)) return false
-        return runCatching { JsonPointer.compile(fragment) }.isSuccess
+    private fun hasValidFragment(reference: String): Boolean {
+        val fragment = runCatching { URI(reference).fragment }.getOrNull()
+        return fragment != null &&
+            !INVALID_JSON_POINTER_ESCAPE.containsMatchIn(fragment) &&
+            runCatching { JsonPointer.compile(fragment) }.isSuccess
     }
 
     private val RUNTIME_EXPRESSION_PREFIXES =

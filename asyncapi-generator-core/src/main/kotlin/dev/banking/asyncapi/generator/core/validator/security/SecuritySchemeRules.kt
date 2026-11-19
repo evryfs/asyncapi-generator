@@ -45,22 +45,6 @@ internal class SecuritySchemeRules(
         path: ValidationPath,
         results: ValidationCollector,
     ) {
-        val validTypes =
-            setOf(
-                "userPassword",
-                "apiKey",
-                "X509",
-                "symmetricEncryption",
-                "asymmetricEncryption",
-                "httpApiKey",
-                "http",
-                "oauth2",
-                "openIdConnect",
-                "plain",
-                "scramSha256",
-                "scramSha512",
-                "gssapi",
-            )
         val type = node.type
         if (type.isBlank()) {
             results.error(
@@ -68,10 +52,10 @@ internal class SecuritySchemeRules(
                 "$path 'type' field in SecurityScheme is required.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
             )
-        } else if (type !in validTypes) {
+        } else if (type !in VALID_TYPES) {
             results.error(
                 SECURITY_TYPE_VALUE,
-                "$path invalid type '$type'. Expected one of: ${validTypes.joinToString(", ")}",
+                "$path invalid type '$type'. Expected one of: ${VALID_TYPES.joinToString(", ")}",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
             )
         }
@@ -165,5 +149,24 @@ internal class SecuritySchemeRules(
                 }
             }
         }
+    }
+
+    private companion object {
+        val VALID_TYPES =
+            setOf(
+                "userPassword",
+                "apiKey",
+                "X509",
+                "symmetricEncryption",
+                "asymmetricEncryption",
+                "httpApiKey",
+                "http",
+                "oauth2",
+                "openIdConnect",
+                "plain",
+                "scramSha256",
+                "scramSha512",
+                "gssapi",
+            )
     }
 }

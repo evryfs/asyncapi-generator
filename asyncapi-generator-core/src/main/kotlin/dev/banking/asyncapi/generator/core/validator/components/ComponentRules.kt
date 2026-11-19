@@ -24,6 +24,7 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 import dev.banking.asyncapi.generator.core.validator.walk.ObjectRules
 import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
+import kotlin.reflect.KProperty0
 
 /**
  * Validates the Components Object: the names of its reusable objects, then walks every reusable object.
@@ -53,29 +54,7 @@ internal class ComponentRules(
         component: Component,
         walk: ValidationWalk,
     ) {
-        val maps =
-            listOf(
-                component::schemas,
-                component::servers,
-                component::channels,
-                component::operations,
-                component::messages,
-                component::securitySchemes,
-                component::serverVariables,
-                component::parameters,
-                component::correlationIds,
-                component::replies,
-                component::replyAddresses,
-                component::externalDocs,
-                component::tags,
-                component::operationTraits,
-                component::messageTraits,
-                component::serverBindings,
-                component::channelBindings,
-                component::operationBindings,
-                component::messageBindings,
-            )
-        maps.forEach { property ->
+        reusableObjectMaps(component).forEach { property ->
             property.get()?.keys?.filterNot(ValidationFormats::isComponentName)?.forEach { name ->
                 walk.results.error(
                     COMPONENT_NAME_FORMAT,
@@ -85,6 +64,29 @@ internal class ComponentRules(
             }
         }
     }
+
+    private fun reusableObjectMaps(component: Component): List<KProperty0<Map<String, *>?>> =
+        listOf(
+            component::schemas,
+            component::servers,
+            component::channels,
+            component::operations,
+            component::messages,
+            component::securitySchemes,
+            component::serverVariables,
+            component::parameters,
+            component::correlationIds,
+            component::replies,
+            component::replyAddresses,
+            component::externalDocs,
+            component::tags,
+            component::operationTraits,
+            component::messageTraits,
+            component::serverBindings,
+            component::channelBindings,
+            component::operationBindings,
+            component::messageBindings,
+        )
 
     /**
      * The reusable objects of one kind, in the order the components are walked.
