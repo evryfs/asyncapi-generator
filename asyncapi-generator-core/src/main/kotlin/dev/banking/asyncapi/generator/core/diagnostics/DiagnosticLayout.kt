@@ -39,6 +39,6 @@ internal object DiagnosticLayout {
             }
         }
 
-    private const val SEPARATOR =
-        "---------------------------------------------------------------------------------------------------------------------"
+    private const val SEPARATOR_WIDTH = 117
+    private val SEPARATOR = "-".repeat(SEPARATOR_WIDTH)
 }

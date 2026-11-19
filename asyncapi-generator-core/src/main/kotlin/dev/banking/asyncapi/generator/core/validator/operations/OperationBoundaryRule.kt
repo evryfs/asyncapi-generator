@@ -65,7 +65,9 @@ internal class OperationBoundaryRule(
         channelRef: Reference,
     ): Boolean {
         if (channelRef.finalModel() !is Channel) return true
-        val target = asyncApiContext.modelTracking.findReference(channelRef) ?: return true
-        return OperationReferenceBoundary.containsChannel(rootChannels, target)
+        return asyncApiContext.modelTracking
+            .findReference(channelRef)
+            ?.let { target -> OperationReferenceBoundary.containsChannel(rootChannels, target) }
+            ?: true
     }
 }

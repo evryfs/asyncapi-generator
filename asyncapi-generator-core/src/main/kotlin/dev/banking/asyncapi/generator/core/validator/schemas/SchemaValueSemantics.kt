@@ -25,13 +25,10 @@ internal object SchemaValueSemantics {
     fun isCompatible(
         value: Any?,
         type: Any?,
-    ): Boolean {
-        if (type == null) return true
-        if (type is List<*>) {
-            val declaredTypes = type.filterIsInstance<String>()
-            return declaredTypes.isEmpty() || declaredTypes.any { isCompatible(value, it) }
-        }
-        return when (type) {
+    ): Boolean =
+        when (type) {
+            null -> true
+            is List<*> -> isCompatibleWithAny(value, type.filterIsInstance<String>())
             "string" -> value is String
             "number" -> value is Number
             "integer" -> value is Number && decimal(value)?.stripTrailingZeros()?.scale()?.let { it <= 0 } == true
@@ -41,7 +38,11 @@ internal object SchemaValueSemantics {
             "null" -> value == null
             else -> true
         }
-    }
+
+    private fun isCompatibleWithAny(
+        value: Any?,
+        declaredTypes: List<String>,
+    ): Boolean = declaredTypes.isEmpty() || declaredTypes.any { isCompatible(value, it) }
 
     fun equal(
         left: Any?,
