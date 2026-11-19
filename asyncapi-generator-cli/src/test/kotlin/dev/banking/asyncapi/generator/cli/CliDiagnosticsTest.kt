@@ -65,7 +65,7 @@ class CliDiagnosticsTest {
 
         assertEquals(1, result.statusCode)
         assertTrue(result.stderr.contains("Validation failed with 1 error(s):"))
-        assertTrue(result.stderr.contains("Info 'title' field is required and cannot be empty."))
+        assertTrue(result.stderr.contains("Info 'title' is required and cannot be empty."))
         assertTrue(result.stderr.contains("asyncapi-validation-error.yaml"))
         assertTrue(result.stderr.contains("title: ''"))
         assertFalse(result.stderr.contains("AsyncApiValidateException"))

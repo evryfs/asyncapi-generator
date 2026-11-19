@@ -9,6 +9,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.EXTERN
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class ExternalDocsValidator(
     val asyncApiContext: AsyncApiContext,
@@ -35,21 +37,9 @@ internal class ExternalDocsValidator(
         results: ValidationCollector,
     ) {
         if (!results.visit(node)) return
-        val url = node.url
-        if (url.isBlank()) {
-            results.error(
-                EXTERNAL_DOC_URL_REQUIRED,
-                "$contextString 'url' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
-            )
-        } else {
-            if (ValidationFormats.absoluteUri(url) == null) {
-                results.error(
-                    EXTERNAL_DOC_URL_FORMAT,
-                    "ExternalDoc '$contextString' 'url' must be a valid absolute URL.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
-                )
-            }
+        val urlSource = asyncApiContext.modelTracking.getSourceLocation(node, node::url)
+        if (results.requireNonBlank(node.url, "url", contextString, EXTERNAL_DOC_URL_REQUIRED, urlSource)) {
+            results.requireAbsoluteUri(node.url, "url", contextString, EXTERNAL_DOC_URL_FORMAT, urlSource)
         }
     }
 }

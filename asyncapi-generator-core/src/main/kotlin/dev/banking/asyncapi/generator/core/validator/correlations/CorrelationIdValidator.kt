@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORREL
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class CorrelationIdValidator(
     val asyncApiContext: AsyncApiContext,
@@ -43,12 +44,15 @@ internal class CorrelationIdValidator(
         results: ValidationCollector,
     ) {
         val location = node.location
-        if (location.isBlank()) {
-            results.error(
+        val locationSource = asyncApiContext.modelTracking.getSourceLocation(node, node::location)
+        if (!results.requireNonBlank(
+                location,
+                "location",
+                contextString,
                 CORRELATION_LOCATION_REQUIRED,
-                "$contextString 'location' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
+                locationSource,
             )
+        ) {
             return
         }
         if (!ValidationFormats.isRuntimeExpression(location)) {

@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTAC
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CONTACT_URL_FORMAT
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
 
 internal class ContactValidator(
     val asyncApiContext: AsyncApiContext,
@@ -18,15 +19,13 @@ internal class ContactValidator(
         if (!results.visit(node)) return
         val url = node.url
         val email = node.email
-        url?.let {
-            if (ValidationFormats.absoluteUri(it) == null) {
-                results.error(
-                    CONTACT_URL_FORMAT,
-                    "$contextString 'url' field must be a valid absolute URL.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
-                )
-            }
-        }
+        results.requireAbsoluteUri(
+            url,
+            "url",
+            contextString,
+            CONTACT_URL_FORMAT,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::url),
+        )
         email?.let {
             if (!ValidationFormats.isEmailAddress(it)) {
                 results.error(

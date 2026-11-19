@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NA
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class TagValidator(
     val asyncApiContext: AsyncApiContext,
@@ -42,14 +43,13 @@ internal class TagValidator(
         results: ValidationCollector,
     ) {
         if (!results.visit(node)) return
-        val name = node.name
-        if (name.isBlank()) {
-            results.error(
-                TAG_NAME_REQUIRED,
-                "$contextString 'name' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name),
-            )
-        }
+        results.requireNonBlank(
+            node.name,
+            "name",
+            contextString,
+            TAG_NAME_REQUIRED,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::name),
+        )
         validateExternalDocs(node, contextString, results)
     }
 

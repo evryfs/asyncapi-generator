@@ -9,6 +9,8 @@ import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsVa
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class InfoValidator(
     val asyncApiContext: AsyncApiContext,
@@ -39,14 +41,13 @@ internal class InfoValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val title = node.title
-        if (title.isBlank()) {
-            results.error(
-                INFO_TITLE_REQUIRED,
-                "$contextString 'title' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::title),
-            )
-        }
+        results.requireNonBlank(
+            node.title,
+            "title",
+            contextString,
+            INFO_TITLE_REQUIRED,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::title),
+        )
     }
 
     private fun validateVersion(
@@ -54,15 +55,13 @@ internal class InfoValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val version = node.version
-        if (version.isBlank()) {
-            results.error(
-                INFO_VERSION_REQUIRED,
-                "$contextString 'version' field is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::version),
-            )
-            return
-        }
+        results.requireNonBlank(
+            node.version,
+            "version",
+            contextString,
+            INFO_VERSION_REQUIRED,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::version),
+        )
     }
 
     private fun validateTermsOfService(
@@ -70,14 +69,13 @@ internal class InfoValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val termsOfService = node.termsOfService ?: return
-        if (ValidationFormats.absoluteUri(termsOfService) == null) {
-            results.error(
-                INFO_TERMS_URI,
-                "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::termsOfService),
-            )
-        }
+        results.requireAbsoluteUri(
+            node.termsOfService,
+            "termsOfService",
+            contextString,
+            INFO_TERMS_URI,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::termsOfService),
+        )
     }
 
     private fun validateTags(
