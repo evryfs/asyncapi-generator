@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.util
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.diagnostics.ValidationReporter
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.ADVISORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.SPECIFICATION

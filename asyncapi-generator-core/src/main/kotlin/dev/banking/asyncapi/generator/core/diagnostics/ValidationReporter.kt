@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.validator.util
+package dev.banking.asyncapi.generator.core.diagnostics
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateException

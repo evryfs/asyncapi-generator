@@ -17,7 +17,8 @@ REFERENCE_CYCLE("AAS3-REFERENCE-CYCLE", SPECIFICATION, ERROR, ASYNCAPI_SPEC),
 ```
 
 - The code is stable public identity; never reuse or rename a published code.
-  Retired codes stay in the enum and the inventory as legacy identifiers.
+  After the first release, retired codes stay in the enum and the inventory
+  as legacy identifiers.
 - The prefix states the authority: `AAS3-` for the AsyncAPI 3.0
   specification, `JSONSCHEMA-` for JSON Schema Draft 7, `GEN-` for generator
   capability limits, and `ADV-` for project advisories.

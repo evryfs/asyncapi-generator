@@ -63,8 +63,4 @@ internal class AsyncApiContext(
         sourceBudget.registerDocument(file, content, location)
         return sourceId
     }
-
-    /** A snippet of the source around the node whose display path is [displayPath]. */
-    fun snippet(displayPath: String): String =
-        nodeLocations.location(displayPath)?.let(sourceTracking::snippet) ?: "(no line found for $displayPath)"
 }

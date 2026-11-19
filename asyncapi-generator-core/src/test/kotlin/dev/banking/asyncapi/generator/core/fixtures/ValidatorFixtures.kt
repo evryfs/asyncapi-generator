@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.diagnostics.ValidationReporter
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.LoadedTargetValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import java.io.File
 
 /**

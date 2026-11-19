@@ -1,14 +1,14 @@
 package dev.banking.asyncapi.generator.core.loader
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.diagnostics.ValidationFindingFormatter
+import dev.banking.asyncapi.generator.core.diagnostics.ValidationReporter
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
 import dev.banking.asyncapi.generator.core.parser.external.ExternalReferenceLoader
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import dev.banking.asyncapi.generator.core.validator.LoadedTargetValidator
-import dev.banking.asyncapi.generator.core.validator.util.ValidationFindingFormatter
-import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 import dev.banking.asyncapi.generator.core.validator.util.ValidationWarningCollector
 import java.io.File
 

@@ -10,7 +10,7 @@
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateObject( schema: Schema, value: Map&lt;*, *&gt;, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaInstanceValidator.kt$SchemaInstanceValidator$private fun evaluateSchema( schema: Schema, value: Any?, path: String, visited: MutableSet&lt;Visit&gt;, ): Evaluation</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
-    <ID>CyclomaticComplexMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, visited: MutableSet&lt;Any&gt;, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>CyclomaticComplexMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, enclosingDeclarations: Set&lt;String&gt;, )</ID>
     <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
     <ID>LargeClass:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
@@ -78,7 +78,7 @@
     <ID>LongMethod:SchemaKeywordPolicy.kt$SchemaKeywordPolicy$fun classify(keyword: String): SchemaKeywordClassification</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
-    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, visited: MutableSet&lt;Any&gt;, enclosingDeclarations: Set&lt;String&gt;, )</ID>
+    <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validate( node: Schema, contextString: String, results: ValidationCollector, enclosingDeclarations: Set&lt;String&gt;, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateKeywords( node: Any, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateNumericConstraints( node: Schema, contextString: String, results: ValidationCollector, )</ID>
     <ID>LongMethod:SchemaValidator.kt$SchemaValidator$private fun validateObject( node: Schema, applicableDeclarations: Set&lt;String&gt;, contextString: String, results: ValidationCollector, )</ID>
@@ -166,7 +166,6 @@
     <ID>ReturnCount:SchemaValidator.kt$SchemaValidator$private fun validateNonNegativeInteger( node: Schema, keyword: String, value: Number?, rule: ValidationRule, contextString: String, results: ValidationCollector, ): BigDecimal?</ID>
     <ID>ReturnCount:SchemaValueSemantics.kt$SchemaValueSemantics$fun isCompatible( value: Any?, type: Any?, ): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
-    <ID>ReturnCount:ValidationFindingFormatter.kt$ValidationFindingFormatter$private fun snippet( finding: ValidationFinding, asyncApiContext: AsyncApiContext, ): String</ID>
     <ID>ReturnCount:ValidationFormats.kt$ValidationFormats$fun isRuntimeExpression(value: String): Boolean</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>
