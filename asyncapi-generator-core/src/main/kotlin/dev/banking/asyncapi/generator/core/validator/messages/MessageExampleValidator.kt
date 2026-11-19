@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.validator.messages
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.messages.MessageExample
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_FORMAT_UNVALIDATED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA_MISMATCH
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA
 import dev.banking.asyncapi.generator.core.validator.schemas.SchemaInstanceValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
@@ -30,7 +30,7 @@ internal class MessageExampleValidator(
             val containsPayload = example.payload != null || "payload" in sourceFields
             if (!containsHeaders && !containsPayload) {
                 results.error(
-                    MESSAGE_EXAMPLE_CONTENT_REQUIRED,
+                    MESSAGE_EXAMPLE_CONTENT,
                     "$contextString Example[$index] must contain 'headers', 'payload', or both.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(example),
                 )
@@ -61,14 +61,14 @@ internal class MessageExampleValidator(
         val evaluation = schemaInstanceValidator.validate(schema, value, basePath)
         evaluation.violations.distinct().forEach { violation ->
             results.error(
-                MESSAGE_EXAMPLE_SCHEMA_MISMATCH,
+                MESSAGE_EXAMPLE_SCHEMA,
                 "$contextString Example[$index] '$field' ${violation.message}.",
                 sourceLocation = sourceLocation(violation.path, basePath),
             )
         }
         evaluation.unsupportedFormats.distinct().forEach { unsupported ->
             results.warn(
-                MESSAGE_EXAMPLE_FORMAT_UNVALIDATED,
+                MESSAGE_EXAMPLE_FORMAT,
                 "$contextString Example[$index] '$field' cannot be validated because schema format " +
                     "'${unsupported.schemaFormat}' has no proven instance validator.",
                 sourceLocation = sourceLocation(unsupported.path, basePath),

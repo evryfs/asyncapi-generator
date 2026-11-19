@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_SUFFIX
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
@@ -69,10 +69,9 @@ internal class ChannelValidator(
         }
         if (address.contains("?") || address.contains("#")) {
             results.error(
-                CHANNEL_ADDRESS_QUERY_OR_FRAGMENT,
+                CHANNEL_ADDRESS_SUFFIX,
                 "$contextString address must not contain query parameters or fragments. Use bindings for that.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::address),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
         val addressParameters =
@@ -86,7 +85,6 @@ internal class ChannelValidator(
                 CHANNEL_PARAMETER_UNDEFINED,
                 "$contextString address uses parameters $missingDefinitions which are not defined in channel parameters map.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::address),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
         reportUnusedParameters(node, definedParameters, addressParameters, contextString, results)
@@ -104,7 +102,6 @@ internal class ChannelValidator(
                 CHANNEL_PARAMETER_UNUSED,
                 "$contextString defines 'parameters', but its address contains no channel address expressions.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::parameters),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
             return
         }
@@ -114,7 +111,6 @@ internal class ChannelValidator(
                 CHANNEL_PARAMETER_UNUSED,
                 "$contextString defines parameters $unusedDefinitions which are not used in its channel address.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::parameters),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#channelObject",
             )
         }
     }

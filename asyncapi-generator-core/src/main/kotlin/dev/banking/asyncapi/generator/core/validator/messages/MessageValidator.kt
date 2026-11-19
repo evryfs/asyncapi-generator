@@ -5,8 +5,8 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -67,7 +67,7 @@ internal class MessageValidator(
         val contentType = node.contentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
-                MESSAGE_CONTENT_TYPE_FORMAT,
+                MESSAGE_CONTENT_TYPE,
                 "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::contentType),
             )
@@ -112,7 +112,7 @@ internal class MessageValidator(
                 ?.filterValues { schema -> schema is SchemaInterface.MultiFormatSchemaInline }
                 ?.forEach { (headerName, _) ->
                     results.warn(
-                        MESSAGE_HEADER_FORMAT_UNSUPPORTED,
+                        MESSAGE_HEADER_FORMAT,
                         "$contextString Header '$headerName' uses a Multi Format Schema, which is not validated " +
                             "in message headers.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::headers),

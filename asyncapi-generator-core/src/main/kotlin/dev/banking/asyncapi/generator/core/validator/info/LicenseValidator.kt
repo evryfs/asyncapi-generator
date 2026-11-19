@@ -22,7 +22,6 @@ internal class LicenseValidator(
                 LICENSE_NAME_REQUIRED,
                 "$contextString 'name' field is required and cannot be empty.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::name),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
             )
         }
         node.url?.let { url ->
@@ -31,7 +30,6 @@ internal class LicenseValidator(
                     LICENSE_URL_FORMAT,
                     "$contextString 'url' field must be a valid absolute URL.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::url),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#licenseObject",
                 )
             }
         }

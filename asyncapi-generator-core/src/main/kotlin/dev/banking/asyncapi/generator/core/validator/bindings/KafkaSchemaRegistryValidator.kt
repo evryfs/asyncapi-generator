@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_URL
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.util.Collections
 import java.util.IdentityHashMap
@@ -93,7 +93,7 @@ internal class KafkaSchemaRegistryValidator(
 
         effectiveFields.forEach { (field, binding) ->
             results.error(
-                KAFKA_MESSAGE_SCHEMA_REGISTRY_REQUIRED,
+                KAFKA_MESSAGE_SCHEMA_REGISTRY_URL,
                 "$contextString Kafka binding '$field' requires 'schemaRegistryUrl' on every applicable " +
                     "Kafka server; missing on ${missingRegistry.joinToString()}.",
                 sourceLocation =

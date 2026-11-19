@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.correlations.CorrelationIdValidator
@@ -72,7 +72,7 @@ internal class MessageTraitValidator(
         val contentType = node.contentType ?: return
         if (!ValidationFormats.isSpecificMediaType(contentType)) {
             results.error(
-                MESSAGE_CONTENT_TYPE_FORMAT,
+                MESSAGE_CONTENT_TYPE,
                 "$contextString has invalid 'contentType' value '$contentType'. Expected a specific media type.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::contentType),
             )

@@ -104,7 +104,6 @@ internal class ComponentValidator(
                     COMPONENT_NAME_FORMAT,
                     "Component ${property.name} key '$name' must match ^[a-zA-Z0-9.\\-_]+$.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(component, property.name),
-                    doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#componentsObject",
                 )
             }
         }

@@ -21,9 +21,9 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_ADDRESS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_SCOPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -84,14 +84,12 @@ internal class OperationValidator(
                 OPERATION_ACTION_REQUIRED,
                 "$contextString must define an 'action' field ('send' or 'receive').",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::action),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         } else if (action != "send" && action != "receive") {
             results.error(
                 OPERATION_ACTION_VALUE,
                 "$contextString has invalid action '$action'. Allowed values are 'send' or 'receive'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::action),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#operationObject",
             )
         }
     }

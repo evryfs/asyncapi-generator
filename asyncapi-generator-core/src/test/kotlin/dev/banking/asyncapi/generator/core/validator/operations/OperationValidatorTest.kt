@@ -2,16 +2,16 @@ package dev.banking.asyncapi.generator.core.validator.operations
 
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_ACTION_VALUE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_SCOPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_TARGET
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_MESSAGE_REFERENCE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_ADDRESS_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_ADDRESS_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_ADDRESS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_SCOPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -34,7 +34,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         assertEquals(8, results.errors.size)
         assertEquals(0, results.warnings.size)
 
-        val scope = results.findings.single { it.code == OPERATION_CHANNEL_REFERENCE_SCOPE.code }
+        val scope = results.findings.single { it.code == OPERATION_CHANNEL_SCOPE.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             scope.sourceLocation?.file?.name,
@@ -56,7 +56,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(40, messageSubset.line)
 
-        val replyChannelScope = results.findings.single { it.code == OPERATION_REPLY_CHANNEL_REFERENCE.code }
+        val replyChannelScope = results.findings.single { it.code == REPLY_CHANNEL_SCOPE.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             replyChannelScope.sourceLocation?.file?.name,
@@ -68,7 +68,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         assertEquals(46, replyChannelScope.line)
 
         val replyMessageSubset =
-            results.findings.single { it.code == OPERATION_REPLY_MESSAGE_REFERENCE.code }
+            results.findings.single { it.code == REPLY_MESSAGE_REFERENCE.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             replyMessageSubset.sourceLocation?.file?.name,
@@ -79,7 +79,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(56, replyMessageSubset.line)
 
-        val replyChannelAddress = results.findings.single { it.code == OPERATION_REPLY_CHANNEL_ADDRESS.code }
+        val replyChannelAddress = results.findings.single { it.code == REPLY_CHANNEL_ADDRESS.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             replyChannelAddress.sourceLocation?.file?.name,
@@ -90,7 +90,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(64, replyChannelAddress.line)
 
-        val missingReplyChannel = results.findings.single { it.code == OPERATION_REPLY_CHANNEL_REQUIRED.code }
+        val missingReplyChannel = results.findings.single { it.code == REPLY_CHANNEL_REQUIRED.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             missingReplyChannel.sourceLocation?.file?.name,
@@ -101,7 +101,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(71, missingReplyChannel.line)
 
-        val replyAddressFormat = results.findings.single { it.code == OPERATION_REPLY_ADDRESS_FORMAT.code }
+        val replyAddressFormat = results.findings.single { it.code == REPLY_ADDRESS_FORMAT.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             replyAddressFormat.sourceLocation?.file?.name,
@@ -113,7 +113,7 @@ class OperationValidatorTest : AbstractValidatorTest() {
         assertEquals(79, replyAddressFormat.line)
 
         val missingReplyAddressLocation =
-            results.findings.single { it.code == OPERATION_REPLY_ADDRESS_REQUIRED.code }
+            results.findings.single { it.code == REPLY_ADDRESS_REQUIRED.code }
         assertEquals(
             "asyncapi_validator_operation_boundaries_invalid.yaml",
             missingReplyAddressLocation.sourceLocation?.file?.name,
@@ -133,11 +133,11 @@ class OperationValidatorTest : AbstractValidatorTest() {
         assertEquals(0, results.warnings.size)
         assertEquals(
             "asyncapi_validator_operation_boundaries_ref_invalid.root.components.operations.Hidden.channel",
-            results.findings.single { it.code == OPERATION_CHANNEL_REFERENCE_SCOPE.code }.path,
+            results.findings.single { it.code == OPERATION_CHANNEL_SCOPE.code }.path,
         )
         assertEquals(
             "asyncapi_validator_operation_boundaries_ref_invalid.root.components.replies.HiddenReply.channel",
-            results.findings.single { it.code == OPERATION_REPLY_CHANNEL_REFERENCE.code }.path,
+            results.findings.single { it.code == REPLY_CHANNEL_SCOPE.code }.path,
         )
     }
 

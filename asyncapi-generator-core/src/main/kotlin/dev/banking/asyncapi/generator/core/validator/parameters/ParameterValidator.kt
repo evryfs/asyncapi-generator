@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_EXAMPLES_ENUM
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_LOCATION_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_LOCATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
@@ -34,7 +34,6 @@ internal class ParameterValidator(
                 PARAMETER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parametersObject",
             )
         }
         when (parameterInterface) {
@@ -112,11 +111,10 @@ internal class ParameterValidator(
         val location = node.location ?: return
         if (!ValidationFormats.isRuntimeExpression(location)) {
             results.error(
-                PARAMETER_LOCATION_FORMAT,
+                PARAMETER_LOCATION,
                 $$"$$contextString invalid 'location' expression '$$location'. Must be a valid " +
                     $$"runtime expression (e.g., $message.header#/param).",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#parameterObject",
             )
         }
     }

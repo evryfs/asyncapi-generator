@@ -44,20 +44,18 @@ internal class ValidationCollector internal constructor() {
         rule: ValidationRule,
         message: String,
         sourceLocation: SourceLocation? = null,
-        doc: String? = rule.documentation,
     ) {
         require(rule.severity == ERROR) { "Rule ${rule.code} is not an error rule" }
-        add(rule, message, sourceLocation, doc ?: rule.documentation)
+        add(rule, message, sourceLocation)
     }
 
     internal fun warn(
         rule: ValidationRule,
         message: String,
         sourceLocation: SourceLocation? = null,
-        doc: String? = rule.documentation,
     ) {
         require(rule.severity == WARNING) { "Rule ${rule.code} is not a warning rule" }
-        add(rule, message, sourceLocation, doc ?: rule.documentation)
+        add(rule, message, sourceLocation)
     }
 
     internal fun report(): ValidationReport = ValidationReport(findings)
@@ -66,7 +64,6 @@ internal class ValidationCollector internal constructor() {
         rule: ValidationRule,
         message: String,
         sourceLocation: SourceLocation?,
-        documentation: String,
     ) {
         findings +=
             ValidationFinding(
@@ -75,7 +72,7 @@ internal class ValidationCollector internal constructor() {
                 severity = rule.severity,
                 message = message,
                 sourceLocation = sourceLocation,
-                documentation = documentation,
+                documentation = rule.documentation,
             )
     }
 }

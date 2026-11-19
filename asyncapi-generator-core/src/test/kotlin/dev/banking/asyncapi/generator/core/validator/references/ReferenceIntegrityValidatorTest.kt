@@ -3,10 +3,10 @@ package dev.banking.asyncapi.generator.core.validator.references
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CORRELATION_LOCATION_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_ADDRESS_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CATEGORY_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_CYCLE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_TARGET_CATEGORY
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_ADDRESS_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.TAG_NAME_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -104,9 +104,9 @@ class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(30, missingTagName.line)
 
-        val replyAddress = report.findings.single { it.code == OPERATION_REPLY_ADDRESS_FORMAT.code }
-        assertEquals(OPERATION_REPLY_ADDRESS_FORMAT.severity, replyAddress.severity)
-        assertEquals(OPERATION_REPLY_ADDRESS_FORMAT.concern, replyAddress.concern)
+        val replyAddress = report.findings.single { it.code == REPLY_ADDRESS_FORMAT.code }
+        assertEquals(REPLY_ADDRESS_FORMAT.severity, replyAddress.severity)
+        assertEquals(REPLY_ADDRESS_FORMAT.concern, replyAddress.concern)
         assertEquals("asyncapi_validator_nested_traversal.yaml", replyAddress.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_nested_traversal.root.components.replyAddresses.shared.location",
