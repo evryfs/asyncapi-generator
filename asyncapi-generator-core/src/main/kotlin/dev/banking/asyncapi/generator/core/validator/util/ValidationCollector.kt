@@ -8,15 +8,23 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.source.SourceLocation
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 import java.util.Collections
 import java.util.IdentityHashMap
 
 /** Mutable validation state confined to one validator invocation. */
 internal class ValidationCollector internal constructor() {
+    /**
+     * A model a reference led to, still to be checked.
+     *
+     * @property category the kind of object the reference expects
+     * @property target the model
+     * @property path the reference as findings name it
+     */
     internal data class PendingReferenceTarget(
         val category: ReferenceCategoryKey,
         val target: Any,
-        val contextString: String,
+        val path: ValidationPath,
     )
 
     private val findings = mutableListOf<ValidationFinding>()
@@ -33,9 +41,9 @@ internal class ValidationCollector internal constructor() {
     internal fun enqueueReferenceTarget(
         category: ReferenceCategoryKey,
         target: Any,
-        contextString: String,
+        path: ValidationPath,
     ) {
-        pendingReferenceTargets.addLast(PendingReferenceTarget(category, target, contextString))
+        pendingReferenceTargets.addLast(PendingReferenceTarget(category, target, path))
     }
 
     internal fun nextReferenceTarget(): PendingReferenceTarget? = pendingReferenceTargets.removeFirstOrNull()

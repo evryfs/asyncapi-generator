@@ -17,6 +17,7 @@ import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_URL
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 import java.util.IdentityHashMap
 
 /** Validates Kafka constraints that depend on the relationship between channels, messages, and servers. */
@@ -52,7 +53,7 @@ internal class KafkaSchemaRegistryValidator(
                 val message = messageInterface.resolvedOrNull() ?: return@messages
                 validateMessage(
                     message = message,
-                    contextString = "Channel '$channelName' Message '$messageName'",
+                    path = ValidationPath.named("Channel", channelName).named("Message", messageName),
                     missingRegistry = missingRegistry,
                     results = results,
                 )
@@ -76,7 +77,7 @@ internal class KafkaSchemaRegistryValidator(
 
     private fun validateMessage(
         message: Message,
-        contextString: String,
+        path: ValidationPath,
         missingRegistry: List<String>,
         results: ValidationCollector,
     ) {
@@ -93,7 +94,7 @@ internal class KafkaSchemaRegistryValidator(
         effectiveFields.forEach { (field, binding) ->
             results.error(
                 KAFKA_MESSAGE_SCHEMA_REGISTRY_URL,
-                "$contextString Kafka binding '$field' requires 'schemaRegistryUrl' on every applicable " +
+                "$path Kafka binding '$field' requires 'schemaRegistryUrl' on every applicable " +
                     "Kafka server; missing on ${missingRegistry.joinToString()}.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(binding, field)

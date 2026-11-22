@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.security
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SECURITY_SCHEME
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
-import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_NAME_REQUIRED
@@ -12,58 +10,39 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_SCHEME_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
-import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.walk.ObjectRules
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 
-internal class SecuritySchemeValidator(
-    val asyncApiContext: AsyncApiContext,
-) {
-    private val referenceResolver = ReferenceResolver(asyncApiContext)
+/**
+ * Validates the Security Scheme Object, including its OAuth flows.
+ *
+ * @param asyncApiContext the load the security schemes belong to
+ */
+internal class SecuritySchemeRules(
+    private val asyncApiContext: AsyncApiContext,
+) : ObjectRules<SecurityScheme> {
     private val oAuthFlowsValidator = OAuthFlowsValidator(asyncApiContext)
 
-    fun validateInterface(
-        node: SecuritySchemeInterface,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        when (node) {
-            is SecuritySchemeInterface.SecuritySchemeInline ->
-                validate(node.security, contextString, results)
-
-            is SecuritySchemeInterface.SecuritySchemeReference ->
-                referenceResolver.resolve(node.reference, SECURITY_SCHEME, contextString, results)
-        }
-    }
-
-    fun validateList(
-        securitySchemeInterfaces: List<SecuritySchemeInterface>,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        securitySchemeInterfaces.forEachIndexed { index, securitySchemeInterface ->
-            val securitySchemeContext = "$contextString [index=$index]"
-            validateInterface(securitySchemeInterface, securitySchemeContext, results)
-        }
-    }
-
-    fun validate(
+    override fun check(
         node: SecurityScheme,
-        contextString: String,
-        results: ValidationCollector,
+        path: ValidationPath,
+        walk: ValidationWalk,
     ) {
-        if (!results.visit(node)) return
-        validateType(node, contextString, results)
-        validateName(node, contextString, results)
-        validateInField(node, contextString, results)
-        validateScheme(node, contextString, results)
-        oAuthFlowsValidator.validate(node, contextString, results)
-        validateOpenIdConnectUrl(node, contextString, results)
+        val results = walk.results
+        validateType(node, path, results)
+        validateName(node, path, results)
+        validateInField(node, path, results)
+        validateScheme(node, path, results)
+        oAuthFlowsValidator.validate(node, path, results)
+        validateOpenIdConnectUrl(node, path, results)
     }
 
     private fun validateType(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val validTypes =
@@ -86,13 +65,13 @@ internal class SecuritySchemeValidator(
         if (type.isBlank()) {
             results.error(
                 SECURITY_TYPE_REQUIRED,
-                "$contextString 'type' field in SecurityScheme is required.",
+                "$path 'type' field in SecurityScheme is required.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
             )
         } else if (type !in validTypes) {
             results.error(
                 SECURITY_TYPE_VALUE,
-                "$contextString invalid type '$type'. Expected one of: ${validTypes.joinToString(", ")}",
+                "$path invalid type '$type'. Expected one of: ${validTypes.joinToString(", ")}",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::type),
             )
         }
@@ -100,13 +79,13 @@ internal class SecuritySchemeValidator(
 
     private fun validateName(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (node.type == "httpApiKey" && node.name.isNullOrBlank()) {
             results.error(
                 SECURITY_NAME_REQUIRED,
-                "$contextString of type 'httpApiKey' requires non-empty 'name'.",
+                "$path of type 'httpApiKey' requires non-empty 'name'.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(node, node::name)
                         ?: asyncApiContext.modelTracking.getSourceLocation(node),
@@ -116,7 +95,7 @@ internal class SecuritySchemeValidator(
 
     private fun validateInField(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         val validInValues =
@@ -129,7 +108,7 @@ internal class SecuritySchemeValidator(
         if (inField.isNullOrBlank()) {
             results.error(
                 SECURITY_IN_REQUIRED,
-                "$contextString of type '${node.type}' requires a non-empty 'in' field.",
+                "$path of type '${node.type}' requires a non-empty 'in' field.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(node, node::inField)
                         ?: asyncApiContext.modelTracking.getSourceLocation(node),
@@ -137,7 +116,7 @@ internal class SecuritySchemeValidator(
         } else if (inField !in validInValues) {
             results.error(
                 SECURITY_IN_VALUE,
-                "$contextString invalid 'in' value '$inField' for type '${node.type}'. " +
+                "$path invalid 'in' value '$inField' for type '${node.type}'. " +
                     "Expected one of: ${validInValues.joinToString(", ")}",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::inField),
             )
@@ -146,13 +125,13 @@ internal class SecuritySchemeValidator(
 
     private fun validateScheme(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (node.type == "http" && node.scheme.isNullOrBlank()) {
             results.error(
                 SECURITY_SCHEME_REQUIRED,
-                "$contextString of type 'http' requires non-empty 'scheme'.",
+                "$path of type 'http' requires non-empty 'scheme'.",
                 sourceLocation =
                     asyncApiContext.modelTracking.getSourceLocation(node, node::scheme)
                         ?: asyncApiContext.modelTracking.getSourceLocation(node),
@@ -162,7 +141,7 @@ internal class SecuritySchemeValidator(
 
     private fun validateOpenIdConnectUrl(
         node: SecurityScheme,
-        contextString: String,
+        path: ValidationPath,
         results: ValidationCollector,
     ) {
         if (node.type == "openIdConnect") {
@@ -170,7 +149,7 @@ internal class SecuritySchemeValidator(
             if (url.isNullOrBlank()) {
                 results.error(
                     SECURITY_OPENID_URL_REQUIRED,
-                    "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'.",
+                    "$path of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'.",
                     sourceLocation =
                         asyncApiContext.modelTracking.getSourceLocation(node, node::openIdConnectUrl)
                             ?: asyncApiContext.modelTracking.getSourceLocation(node),
@@ -179,7 +158,7 @@ internal class SecuritySchemeValidator(
                 if (ValidationFormats.absoluteUri(url) == null) {
                     results.error(
                         SECURITY_OPENID_URL_FORMAT,
-                        "$contextString of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'. " +
+                        "$path of type 'openIdConnect' must provide a valid absolute 'openIdConnectUrl'. " +
                             "Got '$url'.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::openIdConnectUrl),
                     )

@@ -2,19 +2,22 @@ package dev.banking.asyncapi.generator.core.validator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION
+import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_CONTENT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN
 import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistryValidator
-import dev.banking.asyncapi.generator.core.validator.channels.ChannelValidator
-import dev.banking.asyncapi.generator.core.validator.components.ComponentValidator
-import dev.banking.asyncapi.generator.core.validator.info.InfoValidator
+import dev.banking.asyncapi.generator.core.validator.components.ComponentRules
+import dev.banking.asyncapi.generator.core.validator.info.InfoRules
 import dev.banking.asyncapi.generator.core.validator.operations.OperationBoundaryValidator
-import dev.banking.asyncapi.generator.core.validator.operations.OperationValidator
-import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
+import dev.banking.asyncapi.generator.core.validator.servers.ServerRules
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
+import dev.banking.asyncapi.generator.core.validator.walk.ValidationWalk
 
 /**
  * Validates a parsed [AsyncApiDocument] and returns validation results.
@@ -22,40 +25,36 @@ import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 internal class AsyncApiValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
-    private val infoValidator = InfoValidator(asyncApiContext)
-    private val channelValidator = ChannelValidator(asyncApiContext)
-    private val serverValidator = ServerValidator(asyncApiContext)
-    private val operationValidator = OperationValidator(asyncApiContext)
-    private val componentValidator = ComponentValidator(asyncApiContext)
-    private val referenceTargetTraversal = ReferenceTargetTraversal(asyncApiContext)
+    private val infoRules = InfoRules(asyncApiContext)
+    private val componentRules = ComponentRules(asyncApiContext)
     private val operationBoundaryValidator = OperationBoundaryValidator(asyncApiContext)
     private val kafkaSchemaRegistryValidator = KafkaSchemaRegistryValidator(asyncApiContext)
 
+    /** Validates [asyncApiDocument] and every object it reaches, and returns the findings. */
     fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
         val results = ValidationCollector()
+        val walk = ValidationWalk(asyncApiContext, results)
         results.visit(asyncApiDocument)
 
         validateIdentifier(asyncApiDocument, results)
         validateDefaultContentType(asyncApiDocument, results)
-        infoValidator.validate(asyncApiDocument.info, "Info", results)
+        infoRules.check(asyncApiDocument.info, ValidationPath.of("Info"), walk)
         asyncApiDocument.channels?.forEach { (name, channel) ->
-            channelValidator.validateInterface(channel, "Channel '$name'", results)
+            walk.member(channel, CHANNEL, ValidationPath.named("Channel", name))
         }
         asyncApiDocument.servers?.forEach { (name, server) ->
-            serverValidator.validateInterface(server, "Server '$name'", results, name)
+            val path = ValidationPath.named("Server", name)
+            ServerRules.checkName(name, server, path, walk)
+            walk.member(server, SERVER, path)
         }
         asyncApiDocument.operations?.forEach { (name, operation) ->
-            operationValidator.validateInterface(
-                operation,
-                "Operation '$name'",
-                results,
-            )
+            walk.member(operation, OPERATION, ValidationPath.named("Operation", name))
         }
         asyncApiDocument.components?.let { components ->
-            componentValidator.validate(components, "Component", results)
+            componentRules.check(components, ValidationPath.of("Component"), walk)
         }
 
-        referenceTargetTraversal.drain(results)
+        walk.drainReferenceTargets()
         operationBoundaryValidator.validate(asyncApiDocument, results)
         kafkaSchemaRegistryValidator.validate(asyncApiDocument, results)
         return results.report()
