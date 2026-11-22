@@ -16,6 +16,7 @@ class AsyncApiBundler {
     /** Bundles a loaded and validated document. */
     fun bundle(loaded: AsyncApiDocumentLoadResult): BundledAsyncApiDocument = bundle(loaded.document)
 
+    /** Bundles [document]; every call starts a new [BundlingRun]. */
     internal fun bundle(document: AsyncApiDocument): BundledAsyncApiDocument {
         val run = BundlingRun(rootSchemas = document.components?.schemas.orEmpty())
         val scope = run.rootScope()

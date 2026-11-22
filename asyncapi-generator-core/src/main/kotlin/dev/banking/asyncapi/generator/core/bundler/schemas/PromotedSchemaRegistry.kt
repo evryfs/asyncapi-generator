@@ -14,10 +14,22 @@ import java.util.IdentityHashMap
  * Contracts often copy shared types into several files. An external schema whose name is already
  * taken by a schema with the same content reuses that schema; one with different content fails,
  * because one name cannot describe two types.
+ *
+ * @param rootSchemas the component schemas of the root document, which hold their names from the start
  */
 internal class PromotedSchemaRegistry(
     rootSchemas: Map<String, SchemaInterface> = emptyMap(),
 ) {
+    /**
+     * A schema name in the bundled `components.schemas` and the schema that holds it.
+     *
+     * @param name the component schema name
+     * @param model the source model, which identifies the schema
+     * @param origin where the schema comes from, shown when two schemas collide
+     * @param promoted whether the schema is promoted from outside the root components
+     * @param state how far bundling of the schema has come
+     * @param bundledSchema the bundled schema, once complete
+     */
     internal class Entry(
         val name: String,
         val model: Any,
@@ -27,9 +39,15 @@ internal class PromotedSchemaRegistry(
         var bundledSchema: SchemaInterface? = null,
     )
 
+    /** How far bundling of a schema has come; a schema reached again while [BUNDLING] is recursive. */
     internal enum class State {
+        /** Reserved, not bundled yet. */
         PENDING,
+
+        /** Being bundled. */
         BUNDLING,
+
+        /** Bundled; [Entry.bundledSchema] holds the result. */
         COMPLETE,
     }
 
@@ -53,6 +71,12 @@ internal class PromotedSchemaRegistry(
         }
     }
 
+    /**
+     * Returns the entry for [model]: an existing one for the same model or for the same name and content,
+     * or a new one under the name of [reference]'s pointer.
+     *
+     * @throws AsyncApiBundlingException when the pointer gives no name, or the name holds a different schema
+     */
     fun reserve(
         reference: Reference,
         model: Any,
@@ -88,12 +112,14 @@ internal class PromotedSchemaRegistry(
         }
     }
 
+    /** Marks [entry] as being bundled; `false` when it is already being bundled or complete. */
     fun startBundling(entry: Entry): Boolean {
         if (entry.state != State.PENDING) return false
         entry.state = State.BUNDLING
         return true
     }
 
+    /** Stores the bundled [schema] of [entry]. */
     fun complete(
         entry: Entry,
         schema: SchemaInterface,
@@ -102,6 +128,7 @@ internal class PromotedSchemaRegistry(
         entry.state = State.COMPLETE
     }
 
+    /** The promoted schemas by name, in the order they were reserved. */
     fun schemas(): Map<String, SchemaInterface> =
         entriesByName.values
             .filter(Entry::promoted)

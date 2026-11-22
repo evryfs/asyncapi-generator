@@ -14,15 +14,46 @@ resolved every `$ref`, and validated the contract. It returns a
 
 The bundler is a pure transformation of the domain model. It does not read
 files, parse YAML or JSON, validate, or generate code, and it does not modify
-the loaded document. What one bundling shares (promoted schemas, recursion
-analysis) lives in a `BundlingRun` created for that call; where the bundler is
-in the document (references followed, external-document scope) lives in an
-immutable `BundlingScope`.
+the loaded document.
+
+## Architecture
+
+**`BundlingWalk`** holds one bundler per kind of object and does the step every
+inline-or-reference member shares. An inline object has its members bundled; a
+`$ref` not yet followed on the current path becomes an inline copy of its
+bundled object; a `$ref` already followed on the path stays a `$ref`, which ends
+recursion. Each kind of member is a `MemberKind`: how to wrap an object or a
+reference back into the member type, and how to bundle the object's members.
+Objects without members to bundle (tags, external docs, parameters,
+correlation ids, security schemes, server variables, reply addresses) have no
+bundle function and are copied in as they are.
+
+**Object bundlers** (`ChannelBundler`, `MessageBundler`, `OperationBundler`, …)
+rebuild their object from its bundled members, in a fixed order, and never
+build another bundler. The order matters: it decides the order in which
+schemas are promoted into `components.schemas`.
+
+**`SchemaBundler`** rebuilds an inline schema from its bundled child schemas,
+external docs and bindings, and hands a schema `$ref` to
+**`SchemaReferenceBundler`**, which keeps, inlines or promotes it by the rules
+below.
+
+**`BundlingRun`** holds what one call to `bundle` shares: the
+`PromotedSchemaRegistry` and the `SchemaRecursionAnalyzer`. **`BundlingScope`**
+is where the bundler is in the document: the references followed to get there,
+whether that left the root document, and which root component schema is being
+defined. A scope never changes; following a reference returns a new one.
+
+`Schema.childSchemas()` in the model lists every schema a schema holds
+directly. The recursion analyzer uses it, and a model test fails when a
+schema-valued field of `Schema` is missing from it.
+
+To bundle a new member of an object, add it to the object's bundler; for a new
+kind of inline-or-reference member, add a `MemberKind` to the walk.
 
 ## Rules
 
-Each object bundler (`channels`, `messages`, `operations`, `schemas`, and so
-on) walks its part of the model and replaces resolved references:
+The bundlers replace resolved references as follows:
 
 - A reference to a non-schema object in another file is replaced by the
   bundled object.

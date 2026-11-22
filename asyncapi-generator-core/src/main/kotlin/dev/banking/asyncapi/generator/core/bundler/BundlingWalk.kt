@@ -40,8 +40,13 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 internal class BundlingWalk {
     /** Bundles schemas, which are not inline-or-reference members: their references can also be kept or promoted. */
     val schemas = SchemaBundler(this)
+
+    /** Bundles the info object, which is never a reference. */
     val info = InfoBundler(this)
+
+    /** Bundles `components`, which is never a reference. */
     val components = ComponentBundler(this)
+
     private val servers = ServerBundler(this)
     private val channels = ChannelBundler(this)
     private val operations = OperationBundler(this)
@@ -51,6 +56,7 @@ internal class BundlingWalk {
     private val messageTraits = MessageTraitBundler(this)
     private val bindings = BindingBundler(this)
 
+    // One kind per inline-or-reference member; a kind without a bundle function is copied in as it is.
     val server = MemberKind(ServerInterface::ServerInline, ServerInterface::ServerReference, servers::bundle)
     val channel = MemberKind(ChannelInterface::ChannelInline, ChannelInterface::ChannelReference, channels::bundle)
     val operation =

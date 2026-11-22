@@ -16,8 +16,10 @@ import org.yaml.snakeyaml.resolver.Resolver
  * `"123"`, or `"on"`, is quoted, so reading the written document gives back the same values.
  */
 internal object AsyncApiDocumentSerializer {
+    /** Writes [value] as YAML. */
     fun toYaml(value: Any): String = yamlMapper.writeValueAsString(value)
 
+    /** Writes [value] as indented JSON. */
     fun toJson(value: Any): String =
         jsonMapper
             .writerWithDefaultPrettyPrinter()
