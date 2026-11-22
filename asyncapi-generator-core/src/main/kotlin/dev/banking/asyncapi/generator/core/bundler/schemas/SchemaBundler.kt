@@ -4,7 +4,6 @@ import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
-import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
@@ -109,7 +108,7 @@ internal class SchemaBundler {
             when (referencedModel) {
                 is Schema ->
                     return schemaInterface.copy(
-                        reference = reference.withModel(bundleSchema(referencedModel, scope.enter(reference))),
+                        reference = reference.copy(model = bundleSchema(referencedModel, scope.enter(reference))),
                     )
                 is MultiFormatSchema -> return schemaInterface
                 else ->

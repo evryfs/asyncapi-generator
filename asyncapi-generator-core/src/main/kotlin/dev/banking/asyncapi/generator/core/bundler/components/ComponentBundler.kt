@@ -18,7 +18,6 @@ import dev.banking.asyncapi.generator.core.bundler.security.SecuritySchemeBundle
 import dev.banking.asyncapi.generator.core.bundler.servers.ServerBundler
 import dev.banking.asyncapi.generator.core.bundler.servers.ServerVariableBundler
 import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
-import dev.banking.asyncapi.generator.core.bundler.withModel
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 

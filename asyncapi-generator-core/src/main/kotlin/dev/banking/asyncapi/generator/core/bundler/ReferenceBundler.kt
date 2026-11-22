@@ -22,7 +22,7 @@ internal object ReferenceBundler {
         scope: BundlingScope,
     ): Reference {
         if (scope.hasVisited(reference)) return reference
-        return reference.copy(model = reference.requireModel<Any?>()).inline()
+        return reference.inlined(reference.requireModel<Any?>())
     }
 
     /** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */
@@ -34,9 +34,6 @@ internal object ReferenceBundler {
         if (scope.hasVisited(reference)) return reference
         val model = reference.requireModel<T>()
         val bundled = bundle(model, scope.enter(reference))
-        return reference.copy(model = bundled).inline()
+        return reference.inlined(bundled)
     }
 }
-
-/** A copy of this reference pointing at [model], keeping its inline state. */
-internal fun Reference.withModel(model: Any?): Reference = copy(model = model).also { it.inline = inline }
