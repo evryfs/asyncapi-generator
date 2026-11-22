@@ -9,10 +9,10 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_CONTENT_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN
-import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistryValidator
+import dev.banking.asyncapi.generator.core.validator.bindings.KafkaSchemaRegistryRule
 import dev.banking.asyncapi.generator.core.validator.components.ComponentRules
 import dev.banking.asyncapi.generator.core.validator.info.InfoRules
-import dev.banking.asyncapi.generator.core.validator.operations.OperationBoundaryValidator
+import dev.banking.asyncapi.generator.core.validator.operations.OperationBoundaryRule
 import dev.banking.asyncapi.generator.core.validator.servers.ServerRules
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
@@ -27,8 +27,8 @@ internal class AsyncApiValidator(
 ) {
     private val infoRules = InfoRules(asyncApiContext)
     private val componentRules = ComponentRules(asyncApiContext)
-    private val operationBoundaryValidator = OperationBoundaryValidator(asyncApiContext)
-    private val kafkaSchemaRegistryValidator = KafkaSchemaRegistryValidator(asyncApiContext)
+    private val documentRules: List<DocumentRule> =
+        listOf(OperationBoundaryRule(asyncApiContext), KafkaSchemaRegistryRule(asyncApiContext))
 
     /** Validates [asyncApiDocument] and every object it reaches, and returns the findings. */
     fun validate(asyncApiDocument: AsyncApiDocument): ValidationReport {
@@ -55,8 +55,7 @@ internal class AsyncApiValidator(
         }
 
         walk.drainReferenceTargets()
-        operationBoundaryValidator.validate(asyncApiDocument, results)
-        kafkaSchemaRegistryValidator.validate(asyncApiDocument, results)
+        documentRules.forEach { rule -> rule.check(asyncApiDocument, results) }
         return results.report()
     }
 

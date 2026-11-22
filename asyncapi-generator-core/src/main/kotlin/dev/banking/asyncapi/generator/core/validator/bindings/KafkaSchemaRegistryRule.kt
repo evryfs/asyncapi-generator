@@ -16,15 +16,20 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.KAFKA_MESSAGE_SCHEMA_REGISTRY_URL
+import dev.banking.asyncapi.generator.core.validator.DocumentRule
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.walk.ValidationPath
 import java.util.IdentityHashMap
 
-/** Validates Kafka constraints that depend on the relationship between channels, messages, and servers. */
-internal class KafkaSchemaRegistryValidator(
+/**
+ * Checks Kafka constraints that depend on how channels, messages and servers relate.
+ *
+ * @param asyncApiContext the load whose models are checked
+ */
+internal class KafkaSchemaRegistryRule(
     private val asyncApiContext: AsyncApiContext,
-) {
-    fun validate(
+) : DocumentRule {
+    override fun check(
         document: AsyncApiDocument,
         results: ValidationCollector,
     ) {
