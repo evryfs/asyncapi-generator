@@ -186,7 +186,6 @@
     <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>TooManyFunctions:KafkaBindingValidator.kt$KafkaBindingValidator</ID>
-    <ID>TooManyFunctions:KafkaSchemaRegistryValidator.kt$KafkaSchemaRegistryValidator</ID>
     <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:MessageValidator.kt$MessageValidator</ID>
     <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
@@ -224,13 +223,7 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface</ID>
-    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingInline : BindingInterface</ID>
-    <ID>UndocumentedPublicClass:BindingInterface.kt$BindingInterface$BindingReference : BindingInterface</ID>
     <ID>UndocumentedPublicClass:Channel.kt$Channel</ID>
-    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface</ID>
-    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface$ChannelInline : ChannelInterface</ID>
-    <ID>UndocumentedPublicClass:ChannelInterface.kt$ChannelInterface$ChannelReference : ChannelInterface</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Consumer</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Kafka : ClientGeneration</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Producer</ID>
@@ -238,13 +231,7 @@
     <ID>UndocumentedPublicClass:Component.kt$Component</ID>
     <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
     <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
-    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface</ID>
-    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdInline : CorrelationIdInterface</ID>
-    <ID>UndocumentedPublicClass:CorrelationIdInterface.kt$CorrelationIdInterface$CorrelationIdReference : CorrelationIdInterface</ID>
     <ID>UndocumentedPublicClass:ExternalDoc.kt$ExternalDoc</ID>
-    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface</ID>
-    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface$ExternalDocInline : ExternalDocInterface</ID>
-    <ID>UndocumentedPublicClass:ExternalDocInterface.kt$ExternalDocInterface$ExternalDocReference : ExternalDocInterface</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$AvroSchemaArtifacts : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$DocumentArtifact : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$JsonSchemaArtifacts : GenerationTask</ID>
@@ -269,36 +256,15 @@
     <ID>UndocumentedPublicClass:License.kt$License</ID>
     <ID>UndocumentedPublicClass:Message.kt$Message</ID>
     <ID>UndocumentedPublicClass:MessageExample.kt$MessageExample</ID>
-    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface</ID>
-    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageInline : MessageInterface</ID>
-    <ID>UndocumentedPublicClass:MessageInterface.kt$MessageInterface$MessageReference : MessageInterface</ID>
     <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitInline : MessageTraitInterface</ID>
-    <ID>UndocumentedPublicClass:MessageTraitInterface.kt$MessageTraitInterface$MessageTraitReference : MessageTraitInterface</ID>
     <ID>UndocumentedPublicClass:ModelGeneration.kt$ModelGeneration$Enabled : ModelGeneration</ID>
     <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
     <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>
     <ID>UndocumentedPublicClass:Operation.kt$Operation</ID>
-    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface</ID>
-    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface$OperationInline : OperationInterface</ID>
-    <ID>UndocumentedPublicClass:OperationInterface.kt$OperationInterface$OperationReference : OperationInterface</ID>
     <ID>UndocumentedPublicClass:OperationReply.kt$OperationReply</ID>
     <ID>UndocumentedPublicClass:OperationReplyAddress.kt$OperationReplyAddress</ID>
-    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface</ID>
-    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface$OperationReplyAddressInline : OperationReplyAddressInterface</ID>
-    <ID>UndocumentedPublicClass:OperationReplyAddressInterface.kt$OperationReplyAddressInterface$OperationReplyAddressReference : OperationReplyAddressInterface</ID>
-    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface</ID>
-    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface$OperationReplyInline : OperationReplyInterface</ID>
-    <ID>UndocumentedPublicClass:OperationReplyInterface.kt$OperationReplyInterface$OperationReplyReference : OperationReplyInterface</ID>
     <ID>UndocumentedPublicClass:OperationTrait.kt$OperationTrait</ID>
-    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface</ID>
-    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface$OperationTraitInline : OperationTraitInterface</ID>
-    <ID>UndocumentedPublicClass:OperationTraitInterface.kt$OperationTraitInterface$OperationTraitReference : OperationTraitInterface</ID>
     <ID>UndocumentedPublicClass:Parameter.kt$Parameter</ID>
-    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface</ID>
-    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterInline : ParameterInterface</ID>
-    <ID>UndocumentedPublicClass:ParameterInterface.kt$ParameterInterface$ParameterReference : ParameterInterface</ID>
     <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$AvroProjection : SchemaGeneration</ID>
     <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$JsonSchema : SchemaGeneration</ID>
@@ -310,21 +276,9 @@
     <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaInline : SchemaInterface</ID>
     <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaReference : SchemaInterface</ID>
     <ID>UndocumentedPublicClass:SecurityScheme.kt$SecurityScheme</ID>
-    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface</ID>
-    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface$SecuritySchemeInline : SecuritySchemeInterface</ID>
-    <ID>UndocumentedPublicClass:SecuritySchemeInterface.kt$SecuritySchemeInterface$SecuritySchemeReference : SecuritySchemeInterface</ID>
     <ID>UndocumentedPublicClass:Server.kt$Server</ID>
-    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface</ID>
-    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface$ServerInline : ServerInterface</ID>
-    <ID>UndocumentedPublicClass:ServerInterface.kt$ServerInterface$ServerReference : ServerInterface</ID>
     <ID>UndocumentedPublicClass:ServerVariable.kt$ServerVariable</ID>
-    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface</ID>
-    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface$ServerVariableInline : ServerVariableInterface</ID>
-    <ID>UndocumentedPublicClass:ServerVariableInterface.kt$ServerVariableInterface$ServerVariableReference : ServerVariableInterface</ID>
     <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
-    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface</ID>
-    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagInline : TagInterface</ID>
-    <ID>UndocumentedPublicClass:TagInterface.kt$TagInterface$TagReference : TagInterface</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
     <ID>UnusedPrivateProperty:BindingBundlerTest.kt$BindingBundlerTest$val originalKey = assertIs&lt;SchemaInterface.SchemaReference&gt;(binding.kafkaKeySchema)</ID>
