@@ -38,8 +38,6 @@ import dev.banking.asyncapi.generator.core.validator.bindings.BindingValidator
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import java.math.BigDecimal
-import java.util.Collections
-import java.util.IdentityHashMap
 
 internal class SchemaValidator(
     val asyncApiContext: AsyncApiContext,
@@ -54,7 +52,7 @@ internal class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        validateInterface(schemaInterface, contextString, results, newVisitedSet(), emptySet())
+        validateInterface(schemaInterface, contextString, results, emptySet())
     }
 
     fun validateMap(
@@ -62,9 +60,8 @@ internal class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val visited = newVisitedSet()
         schemas.forEach { (name, schema) ->
-            validateInterface(schema, "$contextString Schema '$name'", results, visited, emptySet())
+            validateInterface(schema, "$contextString Schema '$name'", results, emptySet())
         }
     }
 
@@ -72,15 +69,14 @@ internal class SchemaValidator(
         schemaInterface: SchemaInterface,
         contextString: String,
         results: ValidationCollector,
-        visited: MutableSet<Any>,
         enclosingDeclarations: Set<String>,
     ) {
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
-                validate(schemaInterface.schema, contextString, results, visited, enclosingDeclarations)
+                validate(schemaInterface.schema, contextString, results, enclosingDeclarations)
 
             is SchemaInterface.SchemaReference ->
-                validateReference(schemaInterface.reference, contextString, results, visited)
+                validateReference(schemaInterface.reference, contextString, results)
 
             is SchemaInterface.MultiFormatSchemaInline -> results.visit(schemaInterface.multiFormatSchema)
             is SchemaInterface.BooleanSchema -> results.visit(schemaInterface)
@@ -92,19 +88,16 @@ internal class SchemaValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        validate(node, contextString, results, newVisitedSet(), emptySet())
+        validate(node, contextString, results, emptySet())
     }
 
     private fun validate(
         node: Schema,
         contextString: String,
         results: ValidationCollector,
-        visited: MutableSet<Any>,
         enclosingDeclarations: Set<String>,
     ) {
-        if (!visited.add(node) || !results.visit(node)) {
-            return
-        }
+        if (!results.visit(node)) return
         val applicableDeclarations = enclosingDeclarations + propertyDeclarations.collect(node)
         validateKeywords(node, contextString, results)
         validateDialect(node, contextString, results)
@@ -123,48 +116,47 @@ internal class SchemaValidator(
 
         // Recursive validation for nested schemas
         node.properties?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, visited, emptySet())
+            validateInterface(subSchema, name, results, emptySet())
         }
         node.patternProperties?.forEach { (pattern, subSchema) ->
-            validateInterface(subSchema, "Pattern property '$pattern'", results, visited, emptySet())
+            validateInterface(subSchema, "Pattern property '$pattern'", results, emptySet())
         }
         node.definitions?.forEach { (name, subSchema) ->
-            validateInterface(subSchema, name, results, visited, emptySet())
+            validateInterface(subSchema, name, results, emptySet())
         }
-        node.items?.let { validateInterface(it, contextString, results, visited, emptySet()) }
+        node.items?.let { validateInterface(it, contextString, results, emptySet()) }
         node.tupleItems?.forEachIndexed { index, subSchema ->
-            validateInterface(subSchema, "$contextString tuple item $index", results, visited, emptySet())
+            validateInterface(subSchema, "$contextString tuple item $index", results, emptySet())
         }
-        node.additionalItems?.let { validateInterface(it, contextString, results, visited, emptySet()) }
-        node.additionalProperties?.let { validateInterface(it, contextString, results, visited, emptySet()) }
-        node.contains?.let { validateInterface(it, contextString, results, visited, emptySet()) }
-        node.propertyNames?.let { validateInterface(it, contextString, results, visited, emptySet()) }
+        node.additionalItems?.let { validateInterface(it, contextString, results, emptySet()) }
+        node.additionalProperties?.let { validateInterface(it, contextString, results, emptySet()) }
+        node.contains?.let { validateInterface(it, contextString, results, emptySet()) }
+        node.propertyNames?.let { validateInterface(it, contextString, results, emptySet()) }
         node.dependencies?.forEach { (name, dependency) ->
             if (dependency is SchemaInterface) {
                 validateInterface(
                     dependency,
                     "$contextString dependency '$name'",
                     results,
-                    visited,
                     applicableDeclarations,
                 )
             }
         }
 
         node.allOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+            validateInterface(subSchema, contextString, results, applicableDeclarations)
         }
         node.anyOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+            validateInterface(subSchema, contextString, results, applicableDeclarations)
         }
         node.oneOf?.forEach { subSchema ->
-            validateInterface(subSchema, contextString, results, visited, applicableDeclarations)
+            validateInterface(subSchema, contextString, results, applicableDeclarations)
         }
 
-        node.not?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
-        node.ifSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
-        node.thenSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
-        node.elseSchema?.let { validateInterface(it, contextString, results, visited, applicableDeclarations) }
+        node.not?.let { validateInterface(it, contextString, results, applicableDeclarations) }
+        node.ifSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
+        node.thenSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
+        node.elseSchema?.let { validateInterface(it, contextString, results, applicableDeclarations) }
 
         // Members are resolved by the recursion above.
         validateUnionMembers(node, contextString, results)
@@ -174,16 +166,11 @@ internal class SchemaValidator(
         reference: Reference,
         contextString: String,
         results: ValidationCollector,
-        visited: MutableSet<Any>,
     ) {
-        if (!visited.add(reference)) {
-            return
-        }
+        if (!results.visit(reference)) return
         validateKeywords(reference, contextString, results)
         referenceResolver.resolve(reference, SCHEMA, contextString, results)
     }
-
-    private fun newVisitedSet(): MutableSet<Any> = Collections.newSetFromMap(IdentityHashMap())
 
     private fun validateKeywords(
         node: Any,

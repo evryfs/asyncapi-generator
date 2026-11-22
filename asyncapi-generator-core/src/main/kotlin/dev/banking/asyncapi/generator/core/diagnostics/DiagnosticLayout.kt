@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.validator.util
+package dev.banking.asyncapi.generator.core.diagnostics
 
 /**
  * The layout every frontend prints diagnostics in: a title, then per entry the

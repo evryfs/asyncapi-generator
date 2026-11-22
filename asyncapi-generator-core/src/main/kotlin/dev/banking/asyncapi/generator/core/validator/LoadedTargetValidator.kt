@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.diagnostics.ValidationReporter
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.CHANNEL
@@ -39,7 +40,6 @@ import dev.banking.asyncapi.generator.core.validator.servers.ServerValidator
 import dev.banking.asyncapi.generator.core.validator.servers.ServerVariableValidator
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
-import dev.banking.asyncapi.generator.core.validator.util.ValidationReporter
 
 private typealias FragmentValidation = (model: Any, contextString: String, results: ValidationCollector) -> Unit
 
