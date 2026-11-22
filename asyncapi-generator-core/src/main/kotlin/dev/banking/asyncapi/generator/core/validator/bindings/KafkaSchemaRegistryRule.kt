@@ -41,21 +41,30 @@ internal class KafkaSchemaRegistryRule(
             IdentityHashMap<Server, String>().apply {
                 rootServers.forEach { put(it.server, it.name) }
             }
+        val root = RootServers(rootServers, rootServerNames)
 
-        document.channels.orEmpty().forEach channels@{ (channelName, channelInterface) ->
-            val channel = channelInterface.resolvedOrNull() ?: return@channels
-            val applicableServers = applicableServers(channel, rootServers, rootServerNames)
-            val missingRegistry =
-                applicableServers
-                    .filter {
-                        it.server.protocol in KAFKA_PROTOCOLS &&
-                            schemaRegistryStatus(it.server) == SchemaRegistryStatus.ABSENT
-                    }.map(ApplicableServer::name)
-                    .distinct()
-            if (missingRegistry.isEmpty()) return@channels
+        document.channels.orEmpty().forEach { (channelName, channelInterface) ->
+            channelInterface.resolvedOrNull()?.let { checkChannel(channelName, it, root, results) }
+        }
+    }
 
-            channel.messages.orEmpty().forEach messages@{ (messageName, messageInterface) ->
-                val message = messageInterface.resolvedOrNull() ?: return@messages
+    private fun checkChannel(
+        channelName: String,
+        channel: Channel,
+        root: RootServers,
+        results: ValidationCollector,
+    ) {
+        val missingRegistry =
+            applicableServers(channel, root)
+                .filter {
+                    it.server.protocol in KAFKA_PROTOCOLS &&
+                        schemaRegistryStatus(it.server) == SchemaRegistryStatus.ABSENT
+                }.map(ApplicableServer::name)
+                .distinct()
+        if (missingRegistry.isEmpty()) return
+
+        channel.messages.orEmpty().forEach { (messageName, messageInterface) ->
+            messageInterface.resolvedOrNull()?.let { message ->
                 validateMessage(
                     message = message,
                     path = ValidationPath.named("Channel", channelName).named("Message", messageName),
@@ -68,15 +77,14 @@ internal class KafkaSchemaRegistryRule(
 
     private fun applicableServers(
         channel: Channel,
-        rootServers: List<ApplicableServer>,
-        rootServerNames: IdentityHashMap<Server, String>,
+        root: RootServers,
     ): List<ApplicableServer> {
         val selectedServers = channel.servers
-        if (selectedServers.isNullOrEmpty()) return rootServers
+        if (selectedServers.isNullOrEmpty()) return root.servers
 
         return selectedServers.mapNotNull { reference ->
             val server = reference.finalModel() as? Server ?: return@mapNotNull null
-            ApplicableServer(rootServerNames[server] ?: reference.ref, server)
+            ApplicableServer(root.names[server] ?: reference.ref, server)
         }
     }
 
@@ -124,30 +132,28 @@ internal class KafkaSchemaRegistryRule(
             ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.MESSAGE }
 
     private fun schemaRegistryStatus(server: Server): SchemaRegistryStatus {
-        val bindingInterface =
-            server.bindings?.get(KAFKA_BINDING)
-                ?: return SchemaRegistryStatus.ABSENT
-        val binding =
-            bindingInterface?.resolvedOrNull()
-                ?: return SchemaRegistryStatus.UNKNOWN
-        val kafkaBinding =
-            binding
-                .protocolBindings
-                ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.SERVER }
-                ?: return SchemaRegistryStatus.UNKNOWN
+        val bindingInterface = server.bindings?.get(KAFKA_BINDING) ?: return SchemaRegistryStatus.ABSENT
         val properties =
-            kafkaBinding.content as? Map<*, *>
-                ?: return SchemaRegistryStatus.UNKNOWN
-        return if (properties.containsKey(SCHEMA_REGISTRY_URL)) {
-            SchemaRegistryStatus.PRESENT
-        } else {
-            SchemaRegistryStatus.ABSENT
+            bindingInterface
+                .resolvedOrNull()
+                ?.protocolBindings
+                ?.firstOrNull { it.protocol == KAFKA_BINDING && it.location == BindingLocation.SERVER }
+                ?.content as? Map<*, *>
+        return when {
+            properties == null -> SchemaRegistryStatus.UNKNOWN
+            properties.containsKey(SCHEMA_REGISTRY_URL) -> SchemaRegistryStatus.PRESENT
+            else -> SchemaRegistryStatus.ABSENT
         }
     }
 
     private data class ApplicableServer(
         val name: String,
         val server: Server,
+    )
+
+    private class RootServers(
+        val servers: List<ApplicableServer>,
+        val names: IdentityHashMap<Server, String>,
     )
 
     private enum class SchemaRegistryStatus {

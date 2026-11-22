@@ -41,42 +41,61 @@ internal class ReferenceResolver(
         path: ValidationPath,
         results: ValidationCollector,
         targetCategoryRule: ValidationRule = REFERENCE_TARGET_CATEGORY,
-    ): Any? {
+    ): Any? =
         if (reference.referenceCategoryKey != expectedCategory) {
-            results.error(
-                REFERENCE_CATEGORY_REQUIRED,
-                "$path reference '${reference.ref}' was created for category " +
-                    "'${reference.referenceCategoryKey}' instead of '$expectedCategory'.",
-                sourceLocation = location(reference),
-            )
-            return null
+            reportWrongCategory(reference, expectedCategory, path, results)
+        } else {
+            follow(reference, expectedCategory, path, results, targetCategoryRule)
         }
+
+    private fun reportWrongCategory(
+        reference: Reference,
+        expectedCategory: ReferenceCategoryKey,
+        path: ValidationPath,
+        results: ValidationCollector,
+    ): Any? {
+        results.error(
+            REFERENCE_CATEGORY_REQUIRED,
+            "$path reference '${reference.ref}' was created for category " +
+                "'${reference.referenceCategoryKey}' instead of '$expectedCategory'.",
+            sourceLocation = location(reference),
+        )
+        return null
+    }
+
+    private fun follow(
+        reference: Reference,
+        expectedCategory: ReferenceCategoryKey,
+        path: ValidationPath,
+        results: ValidationCollector,
+        targetCategoryRule: ValidationRule,
+    ): Any? {
         val link = asyncApiContext.referenceLinker.link(reference)
         if (!results.process(reference)) return link.finalModel()
         link.chain.drop(1).forEach(results::process)
         return when (link) {
-            is ReferenceLink.Resolved ->
-                link.target.also {
-                    results.enqueueReferenceTarget(
-                        expectedCategory,
-                        it,
-                        path,
-                    )
-                }
+            is ReferenceLink.Resolved -> link.target.also { results.enqueueReferenceTarget(expectedCategory, it, path) }
             is ReferenceLink.Unresolved -> reportUnresolved(link, path, results)
             is ReferenceLink.Cycle -> reportCycle(link, expectedCategory, path, results)
             is ReferenceLink.CategoryMismatch -> reportCategoryMismatch(link, expectedCategory, path, results)
             is ReferenceLink.WrongTarget -> {
                 results.error(
                     targetCategoryRule,
-                    "$path reference '${reference.ref}' must resolve to ${expectedCategory.displayName}; " +
-                        "found ${link.target::class.simpleName}.",
+                    wrongTargetMessage(link, reference, expectedCategory, path),
                     sourceLocation = location(reference),
                 )
                 null
             }
         }
     }
+
+    private fun wrongTargetMessage(
+        link: ReferenceLink.WrongTarget,
+        reference: Reference,
+        expectedCategory: ReferenceCategoryKey,
+        path: ValidationPath,
+    ) = "$path reference '${reference.ref}' must resolve to ${expectedCategory.displayName}; " +
+        "found ${link.target::class.simpleName}."
 
     private fun reportUnresolved(
         link: ReferenceLink.Unresolved,

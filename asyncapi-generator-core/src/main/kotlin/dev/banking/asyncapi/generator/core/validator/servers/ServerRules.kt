@@ -46,28 +46,30 @@ internal class ServerRules(
         path: ValidationPath,
         walk: ValidationWalk,
     ) {
-        val results = walk.results
         val host = node.host
         val hostSource = asyncApiContext.modelTracking.getSourceLocation(node, node::host)
-        if (results.requireNonBlank(host, "host", path, SERVER_HOST_REQUIRED, hostSource) && "://" in host) {
-            results.warn(
+        if (walk.results.requireNonBlank(host, "host", path, SERVER_HOST_REQUIRED, hostSource) && "://" in host) {
+            walk.results.warn(
                 SERVER_HOST_PROTOCOL,
                 "$path host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
                     "(e.g. api.example.com) as protocol is defined separately.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
             )
         }
+        validateVariables(node, path, walk)
+    }
+
+    private fun validateVariables(
+        node: Server,
+        path: ValidationPath,
+        walk: ValidationWalk,
+    ) {
         val definedVars = node.variables?.keys ?: emptySet()
-        val hostVars = PARAMETER_PLACEHOLDER.findAll(host).map { it.groupValues[1] }.toSet()
-        val pathVars =
-            node.pathname
-                ?.let(PARAMETER_PLACEHOLDER::findAll)
-                ?.map { it.groupValues[1] }
-                ?.toSet()
-                ?: emptySet()
+        val hostVars = placeholders(node.host)
+        val pathVars = node.pathname?.let(::placeholders) ?: emptySet()
         val missingHostVars = hostVars - definedVars
         if (missingHostVars.isNotEmpty()) {
-            results.error(
+            walk.results.error(
                 SERVER_VARIABLE_UNDEFINED,
                 "$path host uses variables $missingHostVars which are not defined in 'variables'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
@@ -75,13 +77,16 @@ internal class ServerRules(
         }
         val missingPathVars = pathVars - definedVars
         if (missingPathVars.isNotEmpty()) {
-            results.error(
+            walk.results.error(
                 SERVER_VARIABLE_UNDEFINED,
                 "$path pathname uses variables $missingPathVars which are not defined in 'variables'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::pathname),
             )
         }
     }
+
+    private fun placeholders(text: String): Set<String> =
+        PARAMETER_PLACEHOLDER.findAll(text).map { it.groupValues[1] }.toSet()
 
     private fun validateProtocol(
         node: Server,
