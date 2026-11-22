@@ -1,10 +1,5 @@
 package dev.banking.asyncapi.generator.core.bundler
 
-import dev.banking.asyncapi.generator.core.bundler.channels.ChannelBundler
-import dev.banking.asyncapi.generator.core.bundler.components.ComponentBundler
-import dev.banking.asyncapi.generator.core.bundler.info.InfoBundler
-import dev.banking.asyncapi.generator.core.bundler.operations.OperationBundler
-import dev.banking.asyncapi.generator.core.bundler.servers.ServerBundler
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 
@@ -16,11 +11,7 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  * validate AsyncAPI semantics, or generate code.
  */
 class AsyncApiBundler {
-    private val infoBundler = InfoBundler()
-    private val serverBundler = ServerBundler()
-    private val channelBundler = ChannelBundler()
-    private val operationBundler = OperationBundler()
-    private val componentBundler = ComponentBundler()
+    private val walk = BundlingWalk()
 
     /** Bundles a loaded and validated document. */
     fun bundle(loaded: AsyncApiDocumentLoadResult): BundledAsyncApiDocument = bundle(loaded.document)
@@ -28,16 +19,11 @@ class AsyncApiBundler {
     internal fun bundle(document: AsyncApiDocument): BundledAsyncApiDocument {
         val run = BundlingRun(rootSchemas = document.components?.schemas.orEmpty())
         val scope = run.rootScope()
-        val bundledInfo = infoBundler.bundle(document.info, scope)
-        val bundledServers = serverBundler.bundleServers(document.servers, scope)
-        val bundledChannels = channelBundler.bundleMap(document.channels, scope)
-        val bundledOperations = operationBundler.bundleMap(document.operations, scope)
-        val bundledComponents = document.components?.let { componentBundler.bundleComponent(it, scope) }
-        val componentsWithPromotedSchemas =
-            componentBundler.mergeSchemas(
-                components = bundledComponents,
-                schemas = run.schemaPromotions.schemas(),
-            )
+        val bundledInfo = walk.info.bundle(document.info, scope)
+        val bundledServers = walk.members(document.servers, walk.server, scope)
+        val bundledChannels = walk.members(document.channels, walk.channel, scope)
+        val bundledOperations = walk.members(document.operations, walk.operation, scope)
+        val bundledComponents = document.components?.let { walk.components.bundle(it, scope) }
 
         return BundledAsyncApiDocument(
             document.copy(
@@ -45,7 +31,7 @@ class AsyncApiBundler {
                 servers = bundledServers,
                 channels = bundledChannels,
                 operations = bundledOperations,
-                components = componentsWithPromotedSchemas,
+                components = walk.components.withPromotedSchemas(bundledComponents, run.schemaPromotions.schemas()),
             ),
         )
     }

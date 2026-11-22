@@ -1,51 +1,23 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
-import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
-import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 
 /**
- * Bundles operation reply objects and references.
+ * Bundles the members of an operation reply.
+ *
+ * The reply's `channel` and `messages` point into root channels, which are bundled themselves; like an
+ * operation's channel and messages they stay references. Only the address is bundled.
+ *
+ * @param walk bundles the members of the reply
  */
-internal class OperationReplyBundler {
-    private val operationReplyAddressBundler = OperationReplyAddressBundler()
-
-    fun bundleMap(
-        replies: Map<String, OperationReplyInterface>?,
-        scope: BundlingScope,
-    ): Map<String, OperationReplyInterface>? = replies?.mapValues { (_, reply) -> bundle(reply, scope) }
-
+internal class OperationReplyBundler(
+    private val walk: BundlingWalk,
+) {
+    /** Returns [reply] with its members bundled. */
     fun bundle(
-        replyInterface: OperationReplyInterface,
-        scope: BundlingScope,
-    ): OperationReplyInterface =
-        when (replyInterface) {
-            is OperationReplyInterface.OperationReplyInline ->
-                OperationReplyInterface.OperationReplyInline(
-                    bundleReply(replyInterface.operationReply, scope),
-                )
-
-            is OperationReplyInterface.OperationReplyReference -> {
-                replyInterface.copy(
-                    reference =
-                        ReferenceBundler.bundleReferencedModel<OperationReply>(
-                            reference = replyInterface.reference,
-                            scope = scope,
-                        ) { reply, nextScope ->
-                            bundleReply(reply, nextScope)
-                        },
-                )
-            }
-        }
-
-    private fun bundleReply(
         reply: OperationReply,
         scope: BundlingScope,
-    ): OperationReply {
-        val bundledAddress = reply.address?.let { operationReplyAddressBundler.bundle(it, scope) }
-        // The reply channel and messages point into root channels, which are bundled themselves; like an
-        // operation's channel and messages they stay references.
-        return reply.copy(address = bundledAddress)
-    }
+    ): OperationReply = reply.copy(address = walk.member(reply.address, walk.replyAddress, scope))
 }

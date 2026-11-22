@@ -1,48 +1,20 @@
 package dev.banking.asyncapi.generator.core.bundler.bindings
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
-import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
-import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaBundler
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
- * Bundles binding objects and references.
+ * Bundles the schema fields of a binding, keeping the binding content as written where bundling changed nothing.
+ *
+ * @param walk bundles the schema fields
  */
-internal class BindingBundler {
-    private val schemaBundler by lazy { SchemaBundler() }
-
-    fun bundleMap(
-        bindings: Map<String, BindingInterface>?,
-        scope: BundlingScope,
-    ): Map<String, BindingInterface>? =
-        bindings?.mapValues { (_, binding) ->
-            bundle(binding, scope)
-        }
-
+internal class BindingBundler(
+    private val walk: BundlingWalk,
+) {
+    /** Returns [binding] with its schema fields bundled. */
     fun bundle(
-        binding: BindingInterface,
-        scope: BundlingScope,
-    ): BindingInterface =
-        when (binding) {
-            is BindingInterface.BindingInline ->
-                BindingInterface.BindingInline(bundleBinding(binding.binding, scope))
-
-            is BindingInterface.BindingReference -> {
-                binding.copy(
-                    reference =
-                        ReferenceBundler.bundleReferencedModel<Binding>(
-                            binding.reference,
-                            scope,
-                        ) { model, nextScope ->
-                            bundleBinding(model, nextScope)
-                        },
-                )
-            }
-        }
-
-    private fun bundleBinding(
         binding: Binding,
         scope: BundlingScope,
     ): Binding {
@@ -55,9 +27,9 @@ internal class BindingBundler {
                         // The message key becomes a generated type, so it keeps the name of its source pointer.
                         val isKey = schema === binding.kafkaKeySchema
                         if (isKey) {
-                            schemaBundler.bundleBindingField(schema, scope)
+                            walk.schemas.bundleBindingField(schema, scope)
                         } else {
-                            schemaBundler.bundle(schema, scope)
+                            walk.schemas.bundle(schema, scope)
                         }
                     }
                 // Raw content is only replaced where bundling changed the schema.

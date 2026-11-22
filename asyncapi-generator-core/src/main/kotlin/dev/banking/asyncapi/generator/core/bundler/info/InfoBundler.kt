@@ -1,26 +1,24 @@
 package dev.banking.asyncapi.generator.core.bundler.info
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
-import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
-import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.info.Info
 
 /**
- * Bundles info metadata references.
+ * Bundles the members of the info object.
+ *
+ * @param walk bundles the members of the info
  */
-internal class InfoBundler {
-    private val tagBundler = TagBundler()
-    private val externalDocsBundler = ExternalDocsBundler()
-
+internal class InfoBundler(
+    private val walk: BundlingWalk,
+) {
+    /** Returns [info] with its members bundled. */
     fun bundle(
         info: Info,
         scope: BundlingScope,
-    ): Info {
-        val bundledTags = tagBundler.bundleList(info.tags, scope)
-        val bundledExternalDocs = info.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
-        return info.copy(
-            tags = bundledTags,
-            externalDocs = bundledExternalDocs,
+    ): Info =
+        info.copy(
+            tags = walk.members(info.tags, walk.tag, scope),
+            externalDocs = walk.member(info.externalDocs, walk.externalDoc, scope),
         )
-    }
 }

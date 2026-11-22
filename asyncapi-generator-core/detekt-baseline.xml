@@ -20,7 +20,6 @@
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
-    <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, scope: BundlingScope, ): Component</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
@@ -83,7 +82,6 @@
     <ID>MaxLineLength:ConfigurationWarning.kt$"https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/generator-configuration.md#configuration-warnings"</ID>
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
-    <ID>MaxLineLength:ReferenceBundler.kt$ReferenceBundler$/** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>NestedBlockDepth:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>

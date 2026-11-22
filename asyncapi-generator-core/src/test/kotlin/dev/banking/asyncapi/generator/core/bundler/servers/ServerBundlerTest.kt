@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.servers
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -13,7 +14,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ServerBundlerTest {
-    private val bundler = ServerBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundleServers bundles and inlines an unvisited server reference`() {
@@ -31,7 +32,7 @@ class ServerBundlerTest {
         val serverReference = Reference("#/components/servers/production", model = server)
         val serverInterface = ServerInterface.ServerReference(serverReference)
 
-        val bundled = bundler.bundleServers(mapOf("production" to serverInterface), BundlingRun().rootScope())
+        val bundled = walk.members(mapOf("production" to serverInterface), walk.server, BundlingRun().rootScope())
 
         val bundledServer = assertIs<ServerInterface.ServerReference>(bundled!!["production"])
         assertTrue(bundledServer.reference.inline)

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.info
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -15,7 +16,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class InfoBundlerTest {
-    private val bundler = InfoBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle marks unvisited info references as inline`() {
@@ -30,7 +31,7 @@ class InfoBundlerTest {
                 externalDocs = ExternalDocInterface.ExternalDocReference(externalDocReference),
             )
 
-        val bundled = bundler.bundle(info, BundlingRun().rootScope())
+        val bundled = walk.info.bundle(info, BundlingRun().rootScope())
 
         assertEquals(listOf(TagInterface.TagReference(tagReference)), bundled.tags)
         assertEquals(ExternalDocInterface.ExternalDocReference(externalDocReference), bundled.externalDocs)
