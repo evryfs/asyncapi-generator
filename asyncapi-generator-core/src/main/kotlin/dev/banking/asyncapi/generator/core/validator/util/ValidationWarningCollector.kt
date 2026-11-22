@@ -22,6 +22,18 @@ internal class ValidationWarningCollector {
             rootWarnings.forEach { warning -> putIfAbsent(FindingIdentity.of(warning), warning) }
         }.values.toList()
 
+    /**
+     * What makes two warnings the same: rule, severity, documentation and source position, not the message.
+     *
+     * @property code the rule code
+     * @property concern the rule's concern
+     * @property severity the severity
+     * @property documentation the documentation link
+     * @property file the canonical path of the source file
+     * @property path the source path
+     * @property line the source line
+     * @property column the source column
+     */
     private data class FindingIdentity(
         val code: String,
         val concern: ValidationConcern,

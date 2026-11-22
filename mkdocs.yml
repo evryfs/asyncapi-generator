@@ -45,6 +45,7 @@ nav:
           - Reader architecture: explanation/reader.md
           - Reader contract: reference/reader-contract.md
           - Parser architecture: explanation/parser.md
+          - Validator architecture: explanation/validator.md
           - Parser contract: reference/parser-contract.md
           - Validation boundary: contributing/validation-boundary.md
           - Bundler strategy: explanation/bundler.md

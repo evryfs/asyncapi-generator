@@ -3,6 +3,8 @@ package dev.banking.asyncapi.generator.core.validator.walk
 /**
  * The chain of objects from a root object to the object a rule checks, as findings name it, such as
  * `Channel 'orders' Message 'created'`.
+ *
+ * @param segments the objects of the chain, each as findings name it
  */
 internal class ValidationPath private constructor(
     private val segments: List<String>,

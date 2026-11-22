@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 
+/** How the generator treats a Schema Object keyword. */
 internal enum class SchemaKeywordCategory {
     SUPPORTED,
     RECOGNIZED_UNSUPPORTED,
@@ -12,12 +13,20 @@ internal enum class SchemaKeywordCategory {
     UNKNOWN,
 }
 
+/**
+ * How the generator treats one Schema Object keyword.
+ *
+ * @property category the treatment
+ * @property severity the severity of the finding the keyword causes, or `null` when it causes none
+ * @property explanation the end of the finding's message, after the keyword
+ */
 internal data class SchemaKeywordClassification(
     val category: SchemaKeywordCategory,
     val severity: ValidationSeverity? = null,
     val explanation: String? = null,
 )
 
+/** Classifies Schema Object keywords as supported, ignored, unsupported, extension or unknown. */
 internal object SchemaKeywordPolicy {
     private val supportedKeywords =
         setOf(
