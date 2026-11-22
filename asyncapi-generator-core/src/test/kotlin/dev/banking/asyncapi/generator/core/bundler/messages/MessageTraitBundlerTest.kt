@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.messages
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
@@ -30,7 +31,7 @@ class MessageTraitBundlerTest {
 
         val bundled =
             assertIs<MessageTraitInterface.MessageTraitReference>(
-                bundler.bundle(traitInterface, BundlingContext.empty()),
+                bundler.bundle(traitInterface, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

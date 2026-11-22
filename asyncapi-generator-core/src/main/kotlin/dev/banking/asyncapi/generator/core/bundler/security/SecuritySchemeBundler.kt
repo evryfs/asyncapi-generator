@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.security
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 
@@ -10,27 +10,27 @@ import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterfac
 internal class SecuritySchemeBundler {
     fun bundleMap(
         schemes: Map<String, SecuritySchemeInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, SecuritySchemeInterface>? =
         schemes?.mapValues { (_, scheme) ->
-            bundle(scheme, context)
+            bundle(scheme, scope)
         }
 
     fun bundleList(
         schemes: List<SecuritySchemeInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): List<SecuritySchemeInterface>? =
         schemes?.map { scheme ->
-            bundle(scheme, context)
+            bundle(scheme, scope)
         }
 
     fun bundle(
         scheme: SecuritySchemeInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): SecuritySchemeInterface =
         when (scheme) {
             is SecuritySchemeInterface.SecuritySchemeReference -> {
-                scheme.copy(reference = ReferenceBundler.inlineIfUnvisited(scheme.reference, context))
+                scheme.copy(reference = ReferenceBundler.inlineIfUnvisited(scheme.reference, scope))
             }
             else -> scheme
         }

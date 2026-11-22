@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.info
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
 import dev.banking.asyncapi.generator.core.bundler.tags.TagBundler
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -14,10 +14,10 @@ internal class InfoBundler {
 
     fun bundle(
         info: Info,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Info {
-        val bundledTags = tagBundler.bundleList(info.tags, context)
-        val bundledExternalDocs = info.externalDocs?.let { externalDocsBundler.bundle(it, context) }
+        val bundledTags = tagBundler.bundleList(info.tags, scope)
+        val bundledExternalDocs = info.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
         return info.copy(
             tags = bundledTags,
             externalDocs = bundledExternalDocs,

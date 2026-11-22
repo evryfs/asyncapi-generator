@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
@@ -13,17 +13,17 @@ internal class OperationReplyBundler {
 
     fun bundleMap(
         replies: Map<String, OperationReplyInterface>?,
-        context: BundlingContext,
-    ): Map<String, OperationReplyInterface>? = replies?.mapValues { (_, reply) -> bundle(reply, context) }
+        scope: BundlingScope,
+    ): Map<String, OperationReplyInterface>? = replies?.mapValues { (_, reply) -> bundle(reply, scope) }
 
     fun bundle(
         replyInterface: OperationReplyInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): OperationReplyInterface =
         when (replyInterface) {
             is OperationReplyInterface.OperationReplyInline ->
                 OperationReplyInterface.OperationReplyInline(
-                    bundleReply(replyInterface.operationReply, context),
+                    bundleReply(replyInterface.operationReply, scope),
                 )
 
             is OperationReplyInterface.OperationReplyReference -> {
@@ -31,9 +31,9 @@ internal class OperationReplyBundler {
                     reference =
                         ReferenceBundler.bundleReferencedModel<OperationReply>(
                             reference = replyInterface.reference,
-                            context = context,
-                        ) { reply, nextContext ->
-                            bundleReply(reply, nextContext)
+                            scope = scope,
+                        ) { reply, nextScope ->
+                            bundleReply(reply, nextScope)
                         },
                 )
             }
@@ -41,9 +41,9 @@ internal class OperationReplyBundler {
 
     private fun bundleReply(
         reply: OperationReply,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): OperationReply {
-        val bundledAddress = reply.address?.let { operationReplyAddressBundler.bundle(it, context) }
+        val bundledAddress = reply.address?.let { operationReplyAddressBundler.bundle(it, scope) }
         // The reply channel and messages point into root channels, which are bundled themselves; like an
         // operation's channel and messages they stay references.
         return reply.copy(address = bundledAddress)

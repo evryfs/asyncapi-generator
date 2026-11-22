@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.components
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
@@ -41,7 +42,7 @@ class ComponentBundlerTest {
                     ),
             )
 
-        val bundled = bundler.bundleComponent(component, BundlingContext.empty())
+        val bundled = bundler.bundleComponent(component, BundlingRun().rootScope())
 
         assertTrue(
             assertIs<CorrelationIdInterface.CorrelationIdReference>(bundled.correlationIds!!["user"]).reference.inline,

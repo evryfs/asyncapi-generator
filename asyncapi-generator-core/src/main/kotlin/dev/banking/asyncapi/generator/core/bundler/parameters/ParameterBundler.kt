@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.parameters
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 
@@ -10,19 +10,19 @@ import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 internal class ParameterBundler {
     fun bundleMap(
         parameters: Map<String, ParameterInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, ParameterInterface>? =
         parameters?.mapValues { (_, param) ->
-            bundle(param, context)
+            bundle(param, scope)
         }
 
     fun bundle(
         parameter: ParameterInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): ParameterInterface =
         when (parameter) {
             is ParameterInterface.ParameterReference -> {
-                parameter.copy(reference = ReferenceBundler.inlineIfUnvisited(parameter.reference, context))
+                parameter.copy(reference = ReferenceBundler.inlineIfUnvisited(parameter.reference, scope))
             }
             else -> parameter
         }

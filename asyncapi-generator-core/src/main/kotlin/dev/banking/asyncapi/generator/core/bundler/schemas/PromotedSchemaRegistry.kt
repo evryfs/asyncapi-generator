@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
+import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiDocumentSerializer
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
 import dev.banking.asyncapi.generator.core.model.references.referenceTargetNameOrNull

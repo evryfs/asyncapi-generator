@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
@@ -23,36 +23,36 @@ internal class SchemaBundler {
 
     fun bundleMap(
         schemas: Map<String, SchemaInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, SchemaInterface>? =
         schemas?.mapValues { (_, schemaInterface) ->
-            bundle(schemaInterface, context)
+            bundle(schemaInterface, scope)
         }
 
     internal fun bundleComponentMap(
         schemas: Map<String, SchemaInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, SchemaInterface>? =
         schemas?.mapValues { (name, schemaInterface) ->
-            bundle(schemaInterface, context.defineRootSchema(name))
+            bundle(schemaInterface, scope.defineRootSchema(name))
         }
 
     fun bundleList(
         schemas: List<SchemaInterface>?,
-        context: BundlingContext,
-    ): List<SchemaInterface>? = schemas?.map { schemaInterface -> bundle(schemaInterface, context) }
+        scope: BundlingScope,
+    ): List<SchemaInterface>? = schemas?.map { schemaInterface -> bundle(schemaInterface, scope) }
 
     fun bundle(
         schemaInterface: SchemaInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): SchemaInterface =
         when (schemaInterface) {
             is SchemaInterface.SchemaInline ->
                 SchemaInterface.SchemaInline(
-                    bundleSchema(schemaInterface.schema, context),
+                    bundleSchema(schemaInterface.schema, scope),
                 )
             is SchemaInterface.SchemaReference ->
-                bundleReference(schemaInterface, context)
+                bundleReference(schemaInterface, scope)
             is SchemaInterface.MultiFormatSchemaInline ->
                 schemaInterface
             is SchemaInterface.BooleanSchema ->
@@ -66,23 +66,23 @@ internal class SchemaBundler {
      */
     fun bundleBindingField(
         schemaInterface: SchemaInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): SchemaInterface {
         if (schemaInterface is SchemaInterface.SchemaReference) {
             val reference = schemaInterface.reference
             val referencedModel = reference.requireModel<Any>()
             if (referencedModel !is SchemaInterface.BooleanSchema &&
-                (reference.ref.isExternalReference() || context.externalDocumentScope)
+                (reference.ref.isExternalReference() || scope.externalDocumentScope)
             ) {
-                return bundlePromotedReference(reference, referencedModel, context)
+                return bundlePromotedReference(reference, referencedModel, scope)
             }
         }
-        return bundle(schemaInterface, context)
+        return bundle(schemaInterface, scope)
     }
 
     private fun bundleReference(
         schemaInterface: SchemaInterface.SchemaReference,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): SchemaInterface {
         val reference = schemaInterface.reference
         val referencedModel = reference.requireModel<Any>()
@@ -91,11 +91,11 @@ internal class SchemaBundler {
         }
         val keepAsReference = isComponentSchemaRef(reference.ref)
 
-        if (shouldPromote(reference, referencedModel, context)) {
-            return bundlePromotedReference(reference, referencedModel, context)
+        if (shouldPromote(reference, referencedModel, scope)) {
+            return bundlePromotedReference(reference, referencedModel, scope)
         }
 
-        if (context.hasVisited(reference)) {
+        if (scope.hasVisited(reference)) {
             return if (keepAsReference) {
                 schemaInterface
             } else {
@@ -109,7 +109,7 @@ internal class SchemaBundler {
             when (referencedModel) {
                 is Schema ->
                     return schemaInterface.copy(
-                        reference = reference.withModel(bundleSchema(referencedModel, context.enter(reference))),
+                        reference = reference.withModel(bundleSchema(referencedModel, scope.enter(reference))),
                     )
                 is MultiFormatSchema -> return schemaInterface
                 else ->
@@ -122,11 +122,11 @@ internal class SchemaBundler {
                 SchemaInterface.SchemaInline(
                     bundleSchema(
                         schema = referencedModel,
-                        context =
+                        scope =
                             if (reference.ref.isExternalReference()) {
-                                context.enterExternalSchema(reference)
+                                scope.enterExternalSchema(reference)
                             } else {
-                                context.enter(reference)
+                                scope.enter(reference)
                             },
                     ),
                 )
@@ -140,27 +140,27 @@ internal class SchemaBundler {
     private fun shouldPromote(
         reference: Reference,
         referencedModel: Any,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Boolean =
-        (reference.ref.isExternalReference() || context.externalDocumentScope) &&
-            (context.schemaRecursion.isRecursive(referencedModel) || isComponentSchemaRef(reference.ref))
+        (reference.ref.isExternalReference() || scope.externalDocumentScope) &&
+            (scope.run.schemaRecursion.isRecursive(referencedModel) || isComponentSchemaRef(reference.ref))
 
     private fun bundlePromotedReference(
         reference: Reference,
         referencedModel: Any,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): SchemaInterface {
-        val entry = context.schemaPromotions.reserve(reference, referencedModel)
-        val definesPromotedSchema = context.definesRootSchema(entry.name)
+        val entry = scope.run.schemaPromotions.reserve(reference, referencedModel)
+        val definesPromotedSchema = scope.definesRootSchema(entry.name)
 
-        if (context.schemaPromotions.startBundling(entry)) {
+        if (scope.run.schemaPromotions.startBundling(entry)) {
             val bundledSchema =
                 when (referencedModel) {
                     is Schema ->
                         SchemaInterface.SchemaInline(
                             bundleSchema(
                                 schema = referencedModel,
-                                context = context.enterExternalSchema(reference),
+                                scope = scope.enterExternalSchema(reference),
                             ),
                         )
 
@@ -172,7 +172,7 @@ internal class SchemaBundler {
                             "Schema reference ${reference.ref} resolved to unsupported model",
                         )
                 }
-            context.schemaPromotions.complete(entry, bundledSchema)
+            scope.run.schemaPromotions.complete(entry, bundledSchema)
         }
 
         if (definesPromotedSchema) {
@@ -208,33 +208,33 @@ internal class SchemaBundler {
 
     private fun bundleSchema(
         schema: Schema,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Schema {
-        val bundledItems = schema.items?.let { bundle(it, context) }
-        val bundledTupleItems = bundleList(schema.tupleItems, context)
-        val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, context) }
-        val bundledContains = schema.contains?.let { bundle(it, context) }
+        val bundledItems = schema.items?.let { bundle(it, scope) }
+        val bundledTupleItems = bundleList(schema.tupleItems, scope)
+        val bundledAdditionalItems = schema.additionalItems?.let { bundle(it, scope) }
+        val bundledContains = schema.contains?.let { bundle(it, scope) }
 
-        val bundledProperties = bundleMap(schema.properties, context)
-        val bundledPatternProperties = bundleMap(schema.patternProperties, context)
-        val bundledAdditionalProperties = schema.additionalProperties?.let { bundle(it, context) }
-        val bundledPropertyNames = schema.propertyNames?.let { bundle(it, context) }
+        val bundledProperties = bundleMap(schema.properties, scope)
+        val bundledPatternProperties = bundleMap(schema.patternProperties, scope)
+        val bundledAdditionalProperties = schema.additionalProperties?.let { bundle(it, scope) }
+        val bundledPropertyNames = schema.propertyNames?.let { bundle(it, scope) }
         val bundledDependencies =
             schema.dependencies?.mapValues { (_, dependency) ->
-                if (dependency is SchemaInterface) bundle(dependency, context) else dependency
+                if (dependency is SchemaInterface) bundle(dependency, scope) else dependency
             }
-        val bundledDefinitions = bundleMap(schema.definitions, context)
+        val bundledDefinitions = bundleMap(schema.definitions, scope)
 
-        val bundledAllOf = bundleList(schema.allOf, context)
-        val bundledAnyOf = bundleList(schema.anyOf, context)
-        val bundledOneOf = bundleList(schema.oneOf, context)
-        val bundledNot = schema.not?.let { bundle(it, context) }
-        val bundledIf = schema.ifSchema?.let { bundle(it, context) }
-        val bundledThen = schema.thenSchema?.let { bundle(it, context) }
-        val bundledElse = schema.elseSchema?.let { bundle(it, context) }
+        val bundledAllOf = bundleList(schema.allOf, scope)
+        val bundledAnyOf = bundleList(schema.anyOf, scope)
+        val bundledOneOf = bundleList(schema.oneOf, scope)
+        val bundledNot = schema.not?.let { bundle(it, scope) }
+        val bundledIf = schema.ifSchema?.let { bundle(it, scope) }
+        val bundledThen = schema.thenSchema?.let { bundle(it, scope) }
+        val bundledElse = schema.elseSchema?.let { bundle(it, scope) }
 
-        val bundledExternalDocs = schema.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledBindings = bindingsBundler.bundleMap(schema.bindings, context)
+        val bundledExternalDocs = schema.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
+        val bundledBindings = bindingsBundler.bundleMap(schema.bindings, scope)
         return schema.copy(
             items = bundledItems,
             tupleItems = bundledTupleItems,

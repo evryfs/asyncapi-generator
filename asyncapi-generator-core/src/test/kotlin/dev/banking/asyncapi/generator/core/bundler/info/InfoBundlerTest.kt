@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.info
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDoc
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.info.Info
@@ -29,7 +30,7 @@ class InfoBundlerTest {
                 externalDocs = ExternalDocInterface.ExternalDocReference(externalDocReference),
             )
 
-        val bundled = bundler.bundle(info, BundlingContext.empty())
+        val bundled = bundler.bundle(info, BundlingRun().rootScope())
 
         assertEquals(listOf(TagInterface.TagReference(tagReference)), bundled.tags)
         assertEquals(ExternalDocInterface.ExternalDocReference(externalDocReference), bundled.externalDocs)

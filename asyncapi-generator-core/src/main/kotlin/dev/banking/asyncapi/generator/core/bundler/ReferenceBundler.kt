@@ -19,21 +19,21 @@ internal object ReferenceBundler {
      */
     fun inlineIfUnvisited(
         reference: Reference,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Reference {
-        if (context.hasVisited(reference)) return reference
+        if (scope.hasVisited(reference)) return reference
         return reference.copy(model = reference.requireModel<Any?>()).inline()
     }
 
     /** Returns an inline copy of [reference] holding the bundled model, or [reference] itself when it is already being visited. */
     inline fun <reified T> bundleReferencedModel(
         reference: Reference,
-        context: BundlingContext,
-        bundle: (T, BundlingContext) -> T,
+        scope: BundlingScope,
+        bundle: (T, BundlingScope) -> T,
     ): Reference {
-        if (context.hasVisited(reference)) return reference
+        if (scope.hasVisited(reference)) return reference
         val model = reference.requireModel<T>()
-        val bundled = bundle(model, context.enter(reference))
+        val bundled = bundle(model, scope.enter(reference))
         return reference.copy(model = bundled).inline()
     }
 }

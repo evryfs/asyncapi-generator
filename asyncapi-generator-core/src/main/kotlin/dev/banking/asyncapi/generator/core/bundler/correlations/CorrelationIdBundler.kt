@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.correlations
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 
@@ -10,19 +10,19 @@ import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInter
 internal class CorrelationIdBundler {
     fun bundleMap(
         correlationIds: Map<String, CorrelationIdInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, CorrelationIdInterface>? =
         correlationIds?.mapValues { (_, correlationId) ->
-            bundle(correlationId, context)
+            bundle(correlationId, scope)
         }
 
     fun bundle(
         correlationId: CorrelationIdInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): CorrelationIdInterface =
         when (correlationId) {
             is CorrelationIdInterface.CorrelationIdReference -> {
-                correlationId.copy(reference = ReferenceBundler.inlineIfUnvisited(correlationId.reference, context))
+                correlationId.copy(reference = ReferenceBundler.inlineIfUnvisited(correlationId.reference, scope))
             }
             else -> correlationId
         }

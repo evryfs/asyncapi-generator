@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.messages
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -27,7 +28,7 @@ class MessagesBundlerTest {
 
         val bundled =
             assertIs<MessageInterface.MessageReference>(
-                bundler.bundle(messageInterface, BundlingContext.empty()),
+                bundler.bundle(messageInterface, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

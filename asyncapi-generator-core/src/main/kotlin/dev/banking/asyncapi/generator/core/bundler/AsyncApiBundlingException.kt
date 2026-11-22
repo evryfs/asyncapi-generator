@@ -1,8 +1,18 @@
-package dev.banking.asyncapi.generator.core.model.exceptions
+package dev.banking.asyncapi.generator.core.bundler
 
+/**
+ * A contract that is valid but cannot be written as one self-contained document.
+ *
+ * @param message the explanation shown to the user
+ */
 sealed class AsyncApiBundlingException(
     message: String,
 ) : Exception(message) {
+    /**
+     * An external schema that has to be promoted to `components.schemas` has no name to promote it under.
+     *
+     * @param reference the `$ref` of the schema
+     */
     class ExternalSchemaNameUnavailable(
         reference: String,
     ) : AsyncApiBundlingException(
@@ -19,6 +29,13 @@ sealed class AsyncApiBundlingException(
             }.trimEnd(),
         )
 
+    /**
+     * Two different schemas would be promoted to `components.schemas` under the same name.
+     *
+     * @param schemaName the name both schemas would get
+     * @param existingOrigin where the schema already holding the name comes from
+     * @param incomingOrigin where the second schema comes from
+     */
     class PromotedSchemaNameCollision(
         schemaName: String,
         existingOrigin: String,

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.tags
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
@@ -10,27 +10,27 @@ import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 internal class TagBundler {
     fun bundleMap(
         tags: Map<String, TagInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, TagInterface>? =
         tags?.mapValues { (_, tag) ->
-            bundle(tag, context)
+            bundle(tag, scope)
         }
 
     fun bundleList(
         tags: List<TagInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): List<TagInterface>? =
         tags?.map { tag ->
-            bundle(tag, context)
+            bundle(tag, scope)
         }
 
     fun bundle(
         tag: TagInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): TagInterface =
         when (tag) {
             is TagInterface.TagReference -> {
-                tag.copy(reference = ReferenceBundler.inlineIfUnvisited(tag.reference, context))
+                tag.copy(reference = ReferenceBundler.inlineIfUnvisited(tag.reference, scope))
             }
             else -> tag
         }

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.servers
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
@@ -21,7 +21,7 @@ internal class ServerBundler {
 
     fun bundleServers(
         servers: Map<String, ServerInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, ServerInterface>? {
         if (servers == null) return null
 
@@ -29,7 +29,7 @@ internal class ServerBundler {
             when (serverInterface) {
                 is ServerInterface.ServerInline ->
                     ServerInterface.ServerInline(
-                        bundleServer(serverInterface.server, context),
+                        bundleServer(serverInterface.server, scope),
                     )
 
                 is ServerInterface.ServerReference -> {
@@ -37,9 +37,9 @@ internal class ServerBundler {
                         reference =
                             ReferenceBundler.bundleReferencedModel<Server>(
                                 reference = serverInterface.reference,
-                                context = context,
-                            ) { server, nextContext ->
-                                bundleServer(server, nextContext)
+                                scope = scope,
+                            ) { server, nextScope ->
+                                bundleServer(server, nextScope)
                             },
                     )
                 }
@@ -49,13 +49,13 @@ internal class ServerBundler {
 
     fun bundleServer(
         server: Server,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Server {
-        val bundledVariables = serverVariableBundler.bundleMap(server.variables, context)
-        val bundledSecurity = securitySchemeBundler.bundleList(server.security, context)
-        val bundledTags = tagBundler.bundleList(server.tags, context)
-        val bundledExternalDocs = server.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledBindings = bindingBundler.bundleMap(server.bindings, context)
+        val bundledVariables = serverVariableBundler.bundleMap(server.variables, scope)
+        val bundledSecurity = securitySchemeBundler.bundleList(server.security, scope)
+        val bundledTags = tagBundler.bundleList(server.tags, scope)
+        val bundledExternalDocs = server.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
+        val bundledBindings = bindingBundler.bundleMap(server.bindings, scope)
         return server.copy(
             variables = bundledVariables,
             security = bundledSecurity,

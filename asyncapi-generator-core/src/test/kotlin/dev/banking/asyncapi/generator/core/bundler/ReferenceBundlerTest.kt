@@ -14,7 +14,7 @@ class ReferenceBundlerTest {
     fun `inlineIfUnvisited marks an unvisited reference as inline`() {
         val reference = Reference("#/components/externalDocs/api", model = ExternalDoc(url = "https://example.com"))
 
-        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty())
+        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingRun().rootScope())
 
         assertTrue(bundled.inline)
         assertFalse(reference.inline, "the input reference is not changed")
@@ -24,7 +24,7 @@ class ReferenceBundlerTest {
     fun `inlineIfUnvisited keeps a visited reference unchanged`() {
         val reference = Reference("#/components/externalDocs/api", model = ExternalDoc(url = "https://example.com"))
 
-        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingContext.empty().enter(reference))
+        val bundled = ReferenceBundler.inlineIfUnvisited(reference, BundlingRun().rootScope().enter(reference))
 
         assertSame(reference, bundled)
         assertFalse(bundled.inline)
@@ -39,8 +39,8 @@ class ReferenceBundlerTest {
             )
 
         val bundled =
-            ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingContext.empty()) { server, context ->
-                assertTrue(context.hasVisited(reference))
+            ReferenceBundler.bundleReferencedModel<Server>(reference, BundlingRun().rootScope()) { server, scope ->
+                assertTrue(scope.hasVisited(reference))
                 server.copy(description = "Bundled server")
             }
 
@@ -65,7 +65,7 @@ class ReferenceBundlerTest {
         val bundled =
             ReferenceBundler.bundleReferencedModel<Server>(
                 reference,
-                BundlingContext.empty().enter(reference),
+                BundlingRun().rootScope().enter(reference),
             ) { server, _ ->
                 server.copy(description = "Should not be applied")
             }
