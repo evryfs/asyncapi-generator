@@ -79,7 +79,7 @@ internal class OperationValidator(
         results: ValidationCollector,
     ) {
         val action = node.action
-        if (action.isEmpty()) {
+        if (action.isBlank()) {
             results.error(
                 OPERATION_ACTION_REQUIRED,
                 "$contextString must define an 'action' field ('send' or 'receive').",

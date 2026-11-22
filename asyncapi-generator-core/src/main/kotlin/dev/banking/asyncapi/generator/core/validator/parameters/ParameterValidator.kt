@@ -10,6 +10,8 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAME
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_LOCATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
+import dev.banking.asyncapi.generator.core.validator.util.EnumConstrainedValue
+import dev.banking.asyncapi.generator.core.validator.util.EnumConstrainedValueRules
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
 
@@ -17,6 +19,8 @@ internal class ParameterValidator(
     val asyncApiContext: AsyncApiContext,
 ) {
     private val referenceResolver = ReferenceResolver(asyncApiContext)
+    private val valueRules =
+        EnumConstrainedValueRules(PARAMETER_ENUM_UNIQUE, PARAMETER_DEFAULT_ENUM, PARAMETER_EXAMPLES_ENUM)
 
     fun validateInterface(
         parameterInterface: ParameterInterface,
@@ -50,57 +54,14 @@ internal class ParameterValidator(
         results: ValidationCollector,
     ) {
         if (!results.visit(node)) return
-        validateEnum(node, contextString, results)
-        validateDefault(node, contextString, results)
-        validateExamples(node, contextString, results)
+        valueRules.validate(
+            node,
+            EnumConstrainedValue(node.enum, node.default, node.examples),
+            contextString,
+            results,
+            asyncApiContext.modelTracking,
+        )
         validateLocation(node, contextString, results)
-    }
-
-    private fun validateEnum(
-        node: Parameter,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        val enum = node.enum ?: return
-        if (enum.distinct().size != enum.size) {
-            results.error(
-                PARAMETER_ENUM_UNIQUE,
-                "$contextString 'enum' contains duplicate values.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::enum),
-            )
-        }
-    }
-
-    private fun validateDefault(
-        node: Parameter,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        val default = node.default ?: return
-        val enum = node.enum ?: return
-        if (!enum.contains(default)) {
-            results.warn(
-                PARAMETER_DEFAULT_ENUM,
-                "$contextString 'default' value ('$default') is not included in the allowed enum values.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
-            )
-        }
-    }
-
-    private fun validateExamples(
-        node: Parameter,
-        contextString: String,
-        results: ValidationCollector,
-    ) {
-        val examples = node.examples ?: return
-        val enum = node.enum
-        if (enum != null && examples.any { it !in enum }) {
-            results.warn(
-                PARAMETER_EXAMPLES_ENUM,
-                "$contextString 'examples' are not part of the defined enum values.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::examples),
-            )
-        }
     }
 
     private fun validateLocation(

@@ -17,6 +17,7 @@ import dev.banking.asyncapi.generator.core.validator.security.SecuritySchemeVali
 import dev.banking.asyncapi.generator.core.validator.tags.TagValidator
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class ServerValidator(
     val asyncApiContext: AsyncApiContext,
@@ -76,13 +77,8 @@ internal class ServerValidator(
         results: ValidationCollector,
     ) {
         val host = node.host
-        if (host.isBlank()) {
-            results.error(
-                SERVER_HOST_REQUIRED,
-                "$contextString must define a non-empty 'host'.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
-            )
-        } else if (host.contains("://")) {
+        val hostSource = asyncApiContext.modelTracking.getSourceLocation(node, node::host)
+        if (results.requireNonBlank(host, "host", contextString, SERVER_HOST_REQUIRED, hostSource) && "://" in host) {
             results.warn(
                 SERVER_HOST_PROTOCOL,
                 "$contextString host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
@@ -121,14 +117,13 @@ internal class ServerValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        val protocol = node.protocol
-        if (protocol.isBlank()) {
-            results.error(
-                SERVER_PROTOCOL_REQUIRED,
-                "$contextString must define the 'protocol' it supports.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::protocol),
-            )
-        }
+        results.requireNonBlank(
+            node.protocol,
+            "protocol",
+            contextString,
+            SERVER_PROTOCOL_REQUIRED,
+            asyncApiContext.modelTracking.getSourceLocation(node, node::protocol),
+        )
     }
 
     private fun validateVariables(

@@ -13,6 +13,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireAbsoluteUri
 
 /** Validates the OAuth Flows Object and its flow-specific requirements. */
 internal class OAuthFlowsValidator(
@@ -115,15 +116,13 @@ internal class OAuthFlowsValidator(
                 results,
             )
         }
-        flow.refreshUrl?.let { refreshUrl ->
-            if (ValidationFormats.absoluteUri(refreshUrl) == null) {
-                results.error(
-                    OAUTH_REFRESH_URL_FORMAT,
-                    "$contextString 'refreshUrl' must be an absolute URL.",
-                    sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, flow::refreshUrl),
-                )
-            }
-        }
+        results.requireAbsoluteUri(
+            flow.refreshUrl,
+            "refreshUrl",
+            contextString,
+            OAUTH_REFRESH_URL_FORMAT,
+            asyncApiContext.modelTracking.getSourceLocation(flow, flow::refreshUrl),
+        )
     }
 
     private fun validateRequiredUrl(
@@ -135,7 +134,7 @@ internal class OAuthFlowsValidator(
         contextString: String,
         results: ValidationCollector,
     ) {
-        if (value.isNullOrEmpty()) {
+        if (value.isNullOrBlank()) {
             results.error(
                 requiredRule,
                 "$contextString must define '$fieldName'.",
@@ -143,11 +142,13 @@ internal class OAuthFlowsValidator(
                     asyncApiContext.modelTracking.getSourceLocation(flow, fieldName)
                         ?: asyncApiContext.modelTracking.getSourceLocation(flow),
             )
-        } else if (ValidationFormats.absoluteUri(value) == null) {
-            results.error(
+        } else {
+            results.requireAbsoluteUri(
+                value,
+                fieldName,
+                contextString,
                 formatRule,
-                "$contextString '$fieldName' must be an absolute URL.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(flow, fieldName),
+                asyncApiContext.modelTracking.getSourceLocation(flow, fieldName),
             )
         }
     }

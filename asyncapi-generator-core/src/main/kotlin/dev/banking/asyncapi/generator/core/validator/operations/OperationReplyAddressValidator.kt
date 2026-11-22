@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 import dev.banking.asyncapi.generator.core.validator.util.ValidationFormats
+import dev.banking.asyncapi.generator.core.validator.util.requireNonBlank
 
 internal class OperationReplyAddressValidator(
     val asyncApiContext: AsyncApiContext,
@@ -44,12 +45,15 @@ internal class OperationReplyAddressValidator(
         results: ValidationCollector,
     ) {
         val location = node.location
-        if (location.isEmpty()) {
-            results.error(
+        val locationSource = asyncApiContext.modelTracking.getSourceLocation(node, node::location)
+        if (!results.requireNonBlank(
+                location,
+                "location",
+                contextString,
                 REPLY_ADDRESS_REQUIRED,
-                "$contextString 'location' is required and cannot be empty.",
-                sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::location),
+                locationSource,
             )
+        ) {
             return
         }
         if (!ValidationFormats.isRuntimeExpression(location)) {
