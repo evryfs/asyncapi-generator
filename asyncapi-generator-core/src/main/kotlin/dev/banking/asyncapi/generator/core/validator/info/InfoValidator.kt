@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.validator.info
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.info.Info
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_OF_SERVICE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TERMS_URI
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_TITLE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.INFO_VERSION_REQUIRED
 import dev.banking.asyncapi.generator.core.validator.externaldocs.ExternalDocsValidator
@@ -45,7 +45,6 @@ internal class InfoValidator(
                 INFO_TITLE_REQUIRED,
                 "$contextString 'title' field is required and cannot be empty.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::title),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }
@@ -61,7 +60,6 @@ internal class InfoValidator(
                 INFO_VERSION_REQUIRED,
                 "$contextString 'version' field is required and cannot be empty.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::version),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
             return
         }
@@ -75,10 +73,9 @@ internal class InfoValidator(
         val termsOfService = node.termsOfService ?: return
         if (ValidationFormats.absoluteUri(termsOfService) == null) {
             results.error(
-                INFO_TERMS_OF_SERVICE_FORMAT,
+                INFO_TERMS_URI,
                 "$contextString 'termsOfService' field must be a valid absolute URL. Got '$termsOfService'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::termsOfService),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#infoObject",
             )
         }
     }

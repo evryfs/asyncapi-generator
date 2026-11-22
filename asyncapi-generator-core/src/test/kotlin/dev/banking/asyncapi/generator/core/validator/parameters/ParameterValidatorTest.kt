@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.validator.parameters
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_DEFAULT_ENUM
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_ENUM_UNIQUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_EXAMPLES_ENUM
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_LOCATION_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_LOCATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.PARAMETER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -39,12 +39,12 @@ class ParameterValidatorTest : AbstractValidatorTest() {
 
         val parameterLocation =
             results.findings.single {
-                it.code == PARAMETER_LOCATION_FORMAT.code &&
+                it.code == PARAMETER_LOCATION.code &&
                     it.path ==
                     "asyncapi_validator_parameter_invalid.root.components.parameters.InvalidLocation.location"
             }
-        assertEquals(PARAMETER_LOCATION_FORMAT.severity, parameterLocation.severity)
-        assertEquals(PARAMETER_LOCATION_FORMAT.concern, parameterLocation.concern)
+        assertEquals(PARAMETER_LOCATION.severity, parameterLocation.severity)
+        assertEquals(PARAMETER_LOCATION.concern, parameterLocation.concern)
         assertEquals("asyncapi_validator_parameter_invalid.yaml", parameterLocation.sourceLocation?.file?.name)
         assertEquals(38, parameterLocation.line)
 
@@ -72,23 +72,23 @@ class ParameterValidatorTest : AbstractValidatorTest() {
 
         val invalidContextLocation =
             results.findings.single {
-                it.code == PARAMETER_LOCATION_FORMAT.code &&
+                it.code == PARAMETER_LOCATION.code &&
                     it.path ==
                     "asyncapi_validator_parameter_invalid.root.components.parameters.InvalidContextLocation.location"
             }
-        assertEquals(PARAMETER_LOCATION_FORMAT.severity, invalidContextLocation.severity)
-        assertEquals(PARAMETER_LOCATION_FORMAT.concern, invalidContextLocation.concern)
+        assertEquals(PARAMETER_LOCATION.severity, invalidContextLocation.severity)
+        assertEquals(PARAMETER_LOCATION.concern, invalidContextLocation.concern)
         assertEquals("asyncapi_validator_parameter_invalid.yaml", invalidContextLocation.sourceLocation?.file?.name)
         assertEquals(46, invalidContextLocation.line)
 
         val invalidJsonPointerEscape =
             results.findings.single {
-                it.code == PARAMETER_LOCATION_FORMAT.code &&
+                it.code == PARAMETER_LOCATION.code &&
                     it.path ==
                     "asyncapi_validator_parameter_invalid.root.components.parameters.InvalidJsonPointerEscape.location"
             }
-        assertEquals(PARAMETER_LOCATION_FORMAT.severity, invalidJsonPointerEscape.severity)
-        assertEquals(PARAMETER_LOCATION_FORMAT.concern, invalidJsonPointerEscape.concern)
+        assertEquals(PARAMETER_LOCATION.severity, invalidJsonPointerEscape.severity)
+        assertEquals(PARAMETER_LOCATION.concern, invalidJsonPointerEscape.concern)
         assertEquals("asyncapi_validator_parameter_invalid.yaml", invalidJsonPointerEscape.sourceLocation?.file?.name)
         assertEquals(49, invalidJsonPointerEscape.line)
     }

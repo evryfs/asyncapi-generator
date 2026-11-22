@@ -9,8 +9,8 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_REFERENCE_SCOPE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_CHANNEL_SCOPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_SCOPE
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
 /**
@@ -35,7 +35,7 @@ internal class OperationBoundaryValidator(
             operation.channel?.let { channelRef ->
                 if (!inRoot(rootChannels, channelRef)) {
                     results.error(
-                        OPERATION_CHANNEL_REFERENCE_SCOPE,
+                        OPERATION_CHANNEL_SCOPE,
                         "$contextString must reference a channel from the root 'channels' object.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
                     )
@@ -46,7 +46,7 @@ internal class OperationBoundaryValidator(
             reply.channel?.let { channelRef ->
                 if (!inRoot(rootChannels, channelRef)) {
                     results.error(
-                        OPERATION_REPLY_CHANNEL_REFERENCE,
+                        REPLY_CHANNEL_SCOPE,
                         "$contextString Reply Channel must reference a channel from the root 'channels' object.",
                         sourceLocation = asyncApiContext.modelTracking.getSourceLocation(channelRef, channelRef::ref),
                     )

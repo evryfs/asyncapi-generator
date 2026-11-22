@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
@@ -16,9 +16,9 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
         val results = asyncApiValidator.validate(document)
 
         assertEquals(2, results.errors.size)
-        val contentType = results.findings.single { it.code == MESSAGE_CONTENT_TYPE_FORMAT.code }
-        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.severity, contentType.severity)
-        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.concern, contentType.concern)
+        val contentType = results.findings.single { it.code == MESSAGE_CONTENT_TYPE.code }
+        assertEquals(MESSAGE_CONTENT_TYPE.severity, contentType.severity)
+        assertEquals(MESSAGE_CONTENT_TYPE.concern, contentType.concern)
         assertEquals("asyncapi_validator_messagetrait_invalid.yaml", contentType.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidContentType.contentType",
@@ -28,10 +28,10 @@ class MessageTraitValidatorTest : AbstractValidatorTest() {
 
         val example =
             results.findings.single {
-                it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
+                it.code == MESSAGE_EXAMPLE_CONTENT.code
             }
-        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.severity, example.severity)
-        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.concern, example.concern)
+        assertEquals(MESSAGE_EXAMPLE_CONTENT.severity, example.severity)
+        assertEquals(MESSAGE_EXAMPLE_CONTENT.concern, example.concern)
         assertEquals("asyncapi_validator_messagetrait_invalid.yaml", example.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_messagetrait_invalid.root.components.messageTraits.InvalidExample.examples[0]",

@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.validator.messages
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_FORMAT_UNVALIDATED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA_MISMATCH
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT_UNSUPPORTED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_CONTENT_TYPE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_CONTENT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_EXAMPLE_SCHEMA
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.MESSAGE_HEADER_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REFERENCE_UNRESOLVED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
@@ -22,10 +22,10 @@ class MessageValidatorTest : AbstractValidatorTest() {
         assertEquals(7, results.errors.size)
         val contentType =
             results.findings.single {
-                it.code == MESSAGE_CONTENT_TYPE_FORMAT.code
+                it.code == MESSAGE_CONTENT_TYPE.code
             }
-        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.severity, contentType.severity)
-        assertEquals(MESSAGE_CONTENT_TYPE_FORMAT.concern, contentType.concern)
+        assertEquals(MESSAGE_CONTENT_TYPE.severity, contentType.severity)
+        assertEquals(MESSAGE_CONTENT_TYPE.concern, contentType.concern)
         assertEquals(
             "asyncapi_validator_message_invalid.yaml",
             contentType.sourceLocation?.file?.name,
@@ -38,10 +38,10 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
         val missingExample =
             results.findings.single {
-                it.code == MESSAGE_EXAMPLE_CONTENT_REQUIRED.code
+                it.code == MESSAGE_EXAMPLE_CONTENT.code
             }
-        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.severity, missingExample.severity)
-        assertEquals(MESSAGE_EXAMPLE_CONTENT_REQUIRED.concern, missingExample.concern)
+        assertEquals(MESSAGE_EXAMPLE_CONTENT.severity, missingExample.severity)
+        assertEquals(MESSAGE_EXAMPLE_CONTENT.concern, missingExample.concern)
         assertEquals(
             "asyncapi_validator_message_invalid.yaml",
             missingExample.sourceLocation?.file?.name,
@@ -54,7 +54,7 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
         val exampleSchemaMismatch =
             results.findings.filter {
-                it.code == MESSAGE_EXAMPLE_SCHEMA_MISMATCH.code
+                it.code == MESSAGE_EXAMPLE_SCHEMA.code
             }
         assertEquals(5, exampleSchemaMismatch.size)
         assertEquals(
@@ -97,9 +97,9 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
         assertEquals(1, results.warnings.size)
         val warning = results.findings.single()
-        assertEquals(MESSAGE_EXAMPLE_FORMAT_UNVALIDATED.code, warning.code)
-        assertEquals(MESSAGE_EXAMPLE_FORMAT_UNVALIDATED.severity, warning.severity)
-        assertEquals(MESSAGE_EXAMPLE_FORMAT_UNVALIDATED.concern, warning.concern)
+        assertEquals(MESSAGE_EXAMPLE_FORMAT.code, warning.code)
+        assertEquals(MESSAGE_EXAMPLE_FORMAT.severity, warning.severity)
+        assertEquals(MESSAGE_EXAMPLE_FORMAT.concern, warning.concern)
         assertEquals(
             "asyncapi_validator_message_format_example.yaml",
             warning.sourceLocation?.file?.name,
@@ -117,9 +117,9 @@ class MessageValidatorTest : AbstractValidatorTest() {
 
         assertEquals(1, results.warnings.size)
         val warning = results.findings.single()
-        assertEquals(MESSAGE_HEADER_FORMAT_UNSUPPORTED.code, warning.code)
-        assertEquals(MESSAGE_HEADER_FORMAT_UNSUPPORTED.severity, warning.severity)
-        assertEquals(MESSAGE_HEADER_FORMAT_UNSUPPORTED.concern, warning.concern)
+        assertEquals(MESSAGE_HEADER_FORMAT.code, warning.code)
+        assertEquals(MESSAGE_HEADER_FORMAT.severity, warning.severity)
+        assertEquals(MESSAGE_HEADER_FORMAT.concern, warning.concern)
         assertEquals(
             "asyncapi_validator_message_header_format.yaml",
             warning.sourceLocation?.file?.name,

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.channels
 
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_QUERY_OR_FRAGMENT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_ADDRESS_SUFFIX
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNDEFINED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.CHANNEL_PARAMETER_UNUSED
 import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
@@ -107,7 +107,7 @@ class ChannelValidatorTest : AbstractValidatorTest() {
         val results = validate("validator/channels/asyncapi_validator_channel_address_suffix.yaml")
 
         assertEquals(2, results.errors.size)
-        val suffixErrors = results.findings.filter { it.code == CHANNEL_ADDRESS_QUERY_OR_FRAGMENT.code }
+        val suffixErrors = results.findings.filter { it.code == CHANNEL_ADDRESS_SUFFIX.code }
         assertEquals(2, suffixErrors.size)
         val queryError =
             suffixErrors.single {

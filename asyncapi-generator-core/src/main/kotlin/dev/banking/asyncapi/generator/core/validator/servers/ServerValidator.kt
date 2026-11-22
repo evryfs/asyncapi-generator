@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SERVER
 import dev.banking.asyncapi.generator.core.model.servers.Server
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_CONTAINS_PROTOCOL
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_PROTOCOL
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_HOST_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_NAME_FORMAT
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SERVER_PROTOCOL_REQUIRED
@@ -44,7 +44,6 @@ internal class ServerValidator(
                 SERVER_NAME_FORMAT,
                 "$contextString name must contain only letters, digits, underscores, or hyphens.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(model),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serversObject",
             )
         }
         when (node) {
@@ -82,11 +81,10 @@ internal class ServerValidator(
                 SERVER_HOST_REQUIRED,
                 "$contextString must define a non-empty 'host'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         } else if (host.contains("://")) {
             results.warn(
-                SERVER_HOST_CONTAINS_PROTOCOL,
+                SERVER_HOST_PROTOCOL,
                 "$contextString host '$host' includes scheme/protocol. 'host' should typically be the hostname " +
                     "(e.g. api.example.com) as protocol is defined separately.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
@@ -106,7 +104,6 @@ internal class ServerValidator(
                 SERVER_VARIABLE_UNDEFINED,
                 "$contextString host uses variables $missingHostVars which are not defined in 'variables'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::host),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
         val missingPathVars = pathVars - definedVars
@@ -115,7 +112,6 @@ internal class ServerValidator(
                 SERVER_VARIABLE_UNDEFINED,
                 "$contextString pathname uses variables $missingPathVars which are not defined in 'variables'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::pathname),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
     }
@@ -131,7 +127,6 @@ internal class ServerValidator(
                 SERVER_PROTOCOL_REQUIRED,
                 "$contextString must define the 'protocol' it supports.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::protocol),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverObject",
             )
         }
     }

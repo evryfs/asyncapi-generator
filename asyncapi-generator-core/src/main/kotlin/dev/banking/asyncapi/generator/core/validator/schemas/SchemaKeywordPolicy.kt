@@ -16,13 +16,9 @@ internal data class SchemaKeywordClassification(
     val category: SchemaKeywordCategory,
     val severity: ValidationSeverity? = null,
     val explanation: String? = null,
-    val doc: String? = null,
 )
 
 internal object SchemaKeywordPolicy {
-    private const val ASYNCAPI_SCHEMA_OBJECT_DOC =
-        "https://www.asyncapi.com/docs/reference/specification/v3.0.0#schemaObject"
-
     private val supportedKeywords =
         setOf(
             $$"$id",
@@ -130,7 +126,6 @@ internal object SchemaKeywordPolicy {
                     explanation =
                         "is an unsupported annotation and will not be retained. Use the AsyncAPI-compatible " +
                             "'examples' array instead.",
-                    doc = ASYNCAPI_SCHEMA_OBJECT_DOC,
                 )
 
             keyword in unsupportedKeywords ->
@@ -138,7 +133,6 @@ internal object SchemaKeywordPolicy {
                     category = SchemaKeywordCategory.RECOGNIZED_UNSUPPORTED,
                     severity = ERROR,
                     explanation = unsupportedKeywords.getValue(keyword),
-                    doc = ASYNCAPI_SCHEMA_OBJECT_DOC,
                 )
 
             else ->
@@ -148,7 +142,6 @@ internal object SchemaKeywordPolicy {
                     explanation =
                         "is not supported by the generator and would otherwise be ignored. Use an AsyncAPI 3.0 " +
                             "Schema Object keyword or an 'x-' extension property.",
-                    doc = ASYNCAPI_SCHEMA_OBJECT_DOC,
                 )
         }
 }

@@ -9,9 +9,9 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.OPERATION_REPLY_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_ADDRESS
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_CHANNEL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OPERATION_REPLY_MESSAGE_REFERENCE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_ADDRESS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_CHANNEL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.REPLY_MESSAGE_REFERENCE
 import dev.banking.asyncapi.generator.core.validator.ReferenceResolver
 import dev.banking.asyncapi.generator.core.validator.util.ValidationCollector
 
@@ -77,7 +77,7 @@ internal class OperationReplyValidator(
         if (channelRef == null) {
             if (!node.messages.isNullOrEmpty()) {
                 results.error(
-                    OPERATION_REPLY_CHANNEL_REQUIRED,
+                    REPLY_CHANNEL_REQUIRED,
                     "$contextString must define a 'channel' when it defines reply messages.",
                     sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::messages),
                 )
@@ -96,7 +96,7 @@ internal class OperationReplyValidator(
     ) {
         if (node.address != null && channel?.address != null) {
             results.error(
-                OPERATION_REPLY_CHANNEL_ADDRESS,
+                REPLY_CHANNEL_ADDRESS,
                 "$contextString channel must have an unknown address when the reply defines 'address'.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::channel),
             )
@@ -122,7 +122,7 @@ internal class OperationReplyValidator(
                 )
             ) {
                 results.error(
-                    OPERATION_REPLY_MESSAGE_REFERENCE,
+                    REPLY_MESSAGE_REFERENCE,
                     "$contextString must reference a message from the reply channel's 'messages' object.",
                     sourceLocation =
                         asyncApiContext.modelTracking.getSourceLocation(

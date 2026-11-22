@@ -1,17 +1,17 @@
 package dev.banking.asyncapi.generator.core.validator.security
 
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_AUTHORIZATION_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_AUTHORIZATION_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_REFRESH_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_SCOPE_AVAILABLE
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_TOKEN_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.OAUTH_TOKEN_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_IN_VALUE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_NAME_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_REFRESH_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_SCOPE_AVAILABLE
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_TOKEN_URL_REQUIRED
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPEN_ID_URL_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPEN_ID_URL_REQUIRED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OAUTH_FLOWS
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPENID_URL_FORMAT
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_OPENID_URL_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_SCHEME_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_REQUIRED
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SECURITY_TYPE_VALUE
@@ -49,9 +49,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(12, schemeRequired.line)
 
-        val flowsRequired = results.findings.single { it.code == SECURITY_OAUTH_FLOWS_REQUIRED.code }
-        assertEquals(SECURITY_OAUTH_FLOWS_REQUIRED.severity, flowsRequired.severity)
-        assertEquals(SECURITY_OAUTH_FLOWS_REQUIRED.concern, flowsRequired.concern)
+        val flowsRequired = results.findings.single { it.code == SECURITY_OAUTH_FLOWS.code }
+        assertEquals(SECURITY_OAUTH_FLOWS.severity, flowsRequired.severity)
+        assertEquals(SECURITY_OAUTH_FLOWS.concern, flowsRequired.concern)
         assertEquals("asyncapi_validator_security_invalid.yaml", flowsRequired.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidOAuth2",
@@ -61,13 +61,13 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
 
         val openIdRequired =
             results.findings.single {
-                it.code == SECURITY_OPEN_ID_URL_REQUIRED.code &&
+                it.code == SECURITY_OPENID_URL_REQUIRED.code &&
                     it.path ==
                     "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidOpenID"
             }
-        assertEquals(SECURITY_OPEN_ID_URL_REQUIRED.code, openIdRequired.code)
-        assertEquals(SECURITY_OPEN_ID_URL_REQUIRED.severity, openIdRequired.severity)
-        assertEquals(SECURITY_OPEN_ID_URL_REQUIRED.concern, openIdRequired.concern)
+        assertEquals(SECURITY_OPENID_URL_REQUIRED.code, openIdRequired.code)
+        assertEquals(SECURITY_OPENID_URL_REQUIRED.severity, openIdRequired.severity)
+        assertEquals(SECURITY_OPENID_URL_REQUIRED.concern, openIdRequired.concern)
         assertEquals("asyncapi_validator_security_invalid.yaml", openIdRequired.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_invalid.root.components.securitySchemes.InvalidOpenID",
@@ -155,9 +155,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         assertEquals(7, inRequired.line)
 
         val authUrlRequired =
-            results.findings.single { it.code == SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED.code }
-        assertEquals(SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED.severity, authUrlRequired.severity)
-        assertEquals(SECURITY_OAUTH_AUTHORIZATION_URL_REQUIRED.concern, authUrlRequired.concern)
+            results.findings.single { it.code == OAUTH_AUTHORIZATION_URL_REQUIRED.code }
+        assertEquals(OAUTH_AUTHORIZATION_URL_REQUIRED.severity, authUrlRequired.severity)
+        assertEquals(OAUTH_AUTHORIZATION_URL_REQUIRED.concern, authUrlRequired.concern)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.yaml",
             authUrlRequired.sourceLocation?.file?.name,
@@ -168,9 +168,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(12, authUrlRequired.line)
 
-        val tokenUrlFormat = results.findings.single { it.code == SECURITY_OAUTH_TOKEN_URL_FORMAT.code }
-        assertEquals(SECURITY_OAUTH_TOKEN_URL_FORMAT.severity, tokenUrlFormat.severity)
-        assertEquals(SECURITY_OAUTH_TOKEN_URL_FORMAT.concern, tokenUrlFormat.concern)
+        val tokenUrlFormat = results.findings.single { it.code == OAUTH_TOKEN_URL_FORMAT.code }
+        assertEquals(OAUTH_TOKEN_URL_FORMAT.severity, tokenUrlFormat.severity)
+        assertEquals(OAUTH_TOKEN_URL_FORMAT.concern, tokenUrlFormat.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", tokenUrlFormat.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.flows.password.tokenUrl",
@@ -179,9 +179,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         assertEquals(15, tokenUrlFormat.line)
 
         val refreshUrlFormat =
-            results.findings.single { it.code == SECURITY_OAUTH_REFRESH_URL_FORMAT.code }
-        assertEquals(SECURITY_OAUTH_REFRESH_URL_FORMAT.severity, refreshUrlFormat.severity)
-        assertEquals(SECURITY_OAUTH_REFRESH_URL_FORMAT.concern, refreshUrlFormat.concern)
+            results.findings.single { it.code == OAUTH_REFRESH_URL_FORMAT.code }
+        assertEquals(OAUTH_REFRESH_URL_FORMAT.severity, refreshUrlFormat.severity)
+        assertEquals(OAUTH_REFRESH_URL_FORMAT.concern, refreshUrlFormat.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", refreshUrlFormat.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.flows.password.refreshUrl",
@@ -189,9 +189,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(16, refreshUrlFormat.line)
 
-        val tokenUrlRequired = results.findings.single { it.code == SECURITY_OAUTH_TOKEN_URL_REQUIRED.code }
-        assertEquals(SECURITY_OAUTH_TOKEN_URL_REQUIRED.severity, tokenUrlRequired.severity)
-        assertEquals(SECURITY_OAUTH_TOKEN_URL_REQUIRED.concern, tokenUrlRequired.concern)
+        val tokenUrlRequired = results.findings.single { it.code == OAUTH_TOKEN_URL_REQUIRED.code }
+        assertEquals(OAUTH_TOKEN_URL_REQUIRED.severity, tokenUrlRequired.severity)
+        assertEquals(OAUTH_TOKEN_URL_REQUIRED.concern, tokenUrlRequired.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", tokenUrlRequired.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.flows.clientCredentials",
@@ -200,9 +200,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         assertEquals(18, tokenUrlRequired.line)
 
         val authUrlFormat =
-            results.findings.single { it.code == SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT.code }
-        assertEquals(SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT.severity, authUrlFormat.severity)
-        assertEquals(SECURITY_OAUTH_AUTHORIZATION_URL_FORMAT.concern, authUrlFormat.concern)
+            results.findings.single { it.code == OAUTH_AUTHORIZATION_URL_FORMAT.code }
+        assertEquals(OAUTH_AUTHORIZATION_URL_FORMAT.severity, authUrlFormat.severity)
+        assertEquals(OAUTH_AUTHORIZATION_URL_FORMAT.concern, authUrlFormat.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", authUrlFormat.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.flows.authorizationCode.authorizationUrl",
@@ -210,9 +210,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(21, authUrlFormat.line)
 
-        val scopeAvailable = results.findings.single { it.code == SECURITY_OAUTH_SCOPE_AVAILABLE.code }
-        assertEquals(SECURITY_OAUTH_SCOPE_AVAILABLE.severity, scopeAvailable.severity)
-        assertEquals(SECURITY_OAUTH_SCOPE_AVAILABLE.concern, scopeAvailable.concern)
+        val scopeAvailable = results.findings.single { it.code == OAUTH_SCOPE_AVAILABLE.code }
+        assertEquals(OAUTH_SCOPE_AVAILABLE.severity, scopeAvailable.severity)
+        assertEquals(OAUTH_SCOPE_AVAILABLE.concern, scopeAvailable.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", scopeAvailable.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOAuthFlows.scopes",
@@ -220,9 +220,9 @@ class SecuritySchemeValidatorTest : AbstractValidatorTest() {
         )
         assertEquals(24, scopeAvailable.line)
 
-        val openIdFormat = results.findings.single { it.code == SECURITY_OPEN_ID_URL_FORMAT.code }
-        assertEquals(SECURITY_OPEN_ID_URL_FORMAT.severity, openIdFormat.severity)
-        assertEquals(SECURITY_OPEN_ID_URL_FORMAT.concern, openIdFormat.concern)
+        val openIdFormat = results.findings.single { it.code == SECURITY_OPENID_URL_FORMAT.code }
+        assertEquals(SECURITY_OPENID_URL_FORMAT.severity, openIdFormat.severity)
+        assertEquals(SECURITY_OPENID_URL_FORMAT.concern, openIdFormat.concern)
         assertEquals("asyncapi_validator_security_oauth_invalid.yaml", openIdFormat.sourceLocation?.file?.name)
         assertEquals(
             "asyncapi_validator_security_oauth_invalid.root.components.securitySchemes.InvalidOpenIdUrl.openIdConnectUrl",

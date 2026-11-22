@@ -81,7 +81,6 @@ internal class ServerVariableValidator(
                 SERVER_VARIABLE_DEFAULT_ENUM,
                 "$contextString 'default' ('$default') is not one of the allowed enum values.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::default),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
     }
@@ -98,7 +97,6 @@ internal class ServerVariableValidator(
                 SERVER_VARIABLE_EXAMPLES_ENUM,
                 "$contextString, some 'examples' values are not included in the allowed enum values.",
                 sourceLocation = asyncApiContext.modelTracking.getSourceLocation(node, node::examples),
-                doc = "https://www.asyncapi.com/docs/reference/specification/v3.0.0#serverVariableObject",
             )
         }
     }

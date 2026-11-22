@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiValidateExce
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.ADVISORY
 import dev.banking.asyncapi.generator.core.model.validator.ValidationConcern.SPECIFICATION
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_FORMAT
-import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN_RECOMMENDED
+import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.DOCUMENT_ID_URN
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.ERROR
 import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity.WARNING
 import dev.banking.asyncapi.generator.core.source.SourceLocation
@@ -31,7 +31,7 @@ class ValidationReportTest {
         val collector = ValidationCollector()
 
         collector.error(DOCUMENT_ID_FORMAT, "Invalid identifier.", sourceLocation)
-        collector.warn(DOCUMENT_ID_URN_RECOMMENDED, "Prefer a URN.", sourceLocation)
+        collector.warn(DOCUMENT_ID_URN, "Prefer a URN.", sourceLocation)
         val report = collector.report()
 
         val error = report.errors.single()
@@ -58,7 +58,7 @@ class ValidationReportTest {
         collector.error(DOCUMENT_ID_FORMAT, "First error.")
         val report = collector.report()
 
-        collector.warn(DOCUMENT_ID_URN_RECOMMENDED, "Later warning.")
+        collector.warn(DOCUMENT_ID_URN, "Later warning.")
 
         assertEquals(1, report.findings.size)
         assertTrue(report.hasErrors())
