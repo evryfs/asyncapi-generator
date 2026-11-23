@@ -14,6 +14,31 @@ or unvalidated documents therefore cannot reach generation. The generator
 receives a `ProtocProvider` from its frontend; it never decides on its own how
 `protoc` is obtained.
 
+## Configuration
+
+Package `configuration` turns what a user configured into a
+`GeneratorConfiguration`.
+
+- `GeneratorSettings` mirrors the documented settings one to one and keeps
+  their raw values. The CLI, Maven and Gradle only copy their own syntax into
+  it; none of them checks a setting itself.
+- `GeneratorConfigurationFactory.create` runs every check and reports each
+  problem under the setting's public name, such as `modelPackage` or
+  `clientConfig.topicParameterProperties`. It throws on the first invalid
+  setting. Two resolvers hold the parts with their own rules:
+  `ClientConfigurationResolver` checks client settings on every execution,
+  including one without `clientPackage`, because builds share them between
+  executions; `SchemaConfigurationResolver` selects the schema artifacts.
+- `GeneratorName` selects a `GeneratorProfile`: source code in a
+  `SourceLanguage`, schemas of a `SchemaType`, or a document in a
+  `DocumentFormat`.
+- `ModelType` knows the language that writes it, or none for native Avro and
+  Protobuf models, and whether it accepts `modelConfig.modelAnnotation`.
+  `SourceLanguage` derives its default and supported model types from it.
+- Valid settings that have no effect, such as shared client settings on an
+  execution without `clientPackage`, become a `ConfigurationWarning` instead
+  of being ignored silently.
+
 ## Stages
 
 1. **Plan** (`plan`). `GenerationPlanner` turns the configuration into a list

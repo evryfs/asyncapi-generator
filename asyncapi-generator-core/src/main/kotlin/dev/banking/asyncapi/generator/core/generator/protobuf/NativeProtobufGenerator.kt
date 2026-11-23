@@ -103,7 +103,7 @@ internal class NativeProtobufGenerator(
                 throw NativeProtobufModelGenerationFailed(
                     payloadName = parsedSchema.payloadName,
                     schemaFormat = parsedSchema.schema.schemaFormat,
-                    modelType = models.modelType.configurationValue,
+                    modelType = models.modelType.name.lowercase(),
                     reason = "protoc exited with status code $exitCode: ${output.trim()}",
                 )
             }
@@ -217,7 +217,7 @@ internal class NativeProtobufGenerator(
         NativeProtobufModelGenerationFailed(
             payloadName = parsedSchema.payloadName,
             schemaFormat = parsedSchema.schema.schemaFormat,
-            modelType = models.modelType.configurationValue,
+            modelType = models.modelType.name.lowercase(),
             reason = exception.message ?: exception::class.simpleName.orEmpty(),
         )
 }

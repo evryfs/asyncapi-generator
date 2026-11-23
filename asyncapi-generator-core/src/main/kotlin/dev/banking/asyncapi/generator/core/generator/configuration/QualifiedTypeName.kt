@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Validated fully qualified source type name supplied by generator configuration.
+ *
+ * @param value the validated fully qualified type name.
  */
 @JvmInline
 value class QualifiedTypeName private constructor(
@@ -13,6 +15,7 @@ value class QualifiedTypeName private constructor(
     companion object {
         private val pattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)+")
 
+        /** Checks [value]; [path] names the setting in errors. */
         fun fromConfigurationValue(
             value: String,
             path: String,

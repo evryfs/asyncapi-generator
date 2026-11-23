@@ -1,6 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-/** Additional payload representation exposed by generated Spring Kafka producer contracts. */
+/**
+ * Additional payload representation exposed by generated Spring Kafka producer contracts.
+ *
+ * @param configurationValue the value users write in `clientConfig.producer.additionalPayloadTypes`.
+ */
 enum class AdditionalProducerPayloadType(
     val configurationValue: String,
 ) {
@@ -11,6 +15,7 @@ enum class AdditionalProducerPayloadType(
     companion object {
         val supportedConfigurationValues: List<String> = entries.map { it.configurationValue }
 
+        /** The configured [values] in declaration order without duplicates; [path] names the setting in errors. */
         fun fromConfigurationValues(
             values: List<String>?,
             path: String,
