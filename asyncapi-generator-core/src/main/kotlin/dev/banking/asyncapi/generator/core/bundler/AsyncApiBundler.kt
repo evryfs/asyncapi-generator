@@ -26,16 +26,17 @@ class AsyncApiBundler {
     fun bundle(loaded: AsyncApiDocumentLoadResult): BundledAsyncApiDocument = bundle(loaded.document)
 
     internal fun bundle(document: AsyncApiDocument): BundledAsyncApiDocument {
-        val context = BundlingContext.withRootSchemas(componentBundler.schemas(document.components))
-        val bundledInfo = infoBundler.bundle(document.info, context)
-        val bundledServers = serverBundler.bundleServers(document.servers, context)
-        val bundledChannels = channelBundler.bundleMap(document.channels, context)
-        val bundledOperations = operationBundler.bundleMap(document.operations, context)
-        val bundledComponents = document.components?.let { componentBundler.bundleComponent(it, context) }
+        val run = BundlingRun(rootSchemas = document.components?.schemas.orEmpty())
+        val scope = run.rootScope()
+        val bundledInfo = infoBundler.bundle(document.info, scope)
+        val bundledServers = serverBundler.bundleServers(document.servers, scope)
+        val bundledChannels = channelBundler.bundleMap(document.channels, scope)
+        val bundledOperations = operationBundler.bundleMap(document.operations, scope)
+        val bundledComponents = document.components?.let { componentBundler.bundleComponent(it, scope) }
         val componentsWithPromotedSchemas =
             componentBundler.mergeSchemas(
                 components = bundledComponents,
-                schemas = context.schemaPromotions.schemas(),
+                schemas = run.schemaPromotions.schemas(),
             )
 
         return BundledAsyncApiDocument(

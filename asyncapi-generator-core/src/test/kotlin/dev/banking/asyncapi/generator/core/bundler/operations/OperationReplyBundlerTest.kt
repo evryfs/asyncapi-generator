@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
@@ -36,7 +37,7 @@ class OperationReplyBundlerTest {
 
         val bundled =
             assertIs<OperationReplyInterface.OperationReplyReference>(
-                bundler.bundle(replyInterface, BundlingContext.empty()),
+                bundler.bundle(replyInterface, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

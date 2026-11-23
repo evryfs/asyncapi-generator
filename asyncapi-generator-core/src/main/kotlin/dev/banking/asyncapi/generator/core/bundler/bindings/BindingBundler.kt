@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.bindings
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.schemas.SchemaBundler
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
@@ -15,28 +15,28 @@ internal class BindingBundler {
 
     fun bundleMap(
         bindings: Map<String, BindingInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, BindingInterface>? =
         bindings?.mapValues { (_, binding) ->
-            bundle(binding, context)
+            bundle(binding, scope)
         }
 
     fun bundle(
         binding: BindingInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): BindingInterface =
         when (binding) {
             is BindingInterface.BindingInline ->
-                BindingInterface.BindingInline(bundleBinding(binding.binding, context))
+                BindingInterface.BindingInline(bundleBinding(binding.binding, scope))
 
             is BindingInterface.BindingReference -> {
                 binding.copy(
                     reference =
                         ReferenceBundler.bundleReferencedModel<Binding>(
                             binding.reference,
-                            context,
-                        ) { model, nextContext ->
-                            bundleBinding(model, nextContext)
+                            scope,
+                        ) { model, nextScope ->
+                            bundleBinding(model, nextScope)
                         },
                 )
             }
@@ -44,7 +44,7 @@ internal class BindingBundler {
 
     private fun bundleBinding(
         binding: Binding,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Binding {
         if (binding.protocolBindings.none { it.schemaFields.isNotEmpty() }) return binding
         var bundledContent = binding.content
@@ -55,9 +55,9 @@ internal class BindingBundler {
                         // The message key becomes a generated type, so it keeps the name of its source pointer.
                         val isKey = schema === binding.kafkaKeySchema
                         if (isKey) {
-                            schemaBundler.bundleBindingField(schema, context)
+                            schemaBundler.bundleBindingField(schema, scope)
                         } else {
-                            schemaBundler.bundle(schema, context)
+                            schemaBundler.bundle(schema, scope)
                         }
                     }
                 // Raw content is only replaced where bundling changed the schema.

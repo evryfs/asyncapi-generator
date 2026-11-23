@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.channels
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -27,7 +28,7 @@ class ChannelBundlerTest {
 
         val bundled =
             assertIs<ChannelInterface.ChannelReference>(
-                bundler.bundle(channelInterface, BundlingContext.empty()),
+                bundler.bundle(channelInterface, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

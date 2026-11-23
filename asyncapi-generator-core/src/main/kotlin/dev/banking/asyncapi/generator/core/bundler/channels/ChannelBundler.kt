@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.channels
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
@@ -22,31 +22,31 @@ internal class ChannelBundler {
 
     fun bundleMap(
         channels: Map<String, ChannelInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, ChannelInterface>? {
         if (channels == null) return null
         return channels.mapValues { (_, channelInterface) ->
-            bundle(channelInterface, context)
+            bundle(channelInterface, scope)
         }
     }
 
     fun bundle(
         channelInterface: ChannelInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): ChannelInterface =
         when (channelInterface) {
             is ChannelInterface.ChannelInline ->
                 ChannelInterface.ChannelInline(
-                    bundleChannel(channelInterface.channel, context),
+                    bundleChannel(channelInterface.channel, scope),
                 )
             is ChannelInterface.ChannelReference -> {
                 channelInterface.copy(
                     reference =
                         ReferenceBundler.bundleReferencedModel<Channel>(
                             reference = channelInterface.reference,
-                            context = context,
-                        ) { channel, nextContext ->
-                            bundleChannel(channel, nextContext)
+                            scope = scope,
+                        ) { channel, nextScope ->
+                            bundleChannel(channel, nextScope)
                         },
                 )
             }
@@ -54,13 +54,13 @@ internal class ChannelBundler {
 
     fun bundleChannel(
         channel: Channel,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Channel {
-        val bundledMessages = messagesBundler.bundleMap(channel.messages, context)
-        val bundledParameters = parameterBundler.bundleMap(channel.parameters, context)
-        val bundledTags = tagBundler.bundleList(channel.tags, context)
-        val bundledExternalDocs = channel.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledBindings = bindingBundler.bundleMap(channel.bindings, context)
+        val bundledMessages = messagesBundler.bundleMap(channel.messages, scope)
+        val bundledParameters = parameterBundler.bundleMap(channel.parameters, scope)
+        val bundledTags = tagBundler.bundleList(channel.tags, scope)
+        val bundledExternalDocs = channel.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
+        val bundledBindings = bindingBundler.bundleMap(channel.bindings, scope)
         return channel.copy(
             messages = bundledMessages,
             parameters = bundledParameters,

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
@@ -22,22 +22,22 @@ internal class OperationBundler {
 
     fun bundleMap(
         operations: Map<String, OperationInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, OperationInterface>? {
         if (operations == null) return null
         return operations.mapValues { (_, opInterface) ->
-            bundle(opInterface, context)
+            bundle(opInterface, scope)
         }
     }
 
     fun bundle(
         operationInterface: OperationInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): OperationInterface =
         when (operationInterface) {
             is OperationInterface.OperationInline ->
                 OperationInterface.OperationInline(
-                    bundleOperation(operationInterface.operation, context),
+                    bundleOperation(operationInterface.operation, scope),
                 )
 
             is OperationInterface.OperationReference -> {
@@ -45,9 +45,9 @@ internal class OperationBundler {
                     reference =
                         ReferenceBundler.bundleReferencedModel<Operation>(
                             reference = operationInterface.reference,
-                            context = context,
-                        ) { operation, nextContext ->
-                            bundleOperation(operation, nextContext)
+                            scope = scope,
+                        ) { operation, nextScope ->
+                            bundleOperation(operation, nextScope)
                         },
                 )
             }
@@ -55,14 +55,14 @@ internal class OperationBundler {
 
     fun bundleOperation(
         operation: Operation,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Operation {
-        val bundledBindings = bindingBundler.bundleMap(operation.bindings, context)
-        val bundledTraits = operationTraitBundler.bundleList(operation.traits, context)
-        val bundledTags = tagBundler.bundleList(operation.tags, context)
-        val bundledExternalDocs = operation.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledReply = operation.reply?.let { operationReplyBundler.bundle(it, context) }
-        val bundledSecurity = securitySchemeBundler.bundleList(operation.security, context)
+        val bundledBindings = bindingBundler.bundleMap(operation.bindings, scope)
+        val bundledTraits = operationTraitBundler.bundleList(operation.traits, scope)
+        val bundledTags = tagBundler.bundleList(operation.tags, scope)
+        val bundledExternalDocs = operation.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
+        val bundledReply = operation.reply?.let { operationReplyBundler.bundle(it, scope) }
+        val bundledSecurity = securitySchemeBundler.bundleList(operation.security, scope)
         return operation.copy(
             bindings = bundledBindings,
             traits = bundledTraits,

@@ -20,7 +20,7 @@
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
-    <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, context: BundlingContext, ): Component</ID>
+    <ID>LongMethod:ComponentBundler.kt$ComponentBundler$fun bundleComponent( component: Component, scope: BundlingScope, ): Component</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
@@ -52,9 +52,9 @@
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>LongMethod:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
-    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, context: BundlingContext, ): SchemaInterface</ID>
-    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
-    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleSchema( schema: Schema, context: BundlingContext, ): Schema</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundlePromotedReference( reference: Reference, referencedModel: Any, scope: BundlingScope, ): SchemaInterface</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, scope: BundlingScope, ): SchemaInterface</ID>
+    <ID>LongMethod:SchemaBundler.kt$SchemaBundler$private fun bundleSchema( schema: Schema, scope: BundlingScope, ): Schema</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
@@ -118,7 +118,7 @@
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
-    <ID>ReturnCount:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, context: BundlingContext, ): SchemaInterface</ID>
+    <ID>ReturnCount:SchemaBundler.kt$SchemaBundler$private fun bundleReference( schemaInterface: SchemaInterface.SchemaReference, scope: BundlingScope, ): SchemaInterface</ID>
     <ID>ReturnCount:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
@@ -144,9 +144,6 @@
     <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
     <ID>TooManyFunctions:SchemaBundler.kt$SchemaBundler</ID>
-    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$ExternalSchemaNameUnavailable : AsyncApiBundlingException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiBundlingException.kt$AsyncApiBundlingException$PromotedSchemaNameCollision : AsyncApiBundlingException</ID>
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>

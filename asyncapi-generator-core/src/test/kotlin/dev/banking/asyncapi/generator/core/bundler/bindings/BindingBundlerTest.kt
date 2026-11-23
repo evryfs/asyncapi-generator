@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.bindings
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
@@ -31,7 +32,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
             ).binding
 
         val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
@@ -63,7 +64,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingReference>(
-                bundler.bundle(bindingReference, BundlingContext.empty()),
+                bundler.bundle(bindingReference, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)
@@ -107,7 +108,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
             ).binding
 
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
@@ -143,7 +144,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingContext.empty()),
+                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
             ).binding
 
         assertEquals(binding, bundled)

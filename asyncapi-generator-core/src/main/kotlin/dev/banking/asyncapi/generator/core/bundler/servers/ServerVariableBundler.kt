@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.servers
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 
@@ -10,22 +10,22 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 internal class ServerVariableBundler {
     fun bundleMap(
         variables: Map<String, ServerVariableInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, ServerVariableInterface>? =
         variables?.mapValues { (_, variable) ->
-            bundle(variable, context)
+            bundle(variable, scope)
         }
 
     fun bundle(
         variable: ServerVariableInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): ServerVariableInterface =
         when (variable) {
             is ServerVariableInterface.ServerVariableInline -> {
                 variable
             }
             is ServerVariableInterface.ServerVariableReference -> {
-                variable.copy(reference = ReferenceBundler.inlineIfUnvisited(variable.reference, context))
+                variable.copy(reference = ReferenceBundler.inlineIfUnvisited(variable.reference, scope))
             }
         }
 }

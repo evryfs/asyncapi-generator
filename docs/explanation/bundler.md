@@ -14,8 +14,10 @@ resolved every `$ref`, and validated the contract. It returns a
 
 The bundler is a pure transformation of the domain model. It does not read
 files, parse YAML or JSON, validate, or generate code, and it does not modify
-the loaded document. All state of one run lives in a `BundlingContext` created
-for that run.
+the loaded document. What one bundling shares (promoted schemas, recursion
+analysis) lives in a `BundlingRun` created for that call; where the bundler is
+in the document (references followed, external-document scope) lives in an
+immutable `BundlingScope`.
 
 ## Rules
 
@@ -54,7 +56,7 @@ on) walks its part of the model and replaces resolved references:
   schemas by model identity and by name. A second schema with the same name
   and the same serialized content reuses the first; different content fails
   with `AsyncApiBundlingException.PromotedSchemaNameCollision`.
-- Other schema references are inlined. `BundlingContext` tracks visited
+- Other schema references are inlined. `BundlingScope` tracks visited
   references so recursion through inlined schemas terminates;
   `SchemaRecursionAnalyzer` identifies recursive schemas that must be promoted
   instead.

@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
-import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiBundlingException
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.bundler.messages
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
 import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
 import dev.banking.asyncapi.generator.core.bundler.correlations.CorrelationIdBundler
@@ -24,20 +24,20 @@ internal class MessagesBundler {
 
     fun bundleMap(
         messages: Map<String, MessageInterface>?,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Map<String, MessageInterface>? =
         messages?.mapValues { (_, message) ->
-            bundle(message, context)
+            bundle(message, scope)
         }
 
     fun bundle(
         message: MessageInterface,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): MessageInterface =
         when (message) {
             is MessageInterface.MessageInline -> {
                 MessageInterface.MessageInline(
-                    bundleMessage(message.message, context),
+                    bundleMessage(message.message, scope),
                 )
             }
             is MessageInterface.MessageReference -> {
@@ -45,9 +45,9 @@ internal class MessagesBundler {
                     reference =
                         ReferenceBundler.bundleReferencedModel<Message>(
                             reference = message.reference,
-                            context = context,
-                        ) { messageModel, nextContext ->
-                            bundleMessage(messageModel, nextContext)
+                            scope = scope,
+                        ) { messageModel, nextScope ->
+                            bundleMessage(messageModel, nextScope)
                         },
                 )
             }
@@ -55,15 +55,15 @@ internal class MessagesBundler {
 
     private fun bundleMessage(
         message: Message,
-        context: BundlingContext,
+        scope: BundlingScope,
     ): Message {
-        val bundledHeaders = message.headers?.let { schemaBundler.bundle(it, context) }
-        val bundledPayload = message.payload?.let { schemaBundler.bundle(it, context) }
-        val bundledCorrelationId = message.correlationId?.let { correlationIdBundler.bundle(it, context) }
-        val bundledTags: List<TagInterface>? = tagBundler.bundleList(message.tags, context)
-        val bundledExternalDocs = message.externalDocs?.let { externalDocsBundler.bundle(it, context) }
-        val bundledBindings = bindingBundler.bundleMap(message.bindings, context)
-        val bundledTraits = messageTraitBundler.bundleList(message.traits, context)
+        val bundledHeaders = message.headers?.let { schemaBundler.bundle(it, scope) }
+        val bundledPayload = message.payload?.let { schemaBundler.bundle(it, scope) }
+        val bundledCorrelationId = message.correlationId?.let { correlationIdBundler.bundle(it, scope) }
+        val bundledTags: List<TagInterface>? = tagBundler.bundleList(message.tags, scope)
+        val bundledExternalDocs = message.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
+        val bundledBindings = bindingBundler.bundleMap(message.bindings, scope)
+        val bundledTraits = messageTraitBundler.bundleList(message.traits, scope)
         val bundledExamples = message.examples
         return message.copy(
             headers = bundledHeaders,

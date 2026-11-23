@@ -6,20 +6,20 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
-class BundlingContextTest {
+class BundlingScopeTest {
     @Test
-    fun `empty context has no visited references`() {
+    fun `empty scope has no visited references`() {
         val reference = Reference("#/components/schemas/User")
 
-        val context = BundlingContext.empty()
+        val scope = BundlingRun().rootScope()
 
-        assertFalse(context.hasVisited(reference))
+        assertFalse(scope.hasVisited(reference))
     }
 
     @Test
-    fun `enter returns a context with the visited reference`() {
+    fun `enter returns a scope with the visited reference`() {
         val reference = Reference("#/components/schemas/User")
-        val original = BundlingContext.empty()
+        val original = BundlingRun().rootScope()
 
         val next = original.enter(reference)
 
@@ -33,9 +33,9 @@ class BundlingContextTest {
         val first = Reference("#/components/schemas/User", sourceId = "first.yaml")
         val second = Reference("#/components/schemas/User", sourceId = "second.yaml")
 
-        val context = BundlingContext.empty().enter(first)
+        val scope = BundlingRun().rootScope().enter(first)
 
-        assertTrue(context.hasVisited(first))
-        assertFalse(context.hasVisited(second))
+        assertTrue(scope.hasVisited(first))
+        assertFalse(scope.hasVisited(second))
     }
 }

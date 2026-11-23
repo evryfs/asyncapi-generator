@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.operations
 
-import dev.banking.asyncapi.generator.core.bundler.BundlingContext
+import dev.banking.asyncapi.generator.core.bundler.BundlingRun
+import dev.banking.asyncapi.generator.core.bundler.BundlingScope
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
@@ -33,7 +34,7 @@ class OperationTraitBundlerTest {
 
         val bundled =
             assertIs<OperationTraitInterface.OperationTraitReference>(
-                bundler.bundle(traitInterface, BundlingContext.empty()),
+                bundler.bundle(traitInterface, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)
@@ -57,7 +58,7 @@ class OperationTraitBundlerTest {
                 ),
             )
 
-        val bundled = bundler.bundle(traitInterface, BundlingContext.empty())
+        val bundled = bundler.bundle(traitInterface, BundlingRun().rootScope())
 
         assertIs<OperationTraitInterface.OperationTraitInline>(bundled)
         val bundledTrait = (bundled as OperationTraitInterface.OperationTraitInline).operationTrait
