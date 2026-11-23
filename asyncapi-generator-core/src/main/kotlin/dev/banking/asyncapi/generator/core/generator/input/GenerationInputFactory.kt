@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.ChannelAnalyzer
 import dev.banking.asyncapi.generator.core.generator.analyzer.SchemaAnalyzer
-import dev.banking.asyncapi.generator.core.generator.loader.AsyncApiSchemaLoader
+import dev.banking.asyncapi.generator.core.generator.catalog.SchemaCatalogLoader
 import dev.banking.asyncapi.generator.core.generator.normalizer.SchemaNormalizer
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 
@@ -15,7 +15,7 @@ internal class GenerationInputFactory(
     private val channelAnalyzer: ChannelAnalyzer = ChannelAnalyzer(),
 ) {
     fun create(asyncApiDocument: AsyncApiDocument): GenerationInput {
-        val loadedSchemas = AsyncApiSchemaLoader.load(asyncApiDocument)
+        val loadedSchemas = SchemaCatalogLoader.load(asyncApiDocument)
         val schemas = loadedSchemas.schemas
         val normalizedSchemas = schemaNormalizer.normalize(schemas)
         val schemaAnalysis = schemaAnalyzer.analyze(normalizedSchemas)

@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.loader
+package dev.banking.asyncapi.generator.core.generator.catalog
 
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.schemas.Schema

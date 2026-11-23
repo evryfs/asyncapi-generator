@@ -8,14 +8,11 @@
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
-    <ID>LargeClass:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
     <ID>LargeClass:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator</ID>
     <ID>LargeClass:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
-    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
-    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectMessages( asyncApiDocument: AsyncApiDocument, component: Component?, ): List&lt;CollectedMessage&gt;</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
@@ -54,7 +51,6 @@
     <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
     <ID>LoopWithTooManyJumpStatements:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer$while</ID>
     <ID>LoopWithTooManyJumpStatements:ReferenceAnalyzer.kt$ReferenceAnalyzer$while</ID>
-    <ID>MagicNumber:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$3</ID>
     <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
@@ -69,8 +65,6 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
-    <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
-    <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>NestedBlockDepth:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
     <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:EnumLiteralNormalizer.kt$EnumConstant</ID>
@@ -84,9 +78,6 @@
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
-    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun Reference.localComponentName(category: String): String?</ID>
-    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectFromReference( reference: Reference, sink: MutableSet&lt;String&gt;, visitedRefs: MutableSet&lt;String&gt;, ): Boolean</ID>
-    <ID>ReturnCount:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun componentMessagePayloadIdentity( messageName: String, componentMessages: Map&lt;String, MessageInterface&gt;, visitedNames: Set&lt;String&gt; = emptySet(), ): ContractDeclarationIdentity</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
     <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
@@ -118,7 +109,6 @@
     <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
-    <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
     <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
     <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
