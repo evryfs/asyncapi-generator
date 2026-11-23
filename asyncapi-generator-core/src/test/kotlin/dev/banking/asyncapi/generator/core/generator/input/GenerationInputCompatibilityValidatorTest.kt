@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHea
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -37,8 +37,8 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.ModelArtifacts(
-                            language = SourceLanguage.KOTLIN,
                             packageName = "com.example.model",
+                            modelType = ModelType.KOTLIN_DATA_CLASS,
                         ),
                         GenerationTask.AvroSchemaArtifacts(
                             packageName = "com.example.avro",
@@ -413,9 +413,8 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.ModelArtifacts(
-                                    language = SourceLanguage.JAVA,
                                     packageName = "com.example.model",
-                                    javaModelType = JavaModelType.RECORD,
+                                    modelType = ModelType.JAVA_RECORD,
                                 ),
                             ),
                         ),
@@ -1201,8 +1200,8 @@ class GenerationInputCompatibilityValidatorTest {
 
     private fun modelTask(): GenerationTask.ModelArtifacts =
         GenerationTask.ModelArtifacts(
-            language = SourceLanguage.KOTLIN,
             packageName = "com.example.model",
+            modelType = ModelType.KOTLIN_DATA_CLASS,
         )
 
     private fun inputWithMessage(message: AnalyzedMessage): GenerationInput =

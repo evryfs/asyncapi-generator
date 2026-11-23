@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalPro
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
@@ -21,11 +21,17 @@ sealed interface GenerationTask {
     ) : GenerationTask
 
     data class ModelArtifacts(
-        val language: SourceLanguage,
         val packageName: String,
         val annotation: QualifiedTypeName? = null,
-        val javaModelType: JavaModelType = JavaModelType.CLASS,
-    ) : GenerationTask
+        val modelType: ModelType,
+    ) : GenerationTask {
+        /** The language whose generator writes [modelType]. */
+        val language: SourceLanguage
+            get() =
+                checkNotNull(
+                    modelType.language,
+                ) { "Model type '${modelType.configurationValue}' has no source language" }
+    }
 
     data class KafkaKeyModelArtifacts(
         val language: SourceLanguage,
