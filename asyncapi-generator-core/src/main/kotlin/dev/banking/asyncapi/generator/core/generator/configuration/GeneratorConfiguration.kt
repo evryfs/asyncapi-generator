@@ -5,8 +5,14 @@ import dev.banking.asyncapi.generator.core.diagnostics.DiagnosticLayout
 /**
  * Typed core configuration consumed by generator planning and generation.
  *
- * Entry points such as CLI, Maven, and Gradle should translate their public
- * configuration shape into this model before invoking core generator behavior.
+ * [GeneratorConfigurationFactory] creates it from [GeneratorSettings].
+ *
+ * @param profile what the generator produces: source code, schemas or a document.
+ * @param output where generated files are written.
+ * @param models the source models to generate.
+ * @param schemas the schema artifacts to generate.
+ * @param client the client contracts to generate, or `null` for none.
+ * @param warnings valid settings that have no effect on this execution.
  */
 data class GeneratorConfiguration(
     val profile: GeneratorProfile,
@@ -16,6 +22,7 @@ data class GeneratorConfiguration(
     val client: ClientGeneration? = null,
     val warnings: List<ConfigurationWarning> = emptyList(),
 ) {
+    /** The language of a source profile, or `null` for a schema or document profile. */
     val sourceLanguage: SourceLanguage?
         get() = (profile as? GeneratorProfile.Source)?.language
 
@@ -30,6 +37,7 @@ data class GeneratorConfiguration(
             )
         }
 
+    /** Whether the configuration generates anything at all. */
     fun hasConfiguredOutputs(): Boolean =
         output.document != null ||
             models != ModelGeneration.Disabled ||

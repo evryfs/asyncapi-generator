@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Validated package name used by generated source and schema artifacts.
+ *
+ * @param value the validated package name.
  */
 @JvmInline
 value class PackageName private constructor(
@@ -10,6 +12,7 @@ value class PackageName private constructor(
     companion object {
         private val pattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
 
+        /** Checks [value]; [path] names the setting in errors. */
         fun fromConfigurationValue(
             value: String,
             path: String,

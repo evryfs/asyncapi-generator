@@ -10,7 +10,6 @@
     <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
     <ID>LargeClass:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
     <ID>LargeClass:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator</ID>
-    <ID>LargeClass:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
     <ID>LargeClass:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
@@ -70,7 +69,6 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
-    <ID>MaxLineLength:ConfigurationWarning.kt$"https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/generator-configuration.md#configuration-warnings"</ID>
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
     <ID>NestedBlockDepth:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
@@ -117,14 +115,12 @@
     <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>ThrowsCount:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
     <ID>ThrowsCount:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
-    <ID>ThrowsCount:TopicParameterProperties.kt$TopicParameterProperties.Companion$fun fromConfigurationValues( values: Map&lt;String, String&gt;, path: String, ): TopicParameterProperties</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
     <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
     <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
-    <ID>TooManyFunctions:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
     <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
     <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
@@ -158,8 +154,6 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:Channel.kt$Channel</ID>
-    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Consumer</ID>
-    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Producer</ID>
     <ID>UndocumentedPublicClass:Component.kt$Component</ID>
     <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
     <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
@@ -172,15 +166,11 @@
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeAvroArtifacts : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeProtobufArtifacts : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$SpringKafkaClient : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Document : GeneratorProfile</ID>
-    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Schema : GeneratorProfile</ID>
-    <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Source : GeneratorProfile</ID>
     <ID>UndocumentedPublicClass:Info.kt$Info</ID>
     <ID>UndocumentedPublicClass:License.kt$License</ID>
     <ID>UndocumentedPublicClass:Message.kt$Message</ID>
     <ID>UndocumentedPublicClass:MessageExample.kt$MessageExample</ID>
     <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
-    <ID>UndocumentedPublicClass:ModelGeneration.kt$ModelGeneration$Enabled : ModelGeneration</ID>
     <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
     <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>
     <ID>UndocumentedPublicClass:Operation.kt$Operation</ID>
@@ -189,10 +179,6 @@
     <ID>UndocumentedPublicClass:OperationTrait.kt$OperationTrait</ID>
     <ID>UndocumentedPublicClass:Parameter.kt$Parameter</ID>
     <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
-    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$AvroProjection : SchemaGeneration</ID>
-    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$JsonSchema : SchemaGeneration</ID>
-    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$NativeAvro : SchemaGeneration</ID>
-    <ID>UndocumentedPublicClass:SchemaGeneration.kt$SchemaGeneration$NativeProtobuf : SchemaGeneration</ID>
     <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface</ID>
     <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$BooleanSchema : SchemaInterface</ID>
     <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$MultiFormatSchemaInline : SchemaInterface</ID>
@@ -205,10 +191,6 @@
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
-    <ID>UseRequire:GeneratorName.kt$GeneratorName.Companion$throw IllegalArgumentException("$path is required")</ID>
     <ID>UseRequire:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$throw IllegalArgumentException("Missing Avro schema content")</ID>
-    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path cannot contain an empty parameter name")</ID>
-    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path.$parameterName cannot be empty")</ID>
-    <ID>UseRequire:TopicParameterProperties.kt$TopicParameterProperties.Companion$throw IllegalArgumentException("$path.$parameterName cannot contain whitespace")</ID>
   </CurrentIssues>
 </SmellBaseline>

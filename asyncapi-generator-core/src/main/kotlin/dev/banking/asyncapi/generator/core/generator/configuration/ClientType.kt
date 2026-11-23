@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Client technology selected by user-facing generator configuration.
+ *
+ * @param configurationValue the value users write in `clientConfig.clientType`.
  */
 enum class ClientType(
     val configurationValue: String,
@@ -15,6 +17,7 @@ enum class ClientType(
         /** Used when the setting is omitted: the only client technology. */
         val DEFAULT = SPRING_KAFKA
 
+        /** The value named by [value], or [DEFAULT] when it is omitted; [path] names the setting in errors. */
         fun fromConfigurationValue(
             value: String?,
             path: String,

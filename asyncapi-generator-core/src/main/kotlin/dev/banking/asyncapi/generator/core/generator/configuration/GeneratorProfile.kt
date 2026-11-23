@@ -7,14 +7,29 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * schema artifacts, or serialize an AsyncAPI document.
  */
 sealed interface GeneratorProfile {
+    /**
+     * Generates source code.
+     *
+     * @param language the language of the generated sources.
+     */
     data class Source(
         val language: SourceLanguage,
     ) : GeneratorProfile
 
+    /**
+     * Generates schema artifacts.
+     *
+     * @param type the format of the generated schemas.
+     */
     data class Schema(
         val type: SchemaType,
     ) : GeneratorProfile
 
+    /**
+     * Serializes the bundled AsyncAPI document.
+     *
+     * @param format the serialization of the written document.
+     */
     data class Document(
         val format: DocumentFormat,
     ) : GeneratorProfile
