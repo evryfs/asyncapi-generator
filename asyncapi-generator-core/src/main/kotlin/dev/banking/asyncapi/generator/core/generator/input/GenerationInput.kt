@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -18,19 +17,10 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
  */
 internal data class GenerationInput(
     val schemas: Map<String, Schema>,
-    val schemaDeclarations: SchemaDeclarationCatalog = SchemaDeclarationCatalog(asyncApiSchemas = schemas),
+    val schemaDeclarations: SchemaDeclarationCatalog,
     val polymorphicRelationships: Map<String, List<String>>,
     val channels: List<AnalyzedChannel>,
 ) {
     val multiFormatSchemas: Map<String, MultiFormatSchema>
         get() = schemaDeclarations.multiFormatSchemas
-
-    val schemaContext: GeneratorContext = GeneratorContext(schemas)
-
-    fun schemaContextWith(additionalSchemas: Map<String, Schema>): GeneratorContext =
-        if (additionalSchemas.isEmpty()) {
-            schemaContext
-        } else {
-            GeneratorContext(schemas + additionalSchemas)
-        }
 }

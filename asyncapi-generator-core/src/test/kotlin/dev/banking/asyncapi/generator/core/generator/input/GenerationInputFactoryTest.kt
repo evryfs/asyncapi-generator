@@ -20,7 +20,6 @@ class GenerationInputFactoryTest {
         assertTrue(input.schemas.containsKey("External"))
         assertTrue(input.schemas.containsKey("Status"))
         assertEquals(listOf("Root"), input.polymorphicRelationships["External"])
-        assertSame(input.schemas["Root"], input.schemaContext.findSchemaByName("Root"))
         assertTrue(input.schemaDeclarations.asyncApiSchemas.containsKey("Root"))
         assertTrue(input.schemaDeclarations.asyncApiSchemas.containsKey("UserCreatedPayload"))
         assertFalse(input.schemaDeclarations.asyncApiSchemas.containsKey("External"))

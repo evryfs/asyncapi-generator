@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.ListOf
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.MapOf
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.Named
@@ -17,13 +16,11 @@ import kotlin.test.assertTrue
 class ModelTypeMapperTest {
     private val mapper =
         ModelTypeMapper(
-            GeneratorContext(
-                mapOf(
-                    "User" to Schema(type = "object", properties = mapOf("id" to inline(Schema(type = "string")))),
-                    "Status" to Schema(type = "string", enum = listOf("A", "B")),
-                    "Name" to Schema(type = "string"),
-                    "Anything" to Schema(type = "object"),
-                ),
+            mapOf(
+                "User" to Schema(type = "object", properties = mapOf("id" to inline(Schema(type = "string")))),
+                "Status" to Schema(type = "string", enum = listOf("A", "B")),
+                "Name" to Schema(type = "string"),
+                "Anything" to Schema(type = "object"),
             ),
         )
 

@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.imports
@@ -29,7 +28,7 @@ internal class KafkaPayloadFactory(
                 )
             }
 
-    private val typeMapper = ModelTypeMapper(GeneratorContext(emptyMap()))
+    private val typeMapper = ModelTypeMapper(emptyMap())
 
     private fun create(message: AnalyzedMessage): KafkaPayload {
         val javaTypeName = resolveJavaTypeName(message)
