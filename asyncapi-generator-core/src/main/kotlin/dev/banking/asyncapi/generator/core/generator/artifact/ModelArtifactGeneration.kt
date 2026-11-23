@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinitionFactory
 import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
@@ -39,8 +40,8 @@ internal class ModelArtifactGeneration {
         return renderModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    language = task.language,
                     packageName = task.packageName,
+                    modelType = task.language.defaultModelType,
                 ),
             generationInput =
                 generationInput.copy(
@@ -53,6 +54,6 @@ internal class ModelArtifactGeneration {
     private fun emitterFor(task: GenerationTask.ModelArtifacts): ModelEmitter =
         when (task.language) {
             KOTLIN -> KotlinModelEmitter()
-            JAVA -> JavaModelEmitter(task.javaModelType)
+            JAVA -> JavaModelEmitter(JavaModelType.of(task.modelType))
         }
 }

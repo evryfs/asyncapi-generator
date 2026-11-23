@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
@@ -25,9 +25,9 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        language = SourceLanguage.KOTLIN,
                         packageName = "com.example.model",
                         annotation = modelAnnotation,
+                        modelType = ModelType.KOTLIN_DATA_CLASS,
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )
@@ -44,9 +44,9 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        language = SourceLanguage.JAVA,
                         packageName = "com.example.model",
                         annotation = modelAnnotation,
+                        modelType = ModelType.JAVA_CLASS,
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )
@@ -85,10 +85,9 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        language = SourceLanguage.JAVA,
                         packageName = "com.example.model",
                         annotation = modelAnnotation,
-                        javaModelType = JavaModelType.RECORD,
+                        modelType = ModelType.JAVA_RECORD,
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )

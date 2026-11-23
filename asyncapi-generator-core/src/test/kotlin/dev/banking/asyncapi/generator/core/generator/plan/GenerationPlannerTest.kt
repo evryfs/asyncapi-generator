@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutpu
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
@@ -77,8 +76,8 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
+                    modelType = ModelType.KOTLIN_DATA_CLASS,
                 ),
                 GenerationTask.AvroSchemaArtifacts(
                     packageName = "com.example.schema",
@@ -236,13 +235,13 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = SourceLanguage.KOTLIN,
                     packageName = "com.example.model",
                     annotation =
                         QualifiedTypeName.fromConfigurationValue(
                             value = "com.example.NoArg",
                             path = "modelConfig.modelAnnotation",
                         ),
+                    modelType = ModelType.KOTLIN_DATA_CLASS,
                 ),
             ),
             plan.tasks,
@@ -266,9 +265,8 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
-                    javaModelType = JavaModelType.RECORD,
+                    modelType = ModelType.JAVA_RECORD,
                 ),
             ),
             plan.tasks,
@@ -371,8 +369,8 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    language = SourceLanguage.JAVA,
                     packageName = "com.example.model",
+                    modelType = ModelType.JAVA_CLASS,
                 ),
                 springKafkaClientTask(
                     language = SourceLanguage.JAVA,

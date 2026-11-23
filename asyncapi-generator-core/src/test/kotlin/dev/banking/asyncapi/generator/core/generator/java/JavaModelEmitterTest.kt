@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
 import dev.banking.asyncapi.generator.core.generator.ir.ObjectModel
 import dev.banking.asyncapi.generator.core.generator.ir.OpenObjectModel
