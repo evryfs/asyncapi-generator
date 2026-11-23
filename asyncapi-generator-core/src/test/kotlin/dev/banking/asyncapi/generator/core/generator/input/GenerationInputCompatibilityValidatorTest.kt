@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiForma
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog

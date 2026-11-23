@@ -3,8 +3,8 @@ package dev.banking.asyncapi.generator.maven.plugin
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

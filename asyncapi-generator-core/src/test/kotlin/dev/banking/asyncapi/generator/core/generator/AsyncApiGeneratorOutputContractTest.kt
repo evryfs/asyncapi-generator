@@ -16,10 +16,11 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
@@ -67,7 +68,11 @@ class AsyncApiGeneratorOutputContractTest {
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            modelType = ModelType.KOTLIN_DATA_CLASS,
+                        ),
                 ),
         )
 
@@ -316,7 +321,11 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                            models =
+                                ModelGeneration.Enabled(
+                                    packageName = "com.example.model",
+                                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                                ),
                         ),
                 )
             }
@@ -358,7 +367,11 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                            models =
+                                ModelGeneration.Enabled(
+                                    packageName = "com.example.model",
+                                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                                ),
                         ),
                 )
             }
@@ -437,7 +450,11 @@ class AsyncApiGeneratorOutputContractTest {
             generatorConfiguration(
                 sourceOutputDirectory = sourceOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
-                models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                models =
+                    ModelGeneration.Enabled(
+                        packageName = "com.example.model",
+                        modelType = ModelType.KOTLIN_DATA_CLASS,
+                    ),
             )
         val configuration =
             sourceConfiguration.copy(
@@ -547,7 +564,11 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                            models =
+                                ModelGeneration.Enabled(
+                                    packageName = "com.example.model",
+                                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                                ),
                         ),
                 )
             }
@@ -568,7 +589,11 @@ class AsyncApiGeneratorOutputContractTest {
             generatorConfiguration(
                 sourceOutputDirectory = sourceOutputDirectory,
                 resourceOutputDirectory = resourceOutputDirectory,
-                models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                models =
+                    ModelGeneration.Enabled(
+                        packageName = "com.example.model",
+                        modelType = ModelType.KOTLIN_DATA_CLASS,
+                    ),
             )
         val configuration =
             sourceConfiguration.copy(
@@ -768,7 +793,11 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                            models =
+                                ModelGeneration.Enabled(
+                                    packageName = "com.example.model",
+                                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                                ),
                         ),
                 )
             }

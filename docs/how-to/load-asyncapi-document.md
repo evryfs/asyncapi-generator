@@ -60,7 +60,7 @@ import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
 
 val bundled = AsyncApiBundler().bundle(loaded)
 

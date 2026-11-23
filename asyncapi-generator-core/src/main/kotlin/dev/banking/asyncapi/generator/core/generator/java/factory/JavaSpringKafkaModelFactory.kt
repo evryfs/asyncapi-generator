@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.java.factory
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
@@ -14,7 +15,6 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaCha
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContractFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.ir.DefaultValue
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
 import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinition
@@ -15,7 +16,6 @@ import dev.banking.asyncapi.generator.core.generator.ir.imports
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.JsonPropertyAccessAnnotationMapper
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths

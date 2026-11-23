@@ -9,6 +9,6 @@ sealed interface ModelGeneration {
     data class Enabled(
         val packageName: String,
         val annotation: QualifiedTypeName? = null,
-        val javaModelType: JavaModelType = JavaModelType.CLASS,
+        val modelType: ModelType,
     ) : ModelGeneration
 }

@@ -6,8 +6,8 @@ import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtu
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.THREE_MESSAGE_CONTRACT
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.io.TempDir
@@ -234,7 +234,7 @@ class SpringKafkaClientApprovalTest {
                 contractPath = SINGLE_MESSAGE_CONTRACT,
                 language = SourceLanguage.JAVA,
                 outputDirectory = tempDir.resolve("java-object-key-record"),
-                javaModelType = JavaModelType.RECORD,
+                modelType = ModelType.JAVA_RECORD,
             )
 
         GeneratorApprovals.verify(
