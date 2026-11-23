@@ -1,109 +1,109 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
- * Assembles core generator configuration from frontend-neutral requests.
+ * Turns [GeneratorSettings] into a typed [GeneratorConfiguration].
+ *
+ * Every check on the settings lives here, and every message names the
+ * setting as users write it.
  */
 object GeneratorConfigurationFactory {
-    private val packageNamePattern = Regex("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*")
+    /** Checks [settings] and resolves them; throws [IllegalArgumentException] for the first invalid setting. */
+    fun create(settings: GeneratorSettings): GeneratorConfiguration {
+        validateClientConfigAndPaths(settings)
+        val generatorName = GeneratorName.fromConfigurationValue(settings.generatorName, "generatorName")
+        val configuredModelType =
+            settings.modelConfig?.modelType?.let { ModelType.fromConfigurationValue(it, "modelConfig.modelType") }
+        val clientContract = settings.clientConfig?.let { resolveClientContract(it, settings) }
+        val warnings = warnings(settings)
+        val generatesClient = settings.clientConfig != null && settings.clientPackage != null
 
-    fun create(configuredRequest: GeneratorConfigurationRequest): GeneratorConfiguration {
-        val suppressedWarnings =
-            configuredRequest.suppressedWarnings
-                .map { ConfigurationWarningId.fromConfigurationValue(it, "suppressedWarnings") }
-                .toSet()
-        val (request, warnings) = withoutUnusedClientConfiguration(configuredRequest)
-        validate(request)
+        validateProfile(generatorName, settings)
+        validateModelPackage(settings)
+        settings.schemaPackage?.let { PackageName.fromConfigurationValue(it, "schemaPackage") }
 
-        val profile = request.generatorName.profile
-        val modelType =
-            request.models?.let { models ->
-                ModelTypeResolver.resolve(
-                    generatorName = request.generatorName,
-                    configuredModelType = models.modelType,
-                )
-            }
-        val modelAnnotation = resolveModelAnnotation(request, modelType)
-        val protobufModels = request.protobufModels(modelType)
-
+        val modelPackage = settings.modelPackage
+        val modelType = modelPackage?.let { ModelTypeResolver.resolve(generatorName, configuredModelType) }
+        val protobufModels = protobufModels(generatorName, modelPackage, modelType)
         val configuration =
             GeneratorConfiguration(
-                profile = profile,
-                output =
-                    GeneratorOutputConfiguration(
-                        sourceOutputDirectory = request.sourceOutputDirectory,
-                        javaSourceOutputDirectory = request.javaSourceOutputDirectory,
-                        resourceOutputDirectory = request.resourceOutputDirectory,
-                        manifest = request.manifest,
-                        document =
-                            request.outputFile?.let { outputFile ->
-                                DocumentOutput(
-                                    file = outputFile,
-                                    format =
-                                        when (profile) {
-                                            is GeneratorProfile.Document -> profile.format
-                                            is GeneratorProfile.Schema,
-                                            is GeneratorProfile.Source,
-                                            -> DocumentFormat.YAML
-                                        },
-                                )
-                            },
-                    ),
-                models = request.sourceModels(modelType, modelAnnotation),
-                schemas = request.schemaGeneration(modelType, protobufModels),
-                client =
-                    request.clients.kafka?.let { kafka ->
-                        val springKafka = kafka.springKafka ?: GeneratorConfigurationRequest.KafkaSpringKafka()
-                        ClientGeneration(
-                            packageName =
-                                requiredPackageName(
-                                    path = "clients.kafka.packageName",
-                                    value = kafka.packageName,
-                                ),
-                            modelPackageName =
-                                requiredClientModelPackageName(
-                                    path = "clients.kafka.modelPackageName",
-                                    configuredModelPackageName = kafka.modelPackageName,
-                                    modelsPackageName = request.models?.packageName,
-                                ),
-                            clientContract = springKafka.clientContract,
-                            topicParameterProperties =
-                                TopicParameterProperties.fromConfigurationValues(
-                                    values = springKafka.topicParameterProperties,
-                                    path = "clients.kafka.springKafka.topicParameterProperties",
-                                ),
-                            validationAnnotations = springKafka.validationAnnotations,
-                            producer =
-                                ClientGeneration.Producer(
-                                    enabled = springKafka.producer.enabled,
-                                    additionalPayloadTypes =
-                                        AdditionalProducerPayloadType.fromConfigurationValues(
-                                            values = springKafka.producer.additionalPayloadTypes,
-                                            path = "clientConfig.producer.additionalPayloadTypes",
-                                        ),
-                                ),
-                            consumer = ClientGeneration.Consumer(enabled = springKafka.consumer.enabled),
-                        )
-                    },
-                warnings = warnings.filterNot { it.id in suppressedWarnings },
+                profile = generatorName.profile,
+                output = output(settings, generatorName.profile),
+                models = sourceModels(modelPackage, modelType, modelAnnotation(settings, modelType)),
+                schemas = schemaGeneration(generatorName.profile, settings, modelType, protobufModels),
+                client = if (generatesClient) client(settings, checkNotNull(clientContract)) else null,
+                warnings = warnings,
             )
 
-        validateActivatedOutputs(request, configuration)
+        validateActivatedOutputs(settings, configuration)
         return configuration
     }
 
+    private fun validateClientConfigAndPaths(settings: GeneratorSettings) {
+        require(settings.clientPackage == null || settings.clientConfig != null) {
+            "clientConfig is required when clientPackage is configured"
+        }
+        require(!settings.outputDirectory.exists() || settings.outputDirectory.isDirectory) {
+            "outputDirectory must be a directory: ${settings.outputDirectory}"
+        }
+        require(settings.outputFile?.isDirectory != true) {
+            "outputFile must be a file: ${settings.outputFile}"
+        }
+    }
+
     /**
-     * Drops client configuration from an execution without a client package.
-     *
+     * Checks every client setting, including on an execution that generates no
+     * client, and returns the contract shape.
+     */
+    private fun resolveClientContract(
+        clientConfig: GeneratorSettings.ClientConfig,
+        settings: GeneratorSettings,
+    ): ResolvedClientContract {
+        ClientType.fromConfigurationValue(clientConfig.clientType, "clientConfig.clientType")
+        val clientContract =
+            ClientContract.fromConfigurationValue(clientConfig.clientContract, "clientConfig.clientContract")
+        validateClientPackages(settings)
+        return ResolvedClientContract(clientContract, validationAnnotations(clientConfig.validationAnnotations))
+    }
+
+    private fun validateClientPackages(settings: GeneratorSettings) {
+        settings.clientPackage?.let { PackageName.fromConfigurationValue(it, "clientPackage") }
+        when {
+            settings.modelPackage != null -> PackageName.fromConfigurationValue(settings.modelPackage, "modelPackage")
+            settings.clientPackage != null ->
+                throw IllegalArgumentException("modelPackage is required when clientPackage is configured")
+        }
+    }
+
+    private fun validationAnnotations(
+        annotations: GeneratorSettings.ValidationAnnotationsConfig?,
+    ): ClientValidationAnnotations =
+        ClientValidationAnnotations(
+            clientContract =
+                annotations?.clientContract?.let {
+                    QualifiedTypeName.fromConfigurationValue(it, "clientConfig.validationAnnotations.clientContract")
+                },
+            payloadParameter =
+                annotations?.payloadParameter?.let {
+                    QualifiedTypeName.fromConfigurationValue(it, "clientConfig.validationAnnotations.payloadParameter")
+                },
+        )
+
+    /** The configuration warnings, without the ones listed in `suppressedWarnings`. */
+    private fun warnings(settings: GeneratorSettings): List<ConfigurationWarning> {
+        val suppressed =
+            settings.suppressedWarnings
+                .map { ConfigurationWarningId.fromConfigurationValue(it, "suppressedWarnings") }
+                .toSet()
+        return listOfNotNull(unusedClientConfigWarning(settings)).filterNot { it.id in suppressed }
+    }
+
+    /**
      * Client configuration is usually shared by all executions of a build, so an
      * execution that only generates models or schemas legitimately inherits it.
      * It is ignored there, with a warning so it is never ignored silently.
      */
-    private fun withoutUnusedClientConfiguration(
-        request: GeneratorConfigurationRequest,
-    ): Pair<GeneratorConfigurationRequest, List<ConfigurationWarning>> {
-        val kafka = request.clients.kafka
-        if (kafka == null || kafka.packageName != null) return request to emptyList()
-        val warning =
+    private fun unusedClientConfigWarning(settings: GeneratorSettings): ConfigurationWarning? =
+        if (settings.clientConfig != null && settings.clientPackage == null) {
             ConfigurationWarning(
                 id = ConfigurationWarningId.UNUSED_CLIENT_CONFIG,
                 message =
@@ -111,51 +111,55 @@ object GeneratorConfigurationFactory {
                         "Add '${ConfigurationWarningId.UNUSED_CLIENT_CONFIG.configurationValue}' to " +
                         "suppressedWarnings to silence this warning.",
             )
-        return request.copy(clients = GeneratorConfigurationRequest.Clients()) to listOf(warning)
+        } else {
+            null
+        }
+
+    private fun validateProfile(
+        generatorName: GeneratorName,
+        settings: GeneratorSettings,
+    ) {
+        val name = generatorName.configurationValue
+        when (generatorName.profile) {
+            is GeneratorProfile.Source -> Unit
+            is GeneratorProfile.Schema -> {
+                rejectModelSettings(settings, name)
+                requireNotNull(settings.schemaPackage) { "schemaPackage is required when generatorName is $name" }
+            }
+            is GeneratorProfile.Document -> {
+                requireNotNull(settings.outputFile) { "outputFile is required when generatorName is $name" }
+                rejectModelSettings(settings, name)
+                require(
+                    settings.schemaPackage == null,
+                ) { "schemaPackage cannot be configured when generatorName is $name" }
+            }
+        }
     }
 
-    private fun validate(request: GeneratorConfigurationRequest) {
-        validateProfileConfiguration(request)
+    private fun rejectModelSettings(
+        settings: GeneratorSettings,
+        generatorName: String,
+    ) {
+        require(
+            settings.modelPackage == null,
+        ) { "modelPackage cannot be configured when generatorName is $generatorName" }
+        require(
+            settings.modelConfig == null,
+        ) { "modelConfig cannot be configured when generatorName is $generatorName" }
+    }
 
-        require(request.models?.annotation == null || request.models.packageName != null) {
-            "models.packageName is required when models.annotation is configured"
+    private fun validateModelPackage(settings: GeneratorSettings) {
+        require(settings.modelConfig == null || settings.modelPackage != null) {
+            "modelPackage is required when modelConfig is configured"
         }
-
-        require(request.models == null || request.models.packageName != null) {
-            "models.packageName is required when models are configured"
-        }
-
-        require(request.schemas.avroProjection == null || request.schemas.avroProjection.packageName != null) {
-            "schemas.avroProjection.packageName is required when schemas.avroProjection is configured"
-        }
-
-        validatePackageName(
-            path = "models.packageName",
-            value = request.models?.packageName,
-        )
-        validatePackageName(
-            path = "schemaPackage",
-            value = request.schemaPackageName,
-        )
-        validatePackageName(
-            path = "schemas.avroProjection.packageName",
-            value = request.schemas.avroProjection?.packageName,
-        )
-        validatePackageName(
-            path = "clients.kafka.packageName",
-            value = request.clients.kafka?.packageName,
-        )
-        validatePackageName(
-            path = "clients.kafka.modelPackageName",
-            value = request.clients.kafka?.modelPackageName,
-        )
+        settings.modelPackage?.let { PackageName.fromConfigurationValue(it, "modelPackage") }
     }
 
     private fun validateActivatedOutputs(
-        request: GeneratorConfigurationRequest,
+        settings: GeneratorSettings,
         configuration: GeneratorConfiguration,
     ) {
-        require(request.schemaPackageName == null || configuration.schemas.isNotEmpty()) {
+        require(settings.schemaPackage == null || configuration.schemas.isNotEmpty()) {
             "schemaPackage is only supported by schema generator profiles and native Avro or Protobuf models"
         }
         require(configuration.hasConfiguredOutputs()) {
@@ -164,179 +168,152 @@ object GeneratorConfigurationFactory {
         }
     }
 
-    private fun validateProfileConfiguration(request: GeneratorConfigurationRequest) {
-        when (request.generatorName.profile) {
-            is GeneratorProfile.Source -> Unit
-            is GeneratorProfile.Schema -> {
-                require(request.models == null) {
-                    "models cannot be configured when generatorName is ${request.generatorName.configurationValue}"
-                }
-                require(request.clients == GeneratorConfigurationRequest.Clients()) {
-                    "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}"
-                }
-                require(request.schemas == GeneratorConfigurationRequest.Schemas()) {
-                    "schema generation options cannot be configured when generatorName is " +
-                        request.generatorName.configurationValue +
-                        "; the generator name already selects the schema type"
-                }
-                requireNotNull(request.schemaPackageName) {
-                    "schemaPackage is required when generatorName is ${request.generatorName.configurationValue}"
-                }
-            }
-            is GeneratorProfile.Document -> {
-                requireNotNull(request.outputFile) {
-                    "outputFile is required when generatorName is ${request.generatorName.configurationValue}"
-                }
-                require(request.models == null) {
-                    "models cannot be configured when generatorName is ${request.generatorName.configurationValue}"
-                }
-                require(
-                    request.schemaPackageName == null &&
-                        request.schemas == GeneratorConfigurationRequest.Schemas(),
-                ) {
-                    "schemas cannot be configured when generatorName is ${request.generatorName.configurationValue}"
-                }
-                require(request.clients == GeneratorConfigurationRequest.Clients()) {
-                    "clients cannot be configured when generatorName is ${request.generatorName.configurationValue}"
-                }
-            }
-        }
-    }
+    private fun output(
+        settings: GeneratorSettings,
+        profile: GeneratorProfile,
+    ): GeneratorOutputConfiguration =
+        GeneratorOutputConfiguration(
+            sourceOutputDirectory = settings.outputDirectory,
+            javaSourceOutputDirectory = settings.outputDirectory,
+            resourceOutputDirectory = settings.outputDirectory,
+            manifest = settings.manifest,
+            document =
+                settings.outputFile?.let { outputFile ->
+                    DocumentOutput(
+                        file = outputFile,
+                        format = (profile as? GeneratorProfile.Document)?.format ?: DocumentFormat.YAML,
+                    )
+                },
+        )
 
-    private fun validatePackageName(
-        path: String,
-        value: String?,
-    ) {
-        if (value == null) return
-
-        require(value.isNotBlank()) { "$path cannot be empty" }
-        require(packageNamePattern.matches(value)) {
-            "$path must be a dot-separated package name, for example com.example.model"
-        }
-    }
-
-    private fun requiredPackageName(
-        path: String,
-        value: String?,
-    ): String = requireNotNull(value) { "$path is required" }
-
-    private fun requiredClientModelPackageName(
-        path: String,
-        configuredModelPackageName: String?,
-        modelsPackageName: String?,
-    ): String =
-        requireNotNull(configuredModelPackageName ?: modelsPackageName) {
-            "$path is required when models.packageName is not configured"
-        }
-
-    private fun resolveModelAnnotation(
-        request: GeneratorConfigurationRequest,
+    private fun modelAnnotation(
+        settings: GeneratorSettings,
         modelType: ModelType?,
     ): QualifiedTypeName? {
-        val annotation = request.models?.annotation ?: return null
+        val annotation = settings.modelConfig?.modelAnnotation ?: return null
         require(modelType?.supportsAnnotation == true) {
             val annotated = ModelType.entries.filter { it.supportsAnnotation }.map { it.configurationValue }
             "modelConfig.modelAnnotation is only supported for " +
                 annotated.dropLast(1).joinToString(", ") + ", and ${annotated.last()} model types"
         }
-
-        return QualifiedTypeName.fromConfigurationValue(
-            value = annotation,
-            path = "modelConfig.modelAnnotation",
-        )
+        return QualifiedTypeName.fromConfigurationValue(annotation, "modelConfig.modelAnnotation")
     }
 
-    private fun GeneratorConfigurationRequest.sourceModels(
+    private fun sourceModels(
+        modelPackage: String?,
         modelType: ModelType?,
         modelAnnotation: QualifiedTypeName?,
-    ): ModelGeneration {
-        val packageName = models?.packageName
-        return if (packageName != null && modelType?.language != null) {
-            ModelGeneration.Enabled(
-                packageName = packageName,
-                annotation = modelAnnotation,
-                modelType = modelType,
-            )
+    ): ModelGeneration =
+        if (modelPackage != null && modelType?.language != null) {
+            ModelGeneration.Enabled(packageName = modelPackage, annotation = modelAnnotation, modelType = modelType)
         } else {
             ModelGeneration.Disabled
         }
-    }
 
-    private fun GeneratorConfigurationRequest.protobufModels(modelType: ModelType?): ProtobufModelGeneration? =
-        models
-            ?.takeIf { modelType == ModelType.PROTOBUF_MESSAGE }
-            ?.packageName
-            ?.let { packageName ->
-                ProtobufModelGeneration(
-                    packageName = packageName,
-                    modelType =
-                        when (checkNotNull(generatorName.sourceLanguage)) {
-                            SourceLanguage.KOTLIN -> ProtobufModelType.KOTLIN
-                            SourceLanguage.JAVA -> ProtobufModelType.JAVA
-                        },
-                )
-            }
+    private fun protobufModels(
+        generatorName: GeneratorName,
+        modelPackage: String?,
+        modelType: ModelType?,
+    ): ProtobufModelGeneration? =
+        modelPackage?.takeIf { modelType == ModelType.PROTOBUF_MESSAGE }?.let { packageName ->
+            ProtobufModelGeneration(
+                packageName = packageName,
+                modelType =
+                    when (checkNotNull(generatorName.sourceLanguage)) {
+                        SourceLanguage.KOTLIN -> ProtobufModelType.KOTLIN
+                        SourceLanguage.JAVA -> ProtobufModelType.JAVA
+                    },
+            )
+        }
 
-    private fun GeneratorConfigurationRequest.schemaGeneration(
+    private fun schemaGeneration(
+        profile: GeneratorProfile,
+        settings: GeneratorSettings,
         modelType: ModelType?,
         protobufModels: ProtobufModelGeneration?,
     ): List<SchemaGeneration> =
-        when (val profile = generatorName.profile) {
-            is GeneratorProfile.Source ->
-                buildList {
-                    schemas.avroProjection?.packageName?.let { packageName ->
-                        add(SchemaGeneration.AvroProjection(packageName))
-                    }
-                    val nativeAvro = schemas.nativeAvro
-                    if (nativeAvro != null || modelType == ModelType.AVRO_SPECIFIC_RECORD) {
-                        val generateSpecificRecords =
-                            modelType == ModelType.AVRO_SPECIFIC_RECORD ||
-                                nativeAvro?.generateSpecificRecords == true
-                        add(
-                            SchemaGeneration.NativeAvro(
-                                generateSpecificRecords = generateSpecificRecords,
-                                modelPackageName =
-                                    models
-                                        ?.packageName
-                                        ?.takeIf { generateSpecificRecords },
-                                schemaPackageName = schemaPackageName,
-                            ),
-                        )
-                    }
-                    if (schemas.nativeProtobuf != null || protobufModels != null) {
-                        add(
-                            SchemaGeneration.NativeProtobuf(
-                                models = protobufModels,
-                                schemaPackageName = schemaPackageName,
-                            ),
-                        )
-                    }
-                }
-            is GeneratorProfile.Schema ->
-                when (profile.type) {
-                    SchemaType.AVRO ->
-                        listOf(
-                            SchemaGeneration.AvroProjection(
-                                packageName = requireNotNull(schemaPackageName),
-                            ),
-                            SchemaGeneration.NativeAvro(
-                                generateSpecificRecords = false,
-                                schemaPackageName = schemaPackageName,
-                            ),
-                        )
-                    SchemaType.PROTOBUF ->
-                        listOf(
-                            SchemaGeneration.NativeProtobuf(
-                                schemaPackageName = schemaPackageName,
-                            ),
-                        )
-                    SchemaType.JSON_SCHEMA ->
-                        listOf(
-                            SchemaGeneration.JsonSchema(
-                                packageName = requireNotNull(schemaPackageName),
-                            ),
-                        )
-                }
+        when (profile) {
+            is GeneratorProfile.Source -> nativeModelSchemas(settings, modelType, protobufModels)
+            is GeneratorProfile.Schema -> schemaGeneratorSchemas(profile.type, checkNotNull(settings.schemaPackage))
             is GeneratorProfile.Document -> emptyList()
         }
+
+    /** The schemas behind native Avro or Protobuf payload models of a source generator. */
+    private fun nativeModelSchemas(
+        settings: GeneratorSettings,
+        modelType: ModelType?,
+        protobufModels: ProtobufModelGeneration?,
+    ): List<SchemaGeneration> =
+        buildList {
+            if (modelType == ModelType.AVRO_SPECIFIC_RECORD) {
+                add(
+                    SchemaGeneration.NativeAvro(
+                        generateSpecificRecords = true,
+                        modelPackageName = settings.modelPackage,
+                        schemaPackageName = settings.schemaPackage,
+                    ),
+                )
+            }
+            if (protobufModels != null) {
+                add(
+                    SchemaGeneration.NativeProtobuf(
+                        models = protobufModels,
+                        schemaPackageName = settings.schemaPackage,
+                    ),
+                )
+            }
+        }
+
+    private fun schemaGeneratorSchemas(
+        type: SchemaType,
+        schemaPackage: String,
+    ): List<SchemaGeneration> =
+        when (type) {
+            SchemaType.AVRO ->
+                listOf(
+                    SchemaGeneration.AvroProjection(packageName = schemaPackage),
+                    SchemaGeneration.NativeAvro(generateSpecificRecords = false, schemaPackageName = schemaPackage),
+                )
+            SchemaType.PROTOBUF -> listOf(SchemaGeneration.NativeProtobuf(schemaPackageName = schemaPackage))
+            SchemaType.JSON_SCHEMA -> listOf(SchemaGeneration.JsonSchema(packageName = schemaPackage))
+        }
+
+    private fun client(
+        settings: GeneratorSettings,
+        contract: ResolvedClientContract,
+    ): ClientGeneration {
+        val clientConfig = checkNotNull(settings.clientConfig)
+        return ClientGeneration(
+            packageName = checkNotNull(settings.clientPackage),
+            modelPackageName = checkNotNull(settings.modelPackage),
+            clientContract = contract.clientContract,
+            topicParameterProperties =
+                TopicParameterProperties.fromConfigurationValues(
+                    values = clientConfig.topicParameterProperties,
+                    path = "clientConfig.topicParameterProperties",
+                ),
+            validationAnnotations = contract.validationAnnotations,
+            producer =
+                ClientGeneration.Producer(
+                    enabled = clientConfig.producer?.enabled ?: true,
+                    additionalPayloadTypes =
+                        AdditionalProducerPayloadType.fromConfigurationValues(
+                            values = clientConfig.producer?.additionalPayloadTypes,
+                            path = "clientConfig.producer.additionalPayloadTypes",
+                        ),
+                ),
+            consumer = ClientGeneration.Consumer(enabled = clientConfig.consumer?.enabled ?: true),
+        )
+    }
+
+    /**
+     * The client settings that are checked even when no client is generated.
+     *
+     * @param clientContract the resolved contract shape.
+     * @param validationAnnotations the resolved validation annotations.
+     */
+    private data class ResolvedClientContract(
+        val clientContract: ClientContract,
+        val validationAnnotations: ClientValidationAnnotations,
+    )
 }

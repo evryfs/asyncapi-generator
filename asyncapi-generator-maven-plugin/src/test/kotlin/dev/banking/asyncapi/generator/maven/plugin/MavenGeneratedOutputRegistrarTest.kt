@@ -2,9 +2,8 @@ package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -20,10 +19,7 @@ class MavenGeneratedOutputRegistrarTest {
             configuration(
                 generatorName = GeneratorName.KOTLIN,
                 outputDirectory = outputDirectory,
-                models =
-                    GeneratorConfigurationRequest.Models(
-                        packageName = "com.example.model",
-                    ),
+                modelPackage = "com.example.model",
             )
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
@@ -43,7 +39,7 @@ class MavenGeneratedOutputRegistrarTest {
             configuration(
                 generatorName = GeneratorName.AVRO_SCHEMA,
                 outputDirectory = outputDirectory,
-                schemaPackageName = "com.example.schema",
+                schemaPackage = "com.example.schema",
             )
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
@@ -61,19 +57,12 @@ class MavenGeneratedOutputRegistrarTest {
         val javaSourceOutputDirectory = outputDirectory("protobuf-java")
         val resourceOutputDirectory = outputDirectory("protobuf-schema")
         val configuration =
-            GeneratorConfigurationFactory.create(
-                GeneratorConfigurationRequest(
-                    generatorName = GeneratorName.KOTLIN,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                    models =
-                        GeneratorConfigurationRequest.Models(
-                            packageName = "com.example.protobuf",
-                            modelType = ModelType.PROTOBUF_MESSAGE,
-                        ),
-                ),
-            )
+            configuration(
+                generatorName = GeneratorName.KOTLIN,
+                outputDirectory = sourceOutputDirectory,
+                modelPackage = "com.example.protobuf",
+                modelType = "protobuf-message",
+            ).withSeparateRoots(javaSourceOutputDirectory, resourceOutputDirectory)
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
 
@@ -94,28 +83,13 @@ class MavenGeneratedOutputRegistrarTest {
         val javaSourceOutputDirectory = outputDirectory("avro-java-model")
         val resourceOutputDirectory = outputDirectory("avro-schema")
         val configuration =
-            GeneratorConfigurationFactory.create(
-                GeneratorConfigurationRequest(
-                    generatorName = GeneratorName.KOTLIN,
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                    models =
-                        GeneratorConfigurationRequest.Models(
-                            packageName = "com.example.avro",
-                            modelType = ModelType.AVRO_SPECIFIC_RECORD,
-                        ),
-                    clients =
-                        GeneratorConfigurationRequest.Clients(
-                            kafka =
-                                GeneratorConfigurationRequest.Kafka(
-                                    packageName = "com.example.client",
-                                    modelPackageName = "com.example.avro",
-                                    springKafka = GeneratorConfigurationRequest.KafkaSpringKafka(),
-                                ),
-                        ),
-                ),
-            )
+            configuration(
+                generatorName = GeneratorName.KOTLIN,
+                outputDirectory = sourceOutputDirectory,
+                modelPackage = "com.example.avro",
+                modelType = "avro-specific-record",
+                clientPackage = "com.example.client",
+            ).withSeparateRoots(javaSourceOutputDirectory, resourceOutputDirectory)
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
 
@@ -154,11 +128,8 @@ class MavenGeneratedOutputRegistrarTest {
             configuration(
                 generatorName = GeneratorName.JAVA,
                 outputDirectory = outputDirectory,
-                models =
-                    GeneratorConfigurationRequest.Models(
-                        packageName = "com.example.avro",
-                        modelType = ModelType.AVRO_SPECIFIC_RECORD,
-                    ),
+                modelPackage = "com.example.avro",
+                modelType = "avro-specific-record",
             )
         val registrar = MavenGeneratedOutputRegistrar(project)
 
@@ -173,19 +144,37 @@ class MavenGeneratedOutputRegistrarTest {
         generatorName: GeneratorName,
         outputDirectory: File,
         outputFile: File? = null,
-        schemaPackageName: String? = null,
-        models: GeneratorConfigurationRequest.Models? = null,
+        schemaPackage: String? = null,
+        modelPackage: String? = null,
+        modelType: String? = null,
+        clientPackage: String? = null,
     ): GeneratorConfiguration =
         GeneratorConfigurationFactory.create(
-            GeneratorConfigurationRequest(
-                generatorName = generatorName,
-                sourceOutputDirectory = outputDirectory,
-                javaSourceOutputDirectory = outputDirectory,
-                resourceOutputDirectory = outputDirectory,
+            GeneratorSettings(
+                generatorName = generatorName.configurationValue,
+                outputDirectory = outputDirectory,
                 outputFile = outputFile,
-                schemaPackageName = schemaPackageName,
-                models = models,
+                modelPackage = modelPackage,
+                clientPackage = clientPackage,
+                schemaPackage = schemaPackage,
+                modelConfig = modelType?.let { GeneratorSettings.ModelConfig(modelType = it) },
+                clientConfig =
+                    clientPackage?.let {
+                        GeneratorSettings.ClientConfig(clientType = "spring-kafka", clientContract = "interface")
+                    },
             ),
+        )
+
+    private fun GeneratorConfiguration.withSeparateRoots(
+        javaSourceOutputDirectory: File,
+        resourceOutputDirectory: File,
+    ): GeneratorConfiguration =
+        copy(
+            output =
+                output.copy(
+                    javaSourceOutputDirectory = javaSourceOutputDirectory,
+                    resourceOutputDirectory = resourceOutputDirectory,
+                ),
         )
 
     private fun outputDirectory(name: String): File = File("target/generated-output-registration/$name")

@@ -13,6 +13,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalPro
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import java.io.File
 
@@ -34,11 +35,8 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
         "--generator-name",
         "-g",
         help = "Generator profile.",
-    ).choice(
-        *GeneratorName.entries
-            .map { generatorName -> generatorName.configurationValue to generatorName }
-            .toTypedArray(),
-    ).required()
+    ).choice(GeneratorName.supportedConfigurationValues.associateWith { it })
+        .required()
 
     val protocExecutable by option(
         "--protoc",
@@ -97,18 +95,11 @@ internal class CliModelOptions : OptionGroup(name = "Models") {
     val modelType by option(
         "--model-type",
         help = "Payload model implementation; defaults from the generator profile.",
-    ).choice(
-        *ModelType.entries
-            .map { modelType -> modelType.configurationValue to modelType }
-            .toTypedArray(),
-    )
+    ).choice(ModelType.supportedConfigurationValues.associateWith { it })
 
-    fun toConfiguration(): CliModelConfiguration? =
+    fun toSettings(): GeneratorSettings.ModelConfig? =
         if (modelAnnotation != null || modelType != null) {
-            CliModelConfiguration(
-                modelAnnotation = modelAnnotation,
-                modelType = modelType?.configurationValue,
-            )
+            GeneratorSettings.ModelConfig(modelAnnotation = modelAnnotation, modelType = modelType)
         } else {
             null
         }
@@ -121,20 +112,12 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
     private val clientType by option(
         "--client-type",
         help = "Client technology.",
-    ).choice(
-        *ClientType.entries
-            .map { clientType -> clientType.configurationValue to clientType }
-            .toTypedArray(),
-    )
+    ).choice(ClientType.supportedConfigurationValues.associateWith { it })
 
     private val clientContract by option(
         "--client-contract",
         help = "Generated client contract shape.",
-    ).choice(
-        *ClientContract.entries
-            .map { clientContract -> clientContract.configurationValue to clientContract }
-            .toTypedArray(),
-    )
+    ).choice(ClientContract.supportedConfigurationValues.associateWith { it })
 
     private val producerEnabled by option(
         "--generate-producer",
@@ -144,11 +127,8 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
     private val producerAdditionalPayloadTypes by option(
         "--producer-additional-payload-type",
         help = "Add a producer method for an already serialized payload value.",
-    ).choice(
-        *AdditionalProducerPayloadType.entries
-            .map { payloadType -> payloadType.configurationValue to payloadType.configurationValue }
-            .toTypedArray(),
-    ).multiple()
+    ).choice(AdditionalProducerPayloadType.supportedConfigurationValues.associateWith { it })
+        .multiple()
 
     private val consumerEnabled by option(
         "--generate-consumer",
@@ -170,39 +150,40 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
         help = "Fully qualified validation annotation added to payload parameters.",
     )
 
-    fun toConfiguration(): CliClientConfiguration? {
+    fun toSettings(): GeneratorSettings.ClientConfig? {
         if (!isConfigured()) {
             return null
         }
 
-        return CliClientConfiguration(
-            clientType = clientType?.configurationValue,
-            clientContract = clientContract?.configurationValue,
-            producer =
-                if (producerEnabled != null || producerAdditionalPayloadTypes.isNotEmpty()) {
-                    CliProducerConfiguration(
-                        enabled = producerEnabled,
-                        additionalPayloadTypes = producerAdditionalPayloadTypes.takeIf(List<String>::isNotEmpty),
-                    )
-                } else {
-                    null
-                },
-            consumer = consumerEnabled?.let(::CliConsumerConfiguration),
+        return GeneratorSettings.ClientConfig(
+            clientType = clientType,
+            clientContract = clientContract,
+            producer = producerSettings(),
+            consumer = consumerEnabled?.let(GeneratorSettings::ConsumerConfig),
             topicParameterProperties = topicParameterProperties,
-            validationAnnotations =
-                if (
-                    clientContractValidationAnnotation != null ||
-                    payloadParameterValidationAnnotation != null
-                ) {
-                    CliValidationAnnotationsConfiguration(
-                        clientContract = clientContractValidationAnnotation,
-                        payloadParameter = payloadParameterValidationAnnotation,
-                    )
-                } else {
-                    null
-                },
+            validationAnnotations = validationAnnotationSettings(),
         )
     }
+
+    private fun producerSettings(): GeneratorSettings.ProducerConfig? =
+        if (producerEnabled != null || producerAdditionalPayloadTypes.isNotEmpty()) {
+            GeneratorSettings.ProducerConfig(
+                enabled = producerEnabled,
+                additionalPayloadTypes = producerAdditionalPayloadTypes.takeIf(List<String>::isNotEmpty),
+            )
+        } else {
+            null
+        }
+
+    private fun validationAnnotationSettings(): GeneratorSettings.ValidationAnnotationsConfig? =
+        if (clientContractValidationAnnotation != null || payloadParameterValidationAnnotation != null) {
+            GeneratorSettings.ValidationAnnotationsConfig(
+                clientContract = clientContractValidationAnnotation,
+                payloadParameter = payloadParameterValidationAnnotation,
+            )
+        } else {
+            null
+        }
 
     private fun isConfigured(): Boolean =
         clientType != null ||

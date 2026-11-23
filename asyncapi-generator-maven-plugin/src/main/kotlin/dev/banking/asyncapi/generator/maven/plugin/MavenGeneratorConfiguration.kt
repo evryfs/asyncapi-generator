@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 
 /**
  * Maven model generation configuration.
@@ -9,13 +9,8 @@ class MavenModelConfiguration {
     var modelAnnotation: String? = null
     var modelType: String? = null
 
-    fun toRequest(modelPackage: String?): GeneratorConfigurationRequest.Models? =
-        GeneratorConfigurationRequest.models(
-            enabled = true,
-            packageName = modelPackage,
-            annotation = modelAnnotation,
-            modelType = modelType,
-        )
+    fun toSettings(): GeneratorSettings.ModelConfig =
+        GeneratorSettings.ModelConfig(modelAnnotation = modelAnnotation, modelType = modelType)
 }
 
 /**
@@ -44,21 +39,17 @@ class MavenClientConfiguration {
     var topicParameterProperties: Map<String, String>? = null
     var validationAnnotations: MavenValidationAnnotationsConfiguration? = null
 
-    fun toRequest(
-        clientPackage: String?,
-        modelPackage: String?,
-    ): GeneratorConfigurationRequest.Clients =
-        GeneratorConfigurationRequest.clients(
+    fun toSettings(): GeneratorSettings.ClientConfig =
+        GeneratorSettings.ClientConfig(
             clientType = clientType,
             clientContract = clientContract,
-            clientPackage = clientPackage,
-            modelPackage = modelPackage,
-            producerEnabled = producer?.enabled,
-            producerAdditionalPayloadTypes = producer?.additionalPayloadTypes,
-            consumerEnabled = consumer?.enabled,
+            producer = producer?.let { GeneratorSettings.ProducerConfig(it.enabled, it.additionalPayloadTypes) },
+            consumer = consumer?.let { GeneratorSettings.ConsumerConfig(it.enabled) },
             topicParameterProperties = topicParameterProperties.orEmpty(),
-            validationClientContract = validationAnnotations?.clientContract,
-            validationPayloadParameter = validationAnnotations?.payloadParameter,
+            validationAnnotations =
+                validationAnnotations?.let {
+                    GeneratorSettings.ValidationAnnotationsConfig(it.clientContract, it.payloadParameter)
+                },
         )
 }
 

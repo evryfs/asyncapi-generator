@@ -2,6 +2,8 @@ package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
@@ -108,16 +110,16 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     }
 
     private fun generatorConfiguration() =
-        MavenGeneratorConfigurationMapper.map(
-            MavenGeneratorConfigurationRequest(
+        GeneratorConfigurationFactory.create(
+            GeneratorSettings(
                 generatorName = generatorName,
                 outputDirectory = outputDirectory,
                 outputFile = outputFile,
                 modelPackage = modelPackage,
                 clientPackage = clientPackage,
                 schemaPackage = schemaPackage,
-                modelConfig = modelConfig,
-                clientConfig = clientConfig,
+                modelConfig = modelConfig?.toSettings(),
+                clientConfig = clientConfig?.toSettings(),
                 suppressedWarnings = suppressedWarnings.orEmpty(),
                 manifest = outputManifest(),
             ),
