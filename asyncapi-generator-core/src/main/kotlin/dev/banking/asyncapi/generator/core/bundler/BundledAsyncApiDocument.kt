@@ -7,6 +7,8 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  *
  * Only [AsyncApiBundler] creates it. It is the input of the generator, so an unbundled document
  * cannot reach code generation.
+ *
+ * @property document the bundled document
  */
 class BundledAsyncApiDocument internal constructor(
     val document: AsyncApiDocument,

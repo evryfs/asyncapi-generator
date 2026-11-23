@@ -36,7 +36,7 @@ class BindingBundlerTest {
                 walk.member(BindingInterface.BindingInline(binding), walk.binding, BundlingRun().rootScope()),
             ).binding
 
-        val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
+        assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
         val bundledKey = assertIs<SchemaInterface.SchemaReference>(bundled.content["key"])
         assertEquals("#/components/schemas/AccountKey", bundledKey.reference.ref, "the key keeps its source name")
         assertSame(bundledKey, bundled.kafkaKeySchema)
@@ -72,7 +72,7 @@ class BindingBundlerTest {
         assertFalse(reference.inline, "the input reference is not changed")
         assertSame(binding, reference.model, "the input reference model is not changed")
         val bundledBinding = assertIs<Binding>(bundled.reference.model)
-        val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
+        assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
         val bundledKafka = assertIs<Map<*, *>>(bundledBinding.content["kafka"])
         val bundledKey = assertIs<SchemaInterface.SchemaReference>(bundledKafka["key"])
         assertEquals("#/components/schemas/AccountKey", bundledKey.reference.ref, "the key keeps its source name")

@@ -75,7 +75,6 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
-    <ID>MaxLineLength:BindingBundler.kt$BindingBundler$/** A protocol-keyed binding content holds the fields under the protocol; a single protocol's content holds them directly. */</ID>
     <ID>MaxLineLength:ConfigurationWarning.kt$"https://github.com/evryfs/asyncapi-generator/blob/main/docs/reference/generator-configuration.md#configuration-warnings"</ID>
     <ID>MaxLineLength:GeneratorPrinter.kt$GeneratorPrinter$" - IsInline: $propIsInline, Type: $propType, Default: $propDefault, Enum: $propEnum, Ref: $propRef, HasModel: $hasModel"</ID>
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
@@ -222,7 +221,6 @@
     <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
-    <ID>UnusedPrivateProperty:BindingBundlerTest.kt$BindingBundlerTest$val originalKey = assertIs&lt;SchemaInterface.SchemaReference&gt;(binding.kafkaKeySchema)</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
     <ID>UseRequire:GeneratorName.kt$GeneratorName.Companion$throw IllegalArgumentException("$path is required")</ID>
     <ID>UseRequire:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$throw IllegalArgumentException("Missing Avro schema content")</ID>

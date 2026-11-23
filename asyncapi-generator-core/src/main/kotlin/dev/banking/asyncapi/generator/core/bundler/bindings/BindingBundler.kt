@@ -46,7 +46,10 @@ internal class BindingBundler(
         )
     }
 
-    /** A protocol-keyed binding content holds the fields under the protocol; a single protocol's content holds them directly. */
+    /**
+     * Replaces [fields] in this binding content: a protocol-keyed content holds them under the protocol, a
+     * single protocol's content holds them directly.
+     */
     private fun Map<String, Any?>.withBundledFields(
         protocol: String,
         fields: Map<String, SchemaInterface>,

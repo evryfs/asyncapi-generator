@@ -1,16 +1,16 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
-import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.schemas.childSchemas
 import java.util.Collections
 import java.util.IdentityHashMap
 
-/** Identifies schema models that participate in a reference cycle. */
+/** Identifies schema models that take part in a reference cycle; each answer is kept for the run. */
 internal class SchemaRecursionAnalyzer {
     private val results = IdentityHashMap<Any, Boolean>()
 
+    /** Whether [model] reaches itself through its child schemas and their references. */
     fun isRecursive(model: Any): Boolean =
         results[model] ?: reachesModel(
             target = model,
@@ -22,12 +22,7 @@ internal class SchemaRecursionAnalyzer {
         target: Any,
         model: Any,
         visited: MutableSet<Any>,
-    ): Boolean =
-        when (model) {
-            is Schema -> model.childSchemas().any { nested -> reaches(target, nested, visited) }
-            is MultiFormatSchema -> false
-            else -> false
-        }
+    ): Boolean = model is Schema && model.childSchemas().any { nested -> reaches(target, nested, visited) }
 
     private fun reaches(
         target: Any,
