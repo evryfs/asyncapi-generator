@@ -15,7 +15,7 @@ internal class AvroSchemaArtifactGeneration {
     ): GenerationResult {
         val avroGenerator =
             AvroGenerator(
-                packageName = task.packageName,
+                packageName = task.schema.packageName,
             )
         return avroGenerator.render(generationInput.schemas)
     }

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
@@ -194,10 +195,16 @@ class SpringKafkaClientMethodNameValidatorTest {
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = SourceLanguage.KOTLIN,
-            clientPackage = "com.example.client",
-            modelPackage = "com.example.model",
-            generateProducers = generateProducers,
-            additionalPayloadTypes = additionalPayloadTypes,
-            generateConsumers = generateConsumers,
+            client =
+                ClientGeneration(
+                    packageName = "com.example.client",
+                    modelPackageName = "com.example.model",
+                    producer =
+                        ClientGeneration.Producer(
+                            enabled = generateProducers,
+                            additionalPayloadTypes = additionalPayloadTypes,
+                        ),
+                    consumer = ClientGeneration.Consumer(enabled = generateConsumers),
+                ),
         )
 }

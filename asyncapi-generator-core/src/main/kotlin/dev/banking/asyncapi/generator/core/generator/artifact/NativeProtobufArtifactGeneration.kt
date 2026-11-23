@@ -22,6 +22,6 @@ internal class NativeProtobufArtifactGeneration(
         nativeProtobufGenerator
             .render(
                 schemas = generationInput.multiFormatSchemas,
-                models = task.models,
-            ).inSchemaPackage(task.schemaPackageName)
+                models = task.schema.models,
+            ).inSchemaPackage(task.schema.schemaPackageName)
 }

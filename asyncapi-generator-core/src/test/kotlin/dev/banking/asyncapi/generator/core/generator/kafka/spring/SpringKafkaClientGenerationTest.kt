@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
@@ -333,11 +334,17 @@ class SpringKafkaClientGenerationTest {
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = language,
-            clientPackage = "com.example.client",
-            modelPackage = "com.example.model",
-            generateProducers = generateProducers,
-            additionalPayloadTypes = additionalPayloadTypes,
-            generateConsumers = generateConsumers,
-            validationAnnotations = validationAnnotations,
+            client =
+                ClientGeneration(
+                    packageName = "com.example.client",
+                    modelPackageName = "com.example.model",
+                    validationAnnotations = validationAnnotations,
+                    producer =
+                        ClientGeneration.Producer(
+                            enabled = generateProducers,
+                            additionalPayloadTypes = additionalPayloadTypes,
+                        ),
+                    consumer = ClientGeneration.Consumer(enabled = generateConsumers),
+                ),
         )
 }

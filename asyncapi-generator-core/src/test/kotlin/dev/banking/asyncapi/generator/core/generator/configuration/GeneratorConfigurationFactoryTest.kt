@@ -174,7 +174,6 @@ class GeneratorConfigurationFactoryTest {
         val client = requireNotNull(configuration.client)
         assertEquals("com.example.client", client.packageName)
         assertEquals("com.example.model", client.modelPackageName)
-        assertEquals(ClientContract.INTERFACE, client.clientContract)
         assertEquals(false, client.producer.enabled)
         assertEquals(
             listOf(AdditionalProducerPayloadType.BYTE_ARRAY, AdditionalProducerPayloadType.STRING),

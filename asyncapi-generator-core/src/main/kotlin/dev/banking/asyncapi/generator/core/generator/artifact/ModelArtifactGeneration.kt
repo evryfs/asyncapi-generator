@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
@@ -24,8 +25,8 @@ internal class ModelArtifactGeneration {
         val models =
             ModelDefinitionFactory(
                 input = generationInput,
-                packageName = task.packageName,
-                annotation = task.annotation,
+                packageName = task.models.packageName,
+                annotation = task.models.annotation,
             ).create()
         return emitterFor(task).emit(models)
     }
@@ -40,8 +41,7 @@ internal class ModelArtifactGeneration {
         return renderModelArtifacts(
             task =
                 GenerationTask.ModelArtifacts(
-                    packageName = task.packageName,
-                    modelType = task.language.defaultModelType,
+                    ModelGeneration.Enabled(packageName = task.packageName, modelType = task.language.defaultModelType),
                 ),
             generationInput =
                 generationInput.copy(
@@ -54,6 +54,6 @@ internal class ModelArtifactGeneration {
     private fun emitterFor(task: GenerationTask.ModelArtifacts): ModelEmitter =
         when (task.language) {
             KOTLIN -> KotlinModelEmitter()
-            JAVA -> JavaModelEmitter(JavaModelType.of(task.modelType))
+            JAVA -> JavaModelEmitter(JavaModelType.of(task.models.modelType))
         }
 }

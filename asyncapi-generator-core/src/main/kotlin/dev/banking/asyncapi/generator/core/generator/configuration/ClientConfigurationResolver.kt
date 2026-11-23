@@ -15,8 +15,7 @@ internal object ClientConfigurationResolver {
     fun check(settings: GeneratorSettings): CheckedClientConfig? {
         val clientConfig = settings.clientConfig ?: return null
         ClientType.fromConfigurationValue(clientConfig.clientType, "clientConfig.clientType")
-        val clientContract =
-            ClientContract.fromConfigurationValue(clientConfig.clientContract, "clientConfig.clientContract")
+        ClientContract.fromConfigurationValue(clientConfig.clientContract, "clientConfig.clientContract")
         settings.clientPackage?.let { PackageName.fromConfigurationValue(it, "clientPackage") }
         when {
             settings.modelPackage != null -> PackageName.fromConfigurationValue(settings.modelPackage, "modelPackage")
@@ -25,7 +24,6 @@ internal object ClientConfigurationResolver {
         }
         return CheckedClientConfig(
             clientConfig,
-            clientContract,
             validationAnnotations(clientConfig.validationAnnotations),
         )
     }
@@ -54,7 +52,6 @@ internal object ClientConfigurationResolver {
         return ClientGeneration(
             packageName = clientPackage,
             modelPackageName = checkNotNull(settings.modelPackage),
-            clientContract = checked.clientContract,
             topicParameterProperties =
                 TopicParameterProperties.fromConfigurationValues(
                     values = clientConfig.topicParameterProperties,
@@ -92,12 +89,10 @@ internal object ClientConfigurationResolver {
      * Client settings that passed the checks made on every execution.
      *
      * @param clientConfig the settings as configured.
-     * @param clientContract the resolved contract shape.
      * @param validationAnnotations the resolved validation annotations.
      */
     data class CheckedClientConfig(
         val clientConfig: GeneratorSettings.ClientConfig,
-        val clientContract: ClientContract,
         val validationAnnotations: ClientValidationAnnotations,
     )
 }

@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.artifact
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
@@ -18,7 +19,7 @@ class NativeProtobufArtifactGenerationTest {
             generation.render(
                 task =
                     GenerationTask.NativeProtobufArtifacts(
-                        schemaPackageName = "com.example.schemas",
+                        SchemaGeneration.NativeProtobuf(schemaPackageName = "com.example.schemas"),
                     ),
                 generationInput = fixtures.generationInputWithNativeProtobufSchema(),
             )
@@ -35,11 +36,13 @@ class NativeProtobufArtifactGenerationTest {
             generation.render(
                 task =
                     GenerationTask.NativeProtobufArtifacts(
-                        models =
-                            ProtobufModelGeneration(
-                                packageName = "com.example.protobuf",
-                                modelType = ProtobufModelType.KOTLIN,
-                            ),
+                        SchemaGeneration.NativeProtobuf(
+                            models =
+                                ProtobufModelGeneration(
+                                    packageName = "com.example.protobuf",
+                                    modelType = ProtobufModelType.KOTLIN,
+                                ),
+                        ),
                     ),
                 generationInput = fixtures.generationInputWithNativeProtobufJavaMessageSchema(),
             )

@@ -5,8 +5,12 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
+import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
+import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -37,11 +41,13 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.ModelArtifacts(
-                            packageName = "com.example.model",
-                            modelType = ModelType.KOTLIN_DATA_CLASS,
+                            ModelGeneration.Enabled(
+                                packageName = "com.example.model",
+                                modelType = ModelType.KOTLIN_DATA_CLASS,
+                            ),
                         ),
                         GenerationTask.AvroSchemaArtifacts(
-                            packageName = "com.example.avro",
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                         ),
                     ),
                 ),
@@ -107,7 +113,10 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
                     schema = Schema(tupleItems = listOf(inline(Schema(type = "string")))),
-                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                    task =
+                        GenerationTask.AvroSchemaArtifacts(
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
+                        ),
                 )
             }
 
@@ -121,7 +130,10 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
                     schema = Schema(items = SchemaInterface.BooleanSchema(false)),
-                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                    task =
+                        GenerationTask.AvroSchemaArtifacts(
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
+                        ),
                 )
             }
 
@@ -134,7 +146,10 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
                     schema = Schema(enum = listOf("OPEN", 1)),
-                    task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+                    task =
+                        GenerationTask.AvroSchemaArtifacts(
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
+                        ),
                 )
             }
 
@@ -145,7 +160,10 @@ class GenerationInputCompatibilityValidatorTest {
     fun `avro projection allows a pattern that Java cannot compile`() {
         validateSchemaTask(
             schema = Schema(type = "string", pattern = "["),
-            task = GenerationTask.AvroSchemaArtifacts(packageName = "com.example.avro"),
+            task =
+                GenerationTask.AvroSchemaArtifacts(
+                    SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
+                ),
         )
     }
 
@@ -343,30 +361,6 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `disabled spring kafka does not validate key patterns`() {
-        validator.validate(
-            generationInput =
-                inputWithMessage(
-                    AnalyzedMessage(
-                        messageName = "Event",
-                        payloadTypeName = "EventPayload",
-                        schema = Schema(type = "object"),
-                        keySchema = inline(Schema(type = "string", pattern = "[")),
-                    ),
-                ),
-            generationPlan =
-                GenerationPlan(
-                    listOf(
-                        springKafkaTask(
-                            generateProducers = false,
-                            generateConsumers = false,
-                        ),
-                    ),
-                ),
-        )
-    }
-
-    @Test
     fun `document and JSON Schema artifacts allow source incompatible schemas`() {
         val schema =
             Schema(
@@ -386,8 +380,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.DocumentArtifact(
-                            file = File("asyncapi.yaml"),
-                            format = DocumentFormat.YAML,
+                            DocumentOutput(file = File("asyncapi.yaml"), format = DocumentFormat.YAML),
                         ),
                     ),
                 ),
@@ -397,7 +390,9 @@ class GenerationInputCompatibilityValidatorTest {
             generationPlan =
                 GenerationPlan(
                     listOf(
-                        GenerationTask.JsonSchemaArtifacts(packageName = "com.example.schema"),
+                        GenerationTask.JsonSchemaArtifacts(
+                            SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
+                        ),
                     ),
                 ),
         )
@@ -413,8 +408,10 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.ModelArtifacts(
-                                    packageName = "com.example.model",
-                                    modelType = ModelType.JAVA_RECORD,
+                                    ModelGeneration.Enabled(
+                                        packageName = "com.example.model",
+                                        modelType = ModelType.JAVA_RECORD,
+                                    ),
                                 ),
                             ),
                         ),
@@ -435,7 +432,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.AvroSchemaArtifacts(
-                                    packageName = "com.example.avro",
+                                    SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                                 ),
                             ),
                         ),
@@ -454,11 +451,13 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.AvroSchemaArtifacts(
-                            packageName = "com.example.avro",
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                         ),
                         GenerationTask.NativeAvroArtifacts(
-                            generateSpecificRecords = false,
-                            schemaPackageName = "com.example.avro",
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = false,
+                                schemaPackageName = "com.example.avro",
+                            ),
                         ),
                     ),
                 ),
@@ -482,10 +481,10 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.AvroSchemaArtifacts(
-                            packageName = "com.example.avro",
+                            SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                         ),
                         GenerationTask.NativeProtobufArtifacts(
-                            schemaPackageName = "com.example.protobuf",
+                            SchemaGeneration.NativeProtobuf(schemaPackageName = "com.example.protobuf"),
                         ),
                     ),
                 ),
@@ -511,11 +510,13 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.AvroSchemaArtifacts(
-                                    packageName = "com.example.avro",
+                                    SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                                 ),
                                 GenerationTask.NativeAvroArtifacts(
-                                    generateSpecificRecords = false,
-                                    schemaPackageName = "com.example.avro",
+                                    SchemaGeneration.NativeAvro(
+                                        generateSpecificRecords = false,
+                                        schemaPackageName = "com.example.avro",
+                                    ),
                                 ),
                             ),
                         ),
@@ -549,7 +550,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.NativeAvroArtifacts(
-                                    generateSpecificRecords = false,
+                                    SchemaGeneration.NativeAvro(generateSpecificRecords = false),
                                 ),
                             ),
                         ),
@@ -581,9 +582,9 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.NativeAvroArtifacts(
-                            generateSpecificRecords = false,
+                            SchemaGeneration.NativeAvro(generateSpecificRecords = false),
                         ),
-                        GenerationTask.NativeProtobufArtifacts(),
+                        GenerationTask.NativeProtobufArtifacts(SchemaGeneration.NativeProtobuf()),
                     ),
                 ),
         )
@@ -606,7 +607,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.JsonSchemaArtifacts(
-                            packageName = "com.example.schema",
+                            SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
                         ),
                     ),
                 ),
@@ -624,8 +625,10 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.NativeAvroArtifacts(
-                            generateSpecificRecords = true,
-                            modelPackageName = "com.example.avro",
+                            SchemaGeneration.NativeAvro(
+                                generateSpecificRecords = true,
+                                modelPackageName = "com.example.avro",
+                            ),
                         ),
                     ),
                 ),
@@ -645,8 +648,10 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.NativeAvroArtifacts(
-                                    generateSpecificRecords = true,
-                                    modelPackageName = "com.example.configured",
+                                    SchemaGeneration.NativeAvro(
+                                        generateSpecificRecords = true,
+                                        modelPackageName = "com.example.configured",
+                                    ),
                                 ),
                             ),
                         ),
@@ -668,8 +673,10 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.NativeAvroArtifacts(
-                                    generateSpecificRecords = true,
-                                    modelPackageName = "com.example.configured",
+                                    SchemaGeneration.NativeAvro(
+                                        generateSpecificRecords = true,
+                                        modelPackageName = "com.example.configured",
+                                    ),
                                 ),
                             ),
                         ),
@@ -694,7 +701,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.NativeProtobufArtifacts(
-                                    schemaPackageName = "com.example.protobuf",
+                                    SchemaGeneration.NativeProtobuf(schemaPackageName = "com.example.protobuf"),
                                 ),
                             ),
                         ),
@@ -715,7 +722,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.NativeProtobufArtifacts(
-                                    schemaPackageName = "com.example.protobuf",
+                                    SchemaGeneration.NativeProtobuf(schemaPackageName = "com.example.protobuf"),
                                 ),
                             ),
                         ),
@@ -752,7 +759,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         GenerationTask.JsonSchemaArtifacts(
-                            packageName = "com.example.schema",
+                            SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
                         ),
                     ),
                 ),
@@ -769,7 +776,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.JsonSchemaArtifacts(
-                                    packageName = "com.example.schema",
+                                    SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
                                 ),
                             ),
                         ),
@@ -810,7 +817,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.JsonSchemaArtifacts(
-                                    packageName = "com.example.schema",
+                                    SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
                                 ),
                             ),
                         ),
@@ -835,7 +842,7 @@ class GenerationInputCompatibilityValidatorTest {
                         GenerationPlan(
                             listOf(
                                 GenerationTask.JsonSchemaArtifacts(
-                                    packageName = "com.example.schema",
+                                    SchemaGeneration.JsonSchema(packageName = "com.example.schema"),
                                 ),
                             ),
                         ),
@@ -854,8 +861,11 @@ class GenerationInputCompatibilityValidatorTest {
                     listOf(
                         GenerationTask.SpringKafkaClient(
                             language = SourceLanguage.KOTLIN,
-                            clientPackage = "com.example.kafka",
-                            modelPackage = "com.example.model",
+                            client =
+                                ClientGeneration(
+                                    packageName = "com.example.kafka",
+                                    modelPackageName = "com.example.model",
+                                ),
                         ),
                     ),
                 ),
@@ -871,8 +881,11 @@ class GenerationInputCompatibilityValidatorTest {
                     listOf(
                         GenerationTask.SpringKafkaClient(
                             language = SourceLanguage.KOTLIN,
-                            clientPackage = "com.example.kafka",
-                            modelPackage = "com.example.model",
+                            client =
+                                ClientGeneration(
+                                    packageName = "com.example.kafka",
+                                    modelPackageName = "com.example.model",
+                                ),
                         ),
                     ),
                 ),
@@ -968,52 +981,6 @@ class GenerationInputCompatibilityValidatorTest {
     }
 
     @Test
-    fun `disabled spring kafka generation does not handle a native declaration`() {
-        val error =
-            assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
-                    generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
-                    generationPlan =
-                        GenerationPlan(
-                            listOf(
-                                springKafkaTask(
-                                    generateProducers = false,
-                                    generateConsumers = false,
-                                ),
-                            ),
-                        ),
-                )
-            }
-
-        assertTrue(error.message!!.contains("Generation cannot consume payload 'UserCreated'"))
-    }
-
-    @Test
-    fun `disabled spring kafka generation does not reject Draft 07 message handled by JSON Schema task`() {
-        validator.validate(
-            generationInput =
-                generationInputWithMultiFormatMessage(
-                    MultiFormatSchema(
-                        schemaFormat = "application/schema+json;version=draft-07",
-                        schema = mapOf("type" to "object"),
-                    ),
-                ),
-            generationPlan =
-                GenerationPlan(
-                    listOf(
-                        springKafkaTask(
-                            generateProducers = false,
-                            generateConsumers = false,
-                        ),
-                        GenerationTask.JsonSchemaArtifacts(
-                            packageName = "com.example.schema",
-                        ),
-                    ),
-                ),
-        )
-    }
-
-    @Test
     fun `native artifact task handles declaration unrelated to active spring kafka message`() {
         val usedAvroSchema = nativeAvroSchema()
         val unrelatedProtobufSchema = nativeProtobufSchema()
@@ -1051,7 +1018,7 @@ class GenerationInputCompatibilityValidatorTest {
                 GenerationPlan(
                     listOf(
                         springKafkaTask(),
-                        GenerationTask.NativeProtobufArtifacts(),
+                        GenerationTask.NativeProtobufArtifacts(SchemaGeneration.NativeProtobuf()),
                     ),
                 ),
         )
@@ -1075,8 +1042,11 @@ class GenerationInputCompatibilityValidatorTest {
                             listOf(
                                 GenerationTask.SpringKafkaClient(
                                     language = SourceLanguage.KOTLIN,
-                                    clientPackage = "com.example.kafka",
-                                    modelPackage = "com.example.model",
+                                    client =
+                                        ClientGeneration(
+                                            packageName = "com.example.kafka",
+                                            modelPackageName = "com.example.model",
+                                        ),
                                 ),
                             ),
                         ),
@@ -1110,8 +1080,11 @@ class GenerationInputCompatibilityValidatorTest {
                             listOf(
                                 GenerationTask.SpringKafkaClient(
                                     language = SourceLanguage.KOTLIN,
-                                    clientPackage = "com.example.kafka",
-                                    modelPackage = "com.example.model",
+                                    client =
+                                        ClientGeneration(
+                                            packageName = "com.example.kafka",
+                                            modelPackageName = "com.example.model",
+                                        ),
                                 ),
                             ),
                         ),
@@ -1159,10 +1132,18 @@ class GenerationInputCompatibilityValidatorTest {
                             listOf(
                                 GenerationTask.SpringKafkaClient(
                                     language = SourceLanguage.KOTLIN,
-                                    clientPackage = "com.example.kafka",
-                                    modelPackage = "com.example.model",
-                                    additionalPayloadTypes =
-                                        setOf(AdditionalProducerPayloadType.BYTE_ARRAY),
+                                    client =
+                                        ClientGeneration(
+                                            packageName = "com.example.kafka",
+                                            modelPackageName = "com.example.model",
+                                            producer =
+                                                ClientGeneration.Producer(
+                                                    additionalPayloadTypes =
+                                                        setOf(
+                                                            AdditionalProducerPayloadType.BYTE_ARRAY,
+                                                        ),
+                                                ),
+                                        ),
                                 ),
                             ),
                         ),
@@ -1200,8 +1181,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     private fun modelTask(): GenerationTask.ModelArtifacts =
         GenerationTask.ModelArtifacts(
-            packageName = "com.example.model",
-            modelType = ModelType.KOTLIN_DATA_CLASS,
+            ModelGeneration.Enabled(packageName = "com.example.model", modelType = ModelType.KOTLIN_DATA_CLASS),
         )
 
     private fun inputWithMessage(message: AnalyzedMessage): GenerationInput =
@@ -1256,10 +1236,13 @@ class GenerationInputCompatibilityValidatorTest {
     ): GenerationTask.SpringKafkaClient =
         GenerationTask.SpringKafkaClient(
             language = SourceLanguage.KOTLIN,
-            clientPackage = "com.example.kafka",
-            modelPackage = "com.example.model",
-            generateProducers = generateProducers,
-            generateConsumers = generateConsumers,
+            client =
+                ClientGeneration(
+                    packageName = "com.example.kafka",
+                    modelPackageName = "com.example.model",
+                    producer = ClientGeneration.Producer(enabled = generateProducers),
+                    consumer = ClientGeneration.Consumer(enabled = generateConsumers),
+                ),
         )
 
     private fun nativeAvroSchema(namespace: String? = null): MultiFormatSchema =

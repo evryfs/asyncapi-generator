@@ -50,10 +50,7 @@ class GenerationPlannerTest {
 
         assertEquals(
             listOf(
-                GenerationTask.DocumentArtifact(
-                    file = outputFile,
-                    format = DocumentFormat.JSON,
-                ),
+                GenerationTask.DocumentArtifact(DocumentOutput(file = outputFile, format = DocumentFormat.JSON)),
             ),
             plan.tasks,
         )
@@ -76,12 +73,9 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    packageName = "com.example.model",
-                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                    ModelGeneration.Enabled(packageName = "com.example.model", modelType = ModelType.KOTLIN_DATA_CLASS),
                 ),
-                GenerationTask.AvroSchemaArtifacts(
-                    packageName = "com.example.schema",
-                ),
+                GenerationTask.AvroSchemaArtifacts(SchemaGeneration.AvroProjection(packageName = "com.example.schema")),
             ),
             plan.tasks,
         )
@@ -105,8 +99,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.NativeAvroArtifacts(
-                    generateSpecificRecords = true,
-                    modelPackageName = "com.example.avro",
+                    SchemaGeneration.NativeAvro(generateSpecificRecords = true, modelPackageName = "com.example.avro"),
                 ),
             ),
             plan.tasks,
@@ -130,7 +123,7 @@ class GenerationPlannerTest {
                     packageName = "com.example.model",
                 ),
                 springKafkaClientTask(),
-                GenerationTask.NativeAvroArtifacts(generateSpecificRecords = true),
+                GenerationTask.NativeAvroArtifacts(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
             ),
             plan.tasks,
         )
@@ -146,7 +139,7 @@ class GenerationPlannerTest {
             )
 
         assertEquals(
-            listOf(GenerationTask.NativeProtobufArtifacts()),
+            listOf(GenerationTask.NativeProtobufArtifacts(SchemaGeneration.NativeProtobuf())),
             plan.tasks,
         )
     }
@@ -166,7 +159,7 @@ class GenerationPlannerTest {
             )
 
         assertEquals(
-            listOf(GenerationTask.NativeProtobufArtifacts(models = models)),
+            listOf(GenerationTask.NativeProtobufArtifacts(SchemaGeneration.NativeProtobuf(models = models))),
             plan.tasks,
         )
     }
@@ -193,7 +186,7 @@ class GenerationPlannerTest {
                     packageName = "com.example.model",
                 ),
                 springKafkaClientTask(),
-                GenerationTask.NativeProtobufArtifacts(models = models),
+                GenerationTask.NativeProtobufArtifacts(SchemaGeneration.NativeProtobuf(models = models)),
             ),
             plan.tasks,
         )
@@ -209,7 +202,7 @@ class GenerationPlannerTest {
             )
 
         assertEquals(
-            listOf(GenerationTask.JsonSchemaArtifacts(packageName = "com.example.schema")),
+            listOf(GenerationTask.JsonSchemaArtifacts(SchemaGeneration.JsonSchema(packageName = "com.example.schema"))),
             plan.tasks,
         )
     }
@@ -235,13 +228,15 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    packageName = "com.example.model",
-                    annotation =
-                        QualifiedTypeName.fromConfigurationValue(
-                            value = "com.example.NoArg",
-                            path = "modelConfig.modelAnnotation",
-                        ),
-                    modelType = ModelType.KOTLIN_DATA_CLASS,
+                    ModelGeneration.Enabled(
+                        packageName = "com.example.model",
+                        annotation =
+                            QualifiedTypeName.fromConfigurationValue(
+                                value = "com.example.NoArg",
+                                path = "modelConfig.modelAnnotation",
+                            ),
+                        modelType = ModelType.KOTLIN_DATA_CLASS,
+                    ),
                 ),
             ),
             plan.tasks,
@@ -265,8 +260,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    packageName = "com.example.model",
-                    modelType = ModelType.JAVA_RECORD,
+                    ModelGeneration.Enabled(packageName = "com.example.model", modelType = ModelType.JAVA_RECORD),
                 ),
             ),
             plan.tasks,
@@ -308,47 +302,27 @@ class GenerationPlannerTest {
                         path = "clients.kafka.springKafka.validationAnnotations.payloadParameter",
                     ),
             )
-        val plan =
-            planner.plan(
-                generatorConfiguration(
-                    client =
-                        ClientGeneration(
-                            packageName = "com.example.client",
-                            modelPackageName = "com.example.model",
-                            clientContract = ClientContract.INTERFACE,
-                            topicParameterProperties = topicParameterProperties,
-                            validationAnnotations = validationAnnotations,
-                            producer =
-                                ClientGeneration.Producer(
-                                    enabled = false,
-                                    additionalPayloadTypes =
-                                        setOf(
-                                            AdditionalProducerPayloadType.BYTE_ARRAY,
-                                            AdditionalProducerPayloadType.STRING,
-                                        ),
-                                ),
-                            consumer = ClientGeneration.Consumer(enabled = true),
-                        ),
-                ),
+        val client =
+            ClientGeneration(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+                topicParameterProperties = topicParameterProperties,
+                validationAnnotations = validationAnnotations,
+                producer =
+                    ClientGeneration.Producer(
+                        enabled = false,
+                        additionalPayloadTypes =
+                            setOf(
+                                AdditionalProducerPayloadType.BYTE_ARRAY,
+                                AdditionalProducerPayloadType.STRING,
+                            ),
+                    ),
+                consumer = ClientGeneration.Consumer(enabled = true),
             )
 
-        assertEquals(
-            listOf(
-                springKafkaClientTask(
-                    generateProducers = false,
-                    additionalPayloadTypes =
-                        setOf(
-                            AdditionalProducerPayloadType.BYTE_ARRAY,
-                            AdditionalProducerPayloadType.STRING,
-                        ),
-                    generateConsumers = true,
-                    clientContract = ClientContract.INTERFACE,
-                    topicParameterProperties = topicParameterProperties,
-                    validationAnnotations = validationAnnotations,
-                ),
-            ),
-            plan.tasks,
-        )
+        val plan = planner.plan(generatorConfiguration(client = client))
+
+        assertEquals(listOf(GenerationTask.SpringKafkaClient(SourceLanguage.KOTLIN, client)), plan.tasks)
     }
 
     @Test
@@ -369,8 +343,7 @@ class GenerationPlannerTest {
         assertEquals(
             listOf(
                 GenerationTask.ModelArtifacts(
-                    packageName = "com.example.model",
-                    modelType = ModelType.JAVA_CLASS,
+                    ModelGeneration.Enabled(packageName = "com.example.model", modelType = ModelType.JAVA_CLASS),
                 ),
                 springKafkaClientTask(
                     language = SourceLanguage.JAVA,
@@ -403,24 +376,5 @@ class GenerationPlannerTest {
 
     private fun springKafkaClientTask(
         language: SourceLanguage = SourceLanguage.KOTLIN,
-        clientPackage: String = "com.example.client",
-        modelPackage: String = "com.example.model",
-        generateProducers: Boolean = true,
-        additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
-        generateConsumers: Boolean = true,
-        clientContract: ClientContract = ClientContract.INTERFACE,
-        topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
-        validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
-    ): GenerationTask.SpringKafkaClient =
-        GenerationTask.SpringKafkaClient(
-            language = language,
-            clientPackage = clientPackage,
-            modelPackage = modelPackage,
-            generateProducers = generateProducers,
-            additionalPayloadTypes = additionalPayloadTypes,
-            generateConsumers = generateConsumers,
-            clientContract = clientContract,
-            topicParameterProperties = topicParameterProperties,
-            validationAnnotations = validationAnnotations,
-        )
+    ): GenerationTask.SpringKafkaClient = GenerationTask.SpringKafkaClient(language, kafkaClientGeneration())
 }

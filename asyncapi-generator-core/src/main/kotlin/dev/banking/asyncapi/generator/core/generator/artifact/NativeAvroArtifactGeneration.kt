@@ -18,6 +18,6 @@ internal class NativeAvroArtifactGeneration {
         nativeAvroGenerator
             .render(
                 schemas = generationInput.multiFormatSchemas,
-                generateSpecificRecords = task.generateSpecificRecords,
-            ).inSchemaPackage(task.schemaPackageName)
+                generateSpecificRecords = task.schema.generateSpecificRecords,
+            ).inSchemaPackage(task.schema.schemaPackageName)
 }

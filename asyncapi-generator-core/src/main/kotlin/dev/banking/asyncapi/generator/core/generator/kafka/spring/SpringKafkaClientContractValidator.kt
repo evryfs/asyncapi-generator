@@ -13,10 +13,6 @@ internal object SpringKafkaClientContractValidator {
         channels: List<AnalyzedChannel>,
         task: GenerationTask.SpringKafkaClient,
     ) {
-        if (!task.generateProducers && !task.generateConsumers) {
-            return
-        }
-
         channels
             .firstOrNull { channel -> channel.topic == null }
             ?.let { channel ->
@@ -45,8 +41,8 @@ internal object SpringKafkaClientContractValidator {
                 generatedBaseName = generatedBaseName,
                 contractNames =
                     buildList {
-                        if (task.generateProducers) add("${generatedBaseName}Producer")
-                        if (task.generateConsumers) add("${generatedBaseName}Consumer")
+                        if (task.client.producer.enabled) add("${generatedBaseName}Producer")
+                        if (task.client.consumer.enabled) add("${generatedBaseName}Consumer")
                     },
             )
         }

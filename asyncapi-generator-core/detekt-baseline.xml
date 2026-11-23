@@ -26,7 +26,6 @@
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
-    <ID>LongMethod:GenerationPlanner.kt$GenerationPlanner$fun plan(configuration: GeneratorConfiguration): GenerationPlan</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemaInterfacesPrinter(schemaInterfacesMap: Map&lt;String, SchemaInterface&gt;)</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
     <ID>LongMethod:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
@@ -158,14 +157,6 @@
     <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
     <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
     <ID>UndocumentedPublicClass:ExternalDoc.kt$ExternalDoc</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$AvroSchemaArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$DocumentArtifact : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$JsonSchemaArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$KafkaKeyModelArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$ModelArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeAvroArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeProtobufArtifacts : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$SpringKafkaClient : GenerationTask</ID>
     <ID>UndocumentedPublicClass:Info.kt$Info</ID>
     <ID>UndocumentedPublicClass:License.kt$License</ID>
     <ID>UndocumentedPublicClass:Message.kt$Message</ID>
