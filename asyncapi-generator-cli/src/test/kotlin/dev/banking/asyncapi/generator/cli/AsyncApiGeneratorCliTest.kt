@@ -211,7 +211,7 @@ class AsyncApiGeneratorCliTest {
     }
 
     @Test
-    fun `should reject incomplete client configuration before reading the contract`(
+    fun `should reject invalid client configuration before reading the contract`(
         @TempDir tempDir: Path,
     ) {
         val invalidInput = tempDir.resolve("invalid.yaml")
@@ -229,13 +229,16 @@ class AsyncApiGeneratorCliTest {
                         "com.example.cli.model",
                         "--client-package",
                         "com.example.cli.client",
-                        "--client-type",
-                        "spring-kafka",
+                        "--topic-parameter-property",
+                        "environment=${'$'}{kafka.environment}",
                     ),
                 )
             }
 
-        assertTrue(exception.message.orEmpty().contains("clientConfig.clientContract is required"))
+        assertTrue(
+            exception.message.orEmpty().contains("clientConfig.topicParameterProperties.environment must be"),
+            exception.message,
+        )
     }
 
     @Test

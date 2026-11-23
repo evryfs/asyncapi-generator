@@ -12,11 +12,14 @@ enum class ClientType(
     companion object {
         val supportedConfigurationValues: List<String> = entries.map { it.configurationValue }
 
+        /** Used when the setting is omitted: the only client technology. */
+        val DEFAULT = SPRING_KAFKA
+
         fun fromConfigurationValue(
             value: String?,
             path: String,
         ): ClientType {
-            requireNotNull(value) { "$path is required" }
+            if (value == null) return DEFAULT
             return entries.firstOrNull { it.configurationValue == value }
                 ?: throw IllegalArgumentException(
                     "Invalid $path '$value'. Supported values: ${supportedConfigurationValues.joinToString(", ")}",

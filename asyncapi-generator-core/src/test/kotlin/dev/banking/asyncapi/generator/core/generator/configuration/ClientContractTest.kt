@@ -17,16 +17,11 @@ class ClientContractTest {
     }
 
     @Test
-    fun `fromConfigurationValue requires client contract`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                ClientContract.fromConfigurationValue(
-                    value = null,
-                    path = "clientConfig.clientContract",
-                )
-            }
-
-        assertEquals("clientConfig.clientContract is required", exception.message)
+    fun `fromConfigurationValue defaults an omitted client contract`() {
+        assertEquals(
+            ClientContract.INTERFACE,
+            ClientContract.fromConfigurationValue(value = null, path = "clientConfig.clientContract"),
+        )
     }
 
     @Test

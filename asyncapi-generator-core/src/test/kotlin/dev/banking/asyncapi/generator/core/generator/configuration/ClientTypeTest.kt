@@ -17,16 +17,11 @@ class ClientTypeTest {
     }
 
     @Test
-    fun `fromConfigurationValue requires client type`() {
-        val exception =
-            assertFailsWith<IllegalArgumentException> {
-                ClientType.fromConfigurationValue(
-                    value = null,
-                    path = "clientConfig.clientType",
-                )
-            }
-
-        assertEquals("clientConfig.clientType is required", exception.message)
+    fun `fromConfigurationValue defaults an omitted client type`() {
+        assertEquals(
+            ClientType.SPRING_KAFKA,
+            ClientType.fromConfigurationValue(value = null, path = "clientConfig.clientType"),
+        )
     }
 
     @Test

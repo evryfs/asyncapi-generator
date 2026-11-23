@@ -7,9 +7,10 @@ and owns all Kafka runtime configuration.
 
 ## Configure the execution
 
-Client generation needs four settings on a `java` or `kotlin` execution:
-`modelPackage`, `clientPackage`, `clientType` `spring-kafka`, and
-`clientContract` `interface`.
+Client generation needs `modelPackage`, `clientPackage` and client settings
+on a `java` or `kotlin` execution. `clientType` and `clientContract` default to
+`spring-kafka` and `interface`, their only values; the examples set them
+explicitly.
 
 Maven:
 
