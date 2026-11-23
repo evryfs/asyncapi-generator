@@ -565,7 +565,7 @@ class AsyncApiGeneratorCliTest {
 
         assertTrue(
             exception.message.orEmpty().contains(
-                "models.packageName is required when models.annotation is configured",
+                "modelPackage is required when modelConfig is configured",
             ),
         )
     }

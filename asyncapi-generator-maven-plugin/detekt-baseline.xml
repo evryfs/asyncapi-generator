@@ -2,12 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>LongMethod:MavenGeneratorConfigurationMapper.kt$MavenGeneratorConfigurationMapper$fun map(request: MavenGeneratorConfigurationRequest): GeneratorConfiguration</ID>
-    <ID>ThrowsCount:MavenGeneratorConfigurationMapper.kt$MavenGeneratorConfigurationMapper$private fun validateMavenConfiguration(request: MavenGeneratorConfigurationRequest)</ID>
     <ID>TooGenericExceptionCaught:AsyncApiGeneratorMojo.kt$AsyncApiGeneratorMojo$e: Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorMojo.kt$AsyncApiGeneratorMojo : AbstractMojo</ID>
-    <ID>UseRequire:MavenGeneratorConfigurationMapper.kt$MavenGeneratorConfigurationMapper$throw IllegalArgumentException( "outputDirectory must be a directory: ${request.outputDirectory}", )</ID>
-    <ID>UseRequire:MavenGeneratorConfigurationMapper.kt$MavenGeneratorConfigurationMapper$throw IllegalArgumentException("clientConfig is required when clientPackage is configured")</ID>
-    <ID>UseRequire:MavenGeneratorConfigurationMapper.kt$MavenGeneratorConfigurationMapper$throw IllegalArgumentException("outputFile must be a file: ${request.outputFile}")</ID>
   </CurrentIssues>
 </SmellBaseline>

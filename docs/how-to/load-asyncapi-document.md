@@ -59,19 +59,16 @@ first:
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 
 val bundled = AsyncApiBundler().bundle(loaded)
 
-val outputDirectory = File("build/generated/asyncapi")
 val configuration =
     GeneratorConfigurationFactory.create(
-        GeneratorConfigurationRequest(
-            generatorName = GeneratorName.KOTLIN,
-            sourceOutputDirectory = outputDirectory,
-            resourceOutputDirectory = outputDirectory,
-            models = GeneratorConfigurationRequest.Models(packageName = "com.example.model"),
+        GeneratorSettings(
+            generatorName = "kotlin",
+            outputDirectory = File("build/generated/asyncapi"),
+            modelPackage = "com.example.model",
         ),
     )
 configuration.warnings.forEach { warning -> println(warning.message) }
@@ -79,8 +76,8 @@ configuration.warnings.forEach { warning -> println(warning.message) }
 AsyncApiGenerator().generate(bundled, configuration)
 ```
 
-`GeneratorConfigurationFactory.create` validates the request with the same
-rules as the frontends; see
+`GeneratorSettings` has the same fields as the frontends, and
+`GeneratorConfigurationFactory.create` checks them with the same rules; see
 [Generator configuration](../reference/generator-configuration.md).
 `bundled.document` is the bundled `AsyncApiDocument` if you need the model
 itself.

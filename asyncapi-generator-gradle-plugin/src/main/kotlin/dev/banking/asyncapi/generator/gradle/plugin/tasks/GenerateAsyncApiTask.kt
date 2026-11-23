@@ -2,16 +2,11 @@ package dev.banking.asyncapi.generator.gradle.plugin.tasks
 
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
-import dev.banking.asyncapi.generator.gradle.plugin.GradleClientConfiguration
-import dev.banking.asyncapi.generator.gradle.plugin.GradleConsumerConfiguration
-import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationMapper
-import dev.banking.asyncapi.generator.gradle.plugin.GradleGeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.gradle.plugin.GradleModelConfiguration
-import dev.banking.asyncapi.generator.gradle.plugin.GradleProducerConfiguration
-import dev.banking.asyncapi.generator.gradle.plugin.GradleValidationAnnotationsConfiguration
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
@@ -127,8 +122,8 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         logger.lifecycle("AsyncAPI generation '$name' started")
 
         val generatorConfiguration =
-            GradleGeneratorConfigurationMapper.map(
-                GradleGeneratorConfigurationRequest(
+            GeneratorConfigurationFactory.create(
+                GeneratorSettings(
                     generatorName = generatorName.orNull,
                     outputDirectory = outputDirectory.get().asFile,
                     outputFile = outputFile.orNull?.asFile,
@@ -154,9 +149,9 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         logger.lifecycle("AsyncAPI generation '$name' completed")
     }
 
-    private fun modelConfiguration(): GradleModelConfiguration? =
-        if (modelPackage.isPresent || modelAnnotation.isPresent || modelType.isPresent) {
-            GradleModelConfiguration(
+    private fun modelConfiguration(): GeneratorSettings.ModelConfig? =
+        if (modelAnnotation.isPresent || modelType.isPresent) {
+            GeneratorSettings.ModelConfig(
                 modelAnnotation = modelAnnotation.orNull,
                 modelType = modelType.orNull,
             )
@@ -165,7 +160,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
 
     /** Client configuration is shared by all executions; it counts as configured once any property is set. */
-    private fun clientConfiguration(): GradleClientConfiguration? =
+    private fun clientConfiguration(): GeneratorSettings.ClientConfig? =
         if (
             clientType.isPresent ||
             clientContract.isPresent ||
@@ -176,15 +171,15 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             clientContractValidationAnnotation.isPresent ||
             payloadParameterValidationAnnotation.isPresent
         ) {
-            GradleClientConfiguration(
+            GeneratorSettings.ClientConfig(
                 clientType = clientType.orNull,
                 clientContract = clientContract.orNull,
                 producer =
-                    GradleProducerConfiguration(
+                    GeneratorSettings.ProducerConfig(
                         enabled = producerEnabled.orNull,
                         additionalPayloadTypes = producerAdditionalPayloadTypes.orNull,
                     ),
-                consumer = GradleConsumerConfiguration(enabled = consumerEnabled.orNull),
+                consumer = GeneratorSettings.ConsumerConfig(enabled = consumerEnabled.orNull),
                 topicParameterProperties = topicParameterProperties.orNull.orEmpty(),
                 validationAnnotations = validationAnnotationsConfiguration(),
             )
@@ -192,12 +187,12 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
             null
         }
 
-    private fun validationAnnotationsConfiguration(): GradleValidationAnnotationsConfiguration? =
+    private fun validationAnnotationsConfiguration(): GeneratorSettings.ValidationAnnotationsConfig? =
         if (
             clientContractValidationAnnotation.isPresent ||
             payloadParameterValidationAnnotation.isPresent
         ) {
-            GradleValidationAnnotationsConfiguration(
+            GeneratorSettings.ValidationAnnotationsConfig(
                 clientContract = clientContractValidationAnnotation.orNull,
                 payloadParameter = payloadParameterValidationAnnotation.orNull,
             )

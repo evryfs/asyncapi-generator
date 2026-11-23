@@ -10,6 +10,8 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
@@ -101,16 +103,16 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
     private fun generatorConfiguration() =
         try {
-            CliGeneratorConfigurationMapper.map(
-                CliGeneratorConfigurationRequest(
-                    generatorName = generationOptions.generatorName.configurationValue,
+            GeneratorConfigurationFactory.create(
+                GeneratorSettings(
+                    generatorName = generationOptions.generatorName,
                     outputDirectory = outputOptions.outputDirectory,
                     outputFile = outputOptions.outputFile,
                     modelPackage = outputOptions.modelPackage,
                     clientPackage = outputOptions.clientPackage,
                     schemaPackage = outputOptions.schemaPackage,
-                    modelConfig = modelOptions.toConfiguration(),
-                    clientConfig = clientOptions.toConfiguration(),
+                    modelConfig = modelOptions.toSettings(),
+                    clientConfig = clientOptions.toSettings(),
                     suppressedWarnings = generationOptions.suppressedWarnings,
                 ),
             )

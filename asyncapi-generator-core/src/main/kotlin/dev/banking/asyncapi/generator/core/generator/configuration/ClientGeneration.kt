@@ -15,7 +15,7 @@ data class ClientGeneration(
     init {
         require(producer.enabled || consumer.enabled) {
             "Spring Kafka client generation requires at least one enabled contract: " +
-                "producer.enabled or consumer.enabled"
+                "clientConfig.producer.enabled or clientConfig.consumer.enabled"
         }
     }
 

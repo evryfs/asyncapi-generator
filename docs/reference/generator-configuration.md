@@ -12,11 +12,8 @@ Package fields and `outputFile` activate those categories. A configured request
 must activate at least one output; selecting a source profile alone does not
 generate anything.
 
-Maven, Gradle, and the CLI expose the public names documented on this page.
-They map those values to an internal `GeneratorConfigurationRequest`, whose
-shape is different: it contains typed profiles and nested model, schema, and
-client requests, and separates source, Java-source, and resource output
-directories. The internal object shape is not frontend configuration syntax.
+Maven, Gradle, and the CLI expose the public names documented on this page,
+and every diagnostic uses those names.
 
 ## Common frontend fields
 
@@ -300,9 +297,8 @@ fails instead of completing silently.
 
 ## Required combinations and diagnostics
 
-Frontend values are normalized before generation. Some core diagnostics use
-the internal path `models.packageName`; for Maven, Gradle, and CLI users this
-corresponds to the public `modelPackage` field.
+Diagnostics name the field as it is configured, for example `modelPackage`
+or `clientConfig.topicParameterProperties`.
 
 | Condition                                      | Required behavior or observable failure                                                                                                                                                                                                |
 |------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -314,7 +310,7 @@ corresponds to the public `modelPackage` field.
 | Document profile without `outputFile`          | `outputFile` is required for `asyncapi-yaml` and `asyncapi-json`. Model, client, and schema configuration are rejected.                                                                                                                |
 | `schemaPackage` with a regular source model    | Rejected. On source profiles it is supported only with `avro-specific-record` or `protobuf-message`.                                                                                                                                   |
 | Invalid package name                           | `modelPackage`, `clientPackage`, and `schemaPackage` must be dot-separated identifiers. Each segment starts with an ASCII letter or underscore and continues with ASCII letters, digits, or underscores. Empty values are rejected.    |
-| `modelConfig` without `modelPackage`           | Rejected with a required `models.packageName` diagnostic. `modelPackage` alone is valid and selects the profile default.                                                                                                               |
+| `modelConfig` without `modelPackage`           | Fails with `modelPackage is required when modelConfig is configured`. `modelPackage` alone is valid and selects the profile default.                                                                                                   |
 | Unsupported or incompatible `modelType`        | Accepted values are exactly those in [Model types](#model-types). A valid value from the other source profile is rejected with the supported values for the selected `generatorName`.                                                  |
 | Invalid `modelAnnotation`                      | Must be a fully qualified type name and requires `modelPackage`. It is supported only for `kotlin-data-class`, `java-class`, and `java-record`.                                                                                        |
 | Native Avro model package mismatch             | For `avro-specific-record`, every native Avro payload must declare a `namespace` equal to `modelPackage`; the generator cannot override the SpecificRecord package.                                                                    |
@@ -360,9 +356,8 @@ distinction between AsyncAPI Schema Objects and native schema payloads.
 
 ## Frontend mapping
 
-The three frontends map the following public concepts to the same typed core
-request. The table shows their actual configuration shapes; it does not expose
-the internal `GeneratorConfigurationRequest` fields.
+The three frontends map the following public concepts to the same core
+settings. The table shows their configuration shapes.
 
 | Concept                       | Maven XML                                                                                                                                               | Gradle Kotlin DSL                                                   | CLI                                                    |
 |-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|--------------------------------------------------------|

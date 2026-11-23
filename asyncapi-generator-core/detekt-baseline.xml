@@ -28,11 +28,6 @@
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
     <ID>LongMethod:GenerationPlanner.kt$GenerationPlanner$fun plan(configuration: GeneratorConfiguration): GenerationPlan</ID>
-    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$fun create(configuredRequest: GeneratorConfigurationRequest): GeneratorConfiguration</ID>
-    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun GeneratorConfigurationRequest.schemaGeneration( modelType: ModelType?, protobufModels: ProtobufModelGeneration?, ): List&lt;SchemaGeneration&gt;</ID>
-    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun validate(request: GeneratorConfigurationRequest)</ID>
-    <ID>LongMethod:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory$private fun validateProfileConfiguration(request: GeneratorConfigurationRequest)</ID>
-    <ID>LongMethod:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest.Companion$fun clients( clientType: String?, clientContract: String?, clientPackage: String?, modelPackage: String?, producerEnabled: Boolean? = null, producerAdditionalPayloadTypes: List&lt;String&gt;? = null, consumerEnabled: Boolean? = null, topicParameterProperties: Map&lt;String, String&gt; = emptyMap(), validationClientContract: String? = null, validationPayloadParameter: String? = null, ): Clients</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemaInterfacesPrinter(schemaInterfacesMap: Map&lt;String, SchemaInterface&gt;)</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
     <ID>LongMethod:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
@@ -130,7 +125,6 @@
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
     <ID>TooManyFunctions:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader</ID>
     <ID>TooManyFunctions:GeneratorConfigurationFactory.kt$GeneratorConfigurationFactory</ID>
-    <ID>TooManyFunctions:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Companion</ID>
     <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
     <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
@@ -178,15 +172,6 @@
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeAvroArtifacts : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$NativeProtobufArtifacts : GenerationTask</ID>
     <ID>UndocumentedPublicClass:GenerationTask.kt$GenerationTask$SpringKafkaClient : GenerationTask</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$AvroProjection</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Clients</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Kafka</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaConsumer</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaProducer</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$KafkaSpringKafka</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Models</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$NativeAvro</ID>
-    <ID>UndocumentedPublicClass:GeneratorConfigurationRequest.kt$GeneratorConfigurationRequest$Schemas</ID>
     <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Document : GeneratorProfile</ID>
     <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Schema : GeneratorProfile</ID>
     <ID>UndocumentedPublicClass:GeneratorProfile.kt$GeneratorProfile$Source : GeneratorProfile</ID>

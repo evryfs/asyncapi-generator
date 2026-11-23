@@ -2,18 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>LongMethod:CliGeneratorConfigurationMapper.kt$CliGeneratorConfigurationMapper$fun map(request: CliGeneratorConfigurationRequest): GeneratorConfiguration</ID>
-    <ID>LongMethod:CliOptions.kt$CliClientOptions$fun toConfiguration(): CliClientConfiguration?</ID>
-    <ID>SpreadOperator:CliOptions.kt$CliClientOptions$( *AdditionalProducerPayloadType.entries .map { payloadType -&gt; payloadType.configurationValue to payloadType.configurationValue } .toTypedArray(), )</ID>
-    <ID>SpreadOperator:CliOptions.kt$CliClientOptions$( *ClientContract.entries .map { clientContract -&gt; clientContract.configurationValue to clientContract } .toTypedArray(), )</ID>
-    <ID>SpreadOperator:CliOptions.kt$CliClientOptions$( *ClientType.entries .map { clientType -&gt; clientType.configurationValue to clientType } .toTypedArray(), )</ID>
-    <ID>SpreadOperator:CliOptions.kt$CliGenerationOptions$( *GeneratorName.entries .map { generatorName -&gt; generatorName.configurationValue to generatorName } .toTypedArray(), )</ID>
-    <ID>SpreadOperator:CliOptions.kt$CliModelOptions$( *ModelType.entries .map { modelType -&gt; modelType.configurationValue to modelType } .toTypedArray(), )</ID>
     <ID>SwallowedException:Main.kt$AsyncApiGeneratorCli$exception: IllegalArgumentException</ID>
-    <ID>ThrowsCount:CliGeneratorConfigurationMapper.kt$CliGeneratorConfigurationMapper$private fun validateCliConfiguration(request: CliGeneratorConfigurationRequest)</ID>
     <ID>TooGenericExceptionCaught:Main.kt$AsyncApiGeneratorCli$exception: Exception</ID>
-    <ID>UseRequire:CliGeneratorConfigurationMapper.kt$CliGeneratorConfigurationMapper$throw IllegalArgumentException( "outputDirectory must be a directory: ${request.outputDirectory}", )</ID>
-    <ID>UseRequire:CliGeneratorConfigurationMapper.kt$CliGeneratorConfigurationMapper$throw IllegalArgumentException("clientConfig is required when clientPackage is configured")</ID>
-    <ID>UseRequire:CliGeneratorConfigurationMapper.kt$CliGeneratorConfigurationMapper$throw IllegalArgumentException("outputFile must be a file: ${request.outputFile}")</ID>
   </CurrentIssues>
 </SmellBaseline>
