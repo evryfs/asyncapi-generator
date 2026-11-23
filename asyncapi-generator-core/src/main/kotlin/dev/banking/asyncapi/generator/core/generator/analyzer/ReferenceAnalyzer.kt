@@ -5,19 +5,20 @@ import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
+/**
+ * Adds every schema that [analyze]'s input references, directly or through
+ * other referenced schemas, under its generated name.
+ *
+ * A name is queued only when it is new, so each schema is searched once.
+ */
 internal class ReferenceAnalyzer {
+    /** [schemas] plus the schemas they reference; a name already present keeps its schema. */
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val discoveredSchemas = schemas.toMutableMap()
         val namesToProcess = discoveredSchemas.keys.toMutableList()
-        val processedSet = mutableSetOf<String>()
-
         while (namesToProcess.isNotEmpty()) {
-            val schemaName = namesToProcess.removeFirst()
-            if (schemaName in processedSet) continue
-            processedSet.add(schemaName)
-
-            val originalSchema = discoveredSchemas[schemaName] ?: continue
-            discoverReferencesInSchema(originalSchema, discoveredSchemas, namesToProcess)
+            val schema = discoveredSchemas.getValue(namesToProcess.removeFirst())
+            discoverReferencesInSchema(schema, discoveredSchemas, namesToProcess)
         }
         return discoveredSchemas
     }

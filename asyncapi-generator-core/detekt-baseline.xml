@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ComplexCondition:ConditionalNormalizer.kt$ConditionalNormalizer$thenProperty is SchemaInterface.SchemaReference &amp;&amp; elseProperty is SchemaInterface.SchemaReference &amp;&amp; thenProperty.reference.sourceId == elseProperty.reference.sourceId &amp;&amp; thenProperty.reference.ref == elseProperty.reference.ref</ID>
     <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
     <ID>CyclomaticComplexMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
@@ -15,8 +14,6 @@
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
-    <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
-    <ID>LongMethod:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
     <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
     <ID>LongMethod:DocumentationUtils.kt$DocumentationUtils$fun wrapForParamDoc( paramName: String, text: String, ): List&lt;String&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
@@ -24,7 +21,6 @@
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemaInterfacesPrinter(schemaInterfacesMap: Map&lt;String, SchemaInterface&gt;)</ID>
     <ID>LongMethod:GeneratorPrinter.kt$GeneratorPrinter$fun debugSchemasPrinter(schemas: Map&lt;String, Schema&gt;)</ID>
-    <ID>LongMethod:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
     <ID>LongMethod:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
@@ -49,8 +45,6 @@
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: SchemaInterface, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
-    <ID>LoopWithTooManyJumpStatements:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer$while</ID>
-    <ID>LoopWithTooManyJumpStatements:ReferenceAnalyzer.kt$ReferenceAnalyzer$while</ID>
     <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
     <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
@@ -80,9 +74,6 @@
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
-    <ID>ReturnCount:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
-    <ID>ReturnCount:ConditionalNormalizer.kt$ConditionalNormalizer$private fun normalizeSchema( schema: Schema, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>
-    <ID>ReturnCount:InlineSchemaAnalyzer.kt$InlineSchemaAnalyzer.Promotion$private fun promoteIfNeeded( schemaInterface: SchemaInterface, nameHint: String, owner: String, location: String, ): SchemaInterface</ID>
     <ID>ReturnCount:KafkaKeySchemaResolver.kt$KafkaKeySchemaResolver$fun resolveObjectModelOrNull( messageName: String, schema: SchemaInterface, ): KafkaKeyObjectModel?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveJavaTypeName(message: AnalyzedMessage): String?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveKotlinTypeName(message: AnalyzedMessage): String?</ID>
@@ -94,7 +85,6 @@
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
-    <ID>ReturnCount:SchemaClassification.kt$internal fun Schema.isOpenPayload(): Boolean</ID>
     <ID>ReturnCount:SourceIdentifierMapper.kt$SourceIdentifierMapper$fun toIdentifier(wireName: String): String</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
     <ID>ThrowsCount:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$private fun requireNativeSchema( output: String, generationInput: GenerationInput, supportedInput: String, isSupported: (MultiFormatSchema) -&gt; Boolean, )</ID>

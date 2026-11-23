@@ -50,11 +50,20 @@ Package `configuration` turns what a user configured into a
    client, and the Kafka key-model task, which a client needs when native Avro
    or Protobuf models carry the payloads. A request that only writes documents
    skips the remaining stages.
-2. **Prepare input** (`input`, `analyzer`, `normalizer`). `GenerationInputFactory`
-   collects the schemas and channels of the document, normalizes schemas, and
-   analyzes them: inline objects and enums are promoted to named schemas
-   (`InlineSchemaAnalyzer`), and polymorphic relationships are recorded. Name
-   collisions between different inline types fail here.
+2. **Prepare input** (`catalog`, `normalizer`, `analyzer`, `input`).
+   `GenerationInputFactory` builds the schema catalog, then analyzes channels:
+   - `SchemaCatalogLoader` declares every component schema and every message
+     payload under its generated name (the last pointer segment in PascalCase),
+     plus a model for each object Kafka key. Source models and contract
+     declarations claim names separately, and two different schemas under one
+     name fail with a name collision. A component schema used only in headers
+     gets no source model.
+   - `SchemaNormalizer` flattens `allOf` and projects if/then/else into plain
+     properties.
+   - `SchemaAnalyzer` adds the schemas they reference, infers `type: string`
+     for untyped string enums, promotes inline objects and enums to named
+     schemas (`InlineSchemaAnalyzer`; different inline types under one name
+     fail), and records which unions each schema belongs to.
 3. **Check compatibility** (`input`). `GenerationInputCompatibilityValidator`
    checks the prepared input against the planned tasks, for example that
    native payloads have an output that handles them and that native model
