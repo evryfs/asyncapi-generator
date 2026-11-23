@@ -126,8 +126,8 @@ the output directory when you need it to contain only the current output.
 
 | Option                                      | Description                                                         |
 |---------------------------------------------|---------------------------------------------------------------------|
-| `--client-type`                             | Client technology (`spring-kafka`)                                  |
-| `--client-contract`                         | Contract shape (`interface`)                                        |
+| `--client-type`                             | Client technology (`spring-kafka`, the default)                     |
+| `--client-contract`                         | Contract shape (`interface`, the default)                           |
 | `--generate-producer`                       | Enable producer generation                                          |
 | `--no-generate-producer`                    | Disable producer generation                                         |
 | `--generate-consumer`                       | Enable consumer generation                                          |

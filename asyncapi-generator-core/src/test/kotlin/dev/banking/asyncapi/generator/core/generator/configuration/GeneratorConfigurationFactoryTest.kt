@@ -190,9 +190,10 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `a minimal client config generates producers and consumers`() {
+    fun `a minimal client config generates Spring Kafka interfaces with producers and consumers`() {
         listOf(
             clientConfig(),
+            GeneratorSettings.ClientConfig(),
             clientConfig(
                 producer = GeneratorSettings.ProducerConfig(additionalPayloadTypes = emptyList()),
                 consumer = GeneratorSettings.ConsumerConfig(),
@@ -238,11 +239,6 @@ class GeneratorConfigurationFactoryTest {
         assertRejected(
             "modelPackage is required when clientPackage is configured",
             clientSettings(clientConfig()).copy(modelPackage = null),
-        )
-        assertRejected("clientConfig.clientType is required", clientSettings(clientConfig(clientType = null)))
-        assertRejected(
-            "clientConfig.clientContract is required",
-            clientSettings(clientConfig(clientContract = null)),
         )
         assertRejected(
             "Invalid clientConfig.producer.additionalPayloadTypes 'contract'. Supported values: byte-array, string",

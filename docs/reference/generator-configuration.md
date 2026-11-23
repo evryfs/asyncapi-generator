@@ -114,16 +114,16 @@ The `avro-schema` and `protobuf-schema` profiles are different: they require
 ## Spring Kafka client configuration
 
 Spring Kafka contract generation is available with the `java` and `kotlin`
-source profiles. Configure all four required public values:
+source profiles. Configure:
 
 - `clientPackage`, which activates client-contract output and names its package;
-- `modelPackage`, which names the payload types used by the contracts;
-- `clientConfig.clientType=spring-kafka`; and
-- `clientConfig.clientContract=interface`.
+- `modelPackage`, which names the payload types used by the contracts; and
+- `clientConfig`, the client settings.
 
-`spring-kafka` is the only supported `clientType`, and `interface` is the only
-supported `clientContract`. The combinations behave as follows in every
-frontend:
+`clientConfig.clientType` defaults to `spring-kafka` and
+`clientConfig.clientContract` to `interface`, their only supported values, so
+both can be omitted; any other explicit value fails. The combinations behave
+as follows in every frontend:
 
 - `clientPackage` without client settings fails with
   `clientConfig is required when clientPackage is configured`.
@@ -131,8 +131,8 @@ frontend:
   `modelPackage is required when clientPackage is configured`.
 - Client settings on an execution without `clientPackage` are ignored, and the
   frontend prints the `unused-client-config` warning described in
-  [Configuration warnings](#configuration-warnings). Incomplete client
-  settings, such as a `clientType` without a `clientContract`, still fail.
+  [Configuration warnings](#configuration-warnings). Invalid client
+  settings, such as an unsupported `clientType`, still fail.
 
 Gradle accepts `clientConfig` only directly under `asyncApiGenerator`, where it
 is shared by every execution. Maven accepts `clientConfig` in an execution or
@@ -317,8 +317,8 @@ or `clientConfig.topicParameterProperties`.
 | Native Protobuf model package mismatch         | For `protobuf-message`, `modelPackage` must equal `option java_package`, or the Protobuf `package` when that option is absent. Model generation also requires `option java_multiple_files = true`.                                     |
 | `clientPackage` without client settings        | Fails with `clientConfig is required when clientPackage is configured`. Maven needs the `clientConfig` element, Gradle the shared `clientConfig` block, and the CLI the client flags.                                                  |
 | `clientPackage` without `modelPackage`         | Fails with `modelPackage is required when clientPackage is configured`.                                                                                                                                                                |
-| Incomplete client settings                     | Whenever client settings are present, `clientType=spring-kafka` and `clientContract=interface` are both required, even on an execution without `clientPackage`.                                                                      |
-| Client settings without `clientPackage`        | Not an error. The settings are ignored and the `unused-client-config` warning is printed unless suppressed.                                                                                                                           |
+| Invalid client settings                        | Any `clientType` other than `spring-kafka` or `clientContract` other than `interface` fails, even on an execution without `clientPackage`. Omitted, both take those values.                                                            |
+| Client settings without `clientPackage`        | Not an error. The settings are ignored and the `unused-client-config` warning is printed unless suppressed.                                                                                                                            |
 | Unknown `suppressedWarnings` id                | Fails with `Invalid suppressedWarnings '<id>'` and the supported ids.                                                                                                                                                                  |
 | Both producer and consumer disabled            | Rejected: Spring Kafka client generation requires at least one enabled contract.                                                                                                                                                       |
 | Invalid additional producer payload            | `clientConfig.producer.additionalPayloadTypes` accepts only `byte-array` and `string`. Duplicates are removed.                                                                                                                         |
@@ -332,8 +332,8 @@ or `clientConfig.topicParameterProperties`.
 |------------------------------------------------|-----------------------------------------------------------------------------------------------------|
 | `generatorName`                                | `java`, `kotlin`, `avro-schema`, `protobuf-schema`, `json-schema`, `asyncapi-yaml`, `asyncapi-json` |
 | `modelConfig.modelType`                        | `kotlin-data-class`, `java-class`, `java-record`, `avro-specific-record`, `protobuf-message`        |
-| `clientConfig.clientType`                      | `spring-kafka`                                                                                      |
-| `clientConfig.clientContract`                  | `interface`                                                                                         |
+| `clientConfig.clientType`                      | `spring-kafka` (default)                                                                            |
+| `clientConfig.clientContract`                  | `interface` (default)                                                                               |
 | `clientConfig.producer.additionalPayloadTypes` | `byte-array`, `string`                                                                              |
 | `suppressedWarnings`                           | `unused-client-config`                                                                              |
 

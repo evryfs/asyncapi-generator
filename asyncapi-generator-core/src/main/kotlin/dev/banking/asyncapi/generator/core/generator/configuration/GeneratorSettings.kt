@@ -47,8 +47,8 @@ data class GeneratorSettings(
     /**
      * The `clientConfig` settings.
      *
-     * @param clientType the client technology.
-     * @param clientContract the shape of the generated client contracts.
+     * @param clientType the client technology; `spring-kafka` when omitted.
+     * @param clientContract the shape of the generated client contracts; `interface` when omitted.
      * @param producer the producer settings, or `null` when none are configured.
      * @param consumer the consumer settings, or `null` when none are configured.
      * @param topicParameterProperties channel parameter names mapped to Spring property names.
