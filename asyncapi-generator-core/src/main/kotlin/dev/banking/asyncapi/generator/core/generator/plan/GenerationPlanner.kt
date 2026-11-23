@@ -6,8 +6,15 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
 
 /**
  * Creates an ordered generation plan from generator options.
+ *
+ * Tasks refer to the configuration values they plan. The planner decides only
+ * the order (document, models, Kafka key models, client, schemas), the source
+ * language of client tasks, and whether Kafka key models are needed: they are
+ * when a client uses native Avro or Protobuf payload models, which do not
+ * cover the message keys.
  */
 class GenerationPlanner {
+    /** The tasks [configuration] asks for, in render order. */
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
