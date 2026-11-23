@@ -7,11 +7,11 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import java.nio.file.Path
 import kotlin.io.path.extension
 import kotlin.io.path.isRegularFile
@@ -37,7 +37,7 @@ internal class SpringKafkaClientOutputFixtures(
         validationAnnotations: ClientValidationAnnotations = defaultValidationAnnotations,
         topicParameterProperties: TopicParameterProperties = defaultTopicParameterProperties,
         additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
-        javaModelType: JavaModelType = JavaModelType.CLASS,
+        modelType: ModelType = language.defaultModelType,
     ): GeneratedSpringKafkaContracts {
         generator.generate(
             bundled = bundlerFixtures.bundledDocument(contractPath),
@@ -52,7 +52,7 @@ internal class SpringKafkaClientOutputFixtures(
                     models =
                         ModelGeneration.Enabled(
                             packageName = MODEL_PACKAGE,
-                            javaModelType = javaModelType,
+                            modelType = modelType,
                         ),
                     clients =
                         listOf(

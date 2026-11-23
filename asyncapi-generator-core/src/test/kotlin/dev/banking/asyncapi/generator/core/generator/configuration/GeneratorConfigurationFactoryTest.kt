@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName.JAVA
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -263,7 +261,7 @@ class GeneratorConfigurationFactoryTest {
                         value = "com.example.NoArg",
                         path = "modelConfig.modelAnnotation",
                     ),
-                javaModelType = JavaModelType.CLASS,
+                modelType = ModelType.KOTLIN_DATA_CLASS,
             ),
             configuration.models,
         )
@@ -287,7 +285,7 @@ class GeneratorConfigurationFactoryTest {
         assertEquals(
             ModelGeneration.Enabled(
                 packageName = "com.example.model",
-                javaModelType = JavaModelType.RECORD,
+                modelType = ModelType.JAVA_RECORD,
             ),
             configuration.models,
         )

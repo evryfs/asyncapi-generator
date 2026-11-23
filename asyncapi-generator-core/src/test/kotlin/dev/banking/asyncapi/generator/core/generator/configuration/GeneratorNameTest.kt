@@ -1,8 +1,5 @@
-package dev.banking.asyncapi.generator.core.generator.model
+package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

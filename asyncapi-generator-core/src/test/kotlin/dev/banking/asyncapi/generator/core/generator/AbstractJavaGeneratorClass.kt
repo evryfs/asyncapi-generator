@@ -6,10 +6,10 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ClientGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import java.io.File
 
 abstract class AbstractJavaGeneratorClass {
@@ -28,7 +28,7 @@ abstract class AbstractJavaGeneratorClass {
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
-        javaModelType: JavaModelType = JavaModelType.CLASS,
+        modelType: ModelType = ModelType.JAVA_CLASS,
     ): String {
         val bundled = bundlerFixtures.bundledDocument(yaml)
         val effectiveClientPackage = clientPackage ?: modelPackage
@@ -51,7 +51,7 @@ abstract class AbstractJavaGeneratorClass {
                                         path = "modelConfig.modelAnnotation",
                                     )
                                 },
-                            javaModelType = javaModelType,
+                            modelType = modelType,
                         )
                     } else {
                         ModelGeneration.Disabled

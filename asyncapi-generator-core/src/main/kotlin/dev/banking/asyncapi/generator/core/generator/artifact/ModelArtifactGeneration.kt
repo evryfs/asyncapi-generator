@@ -1,13 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.JAVA
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinitionFactory
 import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.JAVA
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog

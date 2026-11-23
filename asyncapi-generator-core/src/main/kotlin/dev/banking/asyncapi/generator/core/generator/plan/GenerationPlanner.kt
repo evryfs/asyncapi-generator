@@ -2,7 +2,9 @@ package dev.banking.asyncapi.generator.core.generator.plan
 
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
+import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 
 /**
@@ -32,7 +34,7 @@ class GenerationPlanner {
                                 language = configuration.requireSourceLanguage(),
                                 packageName = models.packageName,
                                 annotation = models.annotation,
-                                javaModelType = models.javaModelType,
+                                javaModelType = models.modelType.javaModelType(),
                             ),
                         )
                 }
@@ -108,6 +110,9 @@ class GenerationPlanner {
                 -> false
             }
         }
+
+    private fun ModelType.javaModelType(): JavaModelType =
+        if (this == ModelType.JAVA_RECORD) JavaModelType.RECORD else JavaModelType.CLASS
 
     private fun GeneratorConfiguration.requireSourceLanguage() =
         requireNotNull(sourceLanguage) {

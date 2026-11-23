@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import java.io.File
 
 abstract class AbstractAvroGeneratorClass {

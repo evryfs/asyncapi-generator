@@ -11,12 +11,13 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutp
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
@@ -64,7 +65,11 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            modelType = ModelType.KOTLIN_DATA_CLASS,
+                        ),
                     schemas = listOf(SchemaGeneration.AvroProjection(packageName = "com.example.schema")),
                 ),
             )
@@ -218,6 +223,7 @@ class GenerationPlannerTest {
                     models =
                         ModelGeneration.Enabled(
                             packageName = "com.example.model",
+                            modelType = ModelType.KOTLIN_DATA_CLASS,
                             annotation =
                                 QualifiedTypeName.fromConfigurationValue(
                                     value = "com.example.NoArg",
@@ -252,7 +258,7 @@ class GenerationPlannerTest {
                     models =
                         ModelGeneration.Enabled(
                             packageName = "com.example.model",
-                            javaModelType = JavaModelType.RECORD,
+                            modelType = ModelType.JAVA_RECORD,
                         ),
                 ),
             )
@@ -356,7 +362,11 @@ class GenerationPlannerTest {
             planner.plan(
                 generatorConfiguration(
                     language = SourceLanguage.JAVA,
-                    models = ModelGeneration.Enabled(packageName = "com.example.model"),
+                    models =
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            modelType = ModelType.JAVA_CLASS,
+                        ),
                     clients =
                         listOf(
                             kafkaClientGeneration(),

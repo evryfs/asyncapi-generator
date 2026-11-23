@@ -12,8 +12,8 @@ import com.github.ajalt.clikt.parameters.types.file
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
 import java.io.File
 
 /**

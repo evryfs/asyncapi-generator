@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.java
 import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
 import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import dev.banking.asyncapi.generator.core.generator.AbstractJavaGeneratorClass
-import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -42,7 +42,7 @@ class JavaModelApprovalTest : AbstractJavaGeneratorClass() {
                 codegenOutputDirectory = tempDir.resolve("record-sources").toFile(),
                 resourceOutputDirectory = tempDir.resolve("record-resources").toFile(),
                 modelPackage = "dev.banking.asyncapi.generator.core.model.generated.transaction",
-                javaModelType = JavaModelType.RECORD,
+                modelType = ModelType.JAVA_RECORD,
             )
 
         assertTrue(generated.isNotBlank())

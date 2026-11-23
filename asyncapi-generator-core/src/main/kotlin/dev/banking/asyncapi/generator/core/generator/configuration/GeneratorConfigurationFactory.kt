@@ -1,7 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
-import dev.banking.asyncapi.generator.core.generator.model.SourceLanguage
-
 /**
  * Assembles core generator configuration from frontend-neutral requests.
  */
@@ -50,7 +48,7 @@ object GeneratorConfigurationFactory {
                                 )
                             },
                     ),
-                models = request.jvmModels(modelType, modelAnnotation),
+                models = request.sourceModels(modelType, modelAnnotation),
                 schemas = request.schemaGeneration(modelType, protobufModels),
                 clients =
                     buildList {
@@ -247,16 +245,10 @@ object GeneratorConfigurationFactory {
         modelType: ModelType?,
     ): QualifiedTypeName? {
         val annotation = request.models?.annotation ?: return null
-        require(
-            modelType in
-                setOf(
-                    ModelType.KOTLIN_DATA_CLASS,
-                    ModelType.JAVA_CLASS,
-                    ModelType.JAVA_RECORD,
-                ),
-        ) {
-            "modelConfig.modelAnnotation is only supported for kotlin-data-class, java-class, " +
-                "and java-record model types"
+        require(modelType?.supportsAnnotation == true) {
+            val annotated = ModelType.entries.filter { it.supportsAnnotation }.map { it.configurationValue }
+            "modelConfig.modelAnnotation is only supported for " +
+                annotated.dropLast(1).joinToString(", ") + ", and ${annotated.last()} model types"
         }
 
         return QualifiedTypeName.fromConfigurationValue(
@@ -265,32 +257,21 @@ object GeneratorConfigurationFactory {
         )
     }
 
-    private fun GeneratorConfigurationRequest.jvmModels(
+    private fun GeneratorConfigurationRequest.sourceModels(
         modelType: ModelType?,
         modelAnnotation: QualifiedTypeName?,
-    ): ModelGeneration =
-        models?.packageName?.let { packageName ->
-            when (modelType) {
-                ModelType.KOTLIN_DATA_CLASS,
-                ModelType.JAVA_CLASS,
-                ->
-                    ModelGeneration.Enabled(
-                        packageName = packageName,
-                        annotation = modelAnnotation,
-                        javaModelType = JavaModelType.CLASS,
-                    )
-                ModelType.JAVA_RECORD ->
-                    ModelGeneration.Enabled(
-                        packageName = packageName,
-                        annotation = modelAnnotation,
-                        javaModelType = JavaModelType.RECORD,
-                    )
-                ModelType.AVRO_SPECIFIC_RECORD,
-                ModelType.PROTOBUF_MESSAGE,
-                null,
-                -> ModelGeneration.Disabled
-            }
-        } ?: ModelGeneration.Disabled
+    ): ModelGeneration {
+        val packageName = models?.packageName
+        return if (packageName != null && modelType?.language != null) {
+            ModelGeneration.Enabled(
+                packageName = packageName,
+                annotation = modelAnnotation,
+                modelType = modelType,
+            )
+        } else {
+            ModelGeneration.Disabled
+        }
+    }
 
     private fun GeneratorConfigurationRequest.protobufModels(modelType: ModelType?): ProtobufModelGeneration? =
         models
@@ -300,7 +281,7 @@ object GeneratorConfigurationFactory {
                 ProtobufModelGeneration(
                     packageName = packageName,
                     modelType =
-                        when (GeneratorSourceLanguageResolver.resolve(generatorName)) {
+                        when (checkNotNull(generatorName.sourceLanguage)) {
                             SourceLanguage.KOTLIN -> ProtobufModelType.KOTLIN
                             SourceLanguage.JAVA -> ProtobufModelType.JAVA
                         },

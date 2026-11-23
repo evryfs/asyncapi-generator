@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.gradle.plugin
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationRequest
-import dev.banking.asyncapi.generator.core.generator.model.GeneratorName
+import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import java.io.File
 

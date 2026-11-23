@@ -1,8 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.model
-
-import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
-import dev.banking.asyncapi.generator.core.generator.configuration.SchemaType
+package dev.banking.asyncapi.generator.core.generator.configuration
 
 /**
  * Generator implementation selected by user-facing configuration.
@@ -40,6 +36,10 @@ enum class GeneratorName(
         profile = GeneratorProfile.Document(DocumentFormat.JSON),
     ),
     ;
+
+    /** The language a source generator writes, or `null` for a schema or document generator. */
+    val sourceLanguage: SourceLanguage?
+        get() = (profile as? GeneratorProfile.Source)?.language
 
     companion object {
         val supportedConfigurationValues: List<String> = entries.map { it.configurationValue }
