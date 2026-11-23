@@ -394,13 +394,10 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            clients =
-                                listOf(
-                                    ClientGeneration.Kafka(
-                                        packageName = "com.example.kafka",
-                                        modelPackageName = "com.example.model",
-                                        springKafka = ClientGeneration.SpringKafka(),
-                                    ),
+                            client =
+                                ClientGeneration(
+                                    packageName = "com.example.kafka",
+                                    modelPackageName = "com.example.model",
                                 ),
                         ),
                 )
@@ -424,13 +421,10 @@ class AsyncApiGeneratorOutputContractTest {
                         generatorConfiguration(
                             sourceOutputDirectory = sourceOutputDirectory,
                             resourceOutputDirectory = resourceOutputDirectory,
-                            clients =
-                                listOf(
-                                    ClientGeneration.Kafka(
-                                        packageName = "com.example.kafka",
-                                        modelPackageName = "com.example.model",
-                                        springKafka = ClientGeneration.SpringKafka(),
-                                    ),
+                            client =
+                                ClientGeneration(
+                                    packageName = "com.example.kafka",
+                                    modelPackageName = "com.example.model",
                                 ),
                         ),
                 )
@@ -841,13 +835,10 @@ class AsyncApiGeneratorOutputContractTest {
                 generatorConfiguration(
                     sourceOutputDirectory = sourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
-                    clients =
-                        listOf(
-                            ClientGeneration.Kafka(
-                                packageName = "com.example.kafka",
-                                modelPackageName = "com.example.model",
-                                springKafka = ClientGeneration.SpringKafka(),
-                            ),
+                    client =
+                        ClientGeneration(
+                            packageName = "com.example.kafka",
+                            modelPackageName = "com.example.model",
                         ),
                 ),
         )
@@ -870,13 +861,10 @@ class AsyncApiGeneratorOutputContractTest {
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
-                    clients =
-                        listOf(
-                            ClientGeneration.Kafka(
-                                packageName = "com.example.kafka",
-                                modelPackageName = "com.example.model",
-                                springKafka = ClientGeneration.SpringKafka(),
-                            ),
+                    client =
+                        ClientGeneration(
+                            packageName = "com.example.kafka",
+                            modelPackageName = "com.example.model",
                         ),
                 ),
         )
@@ -909,13 +897,10 @@ class AsyncApiGeneratorOutputContractTest {
                     javaSourceOutputDirectory = javaSourceOutputDirectory,
                     resourceOutputDirectory = resourceOutputDirectory,
                     schemas = listOf(SchemaGeneration.NativeProtobuf(models = protobufModels)),
-                    clients =
-                        listOf(
-                            ClientGeneration.Kafka(
-                                packageName = "com.example.kafka",
-                                modelPackageName = "com.example.protobuf",
-                                springKafka = ClientGeneration.SpringKafka(),
-                            ),
+                    client =
+                        ClientGeneration(
+                            packageName = "com.example.kafka",
+                            modelPackageName = "com.example.protobuf",
                         ),
                 ),
         )
@@ -1070,7 +1055,7 @@ class AsyncApiGeneratorOutputContractTest {
         javaSourceOutputDirectory: File = sourceOutputDirectory,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
-        clients: List<ClientGeneration> = emptyList(),
+        client: ClientGeneration? = null,
     ): GeneratorConfiguration =
         GeneratorConfiguration(
             profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
@@ -1082,7 +1067,7 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
             models = models,
             schemas = schemas,
-            clients = clients,
+            client = client,
         )
 
     private fun documentGeneratorConfiguration(

@@ -7,6 +7,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GeneratorConfigurationFactoryTest {
@@ -324,14 +325,8 @@ class GeneratorConfigurationFactoryTest {
             )
 
         assertEquals(
-            listOf(
-                ClientGeneration.Kafka(
-                    packageName = "com.example.client",
-                    modelPackageName = "com.example.model",
-                    springKafka = ClientGeneration.SpringKafka(),
-                ),
-            ),
-            configuration.clients,
+            ClientGeneration(packageName = "com.example.client", modelPackageName = "com.example.model"),
+            configuration.client,
         )
     }
 
@@ -353,14 +348,8 @@ class GeneratorConfigurationFactoryTest {
             )
 
         assertEquals(
-            listOf(
-                ClientGeneration.Kafka(
-                    packageName = "com.example.client",
-                    modelPackageName = "com.example.external.model",
-                    springKafka = ClientGeneration.SpringKafka(),
-                ),
-            ),
-            configuration.clients,
+            ClientGeneration(packageName = "com.example.client", modelPackageName = "com.example.external.model"),
+            configuration.client,
         )
     }
 
@@ -406,28 +395,23 @@ class GeneratorConfigurationFactoryTest {
             )
 
         assertEquals(
-            listOf(
-                ClientGeneration.Kafka(
-                    packageName = "com.example.client",
-                    modelPackageName = "com.example.model",
-                    springKafka =
-                        ClientGeneration.SpringKafka(
-                            clientContract = ClientContract.INTERFACE,
-                            topicParameterProperties =
-                                TopicParameterProperties.fromConfigurationValues(
-                                    values = mapOf("environment" to "kafka.environment"),
-                                    path = "clients.kafka.springKafka.topicParameterProperties",
-                                ),
-                            validationAnnotations = validationAnnotations,
-                            producer =
-                                ClientGeneration.Producer(
-                                    enabled = false,
-                                ),
-                            consumer = ClientGeneration.Consumer(enabled = true),
-                        ),
-                ),
+            ClientGeneration(
+                packageName = "com.example.client",
+                modelPackageName = "com.example.model",
+                clientContract = ClientContract.INTERFACE,
+                topicParameterProperties =
+                    TopicParameterProperties.fromConfigurationValues(
+                        values = mapOf("environment" to "kafka.environment"),
+                        path = "clients.kafka.springKafka.topicParameterProperties",
+                    ),
+                validationAnnotations = validationAnnotations,
+                producer =
+                    ClientGeneration.Producer(
+                        enabled = false,
+                    ),
+                consumer = ClientGeneration.Consumer(enabled = true),
             ),
-            configuration.clients,
+            configuration.client,
         )
     }
 
@@ -459,11 +443,7 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        val springKafka =
-            configuration.clients
-                .filterIsInstance<ClientGeneration.Kafka>()
-                .single()
-                .springKafka
+        val springKafka = configuration.client
         assertEquals(
             listOf(
                 AdditionalProducerPayloadType.BYTE_ARRAY,
@@ -496,11 +476,7 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        val springKafka =
-            configuration.clients
-                .filterIsInstance<ClientGeneration.Kafka>()
-                .single()
-                .springKafka
+        val springKafka = configuration.client
         assertEquals(emptySet(), springKafka?.producer?.additionalPayloadTypes)
     }
 
@@ -707,7 +683,7 @@ class GeneratorConfigurationFactoryTest {
                 ),
             )
 
-        assertTrue(configuration.clients.isEmpty())
+        assertNull(configuration.client)
         assertEquals(listOf(ConfigurationWarningId.UNUSED_CLIENT_CONFIG), configuration.warnings.map { it.id })
         val warning = configuration.warnings.single()
         assertTrue("unused-client-config" in warning.message)

@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.gradle.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -45,8 +44,7 @@ class GradleGeneratorConfigurationMapperTest {
                     ),
             )
 
-        val kafka = configuration.clients.single() as ClientGeneration.Kafka
-        val springKafka = requireNotNull(kafka.springKafka)
+        val springKafka = requireNotNull(configuration.client)
 
         assertFalse(springKafka.producer.enabled)
         assertEquals(
