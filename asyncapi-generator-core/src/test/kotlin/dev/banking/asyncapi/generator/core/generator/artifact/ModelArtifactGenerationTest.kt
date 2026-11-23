@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
@@ -25,9 +26,11 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        packageName = "com.example.model",
-                        annotation = modelAnnotation,
-                        modelType = ModelType.KOTLIN_DATA_CLASS,
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            annotation = modelAnnotation,
+                            modelType = ModelType.KOTLIN_DATA_CLASS,
+                        ),
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )
@@ -44,9 +47,11 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        packageName = "com.example.model",
-                        annotation = modelAnnotation,
-                        modelType = ModelType.JAVA_CLASS,
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            annotation = modelAnnotation,
+                            modelType = ModelType.JAVA_CLASS,
+                        ),
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )
@@ -85,9 +90,11 @@ class ModelArtifactGenerationTest {
             generation.renderModelArtifacts(
                 task =
                     GenerationTask.ModelArtifacts(
-                        packageName = "com.example.model",
-                        annotation = modelAnnotation,
-                        modelType = ModelType.JAVA_RECORD,
+                        ModelGeneration.Enabled(
+                            packageName = "com.example.model",
+                            annotation = modelAnnotation,
+                            modelType = ModelType.JAVA_RECORD,
+                        ),
                     ),
                 generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
             )

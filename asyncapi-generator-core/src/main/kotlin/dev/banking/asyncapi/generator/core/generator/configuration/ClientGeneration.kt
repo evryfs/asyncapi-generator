@@ -5,7 +5,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * @param packageName the package of the generated client contracts.
  * @param modelPackageName the package of the payload models the contracts use.
- * @param clientContract the shape of the generated contracts.
  * @param topicParameterProperties Spring property names for parameters in Kafka topic addresses.
  * @param validationAnnotations annotations placed on the contracts and their payload parameters.
  * @param producer the producer contract settings.
@@ -14,7 +13,6 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 data class ClientGeneration(
     val packageName: String,
     val modelPackageName: String,
-    val clientContract: ClientContract = ClientContract.INTERFACE,
     val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,
     val validationAnnotations: ClientValidationAnnotations = ClientValidationAnnotations(),
     val producer: Producer = Producer(),

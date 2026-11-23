@@ -13,73 +13,24 @@ class GenerationPlanner {
             buildList {
                 val hasNativePayloadModels = configuration.hasNativePayloadModels()
 
-                configuration.output.document?.let { document ->
-                    add(
-                        GenerationTask.DocumentArtifact(
-                            file = document.file,
-                            format = document.format,
-                        ),
-                    )
-                }
-
-                when (val models = configuration.models) {
-                    ModelGeneration.Disabled -> Unit
-                    is ModelGeneration.Enabled ->
-                        add(
-                            GenerationTask.ModelArtifacts(
-                                packageName = models.packageName,
-                                annotation = models.annotation,
-                                modelType = models.modelType,
-                            ),
-                        )
-                }
-
+                configuration.output.document?.let { add(GenerationTask.DocumentArtifact(it)) }
+                (configuration.models as? ModelGeneration.Enabled)?.let { add(GenerationTask.ModelArtifacts(it)) }
                 configuration.client?.let { client ->
+                    val language = configuration.requireSourceLanguage()
                     if (hasNativePayloadModels) {
-                        add(
-                            GenerationTask.KafkaKeyModelArtifacts(
-                                language = configuration.requireSourceLanguage(),
-                                packageName = client.modelPackageName,
-                            ),
-                        )
+                        add(GenerationTask.KafkaKeyModelArtifacts(language, client.modelPackageName))
                     }
-                    add(
-                        GenerationTask.SpringKafkaClient(
-                            language = configuration.requireSourceLanguage(),
-                            clientPackage = client.packageName,
-                            modelPackage = client.modelPackageName,
-                            generateProducers = client.producer.enabled,
-                            additionalPayloadTypes = client.producer.additionalPayloadTypes,
-                            generateConsumers = client.consumer.enabled,
-                            clientContract = client.clientContract,
-                            topicParameterProperties = client.topicParameterProperties,
-                            validationAnnotations = client.validationAnnotations,
-                        ),
-                    )
+                    add(GenerationTask.SpringKafkaClient(language, client))
                 }
-
                 configuration.schemas.forEach { schema ->
-                    when (schema) {
-                        is SchemaGeneration.AvroProjection ->
-                            add(GenerationTask.AvroSchemaArtifacts(schema.packageName))
-                        is SchemaGeneration.NativeAvro ->
-                            add(
-                                GenerationTask.NativeAvroArtifacts(
-                                    generateSpecificRecords = schema.generateSpecificRecords,
-                                    modelPackageName = schema.modelPackageName,
-                                    schemaPackageName = schema.schemaPackageName,
-                                ),
-                            )
-                        is SchemaGeneration.NativeProtobuf ->
-                            add(
-                                GenerationTask.NativeProtobufArtifacts(
-                                    models = schema.models,
-                                    schemaPackageName = schema.schemaPackageName,
-                                ),
-                            )
-                        is SchemaGeneration.JsonSchema ->
-                            add(GenerationTask.JsonSchemaArtifacts(schema.packageName))
-                    }
+                    add(
+                        when (schema) {
+                            is SchemaGeneration.AvroProjection -> GenerationTask.AvroSchemaArtifacts(schema)
+                            is SchemaGeneration.NativeAvro -> GenerationTask.NativeAvroArtifacts(schema)
+                            is SchemaGeneration.NativeProtobuf -> GenerationTask.NativeProtobufArtifacts(schema)
+                            is SchemaGeneration.JsonSchema -> GenerationTask.JsonSchemaArtifacts(schema)
+                        },
+                    )
                 }
             },
         )

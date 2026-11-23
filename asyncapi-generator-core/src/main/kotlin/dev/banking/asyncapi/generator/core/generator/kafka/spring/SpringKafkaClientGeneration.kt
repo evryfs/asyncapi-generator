@@ -20,23 +20,23 @@ internal class SpringKafkaClientGeneration {
         when (task.language) {
             KOTLIN ->
                 KotlinSpringKafkaGenerator(
-                    clientPackage = task.clientPackage,
-                    modelPackage = task.modelPackage,
-                    generateProducers = task.generateProducers,
-                    additionalPayloadTypes = task.additionalPayloadTypes,
-                    generateConsumers = task.generateConsumers,
-                    topicParameterProperties = task.topicParameterProperties,
-                    validationAnnotations = task.validationAnnotations,
+                    clientPackage = task.client.packageName,
+                    modelPackage = task.client.modelPackageName,
+                    generateProducers = task.client.producer.enabled,
+                    additionalPayloadTypes = task.client.producer.additionalPayloadTypes,
+                    generateConsumers = task.client.consumer.enabled,
+                    topicParameterProperties = task.client.topicParameterProperties,
+                    validationAnnotations = task.client.validationAnnotations,
                 )
             JAVA ->
                 JavaSpringKafkaGenerator(
-                    clientPackage = task.clientPackage,
-                    modelPackage = task.modelPackage,
-                    generateProducers = task.generateProducers,
-                    additionalPayloadTypes = task.additionalPayloadTypes,
-                    generateConsumers = task.generateConsumers,
-                    topicParameterProperties = task.topicParameterProperties,
-                    validationAnnotations = task.validationAnnotations,
+                    clientPackage = task.client.packageName,
+                    modelPackage = task.client.modelPackageName,
+                    generateProducers = task.client.producer.enabled,
+                    additionalPayloadTypes = task.client.producer.additionalPayloadTypes,
+                    generateConsumers = task.client.consumer.enabled,
+                    topicParameterProperties = task.client.topicParameterProperties,
+                    validationAnnotations = task.client.validationAnnotations,
                 )
         }
 }

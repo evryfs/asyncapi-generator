@@ -36,11 +36,11 @@ internal object SpringKafkaClientMethodNameValidator {
 
     private fun MessageIdentity.generatedMethods(task: GenerationTask.SpringKafkaClient): List<GeneratedMethod> =
         buildList {
-            if (task.generateProducers) {
+            if (task.client.producer.enabled) {
                 producerPayloadMethods(
                     messageName = generatedName,
                     hasPayload = hasPayload,
-                    additionalPayloadTypes = task.additionalPayloadTypes,
+                    additionalPayloadTypes = task.client.producer.additionalPayloadTypes,
                 ).forEach { producerMethod ->
                     add(
                         GeneratedMethod(
@@ -51,7 +51,7 @@ internal object SpringKafkaClientMethodNameValidator {
                     )
                 }
             }
-            if (task.generateConsumers) {
+            if (task.client.consumer.enabled) {
                 add(
                     GeneratedMethod(
                         messageId = messageId,

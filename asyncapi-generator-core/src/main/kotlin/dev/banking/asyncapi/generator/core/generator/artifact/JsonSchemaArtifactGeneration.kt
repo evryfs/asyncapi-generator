@@ -17,6 +17,6 @@ internal class JsonSchemaArtifactGeneration(
     ): GenerationResult =
         jsonSchemaGenerator.render(
             schemaDeclarations = generationInput.schemaDeclarations,
-            packageName = task.packageName,
+            packageName = task.schema.packageName,
         )
 }

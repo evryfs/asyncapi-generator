@@ -55,13 +55,11 @@ internal class GenerationInputCompatibilityValidator(
                         channels = generationInput.channels,
                         task = task,
                     )
-                    if (task.generateProducers || task.generateConsumers) {
-                        rejectUnsupportedMultiFormatMessages(
-                            output = "Spring Kafka client generation",
-                            generationInput = generationInput,
-                        )
-                        validateSpringKafkaKeyPatterns(generationInput)
-                    }
+                    rejectUnsupportedMultiFormatMessages(
+                        output = "Spring Kafka client generation",
+                        generationInput = generationInput,
+                    )
+                    validateSpringKafkaKeyPatterns(generationInput)
                 }
                 is GenerationTask.AvroSchemaArtifacts -> {
                     rejectUnplannedAvroProjectionFormats(
@@ -78,7 +76,7 @@ internal class GenerationInputCompatibilityValidator(
                 }
                 is GenerationTask.NativeAvroArtifacts -> {
                     if (
-                        task.generateSpecificRecords ||
+                        task.schema.generateSpecificRecords ||
                         !hasAvroProjection ||
                         generationInput.schemas.isEmpty()
                     ) {
@@ -89,10 +87,10 @@ internal class GenerationInputCompatibilityValidator(
                             isSupported = { schema -> schema.format.isNativeAvro },
                         )
                     }
-                    if (task.generateSpecificRecords && task.modelPackageName != null) {
+                    if (task.schema.generateSpecificRecords && task.schema.modelPackageName != null) {
                         validateNativeAvroModelPackage(
                             generationInput = generationInput,
-                            configuredPackage = task.modelPackageName,
+                            configuredPackage = task.schema.modelPackageName,
                         )
                     }
                 }
@@ -317,12 +315,7 @@ internal class GenerationInputCompatibilityValidator(
         generationInput: GenerationInput,
         generationPlan: GenerationPlan,
     ): Set<String> {
-        val hasActiveSpringKafka =
-            generationPlan.tasks.any { task ->
-                task is GenerationTask.SpringKafkaClient &&
-                    (task.generateProducers || task.generateConsumers)
-            }
-        if (!hasActiveSpringKafka) return emptySet()
+        if (generationPlan.tasks.none { it is GenerationTask.SpringKafkaClient }) return emptySet()
 
         return generationInput.channels
             .asSequence()

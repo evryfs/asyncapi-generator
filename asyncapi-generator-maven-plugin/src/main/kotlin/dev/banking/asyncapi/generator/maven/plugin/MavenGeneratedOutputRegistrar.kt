@@ -64,9 +64,9 @@ internal class MavenGeneratedOutputRegistrar(
             is GenerationTask.SpringKafkaClient,
             -> listOf(output.sourceOutputDirectory)
             is GenerationTask.NativeAvroArtifacts ->
-                listOfNotNull(output.javaSourceOutputDirectory.takeIf { generateSpecificRecords })
+                listOfNotNull(output.javaSourceOutputDirectory.takeIf { schema.generateSpecificRecords })
             is GenerationTask.NativeProtobufArtifacts ->
-                models
+                schema.models
                     ?.let { modelGeneration ->
                         buildList {
                             add(output.javaSourceOutputDirectory)

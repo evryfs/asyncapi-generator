@@ -17,9 +17,9 @@ internal class DocumentArtifactGeneration {
     ): GenerationResult =
         GenerationResult.of(
             GeneratedDocumentArtifact(
-                file = task.file,
+                file = task.document.file,
                 content =
-                    when (task.format) {
+                    when (task.document.format) {
                         DocumentFormat.YAML -> AsyncApiDocumentSerializer.toYaml(asyncApiDocument)
                         DocumentFormat.JSON -> AsyncApiDocumentSerializer.toJson(asyncApiDocument)
                     },
