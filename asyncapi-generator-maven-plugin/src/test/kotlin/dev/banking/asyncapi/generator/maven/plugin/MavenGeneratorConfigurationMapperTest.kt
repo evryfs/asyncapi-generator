@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorProfile
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
@@ -52,8 +51,7 @@ class MavenGeneratorConfigurationMapperTest {
                     ),
             )
 
-        val kafka = configuration.clients.single() as ClientGeneration.Kafka
-        val producer = kafka.springKafka!!.producer
+        val producer = requireNotNull(configuration.client).producer
 
         assertEquals(
             listOf(

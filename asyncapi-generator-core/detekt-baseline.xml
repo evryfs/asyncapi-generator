@@ -165,9 +165,7 @@
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:Channel.kt$Channel</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Consumer</ID>
-    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Kafka : ClientGeneration</ID>
     <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$Producer</ID>
-    <ID>UndocumentedPublicClass:ClientGeneration.kt$ClientGeneration$SpringKafka</ID>
     <ID>UndocumentedPublicClass:Component.kt$Component</ID>
     <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
     <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>

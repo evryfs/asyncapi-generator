@@ -13,7 +13,7 @@ data class GeneratorConfiguration(
     val output: GeneratorOutputConfiguration,
     val models: ModelGeneration = ModelGeneration.Disabled,
     val schemas: List<SchemaGeneration> = emptyList(),
-    val clients: List<ClientGeneration> = emptyList(),
+    val client: ClientGeneration? = null,
     val warnings: List<ConfigurationWarning> = emptyList(),
 ) {
     val sourceLanguage: SourceLanguage?
@@ -34,5 +34,5 @@ data class GeneratorConfiguration(
         output.document != null ||
             models != ModelGeneration.Disabled ||
             schemas.isNotEmpty() ||
-            clients.isNotEmpty()
+            client != null
 }

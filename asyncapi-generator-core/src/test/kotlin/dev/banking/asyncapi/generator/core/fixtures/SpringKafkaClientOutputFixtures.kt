@@ -54,21 +54,16 @@ internal class SpringKafkaClientOutputFixtures(
                             packageName = MODEL_PACKAGE,
                             modelType = modelType,
                         ),
-                    clients =
-                        listOf(
-                            ClientGeneration.Kafka(
-                                packageName = CLIENT_PACKAGE,
-                                modelPackageName = MODEL_PACKAGE,
-                                springKafka =
-                                    ClientGeneration.SpringKafka(
-                                        topicParameterProperties = topicParameterProperties,
-                                        validationAnnotations = validationAnnotations,
-                                        producer =
-                                            ClientGeneration.Producer(
-                                                additionalPayloadTypes = additionalPayloadTypes,
-                                            ),
-                                    ),
-                            ),
+                    client =
+                        ClientGeneration(
+                            packageName = CLIENT_PACKAGE,
+                            modelPackageName = MODEL_PACKAGE,
+                            topicParameterProperties = topicParameterProperties,
+                            validationAnnotations = validationAnnotations,
+                            producer =
+                                ClientGeneration.Producer(
+                                    additionalPayloadTypes = additionalPayloadTypes,
+                                ),
                         ),
                 ),
         )

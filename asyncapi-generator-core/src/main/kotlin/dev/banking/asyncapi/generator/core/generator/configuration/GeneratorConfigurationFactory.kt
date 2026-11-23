@@ -50,50 +50,39 @@ object GeneratorConfigurationFactory {
                     ),
                 models = request.sourceModels(modelType, modelAnnotation),
                 schemas = request.schemaGeneration(modelType, protobufModels),
-                clients =
-                    buildList {
-                        request.clients.kafka?.let { kafka ->
-                            add(
-                                ClientGeneration.Kafka(
-                                    packageName =
-                                        requiredPackageName(
-                                            path = "clients.kafka.packageName",
-                                            value = kafka.packageName,
-                                        ),
-                                    modelPackageName =
-                                        requiredClientModelPackageName(
-                                            path = "clients.kafka.modelPackageName",
-                                            configuredModelPackageName = kafka.modelPackageName,
-                                            modelsPackageName = request.models?.packageName,
-                                        ),
-                                    springKafka =
-                                        kafka.springKafka?.let { springKafka ->
-                                            ClientGeneration.SpringKafka(
-                                                clientContract = springKafka.clientContract,
-                                                topicParameterProperties =
-                                                    TopicParameterProperties.fromConfigurationValues(
-                                                        values = springKafka.topicParameterProperties,
-                                                        path = "clients.kafka.springKafka.topicParameterProperties",
-                                                    ),
-                                                validationAnnotations = springKafka.validationAnnotations,
-                                                producer =
-                                                    ClientGeneration.Producer(
-                                                        enabled = springKafka.producer.enabled,
-                                                        additionalPayloadTypes =
-                                                            AdditionalProducerPayloadType.fromConfigurationValues(
-                                                                values = springKafka.producer.additionalPayloadTypes,
-                                                                path = "clientConfig.producer.additionalPayloadTypes",
-                                                            ),
-                                                    ),
-                                                consumer =
-                                                    ClientGeneration.Consumer(
-                                                        enabled = springKafka.consumer.enabled,
-                                                    ),
-                                            )
-                                        },
+                client =
+                    request.clients.kafka?.let { kafka ->
+                        val springKafka = kafka.springKafka ?: GeneratorConfigurationRequest.KafkaSpringKafka()
+                        ClientGeneration(
+                            packageName =
+                                requiredPackageName(
+                                    path = "clients.kafka.packageName",
+                                    value = kafka.packageName,
                                 ),
-                            )
-                        }
+                            modelPackageName =
+                                requiredClientModelPackageName(
+                                    path = "clients.kafka.modelPackageName",
+                                    configuredModelPackageName = kafka.modelPackageName,
+                                    modelsPackageName = request.models?.packageName,
+                                ),
+                            clientContract = springKafka.clientContract,
+                            topicParameterProperties =
+                                TopicParameterProperties.fromConfigurationValues(
+                                    values = springKafka.topicParameterProperties,
+                                    path = "clients.kafka.springKafka.topicParameterProperties",
+                                ),
+                            validationAnnotations = springKafka.validationAnnotations,
+                            producer =
+                                ClientGeneration.Producer(
+                                    enabled = springKafka.producer.enabled,
+                                    additionalPayloadTypes =
+                                        AdditionalProducerPayloadType.fromConfigurationValues(
+                                            values = springKafka.producer.additionalPayloadTypes,
+                                            path = "clientConfig.producer.additionalPayloadTypes",
+                                        ),
+                                ),
+                            consumer = ClientGeneration.Consumer(enabled = springKafka.consumer.enabled),
+                        )
                     },
                 warnings = warnings.filterNot { it.id in suppressedWarnings },
             )

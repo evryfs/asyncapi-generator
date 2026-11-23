@@ -56,17 +56,14 @@ abstract class AbstractJavaGeneratorClass {
                     } else {
                         ModelGeneration.Disabled
                     },
-                clients =
-                    buildList {
-                        if (generateSpringKafkaClient) {
-                            add(
-                                ClientGeneration.Kafka(
-                                    packageName = effectiveClientPackage,
-                                    modelPackageName = modelPackage,
-                                    springKafka = ClientGeneration.SpringKafka(),
-                                ),
-                            )
-                        }
+                client =
+                    if (generateSpringKafkaClient) {
+                        ClientGeneration(
+                            packageName = effectiveClientPackage,
+                            modelPackageName = modelPackage,
+                        )
+                    } else {
+                        null
                     },
             )
         generator.generate(

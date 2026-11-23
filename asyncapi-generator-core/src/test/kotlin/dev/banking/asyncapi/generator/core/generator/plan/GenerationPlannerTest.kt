@@ -120,7 +120,7 @@ class GenerationPlannerTest {
             planner.plan(
                 generatorConfiguration(
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
-                    clients = listOf(kafkaClientGeneration()),
+                    client = kafkaClientGeneration(),
                 ),
             )
 
@@ -183,7 +183,7 @@ class GenerationPlannerTest {
             planner.plan(
                 generatorConfiguration(
                     schemas = listOf(SchemaGeneration.NativeProtobuf(models = models)),
-                    clients = listOf(kafkaClientGeneration()),
+                    client = kafkaClientGeneration(),
                 ),
             )
 
@@ -280,7 +280,7 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    clients = listOf(kafkaClientGeneration()),
+                    client = kafkaClientGeneration(),
                 ),
             )
 
@@ -313,26 +313,23 @@ class GenerationPlannerTest {
         val plan =
             planner.plan(
                 generatorConfiguration(
-                    clients =
-                        listOf(
-                            kafkaClientGeneration(
-                                springKafka =
-                                    ClientGeneration.SpringKafka(
-                                        clientContract = ClientContract.INTERFACE,
-                                        topicParameterProperties = topicParameterProperties,
-                                        validationAnnotations = validationAnnotations,
-                                        producer =
-                                            ClientGeneration.Producer(
-                                                enabled = false,
-                                                additionalPayloadTypes =
-                                                    setOf(
-                                                        AdditionalProducerPayloadType.BYTE_ARRAY,
-                                                        AdditionalProducerPayloadType.STRING,
-                                                    ),
-                                            ),
-                                        consumer = ClientGeneration.Consumer(enabled = true),
-                                    ),
-                            ),
+                    client =
+                        ClientGeneration(
+                            packageName = "com.example.client",
+                            modelPackageName = "com.example.model",
+                            clientContract = ClientContract.INTERFACE,
+                            topicParameterProperties = topicParameterProperties,
+                            validationAnnotations = validationAnnotations,
+                            producer =
+                                ClientGeneration.Producer(
+                                    enabled = false,
+                                    additionalPayloadTypes =
+                                        setOf(
+                                            AdditionalProducerPayloadType.BYTE_ARRAY,
+                                            AdditionalProducerPayloadType.STRING,
+                                        ),
+                                ),
+                            consumer = ClientGeneration.Consumer(enabled = true),
                         ),
                 ),
             )
@@ -367,10 +364,7 @@ class GenerationPlannerTest {
                             packageName = "com.example.model",
                             modelType = ModelType.JAVA_CLASS,
                         ),
-                    clients =
-                        listOf(
-                            kafkaClientGeneration(),
-                        ),
+                    client = kafkaClientGeneration(),
                 ),
             )
 
@@ -392,7 +386,7 @@ class GenerationPlannerTest {
         language: SourceLanguage = SourceLanguage.KOTLIN,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
-        clients: List<ClientGeneration> = emptyList(),
+        client: ClientGeneration? = null,
     ): GeneratorConfiguration =
         GeneratorConfiguration(
             profile = GeneratorProfile.Source(language),
@@ -403,19 +397,11 @@ class GenerationPlannerTest {
                 ),
             models = models,
             schemas = schemas,
-            clients = clients,
+            client = client,
         )
 
-    private fun kafkaClientGeneration(
-        clientPackage: String = "com.example.client",
-        modelPackage: String = "com.example.model",
-        springKafka: ClientGeneration.SpringKafka? = ClientGeneration.SpringKafka(),
-    ): ClientGeneration.Kafka =
-        ClientGeneration.Kafka(
-            packageName = clientPackage,
-            modelPackageName = modelPackage,
-            springKafka = springKafka,
-        )
+    private fun kafkaClientGeneration(): ClientGeneration =
+        ClientGeneration(packageName = "com.example.client", modelPackageName = "com.example.model")
 
     private fun springKafkaClientTask(
         language: SourceLanguage = SourceLanguage.KOTLIN,

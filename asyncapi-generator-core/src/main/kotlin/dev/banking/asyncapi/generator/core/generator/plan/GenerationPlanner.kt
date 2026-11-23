@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.plan
 
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.configuration.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
@@ -14,7 +13,6 @@ class GenerationPlanner {
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(
             buildList {
-                val keyModelPackages = mutableSetOf<String>()
                 val hasNativePayloadModels = configuration.hasNativePayloadModels()
 
                 configuration.output.document?.let { document ->
@@ -39,39 +37,28 @@ class GenerationPlanner {
                         )
                 }
 
-                configuration.clients.forEach { client ->
-                    when (client) {
-                        is ClientGeneration.Kafka -> {
-                            val springKafka = client.springKafka
-                            if (
-                                hasNativePayloadModels &&
-                                springKafka != null &&
-                                keyModelPackages.add(client.modelPackageName)
-                            ) {
-                                add(
-                                    GenerationTask.KafkaKeyModelArtifacts(
-                                        language = configuration.requireSourceLanguage(),
-                                        packageName = client.modelPackageName,
-                                    ),
-                                )
-                            }
-                            springKafka?.let {
-                                add(
-                                    GenerationTask.SpringKafkaClient(
-                                        language = configuration.requireSourceLanguage(),
-                                        clientPackage = client.packageName,
-                                        modelPackage = client.modelPackageName,
-                                        generateProducers = springKafka.producer.enabled,
-                                        additionalPayloadTypes = springKafka.producer.additionalPayloadTypes,
-                                        generateConsumers = springKafka.consumer.enabled,
-                                        clientContract = springKafka.clientContract,
-                                        topicParameterProperties = springKafka.topicParameterProperties,
-                                        validationAnnotations = springKafka.validationAnnotations,
-                                    ),
-                                )
-                            }
-                        }
+                configuration.client?.let { client ->
+                    if (hasNativePayloadModels) {
+                        add(
+                            GenerationTask.KafkaKeyModelArtifacts(
+                                language = configuration.requireSourceLanguage(),
+                                packageName = client.modelPackageName,
+                            ),
+                        )
                     }
+                    add(
+                        GenerationTask.SpringKafkaClient(
+                            language = configuration.requireSourceLanguage(),
+                            clientPackage = client.packageName,
+                            modelPackage = client.modelPackageName,
+                            generateProducers = client.producer.enabled,
+                            additionalPayloadTypes = client.producer.additionalPayloadTypes,
+                            generateConsumers = client.consumer.enabled,
+                            clientContract = client.clientContract,
+                            topicParameterProperties = client.topicParameterProperties,
+                            validationAnnotations = client.validationAnnotations,
+                        ),
+                    )
                 }
 
                 configuration.schemas.forEach { schema ->
