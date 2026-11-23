@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.channels
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -13,7 +14,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ChannelBundlerTest {
-    private val bundler = ChannelBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle bundles and inlines an unvisited channel reference`() {
@@ -28,7 +29,7 @@ class ChannelBundlerTest {
 
         val bundled =
             assertIs<ChannelInterface.ChannelReference>(
-                bundler.bundle(channelInterface, BundlingRun().rootScope()),
+                walk.member(channelInterface, walk.channel, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

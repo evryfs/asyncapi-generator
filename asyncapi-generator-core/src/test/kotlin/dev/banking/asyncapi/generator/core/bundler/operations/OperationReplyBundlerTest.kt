@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.operations
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.operations.OperationReply
@@ -15,7 +16,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class OperationReplyBundlerTest {
-    private val bundler = OperationReplyBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle bundles and inlines an unvisited operation reply reference`() {
@@ -37,7 +38,7 @@ class OperationReplyBundlerTest {
 
         val bundled =
             assertIs<OperationReplyInterface.OperationReplyReference>(
-                bundler.bundle(replyInterface, BundlingRun().rootScope()),
+                walk.member(replyInterface, walk.reply, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

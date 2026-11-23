@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.bundler.schemas
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
-import dev.banking.asyncapi.generator.core.bundler.ReferenceBundler
-import dev.banking.asyncapi.generator.core.bundler.bindings.BindingBundler
-import dev.banking.asyncapi.generator.core.bundler.externaldocs.ExternalDocsBundler
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.componentSchemaNameOrNull
@@ -15,11 +13,12 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Bundles schema objects and references.
+ *
+ * @param walk bundles the external docs and bindings of a schema
  */
-internal class SchemaBundler {
-    private val externalDocsBundler = ExternalDocsBundler()
-    private val bindingsBundler = BindingBundler()
-
+internal class SchemaBundler(
+    private val walk: BundlingWalk,
+) {
     fun bundleMap(
         schemas: Map<String, SchemaInterface>?,
         scope: BundlingScope,
@@ -232,8 +231,8 @@ internal class SchemaBundler {
         val bundledThen = schema.thenSchema?.let { bundle(it, scope) }
         val bundledElse = schema.elseSchema?.let { bundle(it, scope) }
 
-        val bundledExternalDocs = schema.externalDocs?.let { externalDocsBundler.bundle(it, scope) }
-        val bundledBindings = bindingsBundler.bundleMap(schema.bindings, scope)
+        val bundledExternalDocs = walk.member(schema.externalDocs, walk.externalDoc, scope)
+        val bundledBindings = walk.members(schema.bindings, walk.binding, scope)
         return schema.copy(
             items = bundledItems,
             tupleItems = bundledTupleItems,

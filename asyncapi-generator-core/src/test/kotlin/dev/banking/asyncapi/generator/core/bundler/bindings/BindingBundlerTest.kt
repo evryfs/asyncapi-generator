@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.bindings
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
@@ -17,7 +18,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class BindingBundlerTest {
-    private val bundler = BindingBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundles an external Kafka key schema in an inline protocol binding`() {
@@ -32,7 +33,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
+                walk.member(BindingInterface.BindingInline(binding), walk.binding, BundlingRun().rootScope()),
             ).binding
 
         val originalKey = assertIs<SchemaInterface.SchemaReference>(binding.kafkaKeySchema)
@@ -64,7 +65,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingReference>(
-                bundler.bundle(bindingReference, BundlingRun().rootScope()),
+                walk.member(bindingReference, walk.binding, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)
@@ -108,7 +109,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
+                walk.member(BindingInterface.BindingInline(binding), walk.binding, BundlingRun().rootScope()),
             ).binding
 
         assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
@@ -144,7 +145,7 @@ class BindingBundlerTest {
 
         val bundled =
             assertIs<BindingInterface.BindingInline>(
-                bundler.bundle(BindingInterface.BindingInline(binding), BundlingRun().rootScope()),
+                walk.member(BindingInterface.BindingInline(binding), walk.binding, BundlingRun().rootScope()),
             ).binding
 
         assertEquals(binding, bundled)

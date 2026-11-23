@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.messages
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
@@ -13,7 +14,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class MessageTraitBundlerTest {
-    private val bundler = MessageTraitBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle bundles and inlines an unvisited message trait reference`() {
@@ -31,7 +32,7 @@ class MessageTraitBundlerTest {
 
         val bundled =
             assertIs<MessageTraitInterface.MessageTraitReference>(
-                bundler.bundle(traitInterface, BundlingRun().rootScope()),
+                walk.member(traitInterface, walk.messageTrait, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)

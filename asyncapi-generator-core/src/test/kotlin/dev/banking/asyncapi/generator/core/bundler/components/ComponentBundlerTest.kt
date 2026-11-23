@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.components
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationId
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
@@ -18,7 +19,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ComponentBundlerTest {
-    private val bundler = ComponentBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundleComponent traverses correlation IDs parameters and server variables`() {
@@ -42,7 +43,7 @@ class ComponentBundlerTest {
                     ),
             )
 
-        val bundled = bundler.bundleComponent(component, BundlingRun().rootScope())
+        val bundled = walk.components.bundle(component, BundlingRun().rootScope())
 
         assertTrue(
             assertIs<CorrelationIdInterface.CorrelationIdReference>(bundled.correlationIds!!["user"]).reference.inline,

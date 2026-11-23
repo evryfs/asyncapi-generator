@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.schemas
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -16,7 +17,7 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class SchemaBundlerTest {
-    private val bundler = SchemaBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle keeps an unvisited component schema reference and bundles its model`() {
@@ -33,7 +34,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("#/components/schemas/User", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         val bundledReference = assertIs<SchemaInterface.SchemaReference>(bundled).reference
         assertFalse(bundledReference.inline, "a component schema reference keeps its \$ref")
@@ -59,7 +60,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("schemas.yaml#/shared/User", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertIs<SchemaInterface.SchemaInline>(bundled)
         assertTrue(bundled.schema.bindings!!.containsKey("kafka"))
@@ -82,7 +83,7 @@ class SchemaBundlerTest {
         val schemaInterface = SchemaInterface.SchemaReference(rootReference)
         val scope = BundlingRun().rootScope()
 
-        val bundled = bundler.bundle(schemaInterface, scope)
+        val bundled = walk.schemas.bundle(schemaInterface, scope)
 
         assertEquals(schemaInterface, bundled)
         assertTrue(
@@ -98,7 +99,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("#/components/schemas/UserCreated", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertSame(schemaInterface, bundled)
         assertFalse(schemaReference.inline, "a component schema reference keeps its \$ref")
@@ -111,7 +112,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("schemas.yaml#/shared/UserCreated", model = schema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertEquals(SchemaInterface.MultiFormatSchemaInline(schema), bundled)
         assertFalse(schemaReference.inline)
@@ -123,7 +124,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("#/components/schemas/Anything", model = booleanSchema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertSame(booleanSchema, bundled)
         assertFalse(schemaReference.inline)
@@ -135,7 +136,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("#/components/schemas/Nothing", model = booleanSchema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertSame(booleanSchema, bundled)
         assertEquals(SchemaInterface.BooleanSchema(false), bundled)
@@ -149,7 +150,7 @@ class SchemaBundlerTest {
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
         val scope = BundlingRun().rootScope().enter(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, scope)
+        val bundled = walk.schemas.bundle(schemaInterface, scope)
 
         assertSame(booleanSchema, bundled)
         assertFalse(schemaReference.inline)
@@ -161,7 +162,7 @@ class SchemaBundlerTest {
         val schemaReference = Reference("schemas.yaml#/shared/Nothing", model = booleanSchema)
         val schemaInterface = SchemaInterface.SchemaReference(schemaReference)
 
-        val bundled = bundler.bundle(schemaInterface, BundlingRun().rootScope())
+        val bundled = walk.schemas.bundle(schemaInterface, BundlingRun().rootScope())
 
         assertSame(booleanSchema, bundled)
         assertEquals(SchemaInterface.BooleanSchema(false), bundled)

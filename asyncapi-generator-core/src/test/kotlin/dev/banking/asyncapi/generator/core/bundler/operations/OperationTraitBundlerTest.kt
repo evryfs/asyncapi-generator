@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.bundler.operations
 
 import dev.banking.asyncapi.generator.core.bundler.BundlingRun
 import dev.banking.asyncapi.generator.core.bundler.BundlingScope
+import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
@@ -16,7 +17,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class OperationTraitBundlerTest {
-    private val bundler = OperationTraitBundler()
+    private val walk = BundlingWalk()
 
     @Test
     fun `bundle bundles and inlines an unvisited operation trait reference`() {
@@ -34,7 +35,7 @@ class OperationTraitBundlerTest {
 
         val bundled =
             assertIs<OperationTraitInterface.OperationTraitReference>(
-                bundler.bundle(traitInterface, BundlingRun().rootScope()),
+                walk.member(traitInterface, walk.operationTrait, BundlingRun().rootScope()),
             )
 
         assertTrue(bundled.reference.inline)
@@ -58,7 +59,7 @@ class OperationTraitBundlerTest {
                 ),
             )
 
-        val bundled = bundler.bundle(traitInterface, BundlingRun().rootScope())
+        val bundled = walk.member(traitInterface, walk.operationTrait, BundlingRun().rootScope())
 
         assertIs<OperationTraitInterface.OperationTraitInline>(bundled)
         val bundledTrait = (bundled as OperationTraitInterface.OperationTraitInline).operationTrait
