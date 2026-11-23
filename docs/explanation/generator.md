@@ -41,10 +41,15 @@ Package `configuration` turns what a user configured into a
 
 ## Stages
 
-1. **Plan** (`plan`). `GenerationPlanner` turns the configuration into a list
-   of `GenerationTask`s: models, Kafka key models, Spring Kafka clients,
-   Avro Projection, native Avro, native Protobuf, JSON Schema, and the bundled
-   document. A request that only writes documents skips the remaining stages.
+1. **Plan** (`plan`). `GenerationPlanner` turns the configuration into an
+   ordered list of `GenerationTask`s: the bundled document, models, Kafka key
+   models, the Spring Kafka client, Avro Projection, native Avro, native
+   Protobuf, and JSON Schema. Each task refers to the configuration value it
+   plans, such as `ClientGeneration` or a `SchemaGeneration`, so a setting is
+   defined once. The planner adds only the order, the source language of the
+   client, and the Kafka key-model task, which a client needs when native Avro
+   or Protobuf models carry the payloads. A request that only writes documents
+   skips the remaining stages.
 2. **Prepare input** (`input`, `analyzer`, `normalizer`). `GenerationInputFactory`
    collects the schemas and channels of the document, normalizes schemas, and
    analyzes them: inline objects and enums are promoted to named schemas
