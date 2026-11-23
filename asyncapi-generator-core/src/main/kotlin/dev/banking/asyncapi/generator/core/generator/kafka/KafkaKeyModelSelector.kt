@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -106,7 +106,7 @@ internal object KafkaKeyModelSelector {
                 )
             is SchemaInterface.SchemaReference ->
                 collectNamedSchema(
-                    schemaName = MapperUtil.toPascalCase(schemaInterface.reference.ref.substringAfterLast('/')),
+                    schemaName = schemaInterface.reference.generatedSchemaName(),
                     availableSchemas = availableSchemas,
                     selectedSchemas = selectedSchemas,
                 )

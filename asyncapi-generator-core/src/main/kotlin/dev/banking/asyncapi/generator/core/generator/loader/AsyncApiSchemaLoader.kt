@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.analyzer.ResolvedMessagePay
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.Channel
@@ -261,14 +262,25 @@ internal object AsyncApiSchemaLoader {
         val payloadReference =
             (message.payload as? SchemaInterface.SchemaReference)?.reference
                 ?: return collectedMessage.payloadIdentity
-        val componentSchemaName = payloadReference.localComponentName("schemas")
+        return referencedSchemaIdentity(payloadReference, collectedMessage)
+    }
+
+    /**
+     * The identity of a schema a message references: its component name when the
+     * message is read from the root document, otherwise the reference target.
+     */
+    private fun referencedSchemaIdentity(
+        reference: Reference,
+        collectedMessage: CollectedMessage,
+    ): ContractDeclarationIdentity {
+        val componentSchemaName = reference.localComponentName("schemas")
         return if (
             componentSchemaName != null &&
             collectedMessage.payloadIdentity !is ContractDeclarationIdentity.ReferencedMessagePayload
         ) {
             ContractDeclarationIdentity.ComponentSchema(componentSchemaName)
         } else {
-            ContractDeclarationIdentity.ReferenceTarget(payloadReference.sourceId, payloadReference.ref)
+            ContractDeclarationIdentity.ReferenceTarget(reference.sourceId, reference.ref)
         }
     }
 
@@ -357,8 +369,7 @@ internal object AsyncApiSchemaLoader {
         sink: MutableSet<String>,
         visitedRefs: MutableSet<String>,
     ): Boolean {
-        val rawName = reference.ref.substringAfterLast('/')
-        val schemaName = MapperUtil.toPascalCase(rawName)
+        val schemaName = reference.generatedSchemaName()
         if (schemaName.isBlank()) return false
         val referenceIdentity = "${reference.sourceId.orEmpty()}:${reference.ref}"
         if (!visitedRefs.add(referenceIdentity)) return false
@@ -405,17 +416,7 @@ internal object AsyncApiSchemaLoader {
         keySchema: SchemaInterface,
     ): ContractDeclarationIdentity? {
         val keyReference = (keySchema as? SchemaInterface.SchemaReference)?.reference
-        if (keyReference != null) {
-            val componentSchemaName = keyReference.localComponentName("schemas")
-            return if (
-                componentSchemaName != null &&
-                collectedMessage.payloadIdentity !is ContractDeclarationIdentity.ReferencedMessagePayload
-            ) {
-                ContractDeclarationIdentity.ComponentSchema(componentSchemaName)
-            } else {
-                ContractDeclarationIdentity.ReferenceTarget(keyReference.sourceId, keyReference.ref)
-            }
-        }
+        if (keyReference != null) return referencedSchemaIdentity(keyReference, collectedMessage)
         return when (val messageIdentity = collectedMessage.payloadIdentity) {
             is ContractDeclarationIdentity.ComponentMessagePayload ->
                 ContractDeclarationIdentity.ComponentMessageKafkaKey(messageIdentity.name)

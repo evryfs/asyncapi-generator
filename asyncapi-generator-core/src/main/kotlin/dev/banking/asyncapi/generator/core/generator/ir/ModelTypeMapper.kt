@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -92,7 +93,7 @@ internal class ModelTypeMapper(
     fun mapReference(reference: Reference): TypeRef.Named {
         val raw = reference.ref.substringAfterLast("/")
         val target = context.findSchemaByName(raw) ?: reference.model as? Schema
-        return named(MapperUtil.toPascalCase(raw), isOpenObject = target?.isOpenPayload() == true)
+        return named(reference.generatedSchemaName(), isOpenObject = target?.isOpenPayload() == true)
     }
 
     private fun named(
