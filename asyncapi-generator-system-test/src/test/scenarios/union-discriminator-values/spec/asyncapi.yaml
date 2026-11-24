@@ -1,0 +1,49 @@
+asyncapi: 3.0.0
+info:
+  title: Union discriminator values
+  version: 1.0.0
+channels:
+  pets:
+    address: pets
+    messages:
+      pet:
+        payload:
+          $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Pet:
+      description: A pet whose members fix their discriminator value in different ways.
+      type: object
+      required: [petType]
+      properties:
+        petType:
+          $ref: '#/components/schemas/PetType'
+      discriminator: petType
+      oneOf:
+        - $ref: '#/components/schemas/Dog'
+        - $ref: '#/components/schemas/Cat'
+    PetType:
+      type: string
+      enum: [dog, cat]
+    DogType:
+      description: The shared pet type, narrowed to dog through allOf.
+      allOf:
+        - $ref: '#/components/schemas/PetType'
+        - const: dog
+    Dog:
+      type: object
+      required: [petType]
+      properties:
+        petType:
+          $ref: '#/components/schemas/DogType'
+        bark:
+          type: boolean
+    Cat:
+      type: object
+      required: [petType]
+      properties:
+        petType:
+          type: string
+          const: cat
+        meow:
+          type: boolean

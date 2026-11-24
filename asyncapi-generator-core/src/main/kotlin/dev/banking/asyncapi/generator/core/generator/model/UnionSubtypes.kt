@@ -32,30 +32,35 @@ internal object UnionSubtypes {
         return (schema.oneOf ?: schema.anyOf ?: emptyList())
             .filterIsInstance<SchemaInterface.SchemaReference>()
             .map { member ->
-                val rawName = member.reference.ref.substringAfterLast('/')
                 val childSchemaName = member.reference.generatedSchemaName()
                 val discriminatorValue =
-                    discriminator?.let { property ->
-                        schemas[childSchemaName]
-                            ?.properties
-                            ?.get(property)
-                            ?.let { property ->
-                                // An inline enum may have been promoted to a named enum by now.
-                                when (property) {
-                                    is SchemaInterface.SchemaInline -> property.schema
-                                    // Through a reference only a one-value enum identifies the member;
-                                    // a shared enum of all values does not.
-                                    is SchemaInterface.SchemaReference ->
-                                        property.linkedSchema()?.takeIf {
-                                            it.const != null ||
-                                                it.enum?.size == 1
-                                        }
-                                    else -> null
-                                }
-                            }?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
-                            ?.removeSurrounding("\"")
-                    }
-                UnionSubtype(name = discriminatorValue ?: rawName, type = childSchemaName)
+                    discriminator
+                        ?.let { schemas[childSchemaName]?.properties?.get(it) }
+                        ?.let { discriminatorSchema(it, schemas) }
+                        ?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
+                        ?.removeSurrounding("\"")
+                UnionSubtype(
+                    name = discriminatorValue ?: member.reference.ref.substringAfterLast('/'),
+                    type = childSchemaName,
+                )
             }
     }
+
+    /**
+     * The schema that fixes a member's discriminator value. An inline enum may have been
+     * promoted to a named enum by now. Through a reference only a one-value enum or a const
+     * identifies the member, as a shared enum of all values does not; the normalized schema
+     * counts, so a const added through `allOf` identifies it too.
+     */
+    private fun discriminatorSchema(
+        property: SchemaInterface,
+        schemas: Map<String, Schema>,
+    ): Schema? =
+        when (property) {
+            is SchemaInterface.SchemaInline -> property.schema
+            is SchemaInterface.SchemaReference ->
+                (schemas[property.reference.generatedSchemaName()] ?: property.linkedSchema())
+                    ?.takeIf { it.const != null || it.enum?.size == 1 }
+            else -> null
+        }
 }

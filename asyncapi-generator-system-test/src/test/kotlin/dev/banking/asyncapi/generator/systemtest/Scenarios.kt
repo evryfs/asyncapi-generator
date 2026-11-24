@@ -395,6 +395,13 @@ private val allScenarios: List<Scenario> = listOf(
         expectedWarnings = listOf("union members 'left_twin', 'right_twin' declare the same property names"),
     ),
     Scenario(
+        name = "union-discriminator-values",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.discriminators.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.discriminators.java"),
+        ),
+    ),
+    Scenario(
         name = "kafka-payload-types",
         executions = listOf(
             Execution(
