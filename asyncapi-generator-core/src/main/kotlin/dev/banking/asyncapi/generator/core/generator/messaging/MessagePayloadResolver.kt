@@ -13,55 +13,45 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 internal object MessagePayloadResolver {
     fun resolveMessage(messageInterface: MessageInterface): Message? = messageInterface.resolvedOrNull()
 
+    /**
+     * The payload of [message], the message with key [messageId] in its channel or components; `null` when it
+     * has none or its reference does not lead to a schema.
+     *
+     * An inline payload is named after the message with a `Payload` suffix, a referenced one after its schema.
+     */
     fun resolvePayload(
         message: Message,
         messageId: String,
     ): ResolvedMessagePayload? {
-        val inlinePayloadTypeName =
-            MessageNameResolver.resolve(message, messageId).let { messageName ->
-                if (messageName.endsWith("Payload")) messageName else "${messageName}Payload"
+        val payload = message.payload ?: return null
+        val typeName =
+            when (payload) {
+                is SchemaInterface.SchemaReference -> payload.reference.generatedSchemaName()
+                else -> inlinePayloadTypeName(message, messageId)
             }
-
-        return when (val payload = message.payload) {
-            is SchemaInterface.SchemaInline ->
-                ResolvedMessagePayload.AsyncApi(
-                    typeName = inlinePayloadTypeName,
-                    schema = payload.schema,
-                )
-            is SchemaInterface.SchemaReference -> {
-                val typeName = payload.reference.generatedSchemaName()
-                when (val model = payload.reference.model) {
-                    is Schema ->
-                        ResolvedMessagePayload.AsyncApi(
-                            typeName = typeName,
-                            schema = model,
-                        )
-                    is MultiFormatSchema ->
-                        ResolvedMessagePayload.MultiFormat(
-                            typeName = typeName,
-                            schema = model,
-                        )
-                    is SchemaInterface.BooleanSchema ->
-                        ResolvedMessagePayload.Boolean(
-                            typeName = typeName,
-                            value = model.value,
-                        )
-                    else -> null
+        return when (
+            val model =
+                when (payload) {
+                    is SchemaInterface.SchemaInline -> payload.schema
+                    is SchemaInterface.SchemaReference -> payload.reference.model
+                    is SchemaInterface.MultiFormatSchemaInline -> payload.multiFormatSchema
+                    is SchemaInterface.BooleanSchema -> payload
                 }
-            }
-            is SchemaInterface.MultiFormatSchemaInline ->
-                ResolvedMessagePayload.MultiFormat(
-                    typeName = inlinePayloadTypeName,
-                    schema = payload.multiFormatSchema,
-                )
-            is SchemaInterface.BooleanSchema ->
-                ResolvedMessagePayload.Boolean(
-                    typeName = inlinePayloadTypeName,
-                    value = payload.value,
-                )
-            null -> null
+        ) {
+            is Schema -> ResolvedMessagePayload.AsyncApi(typeName = typeName, schema = model)
+            is MultiFormatSchema -> ResolvedMessagePayload.MultiFormat(typeName = typeName, schema = model)
+            is SchemaInterface.BooleanSchema -> ResolvedMessagePayload.Boolean(typeName = typeName, value = model.value)
+            else -> null
         }
     }
+
+    private fun inlinePayloadTypeName(
+        message: Message,
+        messageId: String,
+    ): String =
+        MessageNameResolver.resolve(message, messageId).let { messageName ->
+            if (messageName.endsWith("Payload")) messageName else "${messageName}Payload"
+        }
 }
 
 /** What a message payload resolves to. */

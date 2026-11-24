@@ -12,6 +12,8 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
  *
  * Language-specific rendering remains responsible for syntax, while payload identity,
  * model imports, headers, and native-schema resolution are derived once here.
+ *
+ * @param nativeKafkaPayloadResolver Resolves payloads in native schema formats.
  */
 internal class KafkaPayloadFactory(
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),

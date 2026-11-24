@@ -6,7 +6,12 @@ import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufPayloadTypeResolver
 
-/** Resolves native multi-format payloads into Spring Kafka payload signatures. */
+/**
+ * Resolves native multi-format payloads into Spring Kafka payload signatures.
+ *
+ * @param nativeAvroPayloadTypeResolver Resolves the type generated for a native Avro payload.
+ * @param nativeProtobufPayloadTypeResolver Resolves the type generated for a native Protobuf payload.
+ */
 internal class NativeKafkaPayloadResolver(
     private val nativeAvroPayloadTypeResolver: NativeAvroPayloadTypeResolver = NativeAvroPayloadTypeResolver(),
     private val nativeProtobufPayloadTypeResolver: NativeProtobufPayloadTypeResolver =

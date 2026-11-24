@@ -44,6 +44,8 @@ have to describe the same configuration.
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [kafka-scalar-payloads](kafka-scalar-payloads) | Spring Kafka clients for UUID, date, date-time and number payloads, typed as models type them, in Kotlin and Java. |
+| [union-discriminator-values](union-discriminator-values) | Kotlin and Java unions whose discriminator values come from `const` and from `allOf`-narrowed enums. |
+| [inline-union-properties](inline-union-properties) | Kotlin and Java union types for inline `oneOf` and `anyOf` properties. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |

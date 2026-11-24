@@ -33,7 +33,6 @@ class NativeAvroPayloadTypeResolverTest {
 
         assertEquals("UserCreated", payloadType?.typeName)
         assertEquals("com.example.avro", payloadType?.packageName)
-        assertEquals("com.example.avro.UserCreated", payloadType?.importName)
     }
 
     @Test

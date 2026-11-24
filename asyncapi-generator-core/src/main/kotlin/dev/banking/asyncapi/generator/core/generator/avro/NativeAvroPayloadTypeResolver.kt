@@ -9,6 +9,8 @@ import org.apache.avro.Schema
  *
  * Native Avro message payloads should use the package declared by the Avro
  * namespace, not the AsyncAPI JSON model package.
+ *
+ * @param schemaParser Parses the native Avro schema.
  */
 internal class NativeAvroPayloadTypeResolver(
     private val schemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
@@ -31,7 +33,6 @@ internal class NativeAvroPayloadTypeResolver(
         return NativeAvroPayloadType(
             typeName = avroSchema.name,
             packageName = packageName,
-            importName = packageName?.let { "$it.${avroSchema.name}" },
         )
     }
 
@@ -41,8 +42,13 @@ internal class NativeAvroPayloadTypeResolver(
             type == Schema.Type.FIXED
 }
 
+/**
+ * The JVM type generated for a native Avro payload.
+ *
+ * @param typeName Simple name of the type.
+ * @param packageName Package of the type, from the Avro namespace; `null` without a namespace.
+ */
 internal data class NativeAvroPayloadType(
     val typeName: String,
     val packageName: String?,
-    val importName: String?,
 )

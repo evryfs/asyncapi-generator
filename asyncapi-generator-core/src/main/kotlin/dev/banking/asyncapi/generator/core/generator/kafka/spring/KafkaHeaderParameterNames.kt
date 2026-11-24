@@ -22,6 +22,15 @@ internal object KafkaHeaderParameterNames {
                 )
             }
 
+        rejectCollisions(headerContractName, parameterNames)
+        return parameterNames
+    }
+
+    /** Fails when two headers, or a header and a fixed parameter, get the same parameter name. */
+    private fun rejectCollisions(
+        headerContractName: String,
+        parameterNames: Map<String, String>,
+    ) {
         parameterNames
             .entries
             .groupBy(
@@ -48,8 +57,6 @@ internal object KafkaHeaderParameterNames {
                     fixedParameter = true,
                 )
             }
-
-        return parameterNames
     }
 
     private fun normalize(

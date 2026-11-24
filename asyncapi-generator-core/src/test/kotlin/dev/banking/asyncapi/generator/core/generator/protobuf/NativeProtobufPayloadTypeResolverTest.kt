@@ -34,7 +34,6 @@ class NativeProtobufPayloadTypeResolverTest {
 
         assertEquals("UserCreated", payloadType?.typeName)
         assertEquals("com.example.protobuf", payloadType?.packageName)
-        assertEquals("com.example.protobuf.UserCreated", payloadType?.importName)
     }
 
     @Test
@@ -59,7 +58,6 @@ class NativeProtobufPayloadTypeResolverTest {
 
         assertEquals("UserCreated", payloadType?.typeName)
         assertEquals("com.example.protobuf", payloadType?.packageName)
-        assertEquals("com.example.protobuf.UserCreated", payloadType?.importName)
     }
 
     @Test
