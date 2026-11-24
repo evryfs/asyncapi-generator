@@ -1,0 +1,47 @@
+asyncapi: 3.0.0
+info:
+  title: Inline union properties
+  version: 1.0.0
+channels:
+  deliveries:
+    address: deliveries
+    messages:
+      delivery:
+        payload:
+          $ref: '#/components/schemas/Delivery'
+components:
+  schemas:
+    Delivery:
+      type: object
+      properties:
+        destination:
+          description: An inline union without a title, named after the property.
+          oneOf:
+            - $ref: '#/components/schemas/Address'
+            - $ref: '#/components/schemas/PickupPoint'
+        shipment:
+          title: Parcel
+          description: An inline union with a title, named after the title.
+          anyOf:
+            - $ref: '#/components/schemas/Letter'
+            - $ref: '#/components/schemas/Box'
+    Address:
+      type: object
+      properties:
+        street:
+          type: string
+    PickupPoint:
+      type: object
+      properties:
+        pointId:
+          type: string
+    Letter:
+      type: object
+      properties:
+        stamps:
+          type: integer
+    Box:
+      type: object
+      properties:
+        weight:
+          type: number

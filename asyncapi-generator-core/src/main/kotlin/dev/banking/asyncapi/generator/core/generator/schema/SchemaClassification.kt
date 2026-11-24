@@ -35,3 +35,6 @@ private fun Schema.hasUnconstrainedAdditionalProperties(): Boolean =
 internal fun Schema.isScalarAlias(): Boolean = enum.isNullOrEmpty() && type.getPrimaryType() in SCALAR_TYPES
 
 private val SCALAR_TYPES = setOf("string", "number", "integer", "boolean")
+
+/** Whether this schema is a `oneOf` or `anyOf` union, which gets a generated type of its own. */
+internal fun Schema.isInlineUnion(): Boolean = !oneOf.isNullOrEmpty() || !anyOf.isNullOrEmpty()

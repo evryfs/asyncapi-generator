@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
+import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
@@ -27,10 +28,7 @@ internal class ModelTypeMapper(
     ): TypeRef {
         if (schema == null) return TypeRef.Scalar.ANY
         if (schema.type.hasMultipleNonNullTypes()) return TypeRef.Scalar.ANY
-        if (!schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty()) {
-            return named(MapperUtil.toPascalCase(propertyName))
-        }
-        if (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty()) {
+        if (schema.isInlineUnion() || (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty())) {
             return named(
                 schema.title
                     ?.takeIf { it.isNotBlank() }
