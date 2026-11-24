@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
 import dev.banking.asyncapi.generator.core.generator.model.UnionSubtype
@@ -24,8 +23,8 @@ internal class ModelDefinitionFactory(
     private val packageName: String,
     private val annotation: QualifiedTypeName? = null,
 ) {
-    private val context: GeneratorContext = input.schemaContext
-    private val typeMapper = ModelTypeMapper(context)
+    private val schemas: Map<String, Schema> = input.schemas
+    private val typeMapper = ModelTypeMapper(schemas)
     private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName)
 
     private val parsedScalars =
@@ -79,10 +78,9 @@ internal class ModelDefinitionFactory(
      * needs a generated class: members that are scalars, unions, or open objects have none.
      */
     private fun unionSubtypes(schema: Schema): List<UnionSubtype> =
-        UnionSubtypes.of(schema, context).filter { subtype ->
+        UnionSubtypes.of(schema, schemas).filter { subtype ->
             schema.discriminator != null ||
-                context
-                    .findSchemaByName(subtype.type)
+                schemas[subtype.type]
                     ?.let { it.type.getPrimaryType() == "object" && !it.isOpenPayload() } == true
         }
 
@@ -122,7 +120,7 @@ internal class ModelDefinitionFactory(
                 propertySchema.schema to typeMapper.map(propertyName, propertySchema.schema)
             is SchemaInterface.SchemaReference -> {
                 val reference = typeMapper.mapReference(propertySchema.reference)
-                val schema = context.findSchemaByName(reference.name)
+                val schema = schemas[reference.name]
                 schema to typeMapper.resolveReference(propertyName, propertySchema.reference)
             }
             is SchemaInterface.BooleanSchema -> null to TypeRef.Scalar.BOOLEAN
@@ -135,7 +133,7 @@ internal class ModelDefinitionFactory(
     ): DefaultValue? {
         val raw = schema.default ?: return null
         val value = raw.toString().trimStart('"', '\'', '|', '>').removeSurrounding("\"")
-        if (type is TypeRef.Named && context.findSchemaByName(type.name)?.enum?.isNotEmpty() == true) {
+        if (type is TypeRef.Named && schemas[type.name]?.enum?.isNotEmpty() == true) {
             return DefaultValue.EnumEntry(type.name, EnumLiteralNormalizer.constantName(value) ?: value)
         }
         return when (schema.type.getPrimaryType()) {

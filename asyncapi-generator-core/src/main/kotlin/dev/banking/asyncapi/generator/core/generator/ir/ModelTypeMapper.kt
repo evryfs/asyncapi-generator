@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
@@ -16,7 +15,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * represents it in generated source.
  */
 internal class ModelTypeMapper(
-    private val context: GeneratorContext,
+    private val schemas: Map<String, Schema>,
 ) {
     /**
      * The type of an inline [schema] of [propertyName]. Inline enums and unions are named after
@@ -60,7 +59,7 @@ internal class ModelTypeMapper(
         reference: Reference,
     ): TypeRef {
         val raw = reference.ref.substringAfterLast("/")
-        val target = context.findSchemaByName(raw) ?: reference.model as? Schema
+        val target = schemas[raw] ?: reference.model as? Schema
         if (target == null || !target.isAlias() || !resolvingAliases.add(raw)) return mapReference(reference)
         return try {
             map(propertyName, target)
@@ -92,7 +91,7 @@ internal class ModelTypeMapper(
     /** The generated model a reference points to; marked when it is an open object. */
     fun mapReference(reference: Reference): TypeRef.Named {
         val raw = reference.ref.substringAfterLast("/")
-        val target = context.findSchemaByName(raw) ?: reference.model as? Schema
+        val target = schemas[raw] ?: reference.model as? Schema
         return named(reference.generatedSchemaName(), isOpenObject = target?.isOpenPayload() == true)
     }
 
@@ -103,7 +102,7 @@ internal class ModelTypeMapper(
 
     private fun isModel(name: String): Boolean {
         if (name in builtInTypeNames) return false
-        val schema = context.findSchemaByName(name) ?: return name.firstOrNull()?.isUpperCase() == true
+        val schema = schemas[name] ?: return name.firstOrNull()?.isUpperCase() == true
         return schema.type.getPrimaryType() == "object" || !schema.oneOf.isNullOrEmpty() ||
             !schema.anyOf.isNullOrEmpty()
     }
@@ -134,7 +133,7 @@ internal class ModelTypeMapper(
                 is SchemaInterface.SchemaInline -> map(propertyName, items.schema)
                 is SchemaInterface.SchemaReference -> {
                     val referenceName = items.reference.ref.substringAfterLast("/")
-                    val referencedSchema = context.findSchemaByName(referenceName) ?: items.reference.model as? Schema
+                    val referencedSchema = schemas[referenceName] ?: items.reference.model as? Schema
                     val isPlainString =
                         referencedSchema?.type.getPrimaryType() == "string" && referencedSchema?.enum.isNullOrEmpty()
                     when {

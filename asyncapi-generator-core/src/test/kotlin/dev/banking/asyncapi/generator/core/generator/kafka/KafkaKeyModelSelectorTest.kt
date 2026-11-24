@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka
 
+import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
@@ -77,7 +78,7 @@ class KafkaKeyModelSelectorTest {
     @Test
     fun `does not select primitive Kafka keys`() {
         val input =
-            GenerationInput(
+            generationInputOf(
                 schemas = emptyMap(),
                 polymorphicRelationships = emptyMap(),
                 channels =

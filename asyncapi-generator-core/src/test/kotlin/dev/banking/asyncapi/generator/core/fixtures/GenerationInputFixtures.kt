@@ -27,7 +27,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  */
 internal class GenerationInputFixtures {
     fun generationInputWithUserSignupChannel(): GenerationInput =
-        GenerationInput(
+        generationInputOf(
             schemas = emptyMap(),
             polymorphicRelationships = emptyMap(),
             channels =
@@ -63,7 +63,7 @@ internal class GenerationInputFixtures {
                 enum = listOf("ACTIVE", "INACTIVE"),
             )
 
-        return GenerationInput(
+        return generationInputOf(
             schemas =
                 linkedMapOf(
                     "User" to userSchema,
@@ -198,7 +198,7 @@ internal class GenerationInputFixtures {
                 deprecated = true,
             )
 
-        return GenerationInput(
+        return generationInputOf(
             schemas =
                 linkedMapOf(
                     "MyAccount" to accountSchema,
@@ -520,3 +520,16 @@ internal class GenerationInputFixtures {
                 }.trimEnd(),
         )
 }
+
+/** A [GenerationInput] whose contract declarations are its source schemas. */
+internal fun generationInputOf(
+    schemas: Map<String, Schema>,
+    polymorphicRelationships: Map<String, List<String>> = emptyMap(),
+    channels: List<AnalyzedChannel> = emptyList(),
+): GenerationInput =
+    GenerationInput(
+        schemas = schemas,
+        schemaDeclarations = SchemaDeclarationCatalog(asyncApiSchemas = schemas),
+        polymorphicRelationships = polymorphicRelationships,
+        channels = channels,
+    )

@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
-import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -27,7 +26,7 @@ data class UnionSubtype(
 internal object UnionSubtypes {
     fun of(
         schema: Schema,
-        context: GeneratorContext,
+        schemas: Map<String, Schema>,
     ): List<UnionSubtype> {
         val discriminator = schema.discriminator
         return (schema.oneOf ?: schema.anyOf ?: emptyList())
@@ -37,8 +36,7 @@ internal object UnionSubtypes {
                 val childSchemaName = member.reference.generatedSchemaName()
                 val discriminatorValue =
                     discriminator?.let { property ->
-                        context
-                            .findSchemaByName(childSchemaName)
+                        schemas[childSchemaName]
                             ?.properties
                             ?.get(property)
                             ?.let { property ->

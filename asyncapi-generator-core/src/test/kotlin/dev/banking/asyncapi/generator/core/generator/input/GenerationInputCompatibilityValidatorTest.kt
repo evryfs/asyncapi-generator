@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
+import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
@@ -32,7 +33,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `allows asyncapi schema object input for model and avro projection tasks`() {
         validator.validate(
             generationInput =
-                GenerationInput(
+                generationInputOf(
                     schemas = mapOf("UserCreated" to Schema(type = "object")),
                     polymorphicRelationships = emptyMap(),
                     channels = emptyList(),
@@ -174,7 +175,7 @@ class GenerationInputCompatibilityValidatorTest {
 
         validator.validate(
             generationInput =
-                GenerationInput(
+                generationInputOf(
                     schemas =
                         linkedMapOf(
                             "UnrelatedPayload" to unrelatedPayload,
@@ -217,7 +218,7 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validator.validate(
                     generationInput =
-                        GenerationInput(
+                        generationInputOf(
                             schemas = mapOf("SelectedKey" to selectedKey),
                             polymorphicRelationships = emptyMap(),
                             channels =
@@ -368,7 +369,7 @@ class GenerationInputCompatibilityValidatorTest {
                 pattern = "[",
             )
         val input =
-            GenerationInput(
+            generationInputOf(
                 schemas = mapOf("Event" to schema),
                 polymorphicRelationships = emptyMap(),
                 channels = emptyList(),
@@ -692,7 +693,7 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
                 validator.validate(
                     generationInput =
-                        GenerationInput(
+                        generationInputOf(
                             schemas = mapOf("UserCreated" to Schema(type = "object")),
                             polymorphicRelationships = emptyMap(),
                             channels = emptyList(),
@@ -833,7 +834,7 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<AsyncApiGeneratorException.MissingSchemaGenerationInput> {
                 validator.validate(
                     generationInput =
-                        GenerationInput(
+                        generationInputOf(
                             schemas = emptyMap(),
                             polymorphicRelationships = emptyMap(),
                             channels = emptyList(),
@@ -1063,7 +1064,7 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages> {
                 validator.validate(
                     generationInput =
-                        GenerationInput(
+                        generationInputOf(
                             schemas = emptyMap(),
                             polymorphicRelationships = emptyMap(),
                             channels =
@@ -1101,7 +1102,7 @@ class GenerationInputCompatibilityValidatorTest {
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision> {
                 validator.validate(
                     generationInput =
-                        GenerationInput(
+                        generationInputOf(
                             schemas = emptyMap(),
                             polymorphicRelationships = emptyMap(),
                             channels =
@@ -1170,7 +1171,7 @@ class GenerationInputCompatibilityValidatorTest {
     ) {
         validator.validate(
             generationInput =
-                GenerationInput(
+                generationInputOf(
                     schemas = mapOf("Event" to schema),
                     polymorphicRelationships = emptyMap(),
                     channels = emptyList(),
@@ -1185,7 +1186,7 @@ class GenerationInputCompatibilityValidatorTest {
         )
 
     private fun inputWithMessage(message: AnalyzedMessage): GenerationInput =
-        GenerationInput(
+        generationInputOf(
             schemas = emptyMap(),
             polymorphicRelationships = emptyMap(),
             channels =
