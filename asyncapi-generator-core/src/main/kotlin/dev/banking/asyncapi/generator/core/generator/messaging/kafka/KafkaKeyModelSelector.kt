@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.kafka
+package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
@@ -14,31 +14,17 @@ internal object KafkaKeyModelSelector {
 
         input.channels.forEach { channel ->
             channel.messages.forEach { message ->
-                collectKeyModel(
-                    messageName = message.messageName,
-                    keySchema = message.keySchema,
-                    availableSchemas = input.schemas,
-                    selectedSchemas = selected,
-                )
+                message.kafkaKey?.modelName?.let { modelName ->
+                    collectNamedSchema(
+                        schemaName = modelName,
+                        availableSchemas = input.schemas,
+                        selectedSchemas = selected,
+                    )
+                }
             }
         }
 
         return selected
-    }
-
-    private fun collectKeyModel(
-        messageName: String,
-        keySchema: SchemaInterface?,
-        availableSchemas: Map<String, Schema>,
-        selectedSchemas: MutableMap<String, Schema>,
-    ) {
-        if (keySchema == null) return
-        val keyModel = KafkaKeySchemaResolver.resolveObjectModelOrNull(messageName, keySchema) ?: return
-        collectNamedSchema(
-            schemaName = keyModel.name,
-            availableSchemas = availableSchemas,
-            selectedSchemas = selectedSchemas,
-        )
     }
 
     private fun collectNamedSchema(

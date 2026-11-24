@@ -1,9 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.catalog
 
 import dev.banking.asyncapi.generator.core.generator.catalog.MessageSchemaCollector.CollectedMessage
-import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
-import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.messaging.MessageNameResolver
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -19,18 +18,14 @@ internal object KafkaKeySchemaCollector {
         message: Message,
         declarations: SchemaDeclarations,
     ) {
-        val keySchema = message.kafkaKeySchema() ?: return
-        val keyModel =
-            KafkaKeySchemaResolver.resolveObjectModelOrNull(
-                messageName = messageBaseName(message, collectedMessage.messageKey),
-                schema = keySchema,
-            ) ?: return
+        val kafkaKey = KafkaKey.of(MessageNameResolver.resolve(message, collectedMessage.messageKey), message) ?: return
+        val modelName = kafkaKey.modelName ?: return
 
         declarations.declareSourceModel(
-            generatedName = keyModel.name,
-            schema = keyModel.schema,
-            identity = kafkaKeyDeclarationIdentity(collectedMessage, keySchema),
-            origin = kafkaKeyOrigin(collectedMessage.origin, keySchema),
+            generatedName = modelName,
+            schema = kafkaKey.requireSchema(),
+            identity = kafkaKeyDeclarationIdentity(collectedMessage, kafkaKey.declaredSchema),
+            origin = kafkaKeyOrigin(collectedMessage.origin, kafkaKey.declaredSchema),
         )
     }
 
@@ -58,9 +53,4 @@ internal object KafkaKeySchemaCollector {
                 "$messageOrigin.bindings.kafka.key (reference '${keySchema.reference.ref}')"
             else -> "$messageOrigin.bindings.kafka.key"
         }
-
-    private fun messageBaseName(
-        message: Message,
-        messageKey: String,
-    ): String = MessageNameResolver.resolve(message, messageKey)
 }

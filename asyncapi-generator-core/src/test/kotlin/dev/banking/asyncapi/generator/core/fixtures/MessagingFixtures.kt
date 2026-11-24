@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.fixtures
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -20,7 +21,7 @@ internal fun analyzedMessage(
         messageId = messageId,
         messageName = messageName,
         payload = schema?.let { ResolvedMessagePayload.AsyncApi(requireNotNull(payloadTypeName), it) },
-        keySchema = keySchema,
+        kafkaKey = keySchema?.let { KafkaKey.of(messageName, it) },
         headers = headers,
     )
 
@@ -37,6 +38,6 @@ internal fun nativeMessage(
         messageId = messageId,
         messageName = messageName,
         payload = ResolvedMessagePayload.MultiFormat(payloadName, schema),
-        keySchema = keySchema,
+        kafkaKey = keySchema?.let { KafkaKey.of(messageName, it) },
         headers = headers,
     )

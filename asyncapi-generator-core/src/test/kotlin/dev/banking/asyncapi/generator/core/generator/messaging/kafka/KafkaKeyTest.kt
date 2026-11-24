@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.kafka
+package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -7,19 +7,19 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
-class KafkaKeySchemaResolverTest {
+class KafkaKeyTest {
     @Test
     fun `uses message name for untitled inline object key`() {
         val schema = Schema(type = "object")
 
         val result =
-            KafkaKeySchemaResolver.resolveObjectModelOrNull(
+            KafkaKey.of(
                 messageName = "AccountUpdated",
-                schema = SchemaInterface.SchemaInline(schema),
+                declaredSchema = SchemaInterface.SchemaInline(schema),
             )
 
-        assertEquals("AccountUpdatedKey", result?.name)
-        assertSame(schema, result?.schema)
+        assertEquals("AccountUpdatedKey", result.modelName)
+        assertSame(schema, result.schema)
     }
 
     @Test
@@ -27,12 +27,12 @@ class KafkaKeySchemaResolverTest {
         val schema = Schema(type = "object", title = "Institution Account Key")
 
         val result =
-            KafkaKeySchemaResolver.resolveObjectModelOrNull(
+            KafkaKey.of(
                 messageName = "AccountUpdated",
-                schema = SchemaInterface.SchemaInline(schema),
+                declaredSchema = SchemaInterface.SchemaInline(schema),
             )
 
-        assertEquals("InstitutionAccountKey", result?.name)
+        assertEquals("InstitutionAccountKey", result.modelName)
     }
 
     @Test
@@ -40,9 +40,9 @@ class KafkaKeySchemaResolverTest {
         val schema = Schema(type = "object", title = "Ignored Reference Title")
 
         val result =
-            KafkaKeySchemaResolver.resolveObjectModelOrNull(
+            KafkaKey.of(
                 messageName = "AccountUpdated",
-                schema =
+                declaredSchema =
                     SchemaInterface.SchemaReference(
                         Reference(
                             ref = "./key-schemas.yaml#/AccountKey",
@@ -51,7 +51,7 @@ class KafkaKeySchemaResolverTest {
                     ),
             )
 
-        assertEquals("AccountKey", result?.name)
-        assertSame(schema, result?.schema)
+        assertEquals("AccountKey", result.modelName)
+        assertSame(schema, result.schema)
     }
 }

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -26,8 +27,7 @@ class KafkaKeyContractResolverTest {
             val result =
                 requireNotNull(
                     KafkaKeyContractResolver.resolve(
-                        messageName = "AccountUpdated",
-                        schema = SchemaInterface.SchemaInline(schema),
+                        kafkaKey = KafkaKey.of("AccountUpdated", SchemaInterface.SchemaInline(schema)),
                     ),
                 )
 
@@ -43,8 +43,7 @@ class KafkaKeyContractResolverTest {
     fun `returns no key contract when the binding key is absent`() {
         assertNull(
             KafkaKeyContractResolver.resolve(
-                messageName = "AccountUpdated",
-                schema = null,
+                kafkaKey = null,
             ),
         )
     }
@@ -54,10 +53,12 @@ class KafkaKeyContractResolverTest {
         val result =
             requireNotNull(
                 KafkaKeyContractResolver.resolve(
-                    messageName = "AccountUpdated",
-                    schema =
-                        SchemaInterface.SchemaInline(
-                            Schema(type = listOf("integer", "null"), format = "int64"),
+                    kafkaKey =
+                        KafkaKey.of(
+                            "AccountUpdated",
+                            SchemaInterface.SchemaInline(
+                                Schema(type = listOf("integer", "null"), format = "int64"),
+                            ),
                         ),
                 ),
             )
@@ -73,12 +74,14 @@ class KafkaKeyContractResolverTest {
         val result =
             requireNotNull(
                 KafkaKeyContractResolver.resolve(
-                    messageName = "AccountUpdated",
-                    schema =
-                        SchemaInterface.SchemaReference(
-                            Reference(
-                                ref = "./keys.yaml#/accountId",
-                                model = referencedSchema,
+                    kafkaKey =
+                        KafkaKey.of(
+                            "AccountUpdated",
+                            SchemaInterface.SchemaReference(
+                                Reference(
+                                    ref = "./keys.yaml#/accountId",
+                                    model = referencedSchema,
+                                ),
                             ),
                         ),
                 ),
@@ -105,8 +108,7 @@ class KafkaKeyContractResolverTest {
         val result =
             requireNotNull(
                 KafkaKeyContractResolver.resolve(
-                    messageName = "AccountUpdated",
-                    schema = SchemaInterface.SchemaInline(schema),
+                    kafkaKey = KafkaKey.of("AccountUpdated", SchemaInterface.SchemaInline(schema)),
                     modelPackage = "com.example.account.model",
                 ),
             )

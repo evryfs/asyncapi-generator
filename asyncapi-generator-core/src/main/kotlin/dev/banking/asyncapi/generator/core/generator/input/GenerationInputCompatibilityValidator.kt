@@ -1,10 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
-import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
-import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientContractValidator
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
@@ -129,12 +128,11 @@ internal class GenerationInputCompatibilityValidator(
     private fun validateSpringKafkaKeyPatterns(generationInput: GenerationInput) {
         generationInput.channels.forEach { channel ->
             channel.messages.forEach { message ->
-                message.keySchema?.let { keySchema ->
-                    val schema = KafkaKeySchemaResolver.resolve(message.messageName, keySchema).schema
+                message.kafkaKey?.let { kafkaKey ->
                     SourceSchemaCompatibilityValidator.validateRootJavaPattern(
                         output = "Spring Kafka client generation",
                         rootSchemaName = message.messageName,
-                        schema = schema,
+                        schema = kafkaKey.requireSchema(),
                     )
                 }
             }

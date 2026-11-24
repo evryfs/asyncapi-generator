@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.messaging
 
-import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 
@@ -35,11 +35,12 @@ internal class ChannelAnalyzer {
     ): AnalyzedMessage? {
         val message = MessagePayloadResolver.resolveMessage(messageInterface) ?: return null
         val payload = MessagePayloadResolver.resolvePayload(message, messageId) as? MessagePayload
+        val messageName = MessageNameResolver.resolve(message, messageId)
         return AnalyzedMessage(
             messageId = messageId,
-            messageName = MessageNameResolver.resolve(message, messageId),
+            messageName = messageName,
             payload = payload,
-            keySchema = message.kafkaKeySchema(),
+            kafkaKey = KafkaKey.of(messageName, message),
             headers = MessageHeaderAnalyzer.analyze(message),
         ).takeUnless { payload == null && message.payload != null }
     }

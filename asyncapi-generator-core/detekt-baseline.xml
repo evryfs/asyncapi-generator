@@ -25,7 +25,6 @@
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$private fun normalizeAsyncApiSchemaNode( schemaNode: ObjectNode, schema: Schema, )</ID>
     <ID>LongMethod:KafkaHeaderParameterNames.kt$KafkaHeaderParameterNames$fun resolve( headerContractName: String, wireNames: Collection&lt;String&gt;, ): Map&lt;String, String&gt;</ID>
-    <ID>LongMethod:KafkaKeyContractResolver.kt$KafkaKeyContractResolver$fun resolve( messageName: String, schema: SchemaInterface?, modelPackage: String? = null, ): KafkaKeyContract?</ID>
     <ID>LongMethod:KotlinModelEmitter.kt$KotlinModelEmitter$private fun dataClass(model: ObjectModel): KotlinClassTemplate</ID>
     <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createConsumer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaConsumerInterface</ID>
     <ID>LongMethod:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory$private fun createProducer(channel: SpringKafkaChannelContract): GeneratorItem.KafkaProducerClass</ID>
@@ -72,7 +71,6 @@
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
-    <ID>ReturnCount:KafkaKeySchemaResolver.kt$KafkaKeySchemaResolver$fun resolveObjectModelOrNull( messageName: String, schema: SchemaInterface, ): KafkaKeyObjectModel?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveJavaTypeName(message: AnalyzedMessage): String?</ID>
     <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveKotlinTypeName(message: AnalyzedMessage): String?</ID>
     <ID>ReturnCount:KafkaScalarTypeResolver.kt$KafkaScalarTypeResolver$private fun resolveInteger(schema: Schema): KafkaScalarType</ID>
