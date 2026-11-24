@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.messaging
 
+import dev.banking.asyncapi.generator.core.generator.normalizer.CompositionNormalizer
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -9,9 +10,12 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 /**
  * Collects the headers of a message, from its traits first and then from the message itself.
  *
- * Only object header schemas contribute; a header declared again replaces the earlier one.
+ * Header schemas composed with `allOf` are flattened first. Only object header schemas contribute; a header
+ * declared again replaces the earlier one.
  */
 internal object MessageHeaderAnalyzer {
+    private val compositionNormalizer = CompositionNormalizer()
+
     fun analyze(message: Message): AnalyzedMessageHeaders? {
         val headerSchemas =
             (
@@ -37,5 +41,6 @@ internal object MessageHeaderAnalyzer {
             is SchemaInterface.SchemaInline -> headers.schema
             is SchemaInterface.SchemaReference -> headers.linkedSchema()
             else -> null
-        }?.takeIf { schema -> schema.type.getPrimaryType() == "object" }
+        }?.let { schema -> compositionNormalizer.normalize(schema, "headers") }
+            ?.takeIf { schema -> schema.type.getPrimaryType() == "object" }
 }

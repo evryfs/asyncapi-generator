@@ -17,13 +17,18 @@ internal class CompositionNormalizer {
     private val schemaMerger = SchemaMerger()
 
     fun normalize(schemas: Map<String, Schema>): Map<String, Schema> =
-        schemas.mapValues { (name, schema) ->
-            resolveSchemaRecursive(
-                schema = schema,
-                schemaName = name,
-                visiting = Collections.newSetFromMap(IdentityHashMap<Schema, Boolean>()),
-            )
-        }
+        schemas.mapValues { (name, schema) -> normalize(schema, name) }
+
+    /** [schema] with its `allOf` compositions flattened; [schemaName] names it in failures. */
+    fun normalize(
+        schema: Schema,
+        schemaName: String,
+    ): Schema =
+        resolveSchemaRecursive(
+            schema = schema,
+            schemaName = schemaName,
+            visiting = Collections.newSetFromMap(IdentityHashMap<Schema, Boolean>()),
+        )
 
     private fun resolveSchemaRecursive(
         schema: Schema,

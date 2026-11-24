@@ -445,6 +445,24 @@ private val allScenarios: List<Scenario> = listOf(
         client = ClientConfig(),
     ),
     Scenario(
+        name = "kafka-composed-headers",
+        executions = listOf(
+            Execution(
+                id = "kotlin-client",
+                generatorName = "kotlin",
+                modelPackage = "com.example.headers.kotlin.model",
+                clientPackage = "com.example.headers.kotlin.client",
+            ),
+            Execution(
+                id = "java-client",
+                generatorName = "java",
+                modelPackage = "com.example.headers.java.model",
+                clientPackage = "com.example.headers.java.client",
+            ),
+        ),
+        client = ClientConfig(),
+    ),
+    Scenario(
         name = "avro-schema-types",
         executions = listOf(
             Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avrotypes"),

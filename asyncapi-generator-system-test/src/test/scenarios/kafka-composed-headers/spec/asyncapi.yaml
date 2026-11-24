@@ -1,0 +1,34 @@
+asyncapi: 3.0.0
+info:
+  title: Kafka composed headers
+  version: 1.0.0
+channels:
+  payments:
+    address: payments
+    messages:
+      paymentBooked:
+        $ref: '#/components/messages/PaymentBooked'
+components:
+  messages:
+    PaymentBooked:
+      name: PaymentBooked
+      headers:
+        allOf:
+          - $ref: '#/components/schemas/TracingHeaders'
+          - type: object
+            properties:
+              tenant:
+                type: string
+      payload:
+        type: object
+        properties:
+          paymentId:
+            type: string
+  schemas:
+    TracingHeaders:
+      type: object
+      required:
+        - traceId
+      properties:
+        traceId:
+          type: string
