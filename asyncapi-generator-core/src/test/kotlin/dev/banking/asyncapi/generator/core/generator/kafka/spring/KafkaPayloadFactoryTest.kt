@@ -58,27 +58,25 @@ class KafkaPayloadFactoryTest {
         val accountCreated = payloads[0]
         assertEquals("AccountCreatedPayload", accountCreated.javaTypeName)
         assertEquals("AccountCreatedPayload", accountCreated.kotlinTypeName)
-        assertEquals("com.example.model.AccountCreatedPayload", accountCreated.javaImportName)
-        assertEquals("com.example.model.AccountCreatedPayload", accountCreated.kotlinImportName)
+        assertEquals(listOf("com.example.model.AccountCreatedPayload"), accountCreated.javaImports)
+        assertEquals(listOf("com.example.model.AccountCreatedPayload"), accountCreated.kotlinImports)
         assertEquals("Created account.", accountCreated.payloadDescription)
 
         val rawEvent = payloads[1]
         assertEquals("Object", rawEvent.javaTypeName)
         assertEquals("RawEventPayload", rawEvent.kotlinTypeName)
-        assertNull(rawEvent.javaImportName)
-        assertEquals("com.example.model.RawEventPayload", rawEvent.kotlinImportName)
+        assertEquals(emptyList(), rawEvent.javaImports)
+        assertEquals(listOf("com.example.model.RawEventPayload"), rawEvent.kotlinImports)
 
         val statusChanged = payloads[2]
         assertEquals("String", statusChanged.javaTypeName)
         assertEquals("String", statusChanged.kotlinTypeName)
-        assertNull(statusChanged.javaImportName)
-        assertNull(statusChanged.kotlinImportName)
+        assertEquals(emptyList(), statusChanged.javaImports)
+        assertEquals(emptyList(), statusChanged.kotlinImports)
 
         val balanceChanged = payloads[3]
-        assertEquals("java.math.BigDecimal", balanceChanged.javaTypeName)
-        assertEquals("java.math.BigDecimal", balanceChanged.kotlinTypeName)
-        assertNull(balanceChanged.javaImportName)
-        assertNull(balanceChanged.kotlinImportName)
+        assertEquals("Double", balanceChanged.javaTypeName)
+        assertEquals("Double", balanceChanged.kotlinTypeName)
     }
 
     @Test
@@ -166,7 +164,7 @@ class KafkaPayloadFactoryTest {
         )
 
     @Test
-    fun `uses a list of the item type for array payloads and Long for wide integers`() {
+    fun `uses the model types for array and scalar payloads`() {
         val payloads =
             factory.create(
                 channel(
@@ -189,6 +187,11 @@ class KafkaPayloadFactoryTest {
                                 payloadTypeName = "CounterPayload",
                                 schema = Schema(type = "integer", format = "int64"),
                             ),
+                            analyzedMessage(
+                                messageName = "IdAssigned",
+                                payloadTypeName = "IdAssignedPayload",
+                                schema = Schema(type = "string", format = "uuid"),
+                            ),
                         ),
                 ),
             )
@@ -200,5 +203,7 @@ class KafkaPayloadFactoryTest {
         assertTrue("java.util.List" in batch.javaImports)
         assertEquals("Long", payloads[1].javaTypeName)
         assertEquals("Long", payloads[1].kotlinTypeName)
+        assertEquals("UUID", payloads[2].javaTypeName)
+        assertEquals(listOf("java.util.UUID"), payloads[2].kotlinImports)
     }
 }

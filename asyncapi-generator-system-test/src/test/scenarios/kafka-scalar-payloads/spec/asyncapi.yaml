@@ -1,0 +1,59 @@
+asyncapi: 3.0.0
+info:
+  title: Kafka scalar payloads
+  version: 1.0.0
+channels:
+  transferIds:
+    address: transfer-ids
+    messages:
+      transferId:
+        $ref: '#/components/messages/TransferId'
+  bookingTimes:
+    address: booking-times
+    messages:
+      bookedAt:
+        $ref: '#/components/messages/BookedAt'
+  bookingDates:
+    address: booking-dates
+    messages:
+      bookingDate:
+        $ref: '#/components/messages/BookingDate'
+  rates:
+    address: rates
+    messages:
+      rate:
+        $ref: '#/components/messages/Rate'
+  amounts:
+    address: amounts
+    messages:
+      amount:
+        $ref: '#/components/messages/Amount'
+components:
+  messages:
+    TransferId:
+      name: TransferId
+      payload:
+        type: string
+        format: uuid
+    BookedAt:
+      name: BookedAt
+      payload:
+        type: string
+        format: date-time
+    BookingDate:
+      name: BookingDate
+      payload:
+        type: string
+        format: date
+    Rate:
+      name: Rate
+      payload:
+        type: number
+    Amount:
+      name: Amount
+      payload:
+        $ref: '#/components/schemas/MoneyAmount'
+  schemas:
+    MoneyAmount:
+      type: number
+      multipleOf: 0.01

@@ -34,67 +34,32 @@ internal class KafkaPayloadFactory(
     private val typeMapper = ModelTypeMapper(emptyMap())
 
     private fun create(message: AnalyzedMessage): KafkaPayload {
-        val javaTypeName = resolveJavaTypeName(message)
-        val kotlinTypeName = resolveKotlinTypeName(message)
-        val collectionType = collectionType(message)
+        val type = payloadType(message)
+        val javaType = type?.takeUnless { message.schema?.isOpenPayload() == true }
         return KafkaPayload(
             messageName = message.messageName,
-            javaTypeName = javaTypeName,
-            kotlinTypeName = kotlinTypeName,
+            javaTypeName = type?.let { javaType?.let(JavaModelEmitter::typeName) ?: "Object" },
+            kotlinTypeName = type?.let(KotlinModelEmitter::typeName),
             payloadDescription = message.schema?.description,
-            javaImportName = modelImport(javaTypeName, JAVA_BUILT_IN_TYPES).takeIf { collectionType == null },
-            kotlinImportName = modelImport(kotlinTypeName, KOTLIN_BUILT_IN_TYPES).takeIf { collectionType == null },
-            javaImports = collectionType?.imports(modelPackage, "", listImport = "java.util.List").orEmpty(),
-            kotlinImports = collectionType?.imports(modelPackage, "").orEmpty(),
+            javaImports = javaType?.imports(modelPackage, "", listImport = "java.util.List").orEmpty(),
+            kotlinImports = type?.imports(modelPackage, "").orEmpty(),
             kafkaKey = message.kafkaKey,
             headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
         )
     }
 
-    /** The list type of an array payload, which has no generated model of its own; null for any other payload. */
-    private fun collectionType(message: AnalyzedMessage): TypeRef? =
-        message.schema
-            ?.takeIf { it.type.getPrimaryType() == "array" }
-            ?.let { typeMapper.map(message.messageName, it) }
-
-    private fun resolveJavaTypeName(message: AnalyzedMessage): String? {
-        val schema = message.schema ?: return null
-        if (schema.isOpenPayload()) return "Object"
-        collectionType(message)?.let { return JavaModelEmitter.typeName(it) }
-
-        return when (schema.type.getPrimaryType()) {
-            "string" -> "String"
-            "integer" -> JavaModelEmitter.typeName(typeMapper.map(message.messageName, schema))
-            "number" -> "java.math.BigDecimal"
-            "boolean" -> "Boolean"
-            else -> message.payload?.typeName
+    /**
+     * The type of a message payload. Array and scalar payloads generate no model of their own and use the
+     * list and scalar types models use; any other payload is its generated model. Java receives an open
+     * object payload as `Object`.
+     */
+    private fun payloadType(message: AnalyzedMessage): TypeRef? =
+        message.schema?.let { schema ->
+            if (schema.type.getPrimaryType() == "array") {
+                typeMapper.map(message.messageName, schema)
+            } else {
+                ModelTypeMapper.scalarType(schema)
+                    ?: TypeRef.Named(name = requireNotNull(message.payload).typeName, isModel = true)
+            }
         }
-    }
-
-    private fun resolveKotlinTypeName(message: AnalyzedMessage): String? {
-        val schema = message.schema ?: return null
-        collectionType(message)?.let { return KotlinModelEmitter.typeName(it) }
-        return when (schema.type.getPrimaryType()) {
-            "string" -> "String"
-            "integer" -> KotlinModelEmitter.typeName(typeMapper.map(message.messageName, schema))
-            "number" -> "java.math.BigDecimal"
-            "boolean" -> "Boolean"
-            else -> message.payload?.typeName
-        }
-    }
-
-    private fun modelImport(
-        typeName: String?,
-        builtInTypes: Set<String>,
-    ): String? =
-        typeName
-            ?.takeUnless { type -> type in builtInTypes }
-            ?.let { type -> "$modelPackage.$type" }
-
-    private companion object {
-        val JAVA_BUILT_IN_TYPES =
-            setOf("String", "Integer", "Long", "Boolean", "Double", "java.math.BigDecimal", "Object")
-        val KOTLIN_BUILT_IN_TYPES =
-            setOf("String", "Int", "Long", "Boolean", "java.math.BigDecimal")
-    }
 }
