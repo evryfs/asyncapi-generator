@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.model
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
+import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -47,7 +48,7 @@ internal object UnionSubtypes {
                                     // Through a reference only a one-value enum identifies the member;
                                     // a shared enum of all values does not.
                                     is SchemaInterface.SchemaReference ->
-                                        (property.reference.model as? Schema)?.takeIf {
+                                        property.linkedSchema()?.takeIf {
                                             it.const != null ||
                                                 it.enum?.size == 1
                                         }

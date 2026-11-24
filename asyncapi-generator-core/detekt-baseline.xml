@@ -16,7 +16,6 @@
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$fun load(asyncApiDocument: AsyncApiDocument): LoadedSchemas</ID>
     <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectMessages( asyncApiDocument: AsyncApiDocument, component: Component?, ): List&lt;CollectedMessage&gt;</ID>
-    <ID>LongMethod:AsyncApiSchemaLoader.kt$AsyncApiSchemaLoader$private fun collectSchemaUsage(asyncApiDocument: AsyncApiDocument): SchemaUsageIndex</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:CompositionNormalizer.kt$CompositionNormalizer$private fun resolveSchemaRecursive( schema: Schema, schemaName: String, visiting: MutableSet&lt;Schema&gt;, ): Schema</ID>

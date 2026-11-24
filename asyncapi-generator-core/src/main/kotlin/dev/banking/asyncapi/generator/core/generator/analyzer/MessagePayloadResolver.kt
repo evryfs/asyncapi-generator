@@ -11,11 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Resolves the message and payload identity shared by model and client generation.
  */
 internal object MessagePayloadResolver {
-    fun resolveMessage(messageInterface: MessageInterface): Message? =
-        when (messageInterface) {
-            is MessageInterface.MessageInline -> messageInterface.message
-            is MessageInterface.MessageReference -> messageInterface.reference.model as? Message
-        }
+    fun resolveMessage(messageInterface: MessageInterface): Message? = messageInterface.resolvedOrNull()
 
     fun resolvePayload(
         message: Message,

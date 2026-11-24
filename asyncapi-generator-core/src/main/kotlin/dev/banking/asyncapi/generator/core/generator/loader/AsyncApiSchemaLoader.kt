@@ -7,16 +7,14 @@ import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolve
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
+import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.model.channels.Channel
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
-import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
-import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.parseReference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -184,11 +182,7 @@ internal object AsyncApiSchemaLoader {
                         channelInterface.reference.ref
                             .parseReference()
                             .isExternal
-                val channel =
-                    when (channelInterface) {
-                        is ChannelInterface.ChannelInline -> channelInterface.channel
-                        is ChannelInterface.ChannelReference -> channelInterface.reference.model as? Channel
-                    } ?: return@forEach
+                val channel = channelInterface.resolvedOrNull() ?: return@forEach
                 channel.messages?.forEach { (messageKey, messageInterface) ->
                     add(
                         CollectedMessage(
@@ -316,26 +310,13 @@ internal object AsyncApiSchemaLoader {
         val payloadNames = mutableSetOf<String>()
         val headerNames = mutableSetOf<String>()
         asyncApiDocument.channels?.values?.forEach { channelInterface ->
-            val channel =
-                when (channelInterface) {
-                    is ChannelInterface.ChannelInline -> channelInterface.channel
-                    is ChannelInterface.ChannelReference -> channelInterface.reference.model as? Channel
-                } ?: return@forEach
+            val channel = channelInterface.resolvedOrNull() ?: return@forEach
             channel.messages?.values?.forEach { messageInterface ->
-                val message =
-                    when (messageInterface) {
-                        is MessageInterface.MessageInline -> messageInterface.message
-                        is MessageInterface.MessageReference -> messageInterface.reference.model as? Message
-                    } ?: return@forEach
+                val message = messageInterface.resolvedOrNull() ?: return@forEach
                 message.payload?.let { collectFromSchemaInterface(it, payloadNames, mutableSetOf()) }
                 message.headers?.let { collectFromSchemaInterface(it, headerNames, mutableSetOf()) }
                 message.traits?.forEach { traitInterface ->
-                    val trait =
-                        when (traitInterface) {
-                            is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
-                            is MessageTraitInterface.MessageTraitReference ->
-                                traitInterface.reference.model as? MessageTrait
-                        } ?: return@forEach
+                    val trait = traitInterface.resolvedOrNull() ?: return@forEach
                     trait.headers?.let { collectFromSchemaInterface(it, headerNames, mutableSetOf()) }
                 }
             }
@@ -355,7 +336,7 @@ internal object AsyncApiSchemaLoader {
             is SchemaInterface.SchemaInline -> collectFromSchema(schemaInterface.schema, sink, visitedRefs)
             is SchemaInterface.SchemaReference -> {
                 if (collectFromReference(schemaInterface.reference, sink, visitedRefs)) {
-                    (schemaInterface.reference.model as? Schema)?.let {
+                    schemaInterface.linkedSchema()?.let {
                         collectFromSchema(it, sink, visitedRefs)
                     }
                 }
