@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
@@ -96,11 +97,15 @@ internal class InlineSchemaAnalyzer {
             }
         }
 
-        /** Whether an inline schema becomes a generated type of its own: an object with properties or a string enum. */
+        /**
+         * Whether an inline schema becomes a generated type of its own: an object with
+         * properties, a string enum, or a union.
+         */
         private fun needsName(schema: Schema): Boolean {
             val primaryType = schema.type.getPrimaryType()
             return (primaryType == "object" && !schema.properties.isNullOrEmpty()) ||
-                (primaryType == "string" && !schema.enum.isNullOrEmpty())
+                (primaryType == "string" && !schema.enum.isNullOrEmpty()) ||
+                schema.isInlineUnion()
         }
 
         /** Names [processedInlineSchema] after its title or [nameHint] and returns a reference to it. */

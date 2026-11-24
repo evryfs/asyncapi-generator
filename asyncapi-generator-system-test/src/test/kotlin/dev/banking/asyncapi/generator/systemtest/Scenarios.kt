@@ -395,6 +395,13 @@ private val allScenarios: List<Scenario> = listOf(
         expectedWarnings = listOf("union members 'left_twin', 'right_twin' declare the same property names"),
     ),
     Scenario(
+        name = "inline-union-properties",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.inlineunions.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.inlineunions.java"),
+        ),
+    ),
+    Scenario(
         name = "union-discriminator-values",
         executions = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.discriminators.kotlin"),
