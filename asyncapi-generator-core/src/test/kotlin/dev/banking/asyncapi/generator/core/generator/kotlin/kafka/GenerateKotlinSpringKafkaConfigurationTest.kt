@@ -1,7 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin.kafka
 
 import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
-import dev.banking.asyncapi.generator.core.generator.kotlin.kafka.spring.KotlinSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.fixtures.springKafkaClientEmitter
+import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinClientSyntax
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -74,7 +75,8 @@ class GenerateKotlinSpringKafkaConfigurationTest {
         generateConsumers: Boolean = true,
     ): GenerationResult {
         val generator =
-            KotlinSpringKafkaGenerator(
+            springKafkaClientEmitter(
+                syntax = KotlinClientSyntax,
                 clientPackage = packageName,
                 modelPackage = packageName,
                 generateProducers = generateProducers,
