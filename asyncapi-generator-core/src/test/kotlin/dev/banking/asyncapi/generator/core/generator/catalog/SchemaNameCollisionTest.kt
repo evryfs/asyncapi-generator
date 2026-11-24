@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.loader
+package dev.banking.asyncapi.generator.core.generator.catalog
 
 import dev.banking.asyncapi.generator.core.fixtures.kafkaKeyBinding
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -27,7 +27,7 @@ class SchemaNameCollisionTest {
     fun `rejects component schemas that normalize to the same name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         schemas =
                             linkedMapOf(
@@ -50,7 +50,7 @@ class SchemaNameCollisionTest {
         val sharedSchema = Schema(type = "object")
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     schemas =
                         linkedMapOf(
@@ -76,7 +76,7 @@ class SchemaNameCollisionTest {
         assertNotSame(componentSchema, separatelyBundledReferenceModel)
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     schemas =
                         mapOf(
@@ -118,7 +118,7 @@ class SchemaNameCollisionTest {
         assertNotSame(componentPayload, separatelyBundledPayload)
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     messages =
                         mapOf(
@@ -174,7 +174,7 @@ class SchemaNameCollisionTest {
         assertNotSame(aliasPayload, channelPayload)
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     messages =
                         linkedMapOf(
@@ -218,7 +218,7 @@ class SchemaNameCollisionTest {
         assertNotSame(firstResolvedModel, secondResolvedModel)
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     messages =
                         linkedMapOf(
@@ -253,7 +253,7 @@ class SchemaNameCollisionTest {
     fun `rejects a component and inline message payload with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         schemas =
                             mapOf(
@@ -277,7 +277,7 @@ class SchemaNameCollisionTest {
     fun `rejects separately constructed message payloads with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         messages =
                             linkedMapOf(
@@ -305,7 +305,7 @@ class SchemaNameCollisionTest {
     fun `rejects external payload references with the same final fragment`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         messages =
                             linkedMapOf(
@@ -341,7 +341,7 @@ class SchemaNameCollisionTest {
     fun `rejects AsyncAPI and Multi Format declarations with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         schemas =
                             mapOf(
@@ -367,7 +367,7 @@ class SchemaNameCollisionTest {
     fun `rejects Boolean and Multi Format declarations with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         schemas =
                             mapOf(
@@ -394,7 +394,7 @@ class SchemaNameCollisionTest {
         val sharedSchema = nativeAvroSchema()
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     messages =
                         linkedMapOf(
@@ -418,7 +418,7 @@ class SchemaNameCollisionTest {
     @Test
     fun `allows same-valued Boolean declarations with the same generated name`() {
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     messages =
                         linkedMapOf(
@@ -443,7 +443,7 @@ class SchemaNameCollisionTest {
     fun `rejects differing Boolean declarations with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         messages =
                             linkedMapOf(
@@ -471,7 +471,7 @@ class SchemaNameCollisionTest {
     fun `rejects a Kafka key model colliding with a component source model`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         schemas =
                             mapOf(
@@ -498,7 +498,7 @@ class SchemaNameCollisionTest {
     fun `rejects a Kafka key model colliding with a payload source model`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         messages =
                             linkedMapOf(
@@ -530,7 +530,7 @@ class SchemaNameCollisionTest {
     fun `rejects distinct Kafka key source models with the same generated name`() {
         val error =
             assertFailsWith<SchemaNameCollision> {
-                AsyncApiSchemaLoader.load(
+                SchemaCatalogLoader.load(
                     documentWith(
                         messages =
                             linkedMapOf(
@@ -567,7 +567,7 @@ class SchemaNameCollisionTest {
         assertNotSame(componentSchema, separatelyResolvedKeySchema)
 
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     schemas =
                         mapOf(
@@ -597,7 +597,7 @@ class SchemaNameCollisionTest {
     @Test
     fun `preserves declaration order for valid contracts`() {
         val loaded =
-            AsyncApiSchemaLoader.load(
+            SchemaCatalogLoader.load(
                 documentWith(
                     schemas =
                         linkedMapOf(
