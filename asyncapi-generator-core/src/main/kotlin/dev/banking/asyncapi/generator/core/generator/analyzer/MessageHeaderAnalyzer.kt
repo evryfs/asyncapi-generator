@@ -1,95 +1,41 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.messages.Message
-import dev.banking.asyncapi.generator.core.model.messages.MessageTrait
-import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
- * Resolves individual client contract parameters from AsyncAPI message headers.
+ * Collects the headers of a message, from its traits first and then from the message itself.
+ *
+ * Only object header schemas contribute; a header declared again replaces the earlier one.
  */
 internal object MessageHeaderAnalyzer {
     fun analyze(message: Message): AnalyzedMessageHeaders? {
-        val properties = collectProperties(message)
+        val headerSchemas =
+            (
+                message.traits.orEmpty().mapNotNull { trait -> trait.resolvedOrNull()?.headers } +
+                    listOfNotNull(message.headers)
+            ).mapNotNull(::objectSchema)
+        val properties =
+            headerSchemas.fold(linkedMapOf<String, SchemaInterface>()) { headers, schema ->
+                headers.apply {
+                    putAll(schema.properties.orEmpty())
+                }
+            }
         if (properties.isEmpty()) return null
 
         return AnalyzedMessageHeaders(
             properties = properties,
-            requiredProperties = collectRequiredProperties(message),
+            requiredProperties = headerSchemas.flatMap { schema -> schema.required.orEmpty() }.distinct(),
         )
     }
 
-    private fun collectProperties(message: Message): Map<String, SchemaInterface> {
-        val headers = mutableMapOf<String, SchemaInterface>()
-
-        message.traits?.forEach { traitInterface ->
-            val trait =
-                when (traitInterface) {
-                    is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
-                    is MessageTraitInterface.MessageTraitReference -> traitInterface.reference.model as? MessageTrait
-                }
-            trait?.headers?.let { headers.putAll(extractProperties(it)) }
-        }
-
-        message.headers?.let { headers.putAll(extractProperties(it)) }
-
-        return headers
-    }
-
-    private fun collectRequiredProperties(message: Message): List<String> {
-        val required = mutableSetOf<String>()
-
-        message.traits?.forEach { traitInterface ->
-            val trait =
-                when (traitInterface) {
-                    is MessageTraitInterface.MessageTraitInline -> traitInterface.messageTrait
-                    is MessageTraitInterface.MessageTraitReference -> traitInterface.reference.model as? MessageTrait
-                }
-            trait?.headers?.let { required.addAll(extractRequiredProperties(it)) }
-        }
-
-        message.headers?.let { required.addAll(extractRequiredProperties(it)) }
-
-        return required.toList()
-    }
-
-    private fun extractRequiredProperties(schemaInterface: SchemaInterface): List<String> =
-        when (schemaInterface) {
-            is SchemaInterface.SchemaInline ->
-                if (schemaInterface.schema.type.getPrimaryType() == "object") {
-                    schemaInterface.schema.required ?: emptyList()
-                } else {
-                    emptyList()
-                }
-            is SchemaInterface.SchemaReference -> {
-                val schema = schemaInterface.reference.model as? Schema
-                if (schema?.type.getPrimaryType() == "object") {
-                    schema?.required ?: emptyList()
-                } else {
-                    emptyList()
-                }
-            }
-            else -> emptyList()
-        }
-
-    private fun extractProperties(schemaInterface: SchemaInterface): Map<String, SchemaInterface> =
-        when (schemaInterface) {
-            is SchemaInterface.SchemaInline ->
-                if (schemaInterface.schema.type.getPrimaryType() == "object") {
-                    schemaInterface.schema.properties ?: emptyMap()
-                } else {
-                    emptyMap()
-                }
-            is SchemaInterface.SchemaReference -> {
-                val schema = schemaInterface.reference.model as? Schema
-                if (schema?.type.getPrimaryType() == "object") {
-                    schema?.properties ?: emptyMap()
-                } else {
-                    emptyMap()
-                }
-            }
-            else -> emptyMap()
-        }
+    private fun objectSchema(headers: SchemaInterface): Schema? =
+        when (headers) {
+            is SchemaInterface.SchemaInline -> headers.schema
+            is SchemaInterface.SchemaReference -> headers.linkedSchema()
+            else -> null
+        }?.takeIf { schema -> schema.type.getPrimaryType() == "object" }
 }
