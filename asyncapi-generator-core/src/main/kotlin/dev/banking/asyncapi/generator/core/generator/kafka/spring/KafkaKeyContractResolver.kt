@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
@@ -9,10 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /** Resolves an AsyncAPI Kafka key schema into its generated client-contract type. */
 internal object KafkaKeyContractResolver {
-    fun resolve(
-        kafkaKey: KafkaKey?,
-        modelPackage: String? = null,
-    ): KafkaKeyContract? {
+    fun resolve(kafkaKey: KafkaKey?): KafkaKeyContract? {
         if (kafkaKey == null) return null
 
         val messageName = kafkaKey.messageName
@@ -24,57 +23,37 @@ internal object KafkaKeyContractResolver {
             )
         }
 
-        val keyType = keyType(kafkaKey, resolvedSchema, modelPackage)
         return KafkaKeyContract(
             schema = resolvedSchema,
-            javaTypeName = keyType.javaTypeName,
-            kotlinTypeName = keyType.kotlinTypeName,
-            importName = keyType.importName,
+            type = keyType(kafkaKey, resolvedSchema),
             nullable = resolvedSchema.type.isTypeNullable(),
-            isModel = keyType.isModel,
         )
     }
 
     private fun keyType(
         kafkaKey: KafkaKey,
         resolvedSchema: Schema,
-        modelPackage: String?,
-    ): KafkaKeyType =
-        KafkaScalarTypeResolver
-            .resolve(resolvedSchema)
-            ?.let { scalarType ->
-                KafkaKeyType(
-                    javaTypeName = scalarType.javaTypeName,
-                    kotlinTypeName = scalarType.kotlinTypeName,
-                    importName = scalarType.importName,
-                )
-            }
-            ?: kafkaKey.modelName?.let { modelName ->
-                KafkaKeyType(
-                    javaTypeName = modelName,
-                    kotlinTypeName = modelName,
-                    importName = modelPackage?.let { "$it.$modelName" },
-                    isModel = true,
-                )
-            }
+    ): TypeRef =
+        ModelTypeMapper.scalarType(resolvedSchema)
+            ?: kafkaKey.modelName?.let { modelName -> TypeRef.Named(name = modelName, isModel = true) }
             ?: throw UnsupportedKafkaKeySchema(
                 messageName = kafkaKey.messageName,
                 schemaType = resolvedSchema.type.getPrimaryType() ?: "unspecified",
             )
 }
 
+/**
+ * The record key parameter of a Spring Kafka client method.
+ *
+ * @param schema The key schema.
+ * @param type Type of the key parameter: a scalar, or the generated key model.
+ * @param nullable Whether the key schema allows `null`.
+ */
 internal data class KafkaKeyContract(
     val schema: Schema,
-    val javaTypeName: String,
-    val kotlinTypeName: String,
-    val importName: String? = null,
+    val type: TypeRef,
     val nullable: Boolean = false,
-    val isModel: Boolean = false,
-)
-
-private data class KafkaKeyType(
-    val javaTypeName: String,
-    val kotlinTypeName: String,
-    val importName: String? = null,
-    val isModel: Boolean = false,
-)
+) {
+    /** Whether the key is a generated model. */
+    val isModel: Boolean get() = type is TypeRef.Named
+}

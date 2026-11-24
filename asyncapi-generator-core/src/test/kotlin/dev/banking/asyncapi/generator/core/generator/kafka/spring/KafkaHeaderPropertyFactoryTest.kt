@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaHeaderSchema
 import dev.banking.asyncapi.generator.core.model.references.Reference
@@ -43,8 +44,7 @@ class KafkaHeaderPropertyFactoryTest {
                 KafkaHeaderProperty(
                     wireName = "correlationId",
                     parameterName = "correlationId",
-                    javaTypeName = "String",
-                    kotlinTypeName = "String",
+                    type = TypeRef.Scalar.STRING,
                     description = "Correlation identifier.",
                     required = true,
                     nullable = false,
@@ -52,42 +52,35 @@ class KafkaHeaderPropertyFactoryTest {
                 KafkaHeaderProperty(
                     wireName = "occurredAt",
                     parameterName = "occurredAt",
-                    javaTypeName = "OffsetDateTime",
-                    kotlinTypeName = "OffsetDateTime",
-                    importName = "java.time.OffsetDateTime",
+                    type = TypeRef.Scalar.DATE_TIME,
                     required = true,
                     nullable = false,
                 ),
                 KafkaHeaderProperty(
                     wireName = "attempt",
                     parameterName = "attempt",
-                    javaTypeName = "Integer",
-                    kotlinTypeName = "Int",
+                    type = TypeRef.Scalar.INT32,
                     required = true,
                     nullable = false,
                 ),
                 KafkaHeaderProperty(
                     wireName = "amount",
                     parameterName = "amount",
-                    javaTypeName = "BigDecimal",
-                    kotlinTypeName = "BigDecimal",
-                    importName = "java.math.BigDecimal",
+                    type = TypeRef.Scalar.DECIMAL,
                     required = false,
                     nullable = true,
                 ),
                 KafkaHeaderProperty(
                     wireName = "retryEnabled",
                     parameterName = "retryEnabled",
-                    javaTypeName = "Boolean",
-                    kotlinTypeName = "Boolean",
+                    type = TypeRef.Scalar.BOOLEAN,
                     required = false,
                     nullable = true,
                 ),
                 KafkaHeaderProperty(
                     wireName = "nullableCode",
                     parameterName = "nullableCode",
-                    javaTypeName = "String",
-                    kotlinTypeName = "String",
+                    type = TypeRef.Scalar.STRING,
                     required = true,
                     nullable = true,
                 ),
@@ -119,9 +112,7 @@ class KafkaHeaderPropertyFactoryTest {
                     messageName = "AccountEvent",
                 ).single()
 
-        assertEquals("UUID", property.javaTypeName)
-        assertEquals("UUID", property.kotlinTypeName)
-        assertEquals("java.util.UUID", property.importName)
+        assertEquals(TypeRef.Scalar.UUID, property.type)
         assertEquals(false, property.nullable)
     }
 

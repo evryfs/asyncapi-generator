@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
@@ -17,7 +18,7 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class KafkaPayloadFactoryTest {
-    private val factory = KafkaPayloadFactory(modelPackage = "com.example.model")
+    private val factory = KafkaPayloadFactory()
 
     @Test
     fun `prepares Java and Kotlin payload types without changing model ownership`() {
@@ -56,27 +57,14 @@ class KafkaPayloadFactoryTest {
             )
 
         val accountCreated = payloads[0]
-        assertEquals("AccountCreatedPayload", accountCreated.javaTypeName)
-        assertEquals("AccountCreatedPayload", accountCreated.kotlinTypeName)
-        assertEquals(listOf("com.example.model.AccountCreatedPayload"), accountCreated.javaImports)
-        assertEquals(listOf("com.example.model.AccountCreatedPayload"), accountCreated.kotlinImports)
+        assertEquals(TypeRef.Named(name = "AccountCreatedPayload", isModel = true), accountCreated.type)
         assertEquals("Created account.", accountCreated.payloadDescription)
 
         val rawEvent = payloads[1]
-        assertEquals("Object", rawEvent.javaTypeName)
-        assertEquals("RawEventPayload", rawEvent.kotlinTypeName)
-        assertEquals(emptyList(), rawEvent.javaImports)
-        assertEquals(listOf("com.example.model.RawEventPayload"), rawEvent.kotlinImports)
+        assertEquals(TypeRef.Named(name = "RawEventPayload", isModel = true, isOpenObject = true), rawEvent.type)
 
-        val statusChanged = payloads[2]
-        assertEquals("String", statusChanged.javaTypeName)
-        assertEquals("String", statusChanged.kotlinTypeName)
-        assertEquals(emptyList(), statusChanged.javaImports)
-        assertEquals(emptyList(), statusChanged.kotlinImports)
-
-        val balanceChanged = payloads[3]
-        assertEquals("Double", balanceChanged.javaTypeName)
-        assertEquals("Double", balanceChanged.kotlinTypeName)
+        assertEquals(TypeRef.Scalar.STRING, payloads[2].type)
+        assertEquals(TypeRef.Scalar.DOUBLE, payloads[3].type)
     }
 
     @Test
@@ -107,8 +95,7 @@ class KafkaPayloadFactoryTest {
                 ).single()
 
         assertFalse(payload.hasPayload)
-        assertNull(payload.javaTypeName)
-        assertNull(payload.kotlinTypeName)
+        assertNull(payload.type)
         assertEquals(keySchema, payload.kafkaKey?.declaredSchema)
         assertEquals(1, payload.headerProperties.size)
         assertEquals("correlationId", payload.headerProperties.single().wireName)
@@ -146,10 +133,7 @@ class KafkaPayloadFactoryTest {
                     ),
                 ).single()
 
-        assertEquals("AccountCreated", payload.javaTypeName)
-        assertEquals("AccountCreated", payload.kotlinTypeName)
-        assertEquals("com.example.avro.AccountCreated", payload.javaImportName)
-        assertEquals("com.example.avro.AccountCreated", payload.kotlinImportName)
+        assertEquals(TypeRef.External(name = "AccountCreated", packageName = "com.example.avro"), payload.type)
         assertEquals("traceId", payload.headerProperties.single().wireName)
     }
 
@@ -196,14 +180,8 @@ class KafkaPayloadFactoryTest {
                 ),
             )
 
-        val batch = payloads[0]
-        assertEquals("List<Order>", batch.javaTypeName)
-        assertEquals("List<Order>", batch.kotlinTypeName)
-        assertTrue("com.example.model.Order" in batch.kotlinImports)
-        assertTrue("java.util.List" in batch.javaImports)
-        assertEquals("Long", payloads[1].javaTypeName)
-        assertEquals("Long", payloads[1].kotlinTypeName)
-        assertEquals("UUID", payloads[2].javaTypeName)
-        assertEquals(listOf("java.util.UUID"), payloads[2].kotlinImports)
+        assertEquals(TypeRef.ListOf(TypeRef.Named(name = "Order", isModel = true)), payloads[0].type)
+        assertEquals(TypeRef.Scalar.INT64, payloads[1].type)
+        assertEquals(TypeRef.Scalar.UUID, payloads[2].type)
     }
 }

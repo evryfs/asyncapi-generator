@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
@@ -25,7 +27,7 @@ internal object KafkaHeaderTypeResolver {
         }
 
         val scalarType =
-            KafkaScalarTypeResolver.resolve(resolvedSchema)
+            ModelTypeMapper.scalarType(resolvedSchema)
                 ?: throw unsupported(
                     headerContractName = headerContractName,
                     wireName = wireName,
@@ -33,9 +35,7 @@ internal object KafkaHeaderTypeResolver {
                 )
 
         return KafkaHeaderType(
-            javaTypeName = scalarType.javaTypeName,
-            kotlinTypeName = scalarType.kotlinTypeName,
-            importName = scalarType.importName,
+            type = scalarType,
             schemaNullable = resolvedSchema.type.isTypeNullable(),
             description = resolvedSchema.description,
         )
@@ -80,10 +80,15 @@ internal object KafkaHeaderTypeResolver {
         )
 }
 
+/**
+ * The parameter type of a header.
+ *
+ * @param type Scalar type of the header.
+ * @param schemaNullable Whether the header schema allows `null`.
+ * @param description Description of the header schema.
+ */
 internal data class KafkaHeaderType(
-    val javaTypeName: String,
-    val kotlinTypeName: String,
-    val importName: String? = null,
+    val type: TypeRef.Scalar,
     val schemaNullable: Boolean = false,
     val description: String? = null,
 )

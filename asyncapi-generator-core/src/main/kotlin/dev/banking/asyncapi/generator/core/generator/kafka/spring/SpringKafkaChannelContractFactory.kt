@@ -7,12 +7,11 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 
 /** Prepares the language-neutral channel and method contract rendered by Spring Kafka generators. */
 internal class SpringKafkaChannelContractFactory(
-    private val modelPackage: String,
     private val additionalPayloadTypes: Set<AdditionalProducerPayloadType>,
     private val topicParameterProperties: TopicParameterProperties,
     nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
-    private val payloadFactory = KafkaPayloadFactory(modelPackage, nativeKafkaPayloadResolver)
+    private val payloadFactory = KafkaPayloadFactory(nativeKafkaPayloadResolver)
 
     fun create(channel: AnalyzedChannel): SpringKafkaChannelContract {
         val topic =
@@ -24,10 +23,7 @@ internal class SpringKafkaChannelContractFactory(
                 SpringKafkaMessageContract(
                     payload = payload,
                     keyContract =
-                        KafkaKeyContractResolver.resolve(
-                            kafkaKey = payload.kafkaKey,
-                            modelPackage = modelPackage,
-                        ),
+                        KafkaKeyContractResolver.resolve(payload.kafkaKey),
                     consumerMethodName = "listen${payload.messageName}",
                     producerMethods =
                         producerPayloadMethods(

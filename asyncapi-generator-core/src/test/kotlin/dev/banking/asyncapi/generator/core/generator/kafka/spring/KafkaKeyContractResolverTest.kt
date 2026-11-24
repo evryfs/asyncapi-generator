@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -14,13 +15,13 @@ class KafkaKeyContractResolverTest {
     fun `resolves supported scalar key schemas`() {
         val scenarios =
             listOf(
-                Schema(type = "string") to ExpectedKeyType("String", "String"),
-                Schema(type = "string", format = "uuid") to ExpectedKeyType("UUID", "UUID", "java.util.UUID"),
-                Schema(type = "integer", format = "int32") to ExpectedKeyType("Integer", "Int"),
-                Schema(type = "integer", format = "int64") to ExpectedKeyType("Long", "Long"),
-                Schema(type = "number", format = "float") to ExpectedKeyType("Float", "Float"),
-                Schema(type = "number", format = "double") to ExpectedKeyType("Double", "Double"),
-                Schema(type = "boolean") to ExpectedKeyType("Boolean", "Boolean"),
+                Schema(type = "string") to TypeRef.Scalar.STRING,
+                Schema(type = "string", format = "uuid") to TypeRef.Scalar.UUID,
+                Schema(type = "integer", format = "int32") to TypeRef.Scalar.INT32,
+                Schema(type = "integer", format = "int64") to TypeRef.Scalar.INT64,
+                Schema(type = "number", format = "float") to TypeRef.Scalar.FLOAT,
+                Schema(type = "number", format = "double") to TypeRef.Scalar.DOUBLE,
+                Schema(type = "boolean") to TypeRef.Scalar.BOOLEAN,
             )
 
         scenarios.forEach { (schema, expected) ->
@@ -32,9 +33,7 @@ class KafkaKeyContractResolverTest {
                 )
 
             assertEquals(schema, result.schema)
-            assertEquals(expected.javaTypeName, result.javaTypeName)
-            assertEquals(expected.kotlinTypeName, result.kotlinTypeName)
-            assertEquals(expected.importName, result.importName)
+            assertEquals(expected, result.type)
             assertEquals(false, result.nullable)
         }
     }
@@ -63,8 +62,7 @@ class KafkaKeyContractResolverTest {
                 ),
             )
 
-        assertEquals("Long", result.javaTypeName)
-        assertEquals("Long", result.kotlinTypeName)
+        assertEquals(TypeRef.Scalar.INT64, result.type)
         assertTrue(result.nullable)
     }
 
@@ -88,8 +86,7 @@ class KafkaKeyContractResolverTest {
             )
 
         assertEquals(referencedSchema, result.schema)
-        assertEquals("UUID", result.javaTypeName)
-        assertEquals("UUID", result.kotlinTypeName)
+        assertEquals(TypeRef.Scalar.UUID, result.type)
     }
 
     @Test
@@ -109,20 +106,11 @@ class KafkaKeyContractResolverTest {
             requireNotNull(
                 KafkaKeyContractResolver.resolve(
                     kafkaKey = KafkaKey.of("AccountUpdated", SchemaInterface.SchemaInline(schema)),
-                    modelPackage = "com.example.account.model",
                 ),
             )
 
         assertEquals(schema, result.schema)
-        assertEquals("AccountUpdatedKey", result.javaTypeName)
-        assertEquals("AccountUpdatedKey", result.kotlinTypeName)
-        assertEquals("com.example.account.model.AccountUpdatedKey", result.importName)
+        assertEquals(TypeRef.Named(name = "AccountUpdatedKey", isModel = true), result.type)
         assertTrue(result.isModel)
     }
-
-    private data class ExpectedKeyType(
-        val javaTypeName: String,
-        val kotlinTypeName: String,
-        val importName: String? = null,
-    )
 }

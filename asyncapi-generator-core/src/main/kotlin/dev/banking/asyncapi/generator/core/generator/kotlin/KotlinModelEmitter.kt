@@ -196,6 +196,7 @@ internal class KotlinModelEmitter : ModelEmitter {
                 is TypeRef.ListOf -> "List<${typeName(type.element)}>"
                 is TypeRef.MapOf -> "Map<String, ${typeName(type.value)}>"
                 is TypeRef.Named -> type.name
+                is TypeRef.External -> type.name
             }
 
         /** A Kotlin literal of [value] for a property of Kotlin type [type]. */

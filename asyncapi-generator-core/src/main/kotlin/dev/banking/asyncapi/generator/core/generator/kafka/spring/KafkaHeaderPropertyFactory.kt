@@ -27,9 +27,7 @@ internal object KafkaHeaderPropertyFactory {
             KafkaHeaderProperty(
                 wireName = wireName,
                 parameterName = parameterNames.getValue(wireName),
-                javaTypeName = headerType.javaTypeName,
-                kotlinTypeName = headerType.kotlinTypeName,
-                importName = headerType.importName,
+                type = headerType.type,
                 description = headerType.description,
                 required = required,
                 nullable = !required || headerType.schemaNullable,

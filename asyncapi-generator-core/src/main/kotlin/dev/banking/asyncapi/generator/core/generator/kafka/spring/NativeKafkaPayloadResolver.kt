@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroPayloadTypeResolver
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufPayloadTypeResolver
@@ -18,19 +19,13 @@ internal class NativeKafkaPayloadResolver(
         nativeAvroPayloadTypeResolver.resolve(payload)?.let { payloadType ->
             KafkaPayload(
                 messageName = message.messageName,
-                javaTypeName = payloadType.typeName,
-                kotlinTypeName = payloadType.typeName,
-                javaImportName = payloadType.importName,
-                kotlinImportName = payloadType.importName,
+                type = TypeRef.External(name = payloadType.typeName, packageName = payloadType.packageName),
                 kafkaKey = message.kafkaKey,
             )
         } ?: nativeProtobufPayloadTypeResolver.resolve(payload)?.let { payloadType ->
             KafkaPayload(
                 messageName = message.messageName,
-                javaTypeName = payloadType.typeName,
-                kotlinTypeName = payloadType.typeName,
-                javaImportName = payloadType.importName,
-                kotlinImportName = payloadType.importName,
+                type = TypeRef.External(name = payloadType.typeName, packageName = payloadType.packageName),
                 kafkaKey = message.kafkaKey,
             )
         }
