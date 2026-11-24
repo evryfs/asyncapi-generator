@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 
 /** Prepares contract-defined Kafka headers for language-specific client generation. */
 internal object KafkaHeaderPropertyFactory {

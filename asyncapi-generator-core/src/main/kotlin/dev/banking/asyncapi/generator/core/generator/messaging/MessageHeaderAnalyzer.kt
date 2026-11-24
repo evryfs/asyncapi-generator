@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.analyzer
+package dev.banking.asyncapi.generator.core.generator.messaging
 
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType

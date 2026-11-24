@@ -28,7 +28,13 @@ class GenerationInputFactoryTest {
         assertEquals("userEvents", channel.channelName)
         assertEquals("user.events", channel.topic)
         assertEquals("UserCreated", channel.messages.single().messageName)
-        assertEquals("UserCreatedPayload", channel.messages.single().payloadTypeName)
+        assertEquals(
+            "UserCreatedPayload",
+            channel.messages
+                .single()
+                .payload
+                ?.typeName,
+        )
     }
 
     @Test

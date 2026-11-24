@@ -1,10 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -25,7 +26,7 @@ class KafkaPayloadFactoryTest {
                 channel(
                     messages =
                         listOf(
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "AccountCreated",
                                 payloadTypeName = "AccountCreatedPayload",
                                 schema =
@@ -35,17 +36,17 @@ class KafkaPayloadFactoryTest {
                                         properties = mapOf("accountId" to SchemaFixtures.inline(type = "string")),
                                     ),
                             ),
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "RawEvent",
                                 payloadTypeName = "RawEventPayload",
                                 schema = Schema(),
                             ),
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "StatusChanged",
                                 payloadTypeName = "StatusChangedPayload",
                                 schema = Schema(type = "string"),
                             ),
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "BalanceChanged",
                                 payloadTypeName = "BalanceChangedPayload",
                                 schema = Schema(type = "number"),
@@ -89,7 +90,7 @@ class KafkaPayloadFactoryTest {
                     channel(
                         messages =
                             listOf(
-                                AnalyzedMessage(
+                                analyzedMessage(
                                     messageName = "Heartbeat",
                                     payloadTypeName = null,
                                     schema = null,
@@ -122,9 +123,9 @@ class KafkaPayloadFactoryTest {
             factory
                 .create(
                     channel(
-                        multiFormatMessages =
+                        nativeMessages =
                             listOf(
-                                AnalyzedMultiFormatMessage(
+                                nativeMessage(
                                     messageName = "AccountCreated",
                                     payloadName = "AccountCreated",
                                     schema =
@@ -156,13 +157,12 @@ class KafkaPayloadFactoryTest {
 
     private fun channel(
         messages: List<AnalyzedMessage> = emptyList(),
-        multiFormatMessages: List<AnalyzedMultiFormatMessage> = emptyList(),
+        nativeMessages: List<AnalyzedMessage> = emptyList(),
     ): AnalyzedChannel =
         AnalyzedChannel(
             channelName = "accountEvents",
             topic = "account.events",
-            messages = messages,
-            multiFormatMessages = multiFormatMessages,
+            messages = messages + nativeMessages,
         )
 
     @Test
@@ -172,7 +172,7 @@ class KafkaPayloadFactoryTest {
                 channel(
                     messages =
                         listOf(
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "OrderBatch",
                                 payloadTypeName = "OrderBatchPayload",
                                 schema =
@@ -184,7 +184,7 @@ class KafkaPayloadFactoryTest {
                                             ),
                                     ),
                             ),
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "Counter",
                                 payloadTypeName = "CounterPayload",
                                 schema = Schema(type = "integer", format = "int64"),

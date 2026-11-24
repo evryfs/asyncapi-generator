@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress
@@ -20,9 +20,8 @@ internal object SpringKafkaClientContractValidator {
             }
 
         channels
-            .firstOrNull { channel ->
-                channel.messages.isEmpty() && channel.multiFormatMessages.isEmpty()
-            }?.let { channel ->
+            .firstOrNull { channel -> channel.messages.isEmpty() }
+            ?.let { channel ->
                 throw SpringKafkaClientChannelWithoutMessages(channel.channelName)
             }
 

@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -36,7 +36,7 @@ class SpringKafkaChannelContractFactoryTest {
                     topic = "accounts.{region}.events",
                     messages =
                         listOf(
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "AccountCreated",
                                 payloadTypeName = "AccountCreatedPayload",
                                 schema =
@@ -46,7 +46,7 @@ class SpringKafkaChannelContractFactoryTest {
                                     ),
                                 keySchema = SchemaFixtures.inline(type = "string"),
                             ),
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "Heartbeat",
                                 payloadTypeName = null,
                                 schema = null,

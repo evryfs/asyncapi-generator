@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.ChannelAnalyzer
 import dev.banking.asyncapi.generator.core.generator.analyzer.SchemaAnalyzer
 import dev.banking.asyncapi.generator.core.generator.catalog.SchemaCatalogLoader
+import dev.banking.asyncapi.generator.core.generator.messaging.ChannelAnalyzer
 import dev.banking.asyncapi.generator.core.generator.normalizer.SchemaNormalizer
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 

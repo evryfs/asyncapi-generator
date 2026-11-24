@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.analyzer
+package dev.banking.asyncapi.generator.core.generator.messaging
 
 import dev.banking.asyncapi.generator.core.fixtures.kafkaKeyBinding
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
@@ -199,7 +199,7 @@ class ChannelAnalyzerTest {
 
         assertEquals("accountUpdateAlias", analyzed.messageId)
         assertEquals("AccountUpdatedV1", analyzed.messageName)
-        assertEquals("AccountChange", analyzed.payloadTypeName)
+        assertEquals("AccountChange", analyzed.payload?.typeName)
     }
 
     @Test
@@ -280,9 +280,7 @@ class ChannelAnalyzerTest {
                 .single()
 
         assertEquals("CacheInvalidatedV1", analyzed.messageName)
-        assertEquals(false, analyzed.hasPayload)
-        assertEquals(null, analyzed.payloadTypeName)
-        assertEquals(null, analyzed.schema)
+        assertEquals(null, analyzed.payload)
         assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
         assertEquals(
             listOf("correlationId"),
@@ -320,12 +318,11 @@ class ChannelAnalyzerTest {
 
         val analyzed = analyzer.analyze(doc).single()
 
-        assertTrue(analyzed.messages.isEmpty())
-        val multiFormatMessage = analyzed.multiFormatMessages.single()
+        val multiFormatMessage = analyzed.messages.single()
         assertEquals("msg", multiFormatMessage.messageId)
         assertEquals("MyMessage", multiFormatMessage.messageName)
-        assertEquals("MyMessagePayload", multiFormatMessage.payloadName)
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)
+        assertEquals("MyMessagePayload", multiFormatMessage.nativePayload?.typeName)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.nativePayload?.schema?.format)
         assertEquals(SchemaInterface.SchemaInline(keySchema), multiFormatMessage.keySchema)
     }
 
@@ -360,11 +357,10 @@ class ChannelAnalyzerTest {
 
         val analyzed = analyzer.analyze(doc).single()
 
-        assertTrue(analyzed.messages.isEmpty())
-        val multiFormatMessage = analyzed.multiFormatMessages.single()
+        val multiFormatMessage = analyzed.messages.single()
         assertEquals("MyMessage", multiFormatMessage.messageName)
-        assertEquals("UserCreated", multiFormatMessage.payloadName)
-        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.schema.format)
+        assertEquals("UserCreated", multiFormatMessage.nativePayload?.typeName)
+        assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.nativePayload?.schema?.format)
     }
 
     @Test
@@ -389,7 +385,6 @@ class ChannelAnalyzerTest {
         val analyzed = analyzer.analyze(document).single()
 
         assertTrue(analyzed.messages.isEmpty())
-        assertTrue(analyzed.multiFormatMessages.isEmpty())
     }
 
     private fun nativeAvroSchema(): MultiFormatSchema =

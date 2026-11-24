@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaHeaderSchema
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema

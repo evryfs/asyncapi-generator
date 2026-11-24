@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import org.junit.jupiter.api.Test
@@ -15,9 +15,8 @@ class NativeAvroPayloadTypeResolverTest {
     fun `resolve returns generated type name and import from Avro namespace`() {
         val payloadType =
             resolver.resolve(
-                AnalyzedMultiFormatMessage(
-                    messageName = "UserCreated",
-                    payloadName = "UserCreated",
+                ResolvedMessagePayload.MultiFormat(
+                    typeName = "UserCreated",
                     schema =
                         MultiFormatSchema(
                             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
@@ -41,9 +40,8 @@ class NativeAvroPayloadTypeResolverTest {
     fun `resolve ignores non Avro messages`() {
         val payloadType =
             resolver.resolve(
-                AnalyzedMultiFormatMessage(
-                    messageName = "UserCreated",
-                    payloadName = "UserCreated",
+                ResolvedMessagePayload.MultiFormat(
+                    typeName = "UserCreated",
                     schema =
                         MultiFormatSchema(
                             schemaFormat = "application/vnd.google.protobuf;version=3",
@@ -60,9 +58,8 @@ class NativeAvroPayloadTypeResolverTest {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedNativeAvroPayloadType> {
                 resolver.resolve(
-                    AnalyzedMultiFormatMessage(
-                        messageName = "UserCreated",
-                        payloadName = "UserCreated",
+                    ResolvedMessagePayload.MultiFormat(
+                        typeName = "UserCreated",
                         schema =
                             MultiFormatSchema(
                                 schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",

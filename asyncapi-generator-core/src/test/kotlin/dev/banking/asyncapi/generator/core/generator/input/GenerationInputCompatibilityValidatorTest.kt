@@ -1,10 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessageHeaders
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
@@ -13,6 +11,9 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ModelGenerati
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
@@ -189,7 +190,7 @@ class GenerationInputCompatibilityValidatorTest {
                                 topic = "events",
                                 messages =
                                     listOf(
-                                        AnalyzedMessage(
+                                        analyzedMessage(
                                             messageName = "Event",
                                             payloadTypeName = "UnrelatedPayload",
                                             schema = unrelatedPayload,
@@ -228,7 +229,7 @@ class GenerationInputCompatibilityValidatorTest {
                                         topic = "events",
                                         messages =
                                             listOf(
-                                                AnalyzedMessage(
+                                                analyzedMessage(
                                                     messageName = "Event",
                                                     payloadTypeName = null,
                                                     schema = null,
@@ -261,7 +262,7 @@ class GenerationInputCompatibilityValidatorTest {
                 validator.validate(
                     generationInput =
                         inputWithMessage(
-                            AnalyzedMessage(
+                            analyzedMessage(
                                 messageName = "Event",
                                 payloadTypeName = "EventPayload",
                                 schema = Schema(type = "object"),
@@ -282,7 +283,7 @@ class GenerationInputCompatibilityValidatorTest {
         validator.validate(
             generationInput =
                 inputWithMessage(
-                    AnalyzedMessage(
+                    analyzedMessage(
                         messageName = "Event",
                         payloadTypeName = "EventPayload",
                         schema = Schema(type = "object"),
@@ -321,10 +322,9 @@ class GenerationInputCompatibilityValidatorTest {
                                     AnalyzedChannel(
                                         channelName = "events",
                                         topic = "events",
-                                        messages = emptyList(),
-                                        multiFormatMessages =
+                                        messages =
                                             listOf(
-                                                AnalyzedMultiFormatMessage(
+                                                nativeMessage(
                                                     messageName = "Event",
                                                     payloadName = "Event",
                                                     schema = schema,
@@ -346,7 +346,7 @@ class GenerationInputCompatibilityValidatorTest {
         validator.validate(
             generationInput =
                 inputWithMessage(
-                    AnalyzedMessage(
+                    analyzedMessage(
                         messageName = "Event",
                         payloadTypeName = "EventPayload",
                         schema = Schema(type = "string", pattern = "["),
@@ -917,10 +917,9 @@ class GenerationInputCompatibilityValidatorTest {
                                     AnalyzedChannel(
                                         channelName = "userEvents",
                                         topic = "users",
-                                        messages = emptyList(),
-                                        multiFormatMessages =
+                                        messages =
                                             listOf(
-                                                AnalyzedMultiFormatMessage(
+                                                nativeMessage(
                                                     messageName = "UserCreated",
                                                     payloadName = "UserCreated",
                                                     schema = usedAvroSchema,
@@ -961,10 +960,9 @@ class GenerationInputCompatibilityValidatorTest {
                                     AnalyzedChannel(
                                         channelName = "userEvents",
                                         topic = "users",
-                                        messages = emptyList(),
-                                        multiFormatMessages =
+                                        messages =
                                             listOf(
-                                                AnalyzedMultiFormatMessage(
+                                                nativeMessage(
                                                     messageName = "UserCreated",
                                                     payloadName = "UserCreated",
                                                     schema = usedProtobufSchema,
@@ -1003,10 +1001,9 @@ class GenerationInputCompatibilityValidatorTest {
                             AnalyzedChannel(
                                 channelName = "userEvents",
                                 topic = "users",
-                                messages = emptyList(),
-                                multiFormatMessages =
+                                messages =
                                     listOf(
-                                        AnalyzedMultiFormatMessage(
+                                        nativeMessage(
                                             messageName = "UserCreated",
                                             payloadName = "UserCreated",
                                             schema = usedAvroSchema,
@@ -1112,13 +1109,13 @@ class GenerationInputCompatibilityValidatorTest {
                                         topic = "message.events",
                                         messages =
                                             listOf(
-                                                AnalyzedMessage(
+                                                analyzedMessage(
                                                     messageId = "my-message-v1",
                                                     messageName = "MyMessageV1",
                                                     payloadTypeName = "MyMessageV1Payload",
                                                     schema = Schema(type = "object"),
                                                 ),
-                                                AnalyzedMessage(
+                                                analyzedMessage(
                                                     messageId = "my-message-v1-byte-array",
                                                     messageName = "MyMessageV1ByteArray",
                                                     payloadTypeName = "MyMessageV1ByteArrayPayload",
@@ -1217,10 +1214,9 @@ class GenerationInputCompatibilityValidatorTest {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "users",
-                        messages = emptyList(),
-                        multiFormatMessages =
+                        messages =
                             listOf(
-                                AnalyzedMultiFormatMessage(
+                                nativeMessage(
                                     messageName = "UserCreated",
                                     payloadName = "UserCreated",
                                     schema = schema,

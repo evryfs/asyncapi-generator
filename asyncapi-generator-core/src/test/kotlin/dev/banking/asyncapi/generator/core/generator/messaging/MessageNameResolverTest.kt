@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.analyzer
+package dev.banking.asyncapi.generator.core.generator.messaging
 
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import org.junit.jupiter.api.Test

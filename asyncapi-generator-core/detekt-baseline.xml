@@ -13,7 +13,6 @@
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
-    <ID>LongMethod:ChannelAnalyzer.kt$ChannelAnalyzer$private fun resolveMessages( channelName: String, messages: Map&lt;String, MessageInterface&gt;?, ): ResolvedMessages</ID>
     <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
     <ID>LongMethod:DocumentationUtils.kt$DocumentationUtils$fun wrapForParamDoc( paramName: String, text: String, ): List&lt;String&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
@@ -35,7 +34,6 @@
     <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
-    <ID>LongMethod:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
@@ -92,7 +90,6 @@
     <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
-    <ID>ThrowsCount:NativeProtobufPayloadTypeResolver.kt$NativeProtobufPayloadTypeResolver$fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType?</ID>
     <ID>ThrowsCount:SpringKafkaClientContractValidator.kt$SpringKafkaClientContractValidator$fun validate( channels: List&lt;AnalyzedChannel&gt;, task: GenerationTask.SpringKafkaClient, )</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
@@ -159,7 +156,6 @@
     <ID>UndocumentedPublicClass:ServerVariable.kt$ServerVariable</ID>
     <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
-    <ID>UnusedParameter:ChannelAnalyzer.kt$ChannelAnalyzer$channelName: String</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
     <ID>UseRequire:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$throw IllegalArgumentException("Missing Avro schema content")</ID>
   </CurrentIssues>

@@ -21,14 +21,6 @@ internal object KafkaKeyModelSelector {
                     selectedSchemas = selected,
                 )
             }
-            channel.multiFormatMessages.forEach { message ->
-                collectKeyModel(
-                    messageName = message.messageName,
-                    keySchema = message.keySchema,
-                    availableSchemas = input.schemas,
-                    selectedSchemas = selected,
-                )
-            }
         }
 
         return selected

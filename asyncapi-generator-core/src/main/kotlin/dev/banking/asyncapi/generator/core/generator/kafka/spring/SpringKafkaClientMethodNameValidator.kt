@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
 
@@ -63,23 +63,20 @@ internal object SpringKafkaClientMethodNameValidator {
         }
 
     private fun AnalyzedChannel.messageIdentities(): List<MessageIdentity> =
-        messages.map { message ->
-            MessageIdentity(
-                messageId = message.messageId,
-                generatedName = message.messageName,
-                hasPayload = message.schema != null,
-            )
-        } +
-            multiFormatMessages
-                .filter { message ->
-                    message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf
-                }.map { message ->
-                    MessageIdentity(
-                        messageId = message.messageId,
-                        generatedName = message.messageName,
-                        hasPayload = true,
-                    )
-                }
+        messages
+            .filter { message ->
+                message.nativePayload
+                    ?.schema
+                    ?.format
+                    ?.let { format -> format.isNativeAvro || format.isNativeProtobuf }
+                    ?: true
+            }.map { message ->
+                MessageIdentity(
+                    messageId = message.messageId,
+                    generatedName = message.messageName,
+                    hasPayload = message.payload != null,
+                )
+            }
 
     private data class MessageIdentity(
         val messageId: String,

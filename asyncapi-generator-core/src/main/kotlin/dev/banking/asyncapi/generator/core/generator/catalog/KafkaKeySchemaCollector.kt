@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.catalog
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.MessageNameResolver
 import dev.banking.asyncapi.generator.core.generator.catalog.MessageSchemaCollector.CollectedMessage
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
+import dev.banking.asyncapi.generator.core.generator.messaging.MessageNameResolver
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
