@@ -31,60 +31,74 @@ internal class CompositionNormalizer {
         visiting: MutableSet<Schema>,
     ): Schema {
         if (!visiting.add(schema)) return schema
-
         try {
-            val currentSchema =
-                schema.copy(
-                    properties =
-                        schema.properties?.mapValues { (propertyName, propertySchema) ->
-                            normalizeNestedSchema(
-                                schemaInterface = propertySchema,
-                                schemaName = "$schemaName.$propertyName",
-                                visiting = visiting,
-                            ) ?: propertySchema
-                        },
-                    items =
-                        normalizeNestedSchema(
-                            schemaInterface = schema.items,
-                            schemaName = "$schemaName.items",
-                            visiting = visiting,
-                        ),
-                    additionalProperties =
-                        normalizeNestedSchema(
-                            schemaInterface = schema.additionalProperties,
-                            schemaName = "$schemaName.additionalProperties",
-                            visiting = visiting,
-                        ),
-                )
-
-            if (currentSchema.allOf.isNullOrEmpty()) {
-                return currentSchema
+            val currentSchema = withNormalizedChildren(schema, schemaName, visiting)
+            return if (currentSchema.allOf.isNullOrEmpty()) {
+                currentSchema
+            } else {
+                mergeAllOf(currentSchema, schemaName, visiting)
             }
-
-            var mergedSchema = currentSchema
-            var titleFromReference: String? = null
-
-            currentSchema.allOf.forEach { schemaInterface ->
-                if (schemaInterface is SchemaInterface.SchemaReference) {
-                    titleFromReference = schemaInterface.reference.ref.substringAfterLast('/')
-                }
-
-                resolveSubSchema(
-                    schemaInterface = schemaInterface,
-                    parentName = schemaName,
-                    visiting = visiting,
-                )?.let { parentSchema ->
-                    mergedSchema = schemaMerger.merge(parentSchema, mergedSchema)
-                }
-            }
-
-            return mergedSchema.copy(
-                allOf = null,
-                title = mergedSchema.title ?: titleFromReference,
-            )
         } finally {
             visiting.remove(schema)
         }
+    }
+
+    private fun withNormalizedChildren(
+        schema: Schema,
+        schemaName: String,
+        visiting: MutableSet<Schema>,
+    ): Schema =
+        schema.copy(
+            properties =
+                schema.properties?.mapValues { (propertyName, propertySchema) ->
+                    normalizeNestedSchema(
+                        schemaInterface = propertySchema,
+                        schemaName = "$schemaName.$propertyName",
+                        visiting = visiting,
+                    ) ?: propertySchema
+                },
+            items =
+                normalizeNestedSchema(
+                    schemaInterface = schema.items,
+                    schemaName = "$schemaName.items",
+                    visiting = visiting,
+                ),
+            additionalProperties =
+                normalizeNestedSchema(
+                    schemaInterface = schema.additionalProperties,
+                    schemaName = "$schemaName.additionalProperties",
+                    visiting = visiting,
+                ),
+        )
+
+    /**
+     * Merges every `allOf` member into [currentSchema], the schema's own keywords
+     * winning. Without a title of its own the result takes the name of the last
+     * referenced member.
+     */
+    private fun mergeAllOf(
+        currentSchema: Schema,
+        schemaName: String,
+        visiting: MutableSet<Schema>,
+    ): Schema {
+        var mergedSchema = currentSchema
+        var titleFromReference: String? = null
+        currentSchema.allOf?.forEach { schemaInterface ->
+            if (schemaInterface is SchemaInterface.SchemaReference) {
+                titleFromReference = schemaInterface.reference.ref.substringAfterLast('/')
+            }
+            resolveSubSchema(
+                schemaInterface = schemaInterface,
+                parentName = schemaName,
+                visiting = visiting,
+            )?.let { parentSchema ->
+                mergedSchema = schemaMerger.merge(parentSchema, mergedSchema)
+            }
+        }
+        return mergedSchema.copy(
+            allOf = null,
+            title = mergedSchema.title ?: titleFromReference,
+        )
     }
 
     private fun resolveSubSchema(

@@ -27,7 +27,6 @@ internal class ConditionalNormalizer {
         visiting: MutableSet<Schema>,
     ): Schema {
         if (!visiting.add(schema)) return schema
-
         try {
             val currentSchema =
                 schema.copy(
@@ -38,31 +37,32 @@ internal class ConditionalNormalizer {
                     items = normalizeNestedSchema(schema.items, visiting),
                     additionalProperties = normalizeNestedSchema(schema.additionalProperties, visiting),
                 )
-            if (
-                currentSchema.ifSchema == null &&
-                currentSchema.thenSchema == null &&
-                currentSchema.elseSchema == null
-            ) {
-                return currentSchema
-            }
-
-            val thenSchema = resolveBranchSchema(currentSchema.thenSchema, visiting)
-            val elseSchema = resolveBranchSchema(currentSchema.elseSchema, visiting)
-
-            return currentSchema.copy(
-                properties =
-                    mergeProperties(
-                        baseProperties = currentSchema.properties.orEmpty(),
-                        thenProperties = thenSchema?.properties.orEmpty(),
-                        elseProperties = elseSchema?.properties.orEmpty(),
-                    ),
-                ifSchema = null,
-                thenSchema = null,
-                elseSchema = null,
-            )
+            val conditional =
+                currentSchema.ifSchema != null || currentSchema.thenSchema != null || currentSchema.elseSchema != null
+            return if (conditional) withBranchProperties(currentSchema, visiting) else currentSchema
         } finally {
             visiting.remove(schema)
         }
+    }
+
+    /** [currentSchema] without its if/then/else, the branch properties merged into its own. */
+    private fun withBranchProperties(
+        currentSchema: Schema,
+        visiting: MutableSet<Schema>,
+    ): Schema {
+        val thenSchema = resolveBranchSchema(currentSchema.thenSchema, visiting)
+        val elseSchema = resolveBranchSchema(currentSchema.elseSchema, visiting)
+        return currentSchema.copy(
+            properties =
+                mergeProperties(
+                    baseProperties = currentSchema.properties.orEmpty(),
+                    thenProperties = thenSchema?.properties.orEmpty(),
+                    elseProperties = elseSchema?.properties.orEmpty(),
+                ),
+            ifSchema = null,
+            thenSchema = null,
+            elseSchema = null,
+        )
     }
 
     private fun mergeProperties(
@@ -99,14 +99,7 @@ internal class ConditionalNormalizer {
         thenProperty: SchemaInterface,
         elseProperty: SchemaInterface,
     ): SchemaInterface {
-        if (
-            thenProperty is SchemaInterface.SchemaReference &&
-            elseProperty is SchemaInterface.SchemaReference &&
-            thenProperty.reference.sourceId == elseProperty.reference.sourceId &&
-            thenProperty.reference.ref == elseProperty.reference.ref
-        ) {
-            return thenProperty
-        }
+        if (thenProperty.isSameReferenceAs(elseProperty)) return thenProperty
 
         val thenSchema = thenProperty.resolvedSchema()
         val elseSchema = elseProperty.resolvedSchema()
@@ -172,3 +165,10 @@ internal class ConditionalNormalizer {
             -> null
         }
 }
+
+/** Whether both are references to the same target. */
+private fun SchemaInterface.isSameReferenceAs(other: SchemaInterface): Boolean =
+    this is SchemaInterface.SchemaReference &&
+        other is SchemaInterface.SchemaReference &&
+        reference.sourceId == other.reference.sourceId &&
+        reference.ref == other.reference.ref

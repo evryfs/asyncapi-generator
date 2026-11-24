@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * to generation analysis rather than parsing or semantic conformance validation.
  */
 internal class EnumTypeAnalyzer {
+    /** [schemas] with `type: string` added to every untyped enum whose values are all strings, at any depth. */
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> =
         schemas.mapValues { (_, schema) -> analyzeSchema(schema) }
 

@@ -18,12 +18,13 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Items of a named array schema are named `<Array>Item`, so they never replace the array.
  */
 internal class InlineSchemaAnalyzer {
+    /** [schemas] with their inline objects and enums replaced by references to promoted schemas. */
     fun analyze(schemas: Map<String, Schema>): Map<String, Schema> {
         val promotion = Promotion(schemas)
+        // A name is queued only when it is new, so each schema is processed once.
         while (promotion.namesToProcess.isNotEmpty()) {
             val schemaName = promotion.namesToProcess.removeFirst()
-            if (!promotion.processed.add(schemaName)) continue
-            val originalSchema = promotion.schemas[schemaName] ?: continue
+            val originalSchema = promotion.schemas.getValue(schemaName)
             val modifiedSchema =
                 promotion.replaceInlineWithRefs(
                     schema = originalSchema,
@@ -43,7 +44,6 @@ internal class InlineSchemaAnalyzer {
     ) {
         val schemas = initial.toMutableMap()
         val namesToProcess = initial.keys.toMutableList()
-        val processed = mutableSetOf<String>()
 
         /** Where each named schema comes from, for collision messages. */
         val locations = initial.keys.associateWith { "components.schemas.$it" }.toMutableMap()
@@ -87,18 +87,28 @@ internal class InlineSchemaAnalyzer {
             owner: String,
             location: String,
         ): SchemaInterface {
-            if (schemaInterface !is SchemaInterface.SchemaInline) {
-                return schemaInterface
-            }
-
+            if (schemaInterface !is SchemaInterface.SchemaInline) return schemaInterface
             val processedInlineSchema = replaceInlineWithRefs(schemaInterface.schema, nameHint, owner, location)
-            val primaryType = processedInlineSchema.type.getPrimaryType()
-            val isInlineObject = primaryType == "object" && !processedInlineSchema.properties.isNullOrEmpty()
-            val isInlineEnum = primaryType == "string" && !processedInlineSchema.enum.isNullOrEmpty()
-            if (!isInlineObject && !isInlineEnum) {
-                return SchemaInterface.SchemaInline(processedInlineSchema)
+            return if (needsName(processedInlineSchema)) {
+                promote(processedInlineSchema, nameHint, location)
+            } else {
+                SchemaInterface.SchemaInline(processedInlineSchema)
             }
+        }
 
+        /** Whether an inline schema becomes a generated type of its own: an object with properties or a string enum. */
+        private fun needsName(schema: Schema): Boolean {
+            val primaryType = schema.type.getPrimaryType()
+            return (primaryType == "object" && !schema.properties.isNullOrEmpty()) ||
+                (primaryType == "string" && !schema.enum.isNullOrEmpty())
+        }
+
+        /** Names [processedInlineSchema] after its title or [nameHint] and returns a reference to it. */
+        private fun promote(
+            processedInlineSchema: Schema,
+            nameHint: String,
+            location: String,
+        ): SchemaInterface.SchemaReference {
             val newSchemaName =
                 processedInlineSchema.title?.takeIf { it.isNotBlank() }?.let { MapperUtil.toPascalCase(it) }
                     ?: MapperUtil.toPascalCase(nameHint)
