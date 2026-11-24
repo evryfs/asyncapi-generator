@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -42,7 +42,7 @@ internal class ReferenceAnalyzer {
         when (schemaInterface) {
             is SchemaInterface.SchemaReference -> {
                 val referencedSchema = schemaInterface.reference.model as? Schema ?: return
-                val refName = MapperUtil.toPascalCase(schemaInterface.reference.ref.substringAfterLast('/'))
+                val refName = schemaInterface.reference.generatedSchemaName()
                 if (!discoveredSchemas.containsKey(refName)) {
                     discoveredSchemas[refName] = referencedSchema
                     namesToProcess.add(refName)

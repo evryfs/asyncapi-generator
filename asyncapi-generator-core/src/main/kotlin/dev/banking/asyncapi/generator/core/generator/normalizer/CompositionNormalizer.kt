@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.util.Collections
@@ -102,7 +101,7 @@ internal class CompositionNormalizer {
                 )
             is SchemaInterface.SchemaReference -> {
                 val referencedSchema =
-                    resolveReference(schemaInterface.reference)
+                    schemaInterface.reference.finalModel() as? Schema
                         ?: throw IllegalArgumentException(
                             "Schema normalization requires allOf reference " +
                                 "'${schemaInterface.reference.ref}' in schema '$parentName' to resolve to a Schema.",
@@ -132,14 +131,4 @@ internal class CompositionNormalizer {
         } else {
             schemaInterface
         }
-
-    private fun resolveReference(reference: Reference): Schema? {
-        val visitedReferences: MutableSet<Reference> =
-            Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
-        var target: Any? = reference
-        while (target is Reference && visitedReferences.add(target)) {
-            target = target.model
-        }
-        return target as? Schema
-    }
 }

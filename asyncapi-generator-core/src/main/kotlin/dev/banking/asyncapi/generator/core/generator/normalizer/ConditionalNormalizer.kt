@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
-import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import java.util.Collections
@@ -167,19 +166,9 @@ internal class ConditionalNormalizer {
     private fun SchemaInterface.resolvedSchema(): Schema? =
         when (this) {
             is SchemaInterface.SchemaInline -> schema
-            is SchemaInterface.SchemaReference -> resolveReference(reference) as? Schema
+            is SchemaInterface.SchemaReference -> reference.finalModel() as? Schema
             is SchemaInterface.BooleanSchema,
             is SchemaInterface.MultiFormatSchemaInline,
             -> null
         }
-
-    private fun resolveReference(reference: Reference): Any? {
-        val visitedReferences: MutableSet<Reference> =
-            Collections.newSetFromMap(IdentityHashMap<Reference, Boolean>())
-        var target: Any? = reference
-        while (target is Reference && visitedReferences.add(target)) {
-            target = target.model
-        }
-        return target?.takeUnless { it is Reference }
-    }
 }

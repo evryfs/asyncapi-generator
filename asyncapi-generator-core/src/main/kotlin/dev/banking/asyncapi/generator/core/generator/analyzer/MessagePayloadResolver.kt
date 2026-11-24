@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -33,7 +33,7 @@ internal object MessagePayloadResolver {
                     schema = payload.schema,
                 )
             is SchemaInterface.SchemaReference -> {
-                val typeName = MapperUtil.toPascalCase(payload.reference.ref.substringAfterLast('/'))
+                val typeName = payload.reference.generatedSchemaName()
                 when (val model = payload.reference.model) {
                     is Schema ->
                         ResolvedMessagePayload.AsyncApi(

@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.model
 
 import dev.banking.asyncapi.generator.core.generator.context.GeneratorContext
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -33,7 +33,7 @@ internal object UnionSubtypes {
             .filterIsInstance<SchemaInterface.SchemaReference>()
             .map { member ->
                 val rawName = member.reference.ref.substringAfterLast('/')
-                val childSchemaName = MapperUtil.toPascalCase(rawName)
+                val childSchemaName = member.reference.generatedSchemaName()
                 val discriminatorValue =
                     discriminator?.let { property ->
                         context
