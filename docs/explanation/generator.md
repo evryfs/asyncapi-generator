@@ -105,9 +105,12 @@ Decisions that affect the wire format, such as enum constant names and their
 `@JsonProperty` values, property identifiers for invalid names, access
 annotations for `readOnly` and `writeOnly`, and discriminator names, are made
 in the language-neutral model (such as `EnumLiteralNormalizer` in `ir`) or in
-shared helpers (such as `JsonPropertyAccessAnnotationMapper`) that both
-emitters call, so both languages produce the same JSON. When adding a
-feature, put the decision in shared code and only the syntax in the emitters.
+the `jvm` support package that both emitters use (such as
+`JsonPropertyAccessAnnotationMapper`), so both languages produce the same JSON.
+The `jvm` package also holds what only JVM sources need: imports, Jackson and
+Jakarta Validation annotations, string literal escaping, and KDoc and Javadoc
+comments. When adding a feature, put the decision in shared code and only the
+syntax in the emitters.
 
 Spring Kafka clients follow the same split. `SpringKafkaChannelContractFactory`
 (`kafka.spring`) builds a language-neutral contract for each channel, whose

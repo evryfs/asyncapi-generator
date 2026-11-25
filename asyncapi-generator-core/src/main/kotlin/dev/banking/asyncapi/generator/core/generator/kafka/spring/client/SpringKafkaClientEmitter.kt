@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
 import dev.banking.asyncapi.generator.core.generator.ir.ClientEmitter
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import java.io.StringWriter
 
 /**

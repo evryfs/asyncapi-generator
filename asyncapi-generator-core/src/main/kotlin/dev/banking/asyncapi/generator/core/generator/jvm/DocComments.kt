@@ -1,6 +1,6 @@
-package dev.banking.asyncapi.generator.core.generator.util
+package dev.banking.asyncapi.generator.core.generator.jvm
 
-internal object DocumentationUtils {
+internal object DocComments {
     private const val WRAP_WIDTH = 120
 
     fun toKDocLines(raw: String?): List<String> {

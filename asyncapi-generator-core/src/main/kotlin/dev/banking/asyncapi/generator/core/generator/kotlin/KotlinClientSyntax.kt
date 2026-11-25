@@ -2,11 +2,11 @@ package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
-import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
+import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientSyntax
-import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
-import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
-import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /** Kotlin syntax of Spring Kafka clients: nullable types instead of nullability annotations. */
@@ -28,7 +28,7 @@ internal object KotlinClientSyntax : SpringKafkaClientSyntax {
         modelPackage: String,
     ): List<String> = type.imports(modelPackage, "")
 
-    override fun docLines(text: String?): List<String> = DocumentationUtils.toKDocLines(text)
+    override fun docLines(text: String?): List<String> = DocComments.toKDocLines(text)
 
     override fun code(text: String): String = "`$text`"
 

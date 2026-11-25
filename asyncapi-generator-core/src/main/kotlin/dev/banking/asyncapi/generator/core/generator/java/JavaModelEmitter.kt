@@ -10,21 +10,21 @@ import dev.banking.asyncapi.generator.core.generator.ir.OpenObjectModel
 import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
-import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
-import dev.banking.asyncapi.generator.core.generator.ir.imports
 import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaRecordTemplate
-import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
-import dev.banking.asyncapi.generator.core.generator.model.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
+import dev.banking.asyncapi.generator.core.generator.jvm.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceMustacheFactory
+import dev.banking.asyncapi.generator.core.generator.jvm.annotationImports
+import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
-import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
-import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import java.io.StringWriter
 
 /**
@@ -72,7 +72,7 @@ internal class JavaModelEmitter(
         return JavaClassTemplate(
             packageName = model.packageName,
             className = model.name,
-            classDocLines = DocumentationUtils.toJavaDocLines(model.description),
+            classDocLines = DocComments.toJavaDocLines(model.description),
             fields = fields,
             allFields = fields,
             imports = imports(model, properties, "java.util.Objects"),
@@ -86,7 +86,7 @@ internal class JavaModelEmitter(
         return JavaRecordTemplate(
             packageName = model.packageName,
             className = model.name,
-            classDocLines = DocumentationUtils.toJavaDocLines(model.description),
+            classDocLines = DocComments.toJavaDocLines(model.description),
             fields =
                 properties.mapIndexed { index, property ->
                     val last = index == properties.lastIndex
@@ -126,7 +126,7 @@ internal class JavaModelEmitter(
         return JavaProperty(
             name = property.identifier,
             type = type,
-            description = DocumentationUtils.toJavaDocLines(property.description),
+            description = DocComments.toJavaDocLines(property.description),
             annotations = annotations,
         )
     }
@@ -162,7 +162,7 @@ internal class JavaModelEmitter(
         mapOf(
             "packageName" to model.packageName,
             "name" to model.name,
-            "description" to DocumentationUtils.toJavaDocLines(model.description),
+            "description" to DocComments.toJavaDocLines(model.description),
             "hasJsonValues" to model.constants.any { it.jsonValue != null },
             "values" to model.constants.map { it.copy(jsonValue = it.jsonValue?.let(SourceLiteralEscaper::forJava)) },
         )
@@ -171,7 +171,7 @@ internal class JavaModelEmitter(
         mapOf(
             "packageName" to model.packageName,
             "interfaceName" to model.name,
-            "description" to DocumentationUtils.toJavaDocLines(model.description),
+            "description" to DocComments.toJavaDocLines(model.description),
             "discriminator" to model.discriminator?.let(SourceLiteralEscaper::forJava),
             "deduction" to model.deduction,
             "hasTypeInfo" to (model.discriminator != null || model.deduction),
