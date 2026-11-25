@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.ir
+package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
 /** A payload model to generate, independent of the source language it is rendered in. */
 internal sealed interface ModelDefinition {

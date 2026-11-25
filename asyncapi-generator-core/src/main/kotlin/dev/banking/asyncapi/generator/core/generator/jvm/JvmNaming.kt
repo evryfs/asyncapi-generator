@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
-import dev.banking.asyncapi.generator.core.generator.ir.SourceNaming
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.SourceNaming
 
 /**
  * Names for Kotlin and Java sources. Both languages share one set of rules, so a contract

@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
-import dev.banking.asyncapi.generator.core.generator.ir.PropertyAccess
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.PropertyAccess
 
 /**
  * Builds the `@JsonProperty` annotation of a generated property: its wire name when the source

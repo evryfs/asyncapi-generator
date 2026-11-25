@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.messaging
 
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.messages.Message
 
 /**

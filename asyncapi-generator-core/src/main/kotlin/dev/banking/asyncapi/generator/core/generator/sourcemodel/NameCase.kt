@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.ir
+package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
 /** Converts names from the contract into the casing of generated type, member and constant names. */
 internal object NameCase {

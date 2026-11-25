@@ -2,12 +2,12 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
-import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaMessageContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 
 /**
  * Builds the listener and send method views of a message, with their parameters.

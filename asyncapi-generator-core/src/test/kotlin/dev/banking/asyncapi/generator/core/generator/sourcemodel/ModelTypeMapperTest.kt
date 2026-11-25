@@ -1,9 +1,9 @@
-package dev.banking.asyncapi.generator.core.generator.ir
+package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.ListOf
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.MapOf
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.Named
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef.Scalar
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef.ListOf
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef.MapOf
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef.Named
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef.Scalar
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface

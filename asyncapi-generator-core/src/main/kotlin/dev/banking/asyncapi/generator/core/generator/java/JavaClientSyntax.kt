@@ -1,14 +1,14 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.ir.Constraints
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter.Companion.withoutOpenObjects
 import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
 import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientSyntax
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
 /** Java syntax of Spring Kafka clients: nullability annotations, and `Object` for open objects. */
 internal object JavaClientSyntax : SpringKafkaClientSyntax {

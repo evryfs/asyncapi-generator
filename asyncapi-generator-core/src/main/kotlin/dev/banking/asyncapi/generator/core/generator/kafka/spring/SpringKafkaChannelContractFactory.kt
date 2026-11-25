@@ -2,8 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 
 /**
  * Prepares the language-neutral channel and method contract rendered by Spring Kafka generators.
