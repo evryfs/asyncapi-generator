@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.ir.ClientEmitter
 import dev.banking.asyncapi.generator.core.generator.java.factory.JavaSpringKafkaModelFactory
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 
 internal class JavaSpringKafkaGenerator(

@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
@@ -19,7 +19,7 @@ class GenerateJavaPrimitivePayloadTest {
                 topic = "simple.topic.v1",
                 messages =
                     listOf(
-                        AnalyzedMessage(
+                        analyzedMessage(
                             messageName = "SimpleStringMessage",
                             payloadTypeName = "SimpleStringMessagePayload",
                             schema = stringSchema,
@@ -89,12 +89,12 @@ class GenerateJavaPrimitivePayloadTest {
                 topic = "multi.topic.v1",
                 messages =
                     listOf(
-                        AnalyzedMessage(
+                        analyzedMessage(
                             messageName = "StringMessage",
                             payloadTypeName = "StringMessagePayload",
                             schema = stringSchema,
                         ),
-                        AnalyzedMessage(
+                        analyzedMessage(
                             messageName = "IntMessage",
                             payloadTypeName = "IntMessagePayload",
                             schema = intSchema,

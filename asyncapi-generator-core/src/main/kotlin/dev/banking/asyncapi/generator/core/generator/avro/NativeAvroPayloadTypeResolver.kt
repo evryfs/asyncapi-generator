@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedNativeAvroPayloadType
 import org.apache.avro.Schema
 
@@ -13,16 +13,16 @@ import org.apache.avro.Schema
 internal class NativeAvroPayloadTypeResolver(
     private val schemaParser: NativeAvroSchemaParser = NativeAvroSchemaParser(),
 ) {
-    fun resolve(message: AnalyzedMultiFormatMessage): NativeAvroPayloadType? {
-        if (!message.schema.format.isNativeAvro) {
+    fun resolve(payload: ResolvedMessagePayload.MultiFormat): NativeAvroPayloadType? {
+        if (!payload.schema.format.isNativeAvro) {
             return null
         }
 
-        val avroSchema = schemaParser.parse(message.payloadName, message.schema)
+        val avroSchema = schemaParser.parse(payload.typeName, payload.schema)
         if (!avroSchema.supportsGeneratedType()) {
             throw UnsupportedNativeAvroPayloadType(
-                payloadName = message.payloadName,
-                schemaFormat = message.schema.schemaFormat,
+                payloadName = payload.typeName,
+                schemaFormat = payload.schema.schemaFormat,
                 schemaType = avroSchema.type.name,
             )
         }

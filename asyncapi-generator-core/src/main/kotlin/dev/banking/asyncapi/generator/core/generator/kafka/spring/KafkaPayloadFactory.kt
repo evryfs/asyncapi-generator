@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.imports
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 
@@ -21,12 +21,15 @@ internal class KafkaPayloadFactory(
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<KafkaPayload> =
-        channel.messages.map(::create) +
-            channel.multiFormatMessages.mapNotNull { message ->
-                nativeKafkaPayloadResolver.resolve(message)?.copy(
-                    headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
-                )
+        channel.messages.mapNotNull { message ->
+            when (val payload = message.nativePayload) {
+                null -> create(message)
+                else ->
+                    nativeKafkaPayloadResolver.resolve(message, payload)?.copy(
+                        headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
+                    )
             }
+        }
 
     private val typeMapper = ModelTypeMapper(emptyMap())
 
@@ -64,7 +67,7 @@ internal class KafkaPayloadFactory(
             "integer" -> JavaModelEmitter.typeName(typeMapper.map(message.messageName, schema))
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
-            else -> message.payloadTypeName
+            else -> message.payload?.typeName
         }
     }
 
@@ -76,7 +79,7 @@ internal class KafkaPayloadFactory(
             "integer" -> KotlinModelEmitter.typeName(typeMapper.map(message.messageName, schema))
             "number" -> "java.math.BigDecimal"
             "boolean" -> "Boolean"
-            else -> message.payloadTypeName
+            else -> message.payload?.typeName
         }
     }
 

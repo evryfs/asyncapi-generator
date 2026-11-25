@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
@@ -37,7 +37,7 @@ internal class GenerationInputFixtures {
                         topic = "user.events",
                         messages =
                             listOf(
-                                AnalyzedMessage(
+                                analyzedMessage(
                                     messageName = "UserSignedUp",
                                     payloadTypeName = "UserSignedUpPayload",
                                     schema = Schema(type = "object"),
@@ -104,10 +104,9 @@ internal class GenerationInputFixtures {
                     AnalyzedChannel(
                         channelName = "userEvents",
                         topic = "user.events",
-                        messages = emptyList(),
-                        multiFormatMessages =
+                        messages =
                             listOf(
-                                AnalyzedMultiFormatMessage(
+                                nativeMessage(
                                     messageName = "UserCreated",
                                     payloadName = "UserCreated",
                                     schema = nativeSchema,

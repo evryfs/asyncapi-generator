@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.java.factory
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
@@ -14,6 +13,7 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPay
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContractFactory
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.serializedPayloadDescription
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
 import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper

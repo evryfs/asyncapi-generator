@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema

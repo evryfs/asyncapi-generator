@@ -1,10 +1,10 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages
@@ -38,10 +38,9 @@ class SpringKafkaClientContractValidatorTest {
                     AnalyzedChannel(
                         channelName = "accountEvents",
                         topic = "account.events",
-                        messages = emptyList(),
-                        multiFormatMessages =
+                        messages =
                             listOf(
-                                AnalyzedMultiFormatMessage(
+                                nativeMessage(
                                     messageId = "accountUpdated",
                                     messageName = "AccountUpdated",
                                     payloadName = "AccountUpdated",
@@ -191,7 +190,7 @@ class SpringKafkaClientContractValidatorTest {
             topic = topic,
             messages =
                 listOf(
-                    AnalyzedMessage(
+                    analyzedMessage(
                         messageId = "accountUpdated",
                         messageName = "AccountUpdated",
                         payloadTypeName = "AccountUpdatedPayload",

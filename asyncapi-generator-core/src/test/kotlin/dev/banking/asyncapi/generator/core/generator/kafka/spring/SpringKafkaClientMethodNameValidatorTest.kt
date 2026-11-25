@@ -1,10 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -181,7 +182,7 @@ class SpringKafkaClientMethodNameValidatorTest {
         generatedName: String,
         hasPayload: Boolean = true,
     ): AnalyzedMessage =
-        AnalyzedMessage(
+        analyzedMessage(
             messageId = messageId,
             messageName = generatedName,
             payloadTypeName = "${generatedName}Payload",

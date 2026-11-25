@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.analyzer
+package dev.banking.asyncapi.generator.core.generator.messaging
 
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
 import dev.banking.asyncapi.generator.core.model.messages.Message
@@ -64,21 +64,44 @@ internal object MessagePayloadResolver {
     }
 }
 
+/** What a message payload resolves to. */
 internal sealed interface ResolvedMessagePayload {
+    /** Name of the generated payload type. */
     val typeName: String
 
+    /**
+     * A payload described by an AsyncAPI schema.
+     *
+     * @param typeName Name of the generated payload type.
+     * @param schema The payload schema.
+     */
     data class AsyncApi(
         override val typeName: String,
         val schema: Schema,
-    ) : ResolvedMessagePayload
+    ) : MessagePayload
 
+    /**
+     * A payload described in another schema format, such as native Avro or Protobuf.
+     *
+     * @param typeName Name of the generated payload type.
+     * @param schema The payload schema and its format.
+     */
     data class MultiFormat(
         override val typeName: String,
         val schema: MultiFormatSchema,
-    ) : ResolvedMessagePayload
+    ) : MessagePayload
 
+    /**
+     * A payload given as a boolean schema.
+     *
+     * @param typeName Name of the generated payload type.
+     * @param value The boolean schema.
+     */
     data class Boolean(
         override val typeName: String,
         val value: kotlin.Boolean,
     ) : ResolvedMessagePayload
 }
+
+/** A payload clients can be generated for: an AsyncAPI schema or a native schema. */
+internal sealed interface MessagePayload : ResolvedMessagePayload

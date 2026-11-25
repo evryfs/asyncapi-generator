@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.catalog
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.MessagePayloadResolver
-import dev.banking.asyncapi.generator.core.generator.analyzer.ResolvedMessagePayload
+import dev.banking.asyncapi.generator.core.generator.messaging.MessagePayloadResolver
+import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.components.Component

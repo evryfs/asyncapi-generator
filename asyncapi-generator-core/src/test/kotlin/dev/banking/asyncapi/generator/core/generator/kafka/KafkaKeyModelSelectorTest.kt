@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.kafka
 
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
@@ -56,10 +56,9 @@ class KafkaKeyModelSelectorTest {
                         AnalyzedChannel(
                             channelName = "accountEvents",
                             topic = "accounts.events",
-                            messages = emptyList(),
-                            multiFormatMessages =
+                            messages =
                                 listOf(
-                                    AnalyzedMultiFormatMessage(
+                                    nativeMessage(
                                         messageName = "AccountUpdated",
                                         payloadName = "AccountUpdated",
                                         schema = nativeAvroSchema(),
@@ -86,10 +85,9 @@ class KafkaKeyModelSelectorTest {
                         AnalyzedChannel(
                             channelName = "accountEvents",
                             topic = "accounts.events",
-                            messages = emptyList(),
-                            multiFormatMessages =
+                            messages =
                                 listOf(
-                                    AnalyzedMultiFormatMessage(
+                                    nativeMessage(
                                         messageName = "AccountUpdated",
                                         payloadName = "AccountUpdated",
                                         schema = nativeAvroSchema(),

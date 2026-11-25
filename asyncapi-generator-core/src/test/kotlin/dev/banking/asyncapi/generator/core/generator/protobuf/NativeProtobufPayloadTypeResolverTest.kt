@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import org.junit.jupiter.api.Test
@@ -66,9 +66,8 @@ class NativeProtobufPayloadTypeResolverTest {
     fun `resolve ignores non Protobuf messages`() {
         val payloadType =
             resolver.resolve(
-                AnalyzedMultiFormatMessage(
-                    messageName = "UserCreated",
-                    payloadName = "UserCreated",
+                ResolvedMessagePayload.MultiFormat(
+                    typeName = "UserCreated",
                     schema =
                         MultiFormatSchema(
                             schemaFormat = "application/vnd.apache.avro+json;version=1.9.0",
@@ -211,10 +210,9 @@ class NativeProtobufPayloadTypeResolverTest {
         )
     }
 
-    private fun protobufMessage(schema: String): AnalyzedMultiFormatMessage =
-        AnalyzedMultiFormatMessage(
-            messageName = "UserCreated",
-            payloadName = "UserCreated",
+    private fun protobufMessage(schema: String): ResolvedMessagePayload.MultiFormat =
+        ResolvedMessagePayload.MultiFormat(
+            typeName = "UserCreated",
             schema =
                 MultiFormatSchema(
                     schemaFormat = "application/vnd.google.protobuf;version=3",

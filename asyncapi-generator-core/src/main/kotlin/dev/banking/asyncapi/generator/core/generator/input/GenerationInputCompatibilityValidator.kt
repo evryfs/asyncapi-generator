@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.generator.avro.NativeAvroSchemaParser
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientContractValidator
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.MissingSchemaGenerationInput
@@ -137,16 +138,6 @@ internal class GenerationInputCompatibilityValidator(
                     )
                 }
             }
-            channel.multiFormatMessages.forEach { message ->
-                message.keySchema?.let { keySchema ->
-                    val schema = KafkaKeySchemaResolver.resolve(message.messageName, keySchema).schema
-                    SourceSchemaCompatibilityValidator.validateRootJavaPattern(
-                        output = "Spring Kafka client generation",
-                        rootSchemaName = message.messageName,
-                        schema = schema,
-                    )
-                }
-            }
         }
     }
 
@@ -271,17 +262,18 @@ internal class GenerationInputCompatibilityValidator(
         output: String,
         generationInput: GenerationInput,
     ) {
-        val firstMessage =
+        val firstPayload =
             generationInput.channels
                 .asSequence()
-                .flatMap { channel -> channel.multiFormatMessages.asSequence() }
-                .filterNot { message -> message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf }
+                .flatMap { channel -> channel.messages.asSequence() }
+                .mapNotNull(AnalyzedMessage::nativePayload)
+                .filterNot { payload -> payload.schema.format.isNativeAvro || payload.schema.format.isNativeProtobuf }
                 .firstOrNull() ?: return
 
         throw UnsupportedPayloadSchemaFormat(
             output = output,
-            payloadName = firstMessage.payloadName,
-            schemaFormat = firstMessage.schema.schemaFormat,
+            payloadName = firstPayload.typeName,
+            schemaFormat = firstPayload.schema.schemaFormat,
         )
     }
 
@@ -319,9 +311,10 @@ internal class GenerationInputCompatibilityValidator(
 
         return generationInput.channels
             .asSequence()
-            .flatMap { channel -> channel.multiFormatMessages.asSequence() }
-            .filter { message -> message.schema.format.isNativeAvro || message.schema.format.isNativeProtobuf }
-            .map { message -> message.payloadName }
+            .flatMap { channel -> channel.messages.asSequence() }
+            .mapNotNull(AnalyzedMessage::nativePayload)
+            .filter { payload -> payload.schema.format.isNativeAvro || payload.schema.format.isNativeProtobuf }
+            .map { payload -> payload.typeName }
             .toSet()
     }
 }

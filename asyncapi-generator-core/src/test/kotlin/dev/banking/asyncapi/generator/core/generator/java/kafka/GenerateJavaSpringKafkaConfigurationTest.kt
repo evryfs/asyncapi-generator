@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
@@ -17,7 +17,7 @@ class GenerateJavaSpringKafkaConfigurationTest {
             topic = "events",
             messages =
                 listOf(
-                    AnalyzedMessage(
+                    analyzedMessage(
                         messageName = "TestEvent",
                         payloadTypeName = "TestEventPayload",
                         schema = Schema(type = "string"),

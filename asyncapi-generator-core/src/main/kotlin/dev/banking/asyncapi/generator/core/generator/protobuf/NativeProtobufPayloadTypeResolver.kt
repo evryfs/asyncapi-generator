@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
-import dev.banking.asyncapi.generator.core.generator.analyzer.AnalyzedMultiFormatMessage
+import dev.banking.asyncapi.generator.core.generator.messaging.ResolvedMessagePayload
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedNativeProtobufPayloadType
 
 /**
@@ -14,52 +14,52 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 internal class NativeProtobufPayloadTypeResolver(
     private val schemaParser: NativeProtobufSchemaParser = NativeProtobufSchemaParser(),
 ) {
-    fun resolve(message: AnalyzedMultiFormatMessage): NativeProtobufPayloadType? {
-        if (!message.schema.format.isNativeProtobuf) {
+    fun resolve(payload: ResolvedMessagePayload.MultiFormat): NativeProtobufPayloadType? {
+        if (!payload.schema.format.isNativeProtobuf) {
             return null
         }
 
-        val protobufSchema = schemaParser.parse(message.payloadName, message.schema)
+        val protobufSchema = schemaParser.parse(payload.typeName, payload.schema)
         val packageName = protobufSchema.javaPackageName ?: protobufSchema.protoPackageName
         if (packageName.isNullOrBlank()) {
             throw unsupported(
-                message = message,
+                payload = payload,
                 reason =
                     "Protobuf client APIs require either `option java_package = \"...\";` " +
                         "or a `package ...;` declaration.",
             )
         }
 
-        if (protobufSchema.javaMultipleFiles != true) {
-            throw unsupported(
-                message = message,
-                reason =
-                    "Protobuf client APIs require `option java_multiple_files = true;` " +
-                        "so the payload message can be referenced as a top-level Java type.",
-            )
-        }
-
-        if (message.payloadName !in protobufSchema.messageNames) {
-            throw unsupported(
-                message = message,
-                reason = "Protobuf client APIs require a top-level message named '${message.payloadName}'.",
-            )
-        }
+        val reason = clientTypeViolation(protobufSchema, payload.typeName)
+        if (reason != null) throw unsupported(payload = payload, reason = reason)
 
         return NativeProtobufPayloadType(
-            typeName = message.payloadName,
+            typeName = payload.typeName,
             packageName = packageName,
-            importName = "$packageName.${message.payloadName}",
+            importName = "$packageName.${payload.typeName}",
         )
     }
 
+    private fun clientTypeViolation(
+        protobufSchema: NativeProtobufSchema,
+        typeName: String,
+    ): String? =
+        when {
+            protobufSchema.javaMultipleFiles != true ->
+                "Protobuf client APIs require `option java_multiple_files = true;` " +
+                    "so the payload message can be referenced as a top-level Java type."
+            typeName !in protobufSchema.messageNames ->
+                "Protobuf client APIs require a top-level message named '$typeName'."
+            else -> null
+        }
+
     private fun unsupported(
-        message: AnalyzedMultiFormatMessage,
+        payload: ResolvedMessagePayload.MultiFormat,
         reason: String,
     ): UnsupportedNativeProtobufPayloadType =
         UnsupportedNativeProtobufPayloadType(
-            payloadName = message.payloadName,
-            schemaFormat = message.schema.schemaFormat,
+            payloadName = payload.typeName,
+            schemaFormat = payload.schema.schemaFormat,
             reason = reason,
         )
 }
