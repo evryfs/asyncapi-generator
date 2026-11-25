@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
@@ -134,7 +135,7 @@ internal class SpringKafkaMethodViews(
             description = syntax.docLines(schema.description).ifEmpty { listOf(defaultDescription) },
             required = !nullable,
             annotations =
-                syntax.parameterConstraints(schema) +
+                syntax.parameterConstraints(Constraints.of(schema)) +
                     listOfNotNull(
                         validationAnnotations.payloadParameter
                             ?.simpleName

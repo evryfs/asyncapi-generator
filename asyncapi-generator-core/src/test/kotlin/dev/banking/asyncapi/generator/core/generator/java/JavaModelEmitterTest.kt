@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.ReservedModelName
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -54,6 +53,7 @@ class JavaModelEmitterTest {
         assertTrue(content.contains("import jakarta.validation.constraints.NotNull;"))
         assertTrue(content.contains("@NotNull\n    private UUID id;"))
         assertTrue(content.contains("private Object payload;"))
+        assertFalse(content.contains("Any payload."))
         assertFalse(content.contains("import com.example.model.Payload;"))
     }
 
@@ -99,13 +99,13 @@ class JavaModelEmitterTest {
             description = null,
             properties =
                 listOf(
-                    PropertyDefinition("id", "id", TypeRef.Scalar.UUID, required = true, schema = Schema()),
+                    PropertyDefinition("id", "id", TypeRef.Scalar.UUID, required = true),
                     PropertyDefinition(
                         "payload",
                         "payload",
                         TypeRef.Named("Payload", isModel = true, isOpenObject = true),
                         required = false,
-                        schema = Schema(type = "object"),
+                        description = "Any payload.",
                     ),
                 ),
             unions = listOf("Command"),

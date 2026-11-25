@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.ir
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
+import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.PropertyNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -103,7 +104,10 @@ internal class ModelDefinitionFactory(
             identifier = naming.propertyIdentifier(propertyName),
             type = type,
             required = propertyName in requiredProperties,
-            schema = schema,
+            nullable = schema?.type.isTypeNullable(),
+            description = schema?.description,
+            access = PropertyAccess.of(schema),
+            constraints = Constraints.of(schema),
             default = schema?.let { defaultValue(it, type) },
         )
     }

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.java
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
 import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
@@ -103,24 +104,22 @@ internal class JavaModelEmitter(
     }
 
     private fun property(definition: PropertyDefinition): JavaProperty {
-        // Java generates no type for an open object, so a reference to one has no schema to read.
+        // Java generates no type for an open object, so a property of one takes nothing from its schema.
         val property =
-            if ((definition.type as? TypeRef.Named)?.isOpenObject ==
-                true
-            ) {
-                definition.copy(schema = null)
+            if ((definition.type as? TypeRef.Named)?.isOpenObject == true) {
+                definition.copy(nullable = false, description = null, access = null, constraints = Constraints.None)
             } else {
                 definition
             }
         val type = property.type.withoutOpenObjects()
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forJava)
-        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.schema, wireName, "@JsonProperty")
+        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.access, wireName, "@JsonProperty")
         val annotations =
             buildList {
                 if (wireName != null) jsonProperty?.let(::add)
-                addAll(constraintMapper.buildAnnotations(property.schema))
+                addAll(constraintMapper.buildAnnotations(property.constraints))
                 if (wireName == null) jsonProperty?.let(::add)
-                if (property.required && !property.nullableInSchema) add("@NotNull")
+                if (property.required && !property.nullable) add("@NotNull")
                 if (type.cascadesValidation) add("@Valid")
             }
         return JavaProperty(

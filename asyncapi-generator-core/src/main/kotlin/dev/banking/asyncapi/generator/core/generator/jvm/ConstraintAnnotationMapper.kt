@@ -1,57 +1,48 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 
+/**
+ * Expresses validation constraints as Jakarta Validation annotations, written for fields of the
+ * given language.
+ *
+ * @param sourceLanguage Language of the annotated source, which decides the use-site target and escaping.
+ */
 internal class ConstraintAnnotationMapper(
     private val sourceLanguage: SourceLanguage,
 ) {
-    fun buildAnnotations(schema: Schema?): List<String> {
-        if (schema == null) return emptyList()
-
-        val annotations = mutableListOf<String>()
-        when (schema.type.getPrimaryType()) {
-            "string" -> {
-                val sizeArguments =
-                    listOfNotNull(
-                        schema.minLength?.toInt()?.let { "min = $it" },
-                        schema.maxLength?.toInt()?.let { "max = $it" },
-                    )
-                if (sizeArguments.isNotEmpty()) {
-                    annotations += annotation("Size", sizeArguments.joinToString(", "))
-                }
-                schema.pattern?.let { pattern ->
-                    annotations += annotation("Pattern", "regexp = \"${escape(pattern)}\"")
-                }
-                if (schema.format == "email") {
-                    annotations += annotation("Email")
-                }
-            }
-            "integer" -> {
-                schema.minimum?.toLong()?.let { annotations += annotation("Min", "${it}L") }
-                schema.maximum?.toLong()?.let { annotations += annotation("Max", "${it}L") }
-            }
-            "number" -> {
-                val minimum = schema.exclusiveMinimum ?: schema.minimum
-                val maximum = schema.exclusiveMaximum ?: schema.maximum
-                minimum?.let {
-                    annotations +=
-                        annotation(
-                            "DecimalMin",
-                            "value = \"$it\", inclusive = ${schema.exclusiveMinimum == null}",
-                        )
-                }
-                maximum?.let {
-                    annotations +=
-                        annotation(
-                            "DecimalMax",
-                            "value = \"$it\", inclusive = ${schema.exclusiveMaximum == null}",
-                        )
-                }
-            }
+    fun buildAnnotations(constraints: Constraints): List<String> =
+        when (constraints) {
+            is Constraints.Text -> textAnnotations(constraints)
+            is Constraints.WholeNumber ->
+                listOfNotNull(
+                    constraints.minimum?.let { annotation("Min", "${it}L") },
+                    constraints.maximum?.let { annotation("Max", "${it}L") },
+                )
+            is Constraints.Decimal ->
+                listOfNotNull(
+                    constraints.minimum?.let {
+                        annotation("DecimalMin", "value = \"${it.value}\", inclusive = ${it.inclusive}")
+                    },
+                    constraints.maximum?.let {
+                        annotation("DecimalMax", "value = \"${it.value}\", inclusive = ${it.inclusive}")
+                    },
+                )
+            Constraints.None -> emptyList()
         }
-        return annotations
+
+    private fun textAnnotations(constraints: Constraints.Text): List<String> {
+        val sizeArguments =
+            listOfNotNull(
+                constraints.minLength?.let { "min = $it" },
+                constraints.maxLength?.let { "max = $it" },
+            )
+        return listOfNotNull(
+            sizeArguments.takeIf { it.isNotEmpty() }?.let { annotation("Size", it.joinToString(", ")) },
+            constraints.pattern?.let { annotation("Pattern", "regexp = \"${escape(it)}\"") },
+            annotation("Email").takeIf { constraints.email },
+        )
     }
 
     private fun annotation(

@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
-    <ID>CyclomaticComplexMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
@@ -12,7 +11,6 @@
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
     <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
-    <ID>LongMethod:ConstraintAnnotationMapper.kt$ConstraintAnnotationMapper$fun buildAnnotations(schema: Schema?): List&lt;String&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
@@ -45,11 +43,9 @@
     <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
     <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:EnumLiteralNormalizer.kt$EnumConstant</ID>
-    <ID>OutdatedDocumentation:JsonPropertyAccessAnnotationMapper.kt$JsonPropertyAccessAnnotationMapper$fun annotationFor( schema: Schema?, wireName: String?, namedTarget: String, ): String?</ID>
     <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
     <ID>OutdatedDocumentation:ModelDefinition.kt$ModelDefinition</ID>
     <ID>OutdatedDocumentation:ModelDefinition.kt$ObjectModel : ModelDefinition</ID>
-    <ID>OutdatedDocumentation:ModelDefinition.kt$PropertyDefinition</ID>
     <ID>OutdatedDocumentation:ModelDefinition.kt$UnionModel : ModelDefinition</ID>
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun TypeRef.imports( modelPackage: String, declaringType: String, listImport: String? = null, mapImport: String? = null, ): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>

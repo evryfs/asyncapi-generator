@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -26,7 +27,7 @@ class ConstraintAnnotationMapperTest {
                 "@Pattern(regexp = \" ^\\\\d+\\\"quoted\\\"${'$'}value \")",
                 "@Email",
             ),
-            javaMapper.buildAnnotations(schema),
+            javaMapper.buildAnnotations(Constraints.of(schema)),
         )
         assertEquals(
             listOf(
@@ -34,7 +35,7 @@ class ConstraintAnnotationMapperTest {
                 "@field:Pattern(regexp = \" ^\\\\d+\\\"quoted\\\"\\${'$'}value \")",
                 "@field:Email",
             ),
-            kotlinMapper.buildAnnotations(schema),
+            kotlinMapper.buildAnnotations(Constraints.of(schema)),
         )
     }
 
@@ -42,7 +43,7 @@ class ConstraintAnnotationMapperTest {
     fun `maps integer bounds`() {
         val schema = Schema(type = "integer", minimum = 0.toBigDecimal(), maximum = 100.toBigDecimal())
 
-        assertEquals(listOf("@Min(0L)", "@Max(100L)"), javaMapper.buildAnnotations(schema))
+        assertEquals(listOf("@Min(0L)", "@Max(100L)"), javaMapper.buildAnnotations(Constraints.of(schema)))
     }
 
     @Test
@@ -60,7 +61,7 @@ class ConstraintAnnotationMapperTest {
                 "@DecimalMin(value = \"10.6\", inclusive = false)",
                 "@DecimalMax(value = \"20.5\", inclusive = true)",
             ),
-            javaMapper.buildAnnotations(schema),
+            javaMapper.buildAnnotations(Constraints.of(schema)),
         )
     }
 }

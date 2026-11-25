@@ -105,18 +105,22 @@ internal class KotlinModelEmitter(
     }
 
     private fun property(property: PropertyDefinition): KotlinProperty {
-        val schema = property.schema
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forKotlin)
-        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(schema, wireName, "@field:JsonProperty")
+        val jsonProperty =
+            JsonPropertyAccessAnnotationMapper.annotationFor(
+                property.access,
+                wireName,
+                "@field:JsonProperty",
+            )
         val annotations =
             buildList {
                 if (wireName != null) jsonProperty?.let(::add)
-                addAll(constraintMapper.buildAnnotations(schema))
+                addAll(constraintMapper.buildAnnotations(property.constraints))
                 if (wireName == null) jsonProperty?.let(::add)
                 if (property.type.cascadesValidation) add("@field:Valid")
             }
         val type = typeName(property.type)
-        val nullable = !property.required || property.nullableInSchema
+        val nullable = !property.required || property.nullable
         return KotlinProperty(
             name = property.identifier,
             type = type,

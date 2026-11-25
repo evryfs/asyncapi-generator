@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
+import dev.banking.asyncapi.generator.core.generator.ir.PropertyAccess
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -9,7 +10,7 @@ class JsonPropertyAccessAnnotationMapperTest {
     private fun annotation(
         schema: Schema?,
         wireName: String? = null,
-    ) = JsonPropertyAccessAnnotationMapper.annotationFor(schema, wireName, "@field:JsonProperty")
+    ) = JsonPropertyAccessAnnotationMapper.annotationFor(PropertyAccess.of(schema), wireName, "@field:JsonProperty")
 
     @Test
     fun `maps supported JSON property access modes`() {
