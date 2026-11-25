@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationReplyInterface
 import dev.banking.asyncapi.generator.core.model.operations.OperationTraitInterface
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import org.junit.jupiter.api.Test
@@ -189,12 +190,12 @@ class BundledDocumentApprovalTest {
         )
         val operationBinding = assertIs<BindingInterface.BindingInline>(publish.bindings?.get("kafka")).binding
         assertEquals(
-            "string",
+            JsonSchemaType.Single("string"),
             assertIs<SchemaInterface.SchemaInline>(operationBinding.protocolBindings.single().schemaFields["groupId"])
                 .schema.type,
         )
         assertEquals(
-            "string",
+            JsonSchemaType.Single("string"),
             assertIs<SchemaInterface.SchemaInline>(operationBinding.protocolBindings.single().schemaFields["clientId"])
                 .schema.type,
         )

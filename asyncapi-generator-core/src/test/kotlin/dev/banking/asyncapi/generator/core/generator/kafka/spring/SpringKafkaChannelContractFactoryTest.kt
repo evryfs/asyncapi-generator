@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalPro
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -41,7 +42,7 @@ class SpringKafkaChannelContractFactoryTest {
                                 payloadTypeName = "AccountCreatedPayload",
                                 schema =
                                     Schema(
-                                        type = "object",
+                                        type = JsonSchemaType.Single("object"),
                                         properties = mapOf("accountId" to SchemaFixtures.inline(type = "string")),
                                     ),
                                 keySchema = SchemaFixtures.inline(type = "string"),

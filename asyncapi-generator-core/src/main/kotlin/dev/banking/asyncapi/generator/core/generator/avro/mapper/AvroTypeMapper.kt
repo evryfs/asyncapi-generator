@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
@@ -46,7 +45,7 @@ internal class AvroTypeMapper(
         if (refName != null && (schema == null || !schema.isAlias())) return namedType(refName)
         if (schema == null) return "\"string\""
 
-        return when (schema.type.getPrimaryType()) {
+        return when (schema.type?.primary) {
             "array" -> "{\"type\": \"array\", \"items\": ${elementType(schema.items)}}"
             "object" -> "{\"type\": \"map\", \"values\": ${elementType(schema.additionalProperties)}}"
             else -> baseType(schema)
@@ -63,7 +62,7 @@ internal class AvroTypeMapper(
 
     private fun Schema.isAlias(): Boolean =
         enum.isNullOrEmpty() && oneOf.isNullOrEmpty() && anyOf.isNullOrEmpty() &&
-            type.getPrimaryType() in setOf("string", "number", "integer", "boolean", "array")
+            type?.primary in setOf("string", "number", "integer", "boolean", "array")
 
     private fun namedType(reference: SchemaInterface.SchemaReference): String =
         namedType(reference.reference.ref.substringAfterLast('/'))
@@ -72,7 +71,7 @@ internal class AvroTypeMapper(
     private fun namedType(schemaName: String): String = "\"$packageName.${NameCase.toPascalCase(schemaName)}\""
 
     private fun baseType(schema: Schema): String =
-        when (schema.type.getPrimaryType()) {
+        when (schema.type?.primary) {
             "string" ->
                 when (schema.format) {
                     "uuid" -> "{\"type\": \"string\", \"logicalType\": \"uuid\"}"

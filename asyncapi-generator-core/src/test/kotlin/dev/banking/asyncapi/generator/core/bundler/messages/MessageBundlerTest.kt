@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -18,7 +19,8 @@ class MessageBundlerTest {
 
     @Test
     fun `bundle bundles and inlines an unvisited message reference`() {
-        val payloadReference = Reference("#/components/schemas/User", model = Schema(type = "object"))
+        val payloadReference =
+            Reference("#/components/schemas/User", model = Schema(type = JsonSchemaType.Single("object")))
         val message =
             Message(
                 name = "userUpdated",

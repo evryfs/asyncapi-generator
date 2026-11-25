@@ -12,6 +12,7 @@ import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -31,8 +32,10 @@ class SchemaNameCollisionTest {
                     documentWith(
                         schemas =
                             linkedMapOf(
-                                "order-item" to SchemaInterface.SchemaInline(Schema(type = "object")),
-                                "order_item" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                                "order-item" to
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
+                                "order_item" to
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                             ),
                     ),
                 )
@@ -47,7 +50,7 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows normalized component names that resolve to the same schema object`() {
-        val sharedSchema = Schema(type = "object")
+        val sharedSchema = Schema(type = JsonSchemaType.Single("object"))
 
         val loaded =
             SchemaCatalogLoader.load(
@@ -71,8 +74,8 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows a component schema and payload reference to the same component declaration`() {
-        val componentSchema = Schema(type = "object")
-        val separatelyBundledReferenceModel = Schema(type = "object")
+        val componentSchema = Schema(type = JsonSchemaType.Single("object"))
+        val separatelyBundledReferenceModel = Schema(type = JsonSchemaType.Single("object"))
         assertNotSame(componentSchema, separatelyBundledReferenceModel)
 
         val loaded =
@@ -102,8 +105,8 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows a component message and channel reference to the same message declaration`() {
-        val componentPayload = Schema(type = "object")
-        val separatelyBundledPayload = Schema(type = "object")
+        val componentPayload = Schema(type = JsonSchemaType.Single("object"))
+        val separatelyBundledPayload = Schema(type = JsonSchemaType.Single("object"))
         val componentMessage =
             Message(
                 name = "EventMessage",
@@ -150,9 +153,9 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows a component message alias and channel reference to the same base message`() {
-        val basePayload = Schema(type = "object")
-        val aliasPayload = Schema(type = "object")
-        val channelPayload = Schema(type = "object")
+        val basePayload = Schema(type = JsonSchemaType.Single("object"))
+        val aliasPayload = Schema(type = JsonSchemaType.Single("object"))
+        val channelPayload = Schema(type = JsonSchemaType.Single("object"))
         val baseMessage =
             Message(
                 name = "SharedEvent",
@@ -213,8 +216,8 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows repeated references to the same external schema target`() {
-        val firstResolvedModel = Schema(type = "object")
-        val secondResolvedModel = Schema(type = "object")
+        val firstResolvedModel = Schema(type = JsonSchemaType.Single("object"))
+        val secondResolvedModel = Schema(type = JsonSchemaType.Single("object"))
         assertNotSame(firstResolvedModel, secondResolvedModel)
 
         val loaded =
@@ -258,11 +261,14 @@ class SchemaNameCollisionTest {
                         schemas =
                             mapOf(
                                 "order-created-payload" to
-                                    SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                             ),
                         messages =
                             mapOf(
-                                "orderCreated" to inlineMessage(SchemaInterface.SchemaInline(Schema(type = "object"))),
+                                "orderCreated" to
+                                    inlineMessage(
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
+                                    ),
                             ),
                     ),
                 )
@@ -283,12 +289,18 @@ class SchemaNameCollisionTest {
                             linkedMapOf(
                                 "firstOrder" to
                                     inlineMessage(
-                                        payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                        payload =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("object")),
+                                            ),
                                         name = "OrderChanged",
                                     ),
                                 "secondOrder" to
                                     inlineMessage(
-                                        payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                        payload =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("object")),
+                                            ),
                                         name = "OrderChanged",
                                     ),
                             ),
@@ -314,7 +326,7 @@ class SchemaNameCollisionTest {
                                         SchemaInterface.SchemaReference(
                                             Reference(
                                                 ref = "./created.yaml#/OrderPayload",
-                                                model = Schema(type = "object"),
+                                                model = Schema(type = JsonSchemaType.Single("object")),
                                             ),
                                         ),
                                     ),
@@ -323,7 +335,7 @@ class SchemaNameCollisionTest {
                                         SchemaInterface.SchemaReference(
                                             Reference(
                                                 ref = "./updated.yaml#/OrderPayload",
-                                                model = Schema(type = "object"),
+                                                model = Schema(type = JsonSchemaType.Single("object")),
                                             ),
                                         ),
                                     ),
@@ -345,7 +357,8 @@ class SchemaNameCollisionTest {
                     documentWith(
                         schemas =
                             mapOf(
-                                "event-payload" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                                "event-payload" to
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                             ),
                         messages =
                             mapOf(
@@ -475,14 +488,18 @@ class SchemaNameCollisionTest {
                     documentWith(
                         schemas =
                             mapOf(
-                                "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                                "account-key" to
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                             ),
                         messages =
                             mapOf(
                                 "account" to
                                     kafkaKeyMessage(
                                         name = "Account",
-                                        keySchema = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                        keySchema =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("object")),
+                                            ),
                                     ),
                             ),
                     ),
@@ -507,14 +524,17 @@ class SchemaNameCollisionTest {
                                         SchemaInterface.SchemaReference(
                                             Reference(
                                                 ref = "./payloads.yaml#/AccountKey",
-                                                model = Schema(type = "object"),
+                                                model = Schema(type = JsonSchemaType.Single("object")),
                                             ),
                                         ),
                                     ),
                                 "account" to
                                     kafkaKeyMessage(
                                         name = "Account",
-                                        keySchema = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                        keySchema =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("object")),
+                                            ),
                                     ),
                             ),
                     ),
@@ -539,7 +559,7 @@ class SchemaNameCollisionTest {
                                         name = "FirstEvent",
                                         keySchema =
                                             SchemaInterface.SchemaInline(
-                                                Schema(type = "object", title = "Shared key"),
+                                                Schema(type = JsonSchemaType.Single("object"), title = "Shared key"),
                                             ),
                                     ),
                                 "secondEvent" to
@@ -547,7 +567,7 @@ class SchemaNameCollisionTest {
                                         name = "SecondEvent",
                                         keySchema =
                                             SchemaInterface.SchemaInline(
-                                                Schema(type = "object", title = "Shared key"),
+                                                Schema(type = JsonSchemaType.Single("object"), title = "Shared key"),
                                             ),
                                     ),
                             ),
@@ -562,8 +582,8 @@ class SchemaNameCollisionTest {
 
     @Test
     fun `allows a Kafka key reference to its component source model`() {
-        val componentSchema = Schema(type = "object")
-        val separatelyResolvedKeySchema = Schema(type = "object")
+        val componentSchema = Schema(type = JsonSchemaType.Single("object"))
+        val separatelyResolvedKeySchema = Schema(type = JsonSchemaType.Single("object"))
         assertNotSame(componentSchema, separatelyResolvedKeySchema)
 
         val loaded =
@@ -601,15 +621,23 @@ class SchemaNameCollisionTest {
                 documentWith(
                     schemas =
                         linkedMapOf(
-                            "order-item" to SchemaInterface.SchemaInline(Schema(type = "object")),
-                            "payment-method" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                            "order-item" to
+                                SchemaInterface.SchemaInline(
+                                    Schema(type = JsonSchemaType.Single("object")),
+                                ),
+                            "payment-method" to
+                                SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                         ),
                     messages =
                         linkedMapOf(
                             "shipmentCreated" to
-                                inlineMessage(SchemaInterface.SchemaInline(Schema(type = "object"))),
+                                inlineMessage(
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
+                                ),
                             "invoiceCreated" to
-                                inlineMessage(SchemaInterface.SchemaInline(Schema(type = "object"))),
+                                inlineMessage(
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
+                                ),
                         ),
                 ),
             )

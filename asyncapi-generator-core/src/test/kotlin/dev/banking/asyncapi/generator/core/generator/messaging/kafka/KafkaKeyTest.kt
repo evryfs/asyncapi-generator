@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -10,7 +11,7 @@ import kotlin.test.assertSame
 class KafkaKeyTest {
     @Test
     fun `uses message name for untitled inline object key`() {
-        val schema = Schema(type = "object")
+        val schema = Schema(type = JsonSchemaType.Single("object"))
 
         val result =
             KafkaKey.of(
@@ -24,7 +25,7 @@ class KafkaKeyTest {
 
     @Test
     fun `uses schema title for titled inline object key`() {
-        val schema = Schema(type = "object", title = "Institution Account Key")
+        val schema = Schema(type = JsonSchemaType.Single("object"), title = "Institution Account Key")
 
         val result =
             KafkaKey.of(
@@ -37,7 +38,7 @@ class KafkaKeyTest {
 
     @Test
     fun `uses reference target name for referenced object key`() {
-        val schema = Schema(type = "object", title = "Ignored Reference Title")
+        val schema = Schema(type = JsonSchemaType.Single("object"), title = "Ignored Reference Title")
 
         val result =
             KafkaKey.of(

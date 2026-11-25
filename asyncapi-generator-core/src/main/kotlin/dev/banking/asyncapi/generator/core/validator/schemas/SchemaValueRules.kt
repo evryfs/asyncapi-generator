@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_CONST_TYPE
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.SCHEMA_DEFAULT_TYPE
@@ -22,15 +23,8 @@ internal class SchemaValueRules(
     fun checkType(schema: CheckedSchema) {
         when (val type = schema.node.type) {
             null -> checkMissingType(schema)
-            is String -> checkTypeName(schema, type)
-            is List<*> -> checkTypeArray(schema, type)
-            else ->
-                typeError(
-                    schema,
-                    SCHEMA_TYPE,
-                    "${schema.path.child("Schema")} 'type' field must be a string or an array of strings. " +
-                        "Found: ${type::class.simpleName}",
-                )
+            is JsonSchemaType.Single -> checkTypeName(schema, type.name)
+            is JsonSchemaType.Multiple -> checkTypeArray(schema, type.names)
         }
     }
 
@@ -110,19 +104,11 @@ internal class SchemaValueRules(
 
     private fun checkTypeArray(
         schema: CheckedSchema,
-        type: List<*>,
+        typeList: List<String>,
     ) {
         val typePath = schema.path.child("Schema")
-        if (type.isEmpty()) {
+        if (typeList.isEmpty()) {
             typeError(schema, SCHEMA_TYPE_ARRAY_NONEMPTY, "$typePath 'type' array must contain at least one type.")
-        }
-        val typeList = type.filterIsInstance<String>()
-        if (typeList.size != type.size) {
-            typeError(
-                schema,
-                SCHEMA_TYPE,
-                "$typePath all elements in 'type' array must be strings. Found non-string elements.",
-            )
         }
         val invalidTypes = typeList.filter { it !in ALLOWED_TYPES }
         if (invalidTypes.isNotEmpty()) {

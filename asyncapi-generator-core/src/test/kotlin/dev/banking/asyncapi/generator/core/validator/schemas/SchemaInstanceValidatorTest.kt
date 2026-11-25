@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface.BooleanSchema
@@ -18,17 +19,17 @@ class SchemaInstanceValidatorTest {
         val schema =
             SchemaInline(
                 Schema(
-                    type = "object",
+                    type = JsonSchemaType.Single("object"),
                     required = listOf("name"),
                     properties =
                         mapOf(
-                            "age" to SchemaInline(Schema(type = "integer", minimum = 18)),
+                            "age" to SchemaInline(Schema(type = JsonSchemaType.Single("integer"), minimum = 18)),
                             "labels" to
                                 SchemaInline(
                                     Schema(
-                                        type = "array",
+                                        type = JsonSchemaType.Single("array"),
                                         uniqueItems = true,
-                                        items = SchemaInline(Schema(type = "string")),
+                                        items = SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                                     ),
                                 ),
                         ),
@@ -63,9 +64,9 @@ class SchemaInstanceValidatorTest {
 
     @Test
     fun `evaluates composition and conditional schemas without branch noise`() {
-        val string = SchemaInline(Schema(type = "string"))
-        val number = SchemaInline(Schema(type = "number"))
-        val integer = SchemaInline(Schema(type = "integer"))
+        val string = SchemaInline(Schema(type = JsonSchemaType.Single("string")))
+        val number = SchemaInline(Schema(type = JsonSchemaType.Single("number")))
+        val integer = SchemaInline(Schema(type = JsonSchemaType.Single("integer")))
 
         val anyOf =
             validator.validate(

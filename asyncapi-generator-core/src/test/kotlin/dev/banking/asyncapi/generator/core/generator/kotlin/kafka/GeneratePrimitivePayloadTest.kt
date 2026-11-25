@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.springKafkaClientEmitter
 import dev.banking.asyncapi.generator.core.generator.AbstractKotlinGeneratorClass
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinClientSyntax
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
@@ -14,7 +15,7 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should generate client for primitive string payload`() {
         val packageName = "com.example.primitive"
-        val stringSchema = Schema(type = "string")
+        val stringSchema = Schema(type = JsonSchemaType.Single("string"))
         val channel =
             AnalyzedChannel(
                 channelName = "simple/topic",
@@ -78,8 +79,8 @@ class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should generate one producer method per payload for multiple messages`() {
         val packageName = "com.example.primitive.multi"
-        val stringSchema = Schema(type = "string")
-        val intSchema = Schema(type = "integer")
+        val stringSchema = Schema(type = JsonSchemaType.Single("string"))
+        val intSchema = Schema(type = JsonSchemaType.Single("integer"))
         val channel =
             AnalyzedChannel(
                 channelName = "multi/topic",

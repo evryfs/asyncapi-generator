@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -186,7 +187,7 @@ class SpringKafkaClientMethodNameValidatorTest {
             messageId = messageId,
             messageName = generatedName,
             payloadTypeName = "${generatedName}Payload",
-            schema = Schema(type = "object").takeIf { hasPayload },
+            schema = Schema(type = JsonSchemaType.Single("object")).takeIf { hasPayload },
         )
 
     private fun task(

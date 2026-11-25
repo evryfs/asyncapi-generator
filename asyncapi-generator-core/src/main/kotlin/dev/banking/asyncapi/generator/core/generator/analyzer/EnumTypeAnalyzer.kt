@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -39,8 +40,8 @@ internal class EnumTypeAnalyzer {
             elseSchema = schema.elseSchema?.let(::analyzeInterface),
         )
 
-    private fun inferredStringType(schema: Schema): String? =
-        "string".takeIf {
+    private fun inferredStringType(schema: Schema): JsonSchemaType? =
+        JsonSchemaType.Single("string").takeIf {
             !schema.enum.isNullOrEmpty() && schema.enum.all { value -> value is String }
         }
 

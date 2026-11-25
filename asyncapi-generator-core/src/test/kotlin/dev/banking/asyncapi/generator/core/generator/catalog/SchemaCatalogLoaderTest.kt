@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
@@ -27,7 +28,7 @@ class SchemaCatalogLoaderTest {
             Component(
                 schemas =
                     mapOf(
-                        "User" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                        "User" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                     ),
             )
         val doc = docWithComponents(components)
@@ -46,7 +47,10 @@ class SchemaCatalogLoaderTest {
                         "UserSignedUp" to
                             MessageInterface.MessageInline(
                                 Message(
-                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    payload =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(type = JsonSchemaType.Single("object")),
+                                        ),
                                 ),
                             ),
                     ),
@@ -60,7 +64,7 @@ class SchemaCatalogLoaderTest {
 
     @Test
     fun `should harvest referenced payload schemas from referenced channel messages`() {
-        val payloadSchema = Schema(type = "object")
+        val payloadSchema = Schema(type = JsonSchemaType.Single("object"))
         val message =
             Message(
                 name = "BillingAccountCreatedV1",
@@ -108,7 +112,7 @@ class SchemaCatalogLoaderTest {
 
     @Test
     fun `should load referenced component schemas using the component name`() {
-        val payloadSchema = Schema(type = "object")
+        val payloadSchema = Schema(type = JsonSchemaType.Single("object"))
         val components =
             Component(
                 schemas =
@@ -134,13 +138,13 @@ class SchemaCatalogLoaderTest {
         val recursiveReference = Reference(ref = "#/components/schemas/RecursiveNodePayload")
         val recursiveSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "children" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "array",
+                                    type = JsonSchemaType.Single("array"),
                                     items = SchemaInterface.SchemaReference(recursiveReference),
                                 ),
                             ),
@@ -186,7 +190,7 @@ class SchemaCatalogLoaderTest {
 
     @Test
     fun `should use the message id instead of title for inline generated schema names`() {
-        val keySchema = Schema(type = "object")
+        val keySchema = Schema(type = JsonSchemaType.Single("object"))
         val components =
             Component(
                 messages =
@@ -195,7 +199,10 @@ class SchemaCatalogLoaderTest {
                             MessageInterface.MessageInline(
                                 Message(
                                     title = "Human-readable account update",
-                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    payload =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(type = JsonSchemaType.Single("object")),
+                                        ),
                                     bindings = kafkaBinding(SchemaInterface.SchemaInline(keySchema)),
                                 ),
                             ),
@@ -214,11 +221,11 @@ class SchemaCatalogLoaderTest {
     fun `should harvest inline object schemas from Kafka message keys`() {
         val keySchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
-                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = "string")),
-                        "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
+                        "accountId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val components =
@@ -243,7 +250,8 @@ class SchemaCatalogLoaderTest {
 
     @Test
     fun `should harvest external referenced object schemas from Kafka message keys`() {
-        val keySchema = Schema(type = "object", title = "External title is not the reference identity")
+        val keySchema =
+            Schema(type = JsonSchemaType.Single("object"), title = "External title is not the reference identity")
         val components =
             Component(
                 messages =
@@ -278,7 +286,7 @@ class SchemaCatalogLoaderTest {
             Component(
                 schemas =
                     mapOf(
-                        "Task" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                        "Task" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                         "UserCreated" to SchemaInterface.MultiFormatSchemaInline(avroSchema),
                         "AllowAnything" to SchemaInterface.BooleanSchema(true),
                         "DenyAnything" to
@@ -424,7 +432,7 @@ class SchemaCatalogLoaderTest {
 
     @Test
     fun `should retain header-only components as declarations but not source-model schemas`() {
-        val headerSchema = Schema(type = "object")
+        val headerSchema = Schema(type = JsonSchemaType.Single("object"))
         val components =
             Component(
                 schemas =

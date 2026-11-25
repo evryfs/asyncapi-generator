@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.InlineSchemaAnalyzer
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -17,11 +18,16 @@ class InlineSchemaAnalyzerTest {
         // Arrange
         val inlineObj =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
-                    mapOf("a" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                    mapOf("a" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
-        val root = Schema(type = "object", properties = mapOf("details" to SchemaInterface.SchemaInline(inlineObj)))
+        val root =
+            Schema(
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("details" to SchemaInterface.SchemaInline(inlineObj)),
+            )
         val input = mapOf("Root" to root)
 
         // Act
@@ -41,8 +47,13 @@ class InlineSchemaAnalyzerTest {
     @Test
     fun `analyze should promote inline enum to top-level schema`() {
         // Arrange
-        val inlineEnum = Schema(type = "string", enum = listOf("A", "B"))
-        val root = Schema(type = "object", properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)))
+        val inlineEnum = Schema(type = JsonSchemaType.Single("string"), enum = listOf("A", "B"))
+        val root =
+            Schema(
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)),
+            )
         val input = mapOf("Root" to root)
 
         // Act
@@ -58,12 +69,17 @@ class InlineSchemaAnalyzerTest {
         // Arrange
         val inlineObj =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 title = "CustomName",
                 properties =
-                    mapOf("a" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                    mapOf("a" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
-        val root = Schema(type = "object", properties = mapOf("details" to SchemaInterface.SchemaInline(inlineObj)))
+        val root =
+            Schema(
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("details" to SchemaInterface.SchemaInline(inlineObj)),
+            )
         val input = mapOf("Root" to root)
 
         // Act
@@ -76,9 +92,15 @@ class InlineSchemaAnalyzerTest {
     @Test
     fun `analyze should promote array items`() {
         // Arrange
-        val itemSchema = Schema(type = "string", enum = listOf("X", "Y"))
-        val arraySchema = Schema(type = "array", items = SchemaInterface.SchemaInline(itemSchema))
-        val root = Schema(type = "object", properties = mapOf("tags" to SchemaInterface.SchemaInline(arraySchema)))
+        val itemSchema = Schema(type = JsonSchemaType.Single("string"), enum = listOf("X", "Y"))
+        val arraySchema =
+            Schema(type = JsonSchemaType.Single("array"), items = SchemaInterface.SchemaInline(itemSchema))
+        val root =
+            Schema(
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("tags" to SchemaInterface.SchemaInline(arraySchema)),
+            )
         val input = mapOf("Root" to root)
 
         // Act
@@ -92,16 +114,24 @@ class InlineSchemaAnalyzerTest {
     fun `analyze shares one name between identical inline schemas`() {
         val address =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
-                    mapOf("street" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                    mapOf("street" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
         val input =
             mapOf(
                 "Customer" to
-                    Schema(type = "object", properties = mapOf("address" to SchemaInterface.SchemaInline(address))),
+                    Schema(
+                        type = JsonSchemaType.Single("object"),
+                        properties =
+                            mapOf("address" to SchemaInterface.SchemaInline(address)),
+                    ),
                 "Supplier" to
-                    Schema(type = "object", properties = mapOf("address" to SchemaInterface.SchemaInline(address))),
+                    Schema(
+                        type = JsonSchemaType.Single("object"),
+                        properties =
+                            mapOf("address" to SchemaInterface.SchemaInline(address)),
+                    ),
             )
 
         val result = analyzer.analyze(input)
@@ -113,15 +143,20 @@ class InlineSchemaAnalyzerTest {
     fun `analyze rejects different inline schemas that would get the same name`() {
         fun withAddress(field: String) =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "address" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     properties =
-                                        mapOf(field to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                                        mapOf(
+                                            field to
+                                                SchemaInterface.SchemaInline(
+                                                    Schema(type = JsonSchemaType.Single("string")),
+                                                ),
+                                        ),
                                 ),
                             ),
                     ),
@@ -142,21 +177,31 @@ class InlineSchemaAnalyzerTest {
             mapOf(
                 "Address" to
                     Schema(
-                        type = "object",
+                        type = JsonSchemaType.Single("object"),
                         properties =
-                            mapOf("street" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                            mapOf(
+                                "street" to
+                                    SchemaInterface.SchemaInline(
+                                        Schema(type = JsonSchemaType.Single("string")),
+                                    ),
+                            ),
                     ),
                 "Customer" to
                     Schema(
-                        type = "object",
+                        type = JsonSchemaType.Single("object"),
                         properties =
                             mapOf(
                                 "address" to
                                     SchemaInterface.SchemaInline(
                                         Schema(
-                                            type = "object",
+                                            type = JsonSchemaType.Single("object"),
                                             properties =
-                                                mapOf("zip" to SchemaInterface.SchemaInline(Schema(type = "integer"))),
+                                                mapOf(
+                                                    "zip" to
+                                                        SchemaInterface.SchemaInline(
+                                                            Schema(type = JsonSchemaType.Single("integer")),
+                                                        ),
+                                                ),
                                         ),
                                     ),
                             ),
@@ -170,15 +215,22 @@ class InlineSchemaAnalyzerTest {
     fun `analyze names inline items of a named array after the array`() {
         val item =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
-                    mapOf("id" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                    mapOf("id" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
-        val input = mapOf("OrderList" to Schema(type = "array", items = SchemaInterface.SchemaInline(item)))
+        val input =
+            mapOf(
+                "OrderList" to
+                    Schema(
+                        type = JsonSchemaType.Single("array"),
+                        items = SchemaInterface.SchemaInline(item),
+                    ),
+            )
 
         val result = analyzer.analyze(input)
 
         assertEquals(item, result["OrderListItem"])
-        assertEquals("array", result["OrderList"]?.type)
+        assertEquals(JsonSchemaType.Single("array"), result["OrderList"]?.type)
     }
 }

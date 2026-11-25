@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnosticCat
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserLoadResourceLimit
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
@@ -46,7 +47,7 @@ class SchemaParserMultiFormatTest {
         val schema = assertIs<SchemaInterface.SchemaInline>(parser.parseElement(schemaNode)).schema
 
         assertEquals("Supported schema format", schema.title)
-        assertEquals("object", schema.type)
+        assertEquals(JsonSchemaType.Single("object"), schema.type)
     }
 
     @Test

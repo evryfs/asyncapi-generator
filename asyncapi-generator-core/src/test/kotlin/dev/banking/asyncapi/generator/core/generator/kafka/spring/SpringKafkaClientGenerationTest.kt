@@ -10,6 +10,9 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguag
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -226,7 +229,14 @@ class SpringKafkaClientGenerationTest {
                                                         "amount" to
                                                             SchemaFixtures.inline(type = "number", multipleOf = 0.01),
                                                         "nullableCode" to
-                                                            SchemaFixtures.inline(type = listOf("string", "null")),
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(
+                                                                    type =
+                                                                        JsonSchemaType.Multiple(
+                                                                            listOf("string", "null"),
+                                                                        ),
+                                                                ),
+                                                            ),
                                                     ),
                                                 requiredProperties =
                                                     listOf(

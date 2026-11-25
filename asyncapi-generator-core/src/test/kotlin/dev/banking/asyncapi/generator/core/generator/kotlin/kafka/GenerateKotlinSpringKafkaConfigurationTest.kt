@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.springKafkaClientEmitter
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinClientSyntax
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
@@ -21,7 +22,7 @@ class GenerateKotlinSpringKafkaConfigurationTest {
                     analyzedMessage(
                         messageName = "TestEvent",
                         payloadTypeName = "TestEventPayload",
-                        schema = Schema(type = "string"),
+                        schema = Schema(type = JsonSchemaType.Single("string")),
                     ),
                 ),
         )

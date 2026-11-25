@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -32,7 +33,7 @@ class KafkaPayloadFactoryTest {
                                 payloadTypeName = "AccountCreatedPayload",
                                 schema =
                                     Schema(
-                                        type = "object",
+                                        type = JsonSchemaType.Single("object"),
                                         description = "Created account.",
                                         properties = mapOf("accountId" to SchemaFixtures.inline(type = "string")),
                                     ),
@@ -45,12 +46,12 @@ class KafkaPayloadFactoryTest {
                             analyzedMessage(
                                 messageName = "StatusChanged",
                                 payloadTypeName = "StatusChangedPayload",
-                                schema = Schema(type = "string"),
+                                schema = Schema(type = JsonSchemaType.Single("string")),
                             ),
                             analyzedMessage(
                                 messageName = "BalanceChanged",
                                 payloadTypeName = "BalanceChangedPayload",
-                                schema = Schema(type = "number"),
+                                schema = Schema(type = JsonSchemaType.Single("number")),
                             ),
                         ),
                 ),
@@ -159,7 +160,7 @@ class KafkaPayloadFactoryTest {
                                 payloadTypeName = "OrderBatchPayload",
                                 schema =
                                     Schema(
-                                        type = "array",
+                                        type = JsonSchemaType.Single("array"),
                                         items =
                                             SchemaInterface.SchemaReference(
                                                 Reference("#/components/schemas/Order"),
@@ -169,12 +170,12 @@ class KafkaPayloadFactoryTest {
                             analyzedMessage(
                                 messageName = "Counter",
                                 payloadTypeName = "CounterPayload",
-                                schema = Schema(type = "integer", format = "int64"),
+                                schema = Schema(type = JsonSchemaType.Single("integer"), format = "int64"),
                             ),
                             analyzedMessage(
                                 messageName = "IdAssigned",
                                 payloadTypeName = "IdAssignedPayload",
-                                schema = Schema(type = "string", format = "uuid"),
+                                schema = Schema(type = JsonSchemaType.Single("string"), format = "uuid"),
                             ),
                         ),
                 ),

@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -18,8 +19,11 @@ class SchemaMergerTest {
             Schema(
                 properties =
                     mapOf(
-                        "shared" to SchemaInterface.SchemaInline(Schema(title = "BaseTitle", type = "string")),
-                        "baseOnly" to SchemaInterface.SchemaInline(Schema(type = "integer")),
+                        "shared" to
+                            SchemaInterface.SchemaInline(
+                                Schema(title = "BaseTitle", type = JsonSchemaType.Single("string")),
+                            ),
+                        "baseOnly" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                     ),
             )
         val override =
@@ -42,8 +46,8 @@ class SchemaMergerTest {
 
     @Test
     fun `preserves generator property shapes inherited from the base schema`() {
-        val stringItems = SchemaInterface.SchemaInline(Schema(type = "string"))
-        val stringValues = SchemaInterface.SchemaInline(Schema(type = "string"))
+        val stringItems = SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))
+        val stringValues = SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))
         val base =
             Schema(
                 properties =
@@ -51,14 +55,14 @@ class SchemaMergerTest {
                         "tags" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "array",
+                                    type = JsonSchemaType.Single("array"),
                                     items = stringItems,
                                 ),
                             ),
                         "attributes" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     additionalProperties = stringValues,
                                 ),
                             ),
@@ -76,12 +80,12 @@ class SchemaMergerTest {
         val result = merger.merge(base, override)
 
         val tags = (result.properties?.get("tags") as SchemaInterface.SchemaInline).schema
-        assertEquals("array", tags.type)
+        assertEquals(JsonSchemaType.Single("array"), tags.type)
         assertEquals(stringItems, tags.items)
         assertEquals("Tags.", tags.description)
 
         val attributes = (result.properties?.get("attributes") as SchemaInterface.SchemaInline).schema
-        assertEquals("object", attributes.type)
+        assertEquals(JsonSchemaType.Single("object"), attributes.type)
         assertEquals(stringValues, attributes.additionalProperties)
         assertEquals("Attributes.", attributes.description)
     }
@@ -90,7 +94,7 @@ class SchemaMergerTest {
     fun `preserves generator constraints and explicit null values`() {
         val base =
             Schema(
-                type = listOf("string", "null"),
+                type = JsonSchemaType.Multiple(listOf("string", "null")),
                 pattern = "[A-Z]+",
                 default = null,
                 defaultSet = true,
@@ -99,9 +103,9 @@ class SchemaMergerTest {
             )
 
         val result = merger.merge(base, Schema(description = "Override description."))
-        val numericResult = merger.merge(Schema(type = "number", multipleOf = 2), Schema())
+        val numericResult = merger.merge(Schema(type = JsonSchemaType.Single("number"), multipleOf = 2), Schema())
 
-        assertEquals(listOf("string", "null"), result.type)
+        assertEquals(JsonSchemaType.Multiple(listOf("string", "null")), result.type)
         assertEquals("[A-Z]+", result.pattern)
         assertNull(result.default)
         assertTrue(result.defaultSet)
@@ -159,7 +163,7 @@ class SchemaMergerTest {
     fun `selects the strictest inclusive or exclusive numeric bounds`() {
         val base =
             Schema(
-                type = "number",
+                type = JsonSchemaType.Single("number"),
                 minimum = 5,
                 exclusiveMaximum = 100,
             )

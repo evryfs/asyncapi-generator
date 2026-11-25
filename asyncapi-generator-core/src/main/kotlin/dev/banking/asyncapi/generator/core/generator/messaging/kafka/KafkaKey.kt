@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
@@ -68,7 +67,7 @@ internal data class KafkaKey private constructor(
                 schema = schema,
                 modelName =
                     schema
-                        ?.takeIf { it.type.getPrimaryType() == "object" }
+                        ?.takeIf { it.type?.primary == "object" }
                         ?.let { modelName(messageName, declaredSchema, it) },
             )
         }

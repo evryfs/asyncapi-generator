@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -19,8 +20,8 @@ class SourceSchemaCompatibilityValidatorTest {
                                 Schema(
                                     tupleItems =
                                         listOf(
-                                            inline(Schema(type = "string")),
-                                            inline(Schema(type = "integer")),
+                                            inline(Schema(type = JsonSchemaType.Single("string"))),
+                                            inline(Schema(type = JsonSchemaType.Single("integer"))),
                                         ),
                                 ),
                         ),
@@ -48,7 +49,7 @@ class SourceSchemaCompatibilityValidatorTest {
                         mapOf(
                             "Event" to
                                 Schema(
-                                    type = "array",
+                                    type = JsonSchemaType.Single("array"),
                                     items = SchemaInterface.BooleanSchema(false),
                                 ),
                         ),
@@ -78,7 +79,7 @@ class SourceSchemaCompatibilityValidatorTest {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validate(
-                    schemas = mapOf("Identifier" to Schema(type = "string", pattern = "[")),
+                    schemas = mapOf("Identifier" to Schema(type = JsonSchemaType.Single("string"), pattern = "[")),
                     checkStructuralModels = false,
                     checkJavaPatterns = true,
                 )
@@ -97,7 +98,7 @@ class SourceSchemaCompatibilityValidatorTest {
                 validate(
                     schemas =
                         linkedMapOf(
-                            "First" to Schema(type = "object"),
+                            "First" to Schema(type = JsonSchemaType.Single("object")),
                             "Second" to
                                 Schema(
                                     definitions =
@@ -107,7 +108,7 @@ class SourceSchemaCompatibilityValidatorTest {
                                                     Schema(
                                                         anyOf =
                                                             listOf(
-                                                                inline(Schema(type = "string")),
+                                                                inline(Schema(type = JsonSchemaType.Single("string"))),
                                                                 inline(
                                                                     Schema(
                                                                         items = SchemaInterface.BooleanSchema(false),
@@ -136,7 +137,7 @@ class SourceSchemaCompatibilityValidatorTest {
 
     @Test
     fun `traverses all inline schema fields`() {
-        val valid = inline(Schema(type = "string"))
+        val valid = inline(Schema(type = JsonSchemaType.Single("string")))
         val invalid = inline(Schema(pattern = "["))
         val schema =
             Schema(
@@ -174,7 +175,7 @@ class SourceSchemaCompatibilityValidatorTest {
     @Test
     fun `handles inline identity cycles`() {
         val properties = linkedMapOf<String, SchemaInterface>()
-        val schema = Schema(type = "object", properties = properties)
+        val schema = Schema(type = JsonSchemaType.Single("object"), properties = properties)
         properties["self"] = inline(schema)
 
         validate(schemas = mapOf("Recursive" to schema))

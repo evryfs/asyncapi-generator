@@ -7,6 +7,7 @@ import dev.banking.asyncapi.generator.core.fixtures.TestResources
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.info.Info
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
@@ -52,7 +53,7 @@ class AsyncApiDocumentSerializerTest {
                                 "SampleSchema" to
                                     SchemaInterface.SchemaInline(
                                         Schema(
-                                            type = listOf("string", "null"),
+                                            type = JsonSchemaType.Multiple(listOf("string", "null")),
                                         ),
                                     ),
                             ),
@@ -112,13 +113,13 @@ class AsyncApiDocumentSerializerTest {
                     Schema(
                         tupleItems =
                             listOf(
-                                SchemaInterface.SchemaInline(Schema(type = "string")),
-                                SchemaInterface.SchemaInline(Schema(type = "integer")),
+                                SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
+                                SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                             ),
                     ),
                 "single" to
                     Schema(
-                        items = SchemaInterface.SchemaInline(Schema(type = "string")),
+                        items = SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
                 "false" to
                     Schema(

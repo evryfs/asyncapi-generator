@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -109,7 +110,7 @@ class JsonSchemaGeneratorTest {
                             mapOf(
                                 "NullValue" to
                                     Schema(
-                                        type = "null",
+                                        type = JsonSchemaType.Single("null"),
                                         const = null,
                                         constSet = true,
                                     ),
@@ -182,11 +183,15 @@ class JsonSchemaGeneratorTest {
                             mapOf(
                                 "TupleArray" to
                                     Schema(
-                                        type = "array",
+                                        type = JsonSchemaType.Single("array"),
                                         tupleItems =
                                             listOf(
-                                                SchemaInterface.SchemaInline(Schema(type = "string")),
-                                                SchemaInterface.SchemaInline(Schema(type = "integer")),
+                                                SchemaInterface.SchemaInline(
+                                                    Schema(type = JsonSchemaType.Single("string")),
+                                                ),
+                                                SchemaInterface.SchemaInline(
+                                                    Schema(type = JsonSchemaType.Single("integer")),
+                                                ),
                                             ),
                                     ),
                             ),
@@ -226,13 +231,17 @@ class JsonSchemaGeneratorTest {
                             mapOf(
                                 "TupleWithAdditional" to
                                     Schema(
-                                        type = "array",
+                                        type = JsonSchemaType.Single("array"),
                                         tupleItems =
                                             listOf(
-                                                SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                SchemaInterface.SchemaInline(
+                                                    Schema(type = JsonSchemaType.Single("string")),
+                                                ),
                                             ),
                                         additionalItems =
-                                            SchemaInterface.SchemaInline(Schema(type = "boolean")),
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("boolean")),
+                                            ),
                                     ),
                             ),
                     ),
@@ -263,9 +272,11 @@ class JsonSchemaGeneratorTest {
                             mapOf(
                                 "SingleItems" to
                                     Schema(
-                                        type = "array",
+                                        type = JsonSchemaType.Single("array"),
                                         items =
-                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("string")),
+                                            ),
                                     ),
                             ),
                     ),
@@ -287,20 +298,24 @@ class JsonSchemaGeneratorTest {
                             mapOf(
                                 "CommonHeaders" to
                                     Schema(
-                                        type = "object",
+                                        type = JsonSchemaType.Single("object"),
                                         properties =
                                             mapOf(
                                                 "requestId" to
-                                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                    SchemaInterface.SchemaInline(
+                                                        Schema(type = JsonSchemaType.Single("string")),
+                                                    ),
                                             ),
                                     ),
                                 "GenericMessagePayload" to
                                     Schema(
-                                        type = "object",
+                                        type = JsonSchemaType.Single("object"),
                                         properties =
                                             mapOf(
                                                 "itemId" to
-                                                    SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                    SchemaInterface.SchemaInline(
+                                                        Schema(type = JsonSchemaType.Single("string")),
+                                                    ),
                                             ),
                                     ),
                             ),
@@ -347,7 +362,7 @@ class JsonSchemaGeneratorTest {
                 generator.render(
                     schemaDeclarations =
                         SchemaDeclarationCatalog(
-                            asyncApiSchemas = mapOf("Shared" to Schema(type = "object")),
+                            asyncApiSchemas = mapOf("Shared" to Schema(type = JsonSchemaType.Single("object"))),
                             multiFormatSchemas =
                                 mapOf(
                                     "Shared" to
@@ -376,7 +391,7 @@ class JsonSchemaGeneratorTest {
                 generator.render(
                     schemaDeclarations =
                         SchemaDeclarationCatalog(
-                            asyncApiSchemas = mapOf("Shared" to Schema(type = "object")),
+                            asyncApiSchemas = mapOf("Shared" to Schema(type = JsonSchemaType.Single("object"))),
                             booleanSchemas = mapOf("Shared" to true),
                         ),
                     packageName = "com.example.schema",

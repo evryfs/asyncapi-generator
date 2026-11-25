@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.SpringKafkaClientContractNameCollision
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
@@ -194,7 +195,7 @@ class SpringKafkaClientContractValidatorTest {
                         messageId = "accountUpdated",
                         messageName = "AccountUpdated",
                         payloadTypeName = "AccountUpdatedPayload",
-                        schema = Schema(type = "object"),
+                        schema = Schema(type = JsonSchemaType.Single("object")),
                     ),
                 ),
         )

@@ -16,7 +16,7 @@ internal fun Schema.isOpenPayload(): Boolean =
             anyOf.isNullOrEmpty() &&
             allOf.isNullOrEmpty()
     } else {
-        type.getPrimaryType() == "object" && properties.isNullOrEmpty() && hasUnconstrainedAdditionalProperties()
+        type?.primary == "object" && properties.isNullOrEmpty() && hasUnconstrainedAdditionalProperties()
     }
 
 private fun Schema.hasUnconstrainedAdditionalProperties(): Boolean =
@@ -31,7 +31,7 @@ private fun Schema.hasUnconstrainedAdditionalProperties(): Boolean =
     }
 
 /** Whether this schema is a plain scalar without an enum, which needs no generated type of its own. */
-internal fun Schema.isScalarAlias(): Boolean = enum.isNullOrEmpty() && type.getPrimaryType() in SCALAR_TYPES
+internal fun Schema.isScalarAlias(): Boolean = enum.isNullOrEmpty() && type?.primary in SCALAR_TYPES
 
 private val SCALAR_TYPES = setOf("string", "number", "integer", "boolean")
 

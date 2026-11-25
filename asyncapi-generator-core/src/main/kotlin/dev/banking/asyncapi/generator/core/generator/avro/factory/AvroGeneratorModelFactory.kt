@@ -7,7 +7,6 @@ import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnumSymbol
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroField
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidAvroName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -56,7 +55,7 @@ internal class AvroGeneratorModelFactory(
             )
         }
 
-        if (schema.type.getPrimaryType() != "object") {
+        if (schema.type?.primary != "object") {
             return null
         }
         requireAvroName("record", name, "components.schemas.$name")
@@ -124,7 +123,7 @@ internal class AvroGeneratorModelFactory(
             refName != null -> null
             schema.format != null -> null
             else ->
-                when (schema.type.getPrimaryType()) {
+                when (schema.type?.primary) {
                     "string" -> "\"${jsonText(text)}\""
                     "boolean" -> text.takeIf { it == "true" || it == "false" }
                     "integer", "number" -> text.takeIf { it.toBigDecimalOrNull() != null }

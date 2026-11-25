@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -14,7 +15,7 @@ class ConstraintAnnotationMapperTest {
     fun `maps string constraints with source-specific targets and escaping`() {
         val schema =
             Schema(
-                type = "string",
+                type = JsonSchemaType.Single("string"),
                 minLength = 5,
                 maxLength = 10,
                 pattern = " ^\\d+\"quoted\"${'$'}value ",
@@ -41,7 +42,8 @@ class ConstraintAnnotationMapperTest {
 
     @Test
     fun `maps integer bounds`() {
-        val schema = Schema(type = "integer", minimum = 0.toBigDecimal(), maximum = 100.toBigDecimal())
+        val schema =
+            Schema(type = JsonSchemaType.Single("integer"), minimum = 0.toBigDecimal(), maximum = 100.toBigDecimal())
 
         assertEquals(listOf("@Min(0L)", "@Max(100L)"), javaMapper.buildAnnotations(Constraints.of(schema)))
     }
@@ -50,7 +52,7 @@ class ConstraintAnnotationMapperTest {
     fun `prefers exclusive decimal bounds`() {
         val schema =
             Schema(
-                type = "number",
+                type = JsonSchemaType.Single("number"),
                 minimum = 10.5.toBigDecimal(),
                 exclusiveMinimum = 10.6.toBigDecimal(),
                 maximum = 20.5.toBigDecimal(),

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.parser.tracking
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.fixtures.modelAt
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.AsyncApiParser
@@ -76,12 +77,12 @@ class ModelTrackingTest {
 
         val dotted = resolvedSchema("DottedReference")
         val nested = resolvedSchema("NestedReference")
-        assertEquals("integer", dotted.type)
-        assertEquals("string", nested.type)
-        assertEquals("boolean", resolvedSchema("EscapedReference").type)
-        assertEquals("number", resolvedSchema("BracketReference").type)
-        assertEquals("string", resolvedSchema("NumericMemberReference").type)
-        assertEquals("string", resolvedSchema("NumericIndexReference").type)
+        assertEquals(JsonSchemaType.Single("integer"), dotted.type)
+        assertEquals(JsonSchemaType.Single("string"), nested.type)
+        assertEquals(JsonSchemaType.Single("boolean"), resolvedSchema("EscapedReference").type)
+        assertEquals(JsonSchemaType.Single("number"), resolvedSchema("BracketReference").type)
+        assertEquals(JsonSchemaType.Single("string"), resolvedSchema("NumericMemberReference").type)
+        assertEquals(JsonSchemaType.Single("string"), resolvedSchema("NumericIndexReference").type)
         assertEquals(
             "identity.root.components.schemas[\"A.properties.x\"]",
             context.modelTracking.getSourceLocation(dotted)?.path,

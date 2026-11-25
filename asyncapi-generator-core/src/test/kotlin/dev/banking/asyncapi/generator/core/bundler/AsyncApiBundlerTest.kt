@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.servers.Server
@@ -147,7 +148,7 @@ class AsyncApiBundlerTest {
                                 "Wrapper" to
                                     SchemaInterface.SchemaInline(
                                         Schema(
-                                            type = "object",
+                                            type = JsonSchemaType.Single("object"),
                                             properties =
                                                 mapOf(
                                                     "denied" to SchemaInterface.SchemaReference(schemaReference),

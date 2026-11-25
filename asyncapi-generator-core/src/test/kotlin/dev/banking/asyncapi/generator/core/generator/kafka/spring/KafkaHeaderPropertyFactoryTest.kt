@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHe
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaHeaderSchema
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -26,7 +27,10 @@ class KafkaHeaderPropertyFactoryTest {
                             "attempt" to SchemaFixtures.inline(type = "integer", format = "int32"),
                             "amount" to SchemaFixtures.inline(type = "number", multipleOf = 0.01),
                             "retryEnabled" to SchemaFixtures.inline(type = "boolean"),
-                            "nullableCode" to SchemaFixtures.inline(type = listOf("string", "null")),
+                            "nullableCode" to
+                                SchemaInterface.SchemaInline(
+                                    Schema(type = JsonSchemaType.Multiple(listOf("string", "null"))),
+                                ),
                         ),
                     requiredProperties =
                         listOf(
@@ -91,7 +95,7 @@ class KafkaHeaderPropertyFactoryTest {
 
     @Test
     fun `resolves referenced scalar header schemas`() {
-        val referencedSchema = Schema(type = "string", format = "uuid")
+        val referencedSchema = Schema(type = JsonSchemaType.Single("string"), format = "uuid")
 
         val property =
             KafkaHeaderPropertyFactory
@@ -122,7 +126,8 @@ class KafkaHeaderPropertyFactoryTest {
             listOf(
                 SchemaFixtures.inline(type = "object") to "object",
                 SchemaFixtures.inline(type = "array") to "array",
-                SchemaFixtures.inline(type = listOf("string", "integer")) to "union with multiple non-null types",
+                SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Multiple(listOf("string", "integer")))) to
+                    "union with multiple non-null types",
                 SchemaInterface.SchemaReference(
                     Reference(ref = "./headers.yaml#/missing"),
                 ) to "unresolved reference './headers.yaml#/missing'",

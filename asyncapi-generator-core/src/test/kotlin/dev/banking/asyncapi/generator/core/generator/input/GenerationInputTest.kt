@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.input
 
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
@@ -10,7 +11,7 @@ import kotlin.test.assertSame
 class GenerationInputTest {
     @Test
     fun `schema declaration catalog backs contract compatibility views`() {
-        val declaredSchema = Schema(type = "object")
+        val declaredSchema = Schema(type = JsonSchemaType.Single("object"))
         val multiFormatSchema =
             MultiFormatSchema(
                 schemaFormat = "application/schema+json;version=draft-07",

@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation
 import dev.banking.asyncapi.generator.core.model.bindings.ProtocolBinding
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -112,8 +113,14 @@ class BindingBundlerTest {
                 walk.member(BindingInterface.BindingInline(binding), walk.binding, BundlingRun().rootScope()),
             ).binding
 
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type)
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(bundled.content["clientId"]).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("string"),
+            assertIs<SchemaInterface.SchemaInline>(bundled.content["groupId"]).schema.type,
+        )
+        assertEquals(
+            JsonSchemaType.Single("string"),
+            assertIs<SchemaInterface.SchemaInline>(bundled.content["clientId"]).schema.type,
+        )
         assertSame(bundled.content["groupId"], bundled.protocolBindings.single().schemaFields["groupId"])
         assertSame(bundled.content["clientId"], bundled.protocolBindings.single().schemaFields["clientId"])
     }
@@ -137,7 +144,8 @@ class BindingBundlerTest {
                             schemaFields =
                                 mapOf(
                                     "groupId" to SchemaInterface.BooleanSchema(true),
-                                    "clientId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    "clientId" to
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                                 ),
                         ),
                     ),
@@ -174,7 +182,7 @@ class BindingBundlerTest {
     ) = SchemaInterface.SchemaReference(
         Reference(
             ref = ref,
-            model = Schema(type = type),
+            model = Schema(type = JsonSchemaType.Single(type)),
         ),
     )
 }

@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.bundler.BundlingWalk
 import dev.banking.asyncapi.generator.core.model.bindings.Binding
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -28,7 +29,7 @@ class SchemaBundlerTest {
             )
         val schema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
             )
         val schemaReference = Reference("#/components/schemas/User", model = schema)
@@ -54,7 +55,7 @@ class SchemaBundlerTest {
             )
         val schema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 bindings = mapOf("kafka" to BindingInterface.BindingReference(bindingReference)),
             )
         val schemaReference = Reference("schemas.yaml#/shared/User", model = schema)
@@ -75,7 +76,7 @@ class SchemaBundlerTest {
         val nestedReference = Reference("#/components/schemas/Node")
         val schema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties = mapOf("next" to SchemaInterface.SchemaReference(nestedReference)),
             )
         nestedReference.model = schema

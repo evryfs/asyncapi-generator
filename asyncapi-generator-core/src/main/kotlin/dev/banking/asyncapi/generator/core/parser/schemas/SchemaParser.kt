@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.parser.schemas
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
@@ -138,11 +139,11 @@ internal class SchemaParser(
         )
     }
 
-    private fun parseType(parserNode: ParserNode): Any? =
+    private fun parseType(parserNode: ParserNode): JsonSchemaType? =
         when (parserNode.node) {
             is DocumentNull -> null
-            is DocumentArray -> parserNode.expect<List<String>>()
-            else -> parserNode.expect<String>()
+            is DocumentArray -> JsonSchemaType.Multiple(parserNode.expect<List<String>>())
+            else -> JsonSchemaType.Single(parserNode.expect<String>())
         }
 
     private fun parseDependencies(parserNode: ParserNode): Map<String, Any> =
