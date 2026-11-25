@@ -43,6 +43,7 @@ have to describe the same configuration.
 | [avro-schema-types](avro-schema-types) | Avro schemas use `long` for wide integers and inline `anyOf` unions. |
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
+| [kafka-scalar-payloads](kafka-scalar-payloads) | Spring Kafka clients for UUID, date, date-time and number payloads, typed as models type them, in Kotlin and Java. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |

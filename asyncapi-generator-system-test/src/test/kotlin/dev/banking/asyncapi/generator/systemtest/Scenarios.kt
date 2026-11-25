@@ -427,6 +427,24 @@ private val allScenarios: List<Scenario> = listOf(
         client = ClientConfig(),
     ),
     Scenario(
+        name = "kafka-scalar-payloads",
+        executions = listOf(
+            Execution(
+                id = "kotlin-client",
+                generatorName = "kotlin",
+                modelPackage = "com.example.scalars.kotlin.model",
+                clientPackage = "com.example.scalars.kotlin.client",
+            ),
+            Execution(
+                id = "java-client",
+                generatorName = "java",
+                modelPackage = "com.example.scalars.java.model",
+                clientPackage = "com.example.scalars.java.client",
+            ),
+        ),
+        client = ClientConfig(),
+    ),
+    Scenario(
         name = "avro-schema-types",
         executions = listOf(
             Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avrotypes"),

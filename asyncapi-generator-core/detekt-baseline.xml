@@ -71,9 +71,6 @@
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
-    <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveJavaTypeName(message: AnalyzedMessage): String?</ID>
-    <ID>ReturnCount:KafkaPayloadFactory.kt$KafkaPayloadFactory$private fun resolveKotlinTypeName(message: AnalyzedMessage): String?</ID>
-    <ID>ReturnCount:KafkaScalarTypeResolver.kt$KafkaScalarTypeResolver$private fun resolveInteger(schema: Schema): KafkaScalarType</ID>
     <ID>ReturnCount:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun defaultValue( schema: Schema, type: TypeRef, ): DefaultValue?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
@@ -98,7 +95,6 @@
     <ID>TooManyFunctions:JavaSpringKafkaModelFactory.kt$JavaSpringKafkaModelFactory</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>TooManyFunctions:KotlinSpringKafkaModelFactory.kt$KotlinSpringKafkaModelFactory</ID>
-    <ID>TooManyFunctions:ModelTypeMapper.kt$ModelTypeMapper</ID>
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>

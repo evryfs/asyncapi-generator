@@ -37,11 +37,7 @@ internal class ModelTypeMapper(
             )
         }
 
-        return when (schema.type.getPrimaryType()) {
-            "string" -> mapString(schema)
-            "integer" -> mapInteger(schema)
-            "number" -> mapNumber(schema)
-            "boolean" -> TypeRef.Scalar.BOOLEAN
+        return scalarType(schema) ?: when (schema.type.getPrimaryType()) {
             "array" -> mapArray(propertyName, schema)
             "object" -> mapObject(propertyName, schema) ?: TypeRef.Scalar.ANY
             else -> TypeRef.Scalar.ANY
@@ -69,6 +65,21 @@ internal class ModelTypeMapper(
     private val resolvingAliases = mutableSetOf<String>()
 
     companion object {
+        /**
+         * The scalar a string, integer, number or boolean schema stands for; `null` for any other schema.
+         *
+         * A string's `format` chooses a date, time or UUID type, a number is decimal when it has a
+         * `multipleOf` and otherwise a float or double by its `format`.
+         */
+        fun scalarType(schema: Schema): TypeRef.Scalar? =
+            when (schema.type.getPrimaryType()) {
+                "string" -> stringType(schema)
+                "integer" -> integerType(schema)
+                "number" -> numberType(schema)
+                "boolean" -> TypeRef.Scalar.BOOLEAN
+                else -> null
+            }
+
         /** The width of an integer schema: 64-bit by `format: int64` or when its bounds leave the 32-bit range. */
         fun integerType(schema: Schema): TypeRef.Scalar {
             when (schema.format?.lowercase()) {
@@ -81,6 +92,22 @@ internal class ModelTypeMapper(
             val maximumFits = maximum == null || maximum.toDouble() <= Int.MAX_VALUE.toDouble()
             return if (minimumFits && maximumFits) TypeRef.Scalar.INT32 else TypeRef.Scalar.INT64
         }
+
+        private fun stringType(schema: Schema): TypeRef.Scalar =
+            when (schema.format) {
+                "uuid" -> TypeRef.Scalar.UUID
+                "date-time" -> TypeRef.Scalar.DATE_TIME
+                "date" -> TypeRef.Scalar.DATE
+                "time" -> TypeRef.Scalar.TIME
+                else -> TypeRef.Scalar.STRING
+            }
+
+        private fun numberType(schema: Schema): TypeRef.Scalar =
+            when {
+                schema.multipleOf != null -> TypeRef.Scalar.DECIMAL
+                schema.format?.lowercase() == "float" -> TypeRef.Scalar.FLOAT
+                else -> TypeRef.Scalar.DOUBLE
+            }
     }
 
     private fun Schema.isAlias(): Boolean =
@@ -103,22 +130,6 @@ internal class ModelTypeMapper(
         val schema = schemas[name] ?: return name.firstOrNull()?.isUpperCase() == true
         return schema.type.getPrimaryType() == "object" || !schema.oneOf.isNullOrEmpty() ||
             !schema.anyOf.isNullOrEmpty()
-    }
-
-    private fun mapString(schema: Schema): TypeRef =
-        when (schema.format) {
-            "uuid" -> TypeRef.Scalar.UUID
-            "date-time" -> TypeRef.Scalar.DATE_TIME
-            "date" -> TypeRef.Scalar.DATE
-            "time" -> TypeRef.Scalar.TIME
-            else -> TypeRef.Scalar.STRING
-        }
-
-    private fun mapInteger(schema: Schema): TypeRef = integerType(schema)
-
-    private fun mapNumber(schema: Schema): TypeRef {
-        if (schema.multipleOf != null) return TypeRef.Scalar.DECIMAL
-        return if (schema.format?.lowercase() == "float") TypeRef.Scalar.FLOAT else TypeRef.Scalar.DOUBLE
     }
 
     private fun mapArray(
