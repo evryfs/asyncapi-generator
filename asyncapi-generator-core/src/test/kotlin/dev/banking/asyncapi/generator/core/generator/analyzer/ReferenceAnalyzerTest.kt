@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.ReferenceAnalyzer
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -15,12 +16,12 @@ class ReferenceAnalyzerTest {
     @Test
     fun `analyze should discover schema embedded in reference model`() {
         // Arrange: A schema with a property that refs an external schema (embedded in 'model')
-        val externalSchema = Schema(type = "object", title = "External")
+        val externalSchema = Schema(type = JsonSchemaType.Single("object"), title = "External")
         val ref = Reference(ref = "#/components/schemas/External", model = externalSchema)
 
         val rootSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties = mapOf("field" to SchemaInterface.SchemaReference(ref)),
             )
         val input = mapOf("Root" to rootSchema)
@@ -38,10 +39,10 @@ class ReferenceAnalyzerTest {
     @Test
     fun `analyze should handle nested references`() {
         // Arrange: Root -> Middle (ref) -> End (ref)
-        val endSchema = Schema(type = "string")
+        val endSchema = Schema(type = JsonSchemaType.Single("string"))
         val middleSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "end" to
@@ -55,7 +56,7 @@ class ReferenceAnalyzerTest {
             )
         val rootSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "middle" to
@@ -81,16 +82,16 @@ class ReferenceAnalyzerTest {
 
     @Test
     fun `analyze discovers external schema used as an inline map value`() {
-        val externalItem = Schema(type = "object")
+        val externalItem = Schema(type = JsonSchemaType.Single("object"))
         val container =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "itemsById" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     additionalProperties =
                                         SchemaInterface.SchemaReference(
                                             Reference(
@@ -114,7 +115,7 @@ class ReferenceAnalyzerTest {
         // Arrange: Reference pointing to internal schema (no model embedded)
         val ref = Reference(ref = "#/components/schemas/Existing")
         val rootSchema = Schema(properties = mapOf("field" to SchemaInterface.SchemaReference(ref)))
-        val input = mapOf("Root" to rootSchema, "Existing" to Schema(type = "string"))
+        val input = mapOf("Root" to rootSchema, "Existing" to Schema(type = JsonSchemaType.Single("string")))
 
         // Act
         val result = analyzer.analyze(input)

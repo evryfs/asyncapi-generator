@@ -11,6 +11,7 @@ import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.operations.Operation
 import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaFormat
@@ -66,7 +67,7 @@ class ChannelAnalyzerTest {
                                     name = "MyMessage",
                                     payload =
                                         SchemaInterface.SchemaInline(
-                                            Schema(title = "MyPayload", type = "object"),
+                                            Schema(title = "MyPayload", type = JsonSchemaType.Single("object")),
                                         ),
                                 ),
                             ),
@@ -107,17 +108,19 @@ class ChannelAnalyzerTest {
                                     headers =
                                         SchemaInterface.SchemaInline(
                                             Schema(
-                                                type = "object",
+                                                type = JsonSchemaType.Single("object"),
                                                 properties =
                                                     mapOf(
                                                         "correlationId" to
-                                                            SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                            SchemaInterface.SchemaInline(
+                                                                Schema(type = JsonSchemaType.Single("string")),
+                                                            ),
                                                     ),
                                             ),
                                         ),
                                     payload =
                                         SchemaInterface.SchemaInline(
-                                            Schema(title = "MyPayload", type = "object"),
+                                            Schema(title = "MyPayload", type = JsonSchemaType.Single("object")),
                                         ),
                                 ),
                             ),
@@ -148,7 +151,7 @@ class ChannelAnalyzerTest {
 
     @Test
     fun `should keep message identity independent from title and referenced payload type`() {
-        val payloadSchema = Schema(type = "object")
+        val payloadSchema = Schema(type = JsonSchemaType.Single("object"))
         val channel =
             Channel(
                 messages =
@@ -161,12 +164,12 @@ class ChannelAnalyzerTest {
                                     headers =
                                         SchemaInterface.SchemaInline(
                                             Schema(
-                                                type = "object",
+                                                type = JsonSchemaType.Single("object"),
                                                 properties =
                                                     mapOf(
                                                         "correlationId" to
                                                             SchemaInterface.SchemaInline(
-                                                                Schema(type = "string"),
+                                                                Schema(type = JsonSchemaType.Single("string")),
                                                             ),
                                                     ),
                                             ),
@@ -203,7 +206,7 @@ class ChannelAnalyzerTest {
 
     @Test
     fun `should preserve Kafka key schema from message binding`() {
-        val keySchema = Schema(type = "integer", format = "int64")
+        val keySchema = Schema(type = JsonSchemaType.Single("integer"), format = "int64")
         val channel =
             Channel(
                 messages =
@@ -212,7 +215,10 @@ class ChannelAnalyzerTest {
                             MessageInterface.MessageInline(
                                 Message(
                                     name = "AccountUpdated",
-                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                    payload =
+                                        SchemaInterface.SchemaInline(
+                                            Schema(type = JsonSchemaType.Single("object")),
+                                        ),
                                     bindings = kafkaKeyBinding(keySchema),
                                 ),
                             ),
@@ -237,7 +243,7 @@ class ChannelAnalyzerTest {
 
     @Test
     fun `should preserve messages without a payload`() {
-        val keySchema = Schema(type = "string")
+        val keySchema = Schema(type = JsonSchemaType.Single("string"))
         val channel =
             Channel(
                 messages =
@@ -249,12 +255,12 @@ class ChannelAnalyzerTest {
                                     headers =
                                         SchemaInterface.SchemaInline(
                                             Schema(
-                                                type = "object",
+                                                type = JsonSchemaType.Single("object"),
                                                 properties =
                                                     mapOf(
                                                         "correlationId" to
                                                             SchemaInterface.SchemaInline(
-                                                                Schema(type = "string"),
+                                                                Schema(type = JsonSchemaType.Single("string")),
                                                             ),
                                                     ),
                                             ),
@@ -293,7 +299,7 @@ class ChannelAnalyzerTest {
     @Test
     fun `should preserve inline multi format payload separately from asyncapi messages`() {
         val avroSchema = nativeAvroSchema()
-        val keySchema = Schema(type = "integer", format = "int64")
+        val keySchema = Schema(type = JsonSchemaType.Single("integer"), format = "int64")
         val channel =
             Channel(
                 messages =

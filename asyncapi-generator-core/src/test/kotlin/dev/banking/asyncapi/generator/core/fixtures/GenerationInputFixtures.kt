@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -39,7 +40,7 @@ internal class GenerationInputFixtures {
                                 analyzedMessage(
                                     messageName = "UserSignedUp",
                                     payloadTypeName = "UserSignedUpPayload",
-                                    schema = Schema(type = "object"),
+                                    schema = Schema(type = JsonSchemaType.Single("object")),
                                 ),
                             ),
                     ),
@@ -49,16 +50,16 @@ internal class GenerationInputFixtures {
     fun generationInputWithObjectEnumAndPrimitive(): GenerationInput {
         val userSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 required = listOf("id"),
                 properties =
                     mapOf(
-                        "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "id" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val statusSchema =
             Schema(
-                type = "string",
+                type = JsonSchemaType.Single("string"),
                 enum = listOf("ACTIVE", "INACTIVE"),
             )
 
@@ -67,7 +68,7 @@ internal class GenerationInputFixtures {
                 linkedMapOf(
                     "User" to userSchema,
                     "Status" to statusSchema,
-                    "IgnoredPrimitive" to Schema(type = "string"),
+                    "IgnoredPrimitive" to Schema(type = JsonSchemaType.Single("string")),
                 ),
             polymorphicRelationships = mapOf("User" to listOf("Command")),
             channels = emptyList(),
@@ -148,25 +149,25 @@ internal class GenerationInputFixtures {
     fun generationInputWithJsonSchemas(): GenerationInput {
         val addressSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 required = listOf("city"),
                 properties =
                     mapOf(
-                        "city" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "city" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val accountSchema =
             Schema(
                 id = "urn:example:my-account",
                 comment = "Generated from the AsyncAPI account payload.",
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 required = listOf("accountId"),
                 properties =
                     linkedMapOf(
                         "accountId" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = listOf("string", "null"),
+                                    type = JsonSchemaType.Multiple(listOf("string", "null")),
                                     default = null,
                                     defaultSet = true,
                                 ),
@@ -186,7 +187,7 @@ internal class GenerationInputFixtures {
                                 mapOf(
                                     "accountId" to
                                         SchemaInterface.SchemaInline(
-                                            Schema(type = "string", pattern = "^A"),
+                                            Schema(type = JsonSchemaType.Single("string"), pattern = "^A"),
                                         ),
                                 ),
                         ),
@@ -250,20 +251,33 @@ internal class GenerationInputFixtures {
                                             MessageInterface.MessageInline(
                                                 Message(
                                                     name = "UserSignup",
-                                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                                    payload =
+                                                        SchemaInterface.SchemaInline(
+                                                            Schema(type = JsonSchemaType.Single("object")),
+                                                        ),
                                                     headers =
                                                         SchemaInterface.SchemaInline(
                                                             Schema(
-                                                                type = "object",
+                                                                type = JsonSchemaType.Single("object"),
                                                                 properties =
                                                                     mapOf(
                                                                         "correlationId" to
                                                                             SchemaInterface.SchemaInline(
-                                                                                Schema(type = "string"),
+                                                                                Schema(
+                                                                                    type =
+                                                                                        JsonSchemaType.Single(
+                                                                                            "string",
+                                                                                        ),
+                                                                                ),
                                                                             ),
                                                                         "applicationInstanceId" to
                                                                             SchemaInterface.SchemaInline(
-                                                                                Schema(type = "string"),
+                                                                                Schema(
+                                                                                    type =
+                                                                                        JsonSchemaType.Single(
+                                                                                            "string",
+                                                                                        ),
+                                                                                ),
                                                                             ),
                                                                     ),
                                                             ),
@@ -279,10 +293,13 @@ internal class GenerationInputFixtures {
     fun documentWithPolymorphicComponentAndChannel(): AsyncApiDocument {
         val externalSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
-                        "status" to SchemaInterface.SchemaInline(Schema(type = "string", enum = listOf("ACTIVE"))),
+                        "status" to
+                            SchemaInterface.SchemaInline(
+                                Schema(type = JsonSchemaType.Single("string"), enum = listOf("ACTIVE")),
+                            ),
                     ),
             )
         val rootSchema =
@@ -313,7 +330,10 @@ internal class GenerationInputFixtures {
                                             MessageInterface.MessageInline(
                                                 Message(
                                                     name = "UserCreated",
-                                                    payload = SchemaInterface.SchemaInline(Schema(type = "object")),
+                                                    payload =
+                                                        SchemaInterface.SchemaInline(
+                                                            Schema(type = JsonSchemaType.Single("object")),
+                                                        ),
                                                 ),
                                             ),
                                     ),
@@ -485,12 +505,12 @@ internal class GenerationInputFixtures {
 
     private fun accountKeySchema(): Schema =
         Schema(
-            type = "object",
+            type = JsonSchemaType.Single("object"),
             required = listOf("tenantId", "accountId"),
             properties =
                 linkedMapOf(
-                    "tenantId" to SchemaInterface.SchemaInline(Schema(type = "string")),
-                    "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                    "tenantId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
+                    "accountId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                 ),
         )
 

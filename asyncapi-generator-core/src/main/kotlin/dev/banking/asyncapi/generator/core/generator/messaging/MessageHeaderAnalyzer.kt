@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.messaging
 
 import dev.banking.asyncapi.generator.core.generator.normalizer.CompositionNormalizer
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -42,5 +41,5 @@ internal object MessageHeaderAnalyzer {
             is SchemaInterface.SchemaReference -> headers.linkedSchema()
             else -> null
         }?.let { schema -> compositionNormalizer.normalize(schema, "headers") }
-            ?.takeIf { schema -> schema.type.getPrimaryType() == "object" }
+            ?.takeIf { schema -> schema.type?.primary == "object" }
 }

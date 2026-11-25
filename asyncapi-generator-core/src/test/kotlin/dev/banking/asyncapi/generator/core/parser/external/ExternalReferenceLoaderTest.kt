@@ -21,6 +21,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationReplyAddres
 import dev.banking.asyncapi.generator.core.model.operations.OperationTrait
 import dev.banking.asyncapi.generator.core.model.parameters.Parameter
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.security.SecurityScheme
@@ -116,15 +117,15 @@ class ExternalReferenceLoaderTest {
         val arraySchema = assertIs<Schema>(context.modelTracking.findReference(arrayReference))
         assertEquals("array root target", arraySchema.description)
 
-        fun resolvedType(referenceName: String): String? {
+        fun resolvedType(referenceName: String): JsonSchemaType? {
             val reference = assertIs<SchemaInterface.SchemaReference>(schemas.getValue(referenceName)).reference
-            return assertIs<Schema>(context.modelTracking.findReference(reference)).type as? String
+            return assertIs<Schema>(context.modelTracking.findReference(reference)).type
         }
 
-        assertEquals("integer", resolvedType("DottedExternalReference"))
-        assertEquals("string", resolvedType("NestedExternalReference"))
-        assertEquals("number", resolvedType("BracketExternalReference"))
-        assertEquals("boolean", resolvedType("NumericMemberExternalReference"))
+        assertEquals(JsonSchemaType.Single("integer"), resolvedType("DottedExternalReference"))
+        assertEquals(JsonSchemaType.Single("string"), resolvedType("NestedExternalReference"))
+        assertEquals(JsonSchemaType.Single("number"), resolvedType("BracketExternalReference"))
+        assertEquals(JsonSchemaType.Single("boolean"), resolvedType("NumericMemberExternalReference"))
     }
 
     @Test

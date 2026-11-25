@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -24,10 +25,10 @@ class SchemaValueSemanticsTest {
         assertTrue(
             SchemaValueSemantics.isCompatible(
                 BigInteger("100000000000000000000000000000000000000"),
-                "integer",
+                JsonSchemaType.Single("integer"),
             ),
         )
-        assertTrue(SchemaValueSemantics.isCompatible(null, listOf("string", "null")))
-        assertFalse(SchemaValueSemantics.isCompatible(null, "string"))
+        assertTrue(SchemaValueSemantics.isCompatible(null, JsonSchemaType.Multiple(listOf("string", "null"))))
+        assertFalse(SchemaValueSemantics.isCompatible(null, JsonSchemaType.Single("string")))
     }
 }

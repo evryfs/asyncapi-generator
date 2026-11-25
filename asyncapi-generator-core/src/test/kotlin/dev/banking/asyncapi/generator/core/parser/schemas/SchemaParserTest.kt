@@ -10,6 +10,7 @@ import dev.banking.asyncapi.generator.core.model.diagnostics.ParserValueType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiParseException
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.external.ExternalReferenceLoader
@@ -43,11 +44,11 @@ class SchemaParserTest {
         val schemas = schemasNode.parseMap(parser::parseElement)
 
         val lightMeasured = assertIs<SchemaInterface.SchemaInline>(schemas["lightMeasuredPayload"]).schema
-        assertEquals("object", lightMeasured.type)
+        assertEquals(JsonSchemaType.Single("object"), lightMeasured.type)
         assertEquals(listOf("lumens"), lightMeasured.required)
         assertEquals(2, lightMeasured.examples?.size)
         val lumens = assertIs<SchemaInterface.SchemaInline>(lightMeasured.properties?.get("lumens")).schema
-        assertEquals("integer", lumens.type)
+        assertEquals(JsonSchemaType.Single("integer"), lumens.type)
         assertEquals(0, lumens.minimum)
         val sentAtReference =
             assertIs<SchemaInterface.SchemaReference>(lightMeasured.properties?.get("sentAt")).reference
@@ -66,7 +67,7 @@ class SchemaParserTest {
         assertEquals(100, percentage.maximum)
 
         val sentAt = assertIs<SchemaInterface.SchemaInline>(schemas["sentAt"]).schema
-        assertEquals("string", sentAt.type)
+        assertEquals(JsonSchemaType.Single("string"), sentAt.type)
         assertEquals("date-time", sentAt.format)
 
         val commandPayload = assertIs<SchemaInterface.SchemaInline>(schemas["commandPayload"]).schema
@@ -90,11 +91,14 @@ class SchemaParserTest {
         assertEquals(0, simpleNumber.exclusiveMinimum)
 
         val numberArray = assertIs<SchemaInterface.SchemaInline>(schemas["numberArray"]).schema
-        assertEquals("array", numberArray.type)
+        assertEquals(JsonSchemaType.Single("array"), numberArray.type)
         assertEquals(true, numberArray.uniqueItems)
         assertEquals(5, numberArray.maxItems)
         assertEquals(1, numberArray.minItems)
-        assertEquals("number", assertIs<SchemaInterface.SchemaInline>(numberArray.items).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("number"),
+            assertIs<SchemaInterface.SchemaInline>(numberArray.items).schema.type,
+        )
         assertEquals(3, assertIs<SchemaInterface.SchemaInline>(numberArray.contains).schema.minimum)
 
         val complex = assertIs<SchemaInterface.SchemaInline>(schemas["complexObject"]).schema
@@ -102,7 +106,7 @@ class SchemaParserTest {
         assertEquals(listOf("email"), complex.dependencies?.get("password"))
         assertEquals(false, assertIs<SchemaInterface.BooleanSchema>(complex.additionalProperties).value)
         assertEquals(
-            listOf("string", "null"),
+            JsonSchemaType.Multiple(listOf("string", "null")),
             assertIs<SchemaInterface.SchemaInline>(complex.properties?.get("nickname")).schema.type,
         )
 
@@ -110,7 +114,7 @@ class SchemaParserTest {
         assertEquals(2, composed.allOf?.size)
         assertEquals(2, composed.anyOf?.size)
         assertEquals(2, composed.oneOf?.size)
-        assertEquals("null", assertIs<SchemaInterface.SchemaInline>(composed.not).schema.type)
+        assertEquals(JsonSchemaType.Single("null"), assertIs<SchemaInterface.SchemaInline>(composed.not).schema.type)
 
         val conditional = assertIs<SchemaInterface.SchemaInline>(schemas["conditionalExample"]).schema
         val ifSchema = assertIs<SchemaInterface.SchemaInline>(conditional.ifSchema).schema
@@ -227,7 +231,7 @@ class SchemaParserTest {
             ).schema
         assertEquals(listOf("billing_address"), dependencies.dependencies?.get("credit_card"))
         assertEquals(
-            "string",
+            JsonSchemaType.Single("string"),
             assertIs<SchemaInterface.SchemaInline>(dependencies.patternProperties?.get("^S_")).schema.type,
         )
 
@@ -235,14 +239,20 @@ class SchemaParserTest {
             assertIs<SchemaInterface.SchemaInline>(
                 parser.parseElement(schemas.required("ArrayWithContains")),
             ).schema
-        assertEquals("integer", assertIs<SchemaInterface.SchemaInline>(withContains.items).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("integer"),
+            assertIs<SchemaInterface.SchemaInline>(withContains.items).schema.type,
+        )
         assertEquals(0, assertIs<SchemaInterface.SchemaInline>(withContains.contains).schema.minimum)
 
         val flexible =
             assertIs<SchemaInterface.SchemaInline>(
                 parser.parseElement(schemas.required("FlexibleObject")),
             ).schema
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(flexible.additionalProperties).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("string"),
+            assertIs<SchemaInterface.SchemaInline>(flexible.additionalProperties).schema.type,
+        )
         assertEquals(
             "^[a-zA-Z_][a-zA-Z0-9_]*$",
             assertIs<SchemaInterface.SchemaInline>(flexible.propertyNames).schema.pattern,
@@ -276,7 +286,7 @@ class SchemaParserTest {
         assertEquals(3, dependencies.size)
         assertEquals(listOf("billing_address"), dependencies["credit_card"])
         val nameDependency = assertIs<SchemaInterface.SchemaInline>(dependencies["name"]).schema
-        assertEquals("object", nameDependency.type)
+        assertEquals(JsonSchemaType.Single("object"), nameDependency.type)
         assertEquals(listOf("category"), nameDependency.required)
         assertEquals(true, assertIs<SchemaInterface.BooleanSchema>(dependencies["unrestricted"]).value)
     }
@@ -434,7 +444,7 @@ class SchemaParserTest {
         assertEquals("application/json", schema.contentMediaType)
         assertEquals(false, assertIs<SchemaInterface.BooleanSchema>(schema.additionalItems).value)
         val identifier = assertIs<SchemaInterface.SchemaInline>(schema.definitions?.get("identifier")).schema
-        assertEquals("string", identifier.type)
+        assertEquals(JsonSchemaType.Single("string"), identifier.type)
         assertEquals(4, schema.maxProperties)
         assertEquals(1, schema.minProperties)
         assertEquals(true, schema.readOnly)
@@ -492,8 +502,8 @@ class SchemaParserTest {
         assertNull(schema.items)
         val tupleItems = assertNotNull(schema.tupleItems)
         assertEquals(2, tupleItems.size)
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(tupleItems[0]).schema.type)
-        assertEquals("number", assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
+        assertEquals(JsonSchemaType.Single("string"), assertIs<SchemaInterface.SchemaInline>(tupleItems[0]).schema.type)
+        assertEquals(JsonSchemaType.Single("number"), assertIs<SchemaInterface.SchemaInline>(tupleItems[1]).schema.type)
         assertEquals(
             "asyncapi_parser_schema_negative_test.root.components.schemas.TupleItemsSchema.items",
             context.modelTracking.getSourceLocation(schema, "items")?.path,

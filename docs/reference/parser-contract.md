@@ -349,8 +349,10 @@ shapes that ordinary AsyncAPI objects do not:
   the YAML or JSON value is an actual boolean. Quoted `"true"` and `"false"`
   values are strings and fail structural parsing.
 - String `$ref` values produce schema references.
-- An absent `type` is valid. A present `type` is parsed as a string, an array of
-  strings, or an explicit null retained through field registration. The
+- An absent `type` is valid. A present `type` is parsed as a `JsonSchemaType`:
+  `Single` for a string, `Multiple` for an array of strings, and it is written
+  back in the same form. An explicit null is retained through field
+  registration. The
   validator reports explicit null with the stable `JSONSCHEMA-TYPE` finding;
   it is not treated as absence. Nullable schemas use a union such as
   `type: [string, "null"]`.

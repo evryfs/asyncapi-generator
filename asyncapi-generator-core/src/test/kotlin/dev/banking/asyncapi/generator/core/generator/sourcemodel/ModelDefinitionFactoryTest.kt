@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.generator.jvm.JvmNaming
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -36,11 +37,11 @@ class ModelDefinitionFactoryTest {
                 "Command" to Schema(oneOf = listOf(ref("Start")), discriminator = "kind"),
                 "Start" to
                     Schema(
-                        type = "object",
+                        type = JsonSchemaType.Single("object"),
                         properties =
-                            mapOf("kind" to inline(Schema(type = "string", const = "start"))),
+                            mapOf("kind" to inline(Schema(type = JsonSchemaType.Single("string"), const = "start"))),
                     ),
-                "Anything" to Schema(type = "object"),
+                "Anything" to Schema(type = JsonSchemaType.Single("object")),
             )
 
         val union = assertIs<UnionModel>(models[0])
@@ -55,17 +56,18 @@ class ModelDefinitionFactoryTest {
             create(
                 "Order" to
                     Schema(
-                        type = "object",
+                        type = JsonSchemaType.Single("object"),
                         required = listOf("status"),
                         properties =
                             mapOf(
                                 "status" to SchemaInterface.SchemaReference(Reference("#/components/schemas/Status")),
                                 "order-name" to SchemaInterface.SchemaReference(Reference("#/components/schemas/Name")),
-                                "count" to inline(Schema(type = "integer", default = 3)),
+                                "count" to inline(Schema(type = JsonSchemaType.Single("integer"), default = 3)),
                             ),
                     ),
-                "Status" to Schema(type = "string", enum = listOf("open", "closed"), default = "open"),
-                "Name" to Schema(type = listOf("string", "null"), maxLength = 20),
+                "Status" to
+                    Schema(type = JsonSchemaType.Single("string"), enum = listOf("open", "closed"), default = "open"),
+                "Name" to Schema(type = JsonSchemaType.Multiple(listOf("string", "null")), maxLength = 20),
             )
 
         val (status, name, count) = assertIs<ObjectModel>(models.first()).properties
@@ -101,11 +103,11 @@ class ModelDefinitionFactoryTest {
                 create(
                     "Account" to
                         Schema(
-                            type = "object",
+                            type = JsonSchemaType.Single("object"),
                             properties =
                                 mapOf(
-                                    "account-id" to inline(Schema(type = "string")),
-                                    "accountId" to inline(Schema(type = "string")),
+                                    "account-id" to inline(Schema(type = JsonSchemaType.Single("string"))),
+                                    "accountId" to inline(Schema(type = JsonSchemaType.Single("string"))),
                                 ),
                         ),
                 )
@@ -122,11 +124,18 @@ class ModelDefinitionFactoryTest {
                 create(
                     "Order" to
                         Schema(
-                            type = "object",
+                            type = JsonSchemaType.Single("object"),
                             properties =
                                 mapOf(
-                                    "day" to inline(Schema(type = "string", format = "date", default = "2024-01-01")),
-                                    "note" to inline(Schema(type = "string", default = "n")),
+                                    "day" to
+                                        inline(
+                                            Schema(
+                                                type = JsonSchemaType.Single("string"),
+                                                format = "date",
+                                                default = "2024-01-01",
+                                            ),
+                                        ),
+                                    "note" to inline(Schema(type = JsonSchemaType.Single("string"), default = "n")),
                                 ),
                         ),
                 ).single(),

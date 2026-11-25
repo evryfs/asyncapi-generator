@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -14,15 +15,17 @@ class ConditionalNormalizerTest {
     fun `adds branch-only properties to the static schema`() {
         val root =
             Schema(
-                type = "object",
-                properties = mapOf("type" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("type" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
                 ifSchema = SchemaInterface.SchemaInline(Schema()),
                 thenSchema =
                     SchemaInterface.SchemaInline(
                         Schema(
                             properties =
                                 mapOf(
-                                    "extra" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    "extra" to
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                                 ),
                         ),
                     ),
@@ -45,7 +48,8 @@ class ConditionalNormalizerTest {
                         Schema(
                             properties =
                                 mapOf(
-                                    "value" to SchemaInterface.SchemaInline(Schema(type = "integer")),
+                                    "value" to
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                                 ),
                         ),
                     ),
@@ -54,7 +58,8 @@ class ConditionalNormalizerTest {
                         Schema(
                             properties =
                                 mapOf(
-                                    "value" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                    "value" to
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                                 ),
                         ),
                     ),
@@ -72,14 +77,14 @@ class ConditionalNormalizerTest {
             Schema(
                 properties =
                     mapOf(
-                        "thenValue" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "thenValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val elseBranch =
             Schema(
                 properties =
                     mapOf(
-                        "elseValue" to SchemaInterface.SchemaInline(Schema(type = "integer")),
+                        "elseValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                     ),
             )
         val root =
@@ -114,7 +119,7 @@ class ConditionalNormalizerTest {
                             properties =
                                 mapOf(
                                     "conditionalValue" to
-                                        SchemaInterface.SchemaInline(Schema(type = "string")),
+                                        SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                                 ),
                         ),
                     ),
@@ -127,14 +132,14 @@ class ConditionalNormalizerTest {
                         "values" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "array",
+                                    type = JsonSchemaType.Single("array"),
                                     items = SchemaInterface.SchemaInline(conditionalValue),
                                 ),
                             ),
                         "valuesByName" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     additionalProperties = SchemaInterface.SchemaInline(conditionalValue),
                                 ),
                             ),
@@ -171,7 +176,7 @@ class ConditionalNormalizerTest {
                                     "value" to
                                         SchemaInterface.SchemaInline(
                                             Schema(
-                                                type = "string",
+                                                type = JsonSchemaType.Single("string"),
                                                 pattern = "A+",
                                                 description = "Conditional value.",
                                             ),
@@ -187,7 +192,7 @@ class ConditionalNormalizerTest {
                                     "value" to
                                         SchemaInterface.SchemaInline(
                                             Schema(
-                                                type = "string",
+                                                type = JsonSchemaType.Single("string"),
                                                 pattern = "B+",
                                             ),
                                         ),
@@ -199,7 +204,7 @@ class ConditionalNormalizerTest {
         val result = normalizer.normalize(mapOf("Root" to root)).getValue("Root")
         val value = (result.properties?.get("value") as SchemaInterface.SchemaInline).schema
 
-        assertEquals("string", value.type)
+        assertEquals(JsonSchemaType.Single("string"), value.type)
         assertEquals("Conditional value.", value.description)
         assertNull(value.pattern)
     }

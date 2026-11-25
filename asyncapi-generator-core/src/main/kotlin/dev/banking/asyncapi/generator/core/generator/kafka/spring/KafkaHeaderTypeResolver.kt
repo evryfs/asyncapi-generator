@@ -1,8 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.schema.hasMultipleNonNullTypes
-import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
@@ -18,7 +15,7 @@ internal object KafkaHeaderTypeResolver {
         schema: SchemaInterface,
     ): KafkaHeaderType {
         val resolvedSchema = schema.resolve(headerContractName, wireName)
-        if (resolvedSchema.type.hasMultipleNonNullTypes()) {
+        if (resolvedSchema.type?.hasMultipleNonNullTypes == true) {
             throw unsupported(
                 headerContractName = headerContractName,
                 wireName = wireName,
@@ -31,12 +28,12 @@ internal object KafkaHeaderTypeResolver {
                 ?: throw unsupported(
                     headerContractName = headerContractName,
                     wireName = wireName,
-                    schemaType = resolvedSchema.type.getPrimaryType() ?: "unspecified",
+                    schemaType = resolvedSchema.type?.primary ?: "unspecified",
                 )
 
         return KafkaHeaderType(
             type = scalarType,
-            schemaNullable = resolvedSchema.type.isTypeNullable(),
+            schemaNullable = resolvedSchema.type?.allowsNull == true,
             description = resolvedSchema.description,
         )
     }

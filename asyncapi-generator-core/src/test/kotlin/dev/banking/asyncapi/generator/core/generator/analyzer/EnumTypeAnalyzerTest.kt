@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -20,9 +21,9 @@ class EnumTypeAnalyzerTest {
 
         val analyzed = analyzer.analyze(mapOf("Action" to root)).getValue("Action")
 
-        assertEquals("string", analyzed.type)
+        assertEquals(JsonSchemaType.Single("string"), analyzed.type)
         val analyzedInline = (analyzed.properties?.getValue("status") as SchemaInterface.SchemaInline).schema
-        assertEquals("string", analyzedInline.type)
+        assertEquals(JsonSchemaType.Single("string"), analyzedInline.type)
         assertNull(root.type)
         assertNull(inlineEnum.type)
     }

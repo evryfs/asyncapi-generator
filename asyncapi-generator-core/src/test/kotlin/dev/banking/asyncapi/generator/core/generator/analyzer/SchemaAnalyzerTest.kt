@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.analyzer.SchemaAnalyzer
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -21,7 +22,7 @@ class SchemaAnalyzerTest {
         val inlineEnum = Schema(enum = listOf("A", "B"))
         val externalSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties = mapOf("status" to SchemaInterface.SchemaInline(inlineEnum)),
             )
 

@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /** The validation constraints of a property or parameter, independent of how a language expresses them. */
@@ -50,7 +49,7 @@ internal sealed interface Constraints {
         fun of(schema: Schema?): Constraints = schema?.let(::declaredBy) ?: None
 
         private fun declaredBy(schema: Schema): Constraints =
-            when (schema.type.getPrimaryType()) {
+            when (schema.type?.primary) {
                 "string" ->
                     Text(
                         minLength = schema.minLength?.toInt(),

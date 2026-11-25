@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -17,16 +18,16 @@ class KafkaKeyModelSelectorTest {
     fun `selects native payload object key models and their dependencies`() {
         val tenantSchema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
-                        "tenantId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "tenantId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val keySchema =
             Schema(
                 title = "AccountKey",
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
                         "tenant" to
@@ -44,7 +45,7 @@ class KafkaKeyModelSelectorTest {
                     linkedMapOf(
                         "AccountKey" to keySchema,
                         "Tenant" to tenantSchema,
-                        "Unrelated" to Schema(type = "object"),
+                        "Unrelated" to Schema(type = JsonSchemaType.Single("object")),
                     ),
                 schemaDeclarations =
                     SchemaDeclarationCatalog(
@@ -91,7 +92,10 @@ class KafkaKeyModelSelectorTest {
                                         messageName = "AccountUpdated",
                                         payloadName = "AccountUpdated",
                                         schema = nativeAvroSchema(),
-                                        keySchema = SchemaInterface.SchemaInline(Schema(type = "string")),
+                                        keySchema =
+                                            SchemaInterface.SchemaInline(
+                                                Schema(type = JsonSchemaType.Single("string")),
+                                            ),
                                     ),
                                 ),
                         ),

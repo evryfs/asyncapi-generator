@@ -33,6 +33,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 import dev.banking.asyncapi.generator.core.model.info.Info
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -525,7 +526,8 @@ class AsyncApiGeneratorOutputContractTest {
                     Component(
                         schemas =
                             mapOf(
-                                "account-key" to SchemaInterface.SchemaInline(Schema(type = "object")),
+                                "account-key" to
+                                    SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("object"))),
                             ),
                         messages =
                             mapOf(
@@ -539,7 +541,7 @@ class AsyncApiGeneratorOutputContractTest {
                                                         BindingInterface.BindingInline(
                                                             kafkaKeyBinding(
                                                                 SchemaInterface.SchemaInline(
-                                                                    Schema(type = "object"),
+                                                                    Schema(type = JsonSchemaType.Single("object")),
                                                                 ),
                                                             ),
                                                         ),
@@ -946,10 +948,13 @@ class AsyncApiGeneratorOutputContractTest {
                             "Task" to
                                 SchemaInterface.SchemaInline(
                                     Schema(
-                                        type = "object",
+                                        type = JsonSchemaType.Single("object"),
                                         properties =
                                             mapOf(
-                                                "id" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                                                "id" to
+                                                    SchemaInterface.SchemaInline(
+                                                        Schema(type = JsonSchemaType.Single("string")),
+                                                    ),
                                             ),
                                     ),
                                 ),
@@ -977,7 +982,7 @@ class AsyncApiGeneratorOutputContractTest {
                 Component(
                     schemas =
                         mapOf(
-                            "Status" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                            "Status" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                         ),
                 ),
         )
@@ -1005,7 +1010,7 @@ class AsyncApiGeneratorOutputContractTest {
                                                     name = "AccountUpdated",
                                                     payload =
                                                         SchemaInterface.SchemaInline(
-                                                            Schema(type = "object"),
+                                                            Schema(type = JsonSchemaType.Single("object")),
                                                         ),
                                                 ),
                                             ),

@@ -14,6 +14,7 @@ import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.MESSAGE_TRAIT
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.SCHEMA
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
@@ -75,15 +76,15 @@ class MessageParserTest {
         assertEquals(MESSAGE_TRAIT, traitReference.referenceCategoryKey)
 
         val headers = assertIs<SchemaInterface.SchemaInline>(lightMeasured.headers).schema
-        assertEquals("object", headers.type)
+        assertEquals(JsonSchemaType.Single("object"), headers.type)
         assertEquals(listOf("correlationId"), headers.required)
         val headerProperties = assertNotNull(headers.properties)
         val correlationId = assertIs<SchemaInterface.SchemaInline>(headerProperties["correlationId"]).schema
-        assertEquals("string", correlationId.type)
+        assertEquals(JsonSchemaType.Single("string"), correlationId.type)
         assertEquals("Correlation ID set by application", correlationId.description)
         val applicationInstanceId =
             assertIs<SchemaInterface.SchemaInline>(headerProperties["applicationInstanceId"]).schema
-        assertEquals("string", applicationInstanceId.type)
+        assertEquals(JsonSchemaType.Single("string"), applicationInstanceId.type)
         assertEquals(
             "Unique identifier for a given instance of the publishing application",
             applicationInstanceId.description,
@@ -201,7 +202,7 @@ class MessageParserTest {
                 assertNotNull(inlineTrait.traits).single(),
             ).messageTrait
         val headers = assertIs<SchemaInterface.SchemaInline>(trait.headers).schema
-        assertEquals("string", headers.type)
+        assertEquals(JsonSchemaType.Single("string"), headers.type)
     }
 
     @Test

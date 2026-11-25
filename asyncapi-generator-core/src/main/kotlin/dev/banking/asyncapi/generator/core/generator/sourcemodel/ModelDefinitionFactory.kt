@@ -1,9 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
-import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.PropertyNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -35,7 +33,7 @@ internal class ModelDefinitionFactory(
         name: String,
         schema: Schema,
     ): ModelDefinition? {
-        val primaryType = schema.type.getPrimaryType()
+        val primaryType = schema.type?.primary
         return when {
             primaryType == "string" && !schema.enum.isNullOrEmpty() ->
                 EnumModel(
@@ -84,7 +82,7 @@ internal class ModelDefinitionFactory(
         UnionSubtypes.of(schema, schemas).filter { subtype ->
             schema.discriminator != null ||
                 schemas[subtype.type]
-                    ?.let { it.type.getPrimaryType() == "object" && !it.isOpenPayload() } == true
+                    ?.let { it.type?.primary == "object" && !it.isOpenPayload() } == true
         }
 
     private fun failOnIdentifierCollision(
@@ -109,7 +107,7 @@ internal class ModelDefinitionFactory(
             identifier = naming.propertyIdentifier(propertyName),
             type = type,
             required = propertyName in requiredProperties,
-            nullable = schema?.type.isTypeNullable(),
+            nullable = schema?.type?.allowsNull == true,
             description = schema?.description,
             access = PropertyAccess.of(schema),
             constraints = Constraints.of(schema),
@@ -152,7 +150,7 @@ internal class ModelDefinitionFactory(
         type: TypeRef,
         value: String,
     ): DefaultValue? =
-        when (schema.type.getPrimaryType()) {
+        when (schema.type?.primary) {
             "boolean" -> DefaultValue.BooleanLiteral(value)
             "integer" -> DefaultValue.IntegerLiteral(value)
             "number" -> DefaultValue.NumberLiteral(value)

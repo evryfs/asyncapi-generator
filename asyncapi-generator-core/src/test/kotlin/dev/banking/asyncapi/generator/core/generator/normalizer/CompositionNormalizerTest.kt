@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.normalizer
 
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -14,10 +15,10 @@ class CompositionNormalizerTest {
     fun `flattens a resolved allOf composition`() {
         val parent =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
-                        "parentProp" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "parentProp" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val child =
@@ -30,7 +31,7 @@ class CompositionNormalizerTest {
                     ),
                 properties =
                     mapOf(
-                        "childProp" to SchemaInterface.SchemaInline(Schema(type = "integer")),
+                        "childProp" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                     ),
             )
 
@@ -46,7 +47,7 @@ class CompositionNormalizerTest {
             Schema(
                 properties =
                     mapOf(
-                        "status" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "status" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val child =
@@ -61,7 +62,7 @@ class CompositionNormalizerTest {
                     mapOf(
                         "status" to
                             SchemaInterface.SchemaInline(
-                                Schema(type = "string", enum = listOf("A", "B")),
+                                Schema(type = JsonSchemaType.Single("string"), enum = listOf("A", "B")),
                             ),
                     ),
             )
@@ -76,8 +77,8 @@ class CompositionNormalizerTest {
     fun `flattens a composition inside an object property`() {
         val parent =
             Schema(
-                type = "object",
-                properties = mapOf("a" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                type = JsonSchemaType.Single("object"),
+                properties = mapOf("a" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
         val inlineComposition =
             Schema(
@@ -104,9 +105,9 @@ class CompositionNormalizerTest {
     fun `normalizes compositions inside array items and map values`() {
         val inheritedProperty =
             mapOf(
-                "inherited" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                "inherited" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
             )
-        val parent = Schema(type = "object", properties = inheritedProperty)
+        val parent = Schema(type = JsonSchemaType.Single("object"), properties = inheritedProperty)
         val composedValue =
             Schema(
                 allOf =
@@ -123,14 +124,14 @@ class CompositionNormalizerTest {
                         "values" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "array",
+                                    type = JsonSchemaType.Single("array"),
                                     items = SchemaInterface.SchemaInline(composedValue),
                                 ),
                             ),
                         "valuesByName" to
                             SchemaInterface.SchemaInline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     additionalProperties = SchemaInterface.SchemaInline(composedValue),
                                 ),
                             ),
@@ -155,10 +156,10 @@ class CompositionNormalizerTest {
     fun `follows chained resolved references in compositions`() {
         val base =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 properties =
                     mapOf(
-                        "baseValue" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "baseValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val baseReference = Reference("#/components/schemas/Base", model = base)
@@ -168,7 +169,7 @@ class CompositionNormalizerTest {
                 allOf = listOf(SchemaInterface.SchemaReference(aliasReference)),
                 properties =
                     mapOf(
-                        "childValue" to SchemaInterface.SchemaInline(Schema(type = "integer")),
+                        "childValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("integer"))),
                     ),
             )
 
@@ -184,7 +185,7 @@ class CompositionNormalizerTest {
             Schema(
                 properties =
                     mapOf(
-                        "baseValue" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "baseValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val distinctCommon =
@@ -197,7 +198,7 @@ class CompositionNormalizerTest {
                     ),
                 properties =
                     mapOf(
-                        "commonValue" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "commonValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
         val root =
@@ -210,7 +211,7 @@ class CompositionNormalizerTest {
                     ),
                 properties =
                     mapOf(
-                        "rootValue" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "rootValue" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
 
@@ -227,12 +228,12 @@ class CompositionNormalizerTest {
         val schemaA =
             Schema(
                 allOf = listOf(SchemaInterface.SchemaReference(referenceToB)),
-                properties = mapOf("a" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                properties = mapOf("a" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
         val schemaB =
             Schema(
                 allOf = listOf(SchemaInterface.SchemaReference(referenceToA)),
-                properties = mapOf("b" to SchemaInterface.SchemaInline(Schema(type = "string"))),
+                properties = mapOf("b" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string")))),
             )
         referenceToA.model = schemaA
         referenceToB.model = schemaB

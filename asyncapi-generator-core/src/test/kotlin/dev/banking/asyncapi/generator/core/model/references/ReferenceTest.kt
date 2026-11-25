@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.references
 
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -22,14 +23,19 @@ class ReferenceTest {
     fun `references are equal when they point at the same target`() {
         val reference = Reference(ref = "#/components/schemas/Node", sourceId = "main")
 
-        assertEquals(reference, reference.copy(model = Schema(type = "string")))
+        assertEquals(reference, reference.copy(model = Schema(type = JsonSchemaType.Single("string"))))
         assertNotEquals(reference, reference.copy(ref = "#/components/schemas/Other"))
         assertNotEquals(reference, reference.copy(sourceId = "external"))
     }
 
     private fun recursiveNode(): Schema {
         val reference = Reference(ref = "#/components/schemas/Node")
-        val node = Schema(type = "object", properties = mapOf("next" to SchemaInterface.SchemaReference(reference)))
+        val node =
+            Schema(
+                type = JsonSchemaType.Single("object"),
+                properties =
+                    mapOf("next" to SchemaInterface.SchemaReference(reference)),
+            )
         reference.model = node
         return node
     }

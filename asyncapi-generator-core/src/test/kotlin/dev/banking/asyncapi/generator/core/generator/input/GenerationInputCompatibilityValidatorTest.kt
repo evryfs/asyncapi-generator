@@ -19,6 +19,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -35,7 +36,7 @@ class GenerationInputCompatibilityValidatorTest {
         validator.validate(
             generationInput =
                 generationInputOf(
-                    schemas = mapOf("UserCreated" to Schema(type = "object")),
+                    schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
                     polymorphicRelationships = emptyMap(),
                     channels = emptyList(),
                 ),
@@ -61,7 +62,7 @@ class GenerationInputCompatibilityValidatorTest {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
-                    schema = Schema(tupleItems = listOf(inline(Schema(type = "string")))),
+                    schema = Schema(tupleItems = listOf(inline(Schema(type = JsonSchemaType.Single("string"))))),
                     task = modelTask(),
                 )
             }
@@ -101,7 +102,7 @@ class GenerationInputCompatibilityValidatorTest {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
-                    schema = Schema(type = "string", pattern = "["),
+                    schema = Schema(type = JsonSchemaType.Single("string"), pattern = "["),
                     task = modelTask(),
                 )
             }
@@ -114,7 +115,7 @@ class GenerationInputCompatibilityValidatorTest {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
                 validateSchemaTask(
-                    schema = Schema(tupleItems = listOf(inline(Schema(type = "string")))),
+                    schema = Schema(tupleItems = listOf(inline(Schema(type = JsonSchemaType.Single("string"))))),
                     task =
                         GenerationTask.AvroSchemaArtifacts(
                             SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
@@ -161,7 +162,7 @@ class GenerationInputCompatibilityValidatorTest {
     @Test
     fun `avro projection allows a pattern that Java cannot compile`() {
         validateSchemaTask(
-            schema = Schema(type = "string", pattern = "["),
+            schema = Schema(type = JsonSchemaType.Single("string"), pattern = "["),
             task =
                 GenerationTask.AvroSchemaArtifacts(
                     SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
@@ -171,8 +172,8 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `kafka key model artifacts validate selected key models only`() {
-        val selectedKey = Schema(type = "object")
-        val unrelatedPayload = Schema(tupleItems = listOf(inline(Schema(type = "string"))))
+        val selectedKey = Schema(type = JsonSchemaType.Single("object"))
+        val unrelatedPayload = Schema(tupleItems = listOf(inline(Schema(type = JsonSchemaType.Single("string")))))
 
         validator.validate(
             generationInput =
@@ -194,7 +195,13 @@ class GenerationInputCompatibilityValidatorTest {
                                             messageName = "Event",
                                             payloadTypeName = "UnrelatedPayload",
                                             schema = unrelatedPayload,
-                                            keySchema = inline(Schema(type = "object", title = "SelectedKey")),
+                                            keySchema =
+                                                inline(
+                                                    Schema(
+                                                        type = JsonSchemaType.Single("object"),
+                                                        title = "SelectedKey",
+                                                    ),
+                                                ),
                                         ),
                                     ),
                             ),
@@ -233,7 +240,13 @@ class GenerationInputCompatibilityValidatorTest {
                                                     messageName = "Event",
                                                     payloadTypeName = null,
                                                     schema = null,
-                                                    keySchema = inline(Schema(type = "object", title = "SelectedKey")),
+                                                    keySchema =
+                                                        inline(
+                                                            Schema(
+                                                                type = JsonSchemaType.Single("object"),
+                                                                title = "SelectedKey",
+                                                            ),
+                                                        ),
                                                 ),
                                             ),
                                     ),
@@ -265,8 +278,8 @@ class GenerationInputCompatibilityValidatorTest {
                             analyzedMessage(
                                 messageName = "Event",
                                 payloadTypeName = "EventPayload",
-                                schema = Schema(type = "object"),
-                                keySchema = inline(Schema(type = "string", pattern = "[")),
+                                schema = Schema(type = JsonSchemaType.Single("object")),
+                                keySchema = inline(Schema(type = JsonSchemaType.Single("string"), pattern = "[")),
                             ),
                         ),
                     generationPlan = GenerationPlan(listOf(springKafkaTask())),
@@ -286,14 +299,15 @@ class GenerationInputCompatibilityValidatorTest {
                     analyzedMessage(
                         messageName = "Event",
                         payloadTypeName = "EventPayload",
-                        schema = Schema(type = "object"),
+                        schema = Schema(type = JsonSchemaType.Single("object")),
                         keySchema =
                             inline(
                                 Schema(
-                                    type = "object",
+                                    type = JsonSchemaType.Single("object"),
                                     properties =
                                         mapOf(
-                                            "value" to inline(Schema(type = "string", pattern = "[")),
+                                            "value" to
+                                                inline(Schema(type = JsonSchemaType.Single("string"), pattern = "[")),
                                         ),
                                 ),
                             ),
@@ -328,7 +342,13 @@ class GenerationInputCompatibilityValidatorTest {
                                                     messageName = "Event",
                                                     payloadName = "Event",
                                                     schema = schema,
-                                                    keySchema = inline(Schema(type = "string", pattern = "[")),
+                                                    keySchema =
+                                                        inline(
+                                                            Schema(
+                                                                type = JsonSchemaType.Single("string"),
+                                                                pattern = "[",
+                                                            ),
+                                                        ),
                                                 ),
                                             ),
                                     ),
@@ -349,11 +369,17 @@ class GenerationInputCompatibilityValidatorTest {
                     analyzedMessage(
                         messageName = "Event",
                         payloadTypeName = "EventPayload",
-                        schema = Schema(type = "string", pattern = "["),
-                        keySchema = inline(Schema(type = "string", pattern = "[a-z]+")),
+                        schema = Schema(type = JsonSchemaType.Single("string"), pattern = "["),
+                        keySchema = inline(Schema(type = JsonSchemaType.Single("string"), pattern = "[a-z]+")),
                         headers =
                             AnalyzedMessageHeaders(
-                                properties = mapOf("trace" to inline(Schema(type = "string", pattern = "["))),
+                                properties =
+                                    mapOf(
+                                        "trace" to
+                                            inline(
+                                                Schema(type = JsonSchemaType.Single("string"), pattern = "["),
+                                            ),
+                                    ),
                             ),
                     ),
                 ),
@@ -365,7 +391,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `document and JSON Schema artifacts allow source incompatible schemas`() {
         val schema =
             Schema(
-                tupleItems = listOf(inline(Schema(type = "string"))),
+                tupleItems = listOf(inline(Schema(type = JsonSchemaType.Single("string")))),
                 pattern = "[",
             )
         val input =
@@ -470,7 +496,7 @@ class GenerationInputCompatibilityValidatorTest {
         validator.validate(
             generationInput =
                 GenerationInput(
-                    schemas = mapOf("Account" to Schema(type = "object")),
+                    schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
                     schemaDeclarations =
                         SchemaDeclarationCatalog(
                             multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
@@ -499,7 +525,7 @@ class GenerationInputCompatibilityValidatorTest {
                 validator.validate(
                     generationInput =
                         GenerationInput(
-                            schemas = mapOf("Account" to Schema(type = "object")),
+                            schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
                             schemaDeclarations =
                                 SchemaDeclarationCatalog(
                                     multiFormatSchemas = mapOf("UserCreated" to nativeProtobufSchema()),
@@ -535,7 +561,7 @@ class GenerationInputCompatibilityValidatorTest {
                 validator.validate(
                     generationInput =
                         GenerationInput(
-                            schemas = mapOf("Account" to Schema(type = "object")),
+                            schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
                             schemaDeclarations =
                                 SchemaDeclarationCatalog(
                                     multiFormatSchemas =
@@ -567,7 +593,7 @@ class GenerationInputCompatibilityValidatorTest {
         validator.validate(
             generationInput =
                 GenerationInput(
-                    schemas = mapOf("Account" to Schema(type = "object")),
+                    schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
                     schemaDeclarations =
                         SchemaDeclarationCatalog(
                             multiFormatSchemas =
@@ -694,7 +720,7 @@ class GenerationInputCompatibilityValidatorTest {
                 validator.validate(
                     generationInput =
                         generationInputOf(
-                            schemas = mapOf("UserCreated" to Schema(type = "object")),
+                            schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
                             polymorphicRelationships = emptyMap(),
                             channels = emptyList(),
                         ),
@@ -736,7 +762,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows AsyncAPI and native Draft 07 schemas for JSON Schema generation`() {
-        val userCreatedSchema = Schema(type = "object")
+        val userCreatedSchema = Schema(type = JsonSchemaType.Single("object"))
         validator.validate(
             generationInput =
                 GenerationInput(
@@ -799,7 +825,7 @@ class GenerationInputCompatibilityValidatorTest {
                 validator.validate(
                     generationInput =
                         GenerationInput(
-                            schemas = mapOf("UserCreated" to Schema(type = "object")),
+                            schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
                             schemaDeclarations =
                                 SchemaDeclarationCatalog(
                                     multiFormatSchemas =
@@ -1033,7 +1059,7 @@ class GenerationInputCompatibilityValidatorTest {
                                 schemaFormat = "application/schema+json;version=draft-07",
                                 schema = mapOf("type" to "object"),
                             ),
-                            keySchema = inline(Schema(type = "string", pattern = "[")),
+                            keySchema = inline(Schema(type = JsonSchemaType.Single("string"), pattern = "[")),
                         ),
                     generationPlan =
                         GenerationPlan(
@@ -1113,13 +1139,13 @@ class GenerationInputCompatibilityValidatorTest {
                                                     messageId = "my-message-v1",
                                                     messageName = "MyMessageV1",
                                                     payloadTypeName = "MyMessageV1Payload",
-                                                    schema = Schema(type = "object"),
+                                                    schema = Schema(type = JsonSchemaType.Single("object")),
                                                 ),
                                                 analyzedMessage(
                                                     messageId = "my-message-v1-byte-array",
                                                     messageName = "MyMessageV1ByteArray",
                                                     payloadTypeName = "MyMessageV1ByteArrayPayload",
-                                                    schema = Schema(type = "object"),
+                                                    schema = Schema(type = JsonSchemaType.Single("object")),
                                                 ),
                                             ),
                                     ),

@@ -8,6 +8,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.MESSAG
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.OPERATION
 import dev.banking.asyncapi.generator.core.model.bindings.BindingLocation.SERVER
 import dev.banking.asyncapi.generator.core.model.references.ReferenceCategoryKey.BINDING
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
 import dev.banking.asyncapi.generator.core.source.SourceReader
@@ -112,7 +113,7 @@ class BindingParserTest {
                 .schemaFields.keys,
         )
         val keySchema = assertIs<SchemaInterface.SchemaInline>(kafka.kafkaKeySchema).schema
-        assertEquals("integer", keySchema.type)
+        assertEquals(JsonSchemaType.Single("integer"), keySchema.type)
         assertEquals("int64", keySchema.format)
         assertEquals("Account identifier used as the Kafka record key.", keySchema.description)
     }
@@ -140,7 +141,10 @@ class BindingParserTest {
                 parser.parseProtocol(kafkaBindingNode, MESSAGE, "kafka"),
             ).binding
 
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("string"),
+            assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type,
+        )
     }
 
     @Test

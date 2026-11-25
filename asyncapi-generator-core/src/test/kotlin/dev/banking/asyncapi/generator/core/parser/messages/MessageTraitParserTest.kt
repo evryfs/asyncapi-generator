@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.correlations.CorrelationIdInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageTraitInterface
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 import dev.banking.asyncapi.generator.core.parser.node.ParserNodeFactory
@@ -48,7 +49,10 @@ class MessageTraitParserTest {
         val externalDocs = assertIs<ExternalDocInterface.ExternalDocInline>(trait.externalDocs).externalDoc
         assertEquals("https://example.com/docs/message-trait", externalDocs.url)
         val binding = assertIs<BindingInterface.BindingInline>(trait.bindings?.get("kafka")).binding
-        assertEquals("string", assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type)
+        assertEquals(
+            JsonSchemaType.Single("string"),
+            assertIs<SchemaInterface.SchemaInline>(binding.kafkaKeySchema).schema.type,
+        )
         assertEquals("commonHeadersExample", trait.examples?.single()?.name)
     }
 }

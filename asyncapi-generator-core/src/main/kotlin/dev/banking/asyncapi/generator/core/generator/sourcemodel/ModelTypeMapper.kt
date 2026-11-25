@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.schema.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
@@ -25,9 +23,9 @@ internal class ModelTypeMapper(
         propertyName: String,
         schema: Schema?,
     ): TypeRef {
-        if (schema == null || schema.type.hasMultipleNonNullTypes()) return TypeRef.Scalar.ANY
+        if (schema == null || schema.type?.hasMultipleNonNullTypes == true) return TypeRef.Scalar.ANY
         return if (schema.isInlineUnion() ||
-            (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty())
+            (schema.type?.primary == "string" && !schema.enum.isNullOrEmpty())
         ) {
             named(
                 schema.title
@@ -36,7 +34,7 @@ internal class ModelTypeMapper(
                     ?: NameCase.toPascalCase(propertyName),
             )
         } else {
-            scalarType(schema) ?: when (schema.type.getPrimaryType()) {
+            scalarType(schema) ?: when (schema.type?.primary) {
                 "array" -> mapArray(propertyName, schema)
                 "object" -> mapObject(propertyName, schema) ?: TypeRef.Scalar.ANY
                 else -> TypeRef.Scalar.ANY
@@ -72,7 +70,7 @@ internal class ModelTypeMapper(
          * `multipleOf` and otherwise a float or double by its `format`.
          */
         fun scalarType(schema: Schema): TypeRef.Scalar? =
-            when (schema.type.getPrimaryType()) {
+            when (schema.type?.primary) {
                 "string" -> stringType(schema)
                 "integer" -> integerType(schema)
                 "number" -> numberType(schema)
@@ -113,8 +111,7 @@ internal class ModelTypeMapper(
             }
     }
 
-    private fun Schema.isAlias(): Boolean =
-        isScalarAlias() || (type.getPrimaryType() == "array" && enum.isNullOrEmpty())
+    private fun Schema.isAlias(): Boolean = isScalarAlias() || (type?.primary == "array" && enum.isNullOrEmpty())
 
     /** The generated model a reference points to; marked when it is an open object. */
     fun mapReference(reference: Reference): TypeRef.Named {
@@ -130,7 +127,7 @@ internal class ModelTypeMapper(
 
     /** Whether [name] is an object or union model; a name without a schema is assumed to be one. */
     private fun isModel(name: String): Boolean =
-        schemas[name]?.let { schema -> schema.type.getPrimaryType() == "object" || schema.isInlineUnion() } ?: true
+        schemas[name]?.let { schema -> schema.type?.primary == "object" || schema.isInlineUnion() } ?: true
 
     private fun mapArray(
         propertyName: String,
@@ -144,7 +141,7 @@ internal class ModelTypeMapper(
                     val referenceName = items.reference.ref.substringAfterLast("/")
                     val referencedSchema = schemas[referenceName] ?: items.reference.model as? Schema
                     val isPlainString =
-                        referencedSchema?.type.getPrimaryType() == "string" && referencedSchema?.enum.isNullOrEmpty()
+                        referencedSchema?.type?.primary == "string" && referencedSchema?.enum.isNullOrEmpty()
                     when {
                         isPlainString -> TypeRef.Scalar.STRING
                         referencedSchema?.isAlias() == true -> resolveReference(propertyName, items.reference)

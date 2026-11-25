@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
@@ -46,7 +45,7 @@ internal class KafkaPayloadFactory(
      */
     private fun payloadType(message: AnalyzedMessage): TypeRef? =
         message.schema?.let { schema ->
-            if (schema.type.getPrimaryType() == "array") {
+            if (schema.type?.primary == "array") {
                 typeMapper.map(message.messageName, schema)
             } else {
                 ModelTypeMapper.scalarType(schema)

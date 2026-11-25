@@ -1,9 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.schema.hasMultipleNonNullTypes
-import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
@@ -16,7 +13,7 @@ internal object KafkaKeyContractResolver {
 
         val messageName = kafkaKey.messageName
         val resolvedSchema = kafkaKey.requireSchema()
-        if (resolvedSchema.type.hasMultipleNonNullTypes()) {
+        if (resolvedSchema.type?.hasMultipleNonNullTypes == true) {
             throw UnsupportedKafkaKeySchema(
                 messageName = messageName,
                 schemaType = "union with multiple non-null types",
@@ -26,7 +23,7 @@ internal object KafkaKeyContractResolver {
         return KafkaKeyContract(
             schema = resolvedSchema,
             type = keyType(kafkaKey, resolvedSchema),
-            nullable = resolvedSchema.type.isTypeNullable(),
+            nullable = resolvedSchema.type?.allowsNull == true,
         )
     }
 
@@ -38,7 +35,7 @@ internal object KafkaKeyContractResolver {
             ?: kafkaKey.modelName?.let { modelName -> TypeRef.Named(name = modelName, isModel = true) }
             ?: throw UnsupportedKafkaKeySchema(
                 messageName = kafkaKey.messageName,
-                schemaType = resolvedSchema.type.getPrimaryType() ?: "unspecified",
+                schemaType = resolvedSchema.type?.primary ?: "unspecified",
             )
 }
 

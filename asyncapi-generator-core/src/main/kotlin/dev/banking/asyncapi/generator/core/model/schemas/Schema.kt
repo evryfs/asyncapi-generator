@@ -15,8 +15,7 @@ data class Schema(
     val comment: String? = null, // is $comment in JSON/Yaml Schema
     val title: String? = null,
     val description: String? = null,
-    // A string or an array of strings: https://www.learnjsonschema.com/draft7/validation/type/
-    val type: Any? = null,
+    val type: JsonSchemaType? = null,
     val format: String? = null,
     val default: Any? = null,
     @get:JsonIgnore

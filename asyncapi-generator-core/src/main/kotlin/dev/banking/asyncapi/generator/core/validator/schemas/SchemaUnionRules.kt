@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.core.validator.schemas
 
 import dev.banking.asyncapi.generator.core.context.AsyncApiContext
-import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import dev.banking.asyncapi.generator.core.model.validator.ValidationRule.UNION_INDISTINGUISHABLE_MEMBERS
@@ -29,7 +28,7 @@ internal class SchemaUnionRules(
                 .filterIsInstance<SchemaInterface.SchemaReference>()
                 .mapNotNull { member ->
                     (member.reference.model as? Schema)
-                        ?.takeIf { it.type.getPrimaryType() == "object" }
+                        ?.takeIf { it.type?.primary == "object" }
                         ?.let { member.reference.ref.substringAfterLast('/') to propertyNames(it) }
                 }
         members

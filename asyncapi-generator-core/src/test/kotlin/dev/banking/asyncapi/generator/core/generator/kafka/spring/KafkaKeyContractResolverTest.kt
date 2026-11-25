@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.model.references.Reference
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
@@ -15,13 +16,13 @@ class KafkaKeyContractResolverTest {
     fun `resolves supported scalar key schemas`() {
         val scenarios =
             listOf(
-                Schema(type = "string") to TypeRef.Scalar.STRING,
-                Schema(type = "string", format = "uuid") to TypeRef.Scalar.UUID,
-                Schema(type = "integer", format = "int32") to TypeRef.Scalar.INT32,
-                Schema(type = "integer", format = "int64") to TypeRef.Scalar.INT64,
-                Schema(type = "number", format = "float") to TypeRef.Scalar.FLOAT,
-                Schema(type = "number", format = "double") to TypeRef.Scalar.DOUBLE,
-                Schema(type = "boolean") to TypeRef.Scalar.BOOLEAN,
+                Schema(type = JsonSchemaType.Single("string")) to TypeRef.Scalar.STRING,
+                Schema(type = JsonSchemaType.Single("string"), format = "uuid") to TypeRef.Scalar.UUID,
+                Schema(type = JsonSchemaType.Single("integer"), format = "int32") to TypeRef.Scalar.INT32,
+                Schema(type = JsonSchemaType.Single("integer"), format = "int64") to TypeRef.Scalar.INT64,
+                Schema(type = JsonSchemaType.Single("number"), format = "float") to TypeRef.Scalar.FLOAT,
+                Schema(type = JsonSchemaType.Single("number"), format = "double") to TypeRef.Scalar.DOUBLE,
+                Schema(type = JsonSchemaType.Single("boolean")) to TypeRef.Scalar.BOOLEAN,
             )
 
         scenarios.forEach { (schema, expected) ->
@@ -56,7 +57,7 @@ class KafkaKeyContractResolverTest {
                         KafkaKey.of(
                             "AccountUpdated",
                             SchemaInterface.SchemaInline(
-                                Schema(type = listOf("integer", "null"), format = "int64"),
+                                Schema(type = JsonSchemaType.Multiple(listOf("integer", "null")), format = "int64"),
                             ),
                         ),
                 ),
@@ -68,7 +69,7 @@ class KafkaKeyContractResolverTest {
 
     @Test
     fun `resolves referenced scalar key schemas`() {
-        val referencedSchema = Schema(type = "string", format = "uuid")
+        val referencedSchema = Schema(type = JsonSchemaType.Single("string"), format = "uuid")
         val result =
             requireNotNull(
                 KafkaKeyContractResolver.resolve(
@@ -93,12 +94,12 @@ class KafkaKeyContractResolverTest {
     fun `resolves inline object key schema to generated model type`() {
         val schema =
             Schema(
-                type = "object",
+                type = JsonSchemaType.Single("object"),
                 description = "Composite account key.",
                 properties =
                     mapOf(
-                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = "string")),
-                        "accountId" to SchemaInterface.SchemaInline(Schema(type = "string")),
+                        "institutionId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
+                        "accountId" to SchemaInterface.SchemaInline(Schema(type = JsonSchemaType.Single("string"))),
                     ),
             )
 

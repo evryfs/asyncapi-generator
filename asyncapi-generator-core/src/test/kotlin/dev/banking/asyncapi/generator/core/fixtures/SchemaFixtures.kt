@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
+import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -8,14 +9,14 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  */
 internal object SchemaFixtures {
     fun inline(
-        type: Any,
+        type: String,
         format: String? = null,
         description: String? = null,
         multipleOf: Number? = null,
     ): SchemaInterface.SchemaInline =
         SchemaInterface.SchemaInline(
             Schema(
-                type = type,
+                type = JsonSchemaType.Single(type),
                 format = format,
                 description = description,
                 multipleOf = multipleOf,
