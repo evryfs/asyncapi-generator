@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.ir.DefaultValue
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
@@ -13,7 +14,6 @@ import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.ir.imports
-import dev.banking.asyncapi.generator.core.generator.ir.modelAnnotationNames
 import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
@@ -30,13 +30,17 @@ import java.io.StringWriter
 /**
  * Renders payload models as Kotlin sources: data classes, enums, sealed interfaces for unions,
  * and `Any` type aliases for open objects.
+ *
+ * @param annotation Annotation added to every data class; null for none.
  */
-internal class KotlinModelEmitter : ModelEmitter {
+internal class KotlinModelEmitter(
+    private val annotation: QualifiedTypeName? = null,
+) : ModelEmitter {
     private val mustacheFactory = SourceMustacheFactory("kotlin")
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
 
     override fun emit(models: List<ModelDefinition>): GenerationResult {
-        models.rejectReservedNames("Kotlin", reservedTypeNames + modelAnnotationNames(models))
+        models.rejectReservedNames("Kotlin", reservedTypeNames + listOfNotNull(annotation?.simpleName))
         return GenerationResult(
             models.map { model ->
                 when (model) {
@@ -88,7 +92,7 @@ internal class KotlinModelEmitter : ModelEmitter {
                     )
                 },
             imports =
-                (typeImports + annotationImports + listOfNotNull(model.annotation?.value) + emptyClassImports)
+                (typeImports + annotationImports + listOfNotNull(annotation?.value) + emptyClassImports)
                     .distinct()
                     .sorted(),
             implementsClause =
@@ -96,7 +100,7 @@ internal class KotlinModelEmitter : ModelEmitter {
                     .takeIf { it.isNotEmpty() }
                     ?.joinToString(", ", prefix = " : ")
                     .orEmpty(),
-            classAnnotations = listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) + emptyClassAnnotations,
+            classAnnotations = listOfNotNull(annotation?.let { "@${it.simpleName}" }) + emptyClassAnnotations,
         )
     }
 

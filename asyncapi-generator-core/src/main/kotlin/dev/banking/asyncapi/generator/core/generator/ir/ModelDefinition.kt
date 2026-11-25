@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
@@ -19,7 +18,6 @@ internal sealed interface ModelDefinition {
  * An object with properties.
  *
  * @property unions Union models this object is a member of.
- * @property annotation Configured annotation for every generated model class.
  */
 internal data class ObjectModel(
     override val name: String,
@@ -27,7 +25,6 @@ internal data class ObjectModel(
     override val description: String?,
     val properties: List<PropertyDefinition>,
     val unions: List<String>,
-    val annotation: QualifiedTypeName? = null,
 ) : ModelDefinition
 
 internal data class EnumModel(
