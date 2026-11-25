@@ -5,7 +5,6 @@
     <ID>ComplexCondition:GeneratedOutputManifest.kt$GeneratedOutputManifest$directory != null &amp;&amp; directory != base &amp;&amp; isBelowRoot(directory, roots) &amp;&amp; isEmptyDirectory(directory)</ID>
     <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>DestructuringDeclarationWithTooManyEntries:KotlinModelEmitterTest.kt$KotlinModelEmitterTest$val (user, status, command, payload) = result.artifacts.map { it.content }</ID>
     <ID>LargeClass:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator</ID>
     <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
@@ -16,8 +15,6 @@
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
     <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$private fun normalizeAsyncApiSchemaNode( schemaNode: ObjectNode, schema: Schema, )</ID>
-    <ID>LongMethod:KotlinModelEmitter.kt$KotlinModelEmitter$private fun dataClass(model: ObjectModel): KotlinClassTemplate</ID>
-    <ID>LongMethod:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun create( name: String, schema: Schema, ): ModelDefinition?</ID>
     <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
     <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
@@ -30,9 +27,6 @@
     <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
     <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
-    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$0x20</ID>
-    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$16</ID>
-    <ID>MagicNumber:SourceLiteralEscaper.kt$SourceLiteralEscaper$4</ID>
     <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey."</ID>
@@ -40,22 +34,11 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
-    <ID>MaxLineLength:ModelDefinition.kt$DefaultValue.ParsedScalar$/** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */</ID>
     <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
-    <ID>OutdatedDocumentation:EnumLiteralNormalizer.kt$EnumConstant</ID>
     <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
-    <ID>OutdatedDocumentation:ModelDefinition.kt$ModelDefinition</ID>
-    <ID>OutdatedDocumentation:ModelDefinition.kt$ObjectModel : ModelDefinition</ID>
-    <ID>OutdatedDocumentation:ModelDefinition.kt$UnionModel : ModelDefinition</ID>
-    <ID>OutdatedDocumentation:TypeImports.kt$internal fun TypeRef.imports( modelPackage: String, declaringType: String, listImport: String? = null, mapImport: String? = null, ): List&lt;String&gt;</ID>
-    <ID>OutdatedDocumentation:TypeImports.kt$internal fun annotationImports( annotations: List&lt;String&gt;, target: String, accessMarker: String, ): List&lt;String&gt;</ID>
-    <ID>OutdatedDocumentation:TypeRef.kt$TypeRef$Named : TypeRef</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
-    <ID>ReturnCount:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun defaultValue( schema: Schema, type: TypeRef, ): DefaultValue?</ID>
-    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
-    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
@@ -69,7 +52,6 @@
     <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
     <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
-    <ID>TooManyFunctions:JavaModelEmitter.kt$JavaModelEmitter : ModelEmitter</ID>
     <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>

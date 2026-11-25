@@ -1,19 +1,24 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-/**
- * A payload model to generate, independent of the source language it is rendered in.
- *
- * @property description Contract description as written, not yet formatted as documentation.
- */
+/** A payload model to generate, independent of the source language it is rendered in. */
 internal sealed interface ModelDefinition {
+    /** Name of the generated type. */
     val name: String
+
+    /** Package the type is generated in. */
     val packageName: String
+
+    /** Contract description as written, not yet formatted as documentation. */
     val description: String?
 }
 
 /**
  * An object with properties.
  *
+ * @property name Name of the generated type.
+ * @property packageName Package the type is generated in.
+ * @property description Contract description as written.
+ * @property properties Properties in contract order.
  * @property unions Union models this object is a member of.
  */
 internal data class ObjectModel(
@@ -24,6 +29,14 @@ internal data class ObjectModel(
     val unions: List<String>,
 ) : ModelDefinition
 
+/**
+ * A string enum.
+ *
+ * @property name Name of the generated type.
+ * @property packageName Package the type is generated in.
+ * @property description Contract description as written.
+ * @property constants Constants in contract order.
+ */
 internal data class EnumModel(
     override val name: String,
     override val packageName: String,
@@ -34,7 +47,11 @@ internal data class EnumModel(
 /**
  * A `oneOf`/`anyOf` union.
  *
+ * @property name Name of the generated type.
+ * @property packageName Package the type is generated in.
+ * @property description Contract description as written.
  * @property discriminator Property whose value selects the member; null without one.
+ * @property subtypes Members that have a generated type.
  */
 internal data class UnionModel(
     override val name: String,
@@ -47,7 +64,13 @@ internal data class UnionModel(
     val deduction: Boolean get() = discriminator == null && subtypes.isNotEmpty()
 }
 
-/** An object without declared properties, which accepts any payload. */
+/**
+ * An object without declared properties, which accepts any payload.
+ *
+ * @property name Name of the generated type.
+ * @property packageName Package the type is generated in.
+ * @property description Contract description as written.
+ */
 internal data class OpenObjectModel(
     override val name: String,
     override val packageName: String,
@@ -99,7 +122,10 @@ internal sealed interface DefaultValue {
         val value: String,
     ) : DefaultValue
 
-    /** A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type, not written as a string. */
+    /**
+     * A string default of a date, time, or UUID property: [value] is parsed into the [scalar] type,
+     * not written as a string.
+     */
     data class ParsedScalar(
         val scalar: TypeRef.Scalar,
         val value: String,

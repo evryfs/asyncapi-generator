@@ -54,22 +54,27 @@ internal class ModelDefinitionFactory(
                 )
             schema.isOpenPayload() ->
                 OpenObjectModel(name = name, packageName = packageName, description = schema.description)
-            primaryType == "object" ->
-                ObjectModel(
-                    name = name,
-                    packageName = packageName,
-                    description = schema.description,
-                    properties =
-                        schema.properties
-                            .orEmpty()
-                            .map { (propertyName, propertySchema) ->
-                                createProperty(propertyName, propertySchema, schema.required.orEmpty())
-                            }.also { failOnIdentifierCollision(name, it) },
-                    unions = input.polymorphicRelationships[name].orEmpty(),
-                )
+            primaryType == "object" -> objectModel(name, schema)
             else -> null
         }
     }
+
+    private fun objectModel(
+        name: String,
+        schema: Schema,
+    ): ObjectModel =
+        ObjectModel(
+            name = name,
+            packageName = packageName,
+            description = schema.description,
+            properties =
+                schema.properties
+                    .orEmpty()
+                    .map { (propertyName, propertySchema) ->
+                        createProperty(propertyName, propertySchema, schema.required.orEmpty())
+                    }.also { failOnIdentifierCollision(name, it) },
+            unions = input.polymorphicRelationships[name].orEmpty(),
+        )
 
     /**
      * Without a discriminator the subtypes are only listed so that Jackson can deduce them, which
@@ -134,10 +139,20 @@ internal class ModelDefinitionFactory(
     ): DefaultValue? {
         val raw = schema.default ?: return null
         val value = raw.toString().trimStart('"', '\'', '|', '>').removeSurrounding("\"")
-        if (type is TypeRef.Named && schemas[type.name]?.enum?.isNotEmpty() == true) {
-            return DefaultValue.EnumEntry(type.name, naming.enumConstant(value) ?: value)
+        return if (type is TypeRef.Named && schemas[type.name]?.enum?.isNotEmpty() == true) {
+            DefaultValue.EnumEntry(type.name, naming.enumConstant(value) ?: value)
+        } else {
+            literalDefault(schema, type, value)
         }
-        return when (schema.type.getPrimaryType()) {
+    }
+
+    /** A default of a boolean, number, or string property; null for other types. */
+    private fun literalDefault(
+        schema: Schema,
+        type: TypeRef,
+        value: String,
+    ): DefaultValue? =
+        when (schema.type.getPrimaryType()) {
             "boolean" -> DefaultValue.BooleanLiteral(value)
             "integer" -> DefaultValue.IntegerLiteral(value)
             "number" -> DefaultValue.NumberLiteral(value)
@@ -149,5 +164,4 @@ internal class ModelDefinitionFactory(
                 }
             else -> null
         }
-    }
 }

@@ -141,14 +141,12 @@ internal class JavaModelEmitter(
         return (
             fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports +
                 listOfNotNull(annotation?.value) +
-                emptyClassImports(model)
+                // Jackson refuses to serialize a bean without properties unless the class carries an
+                // annotation of its own.
+                listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties").filter { model.properties.isEmpty() }
         ).distinct()
             .sorted()
     }
-
-    /** Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own. */
-    private fun emptyClassImports(model: ObjectModel): List<String> =
-        if (model.properties.isEmpty()) listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties") else emptyList()
 
     private fun implementsClause(model: ObjectModel): String =
         " implements " + (model.unions + "Serializable").joinToString(", ")
