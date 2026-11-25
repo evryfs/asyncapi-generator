@@ -2,8 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.analyzer
 
 import dev.banking.asyncapi.generator.core.generator.kafka.kafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
-import dev.banking.asyncapi.generator.core.model.channels.Channel
-import dev.banking.asyncapi.generator.core.model.channels.ChannelInterface
 import dev.banking.asyncapi.generator.core.model.messages.MessageInterface
 
 internal class ChannelAnalyzer {
@@ -12,11 +10,7 @@ internal class ChannelAnalyzer {
 
         val analyzedChannels =
             channels.mapNotNull { (name, chInterface) ->
-                val channel =
-                    when (chInterface) {
-                        is ChannelInterface.ChannelInline -> chInterface.channel
-                        is ChannelInterface.ChannelReference -> chInterface.reference.model as? Channel
-                    } ?: return@mapNotNull null
+                val channel = chInterface.resolvedOrNull() ?: return@mapNotNull null
 
                 val resolvedMessages = resolveMessages(channelName = name, messages = channel.messages)
 

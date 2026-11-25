@@ -1,9 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.kafka
 
+import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.model.bindings.Binding
-import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -63,7 +62,7 @@ internal object KafkaKeySchemaResolver {
     private fun SchemaInterface.resolveOrNull(): Schema? =
         when (this) {
             is SchemaInterface.SchemaInline -> schema
-            is SchemaInterface.SchemaReference -> reference.model as? Schema
+            is SchemaInterface.SchemaReference -> linkedSchema()
             is SchemaInterface.BooleanSchema,
             is SchemaInterface.MultiFormatSchemaInline,
             -> null
@@ -111,13 +110,4 @@ internal data class KafkaKeyObjectModel(
     val schema: Schema,
 )
 
-internal fun Message.kafkaKeySchema(): SchemaInterface? {
-    val binding =
-        when (val kafkaBinding = bindings?.get("kafka")) {
-            is BindingInterface.BindingInline -> kafkaBinding.binding
-            is BindingInterface.BindingReference -> kafkaBinding.reference.model as? Binding
-            null -> null
-        } ?: return null
-
-    return binding.kafkaKeySchema
-}
+internal fun Message.kafkaKeySchema(): SchemaInterface? = bindings?.get("kafka")?.resolvedOrNull()?.kafkaKeySchema

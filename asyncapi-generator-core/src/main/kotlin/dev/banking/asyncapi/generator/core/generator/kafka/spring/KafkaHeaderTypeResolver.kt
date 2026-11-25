@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
@@ -47,16 +48,12 @@ internal object KafkaHeaderTypeResolver {
         when (this) {
             is SchemaInterface.SchemaInline -> schema
             is SchemaInterface.SchemaReference ->
-                when (val model = reference.model) {
-                    is Schema -> model
-                    is SchemaInterface.SchemaInline -> model.schema
-                    else ->
-                        throw unsupported(
-                            headerContractName = headerContractName,
-                            wireName = wireName,
-                            schemaType = "unresolved reference '${reference.ref}'",
-                        )
-                }
+                linkedSchema()
+                    ?: throw unsupported(
+                        headerContractName = headerContractName,
+                        wireName = wireName,
+                        schemaType = "unresolved reference '${reference.ref}'",
+                    )
             is SchemaInterface.BooleanSchema ->
                 throw unsupported(
                     headerContractName = headerContractName,
