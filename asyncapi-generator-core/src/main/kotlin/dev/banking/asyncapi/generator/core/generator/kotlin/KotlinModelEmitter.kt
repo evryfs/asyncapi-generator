@@ -13,6 +13,8 @@ import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.ir.modelAnnotationNames
+import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.model.JsonPropertyAccessAnnotationMapper
@@ -33,8 +35,9 @@ internal class KotlinModelEmitter : ModelEmitter {
     private val mustacheFactory = SourceMustacheFactory("kotlin")
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
 
-    override fun emit(models: List<ModelDefinition>): GenerationResult =
-        GenerationResult(
+    override fun emit(models: List<ModelDefinition>): GenerationResult {
+        models.rejectReservedNames("Kotlin", reservedTypeNames + modelAnnotationNames(models))
+        return GenerationResult(
             models.map { model ->
                 when (model) {
                     is ObjectModel -> render(model, "dataClass.mustache", dataClass(model))
@@ -44,6 +47,7 @@ internal class KotlinModelEmitter : ModelEmitter {
                 }
             },
         )
+    }
 
     private fun dataClass(model: ObjectModel): KotlinClassTemplate {
         val properties = model.properties.map(::property)
@@ -175,6 +179,41 @@ internal class KotlinModelEmitter : ModelEmitter {
     )
 
     companion object {
+        /**
+         * Types that generated Kotlin models use without qualification: the scalar, collection, and
+         * date types, and the Jackson and Jakarta Validation annotations.
+         */
+        private val reservedTypeNames =
+            setOf(
+                "String",
+                "Int",
+                "Long",
+                "Float",
+                "Double",
+                "Boolean",
+                "Any",
+                "List",
+                "Map",
+                "UUID",
+                "LocalDate",
+                "LocalTime",
+                "OffsetDateTime",
+                "BigDecimal",
+                "JsonProperty",
+                "JsonIgnoreProperties",
+                "JsonTypeInfo",
+                "JsonSubTypes",
+                "Access",
+                "Valid",
+                "Size",
+                "Pattern",
+                "Min",
+                "Max",
+                "DecimalMin",
+                "DecimalMax",
+                "Email",
+            )
+
         /** The Kotlin source name of [type]. */
         internal fun typeName(type: TypeRef): String =
             when (type) {

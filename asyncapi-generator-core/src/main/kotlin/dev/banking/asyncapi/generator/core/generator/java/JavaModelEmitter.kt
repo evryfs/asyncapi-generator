@@ -12,6 +12,8 @@ import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.ir.modelAnnotationNames
+import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaRecordTemplate
 import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
@@ -36,8 +38,11 @@ internal class JavaModelEmitter(
     private val mustacheFactory = SourceMustacheFactory("java")
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
 
-    override fun emit(models: List<ModelDefinition>): GenerationResult =
-        GenerationResult(
+    override fun emit(models: List<ModelDefinition>): GenerationResult {
+        models
+            .filterNot { model -> model is OpenObjectModel }
+            .rejectReservedNames("Java", reservedTypeNames + modelAnnotationNames(models))
+        return GenerationResult(
             models.mapNotNull { model ->
                 when (model) {
                     is ObjectModel ->
@@ -51,6 +56,7 @@ internal class JavaModelEmitter(
                 }
             },
         )
+    }
 
     private fun javaClass(model: ObjectModel): JavaClassTemplate {
         val properties = model.properties.map(::property)
@@ -211,6 +217,47 @@ internal class JavaModelEmitter(
     }
 
     companion object {
+        /**
+         * Types that generated Java models use without qualification: the `java.lang` and `java.util`
+         * types of the class bodies, the scalar, collection, and date types, and the Jackson and
+         * Jakarta Validation annotations.
+         */
+        private val reservedTypeNames =
+            setOf(
+                "String",
+                "Integer",
+                "Long",
+                "Float",
+                "Double",
+                "Boolean",
+                "Object",
+                "Override",
+                "StringBuilder",
+                "Serializable",
+                "Objects",
+                "List",
+                "Map",
+                "UUID",
+                "LocalDate",
+                "LocalTime",
+                "OffsetDateTime",
+                "BigDecimal",
+                "NotNull",
+                "JsonProperty",
+                "JsonIgnoreProperties",
+                "JsonTypeInfo",
+                "JsonSubTypes",
+                "Access",
+                "Valid",
+                "Size",
+                "Pattern",
+                "Min",
+                "Max",
+                "DecimalMin",
+                "DecimalMax",
+                "Email",
+            )
+
         /** The Java source name of [type]. */
         internal fun typeName(type: TypeRef): String =
             when (type) {

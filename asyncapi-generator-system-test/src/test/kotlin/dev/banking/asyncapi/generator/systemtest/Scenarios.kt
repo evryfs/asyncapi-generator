@@ -483,6 +483,13 @@ private val allScenarios: List<Scenario> = listOf(
         expectedFailure = ExpectedFailure(messages = listOf("'Account'", "'account-id'", "'accountId'")),
     ),
     Scenario(
+        name = "diagnostics-reserved-model-name",
+        executions = listOf(
+            Execution(id = "reserved-model-name", generatorName = "kotlin", modelPackage = "com.example.model"),
+        ),
+        expectedFailure = ExpectedFailure(messages = listOf("Model 'UUID'", "generated Kotlin code already uses")),
+    ),
+    Scenario(
         name = "diagnostics-header-name-collision",
         executions = listOf(
             Execution(

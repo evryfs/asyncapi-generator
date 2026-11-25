@@ -71,6 +71,7 @@ in the contract, that every frontend must reject with a clear message:
 | [diagnostics-recursive-yaml-alias](diagnostics-recursive-yaml-alias) | A YAML alias that refers to itself. |
 | [diagnostics-inline-name-collision](diagnostics-inline-name-collision) | Two different inline schemas that would get the same class name. |
 | [diagnostics-property-name-collision](diagnostics-property-name-collision) | Two properties that become the same source identifier. |
+| [diagnostics-reserved-model-name](diagnostics-reserved-model-name) | A model named like a type the generated Kotlin code uses, such as `UUID`. |
 | [diagnostics-header-name-collision](diagnostics-header-name-collision) | Kafka headers whose parameter names collide with the fixed consumer parameters. |
 | [diagnostics-ref-operation-channel-scope](diagnostics-ref-operation-channel-scope) | A root operation or reply reached through `$ref` that uses a component channel instead of a root channel. |
 | [diagnostics-invalid-component-name](diagnostics-invalid-component-name) | A components key with characters the spec does not allow. |
