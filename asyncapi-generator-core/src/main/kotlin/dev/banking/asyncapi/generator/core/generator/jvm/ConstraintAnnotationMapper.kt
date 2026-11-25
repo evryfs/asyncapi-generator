@@ -1,8 +1,7 @@
-package dev.banking.asyncapi.generator.core.generator.model
+package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 internal class ConstraintAnnotationMapper(

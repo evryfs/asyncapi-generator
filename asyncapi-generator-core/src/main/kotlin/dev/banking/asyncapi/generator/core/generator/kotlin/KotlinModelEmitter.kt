@@ -11,20 +11,20 @@ import dev.banking.asyncapi.generator.core.generator.ir.OpenObjectModel
 import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
-import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
-import dev.banking.asyncapi.generator.core.generator.ir.imports
 import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
+import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
+import dev.banking.asyncapi.generator.core.generator.jvm.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceMustacheFactory
+import dev.banking.asyncapi.generator.core.generator.jvm.annotationImports
+import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
-import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
-import dev.banking.asyncapi.generator.core.generator.model.JsonPropertyAccessAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
-import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
-import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
-import dev.banking.asyncapi.generator.core.generator.util.SourceMustacheFactory
 import java.io.StringWriter
 
 /**
@@ -77,7 +77,7 @@ internal class KotlinModelEmitter(
         return KotlinClassTemplate(
             packageName = model.packageName,
             className = model.name,
-            classDocLines = DocumentationUtils.toKDocLines(model.description),
+            classDocLines = DocComments.toKDocLines(model.description),
             fields =
                 properties.mapIndexed { index, property ->
                     mapOf(
@@ -120,7 +120,7 @@ internal class KotlinModelEmitter(
         return KotlinProperty(
             name = property.identifier,
             type = type,
-            description = DocumentationUtils.toKDocLines(property.description),
+            description = DocComments.toKDocLines(property.description),
             nullable = nullable,
             defaultValue = property.default?.let { literal(it, type) } ?: "null".takeIf { nullable },
             annotations = annotations,
@@ -131,8 +131,8 @@ internal class KotlinModelEmitter(
         mapOf(
             "packageName" to model.packageName,
             "name" to model.name,
-            "hasDescription" to DocumentationUtils.toKDocLines(model.description).isNotEmpty(),
-            "description" to DocumentationUtils.toKDocLines(model.description),
+            "hasDescription" to DocComments.toKDocLines(model.description).isNotEmpty(),
+            "description" to DocComments.toKDocLines(model.description),
             "hasJsonValues" to model.constants.any { it.jsonValue != null },
             "values" to model.constants.map { it.copy(jsonValue = it.jsonValue?.let(SourceLiteralEscaper::forKotlin)) },
         )
@@ -141,8 +141,8 @@ internal class KotlinModelEmitter(
         mapOf(
             "packageName" to model.packageName,
             "interfaceName" to model.name,
-            "hasDescription" to DocumentationUtils.toKDocLines(model.description).isNotEmpty(),
-            "description" to DocumentationUtils.toKDocLines(model.description),
+            "hasDescription" to DocComments.toKDocLines(model.description).isNotEmpty(),
+            "description" to DocComments.toKDocLines(model.description),
             "discriminator" to model.discriminator?.let(SourceLiteralEscaper::forKotlin),
             "deduction" to model.deduction,
             "hasTypeInfo" to (model.discriminator != null || model.deduction),

@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.util
+package dev.banking.asyncapi.generator.core.generator.jvm
 
 import com.github.mustachejava.DefaultMustacheFactory
 import java.io.Writer

@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.model
+package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test

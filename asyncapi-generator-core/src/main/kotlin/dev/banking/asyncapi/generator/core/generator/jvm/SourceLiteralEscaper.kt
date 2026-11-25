@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.util
+package dev.banking.asyncapi.generator.core.generator.jvm
 
 /** Escapes exact model values for generated Java and Kotlin quoted string literals. */
 internal object SourceLiteralEscaper {
