@@ -1,16 +1,17 @@
-package dev.banking.asyncapi.generator.core.generator.util
+package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.ir.SourceNaming
 
 /**
- * Converts wire-level names (property names, header names, etc.) into valid
- * Java and Kotlin source identifiers.
+ * Names for Kotlin and Java sources. Both languages share one set of rules, so a contract
+ * generates the same identifiers and JSON in either language.
  *
- * Names that are already valid identifiers are preserved as-is. Names with
- * hyphens, spaces, leading digits, or other invalid characters are converted
- * to lowerCamelCase. Reserved words are suffixed with an underscore.
+ * Property names that are already valid identifiers are kept; other names become lowerCamelCase.
+ * Words reserved in Kotlin or Java get a `_` suffix. Enum constants are UPPER_SNAKE_CASE.
  */
-internal object SourceIdentifierMapper {
+internal object JvmNaming : SourceNaming {
+    private val separators = Regex("[^A-Z0-9_]+")
     private val validIdentifierRegex = Regex("[A-Za-z_][A-Za-z0-9_]*")
 
     private val reservedIdentifiers =
@@ -118,17 +119,30 @@ internal object SourceIdentifierMapper {
             "yield",
         )
 
+    /** Whether [identifier] is a Kotlin or Java keyword. */
     fun isReserved(identifier: String): Boolean = identifier in reservedIdentifiers
 
-    fun toIdentifier(wireName: String): String {
+    override fun propertyIdentifier(wireName: String): String =
         if (validIdentifierRegex.matches(wireName) && wireName !in reservedIdentifiers) {
-            return wireName
+            wireName
+        } else {
+            camelCaseIdentifier(wireName)
         }
 
+    private fun camelCaseIdentifier(wireName: String): String {
         val camelCase = NameCase.toCamelCase(wireName)
-        if (camelCase.isEmpty()) return "_"
-
-        val identifier = if (camelCase[0].isDigit()) "_$camelCase" else camelCase
+        val identifier =
+            when {
+                camelCase.isEmpty() -> "_"
+                camelCase.first().isDigit() -> "_$camelCase"
+                else -> camelCase
+            }
         return if (identifier in reservedIdentifiers) "${identifier}_" else identifier
+    }
+
+    override fun enumConstant(value: String): String? {
+        val constant = value.uppercase().replace(separators, "_")
+        if (constant.all { it == '_' }) return null
+        return if (constant.first().isDigit()) "_$constant" else constant
     }
 }

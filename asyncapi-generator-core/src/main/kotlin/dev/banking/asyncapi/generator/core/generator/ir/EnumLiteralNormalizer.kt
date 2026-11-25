@@ -15,15 +15,17 @@ data class EnumConstant(
 )
 
 /**
- * Turns enum values from the contract into Kotlin and Java enum constants.
+ * Turns enum values from the contract into enum constants named by [naming].
  *
- * Constants are upper case; characters that cannot appear in an identifier become `_`, so
- * `in-progress` becomes `IN_PROGRESS`. The original value is kept as the wire value, so
- * messages keep using the contract's values. Values that leave no identifier, or that
- * collide after this mapping, fail.
+ * The original value is kept as the wire value, so messages keep using the contract's values.
+ * Values that leave no identifier, or that collide after naming, fail.
+ *
+ * @param packageName Package of the generated enums, for error messages.
+ * @param naming Naming rules of the generated sources.
  */
 internal class EnumLiteralNormalizer(
     private val packageName: String,
+    private val naming: SourceNaming,
 ) {
     fun normalize(
         schemaName: String,
@@ -34,7 +36,7 @@ internal class EnumLiteralNormalizer(
             rawValues.map { rawValue ->
                 val original = rawValue.toEnumLiteral()
                 val constant =
-                    constantName(original)
+                    naming.enumConstant(original)
                         ?: throw InvalidEnum(schemaName = schemaName, literal = original, packageName = packageName)
                 originalsByConstant.getOrPut(constant) { mutableListOf() }.add(original)
                 EnumConstant(name = constant, jsonValue = original.takeIf { it != constant })
@@ -57,15 +59,4 @@ internal class EnumLiteralNormalizer(
         toString()
             .trimStart('"', '\'', '|', '>')
             .removeSurrounding("\"")
-
-    companion object {
-        private val separators = Regex("[^A-Z0-9_]+")
-
-        /** The constant for one enum value, or null when no identifier remains. */
-        fun constantName(value: String): String? {
-            val constant = value.uppercase().replace(separators, "_")
-            if (constant.all { it == '_' }) return null
-            return if (constant.first().isDigit()) "_$constant" else constant
-        }
-    }
 }
