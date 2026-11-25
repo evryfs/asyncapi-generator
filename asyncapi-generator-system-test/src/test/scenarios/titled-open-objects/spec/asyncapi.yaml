@@ -1,0 +1,26 @@
+asyncapi: 3.0.0
+info:
+  title: Titled open objects
+  version: 1.0.0
+channels:
+  audits:
+    address: audits
+    messages:
+      audit:
+        payload:
+          $ref: '#/components/schemas/Audit'
+components:
+  schemas:
+    Audit:
+      type: object
+      properties:
+        metadata:
+          title: Metadata
+          description: A titled object without properties, which accepts any object.
+          type: object
+        labels:
+          title: Labels
+          description: A titled object whose values are strings.
+          type: object
+          additionalProperties:
+            type: string

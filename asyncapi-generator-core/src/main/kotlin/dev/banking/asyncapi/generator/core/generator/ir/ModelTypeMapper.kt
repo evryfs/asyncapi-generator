@@ -155,6 +155,10 @@ internal class ModelTypeMapper(
         return TypeRef.ListOf(element)
     }
 
+    /**
+     * An inline object without properties is a map of its additional properties, also when it has a
+     * title: only objects with properties are promoted to models named after their title.
+     */
     private fun mapObject(
         propertyName: String,
         schema: Schema,
@@ -164,7 +168,6 @@ internal class ModelTypeMapper(
                 "This schema should have been promoted to a top-level schema reference by InlineSchemaAnalyzer. " +
                 "This indicates a bug in the generator pipeline."
         }
-        schema.title?.takeIf { it.isNotBlank() }?.let { return named(NameCase.toPascalCase(it)) }
         val value =
             when (val additionalProperties = schema.additionalProperties) {
                 null -> TypeRef.Scalar.ANY

@@ -60,7 +60,6 @@
     <ID>ReturnCount:ModelDefinitionFactory.kt$ModelDefinitionFactory$private fun defaultValue( schema: Schema, type: TypeRef, ): DefaultValue?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$fun map( propertyName: String, schema: Schema?, ): TypeRef</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun isModel(name: String): Boolean</ID>
-    <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper$private fun mapObject( propertyName: String, schema: Schema, ): TypeRef?</ID>
     <ID>ReturnCount:ModelTypeMapper.kt$ModelTypeMapper.Companion$fun integerType(schema: Schema): TypeRef.Scalar</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
