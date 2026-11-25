@@ -402,6 +402,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "titled-open-objects",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.titledobjects.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.titledobjects.java"),
+        ),
+    ),
+    Scenario(
         name = "union-discriminator-values",
         executions = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.discriminators.kotlin"),
