@@ -109,7 +109,9 @@ the `jvm` support package that both emitters use (such as
 `JsonPropertyAccessAnnotationMapper`), so both languages produce the same JSON.
 The `jvm` package also holds what only JVM sources need: imports, Jackson and
 Jakarta Validation annotations, string literal escaping, and KDoc and Javadoc
-comments. When adding a feature, put the decision in shared code and only the
+comments. The model takes its property identifier and enum constant rules from
+a `SourceNaming`; `JvmNaming` gives Kotlin and Java the same rules, so a
+contract generates the same identifiers in both. When adding a feature, put the decision in shared code and only the
 syntax in the emitters.
 
 Spring Kafka clients follow the same split. `SpringKafkaChannelContractFactory`

@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
+import dev.banking.asyncapi.generator.core.generator.jvm.JvmNaming
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -17,6 +18,7 @@ class ModelDefinitionFactoryTest {
             ModelDefinitionFactory(
                 input = GenerationInputFixtures().generationInputWithObjectEnumAndPrimitive(),
                 packageName = "com.example.model",
+                naming = JvmNaming,
             ).create()
 
         assertEquals(listOf("User", "Status"), models.map { it.name })
@@ -85,6 +87,7 @@ class ModelDefinitionFactoryTest {
                     channels = emptyList(),
                 ),
             packageName = "com.example.model",
+            naming = JvmNaming,
         ).create()
 
     private fun inline(schema: Schema) = SchemaInterface.SchemaInline(schema)

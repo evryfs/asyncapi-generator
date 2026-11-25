@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.ir.NameCase
-import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.JvmNaming
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKafkaHeaderName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KafkaHeaderParameterNameCollision
 
@@ -87,7 +87,7 @@ internal object KafkaHeaderParameterNames {
                 normalized
             }
 
-        return if (SourceIdentifierMapper.isReserved(identifier)) {
+        return if (JvmNaming.isReserved(identifier)) {
             "${identifier}_"
         } else {
             identifier

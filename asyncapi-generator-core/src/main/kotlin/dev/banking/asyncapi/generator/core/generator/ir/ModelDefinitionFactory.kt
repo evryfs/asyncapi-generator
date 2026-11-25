@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.generator.ir
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
-import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.PropertyNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -12,14 +11,19 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * Builds the language-neutral [ModelDefinition]s of the analyzed schemas.
  *
  * Schemas that need no generated type of their own, such as scalar aliases, yield nothing.
+ *
+ * @param input Analyzed schemas and the unions they belong to.
+ * @param packageName Package of the generated models.
+ * @param naming Naming rules of the generated sources, for property identifiers and enum constants.
  */
 internal class ModelDefinitionFactory(
     private val input: GenerationInput,
     private val packageName: String,
+    private val naming: SourceNaming,
 ) {
     private val schemas: Map<String, Schema> = input.schemas
     private val typeMapper = ModelTypeMapper(schemas)
-    private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName)
+    private val enumLiteralNormalizer = EnumLiteralNormalizer(packageName, naming)
 
     private val parsedScalars =
         setOf(TypeRef.Scalar.DATE, TypeRef.Scalar.TIME, TypeRef.Scalar.DATE_TIME, TypeRef.Scalar.UUID)
@@ -96,7 +100,7 @@ internal class ModelDefinitionFactory(
         val (schema, type) = resolveSchemaAndType(propertyName, propertySchema)
         return PropertyDefinition(
             wireName = propertyName,
-            identifier = SourceIdentifierMapper.toIdentifier(propertyName),
+            identifier = naming.propertyIdentifier(propertyName),
             type = type,
             required = propertyName in requiredProperties,
             schema = schema,
@@ -127,7 +131,7 @@ internal class ModelDefinitionFactory(
         val raw = schema.default ?: return null
         val value = raw.toString().trimStart('"', '\'', '|', '>').removeSurrounding("\"")
         if (type is TypeRef.Named && schemas[type.name]?.enum?.isNotEmpty() == true) {
-            return DefaultValue.EnumEntry(type.name, EnumLiteralNormalizer.constantName(value) ?: value)
+            return DefaultValue.EnumEntry(type.name, naming.enumConstant(value) ?: value)
         }
         return when (schema.type.getPrimaryType()) {
             "boolean" -> DefaultValue.BooleanLiteral(value)

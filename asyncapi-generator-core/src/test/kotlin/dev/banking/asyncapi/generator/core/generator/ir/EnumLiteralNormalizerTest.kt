@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
+import dev.banking.asyncapi.generator.core.generator.jvm.JvmNaming
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.EnumLiteralCollision
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidEnum
 import org.junit.jupiter.api.Test
@@ -8,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class EnumLiteralNormalizerTest {
-    private val normalizer = EnumLiteralNormalizer("com.example.model")
+    private val normalizer = EnumLiteralNormalizer("com.example.model", JvmNaming)
 
     @Test
     fun `maps values to upper case constants and keeps differing wire values`() {
