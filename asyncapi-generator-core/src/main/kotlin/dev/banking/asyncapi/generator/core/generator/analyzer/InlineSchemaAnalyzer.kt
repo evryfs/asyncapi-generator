@@ -17,6 +17,8 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * of different types that would get the same name fail, because generating both under one name
  * would silently drop one of them.
  * Items of a named array schema are named `<Array>Item`, so they never replace the array.
+ * An inline member of a `oneOf` or `anyOf` union is named after its title, or else
+ * `<Union>Member<N>` by its position, so the union can deserialize into it.
  */
 internal class InlineSchemaAnalyzer {
     /** [schemas] with their inline objects and enums replaced by references to promoted schemas. */
@@ -29,6 +31,7 @@ internal class InlineSchemaAnalyzer {
             val modifiedSchema =
                 promotion.replaceInlineWithRefs(
                     schema = originalSchema,
+                    typeName = schemaName,
                     nameHint = schemaName,
                     owner = schemaName,
                     location = promotion.locations.getValue(schemaName),
@@ -49,8 +52,10 @@ internal class InlineSchemaAnalyzer {
         /** Where each named schema comes from, for collision messages. */
         val locations = initial.keys.associateWith { "components.schemas.$it" }.toMutableMap()
 
+        /** [schema] with its inline types promoted; [typeName] is the name [schema] itself is generated as. */
         fun replaceInlineWithRefs(
             schema: Schema,
+            typeName: String,
             nameHint: String,
             owner: String,
             location: String,
@@ -79,7 +84,26 @@ internal class InlineSchemaAnalyzer {
                     modifiedSchema = modifiedSchema.copy(additionalProperties = newAdditional)
                 }
             }
-            return modifiedSchema
+            return promoteUnionMembers(modifiedSchema, typeName, owner, location)
+        }
+
+        private fun promoteUnionMembers(
+            schema: Schema,
+            typeName: String,
+            owner: String,
+            location: String,
+        ): Schema {
+            fun promoteMembers(
+                members: List<SchemaInterface>?,
+                keyword: String,
+            ): List<SchemaInterface>? =
+                members?.mapIndexed { index, member ->
+                    promoteIfNeeded(member, "${typeName}Member${index + 1}", owner, "$location.$keyword[$index]")
+                }
+            return schema.copy(
+                oneOf = promoteMembers(schema.oneOf, "oneOf"),
+                anyOf = promoteMembers(schema.anyOf, "anyOf"),
+            )
         }
 
         private fun promoteIfNeeded(
@@ -89,7 +113,14 @@ internal class InlineSchemaAnalyzer {
             location: String,
         ): SchemaInterface {
             if (schemaInterface !is SchemaInterface.SchemaInline) return schemaInterface
-            val processedInlineSchema = replaceInlineWithRefs(schemaInterface.schema, nameHint, owner, location)
+            val processedInlineSchema =
+                replaceInlineWithRefs(
+                    schemaInterface.schema,
+                    typeName(schemaInterface.schema, nameHint),
+                    nameHint,
+                    owner,
+                    location,
+                )
             return if (needsName(processedInlineSchema)) {
                 promote(processedInlineSchema, nameHint, location)
             } else {
@@ -114,9 +145,7 @@ internal class InlineSchemaAnalyzer {
             nameHint: String,
             location: String,
         ): SchemaInterface.SchemaReference {
-            val newSchemaName =
-                processedInlineSchema.title?.takeIf { it.isNotBlank() }?.let { NameCase.toPascalCase(it) }
-                    ?: NameCase.toPascalCase(nameHint)
+            val newSchemaName = typeName(processedInlineSchema, nameHint)
             val existing = schemas[newSchemaName]
             when {
                 existing == null -> {
@@ -135,6 +164,14 @@ internal class InlineSchemaAnalyzer {
             val newReference = Reference(ref = "#/components/schemas/$newSchemaName", model = processedInlineSchema)
             return SchemaInterface.SchemaReference(reference = newReference)
         }
+
+        /** The name an inline [schema] is promoted as: its title, or else [nameHint]. */
+        private fun typeName(
+            schema: Schema,
+            nameHint: String,
+        ): String =
+            schema.title?.takeIf { it.isNotBlank() }?.let { NameCase.toPascalCase(it) }
+                ?: NameCase.toPascalCase(nameHint)
 
         /** What the generated type depends on: its kind, values, and the shapes of its members. */
         private fun typeShape(schema: Schema): List<Any?> =

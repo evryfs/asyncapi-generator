@@ -402,6 +402,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "inline-union-members",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.unionmembers.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.unionmembers.java"),
+        ),
+    ),
+    Scenario(
         name = "titled-open-objects",
         executions = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.titledobjects.kotlin"),

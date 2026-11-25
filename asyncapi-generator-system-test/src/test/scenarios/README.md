@@ -47,6 +47,7 @@ have to describe the same configuration.
 | [kafka-composed-headers](kafka-composed-headers) | Spring Kafka clients for message headers composed with `allOf`, in Kotlin and Java. |
 | [union-discriminator-values](union-discriminator-values) | Kotlin and Java unions whose discriminator values come from `const` and from `allOf`-narrowed enums. |
 | [inline-union-properties](inline-union-properties) | Kotlin and Java union types for inline `oneOf` and `anyOf` properties. |
+| [inline-union-members](inline-union-members) | Kotlin and Java models for inline union members, named by title or position. |
 | [titled-open-objects](titled-open-objects) | Titled inline objects without properties typed as maps in Kotlin and Java. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |

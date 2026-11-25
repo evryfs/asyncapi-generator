@@ -1,0 +1,31 @@
+asyncapi: 3.0.0
+info:
+  title: Inline union members
+  version: 1.0.0
+channels:
+  pets:
+    address: pets
+    messages:
+      pet:
+        payload:
+          $ref: '#/components/schemas/Pet'
+components:
+  schemas:
+    Pet:
+      description: A union whose members are inline objects and a reference.
+      oneOf:
+        - title: Dog
+          type: object
+          properties:
+            bark:
+              type: string
+        - type: object
+          properties:
+            purr:
+              type: boolean
+        - $ref: '#/components/schemas/Cat'
+    Cat:
+      type: object
+      properties:
+        meow:
+          type: string
