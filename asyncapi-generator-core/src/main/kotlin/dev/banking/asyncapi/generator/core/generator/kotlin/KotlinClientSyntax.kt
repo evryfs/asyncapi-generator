@@ -1,0 +1,41 @@
+package dev.banking.asyncapi.generator.core.generator.kotlin
+
+import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
+import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientSyntax
+import dev.banking.asyncapi.generator.core.generator.model.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils
+import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
+import dev.banking.asyncapi.generator.core.model.schemas.Schema
+
+/** Kotlin syntax of Spring Kafka clients: nullable types instead of nullability annotations. */
+internal object KotlinClientSyntax : SpringKafkaClientSyntax {
+    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
+
+    override val templateRoot = "kotlin"
+    override val fileExtension = "kt"
+    override val anyType = "Any?"
+    override val byteArrayType = "ByteArray"
+
+    override fun typeName(
+        type: TypeRef,
+        nullable: Boolean,
+    ): String = KotlinModelEmitter.typeName(type) + if (nullable) "?" else ""
+
+    override fun imports(
+        type: TypeRef,
+        modelPackage: String,
+    ): List<String> = type.imports(modelPackage, "")
+
+    override fun docLines(text: String?): List<String> = DocumentationUtils.toKDocLines(text)
+
+    override fun code(text: String): String = "`$text`"
+
+    override fun stringLiteral(value: String): String = SourceLiteralEscaper.forKotlin(value)
+
+    override fun nullabilityAnnotation(nullable: Boolean): String? = null
+
+    override fun parameterConstraints(schema: Schema): List<String> =
+        constraintMapper.buildAnnotations(schema).map { annotation -> annotation.replace("@field:", "@") }
+}

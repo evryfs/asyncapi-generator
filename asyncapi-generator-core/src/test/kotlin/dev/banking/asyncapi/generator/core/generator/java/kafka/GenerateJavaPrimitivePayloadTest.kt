@@ -1,7 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.java.kafka
 
 import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
-import dev.banking.asyncapi.generator.core.generator.java.kafka.spring.JavaSpringKafkaGenerator
+import dev.banking.asyncapi.generator.core.fixtures.springKafkaClientEmitter
+import dev.banking.asyncapi.generator.core.generator.java.JavaClientSyntax
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
@@ -27,7 +28,8 @@ class GenerateJavaPrimitivePayloadTest {
                     ),
             )
         val generator =
-            JavaSpringKafkaGenerator(
+            springKafkaClientEmitter(
+                syntax = JavaClientSyntax,
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
@@ -102,7 +104,8 @@ class GenerateJavaPrimitivePayloadTest {
                     ),
             )
         val generator =
-            JavaSpringKafkaGenerator(
+            springKafkaClientEmitter(
+                syntax = JavaClientSyntax,
                 clientPackage = packageName,
                 modelPackage = packageName,
             )
