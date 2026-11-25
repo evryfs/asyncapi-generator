@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.linkedSchema
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.messages.Message
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -83,7 +83,7 @@ internal data class KafkaKey private constructor(
                 else ->
                     schema.title
                         ?.takeIf(String::isNotBlank)
-                        ?.let(MapperUtil::toPascalCase)
+                        ?.let(NameCase::toPascalCase)
                         ?: messageName.withKeySuffix()
             }
 
@@ -95,11 +95,11 @@ internal data class KafkaKey private constructor(
                 } else {
                     substringAfterLast('/').substringBeforeLast('.')
                 }
-            return MapperUtil.toPascalCase(rawName)
+            return NameCase.toPascalCase(rawName)
         }
 
         private fun String.withKeySuffix(): String =
-            MapperUtil.toPascalCase(this).let { name ->
+            NameCase.toPascalCase(this).let { name ->
                 if (name.endsWith("Key")) name else "${name}Key"
             }
     }

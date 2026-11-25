@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
+import dev.banking.asyncapi.generator.core.generator.ir.EnumConstant
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
 import dev.banking.asyncapi.generator.core.generator.ir.ObjectModel
 import dev.banking.asyncapi.generator.core.generator.ir.OpenObjectModel
 import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
-import dev.banking.asyncapi.generator.core.generator.model.EnumConstant
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test

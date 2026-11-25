@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
 import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
@@ -69,7 +69,7 @@ internal class AvroTypeMapper(
         namedType(reference.reference.ref.substringAfterLast('/'))
 
     /** Schema names reach the generator in PascalCase, which is also the record name in its own file. */
-    private fun namedType(schemaName: String): String = "\"$packageName.${MapperUtil.toPascalCase(schemaName)}\""
+    private fun namedType(schemaName: String): String = "\"$packageName.${NameCase.toPascalCase(schemaName)}\""
 
     private fun baseType(schema: Schema): String =
         when (schema.type.getPrimaryType()) {

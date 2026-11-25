@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.catalog
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -27,7 +27,7 @@ internal object ComponentSchemaCollector {
         usage: SchemaUsageIndex,
         declarations: SchemaDeclarations,
     ) {
-        val schemaName = MapperUtil.toPascalCase(name)
+        val schemaName = NameCase.toPascalCase(name)
         val identity = ContractDeclarationIdentity.ComponentSchema(name)
         val origin = "component schema components.schemas['$name']"
         val generatesSourceModel = !usage.isHeaderOnly(schemaName)

@@ -4,8 +4,8 @@ import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 
 /**
  * Prepares message payload contracts shared by Java and Kotlin Spring Kafka generation.

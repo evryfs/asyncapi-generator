@@ -6,12 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidJsonSchema
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -312,7 +312,7 @@ internal class JsonSchemaGenerator(
         val target = reference.removePrefix(COMPONENT_SCHEMA_REFERENCE_PREFIX)
         val componentName = target.substringBefore('/')
         val componentPath = target.substringAfter('/', missingDelimiterValue = "")
-        val generatedName = MapperUtil.toPascalCase(componentName)
+        val generatedName = NameCase.toPascalCase(componentName)
         val fragment = componentPath.takeIf(String::isNotEmpty)?.let { "#/$it" }.orEmpty()
         return "$generatedName.schema.json$fragment"
     }

@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDER
 
 /**
@@ -45,7 +45,7 @@ internal data class KafkaTopicAddress private constructor(
 
             return KafkaTopicAddress(
                 propertyPlaceholderValue = propertyPlaceholderValue,
-                constantName = "${MapperUtil.toUpperSnakeCase(channelName)}_TOPIC_ADDRESS",
+                constantName = "${NameCase.toUpperSnakeCase(channelName)}_TOPIC_ADDRESS",
             )
         }
     }

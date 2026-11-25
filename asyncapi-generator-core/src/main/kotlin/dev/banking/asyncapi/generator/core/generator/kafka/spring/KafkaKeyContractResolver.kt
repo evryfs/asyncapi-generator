@@ -3,9 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.schema.hasMultipleNonNullTypes
+import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 

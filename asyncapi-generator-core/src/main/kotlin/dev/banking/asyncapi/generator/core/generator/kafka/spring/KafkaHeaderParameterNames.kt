@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidKafkaHeaderName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.KafkaHeaderParameterNameCollision
@@ -71,7 +71,7 @@ internal object KafkaHeaderParameterNames {
             )
         }
 
-        val normalized = MapperUtil.toCamelCase(wireName)
+        val normalized = NameCase.toCamelCase(wireName)
         if (normalized.isEmpty()) {
             throw InvalidKafkaHeaderName(
                 headerContractName = headerContractName,

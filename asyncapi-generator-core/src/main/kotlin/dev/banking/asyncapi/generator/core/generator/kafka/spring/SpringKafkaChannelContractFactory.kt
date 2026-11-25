@@ -2,8 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 
 /**
  * Prepares the language-neutral channel and method contract rendered by Spring Kafka generators.
@@ -25,7 +25,7 @@ internal class SpringKafkaChannelContractFactory(
                 "Spring Kafka channel '${channel.channelName}' must have an address after compatibility validation."
             }
         return SpringKafkaChannelContract(
-            baseName = MapperUtil.toPascalCase(channel.channelName),
+            baseName = NameCase.toPascalCase(channel.channelName),
             topic = topic,
             topicAddress =
                 KafkaTopicAddress.from(

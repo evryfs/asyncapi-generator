@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -66,7 +66,7 @@ internal class InlineSchemaAnalyzer {
                 }
             }
             schema.items?.let { items ->
-                val itemsHint = if (MapperUtil.toPascalCase(nameHint) == owner) "${owner}Item" else nameHint
+                val itemsHint = if (NameCase.toPascalCase(nameHint) == owner) "${owner}Item" else nameHint
                 val newItems = promoteIfNeeded(items, itemsHint, owner, "$location.items")
                 if (newItems != items) {
                     modifiedSchema = modifiedSchema.copy(items = newItems)
@@ -115,8 +115,8 @@ internal class InlineSchemaAnalyzer {
             location: String,
         ): SchemaInterface.SchemaReference {
             val newSchemaName =
-                processedInlineSchema.title?.takeIf { it.isNotBlank() }?.let { MapperUtil.toPascalCase(it) }
-                    ?: MapperUtil.toPascalCase(nameHint)
+                processedInlineSchema.title?.takeIf { it.isNotBlank() }?.let { NameCase.toPascalCase(it) }
+                    ?: NameCase.toPascalCase(nameHint)
             val existing = schemas[newSchemaName]
             when {
                 existing == null -> {

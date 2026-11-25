@@ -1,12 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.schema.generatedSchemaName
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.schema.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
 import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -32,8 +31,8 @@ internal class ModelTypeMapper(
             return named(
                 schema.title
                     ?.takeIf { it.isNotBlank() }
-                    ?.let(MapperUtil::toPascalCase)
-                    ?: MapperUtil.toPascalCase(propertyName),
+                    ?.let(NameCase::toPascalCase)
+                    ?: NameCase.toPascalCase(propertyName),
             )
         }
 
@@ -148,7 +147,7 @@ internal class ModelTypeMapper(
                     when {
                         isPlainString -> TypeRef.Scalar.STRING
                         referencedSchema?.isAlias() == true -> resolveReference(propertyName, items.reference)
-                        else -> named(MapperUtil.toPascalCase(referenceName))
+                        else -> named(NameCase.toPascalCase(referenceName))
                     }
                 }
                 else -> TypeRef.Scalar.ANY
@@ -165,7 +164,7 @@ internal class ModelTypeMapper(
                 "This schema should have been promoted to a top-level schema reference by InlineSchemaAnalyzer. " +
                 "This indicates a bug in the generator pipeline."
         }
-        schema.title?.takeIf { it.isNotBlank() }?.let { return named(MapperUtil.toPascalCase(it)) }
+        schema.title?.takeIf { it.isNotBlank() }?.let { return named(NameCase.toPascalCase(it)) }
         val value =
             when (val additionalProperties = schema.additionalProperties) {
                 null -> TypeRef.Scalar.ANY

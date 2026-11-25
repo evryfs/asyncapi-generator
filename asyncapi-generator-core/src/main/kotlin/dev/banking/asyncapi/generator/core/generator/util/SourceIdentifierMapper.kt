@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.util
 
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+
 /**
  * Converts wire-level names (property names, header names, etc.) into valid
  * Java and Kotlin source identifiers.
@@ -123,7 +125,7 @@ internal object SourceIdentifierMapper {
             return wireName
         }
 
-        val camelCase = MapperUtil.toCamelCase(wireName)
+        val camelCase = NameCase.toCamelCase(wireName)
         if (camelCase.isEmpty()) return "_"
 
         val identifier = if (camelCase[0].isDigit()) "_$camelCase" else camelCase
