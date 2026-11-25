@@ -50,6 +50,7 @@ have to describe the same configuration.
 | [inline-union-members](inline-union-members) | Kotlin and Java models for inline union members, named by title or position. |
 | [titled-open-objects](titled-open-objects) | Titled inline objects without properties typed as maps in Kotlin and Java. |
 | [integer-enums](integer-enums) | Referenced integer and number enums typed as their scalar in Kotlin and Java. |
+| [literal-values](literal-values) | Kotlin and Java defaults and enum values that start with a quote or a YAML block marker, kept as written. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |

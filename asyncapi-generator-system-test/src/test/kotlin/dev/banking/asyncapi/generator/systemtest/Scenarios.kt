@@ -423,6 +423,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "literal-values",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.literals.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.literals.java"),
+        ),
+    ),
+    Scenario(
         name = "union-discriminator-values",
         executions = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.discriminators.kotlin"),
