@@ -8,9 +8,11 @@ import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.ReservedModelName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -53,6 +55,18 @@ class JavaModelEmitterTest {
         assertTrue(content.contains("@NotNull\n    private UUID id;"))
         assertTrue(content.contains("private Object payload;"))
         assertFalse(content.contains("import com.example.model.Payload;"))
+    }
+
+    @Test
+    fun `rejects a model named like a type of the generated sources`() {
+        val error =
+            assertFailsWith<ReservedModelName> {
+                JavaModelEmitter().emit(
+                    listOf(user(), ObjectModel("Override", PACKAGE, null, emptyList(), emptyList())),
+                )
+            }
+
+        assertEquals("Override", error.modelName)
     }
 
     @Test

@@ -27,6 +27,18 @@ sealed class AsyncApiGeneratorException(
                 "under components.schemas and reference it.",
         )
 
+    /**
+     * A model named like a type that the generated sources use without qualification, which would
+     * shadow that type or be shadowed by its import.
+     */
+    class ReservedModelName(
+        val modelName: String,
+        val language: String,
+    ) : AsyncApiGeneratorException(
+            "Model '$modelName' has the name of a type that generated $language code already uses. " +
+                "Rename the schema it is generated from in the contract.",
+        )
+
     /** A name Avro rejects; renaming it silently would change a schema that may already be registered. */
     class PropertyNameCollision(
         val schemaName: String,

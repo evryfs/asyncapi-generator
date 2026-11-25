@@ -1,0 +1,27 @@
+asyncapi: 3.0.0
+info:
+  title: Reserved model name
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      account:
+        payload:
+          $ref: '#/components/schemas/Account'
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        reference:
+          $ref: '#/components/schemas/UUID'
+    UUID:
+      type: object
+      properties:
+        value:
+          type: string
+          minLength: 2
