@@ -54,6 +54,7 @@ internal fun TypeRef.imports(
                 .takeIf {
                     name != declaringType && name !in builtInTypeNames && '.' !in name && name.first().isUpperCase()
                 }.orEmpty()
+        is TypeRef.External -> listOfNotNull(packageName?.let { "$it.$name" })
     }
 
 /**

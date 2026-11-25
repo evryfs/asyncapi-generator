@@ -4,6 +4,7 @@ import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
 import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
@@ -14,7 +15,6 @@ import kotlin.test.assertNull
 class SpringKafkaChannelContractFactoryTest {
     private val factory =
         SpringKafkaChannelContractFactory(
-            modelPackage = "com.example.model",
             additionalPayloadTypes =
                 linkedSetOf(
                     AdditionalProducerPayloadType.STRING,
@@ -62,8 +62,7 @@ class SpringKafkaChannelContractFactoryTest {
 
         val accountCreated = contract.messages[0]
         assertEquals("listenAccountCreated", accountCreated.consumerMethodName)
-        assertEquals("String", accountCreated.keyContract?.javaTypeName)
-        assertEquals("String", accountCreated.keyContract?.kotlinTypeName)
+        assertEquals(TypeRef.Scalar.STRING, accountCreated.keyContract?.type)
         assertFalse(accountCreated.keyContract?.nullable ?: true)
         assertEquals(
             listOf(

@@ -42,6 +42,17 @@ internal sealed interface TypeRef {
         val isModel: Boolean,
         val isOpenObject: Boolean = false,
     ) : TypeRef
+
+    /**
+     * A type generated outside the models, such as a class from a native Avro or Protobuf schema.
+     *
+     * @property name Simple name of the type.
+     * @property packageName Package the type is imported from, or `null` when it needs no import.
+     */
+    data class External(
+        val name: String,
+        val packageName: String?,
+    ) : TypeRef
 }
 
 /**
@@ -62,6 +73,7 @@ private fun TypeRef.holdsModel(): Boolean =
     when (this) {
         is TypeRef.Scalar -> false
         is TypeRef.Named -> isModel
+        is TypeRef.External -> false
         is TypeRef.ListOf, is TypeRef.MapOf -> true
     }
 

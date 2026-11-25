@@ -4,6 +4,9 @@ import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalPro
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
+import dev.banking.asyncapi.generator.core.generator.ir.imports
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
+import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter.Companion.withoutOpenObjects
 import dev.banking.asyncapi.generator.core.generator.java.model.GeneratorItem
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
@@ -20,7 +23,7 @@ import dev.banking.asyncapi.generator.core.generator.util.SourceLiteralEscaper
 
 internal class JavaSpringKafkaModelFactory(
     private val clientPackage: String,
-    modelPackage: String,
+    private val modelPackage: String,
     private val generateProducers: Boolean = true,
     additionalPayloadTypes: Set<AdditionalProducerPayloadType> = emptySet(),
     private val generateConsumers: Boolean = true,
@@ -31,7 +34,6 @@ internal class JavaSpringKafkaModelFactory(
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
     private val channelContractFactory =
         SpringKafkaChannelContractFactory(
-            modelPackage = modelPackage,
             additionalPayloadTypes = additionalPayloadTypes,
             topicParameterProperties = topicParameterProperties,
             nativeKafkaPayloadResolver = nativeKafkaPayloadResolver,
@@ -55,7 +57,7 @@ internal class JavaSpringKafkaModelFactory(
                 GeneratorItem.ConsumerMethod(
                     messageName = payload.messageName,
                     methodName = message.consumerMethodName,
-                    payloadType = payload.javaTypeName,
+                    payloadType = payload.type?.let(JavaModelEmitter::typeName),
                     payloadDescription = payload.contractPayloadDescription(),
                     keyParameter =
                         message.keyContract?.toJavaKeyParameter(
@@ -192,7 +194,7 @@ internal class JavaSpringKafkaModelFactory(
         when (additionalPayloadType) {
             AdditionalProducerPayloadType.BYTE_ARRAY -> "byte[]"
             AdditionalProducerPayloadType.STRING -> "String"
-            null -> javaTypeName
+            null -> type?.let(JavaModelEmitter::typeName)
         }
 
     private fun KafkaPayload.contractPayloadDescription(): List<String> =
@@ -220,7 +222,7 @@ internal class JavaSpringKafkaModelFactory(
                 wireName = header.wireName,
                 wireNameLiteral = header.wireName.toJavaStringLiteral(),
                 parameterName = header.parameterName,
-                typeName = header.javaTypeName,
+                typeName = JavaModelEmitter.typeName(header.type),
                 description = header.parameterDescription(),
                 required = header.required,
                 requiredAnnotation = if (header.nullable) null else "@NotNull",
@@ -240,11 +242,18 @@ internal class JavaSpringKafkaModelFactory(
 
     private fun SpringKafkaChannelContract.contractImports(): List<String> =
         messages.flatMap { message ->
-            listOfNotNull(
-                message.payload.javaImportName,
-                message.keyContract?.importName,
-            ) + message.payload.javaImports +
-                message.payload.headerProperties.mapNotNull { header -> header.importName }
+            message.payload.type
+                ?.withoutOpenObjects()
+                ?.imports(
+                    modelPackage,
+                    "",
+                    listImport = "java.util.List",
+                ).orEmpty() +
+                message.keyContract
+                    ?.type
+                    ?.imports(modelPackage, "")
+                    .orEmpty() +
+                message.payload.headerProperties.flatMap { header -> header.type.imports(modelPackage, "") }
         }
 
     private fun KafkaHeaderProperty.parameterDescription(): List<String> =
@@ -275,7 +284,7 @@ internal class JavaSpringKafkaModelFactory(
             }
         return GeneratorItem.KeyParameter(
             parameterName = parameterName,
-            typeName = javaTypeName,
+            typeName = JavaModelEmitter.typeName(type),
             description =
                 DocumentationUtils
                     .toJavaDocLines(schema.description)

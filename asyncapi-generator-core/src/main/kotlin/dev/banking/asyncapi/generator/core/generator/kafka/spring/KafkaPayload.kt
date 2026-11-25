@@ -1,31 +1,41 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 
 /**
- * Payload signature model used by Spring Kafka client generators.
+ * The payload signature of a message in a Spring Kafka client contract.
+ *
+ * @param messageName Source-code name of the message.
+ * @param type Type of the payload parameter, or `null` when the message has no payload.
+ * @param payloadDescription Description of the payload schema.
+ * @param kafkaKey Kafka record key of the message, or `null` when it declares none.
+ * @param headerProperties Header parameters of the message.
  */
 internal data class KafkaPayload(
     val messageName: String,
-    val javaTypeName: String?,
-    val kotlinTypeName: String?,
+    val type: TypeRef?,
     val payloadDescription: String? = null,
-    val javaImportName: String? = null,
-    val kotlinImportName: String? = null,
-    val javaImports: List<String> = emptyList(),
-    val kotlinImports: List<String> = emptyList(),
     val kafkaKey: KafkaKey? = null,
     val headerProperties: List<KafkaHeaderProperty> = emptyList(),
 ) {
-    val hasPayload: Boolean get() = javaTypeName != null || kotlinTypeName != null
+    val hasPayload: Boolean get() = type != null
 }
 
+/**
+ * A header parameter of a Spring Kafka client method.
+ *
+ * @param wireName Name of the header on the Kafka record.
+ * @param parameterName Source-code name of the parameter.
+ * @param type Type of the parameter.
+ * @param description Description of the header schema.
+ * @param required Whether the contract requires the header.
+ * @param nullable Whether the parameter accepts `null`.
+ */
 internal data class KafkaHeaderProperty(
     val wireName: String,
     val parameterName: String,
-    val javaTypeName: String,
-    val kotlinTypeName: String,
-    val importName: String? = null,
+    val type: TypeRef.Scalar,
     val description: String? = null,
     val required: Boolean = false,
     val nullable: Boolean = !required,

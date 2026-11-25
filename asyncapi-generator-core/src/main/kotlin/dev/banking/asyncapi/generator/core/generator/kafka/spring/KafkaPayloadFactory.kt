@@ -2,9 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
 import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
-import dev.banking.asyncapi.generator.core.generator.ir.imports
-import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
-import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
@@ -17,7 +14,6 @@ import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryT
  * model imports, headers, and native-schema resolution are derived once here.
  */
 internal class KafkaPayloadFactory(
-    private val modelPackage: String,
     private val nativeKafkaPayloadResolver: NativeKafkaPayloadResolver = NativeKafkaPayloadResolver(),
 ) {
     fun create(channel: AnalyzedChannel): List<KafkaPayload> =
@@ -33,25 +29,18 @@ internal class KafkaPayloadFactory(
 
     private val typeMapper = ModelTypeMapper(emptyMap())
 
-    private fun create(message: AnalyzedMessage): KafkaPayload {
-        val type = payloadType(message)
-        val javaType = type?.takeUnless { message.schema?.isOpenPayload() == true }
-        return KafkaPayload(
+    private fun create(message: AnalyzedMessage): KafkaPayload =
+        KafkaPayload(
             messageName = message.messageName,
-            javaTypeName = type?.let { javaType?.let(JavaModelEmitter::typeName) ?: "Object" },
-            kotlinTypeName = type?.let(KotlinModelEmitter::typeName),
+            type = payloadType(message),
             payloadDescription = message.schema?.description,
-            javaImports = javaType?.imports(modelPackage, "", listImport = "java.util.List").orEmpty(),
-            kotlinImports = type?.imports(modelPackage, "").orEmpty(),
             kafkaKey = message.kafkaKey,
             headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
         )
-    }
 
     /**
      * The type of a message payload. Array and scalar payloads generate no model of their own and use the
-     * list and scalar types models use; any other payload is its generated model. Java receives an open
-     * object payload as `Object`.
+     * list and scalar types models use; any other payload is its generated model.
      */
     private fun payloadType(message: AnalyzedMessage): TypeRef? =
         message.schema?.let { schema ->
@@ -59,7 +48,11 @@ internal class KafkaPayloadFactory(
                 typeMapper.map(message.messageName, schema)
             } else {
                 ModelTypeMapper.scalarType(schema)
-                    ?: TypeRef.Named(name = requireNotNull(message.payload).typeName, isModel = true)
+                    ?: TypeRef.Named(
+                        name = requireNotNull(message.payload).typeName,
+                        isModel = true,
+                        isOpenObject = schema.isOpenPayload(),
+                    )
             }
         }
 }

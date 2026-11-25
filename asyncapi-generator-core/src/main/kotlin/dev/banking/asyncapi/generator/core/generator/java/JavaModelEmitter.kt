@@ -232,14 +232,16 @@ internal class JavaModelEmitter(
                 is TypeRef.ListOf -> "List<${typeName(type.element)}>"
                 is TypeRef.MapOf -> "Map<String, ${typeName(type.value)}>"
                 is TypeRef.Named -> if (type.isOpenObject) "Object" else type.name
+                is TypeRef.External -> type.name
             }
 
-        private fun TypeRef.withoutOpenObjects(): TypeRef =
+        /** This type with open objects replaced by `Object`, which needs no import. */
+        internal fun TypeRef.withoutOpenObjects(): TypeRef =
             when (this) {
                 is TypeRef.Named -> if (isOpenObject) TypeRef.Scalar.ANY else this
                 is TypeRef.ListOf -> TypeRef.ListOf(element.withoutOpenObjects())
                 is TypeRef.MapOf -> TypeRef.MapOf(value.withoutOpenObjects())
-                is TypeRef.Scalar -> this
+                is TypeRef.Scalar, is TypeRef.External -> this
             }
     }
 }
