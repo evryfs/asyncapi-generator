@@ -26,7 +26,6 @@ internal class ModelArtifactGeneration {
             ModelDefinitionFactory(
                 input = generationInput,
                 packageName = task.models.packageName,
-                annotation = task.models.annotation,
             ).create()
         return emitterFor(task).emit(models)
     }
@@ -53,7 +52,7 @@ internal class ModelArtifactGeneration {
 
     private fun emitterFor(task: GenerationTask.ModelArtifacts): ModelEmitter =
         when (task.language) {
-            KOTLIN -> KotlinModelEmitter()
-            JAVA -> JavaModelEmitter(JavaModelType.of(task.models.modelType))
+            KOTLIN -> KotlinModelEmitter(task.models.annotation)
+            JAVA -> JavaModelEmitter(JavaModelType.of(task.models.modelType), task.models.annotation)
         }
 }

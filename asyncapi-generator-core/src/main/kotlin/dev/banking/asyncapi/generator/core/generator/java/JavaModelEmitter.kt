@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
+import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
 import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinition
@@ -12,7 +13,6 @@ import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.ir.annotationImports
 import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.ir.imports
-import dev.banking.asyncapi.generator.core.generator.ir.modelAnnotationNames
 import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaRecordTemplate
@@ -31,9 +31,13 @@ import java.io.StringWriter
  * Renders payload models as Java sources: classes or records, enums, and interfaces for unions.
  *
  * Java has no type alias, so an open object gets no source and references to it are `Object`.
+ *
+ * @param javaModelType Whether objects become classes or records.
+ * @param annotation Annotation added to every object class or record; null for none.
  */
 internal class JavaModelEmitter(
     private val javaModelType: JavaModelType = JavaModelType.CLASS,
+    private val annotation: QualifiedTypeName? = null,
 ) : ModelEmitter {
     private val mustacheFactory = SourceMustacheFactory("java")
     private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
@@ -41,7 +45,7 @@ internal class JavaModelEmitter(
     override fun emit(models: List<ModelDefinition>): GenerationResult {
         models
             .filterNot { model -> model is OpenObjectModel }
-            .rejectReservedNames("Java", reservedTypeNames + modelAnnotationNames(models))
+            .rejectReservedNames("Java", reservedTypeNames + listOfNotNull(annotation?.simpleName))
         return GenerationResult(
             models.mapNotNull { model ->
                 when (model) {
@@ -137,7 +141,7 @@ internal class JavaModelEmitter(
         val annotationImports = properties.flatMap { annotationImports(it.annotations, "@", "access = Access.") }
         return (
             fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports +
-                listOfNotNull(model.annotation?.value) +
+                listOfNotNull(annotation?.value) +
                 emptyClassImports(model)
         ).distinct()
             .sorted()
@@ -151,7 +155,7 @@ internal class JavaModelEmitter(
         " implements " + (model.unions + "Serializable").joinToString(", ")
 
     private fun classAnnotations(model: ObjectModel): List<String> =
-        listOfNotNull(model.annotation?.let { "@${it.simpleName}" }) +
+        listOfNotNull(annotation?.let { "@${it.simpleName}" }) +
             if (model.properties.isEmpty()) listOf("@JsonIgnoreProperties(ignoreUnknown = true)") else emptyList()
 
     private fun javaEnum(model: EnumModel) =

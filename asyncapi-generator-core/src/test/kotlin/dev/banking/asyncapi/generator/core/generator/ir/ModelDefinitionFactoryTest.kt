@@ -2,7 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
-import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -14,23 +13,15 @@ import kotlin.test.assertIs
 class ModelDefinitionFactoryTest {
     @Test
     fun `creates object and enum models and skips scalar aliases`() {
-        val annotation =
-            QualifiedTypeName.fromConfigurationValue(
-                "jakarta.validation.Valid",
-                "modelConfig.modelAnnotation",
-            )
-
         val models =
             ModelDefinitionFactory(
                 input = GenerationInputFixtures().generationInputWithObjectEnumAndPrimitive(),
                 packageName = "com.example.model",
-                annotation = annotation,
             ).create()
 
         assertEquals(listOf("User", "Status"), models.map { it.name })
         val user = assertIs<ObjectModel>(models[0])
         assertEquals(listOf("Command"), user.unions)
-        assertEquals(annotation, user.annotation)
         assertEquals(TypeRef.Scalar.STRING, user.properties.single().type)
         assertEquals(true, user.properties.single().required)
         assertEquals(listOf("ACTIVE", "INACTIVE"), assertIs<EnumModel>(models[1]).constants.map { it.name })

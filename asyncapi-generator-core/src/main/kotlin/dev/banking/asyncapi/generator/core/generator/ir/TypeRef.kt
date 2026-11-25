@@ -35,7 +35,7 @@ internal sealed interface TypeRef {
      * @property isModel Whether the type is an object or union model whose constraints a
      *   validator should cascade into; unknown names are assumed to be models.
      * @property isOpenObject Whether the reference names an object without properties, which
-     *   Kotlin aliases to `Any` and Java does not generate.
+     *   accepts any object and so needs no type of its own.
      */
     data class Named(
         val name: String,

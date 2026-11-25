@@ -1,6 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
@@ -17,7 +16,6 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 internal class ModelDefinitionFactory(
     private val input: GenerationInput,
     private val packageName: String,
-    private val annotation: QualifiedTypeName? = null,
 ) {
     private val schemas: Map<String, Schema> = input.schemas
     private val typeMapper = ModelTypeMapper(schemas)
@@ -63,7 +61,6 @@ internal class ModelDefinitionFactory(
                                 createProperty(propertyName, propertySchema, schema.required.orEmpty())
                             }.also { failOnIdentifierCollision(name, it) },
                     unions = input.polymorphicRelationships[name].orEmpty(),
-                    annotation = annotation,
                 )
             else -> null
         }

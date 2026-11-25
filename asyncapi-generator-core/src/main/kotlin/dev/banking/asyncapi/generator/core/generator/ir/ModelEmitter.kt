@@ -18,10 +18,3 @@ internal fun List<ModelDefinition>.rejectReservedNames(
 ) {
     firstOrNull { model -> model.name in reservedNames }?.let { model -> throw ReservedModelName(model.name, language) }
 }
-
-/** Simple names of the annotations configured for [models], which generated sources import. */
-internal fun modelAnnotationNames(models: List<ModelDefinition>): Set<String> =
-    models
-        .filterIsInstance<ObjectModel>()
-        .mapNotNull { model -> model.annotation?.simpleName }
-        .toSet()

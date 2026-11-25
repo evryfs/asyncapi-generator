@@ -124,12 +124,9 @@ internal class ModelTypeMapper(
         isOpenObject: Boolean = false,
     ): TypeRef.Named = TypeRef.Named(name = name, isModel = isModel(name), isOpenObject = isOpenObject)
 
-    private fun isModel(name: String): Boolean {
-        if (name in builtInTypeNames) return false
-        val schema = schemas[name] ?: return name.firstOrNull()?.isUpperCase() == true
-        return schema.type.getPrimaryType() == "object" || !schema.oneOf.isNullOrEmpty() ||
-            !schema.anyOf.isNullOrEmpty()
-    }
+    /** Whether [name] is an object or union model; a name without a schema is assumed to be one. */
+    private fun isModel(name: String): Boolean =
+        schemas[name]?.let { schema -> schema.type.getPrimaryType() == "object" || schema.isInlineUnion() } ?: true
 
     private fun mapArray(
         propertyName: String,
