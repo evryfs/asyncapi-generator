@@ -32,6 +32,12 @@ internal fun producerPayloadMethods(
     }
 }
 
+/**
+ * A send method of a message.
+ *
+ * @param methodName Name of the method.
+ * @param additionalPayloadType Serialized payload type the method sends, or `null` for the contract payload.
+ */
 internal data class ProducerPayloadMethod(
     val methodName: String,
     val additionalPayloadType: AdditionalProducerPayloadType?,

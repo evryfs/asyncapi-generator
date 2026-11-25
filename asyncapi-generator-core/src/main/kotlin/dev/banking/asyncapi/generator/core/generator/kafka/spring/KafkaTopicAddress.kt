@@ -4,7 +4,12 @@ import dev.banking.asyncapi.generator.core.generator.configuration.TopicParamete
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
 import dev.banking.asyncapi.generator.core.model.parameters.PARAMETER_PLACEHOLDER
 
-/** Spring-resolvable Kafka topic address used by generated client contracts. */
+/**
+ * Spring-resolvable Kafka topic address used by generated client contracts.
+ *
+ * @param propertyPlaceholderValue The address with channel parameters replaced by Spring property placeholders.
+ * @param constantName Name of the constant that holds the address.
+ */
 @ConsistentCopyVisibility
 internal data class KafkaTopicAddress private constructor(
     val propertyPlaceholderValue: String,

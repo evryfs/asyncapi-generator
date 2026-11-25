@@ -50,7 +50,7 @@ Package `configuration` turns what a user configured into a
    client, and the Kafka key-model task, which a client needs when native Avro
    or Protobuf models carry the payloads. A request that only writes documents
    skips the remaining stages.
-2. **Prepare input** (`catalog`, `normalizer`, `analyzer`, `input`).
+2. **Prepare input** (`catalog`, `normalizer`, `analyzer`, `messaging`, `input`).
    `GenerationInputFactory` builds the schema catalog, then analyzes channels:
    - `SchemaCatalogLoader` declares every component schema and every message
      payload under its generated name (the last pointer segment in PascalCase),
@@ -64,6 +64,13 @@ Package `configuration` turns what a user configured into a
      for untyped string enums, promotes inline objects and enums to named
      schemas (`InlineSchemaAnalyzer`; different inline types under one name
      fail), and records which unions each schema belongs to.
+   - `ChannelAnalyzer` (`messaging`) reads each channel and its messages into
+     `AnalyzedChannel`s. A message has a source-code name (its `name`, or its
+     key in the channel), a payload (an AsyncAPI schema, a native Avro or
+     Protobuf schema, or none), its headers merged from its traits and itself,
+     and its `KafkaKey`. The Kafka key is analyzed once, with the name of its
+     model when it is an object; the schema catalog declares that model from
+     the same analysis.
 3. **Check compatibility** (`input`). `GenerationInputCompatibilityValidator`
    checks the prepared input against the planned tasks, for example that
    native payloads have an output that handles them and that native model
@@ -102,9 +109,16 @@ in the language-neutral model or in shared helpers in `model` (such as
 emitters call, so both languages produce the same JSON. When adding a
 feature, put the decision in shared code and only the syntax in the emitters.
 
-Spring Kafka clients follow the same split: `SpringKafkaChannelContractFactory`
-builds a language-neutral channel contract, and the Kotlin and Java client
-emitters render it.
+Spring Kafka clients follow the same split. `SpringKafkaChannelContractFactory`
+(`kafka.spring`) builds a language-neutral contract for each channel, whose
+payloads, keys, and headers are typed by `TypeRef` with the same scalar
+mapping as models; a payload class generated from a native Avro or Protobuf
+schema is a `TypeRef.External`. `SpringKafkaClientViewFactory`
+(`kafka.spring.client`) turns that contract into the consumer and producer
+views, and `SpringKafkaClientEmitter` renders them with the templates of the
+language. The few differences between Kotlin and Java, such as type names,
+nullability, and documentation markup, come from a `SpringKafkaClientSyntax`:
+`KotlinClientSyntax` or `JavaClientSyntax`.
 
 ## Schema formats
 

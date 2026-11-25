@@ -10,6 +10,8 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
  * `option java_package` when present, otherwise the Protobuf package. Runtime
  * client generation currently requires `option java_multiple_files = true` so
  * top-level messages can be referenced directly by generated Kafka APIs.
+ *
+ * @param schemaParser Parses the native Protobuf schema.
  */
 internal class NativeProtobufPayloadTypeResolver(
     private val schemaParser: NativeProtobufSchemaParser = NativeProtobufSchemaParser(),
@@ -36,7 +38,6 @@ internal class NativeProtobufPayloadTypeResolver(
         return NativeProtobufPayloadType(
             typeName = payload.typeName,
             packageName = packageName,
-            importName = "$packageName.${payload.typeName}",
         )
     }
 
@@ -64,8 +65,13 @@ internal class NativeProtobufPayloadTypeResolver(
         )
 }
 
+/**
+ * The JVM type generated for a native Protobuf payload.
+ *
+ * @param typeName Simple name of the type.
+ * @param packageName Java package of the type.
+ */
 internal data class NativeProtobufPayloadType(
     val typeName: String,
     val packageName: String,
-    val importName: String,
 )

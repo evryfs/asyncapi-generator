@@ -25,6 +25,18 @@ internal object SpringKafkaClientContractValidator {
                 throw SpringKafkaClientChannelWithoutMessages(channel.channelName)
             }
 
+        rejectContractNameCollision(channels, task)
+
+        SpringKafkaClientMethodNameValidator.validate(
+            channels = channels,
+            task = task,
+        )
+    }
+
+    private fun rejectContractNameCollision(
+        channels: List<AnalyzedChannel>,
+        task: GenerationTask.SpringKafkaClient,
+    ) {
         val collision =
             channels
                 .groupBy { channel -> MapperUtil.toPascalCase(channel.channelName) }
@@ -45,10 +57,5 @@ internal object SpringKafkaClientContractValidator {
                     },
             )
         }
-
-        SpringKafkaClientMethodNameValidator.validate(
-            channels = channels,
-            task = task,
-        )
     }
 }
