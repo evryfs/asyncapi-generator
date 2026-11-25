@@ -36,6 +36,8 @@ internal val TypeRef.Scalar.importName: String?
 /**
  * The imports a source file declaring [declaringType] in [modelPackage] needs to use this type.
  *
+ * @param modelPackage Package of the generated models, which named types are imported from.
+ * @param declaringType Type the source file declares, which needs no import of itself.
  * @param listImport Import of the list type; null where lists need none.
  * @param mapImport Import of the map type; null where maps need none.
  */
@@ -62,6 +64,7 @@ internal fun TypeRef.imports(
 /**
  * Imports of the Jakarta Validation and Jackson annotations among [annotations].
  *
+ * @param annotations Annotations of a property, as written in the source.
  * @param target Annotation prefix including its use-site target, such as `@field:` in Kotlin.
  * @param accessMarker Text that shows an annotation uses `JsonProperty.Access`.
  */

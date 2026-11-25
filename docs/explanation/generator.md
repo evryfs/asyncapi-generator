@@ -92,7 +92,11 @@ Kotlin and Java models are built from one language-neutral model in `ir`.
 `ObjectModel`, `EnumModel`, `UnionModel`, and `OpenObjectModel`, with
 properties typed by `TypeRef` and defaults as typed `DefaultValue`s.
 `ModelTypeMapper` decides the `TypeRef` of each schema once, for both
-languages.
+languages. A property carries what its schema says about it (nullability,
+description, read-only or write-only `PropertyAccess`, and validation
+`Constraints`), so emitters never read the schema themselves. Each emitter
+rejects a model named like a type its sources use without qualification, such
+as `UUID` or `List`.
 
 Emitters render that model:
 

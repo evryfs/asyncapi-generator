@@ -55,54 +55,39 @@ internal class KotlinModelEmitter(
 
     private fun dataClass(model: ObjectModel): KotlinClassTemplate {
         val properties = model.properties.map(::property)
-        val annotationImports = properties.flatMap { annotationImports(it.annotations, "@field:", "Access.") }
-        // Jackson refuses to serialize a bean without properties unless the class carries an annotation of its own.
-        val emptyClassImports =
-            if (properties.isEmpty()) {
-                listOf(
-                    "com.fasterxml.jackson.annotation.JsonIgnoreProperties",
-                )
-            } else {
-                emptyList()
-            }
-        val emptyClassAnnotations =
-            if (properties.isEmpty()) {
-                listOf(
-                    "@JsonIgnoreProperties(ignoreUnknown = true)",
-                )
-            } else {
-                emptyList()
-            }
-        val typeImports = model.properties.flatMap { it.type.imports(model.packageName, model.name) }
         return KotlinClassTemplate(
             packageName = model.packageName,
             className = model.name,
             classDocLines = DocComments.toKDocLines(model.description),
             fields =
-                properties.mapIndexed { index, property ->
-                    mapOf(
-                        "name" to property.name,
-                        "type" to property.type,
-                        "docFirstLine" to property.description.firstOrNull(),
-                        "docTailLines" to property.description.drop(1),
-                        "nullable" to property.nullable,
-                        "defaultValue" to property.defaultValue,
-                        "last" to (index == properties.lastIndex),
-                        "annotations" to property.annotations,
-                    )
+                properties.withIndex().map { (index, property) ->
+                    property.templateFields(index == properties.lastIndex)
                 },
-            imports =
-                (typeImports + annotationImports + listOfNotNull(annotation?.value) + emptyClassImports)
-                    .distinct()
-                    .sorted(),
+            imports = imports(model, properties),
             implementsClause =
                 model.unions
                     .takeIf { it.isNotEmpty() }
                     ?.joinToString(", ", prefix = " : ")
                     .orEmpty(),
-            classAnnotations = listOfNotNull(annotation?.let { "@${it.simpleName}" }) + emptyClassAnnotations,
+            classAnnotations =
+                listOfNotNull(annotation?.let { "@${it.simpleName}" }) +
+                    // Jackson refuses to serialize a bean without properties unless the class carries an
+                    // annotation of its own.
+                    listOf("@JsonIgnoreProperties(ignoreUnknown = true)").filter { properties.isEmpty() },
         )
     }
+
+    private fun imports(
+        model: ObjectModel,
+        properties: List<KotlinProperty>,
+    ): List<String> =
+        (
+            model.properties.flatMap { it.type.imports(model.packageName, model.name) } +
+                properties.flatMap { annotationImports(it.annotations, "@field:", "Access.") } +
+                listOfNotNull(annotation?.value) +
+                listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties").filter { properties.isEmpty() }
+        ).distinct()
+            .sorted()
 
     private fun property(property: PropertyDefinition): KotlinProperty {
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forKotlin)
@@ -184,7 +169,19 @@ internal class KotlinModelEmitter(
         val nullable: Boolean,
         val defaultValue: String?,
         val annotations: List<String>,
-    )
+    ) {
+        fun templateFields(last: Boolean): Map<String, Any?> =
+            mapOf(
+                "name" to name,
+                "type" to type,
+                "docFirstLine" to description.firstOrNull(),
+                "docTailLines" to description.drop(1),
+                "nullable" to nullable,
+                "defaultValue" to defaultValue,
+                "last" to last,
+                "annotations" to annotations,
+            )
+    }
 
     companion object {
         /**

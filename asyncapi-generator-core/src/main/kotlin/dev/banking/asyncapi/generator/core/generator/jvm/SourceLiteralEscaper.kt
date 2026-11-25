@@ -29,9 +29,9 @@ internal object SourceLiteralEscaper {
                         }
                     }
                     else -> {
-                        if (character.code < 0x20) {
+                        if (character.code < FIRST_PRINTABLE) {
                             append("\\u")
-                            append(character.code.toString(16).padStart(4, '0'))
+                            append(character.code.toString(HEX_RADIX).padStart(UNICODE_ESCAPE_DIGITS, '0'))
                         } else {
                             append(character)
                         }
@@ -39,4 +39,9 @@ internal object SourceLiteralEscaper {
                 }
             }
         }
+
+    /** Characters below this code are control characters, written as `\u` escapes. */
+    private const val FIRST_PRINTABLE = 0x20
+    private const val HEX_RADIX = 16
+    private const val UNICODE_ESCAPE_DIGITS = 4
 }

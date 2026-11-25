@@ -25,21 +25,22 @@ internal class ModelTypeMapper(
         propertyName: String,
         schema: Schema?,
     ): TypeRef {
-        if (schema == null) return TypeRef.Scalar.ANY
-        if (schema.type.hasMultipleNonNullTypes()) return TypeRef.Scalar.ANY
-        if (schema.isInlineUnion() || (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty())) {
-            return named(
+        if (schema == null || schema.type.hasMultipleNonNullTypes()) return TypeRef.Scalar.ANY
+        return if (schema.isInlineUnion() ||
+            (schema.type.getPrimaryType() == "string" && !schema.enum.isNullOrEmpty())
+        ) {
+            named(
                 schema.title
                     ?.takeIf { it.isNotBlank() }
                     ?.let(NameCase::toPascalCase)
                     ?: NameCase.toPascalCase(propertyName),
             )
-        }
-
-        return scalarType(schema) ?: when (schema.type.getPrimaryType()) {
-            "array" -> mapArray(propertyName, schema)
-            "object" -> mapObject(propertyName, schema) ?: TypeRef.Scalar.ANY
-            else -> TypeRef.Scalar.ANY
+        } else {
+            scalarType(schema) ?: when (schema.type.getPrimaryType()) {
+                "array" -> mapArray(propertyName, schema)
+                "object" -> mapObject(propertyName, schema) ?: TypeRef.Scalar.ANY
+                else -> TypeRef.Scalar.ANY
+            }
         }
     }
 
@@ -80,16 +81,19 @@ internal class ModelTypeMapper(
             }
 
         /** The width of an integer schema: 64-bit by `format: int64` or when its bounds leave the 32-bit range. */
-        fun integerType(schema: Schema): TypeRef.Scalar {
+        fun integerType(schema: Schema): TypeRef.Scalar =
             when (schema.format?.lowercase()) {
-                "int64" -> return TypeRef.Scalar.INT64
-                "int32" -> return TypeRef.Scalar.INT32
+                "int64" -> TypeRef.Scalar.INT64
+                "int32" -> TypeRef.Scalar.INT32
+                else -> if (boundsFitInt32(schema)) TypeRef.Scalar.INT32 else TypeRef.Scalar.INT64
             }
+
+        private fun boundsFitInt32(schema: Schema): Boolean {
             val minimum = schema.minimum
             val maximum = schema.maximum
             val minimumFits = minimum == null || minimum.toDouble() >= Int.MIN_VALUE.toDouble()
             val maximumFits = maximum == null || maximum.toDouble() <= Int.MAX_VALUE.toDouble()
-            return if (minimumFits && maximumFits) TypeRef.Scalar.INT32 else TypeRef.Scalar.INT64
+            return minimumFits && maximumFits
         }
 
         private fun stringType(schema: Schema): TypeRef.Scalar =

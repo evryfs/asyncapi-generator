@@ -32,6 +32,7 @@ internal sealed interface TypeRef {
     /**
      * A generated model type.
      *
+     * @property name Name of the generated type.
      * @property isModel Whether the type is an object or union model whose constraints a
      *   validator should cascade into; unknown names are assumed to be models.
      * @property isOpenObject Whether the reference names an object without properties, which

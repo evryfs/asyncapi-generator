@@ -6,6 +6,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
 /**
  * One enum constant: its source name and the value it has on the wire.
  *
+ * @property name Name of the constant in generated sources.
  * @property jsonValue The wire value when it differs from [name], so generated code maps it with
  *   `@JsonProperty`; null when Jackson's default (the constant name) already matches.
  */
