@@ -30,8 +30,13 @@ private fun Schema.hasUnconstrainedAdditionalProperties(): Boolean =
         else -> false
     }
 
-/** Whether this schema is a plain scalar without an enum, which needs no generated type of its own. */
-internal fun Schema.isScalarAlias(): Boolean = enum.isNullOrEmpty() && type?.primary in SCALAR_TYPES
+/**
+ * Whether this schema is a plain scalar, which needs no generated type of its own: a string, number,
+ * integer or boolean schema that is not a string enum. Only string enums become enum types, so an
+ * integer or number enum is typed as its scalar.
+ */
+internal fun Schema.isScalarAlias(): Boolean =
+    type?.primary in SCALAR_TYPES && (type?.primary != "string" || enum.isNullOrEmpty())
 
 private val SCALAR_TYPES = setOf("string", "number", "integer", "boolean")
 
