@@ -233,7 +233,7 @@ class ChannelAnalyzerTest {
                 .messages
                 .single()
 
-        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.kafkaKey?.declaredSchema)
     }
 
     @Test
@@ -281,7 +281,7 @@ class ChannelAnalyzerTest {
 
         assertEquals("CacheInvalidatedV1", analyzed.messageName)
         assertEquals(null, analyzed.payload)
-        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.keySchema)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), analyzed.kafkaKey?.declaredSchema)
         assertEquals(
             listOf("correlationId"),
             analyzed.headers
@@ -323,7 +323,7 @@ class ChannelAnalyzerTest {
         assertEquals("MyMessage", multiFormatMessage.messageName)
         assertEquals("MyMessagePayload", multiFormatMessage.nativePayload?.typeName)
         assertEquals(SchemaFormat.AVRO_1_9_0_JSON, multiFormatMessage.nativePayload?.schema?.format)
-        assertEquals(SchemaInterface.SchemaInline(keySchema), multiFormatMessage.keySchema)
+        assertEquals(SchemaInterface.SchemaInline(keySchema), multiFormatMessage.kafkaKey?.declaredSchema)
     }
 
     @Test

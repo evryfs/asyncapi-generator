@@ -22,7 +22,7 @@ internal class NativeKafkaPayloadResolver(
                 kotlinTypeName = payloadType.typeName,
                 javaImportName = payloadType.importName,
                 kotlinImportName = payloadType.importName,
-                keySchema = message.keySchema,
+                kafkaKey = message.kafkaKey,
             )
         } ?: nativeProtobufPayloadTypeResolver.resolve(payload)?.let { payloadType ->
             KafkaPayload(
@@ -31,7 +31,7 @@ internal class NativeKafkaPayloadResolver(
                 kotlinTypeName = payloadType.typeName,
                 javaImportName = payloadType.importName,
                 kotlinImportName = payloadType.importName,
-                keySchema = message.keySchema,
+                kafkaKey = message.kafkaKey,
             )
         }
 }

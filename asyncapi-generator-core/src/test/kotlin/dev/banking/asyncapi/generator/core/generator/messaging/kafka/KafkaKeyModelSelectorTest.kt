@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.kafka
+package dev.banking.asyncapi.generator.core.generator.messaging.kafka
 
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.fixtures.nativeMessage

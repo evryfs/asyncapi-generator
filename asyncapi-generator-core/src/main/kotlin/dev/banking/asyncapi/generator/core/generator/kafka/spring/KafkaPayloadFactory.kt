@@ -46,7 +46,7 @@ internal class KafkaPayloadFactory(
             kotlinImportName = modelImport(kotlinTypeName, KOTLIN_BUILT_IN_TYPES).takeIf { collectionType == null },
             javaImports = collectionType?.imports(modelPackage, "", listImport = "java.util.List").orEmpty(),
             kotlinImports = collectionType?.imports(modelPackage, "").orEmpty(),
-            keySchema = message.keySchema,
+            kafkaKey = message.kafkaKey,
             headerProperties = KafkaHeaderPropertyFactory.create(message.headers, message.messageName),
         )
     }

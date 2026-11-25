@@ -111,7 +111,7 @@ class KafkaPayloadFactoryTest {
         assertFalse(payload.hasPayload)
         assertNull(payload.javaTypeName)
         assertNull(payload.kotlinTypeName)
-        assertEquals(keySchema, payload.keySchema)
+        assertEquals(keySchema, payload.kafkaKey?.declaredSchema)
         assertEquals(1, payload.headerProperties.size)
         assertEquals("correlationId", payload.headerProperties.single().wireName)
         assertTrue(payload.headerProperties.single().required)

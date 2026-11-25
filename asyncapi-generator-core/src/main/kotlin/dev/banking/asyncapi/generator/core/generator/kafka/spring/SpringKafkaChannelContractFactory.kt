@@ -25,8 +25,7 @@ internal class SpringKafkaChannelContractFactory(
                     payload = payload,
                     keyContract =
                         KafkaKeyContractResolver.resolve(
-                            messageName = payload.messageName,
-                            schema = payload.keySchema,
+                            kafkaKey = payload.kafkaKey,
                             modelPackage = modelPackage,
                         ),
                     consumerMethodName = "listen${payload.messageName}",

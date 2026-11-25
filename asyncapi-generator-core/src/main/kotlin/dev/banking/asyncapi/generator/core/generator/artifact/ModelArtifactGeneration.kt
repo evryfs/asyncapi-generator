@@ -8,8 +8,8 @@ import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinitionFactory
 import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelType
-import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.kotlin.KotlinModelEmitter
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKeyModelSelector
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog

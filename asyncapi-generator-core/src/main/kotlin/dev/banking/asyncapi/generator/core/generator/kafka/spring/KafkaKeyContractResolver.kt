@@ -1,24 +1,22 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.kafka.KafkaKeySchemaResolver
+import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.hasMultipleNonNullTypes
 import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.isTypeNullable
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedKafkaKeySchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /** Resolves an AsyncAPI Kafka key schema into its generated client-contract type. */
 internal object KafkaKeyContractResolver {
     fun resolve(
-        messageName: String,
-        schema: SchemaInterface?,
+        kafkaKey: KafkaKey?,
         modelPackage: String? = null,
     ): KafkaKeyContract? {
-        if (schema == null) return null
+        if (kafkaKey == null) return null
 
-        val resolved = KafkaKeySchemaResolver.resolve(messageName, schema)
-        val resolvedSchema = resolved.schema
+        val messageName = kafkaKey.messageName
+        val resolvedSchema = kafkaKey.requireSchema()
         if (resolvedSchema.type.hasMultipleNonNullTypes()) {
             throw UnsupportedKafkaKeySchema(
                 messageName = messageName,
@@ -26,36 +24,7 @@ internal object KafkaKeyContractResolver {
             )
         }
 
-        val keyType =
-            KafkaScalarTypeResolver
-                .resolve(resolvedSchema)
-                ?.let { scalarType ->
-                    KafkaKeyType(
-                        javaTypeName = scalarType.javaTypeName,
-                        kotlinTypeName = scalarType.kotlinTypeName,
-                        importName = scalarType.importName,
-                    )
-                }
-                ?: when (val schemaType = resolvedSchema.type.getPrimaryType()) {
-                    "object" -> {
-                        val modelName =
-                            requireNotNull(resolved.modelName) {
-                                "Object Kafka key model name was not resolved for '$messageName'"
-                            }
-                        KafkaKeyType(
-                            javaTypeName = modelName,
-                            kotlinTypeName = modelName,
-                            importName = modelPackage?.let { "$it.$modelName" },
-                            isModel = true,
-                        )
-                    }
-                    else ->
-                        throw UnsupportedKafkaKeySchema(
-                            messageName = messageName,
-                            schemaType = schemaType ?: "unspecified",
-                        )
-                }
-
+        val keyType = keyType(kafkaKey, resolvedSchema, modelPackage)
         return KafkaKeyContract(
             schema = resolvedSchema,
             javaTypeName = keyType.javaTypeName,
@@ -65,6 +34,33 @@ internal object KafkaKeyContractResolver {
             isModel = keyType.isModel,
         )
     }
+
+    private fun keyType(
+        kafkaKey: KafkaKey,
+        resolvedSchema: Schema,
+        modelPackage: String?,
+    ): KafkaKeyType =
+        KafkaScalarTypeResolver
+            .resolve(resolvedSchema)
+            ?.let { scalarType ->
+                KafkaKeyType(
+                    javaTypeName = scalarType.javaTypeName,
+                    kotlinTypeName = scalarType.kotlinTypeName,
+                    importName = scalarType.importName,
+                )
+            }
+            ?: kafkaKey.modelName?.let { modelName ->
+                KafkaKeyType(
+                    javaTypeName = modelName,
+                    kotlinTypeName = modelName,
+                    importName = modelPackage?.let { "$it.$modelName" },
+                    isModel = true,
+                )
+            }
+            ?: throw UnsupportedKafkaKeySchema(
+                messageName = kafkaKey.messageName,
+                schemaType = resolvedSchema.type.getPrimaryType() ?: "unspecified",
+            )
 }
 
 internal data class KafkaKeyContract(
