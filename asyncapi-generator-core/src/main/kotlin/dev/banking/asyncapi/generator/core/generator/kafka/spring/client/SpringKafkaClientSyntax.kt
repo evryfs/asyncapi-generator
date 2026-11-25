@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /** How one source language writes the parts of a Spring Kafka client that differ between languages. */
 internal interface SpringKafkaClientSyntax {
@@ -41,6 +41,6 @@ internal interface SpringKafkaClientSyntax {
     /** Annotation marking a parameter as nullable or not null; `null` where the type itself says so. */
     fun nullabilityAnnotation(nullable: Boolean): String?
 
-    /** Jakarta Validation annotations on a parameter of [schema]. */
-    fun parameterConstraints(schema: Schema): List<String>
+    /** Jakarta Validation annotations that express [constraints] on a parameter. */
+    fun parameterConstraints(constraints: Constraints): List<String>
 }

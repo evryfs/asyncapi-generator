@@ -1,13 +1,13 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.ir.Constraints
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
 import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientSyntax
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 
 /** Kotlin syntax of Spring Kafka clients: nullable types instead of nullability annotations. */
 internal object KotlinClientSyntax : SpringKafkaClientSyntax {
@@ -36,6 +36,6 @@ internal object KotlinClientSyntax : SpringKafkaClientSyntax {
 
     override fun nullabilityAnnotation(nullable: Boolean): String? = null
 
-    override fun parameterConstraints(schema: Schema): List<String> =
-        constraintMapper.buildAnnotations(schema).map { annotation -> annotation.replace("@field:", "@") }
+    override fun parameterConstraints(constraints: Constraints): List<String> =
+        constraintMapper.buildAnnotations(constraints).map { annotation -> annotation.replace("@field:", "@") }
 }

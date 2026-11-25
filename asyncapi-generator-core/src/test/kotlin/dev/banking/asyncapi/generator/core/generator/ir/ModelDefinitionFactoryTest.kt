@@ -74,7 +74,7 @@ class ModelDefinitionFactoryTest {
         assertEquals("orderName", name.identifier)
         assertEquals("order-name", name.wireName)
         assertEquals(TypeRef.Scalar.STRING, name.type)
-        assertEquals(true, name.nullableInSchema)
+        assertEquals(true, name.nullable)
         assertEquals(DefaultValue.IntegerLiteral("3"), count.default)
     }
 

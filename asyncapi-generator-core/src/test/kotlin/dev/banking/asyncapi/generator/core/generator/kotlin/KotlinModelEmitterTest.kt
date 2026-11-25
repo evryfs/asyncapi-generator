@@ -9,7 +9,6 @@ import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -86,7 +85,6 @@ class KotlinModelEmitterTest {
         identifier = identifier,
         type = type,
         required = required,
-        schema = Schema(),
         default = default,
     )
 

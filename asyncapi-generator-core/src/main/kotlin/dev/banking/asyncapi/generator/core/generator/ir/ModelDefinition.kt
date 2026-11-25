@@ -1,8 +1,5 @@
 package dev.banking.asyncapi.generator.core.generator.ir
 
-import dev.banking.asyncapi.generator.core.generator.schema.isTypeNullable
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-
 /**
  * A payload model to generate, independent of the source language it is rendered in.
  *
@@ -58,12 +55,16 @@ internal data class OpenObjectModel(
 ) : ModelDefinition
 
 /**
- * A property of an [ObjectModel].
+ * A property of an [ObjectModel], with what its schema, or the schema it references, says about it.
  *
  * @property wireName Name in the JSON payload.
  * @property identifier Source identifier of the property.
- * @property schema The property schema, or the schema it references; drives constraints, access,
- *   nullability, and documentation.
+ * @property type Type of the property.
+ * @property required Whether the payload must contain the property.
+ * @property nullable Whether the schema allows `null`.
+ * @property description Contract description as written; null without one.
+ * @property access Read-only or write-only access; null when neither is declared.
+ * @property constraints Validation constraints of the value.
  * @property default Default value from the schema; null without a supported one.
  */
 internal data class PropertyDefinition(
@@ -71,14 +72,12 @@ internal data class PropertyDefinition(
     val identifier: String,
     val type: TypeRef,
     val required: Boolean,
-    val schema: Schema?,
+    val nullable: Boolean = false,
+    val description: String? = null,
+    val access: PropertyAccess? = null,
+    val constraints: Constraints = Constraints.None,
     val default: DefaultValue? = null,
-) {
-    /** Whether the schema allows `null`. */
-    val nullableInSchema: Boolean get() = schema?.type.isTypeNullable()
-
-    val description: String? get() = schema?.description
-}
+)
 
 /** A schema default value. */
 internal sealed interface DefaultValue {
