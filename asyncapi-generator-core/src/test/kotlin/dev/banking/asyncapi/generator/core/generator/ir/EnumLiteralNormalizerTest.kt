@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.model
+package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.EnumLiteralCollision
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidEnum

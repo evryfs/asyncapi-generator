@@ -46,15 +46,6 @@ internal object DocumentationUtils {
     /** Kotlin block comments nest, so an opening `/` + `*` in a KDoc line must not start a new one either. */
     private fun escapeKotlinComment(line: String): String = escapeJavaComment(line).replace("/*", "&#47;*")
 
-    fun toAvroDocLines(raw: String?): String? {
-        if (raw.isNullOrBlank()) return null
-        return raw
-            .replace("\n", " ")
-            .replace("\r", "")
-            .trimStart('"', '\'', '|', '>')
-            .trim()
-    }
-
     private fun cleanAndUnescape(raw: String): String =
         unescapeBasicHtml(raw)
             .replace("\r\n", "\n")
@@ -90,47 +81,6 @@ internal object DocumentationUtils {
             if (current.length + 1 + word.length > WRAP_WIDTH) {
                 result += current.toString()
                 current = StringBuilder(word)
-            } else {
-                current.append(' ').append(word)
-            }
-        }
-
-        if (current.isNotEmpty()) {
-            result += current.toString()
-        }
-
-        return result
-    }
-
-    fun wrapForParamDoc(
-        paramName: String,
-        text: String,
-    ): List<String> {
-        val cleaned = text.trim()
-        if (cleaned.length <= WRAP_WIDTH) return listOf(cleaned)
-
-        val prefixLenFirst = "* @param [$paramName] - ".length
-        val words = cleaned.split(Regex("\\s+"))
-
-        val result = mutableListOf<String>()
-        var current = StringBuilder()
-        var currentWidth = WRAP_WIDTH - prefixLenFirst
-        var firstLine = true
-
-        for (word in words) {
-            if (current.isEmpty()) {
-                current.append(word)
-                continue
-            }
-
-            if (current.length + 1 + word.length > currentWidth) {
-                result += current.toString()
-                current = StringBuilder(word)
-
-                if (firstLine) {
-                    firstLine = false
-                    currentWidth = WRAP_WIDTH
-                }
             } else {
                 current.append(' ').append(word)
             }

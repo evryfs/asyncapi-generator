@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.messaging
 
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil
+import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.model.messages.Message
 
 /**
@@ -14,7 +14,7 @@ internal object MessageNameResolver {
         message: Message,
         messageId: String,
     ): String =
-        MapperUtil.toPascalCase(
+        NameCase.toPascalCase(
             message.name
                 ?.takeIf(String::isNotBlank)
                 ?: messageId,

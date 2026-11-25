@@ -7,8 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnumSymbol
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroField
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
-import dev.banking.asyncapi.generator.core.generator.util.DocumentationUtils.toAvroDocLines
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidAvroName
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
@@ -51,7 +50,7 @@ internal class AvroGeneratorModelFactory(
             return AvroEnum(
                 namespace = packageName,
                 name = name,
-                doc = jsonText(toAvroDocLines(schema.description)),
+                doc = doc(schema.description),
                 symbols = symbolWrappers,
                 default = defaultSymbol,
             )
@@ -83,7 +82,7 @@ internal class AvroGeneratorModelFactory(
 
                 AvroField(
                     name = propName,
-                    doc = jsonText(toAvroDocLines(propSchema?.description)),
+                    doc = doc(propSchema?.description),
                     jsonType =
                         when {
                             // A union's default must match its first branch, so a non-null default comes first.
@@ -102,7 +101,7 @@ internal class AvroGeneratorModelFactory(
         return AvroRecord(
             namespace = packageName,
             name = name,
-            doc = jsonText(toAvroDocLines(schema.description)),
+            doc = doc(schema.description),
             fields = fields,
         )
     }
@@ -141,6 +140,16 @@ internal class AvroGeneratorModelFactory(
     ) {
         if (!AVRO_NAME.matches(value)) throw InvalidAvroName(kind = kind, avroName = value, location = location)
     }
+
+    /** A description as one line of Avro `doc` text, quoted for JSON; null without a description. */
+    private fun doc(description: String?): String? =
+        description
+            ?.takeUnless { it.isBlank() }
+            ?.replace("\n", " ")
+            ?.replace("\r", "")
+            ?.trimStart('"', '\'', '|', '>')
+            ?.trim()
+            .let(::jsonText)
 
     private fun jsonText(text: String?): String? =
         text?.let { String(JsonStringEncoder.getInstance().quoteAsString(it)) }

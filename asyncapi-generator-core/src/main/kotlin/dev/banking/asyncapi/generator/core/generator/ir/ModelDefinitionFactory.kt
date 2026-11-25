@@ -2,12 +2,8 @@ package dev.banking.asyncapi.generator.core.generator.ir
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.model.EnumLiteralNormalizer
-import dev.banking.asyncapi.generator.core.generator.model.UnionSubtype
-import dev.banking.asyncapi.generator.core.generator.model.UnionSubtypes
+import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isOpenPayload
-import dev.banking.asyncapi.generator.core.generator.schema.isScalarAlias
-import dev.banking.asyncapi.generator.core.generator.util.MapperUtil.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.util.SourceIdentifierMapper
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.PropertyNameCollision
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
