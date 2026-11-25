@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.schema
 
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface

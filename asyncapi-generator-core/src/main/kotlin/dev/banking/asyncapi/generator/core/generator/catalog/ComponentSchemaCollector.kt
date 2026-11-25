@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.catalog
 
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.components.Component
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema

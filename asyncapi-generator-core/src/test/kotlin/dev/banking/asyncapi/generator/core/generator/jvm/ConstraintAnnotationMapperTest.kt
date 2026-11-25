@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.ir.Constraints
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

@@ -1,8 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.analyzer
 
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
 import dev.banking.asyncapi.generator.core.generator.schema.isInlineUnion
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InlineSchemaNameCollision
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.Schema

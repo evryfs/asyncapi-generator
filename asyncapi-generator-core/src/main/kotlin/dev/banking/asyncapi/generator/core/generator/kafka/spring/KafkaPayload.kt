@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKey
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
 /**
  * The payload signature of a message in a Spring Kafka client contract.

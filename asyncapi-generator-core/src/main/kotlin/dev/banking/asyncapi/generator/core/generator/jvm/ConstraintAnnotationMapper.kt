@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.ir.Constraints
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 
 /**
  * Expresses validation constraints as Jakarta Validation annotations, written for fields of the

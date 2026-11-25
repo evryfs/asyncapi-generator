@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
-import dev.banking.asyncapi.generator.core.generator.ir.PropertyAccess
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.PropertyAccess
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals

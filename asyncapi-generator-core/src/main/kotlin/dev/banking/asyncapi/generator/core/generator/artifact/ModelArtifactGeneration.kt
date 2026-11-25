@@ -4,8 +4,6 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ModelGenerati
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.JAVA
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage.KOTLIN
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
-import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinitionFactory
-import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelType
 import dev.banking.asyncapi.generator.core.generator.jvm.JvmNaming
@@ -14,6 +12,8 @@ import dev.banking.asyncapi.generator.core.generator.messaging.kafka.KafkaKeyMod
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinitionFactory
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelEmitter
 
 /**
  * Renders planned Kotlin and Java model artifacts before writing them.

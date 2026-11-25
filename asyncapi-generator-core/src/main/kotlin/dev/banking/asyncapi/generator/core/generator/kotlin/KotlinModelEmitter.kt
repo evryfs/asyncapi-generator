@@ -2,17 +2,6 @@ package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
-import dev.banking.asyncapi.generator.core.generator.ir.DefaultValue
-import dev.banking.asyncapi.generator.core.generator.ir.EnumModel
-import dev.banking.asyncapi.generator.core.generator.ir.ModelDefinition
-import dev.banking.asyncapi.generator.core.generator.ir.ModelEmitter
-import dev.banking.asyncapi.generator.core.generator.ir.ObjectModel
-import dev.banking.asyncapi.generator.core.generator.ir.OpenObjectModel
-import dev.banking.asyncapi.generator.core.generator.ir.PropertyDefinition
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
-import dev.banking.asyncapi.generator.core.generator.ir.UnionModel
-import dev.banking.asyncapi.generator.core.generator.ir.cascadesValidation
-import dev.banking.asyncapi.generator.core.generator.ir.rejectReservedNames
 import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
 import dev.banking.asyncapi.generator.core.generator.jvm.JsonPropertyAccessAnnotationMapper
@@ -25,6 +14,17 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.DefaultValue
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.EnumModel
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelEmitter
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ObjectModel
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.OpenObjectModel
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.PropertyDefinition
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.cascadesValidation
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.rejectReservedNames
 import java.io.StringWriter
 
 /**

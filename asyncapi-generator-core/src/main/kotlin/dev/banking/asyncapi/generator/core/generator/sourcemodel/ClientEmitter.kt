@@ -1,4 +1,4 @@
-package dev.banking.asyncapi.generator.core.generator.ir
+package dev.banking.asyncapi.generator.core.generator.sourcemodel
 
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult

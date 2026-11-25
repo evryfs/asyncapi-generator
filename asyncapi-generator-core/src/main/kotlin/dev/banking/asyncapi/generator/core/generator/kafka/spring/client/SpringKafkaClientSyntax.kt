@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
-import dev.banking.asyncapi.generator.core.generator.ir.Constraints
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
 /** How one source language writes the parts of a Spring Kafka client that differ between languages. */
 internal interface SpringKafkaClientSyntax {

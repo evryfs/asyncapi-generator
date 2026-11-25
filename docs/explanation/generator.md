@@ -87,16 +87,16 @@ Package `configuration` turns what a user configured into a
 
 ## Language-neutral models
 
-Kotlin and Java models are built from one language-neutral model in `ir`.
-`ModelDefinitionFactory` turns the analyzed schemas into `ModelDefinition`s:
-`ObjectModel`, `EnumModel`, `UnionModel`, and `OpenObjectModel`, with
-properties typed by `TypeRef` and defaults as typed `DefaultValue`s.
-`ModelTypeMapper` decides the `TypeRef` of each schema once, for both
-languages. A property carries what its schema says about it (nullability,
-description, read-only or write-only `PropertyAccess`, and validation
-`Constraints`), so emitters never read the schema themselves. Each emitter
-rejects a model named like a type its sources use without qualification, such
-as `UUID` or `List`.
+Kotlin and Java models are built from one language-neutral source model in
+`sourcemodel`. `ModelDefinitionFactory` turns the analyzed schemas into
+`ModelDefinition`s: `ObjectModel`, `EnumModel`, `UnionModel`, and
+`OpenObjectModel`, with properties typed by `TypeRef` and defaults as typed
+`DefaultValue`s. `ModelTypeMapper` decides the `TypeRef` of each schema once,
+for both languages. A property carries what its schema says about it
+(nullability, description, read-only or write-only `PropertyAccess`, and
+validation `Constraints`), so emitters never read the schema themselves. Each
+emitter rejects a model named like a type its sources use without
+qualification, such as `UUID` or `List`.
 
 Emitters render that model:
 
@@ -108,15 +108,16 @@ Emitters render that model:
 Decisions that affect the wire format, such as enum constant names and their
 `@JsonProperty` values, property identifiers for invalid names, access
 annotations for `readOnly` and `writeOnly`, and discriminator names, are made
-in the language-neutral model (such as `EnumLiteralNormalizer` in `ir`) or in
-the `jvm` support package that both emitters use (such as
-`JsonPropertyAccessAnnotationMapper`), so both languages produce the same JSON.
-The `jvm` package also holds what only JVM sources need: imports, Jackson and
-Jakarta Validation annotations, string literal escaping, and KDoc and Javadoc
-comments. The model takes its property identifier and enum constant rules from
-a `SourceNaming`; `JvmNaming` gives Kotlin and Java the same rules, so a
-contract generates the same identifiers in both. When adding a feature, put the decision in shared code and only the
-syntax in the emitters.
+in the language-neutral model (such as `EnumLiteralNormalizer` in
+`sourcemodel`) or in the `jvm` support package that both emitters use (such as
+`JsonPropertyAccessAnnotationMapper`), so both languages produce the same
+JSON. The `jvm` package also holds what only JVM sources need: imports,
+Jackson and Jakarta Validation annotations, string literal escaping, and KDoc
+and Javadoc comments. The model takes its property identifier and enum
+constant rules from a `SourceNaming`; `JvmNaming` gives Kotlin and Java the
+same rules, so a contract generates the same identifiers in both. When adding
+a feature, put the decision in shared code and only the syntax in the
+emitters.
 
 Spring Kafka clients follow the same split. `SpringKafkaChannelContractFactory`
 (`kafka.spring`) builds a language-neutral contract for each channel, whose

@@ -1,9 +1,9 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
-import dev.banking.asyncapi.generator.core.generator.ir.ModelTypeMapper
-import dev.banking.asyncapi.generator.core.generator.ir.NameCase
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
 import dev.banking.asyncapi.generator.core.generator.schema.getPrimaryType
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 

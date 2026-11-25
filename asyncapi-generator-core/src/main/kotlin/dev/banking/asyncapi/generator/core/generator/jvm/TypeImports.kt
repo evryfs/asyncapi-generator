@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.jvm
 
-import dev.banking.asyncapi.generator.core.generator.ir.TypeRef
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
 /** Names of Kotlin and Java built-in types, which a named type never imports from the model package. */
 private val builtInTypeNames =
