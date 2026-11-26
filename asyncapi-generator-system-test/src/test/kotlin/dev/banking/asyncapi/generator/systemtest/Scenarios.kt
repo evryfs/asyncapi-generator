@@ -372,6 +372,11 @@ private val allScenarios: List<Scenario> = listOf(
         executions = listOf(Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avro")),
         expectedFailure = ExpectedFailure(messages = listOf("'account-id'", "not a valid Avro name")),
     ),
+    Scenario(
+        name = "diagnostics-avro-untyped-value",
+        executions = listOf(Execution(id = "avro", generatorName = "avro-schema", schemaPackage = "com.example.avro")),
+        expectedFailure = ExpectedFailure(messages = listOf("property 'details'", "Avro has no type")),
+    ),
     invalidContract(
         name = "recursive-yaml-alias",
         expected = ExpectedFailure(messages = listOf("Recursive YAML alias", "next")),

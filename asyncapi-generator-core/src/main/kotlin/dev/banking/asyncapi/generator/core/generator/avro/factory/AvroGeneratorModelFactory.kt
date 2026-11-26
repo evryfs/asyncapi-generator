@@ -16,13 +16,15 @@ import dev.banking.asyncapi.generator.core.generator.sourcemodel.OpenObjectModel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.PropertyDefinition
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidAvroName
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UntypedAvroValue
 
 /**
  * Builds Avro records and enums from the models of a contract.
  *
  * Objects become records and enums become enums; unions have no schema of their own, as fields hold
  * their members directly. Names that Avro rejects fail generation, because renaming them would
- * silently change a schema that may already be registered. Text values are JSON-escaped for the
+ * silently change a schema that may already be registered. Open objects and values that may be
+ * anything fail too, as Avro has no type for them. Text values are JSON-escaped for the
  * `.avsc` templates.
  *
  * @param packageName the Avro namespace of the generated schemas
@@ -41,7 +43,7 @@ internal class AvroGeneratorModelFactory(
         when (model) {
             is EnumModel -> enum(model)
             is ObjectModel -> record(model.name, model.description, model.properties)
-            is OpenObjectModel -> record(model.name, model.description, emptyList())
+            is OpenObjectModel -> throw UntypedAvroValue("components.schemas.${model.name}")
             is UnionModel -> null
         }
 
@@ -71,16 +73,18 @@ internal class AvroGeneratorModelFactory(
             fields =
                 properties.mapIndexed { index, property ->
                     requireAvroName("field", property.wireName, name)
-                    field(property, last = index == properties.lastIndex)
+                    val location = "property '${property.wireName}' in components.schemas.$name"
+                    field(property, location, last = index == properties.lastIndex)
                 },
         )
     }
 
     private fun field(
         property: PropertyDefinition,
+        location: String,
         last: Boolean,
     ): AvroField {
-        val type = typeMapper.map(property.type)
+        val type = typeMapper.map(property.type, location)
         val default = property.default?.let(::defaultJson)
         return AvroField(
             name = property.wireName,

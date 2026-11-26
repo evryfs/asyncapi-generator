@@ -64,6 +64,18 @@ sealed class AsyncApiGeneratorException(
                 "Avro names must match [A-Za-z_][A-Za-z0-9_]*. Rename it in the contract.",
         )
 
+    /**
+     * Avro Projection meets a value that may be anything, such as an open object, which no Avro type describes.
+     *
+     * @param location the property or schema that holds the value
+     */
+    class UntypedAvroValue(
+        val location: String,
+    ) : AsyncApiGeneratorException(
+            "Avro schema generation failed: $location accepts any value, and Avro has no type for that. " +
+                "Give it a type in the contract.",
+        )
+
     class NoArtifactsGenerated :
         AsyncApiGeneratorException(
             "Generation completed without producing any artifacts.",
