@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentFormat
 import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutput
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -26,10 +27,13 @@ class DocumentArtifactGenerationTest {
             generation.render(
                 task =
                     GenerationTask.DocumentArtifact(DocumentOutput(file = outputFile, format = DocumentFormat.YAML)),
-                asyncApiDocument =
-                    AsyncApiDocument(
-                        asyncapi = "3.0.0",
-                        info = Info(title = "Document output", version = "1.0.0"),
+                context =
+                    generationContext(
+                        document =
+                            AsyncApiDocument(
+                                asyncapi = "3.0.0",
+                                info = Info(title = "Document output", version = "1.0.0"),
+                            ),
                     ),
             )
 

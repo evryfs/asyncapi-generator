@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
@@ -21,7 +22,7 @@ class NativeProtobufArtifactGenerationTest {
                     GenerationTask.NativeProtobufArtifacts(
                         SchemaGeneration.NativeProtobuf(schemaPackageName = "com.example.schemas"),
                     ),
-                generationInput = fixtures.generationInputWithNativeProtobufSchema(),
+                context = generationContext(fixtures.generationInputWithNativeProtobufSchema()),
             )
 
         assertEquals(
@@ -44,7 +45,7 @@ class NativeProtobufArtifactGenerationTest {
                                 ),
                         ),
                     ),
-                generationInput = fixtures.generationInputWithNativeProtobufJavaMessageSchema(),
+                context = generationContext(fixtures.generationInputWithNativeProtobufJavaMessageSchema()),
             )
 
         assertEquals(
