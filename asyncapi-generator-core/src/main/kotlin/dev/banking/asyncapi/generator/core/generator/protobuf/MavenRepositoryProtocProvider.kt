@@ -18,7 +18,10 @@ import java.time.Duration
  * Downloads are checked against the repository's SHA-1 checksum and stored in the local
  * repository layout, so later runs and Maven builds reuse them.
  *
+ * @param localRepository The local Maven repository that holds downloaded executables.
+ * @param remoteRepository The Maven repository to download `protoc` from when the local one lacks it.
  * @param override An explicit `protoc` executable to use instead, for offline or locked-down machines.
+ * @param classifier The `protoc` classifier of the running platform, such as `linux-x86_64`.
  */
 class MavenRepositoryProtocProvider(
     private val localRepository: Path = defaultLocalRepository(),
@@ -70,7 +73,7 @@ class MavenRepositoryProtocProvider(
                     .build(),
                 HttpResponse.BodyHandlers.ofByteArray(),
             )
-        if (response.statusCode() != 200) {
+        if (response.statusCode() != HTTP_OK) {
             throw IOException(
                 "Could not download $url (HTTP ${response.statusCode()}). Without network access, " +
                     "point the generator at a local protoc executable.",
@@ -81,6 +84,7 @@ class MavenRepositoryProtocProvider(
 
     companion object {
         val MAVEN_CENTRAL: URI = URI.create("https://repo.maven.apache.org/maven2/")
+        private const val HTTP_OK = 200
         private val TIMEOUT: Duration = Duration.ofMinutes(2)
         private val client: HttpClient =
             HttpClient

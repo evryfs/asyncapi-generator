@@ -43,26 +43,31 @@ internal class NativeProtobufSchemaParser {
     private fun extractTopLevelMessageNames(content: String): List<String> {
         val names = mutableListOf<String>()
         var depth = 0
-
         for (line in content.lines()) {
-            if (depth == 0 && TOP_LEVEL_MESSAGE_REGEX.containsMatchIn(line)) {
-                val name = requireNotNull(TOP_LEVEL_MESSAGE_REGEX.find(line)).groupValues[1]
-                names.add(name)
-                if (line.contains('{')) {
-                    depth = 1
-                    continue
-                }
-            }
-            for (c in line) {
-                when (c) {
-                    '{' -> depth++
-                    '}' -> if (depth > 0) depth--
-                }
-            }
+            val topLevelName =
+                TOP_LEVEL_MESSAGE_REGEX
+                    .find(line)
+                    ?.groupValues
+                    ?.get(1)
+                    ?.takeIf { depth == 0 }
+            topLevelName?.let(names::add)
+            depth = if (topLevelName != null && line.contains('{')) 1 else depthAfter(line, depth)
         }
-
         return names
     }
+
+    /** The brace depth after [line], starting from [depth]; a closing brace never goes below zero. */
+    private fun depthAfter(
+        line: String,
+        depth: Int,
+    ): Int =
+        line.fold(depth) { current, c ->
+            when (c) {
+                '{' -> current + 1
+                '}' -> if (current > 0) current - 1 else current
+                else -> current
+            }
+        }
 
     private fun schemaContent(
         payloadName: String,
@@ -92,6 +97,15 @@ internal class NativeProtobufSchemaParser {
     }
 }
 
+/**
+ * The declarations of a `.proto` file that generation needs.
+ *
+ * @property content the file content as written
+ * @property protoPackageName the `package` declaration; null without one
+ * @property javaPackageName the `java_package` option; null without one
+ * @property javaMultipleFiles the `java_multiple_files` option; null when not set
+ * @property messageNames the top-level message names, in file order
+ */
 internal data class NativeProtobufSchema(
     val content: String,
     val protoPackageName: String?,

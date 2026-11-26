@@ -11,7 +11,6 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
-import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidJsonSchema
 import dev.banking.asyncapi.generator.core.model.schemas.MultiFormatSchema
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -19,6 +18,8 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 
 /**
  * Renders supported contract declarations as standalone Draft 07 JSON Schema artifacts.
+ *
+ * @param objectMapper converts schemas to JSON, leaving out absent values
  */
 internal class JsonSchemaGenerator(
     private val objectMapper: ObjectMapper =
@@ -46,41 +47,15 @@ internal class JsonSchemaGenerator(
         )
 
         val artifacts =
-            buildList {
-                schemas.entries
-                    .sortedBy(Map.Entry<String, Schema>::key)
-                    .forEach { (schemaName, schema) ->
-                        add(
-                            schemaArtifact(
-                                schemaName = schemaName,
-                                schemaNode = renderAsyncApiSchema(schema),
-                                packageName = packageName,
-                            ),
-                        )
-                    }
-                nativeJsonSchemas.entries
-                    .sortedBy(Map.Entry<String, MultiFormatSchema>::key)
-                    .forEach { (schemaName, schema) ->
-                        add(
-                            schemaArtifact(
-                                schemaName = schemaName,
-                                schemaNode = renderNativeJsonSchema(schemaName, schema),
-                                packageName = packageName,
-                            ),
-                        )
-                    }
-                booleanSchemas.entries
-                    .sortedBy(Map.Entry<String, Boolean>::key)
-                    .forEach { (schemaName, schema) ->
-                        add(
-                            schemaArtifact(
-                                schemaName = schemaName,
-                                schemaNode = objectMapper.nodeFactory.booleanNode(schema),
-                                packageName = packageName,
-                            ),
-                        )
-                    }
-            }
+            schemas.toSortedMap().map { (name, schema) ->
+                schemaArtifact(name, renderAsyncApiSchema(schema), packageName)
+            } +
+                nativeJsonSchemas.toSortedMap().map { (name, schema) ->
+                    schemaArtifact(name, renderNativeJsonSchema(name, schema), packageName)
+                } +
+                booleanSchemas.toSortedMap().map { (name, schema) ->
+                    schemaArtifact(name, objectMapper.nodeFactory.booleanNode(schema), packageName)
+                }
 
         return GenerationResult(artifacts)
     }
@@ -89,7 +64,7 @@ internal class JsonSchemaGenerator(
         val schemaNode = objectMapper.valueToTree<ObjectNode>(schema)
         normalizeAsyncApiSchemaNode(schemaNode, schema)
         addDraft07Declaration(schemaNode)
-        rewriteSchemaReferences(schemaNode)
+        JsonSchemaReferences.rewrite(schemaNode)
         return schemaNode
     }
 
@@ -108,7 +83,7 @@ internal class JsonSchemaGenerator(
         if (schemaNode is ObjectNode) {
             addDraft07Declaration(schemaNode)
         }
-        rewriteSchemaReferences(schemaNode)
+        JsonSchemaReferences.rewrite(schemaNode)
         return schemaNode
     }
 
@@ -143,15 +118,19 @@ internal class JsonSchemaGenerator(
             schemaNode.putNull("const")
         }
 
-        SUBSCHEMA_KEYWORDS.forEach { keyword ->
+        SubschemaKeyword.ALL.forEach { keyword ->
             val node = schemaNode.get(keyword.name)
             when (keyword.shape) {
-                Shape.SINGLE -> normalizeSchemaInterface(node, keyword.value(schema) as? SchemaInterface)
-                Shape.MAP ->
+                SubschemaKeyword.Shape.SINGLE ->
+                    normalizeSchemaInterface(
+                        node,
+                        keyword.value(schema) as? SchemaInterface,
+                    )
+                SubschemaKeyword.Shape.MAP ->
                     (keyword.value(schema) as? Map<*, *>)?.forEach { (name, value) ->
                         normalizeSchemaInterface(node?.get(name.toString()), value as? SchemaInterface)
                     }
-                Shape.LIST ->
+                SubschemaKeyword.Shape.LIST ->
                     (keyword.value(schema) as? List<*>)?.forEachIndexed { index, value ->
                         normalizeSchemaInterface(node?.get(index), value as? SchemaInterface)
                     }
@@ -201,37 +180,6 @@ internal class JsonSchemaGenerator(
         }
     }
 
-    private fun rewriteSchemaReferences(schemaNode: JsonNode) {
-        if (schemaNode !is ObjectNode) {
-            return
-        }
-
-        schemaNode
-            .get($$"$ref")
-            ?.takeIf(JsonNode::isTextual)
-            ?.asText()
-            ?.let(::generatedSchemaReference)
-            ?.let { reference -> schemaNode.put($$"$ref", reference) }
-
-        SUBSCHEMA_KEYWORDS.forEach { keyword ->
-            val node = schemaNode.get(keyword.name)
-            if (keyword.shape == Shape.MAP) {
-                (node as? ObjectNode)?.elements()?.forEachRemaining(::rewriteSchemaNodeReference)
-            } else {
-                rewriteSchemaNodeReference(node)
-            }
-        }
-    }
-
-    /** Rewrites the references of a schema, or of every schema in an array of them. */
-    private fun rewriteSchemaNodeReference(node: JsonNode?) {
-        when (node) {
-            is ObjectNode -> rewriteSchemaReferences(node)
-            is ArrayNode -> node.elements().forEachRemaining(::rewriteSchemaNodeReference)
-            else -> Unit
-        }
-    }
-
     /** Fails on the first generated artifact name that two kinds of schema both use. */
     private fun rejectSharedNames(vararg kinds: Pair<String, Set<String>>) {
         kinds.forEachIndexed { index, (firstKind, firstNames) ->
@@ -246,62 +194,8 @@ internal class JsonSchemaGenerator(
         }
     }
 
-    private fun generatedSchemaReference(reference: String): String {
-        if (!reference.startsWith(COMPONENT_SCHEMA_REFERENCE_PREFIX)) {
-            return reference
-        }
-
-        val target = reference.removePrefix(COMPONENT_SCHEMA_REFERENCE_PREFIX)
-        val componentName = target.substringBefore('/')
-        val componentPath = target.substringAfter('/', missingDelimiterValue = "")
-        val generatedName = NameCase.toPascalCase(componentName)
-        val fragment = componentPath.takeIf(String::isNotEmpty)?.let { "#/$it" }.orEmpty()
-        return "$generatedName.schema.json$fragment"
-    }
-
-    /** How a keyword holds sub-schemas: one schema, a map of named schemas, or a list of schemas. */
-    private enum class Shape { SINGLE, MAP, LIST }
-
-    /**
-     * A keyword whose value holds sub-schemas.
-     *
-     * @property name the keyword
-     * @property shape how the keyword holds its sub-schemas
-     * @property value the keyword's value in a parsed schema
-     */
-    private class SubschemaKeyword(
-        val name: String,
-        val shape: Shape,
-        val value: (Schema) -> Any?,
-    )
-
     private companion object {
-        /**
-         * The Draft 7 keywords that hold sub-schemas, which both passes over a schema visit. Tuple-form
-         * `items` is an array of schemas, so a single `items` keyword visits it too.
-         */
-        val SUBSCHEMA_KEYWORDS =
-            listOf(
-                SubschemaKeyword("items", Shape.SINGLE) { it.items },
-                SubschemaKeyword("additionalItems", Shape.SINGLE) { it.additionalItems },
-                SubschemaKeyword("contains", Shape.SINGLE) { it.contains },
-                SubschemaKeyword("properties", Shape.MAP) { it.properties },
-                SubschemaKeyword("patternProperties", Shape.MAP) { it.patternProperties },
-                SubschemaKeyword("additionalProperties", Shape.SINGLE) { it.additionalProperties },
-                SubschemaKeyword("propertyNames", Shape.SINGLE) { it.propertyNames },
-                SubschemaKeyword("dependencies", Shape.MAP) { it.dependencies },
-                SubschemaKeyword("definitions", Shape.MAP) { it.definitions },
-                SubschemaKeyword("allOf", Shape.LIST) { it.allOf },
-                SubschemaKeyword("anyOf", Shape.LIST) { it.anyOf },
-                SubschemaKeyword("oneOf", Shape.LIST) { it.oneOf },
-                SubschemaKeyword("not", Shape.SINGLE) { it.not },
-                SubschemaKeyword("if", Shape.SINGLE) { it.ifSchema },
-                SubschemaKeyword("then", Shape.SINGLE) { it.thenSchema },
-                SubschemaKeyword("else", Shape.SINGLE) { it.elseSchema },
-            )
-
         const val DRAFT_07_SCHEMA_URI = "http://json-schema.org/draft-07/schema#"
-        const val COMPONENT_SCHEMA_REFERENCE_PREFIX = "#/components/schemas/"
 
         val ASYNCAPI_ONLY_SCHEMA_FIELDS =
             listOf(

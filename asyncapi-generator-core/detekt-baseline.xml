@@ -8,10 +8,6 @@
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
-    <ID>LongMethod:JsonSchemaGenerator.kt$JsonSchemaGenerator$fun render( schemaDeclarations: SchemaDeclarationCatalog, packageName: String, ): GenerationResult</ID>
-    <ID>LongMethod:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
-    <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
-    <ID>LongMethod:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
     <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
@@ -19,7 +15,6 @@
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: SchemaInterface, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
     <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
-    <ID>MagicNumber:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider$200</ID>
     <ID>MagicNumber:ReferencePointer.kt$3</ID>
     <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
@@ -28,21 +23,12 @@
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
     <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
-    <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
-    <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>
-    <ID>ThrowsCount:NativeAvroGenerator.kt$NativeAvroGenerator$private fun renderSpecificRecordArtifacts(parsedSchema: ParsedNativeAvroSchema): List&lt;GeneratedArtifact&gt;</ID>
-    <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun renderModelArtifacts( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, ): List&lt;GeneratedArtifact&gt;</ID>
-    <ID>ThrowsCount:NativeProtobufGenerator.kt$NativeProtobufGenerator$private fun validateModelGenerationSupport( parsedSchema: ParsedNativeProtobufSchema, models: ProtobufModelGeneration, )</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$cleanupEx: Exception</ID>
     <ID>TooGenericExceptionCaught:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: Exception</ID>
-    <ID>TooGenericExceptionCaught:NativeAvroGenerator.kt$NativeAvroGenerator$ex: RuntimeException</ID>
-    <ID>TooGenericExceptionCaught:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$ex: RuntimeException</ID>
-    <ID>TooGenericExceptionCaught:NativeProtobufGenerator.kt$NativeProtobufGenerator$ex: RuntimeException</ID>
-    <ID>TooManyFunctions:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>
@@ -99,6 +85,5 @@
     <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
-    <ID>UseRequire:NativeAvroSchemaParser.kt$NativeAvroSchemaParser$throw IllegalArgumentException("Missing Avro schema content")</ID>
   </CurrentIssues>
 </SmellBaseline>
