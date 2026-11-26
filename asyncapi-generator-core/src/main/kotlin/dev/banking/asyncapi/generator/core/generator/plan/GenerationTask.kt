@@ -5,6 +5,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.DocumentOutpu
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 
 /**
  * Planned generator work item.
@@ -14,13 +15,23 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguag
  */
 sealed interface GenerationTask {
     /**
+     * The kinds of artifact the task writes under the output directory, which tell a build tool
+     * whether to compile the directory, package it as resources, or both. A bundled document is
+     * written to its own file and is no kind.
+     */
+    val outputKinds: Set<GeneratedArtifactKind>
+
+    /**
      * Writes the bundled AsyncAPI document.
      *
      * @param document the file and format to write.
      */
     data class DocumentArtifact(
         val document: DocumentOutput,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = emptySet()
+    }
 
     /**
      * Writes source models for the payload schemas.
@@ -30,6 +41,9 @@ sealed interface GenerationTask {
     data class ModelArtifacts(
         val models: ModelGeneration.Enabled,
     ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = setOf(GeneratedArtifactKind.SOURCE)
+
         /** The language whose generator writes the model type. */
         val language: SourceLanguage
             get() =
@@ -47,7 +61,10 @@ sealed interface GenerationTask {
     data class KafkaKeyModelArtifacts(
         val language: SourceLanguage,
         val packageName: String,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = setOf(GeneratedArtifactKind.SOURCE)
+    }
 
     /**
      * Writes Spring Kafka producer and consumer contracts.
@@ -58,7 +75,10 @@ sealed interface GenerationTask {
     data class SpringKafkaClient(
         val language: SourceLanguage,
         val client: ClientGeneration,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = setOf(GeneratedArtifactKind.SOURCE)
+    }
 
     /**
      * Projects AsyncAPI Schema Objects to `.avsc` files.
@@ -67,7 +87,10 @@ sealed interface GenerationTask {
      */
     data class AvroSchemaArtifacts(
         val schema: SchemaGeneration.AvroProjection,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = setOf(GeneratedArtifactKind.SCHEMA)
+    }
 
     /**
      * Copies native Avro payload schemas, optionally with SpecificRecord models.
@@ -76,7 +99,10 @@ sealed interface GenerationTask {
      */
     data class NativeAvroArtifacts(
         val schema: SchemaGeneration.NativeAvro,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = withSources(schema.generateSpecificRecords)
+    }
 
     /**
      * Copies native Protobuf payload schemas, optionally with compiled models.
@@ -85,7 +111,10 @@ sealed interface GenerationTask {
      */
     data class NativeProtobufArtifacts(
         val schema: SchemaGeneration.NativeProtobuf,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = withSources(schema.models != null)
+    }
 
     /**
      * Writes Draft 07 JSON Schema files.
@@ -94,5 +123,16 @@ sealed interface GenerationTask {
      */
     data class JsonSchemaArtifacts(
         val schema: SchemaGeneration.JsonSchema,
-    ) : GenerationTask
+    ) : GenerationTask {
+        override val outputKinds: Set<GeneratedArtifactKind>
+            get() = setOf(GeneratedArtifactKind.SCHEMA)
+    }
 }
+
+/** Schemas, plus the sources compiled from them when [compiled]. */
+private fun withSources(compiled: Boolean): Set<GeneratedArtifactKind> =
+    if (compiled) {
+        setOf(GeneratedArtifactKind.SCHEMA, GeneratedArtifactKind.SOURCE)
+    } else {
+        setOf(GeneratedArtifactKind.SCHEMA)
+    }

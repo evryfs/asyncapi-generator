@@ -9,6 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.artifact.NativeAvroArtifact
 import dev.banking.asyncapi.generator.core.generator.artifact.NativeProtobufArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.input.PayloadFormatChecks
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientGeneration
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
@@ -71,6 +72,13 @@ internal class GenerationTasks(
     ) {
         fun validate(context: GenerationContext) = renderer.validate(task, context)
 
-        fun render(context: GenerationContext): GenerationResult = renderer.render(task, context)
+        fun render(context: GenerationContext): GenerationResult =
+            renderer.render(task, context).also { result ->
+                val undeclared = result.artifacts.map(GeneratedArtifact::kind).toSet() - task.outputKinds
+                check(undeclared.isEmpty()) {
+                    "${task::class.simpleName} rendered $undeclared artifacts that its outputKinds do not declare. " +
+                        "This indicates a bug in the generator pipeline."
+                }
+            }
     }
 }
