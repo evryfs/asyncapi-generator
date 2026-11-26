@@ -45,15 +45,16 @@ class SchemaClassificationTest {
     }
 
     @Test
-    fun `recognizes non-enum scalar aliases`() {
+    fun `recognizes scalar aliases, including enums that are not string enums`() {
         assertTrue(Schema(type = JsonSchemaType.Single("string")).isScalarAlias())
         assertTrue(Schema(type = JsonSchemaType.Single("integer")).isScalarAlias())
         assertTrue(Schema(type = JsonSchemaType.Single("number")).isScalarAlias())
         assertTrue(Schema(type = JsonSchemaType.Single("boolean")).isScalarAlias())
+        assertTrue(Schema(type = JsonSchemaType.Single("integer"), enum = listOf(1, 2)).isScalarAlias())
     }
 
     @Test
-    fun `keeps enums and structured schemas as generated models`() {
+    fun `keeps string enums and structured schemas as generated models`() {
         assertFalse(Schema(type = JsonSchemaType.Single("string"), enum = listOf("active")).isScalarAlias())
         assertFalse(Schema(type = JsonSchemaType.Single("object")).isScalarAlias())
         assertFalse(Schema().isScalarAlias())

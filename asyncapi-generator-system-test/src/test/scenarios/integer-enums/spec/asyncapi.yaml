@@ -1,0 +1,32 @@
+asyncapi: 3.0.0
+info:
+  title: Integer enums
+  version: 1.0.0
+channels:
+  readings:
+    address: readings
+    messages:
+      reading:
+        payload:
+          $ref: '#/components/schemas/Reading'
+components:
+  schemas:
+    Reading:
+      type: object
+      required: [level]
+      properties:
+        level:
+          $ref: '#/components/schemas/Level'
+        scale:
+          $ref: '#/components/schemas/Scale'
+        history:
+          type: array
+          items:
+            $ref: '#/components/schemas/Level'
+    Level:
+      description: An alert level; only string enums become enum types.
+      type: integer
+      enum: [1, 2, 3]
+    Scale:
+      type: number
+      enum: [0.5, 1.0, 2.0]

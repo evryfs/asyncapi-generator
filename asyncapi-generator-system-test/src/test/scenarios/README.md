@@ -49,6 +49,7 @@ have to describe the same configuration.
 | [inline-union-properties](inline-union-properties) | Kotlin and Java union types for inline `oneOf` and `anyOf` properties. |
 | [inline-union-members](inline-union-members) | Kotlin and Java models for inline union members, named by title or position. |
 | [titled-open-objects](titled-open-objects) | Titled inline objects without properties typed as maps in Kotlin and Java. |
+| [integer-enums](integer-enums) | Referenced integer and number enums typed as their scalar in Kotlin and Java. |
 | [bundling](bundling) | Bundling a contract split over several files into one `outputFile`, and the `asyncapi-yaml` generator. |
 | [bundle-round-trip](bundle-round-trip) | A multi-file contract with reply channels, reference chains, tuple items, deep pointers, same-named files, and `x-*` extensions, bundled and regenerated from the bundle. |
 | [external-references](external-references) | `$ref` forms across files, external messages, and recursive schemas, for Kotlin and Java. |

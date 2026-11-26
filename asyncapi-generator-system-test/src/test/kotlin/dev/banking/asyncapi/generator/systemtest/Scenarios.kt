@@ -416,6 +416,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "integer-enums",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.integerenums.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.integerenums.java"),
+        ),
+    ),
+    Scenario(
         name = "union-discriminator-values",
         executions = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.discriminators.kotlin"),
