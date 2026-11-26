@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
+import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceAnnotation
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
@@ -39,8 +41,9 @@ internal interface SpringKafkaClientSyntax {
     fun stringLiteral(value: String): String
 
     /** Annotation marking a parameter as nullable or not null; `null` where the type itself says so. */
-    fun nullabilityAnnotation(nullable: Boolean): String?
+    fun nullabilityAnnotation(nullable: Boolean): SourceAnnotation?
 
     /** Jakarta Validation annotations that express [constraints] on a parameter. */
-    fun parameterConstraints(constraints: Constraints): List<String>
+    fun parameterConstraints(constraints: Constraints): List<SourceAnnotation> =
+        ConstraintAnnotationMapper.buildAnnotations(constraints, ::stringLiteral)
 }

@@ -1,19 +1,17 @@
 package dev.banking.asyncapi.generator.core.generator.kotlin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
 import dev.banking.asyncapi.generator.core.generator.jvm.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceAnnotation
 import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
-import dev.banking.asyncapi.generator.core.generator.jvm.SourceMustacheFactory
-import dev.banking.asyncapi.generator.core.generator.jvm.annotationImports
 import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kotlin.model.KotlinClassTemplate
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.generator.output.TemplateRenderer
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.DefaultValue
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.EnumModel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
@@ -25,7 +23,6 @@ import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.rejectReservedNames
-import java.io.StringWriter
 
 /**
  * Renders payload models as Kotlin sources: data classes, enums, sealed interfaces for unions,
@@ -36,8 +33,7 @@ import java.io.StringWriter
 internal class KotlinModelEmitter(
     private val annotation: QualifiedTypeName? = null,
 ) : ModelEmitter {
-    private val mustacheFactory = SourceMustacheFactory("kotlin")
-    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.KOTLIN)
+    private val templates = TemplateRenderer("kotlin", GeneratedArtifactKind.SOURCE)
 
     override fun emit(models: List<ModelDefinition>): GenerationResult {
         models.rejectReservedNames("Kotlin", reservedTypeNames + listOfNotNull(annotation?.simpleName))
@@ -83,7 +79,7 @@ internal class KotlinModelEmitter(
     ): List<String> =
         (
             model.properties.flatMap { it.type.imports(model.packageName, model.name) } +
-                properties.flatMap { annotationImports(it.annotations, "@field:", "Access.") } +
+                properties.flatMap { it.annotationImports } +
                 listOfNotNull(annotation?.value) +
                 listOf("com.fasterxml.jackson.annotation.JsonIgnoreProperties").filter { properties.isEmpty() }
         ).distinct()
@@ -91,18 +87,17 @@ internal class KotlinModelEmitter(
 
     private fun property(property: PropertyDefinition): KotlinProperty {
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forKotlin)
-        val jsonProperty =
-            JsonPropertyAccessAnnotationMapper.annotationFor(
-                property.access,
-                wireName,
-                "@field:JsonProperty",
-            )
+        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.access, wireName)
+        // Annotations go on the backing field; without a wire name, @JsonProperty keeps Kotlin's
+        // default target, the constructor parameter.
         val annotations =
             buildList {
-                if (wireName != null) jsonProperty?.let(::add)
-                addAll(constraintMapper.buildAnnotations(property.constraints))
-                if (wireName == null) jsonProperty?.let(::add)
-                if (property.type.cascadesValidation) add("@field:Valid")
+                if (wireName != null) jsonProperty?.let { add(it to FIELD) }
+                ConstraintAnnotationMapper
+                    .buildAnnotations(property.constraints, SourceLiteralEscaper::forKotlin)
+                    .forEach { add(it to FIELD) }
+                if (wireName == null) jsonProperty?.let { add(it to null) }
+                if (property.type.cascadesValidation) add(VALID to FIELD)
             }
         val type = typeName(property.type)
         val nullable = !property.required || property.nullable
@@ -112,7 +107,8 @@ internal class KotlinModelEmitter(
             description = DocComments.toKDocLines(property.description),
             nullable = nullable,
             defaultValue = property.default?.let { literal(it, type) } ?: "null".takeIf { nullable },
-            annotations = annotations,
+            annotations = annotations.map { (annotation, target) -> annotation.render(target) },
+            annotationImports = annotations.flatMap { (annotation, _) -> annotation.imports },
         )
     }
 
@@ -152,15 +148,7 @@ internal class KotlinModelEmitter(
         model: ModelDefinition,
         templateName: String,
         data: Any,
-    ): GeneratedArtifact {
-        val writer = StringWriter()
-        mustacheFactory.compile(templateName).execute(writer, data).flush()
-        return GeneratedArtifact(
-            relativePath = GeneratedArtifactPaths.fromNamespace(model.packageName, "${model.name}.kt"),
-            content = writer.toString(),
-            kind = GeneratedArtifactKind.SOURCE,
-        )
-    }
+    ): GeneratedArtifact = templates.render(model.packageName, "${model.name}.kt", templateName, data)
 
     private data class KotlinProperty(
         val name: String,
@@ -169,6 +157,7 @@ internal class KotlinModelEmitter(
         val nullable: Boolean,
         val defaultValue: String?,
         val annotations: List<String>,
+        val annotationImports: List<String>,
     ) {
         fun templateFields(last: Boolean): Map<String, Any?> =
             mapOf(
@@ -184,6 +173,9 @@ internal class KotlinModelEmitter(
     }
 
     companion object {
+        private const val FIELD = "field"
+        private val VALID = SourceAnnotation("jakarta.validation.Valid")
+
         /**
          * Types that generated Kotlin models use without qualification: the scalar, collection, and
          * date types, and the Jackson and Jakarta Validation annotations.

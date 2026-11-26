@@ -2,6 +2,7 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceAnnotation
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaHeaderProperty
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaKeyContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.KafkaPayload
@@ -23,6 +24,7 @@ internal class SpringKafkaMethodViews(
     fun consumerMethod(message: SpringKafkaMessageContract): SpringKafkaClientView.ConsumerMethod {
         val payload = message.payload
         val headers = payload.headers(producer = false)
+        val requiredAnnotation = syntax.nullabilityAnnotation(nullable = false)
         return SpringKafkaClientView.ConsumerMethod(
             messageName = payload.messageName,
             methodName = message.consumerMethodName,
@@ -37,7 +39,8 @@ internal class SpringKafkaMethodViews(
             headerProperties = headers,
             payloadParameterAnnotation =
                 validationAnnotations.payloadParameter?.simpleName?.takeIf { payload.hasPayload },
-            requiredHeaderAnnotation = syntax.nullabilityAnnotation(nullable = false)?.removePrefix("@"),
+            requiredHeaderAnnotation = requiredAnnotation?.simpleName,
+            annotationImports = requiredAnnotation?.imports.orEmpty(),
         )
     }
 
@@ -96,6 +99,8 @@ internal class SpringKafkaMethodViews(
     private fun KafkaPayload.headers(producer: Boolean): List<SpringKafkaClientView.HeaderProperty> =
         headerProperties.mapIndexed { index, header ->
             val wireNameLiteral = syntax.stringLiteral(header.wireName)
+            val requiredAnnotation = syntax.nullabilityAnnotation(nullable = false).takeUnless { header.nullable }
+            val nullableAnnotation = syntax.nullabilityAnnotation(nullable = true).takeIf { header.nullable }
             SpringKafkaClientView.HeaderProperty(
                 wireName = header.wireName,
                 wireNameLiteral = wireNameLiteral,
@@ -104,8 +109,13 @@ internal class SpringKafkaMethodViews(
                 description = header.parameterDescription(),
                 required = header.required,
                 defaultValue = if (header.required) null else "null",
-                requiredAnnotation = syntax.nullabilityAnnotation(nullable = false).takeUnless { header.nullable },
-                nullableAnnotation = syntax.nullabilityAnnotation(nullable = true).takeIf { header.nullable },
+                requiredAnnotation = requiredAnnotation?.render(),
+                nullableAnnotation = nullableAnnotation?.render(),
+                annotationImports =
+                    listOfNotNull(
+                        requiredAnnotation,
+                        nullableAnnotation,
+                    ).flatMap(SourceAnnotation::imports),
                 parameterSuffix = if (index == headerProperties.lastIndex) "" else ",",
                 bindingAnnotation =
                     if (producer) "Header(name = \"$wireNameLiteral\", required = ${header.required})" else null,
@@ -129,20 +139,23 @@ internal class SpringKafkaMethodViews(
             } else {
                 "Kafka record key."
             }
+        val constraints = syntax.parameterConstraints(Constraints.of(schema))
+        val nullability = syntax.nullabilityAnnotation(nullable)
         return SpringKafkaClientView.KeyParameter(
             parameterName = parameterName,
             typeName = syntax.typeName(type, nullable),
             description = syntax.docLines(schema.description).ifEmpty { listOf(defaultDescription) },
             required = !nullable,
             annotations =
-                syntax.parameterConstraints(Constraints.of(schema)) +
+                constraints.map { it.render() } +
                     listOfNotNull(
                         validationAnnotations.payloadParameter
                             ?.simpleName
                             ?.takeIf { isModel }
                             ?.let { "@$it" },
-                        syntax.nullabilityAnnotation(nullable),
+                        nullability?.render(),
                     ),
+            annotationImports = (constraints + listOfNotNull(nullability)).flatMap(SourceAnnotation::imports),
             parameterSuffix = if (hasFollowingParameters) "," else "",
         )
     }

@@ -97,6 +97,7 @@ internal sealed interface SpringKafkaClientView {
      * @param headerProperties Header parameters.
      * @param payloadParameterAnnotation Simple name of the annotation on the payload parameter, if configured.
      * @param requiredHeaderAnnotation Simple name of the annotation on required fixed header parameters, if any.
+     * @param annotationImports Imports of the annotation on required fixed header parameters.
      */
     data class ConsumerMethod(
         val messageName: String,
@@ -107,6 +108,7 @@ internal sealed interface SpringKafkaClientView {
         val headerProperties: List<HeaderProperty> = emptyList(),
         val payloadParameterAnnotation: String? = null,
         val requiredHeaderAnnotation: String? = null,
+        val annotationImports: List<String> = emptyList(),
     ) {
         val hasPayload: Boolean get() = payloadType != null
         val hasHeaders: Boolean get() = headerProperties.isNotEmpty()
@@ -158,6 +160,7 @@ internal sealed interface SpringKafkaClientView {
      * @param description Documentation lines of the parameter.
      * @param required Whether the key must be present.
      * @param annotations Annotations on the parameter.
+     * @param annotationImports Imports of the validation and nullability annotations on the parameter.
      * @param parameterSuffix Text after the parameter: a comma when more parameters follow.
      */
     data class KeyParameter(
@@ -166,6 +169,7 @@ internal sealed interface SpringKafkaClientView {
         val description: List<String> = emptyList(),
         val required: Boolean,
         val annotations: List<String> = emptyList(),
+        val annotationImports: List<String> = emptyList(),
         val parameterSuffix: String = "",
     ) {
         val descriptionFirstLine: String? get() = description.firstOrNull()
@@ -184,6 +188,7 @@ internal sealed interface SpringKafkaClientView {
      * @param defaultValue Default argument of an optional header, where the language has default arguments.
      * @param requiredAnnotation Annotation marking the parameter as not null, where the language uses one.
      * @param nullableAnnotation Annotation marking the parameter as nullable, where the language uses one.
+     * @param annotationImports Imports of [requiredAnnotation] and [nullableAnnotation].
      * @param parameterSuffix Text after the parameter: a comma when more parameters follow.
      * @param bindingAnnotation Annotation binding the parameter to its header, on send methods.
      */
@@ -197,6 +202,7 @@ internal sealed interface SpringKafkaClientView {
         val defaultValue: String? = null,
         val requiredAnnotation: String? = null,
         val nullableAnnotation: String? = null,
+        val annotationImports: List<String> = emptyList(),
         val parameterSuffix: String = "",
         val bindingAnnotation: String? = null,
     ) {

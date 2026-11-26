@@ -60,35 +60,3 @@ internal fun TypeRef.imports(
                 }.orEmpty()
         is TypeRef.External -> listOfNotNull(packageName?.let { "$it.$name" })
     }
-
-/**
- * Imports of the Jakarta Validation and Jackson annotations among [annotations].
- *
- * @param annotations Annotations of a property, as written in the source.
- * @param target Annotation prefix including its use-site target, such as `@field:` in Kotlin.
- * @param accessMarker Text that shows an annotation uses `JsonProperty.Access`.
- */
-internal fun annotationImports(
-    annotations: List<String>,
-    target: String,
-    accessMarker: String,
-): List<String> =
-    annotations.flatMap { annotation ->
-        val trimmed = annotation.trim()
-        when {
-            trimmed.startsWith("${target}Valid") -> listOf("jakarta.validation.Valid")
-            trimmed.startsWith("@JsonProperty") || trimmed.startsWith("${target}JsonProperty") ->
-                listOfNotNull(
-                    "com.fasterxml.jackson.annotation.JsonProperty",
-                    "com.fasterxml.jackson.annotation.JsonProperty.Access".takeIf { accessMarker in trimmed },
-                )
-            else ->
-                constraintAnnotations
-                    .firstOrNull { trimmed.startsWith("$target$it") }
-                    ?.let { listOf("jakarta.validation.constraints.$it") }
-                    .orEmpty()
-        }
-    }
-
-private val constraintAnnotations =
-    listOf("NotNull", "Size", "Pattern", "Min", "Max", "DecimalMin", "DecimalMax", "Email")

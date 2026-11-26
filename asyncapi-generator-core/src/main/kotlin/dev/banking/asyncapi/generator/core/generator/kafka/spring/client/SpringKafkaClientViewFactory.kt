@@ -3,7 +3,6 @@ package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
 import dev.banking.asyncapi.generator.core.generator.configuration.TopicParameterProperties
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.JakartaValidationImportResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.NativeKafkaPayloadResolver
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContract
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaChannelContractFactory
@@ -101,21 +100,15 @@ internal class SpringKafkaClientViewFactory(
                     "org.springframework.messaging.handler.annotation.Payload".takeIf {
                         methods.any { method -> method.hasPayload }
                     },
-                    NULLABLE_IMPORT.takeIf {
-                        methods.any { method ->
-                            method.keyParameter.isNullable() ||
-                                method.headerProperties.anyNullable()
-                        }
-                    },
                     validationAnnotations.payloadParameter?.value?.takeIf {
                         methods.any { method -> method.payloadParameterAnnotation != null }
                     },
                 ) +
-                JakartaValidationImportResolver.resolve(
-                    methods.flatMap { method ->
-                        method.keyParameter.annotations() + listOfNotNull(method.requiredHeaderAnnotation)
-                    },
-                )
+                methods.flatMap { method ->
+                    method.annotationImports +
+                        method.keyParameter?.annotationImports.orEmpty() +
+                        method.headerProperties.flatMap { header -> header.annotationImports }
+                }
         ).withClientContractImport()
 
     private fun producerImports(
@@ -134,30 +127,17 @@ internal class SpringKafkaClientViewFactory(
                     "org.springframework.messaging.handler.annotation.Header".takeIf {
                         headers.any { header -> header.bindingAnnotation != null }
                     },
-                    NULLABLE_IMPORT.takeIf {
-                        methods.any { method -> method.keyParameter.isNullable() } || headers.anyNullable()
-                    },
                     validationAnnotations.payloadParameter?.value?.takeIf {
                         methods.any { method -> method.payloadParameterAnnotation != null }
                     },
                 ) +
-                JakartaValidationImportResolver.resolve(
-                    methods.flatMap { method -> method.keyParameter.annotations() } +
-                        headers.mapNotNull { header -> header.requiredAnnotation },
-                )
+                methods.flatMap { method -> method.keyParameter?.annotationImports.orEmpty() } +
+                headers.flatMap { header -> header.annotationImports }
         ).withClientContractImport()
     }
 
     private fun List<String>.withClientContractImport(): List<String> =
         (this + listOfNotNull(validationAnnotations.clientContract?.value)).distinct().sorted()
-
-    private fun SpringKafkaClientView.KeyParameter?.annotations(): List<String> = this?.annotations.orEmpty()
-
-    private fun SpringKafkaClientView.KeyParameter?.isNullable(): Boolean =
-        this != null && syntax.nullabilityAnnotation(nullable = true) in annotations
-
-    private fun List<SpringKafkaClientView.HeaderProperty>.anyNullable(): Boolean =
-        any { header -> header.nullableAnnotation != null }
 
     private fun SpringKafkaChannelContract.contractImports(): List<String> =
         messages.flatMap { message ->
@@ -169,8 +149,4 @@ internal class SpringKafkaClientViewFactory(
                     .orEmpty() +
                 message.payload.headerProperties.flatMap { header -> syntax.imports(header.type, modelPackage) }
         }
-
-    private companion object {
-        const val NULLABLE_IMPORT = "org.springframework.lang.Nullable"
-    }
 }
