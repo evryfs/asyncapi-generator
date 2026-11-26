@@ -524,6 +524,14 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "doc-comments",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.doccomments.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.doccomments.java"),
+            Execution(id = "avro-schemas", generatorName = "avro-schema", schemaPackage = "com.example.doccomments.avro"),
+        ),
+    ),
+    Scenario(
         name = "diagnostics-property-name-collision",
         executions = listOf(
             Execution(id = "property-name-collision", generatorName = "kotlin", modelPackage = "com.example.model"),
