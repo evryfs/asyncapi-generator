@@ -38,7 +38,6 @@ internal object UnionSubtypes {
                         ?.let { schemas[childSchemaName]?.properties?.get(it) }
                         ?.let { discriminatorSchema(it, schemas) }
                         ?.let { it.const?.toString() ?: it.enum?.firstOrNull()?.toString() }
-                        ?.removeSurrounding("\"")
                 UnionSubtype(
                     name = discriminatorValue ?: member.reference.ref.substringAfterLast('/'),
                     type = childSchemaName,

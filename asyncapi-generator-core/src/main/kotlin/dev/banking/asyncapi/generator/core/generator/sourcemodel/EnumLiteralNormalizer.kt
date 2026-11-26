@@ -35,7 +35,7 @@ internal class EnumLiteralNormalizer(
         val originalsByConstant = linkedMapOf<String, MutableList<String>>()
         val constants =
             rawValues.map { rawValue ->
-                val original = rawValue.toEnumLiteral()
+                val original = rawValue.toString()
                 val constant =
                     naming.enumConstant(original)
                         ?: throw InvalidEnum(schemaName = schemaName, literal = original, packageName = packageName)
@@ -55,9 +55,4 @@ internal class EnumLiteralNormalizer(
         }
         return constants
     }
-
-    private fun Any?.toEnumLiteral(): String =
-        toString()
-            .trimStart('"', '\'', '|', '>')
-            .removeSurrounding("\"")
 }

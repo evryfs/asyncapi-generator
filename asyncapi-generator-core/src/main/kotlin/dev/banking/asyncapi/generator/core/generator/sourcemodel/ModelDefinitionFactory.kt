@@ -136,7 +136,7 @@ internal class ModelDefinitionFactory(
         type: TypeRef,
     ): DefaultValue? {
         val raw = schema.default ?: return null
-        val value = raw.toString().trimStart('"', '\'', '|', '>').removeSurrounding("\"")
+        val value = raw.toString()
         return if (type is TypeRef.Named && schemas[type.name]?.enum?.isNotEmpty() == true) {
             DefaultValue.EnumEntry(type.name, naming.enumConstant(value) ?: value)
         } else {

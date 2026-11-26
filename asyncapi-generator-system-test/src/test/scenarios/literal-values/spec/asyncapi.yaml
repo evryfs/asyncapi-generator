@@ -1,0 +1,30 @@
+asyncapi: 3.0.0
+info:
+  title: Literal values
+  version: 1.0.0
+channels:
+  alerts:
+    address: alerts
+    messages:
+      alert:
+        payload:
+          $ref: '#/components/schemas/Alert'
+components:
+  schemas:
+    Alert:
+      type: object
+      properties:
+        note:
+          description: A default that starts with a quote.
+          type: string
+          default: "'quoted'"
+        threshold:
+          description: A default that starts with a YAML block marker.
+          type: string
+          default: '> 5'
+        route:
+          $ref: '#/components/schemas/Route'
+    Route:
+      description: Enum values that start with a quote or a YAML block marker.
+      type: string
+      enum: ['|pipe', "'single'", plain]
