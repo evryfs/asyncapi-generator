@@ -39,27 +39,11 @@ internal class JsonSchemaGenerator(
         val nativeJsonSchemas =
             schemaDeclarations.multiFormatSchemas.filterValues { schema -> schema.format.isJsonSchemaDraft07 }
         val booleanSchemas = schemaDeclarations.booleanSchemas
-        val asyncApiNativeDuplicate = schemas.keys.intersect(nativeJsonSchemas.keys).minOrNull()
-        if (asyncApiNativeDuplicate != null) {
-            throw InvalidJsonSchema(
-                payloadName = asyncApiNativeDuplicate,
-                reason = "Both an AsyncAPI Schema Object and a native JSON Schema use this generated artifact name.",
-            )
-        }
-        val asyncApiBooleanDuplicate = schemas.keys.intersect(booleanSchemas.keys).minOrNull()
-        if (asyncApiBooleanDuplicate != null) {
-            throw InvalidJsonSchema(
-                payloadName = asyncApiBooleanDuplicate,
-                reason = "Both an AsyncAPI Schema Object and a Boolean schema use this generated artifact name.",
-            )
-        }
-        val nativeBooleanDuplicate = nativeJsonSchemas.keys.intersect(booleanSchemas.keys).minOrNull()
-        if (nativeBooleanDuplicate != null) {
-            throw InvalidJsonSchema(
-                payloadName = nativeBooleanDuplicate,
-                reason = "Both a native JSON Schema and a Boolean schema use this generated artifact name.",
-            )
-        }
+        rejectSharedNames(
+            "an AsyncAPI Schema Object" to schemas.keys,
+            "a native JSON Schema" to nativeJsonSchemas.keys,
+            "a Boolean schema" to booleanSchemas.keys,
+        )
 
         val artifacts =
             buildList {
@@ -159,78 +143,47 @@ internal class JsonSchemaGenerator(
             schemaNode.putNull("const")
         }
 
-        normalizeSchemaInterface(schemaNode.get("items"), schema.items)
-        schema.tupleItems?.let { tupleItems ->
-            val tupleArray = objectMapper.createArrayNode()
-            tupleItems.forEach { element ->
-                when (element) {
-                    is SchemaInterface.SchemaInline -> {
-                        val elementNode = objectMapper.valueToTree<ObjectNode>(element.schema)
-                        normalizeAsyncApiSchemaNode(elementNode, element.schema)
-                        tupleArray.add(elementNode)
+        SUBSCHEMA_KEYWORDS.forEach { keyword ->
+            val node = schemaNode.get(keyword.name)
+            when (keyword.shape) {
+                Shape.SINGLE -> normalizeSchemaInterface(node, keyword.value(schema) as? SchemaInterface)
+                Shape.MAP ->
+                    (keyword.value(schema) as? Map<*, *>)?.forEach { (name, value) ->
+                        normalizeSchemaInterface(node?.get(name.toString()), value as? SchemaInterface)
                     }
-                    is SchemaInterface.SchemaReference -> {
-                        val refNode = objectMapper.createObjectNode()
-                        refNode.put($$"$ref", element.reference.ref)
-                        tupleArray.add(refNode)
+                Shape.LIST ->
+                    (keyword.value(schema) as? List<*>)?.forEachIndexed { index, value ->
+                        normalizeSchemaInterface(node?.get(index), value as? SchemaInterface)
                     }
-                    is SchemaInterface.BooleanSchema -> {
-                        tupleArray.add(element.value)
-                    }
-                    else -> {
-                        tupleArray.add(objectMapper.createObjectNode())
-                    }
+            }
+        }
+        schema.tupleItems?.let { tupleItems -> schemaNode.set<JsonNode>("items", tupleArray(tupleItems)) }
+    }
+
+    /** Draft 7 tuple-form `items`: inline members normalized, references and Boolean schemas as written. */
+    private fun tupleArray(tupleItems: List<SchemaInterface>): ArrayNode {
+        val tupleArray = objectMapper.createArrayNode()
+        tupleItems.forEach { element ->
+            when (element) {
+                is SchemaInterface.SchemaInline -> {
+                    val elementNode = objectMapper.valueToTree<ObjectNode>(element.schema)
+                    normalizeAsyncApiSchemaNode(elementNode, element.schema)
+                    tupleArray.add(elementNode)
+                }
+                is SchemaInterface.SchemaReference -> {
+                    val refNode = objectMapper.createObjectNode()
+                    refNode.put($$"$ref", element.reference.ref)
+                    tupleArray.add(refNode)
+                }
+                is SchemaInterface.BooleanSchema -> {
+                    tupleArray.add(element.value)
+                }
+                else -> {
+                    tupleArray.add(objectMapper.createObjectNode())
                 }
             }
-            schemaNode.set<JsonNode>("items", tupleArray)
         }
-        normalizeSchemaInterface(schemaNode.get("additionalItems"), schema.additionalItems)
-        normalizeSchemaInterface(schemaNode.get("contains"), schema.contains)
-        normalizeSchemaMap(schemaNode.get("properties"), schema.properties)
-        normalizeSchemaMap(schemaNode.get("patternProperties"), schema.patternProperties)
-        normalizeSchemaInterface(schemaNode.get("additionalProperties"), schema.additionalProperties)
-        normalizeSchemaInterface(schemaNode.get("propertyNames"), schema.propertyNames)
-        normalizeDependencies(schemaNode.get("dependencies"), schema.dependencies)
-        normalizeSchemaMap(schemaNode.get("definitions"), schema.definitions)
-        normalizeSchemaList(schemaNode.get("allOf"), schema.allOf)
-        normalizeSchemaList(schemaNode.get("anyOf"), schema.anyOf)
-        normalizeSchemaList(schemaNode.get("oneOf"), schema.oneOf)
-        normalizeSchemaInterface(schemaNode.get("not"), schema.not)
-        normalizeSchemaInterface(schemaNode.get("if"), schema.ifSchema)
-        normalizeSchemaInterface(schemaNode.get("then"), schema.thenSchema)
-        normalizeSchemaInterface(schemaNode.get("else"), schema.elseSchema)
-    }
-
-    private fun normalizeSchemaMap(
-        node: JsonNode?,
-        schemas: Map<String, SchemaInterface>?,
-    ) {
-        val objectNode = node as? ObjectNode ?: return
-        schemas?.forEach { (name, schema) ->
-            normalizeSchemaInterface(objectNode.get(name), schema)
-        }
-    }
-
-    private fun normalizeSchemaList(
-        node: JsonNode?,
-        schemas: List<SchemaInterface>?,
-    ) {
-        val arrayNode = node as? ArrayNode ?: return
-        schemas?.forEachIndexed { index, schema ->
-            normalizeSchemaInterface(arrayNode.get(index), schema)
-        }
-    }
-
-    private fun normalizeDependencies(
-        node: JsonNode?,
-        dependencies: Map<String, Any>?,
-    ) {
-        val objectNode = node as? ObjectNode ?: return
-        dependencies?.forEach { (name, dependency) ->
-            if (dependency is SchemaInterface) {
-                normalizeSchemaInterface(objectNode.get(name), dependency)
-            }
-        }
+        return tupleArray
     }
 
     private fun normalizeSchemaInterface(
@@ -260,47 +213,36 @@ internal class JsonSchemaGenerator(
             ?.let(::generatedSchemaReference)
             ?.let { reference -> schemaNode.put($$"$ref", reference) }
 
-        rewriteSchemaMapReferences(schemaNode.get("properties"))
-        rewriteSchemaMapReferences(schemaNode.get("patternProperties"))
-        rewriteSchemaMapReferences(schemaNode.get("definitions"))
-        rewriteDependencyReferences(schemaNode.get("dependencies"))
-        rewriteSchemaNodeReference(schemaNode.get("additionalProperties"))
-        rewriteSchemaNodeReference(schemaNode.get("additionalItems"))
-        rewriteSchemaNodeReference(schemaNode.get("items"))
-        rewriteSchemaNodeReference(schemaNode.get("contains"))
-        rewriteSchemaNodeReference(schemaNode.get("propertyNames"))
-        rewriteSchemaNodeReference(schemaNode.get("not"))
-        rewriteSchemaNodeReference(schemaNode.get("if"))
-        rewriteSchemaNodeReference(schemaNode.get("then"))
-        rewriteSchemaNodeReference(schemaNode.get("else"))
-        rewriteSchemaArrayReferences(schemaNode.get("allOf"))
-        rewriteSchemaArrayReferences(schemaNode.get("anyOf"))
-        rewriteSchemaArrayReferences(schemaNode.get("oneOf"))
-    }
-
-    private fun rewriteSchemaMapReferences(node: JsonNode?) {
-        val objectNode = node as? ObjectNode ?: return
-        objectNode.elements().forEachRemaining(::rewriteSchemaNodeReference)
-    }
-
-    private fun rewriteDependencyReferences(node: JsonNode?) {
-        val objectNode = node as? ObjectNode ?: return
-        objectNode.elements().forEachRemaining { dependency ->
-            if (!dependency.isArray) {
-                rewriteSchemaNodeReference(dependency)
+        SUBSCHEMA_KEYWORDS.forEach { keyword ->
+            val node = schemaNode.get(keyword.name)
+            if (keyword.shape == Shape.MAP) {
+                (node as? ObjectNode)?.elements()?.forEachRemaining(::rewriteSchemaNodeReference)
+            } else {
+                rewriteSchemaNodeReference(node)
             }
         }
     }
 
-    private fun rewriteSchemaArrayReferences(node: JsonNode?) {
-        val arrayNode = node as? ArrayNode ?: return
-        arrayNode.elements().forEachRemaining(::rewriteSchemaNodeReference)
+    /** Rewrites the references of a schema, or of every schema in an array of them. */
+    private fun rewriteSchemaNodeReference(node: JsonNode?) {
+        when (node) {
+            is ObjectNode -> rewriteSchemaReferences(node)
+            is ArrayNode -> node.elements().forEachRemaining(::rewriteSchemaNodeReference)
+            else -> Unit
+        }
     }
 
-    private fun rewriteSchemaNodeReference(node: JsonNode?) {
-        when {
-            node is ObjectNode -> rewriteSchemaReferences(node)
-            node is ArrayNode -> node.elements().forEachRemaining(::rewriteSchemaNodeReference)
+    /** Fails on the first generated artifact name that two kinds of schema both use. */
+    private fun rejectSharedNames(vararg kinds: Pair<String, Set<String>>) {
+        kinds.forEachIndexed { index, (firstKind, firstNames) ->
+            kinds.drop(index + 1).forEach { (secondKind, secondNames) ->
+                firstNames.intersect(secondNames).minOrNull()?.let { name ->
+                    throw InvalidJsonSchema(
+                        payloadName = name,
+                        reason = "Both $firstKind and $secondKind use this generated artifact name.",
+                    )
+                }
+            }
         }
     }
 
@@ -317,7 +259,47 @@ internal class JsonSchemaGenerator(
         return "$generatedName.schema.json$fragment"
     }
 
+    /** How a keyword holds sub-schemas: one schema, a map of named schemas, or a list of schemas. */
+    private enum class Shape { SINGLE, MAP, LIST }
+
+    /**
+     * A keyword whose value holds sub-schemas.
+     *
+     * @property name the keyword
+     * @property shape how the keyword holds its sub-schemas
+     * @property value the keyword's value in a parsed schema
+     */
+    private class SubschemaKeyword(
+        val name: String,
+        val shape: Shape,
+        val value: (Schema) -> Any?,
+    )
+
     private companion object {
+        /**
+         * The Draft 7 keywords that hold sub-schemas, which both passes over a schema visit. Tuple-form
+         * `items` is an array of schemas, so a single `items` keyword visits it too.
+         */
+        val SUBSCHEMA_KEYWORDS =
+            listOf(
+                SubschemaKeyword("items", Shape.SINGLE) { it.items },
+                SubschemaKeyword("additionalItems", Shape.SINGLE) { it.additionalItems },
+                SubschemaKeyword("contains", Shape.SINGLE) { it.contains },
+                SubschemaKeyword("properties", Shape.MAP) { it.properties },
+                SubschemaKeyword("patternProperties", Shape.MAP) { it.patternProperties },
+                SubschemaKeyword("additionalProperties", Shape.SINGLE) { it.additionalProperties },
+                SubschemaKeyword("propertyNames", Shape.SINGLE) { it.propertyNames },
+                SubschemaKeyword("dependencies", Shape.MAP) { it.dependencies },
+                SubschemaKeyword("definitions", Shape.MAP) { it.definitions },
+                SubschemaKeyword("allOf", Shape.LIST) { it.allOf },
+                SubschemaKeyword("anyOf", Shape.LIST) { it.anyOf },
+                SubschemaKeyword("oneOf", Shape.LIST) { it.oneOf },
+                SubschemaKeyword("not", Shape.SINGLE) { it.not },
+                SubschemaKeyword("if", Shape.SINGLE) { it.ifSchema },
+                SubschemaKeyword("then", Shape.SINGLE) { it.thenSchema },
+                SubschemaKeyword("else", Shape.SINGLE) { it.elseSchema },
+            )
+
         const val DRAFT_07_SCHEMA_URI = "http://json-schema.org/draft-07/schema#"
         const val COMPONENT_SCHEMA_REFERENCE_PREFIX = "#/components/schemas/"
 

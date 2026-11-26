@@ -154,7 +154,9 @@ nullability, and documentation markup, come from a `SpringKafkaClientSyntax`:
 - `protobuf`: native Protobuf schemas and `protoc` compilation
   (`NativeProtobufGenerator`), with `ProtocProvider` implementations for each
   frontend.
-- `jsonschema`: Draft 7 files (`JsonSchemaGenerator`).
+- `jsonschema`: Draft 7 files (`JsonSchemaGenerator`). One table lists the
+  keywords that hold sub-schemas; both passes over a schema, removing
+  AsyncAPI-only fields and rewriting component references, walk it.
 
 ## Tests
 
