@@ -4,6 +4,9 @@ import java.io.File
 
 /**
  * Rendered bundled-document output targeting an explicitly configured file.
+ *
+ * @param file the file the document is written to
+ * @param content the document content
  */
 data class GeneratedDocumentArtifact(
     val file: File,

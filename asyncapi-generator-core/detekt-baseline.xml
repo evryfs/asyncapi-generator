@@ -26,7 +26,6 @@
     <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$GeneratedArtifactCollision : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidAvroName : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidEnum : AsyncApiGeneratorException</ID>
     <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidJsonSchema : AsyncApiGeneratorException</ID>

@@ -250,7 +250,8 @@ as well. The rules protect other content:
   cooperate through the shared manifest.
 - The bundled document at `outputFile` is not recorded and is never deleted.
 - An execution that is renamed or removed from the build no longer runs, so
-  its earlier files stay until the build directory is cleaned.
+  its earlier files stay, and other executions treat them as still generated,
+  until the build directory is cleaned (`mvn clean` or `gradle clean`).
 
 The CLI keeps no manifest and never deletes files. No frontend rewrites a file
 whose content did not change, so its timestamp is preserved.
