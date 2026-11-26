@@ -73,6 +73,8 @@ generation, naming both locations; give one a `title` or move it to
 | String enum                              | `enum class`                                                                   | `enum`                                                            |
 | `oneOf` or `anyOf` of object schemas     | `sealed interface` implemented by the member classes                           | `interface` implemented by the member classes                     |
 | Object without properties                | `typealias Name = Any`; properties of that type are `Any`                      | No file; properties of that type are `Object`                     |
+| Property schema `true` (any value)       | `Any`                                                                          | `Object`                                                          |
+| Property schema `false` (no value)       | Generation fails, naming the property                                          | Same                                                              |
 | `additionalProperties` schema            | `Map<String, T>`                                                               | `Map<String, T>`                                                  |
 | Array                                    | `List<T>`                                                                      | `List<T>`                                                         |
 | `string` with `format` `uuid`, `date`, `date-time`, `time` | `UUID`, `LocalDate`, `OffsetDateTime`, `LocalTime`         | Same Java types                                                   |

@@ -1,0 +1,20 @@
+asyncapi: 3.0.0
+info:
+  title: Any-value properties
+  version: 1.0.0
+channels:
+  events:
+    address: events
+    messages:
+      event:
+        payload:
+          $ref: '#/components/schemas/Event'
+components:
+  schemas:
+    Event:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        details: true

@@ -378,6 +378,10 @@ private val allScenarios: List<Scenario> = listOf(
         expectedFailure = ExpectedFailure(messages = listOf("property 'details'", "Avro has no type")),
     ),
     invalidContract(
+        name = "false-property",
+        expected = ExpectedFailure(messages = listOf("properties['legacy']", "a property schema 'false'")),
+    ),
+    invalidContract(
         name = "recursive-yaml-alias",
         expected = ExpectedFailure(messages = listOf("Recursive YAML alias", "next")),
     ),
@@ -529,6 +533,13 @@ private val allScenarios: List<Scenario> = listOf(
             Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.doccomments.kotlin"),
             Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.doccomments.java"),
             Execution(id = "avro-schemas", generatorName = "avro-schema", schemaPackage = "com.example.doccomments.avro"),
+        ),
+    ),
+    Scenario(
+        name = "any-value-properties",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.anyvalues.kotlin"),
+            Execution(id = "java-models", generatorName = "java", modelPackage = "com.example.anyvalues.java"),
         ),
     ),
     Scenario(
