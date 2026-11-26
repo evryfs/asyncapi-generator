@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConf
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputCompatibilityValidator
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
-import dev.banking.asyncapi.generator.core.generator.kafka.spring.SpringKafkaClientGeneration
+import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientGeneration
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
@@ -34,12 +34,12 @@ class AsyncApiGenerator(
     private val generationInputCompatibilityValidator = GenerationInputCompatibilityValidator()
     private val generationPlanner = GenerationPlanner()
     private val documentArtifactGeneration = DocumentArtifactGeneration()
-    private val modelArtifactGeneration = ModelArtifactGeneration()
+    private val modelArtifactGeneration = ModelArtifactGeneration(SourceTargets::of)
     private val avroSchemaArtifactGeneration = AvroSchemaArtifactGeneration()
     private val jsonSchemaArtifactGeneration = JsonSchemaArtifactGeneration()
     private val nativeAvroArtifactGeneration = NativeAvroArtifactGeneration()
     private val nativeProtobufArtifactGeneration = NativeProtobufArtifactGeneration(protocProvider)
-    private val springKafkaClientGeneration = SpringKafkaClientGeneration()
+    private val springKafkaClientGeneration = SpringKafkaClientGeneration { SourceTargets.of(it).clientSyntax }
 
     fun generate(
         bundled: BundledAsyncApiDocument,

@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.generator.SourceTargets
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
@@ -12,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ModelArtifactGenerationTest {
-    private val generation = ModelArtifactGeneration()
+    private val generation = ModelArtifactGeneration(SourceTargets::of)
     private val fixtures = GenerationInputFixtures()
     private val modelAnnotation =
         QualifiedTypeName.fromConfigurationValue(
