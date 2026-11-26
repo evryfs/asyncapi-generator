@@ -66,9 +66,11 @@ Each execution also has its own task. The `models` execution above creates `gene
 
 By default, that execution writes generated files below
 `build/generated/asyncapi/models`. When the `java` or
-`org.jetbrains.kotlin.jvm` plugin is applied, the output directory is added to
-the `main` source set (Java and Kotlin sources, and schema files as
-resources), and compilation depends on the generation task automatically.
+`org.jetbrains.kotlin.jvm` plugin is applied, an execution that generates
+sources adds the output directory to the `main` Java and Kotlin sources, and
+one that generates schemas adds its schema files to `processResources`.
+Compilation and resource processing depend on the generation task
+automatically, and the project's own resources are left as they are.
 
 ## Configure models
 

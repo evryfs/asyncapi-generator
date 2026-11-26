@@ -543,6 +543,13 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "project-resources",
+        executions = listOf(
+            Execution(id = "kotlin-models", generatorName = "kotlin", modelPackage = "com.example.projectresources.kotlin"),
+            Execution(id = "avro-schemas", generatorName = "avro-schema", schemaPackage = "com.example.projectresources.avro"),
+        ),
+    ),
+    Scenario(
         name = "diagnostics-property-name-collision",
         executions = listOf(
             Execution(id = "property-name-collision", generatorName = "kotlin", modelPackage = "com.example.model"),

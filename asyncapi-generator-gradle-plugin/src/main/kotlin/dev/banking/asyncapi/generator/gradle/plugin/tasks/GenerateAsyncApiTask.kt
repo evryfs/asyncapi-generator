@@ -4,7 +4,9 @@ import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
 import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
+import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.gradle.api.DefaultTask
@@ -123,18 +125,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
         val generatorConfiguration =
             GeneratorConfigurationFactory.create(
-                GeneratorSettings(
-                    generatorName = generatorName.orNull,
-                    outputDirectory = outputDirectory.get().asFile,
-                    outputFile = outputFile.orNull?.asFile,
-                    modelPackage = modelPackage.orNull,
-                    clientPackage = clientPackage.orNull,
-                    schemaPackage = schemaPackage.orNull,
-                    modelConfig = modelConfiguration(),
-                    clientConfig = clientConfiguration(),
-                    suppressedWarnings = suppressedWarnings.get().distinct(),
-                    manifest = GeneratedOutputManifest(outputManifest.get().asFile, executionName.get()),
-                ),
+                settings().copy(manifest = GeneratedOutputManifest(outputManifest.get().asFile, executionName.get())),
             )
         generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { logger.warn(it.trimEnd()) }
         val loaded = AsyncApiDocumentLoader().load(inputSpec.get().asFile)
@@ -148,6 +139,28 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
         logger.lifecycle("AsyncAPI generation '$name' completed")
     }
+
+    /**
+     * The kinds of artifact this execution writes under [outputDirectory], which decide whether the
+     * plugin compiles the directory, packages it as resources, or both. While the configuration is
+     * invalid it is every kind: this task reports the configuration error itself when it runs.
+     */
+    fun outputKinds(): Set<GeneratedArtifactKind> =
+        runCatching { GenerationPlanner().plan(GeneratorConfigurationFactory.create(settings())).outputKinds }
+            .getOrDefault(GeneratedArtifactKind.entries.toSet())
+
+    private fun settings(): GeneratorSettings =
+        GeneratorSettings(
+            generatorName = generatorName.orNull,
+            outputDirectory = outputDirectory.get().asFile,
+            outputFile = outputFile.orNull?.asFile,
+            modelPackage = modelPackage.orNull,
+            clientPackage = clientPackage.orNull,
+            schemaPackage = schemaPackage.orNull,
+            modelConfig = modelConfiguration(),
+            clientConfig = clientConfiguration(),
+            suppressedWarnings = suppressedWarnings.get().distinct(),
+        )
 
     private fun modelConfiguration(): GeneratorSettings.ModelConfig? =
         if (modelAnnotation.isPresent || modelType.isPresent) {

@@ -84,8 +84,8 @@ Package `configuration` turns what a user configured into a
    needs a `GenerationTask` subtype that declares its `outputKinds`, a planner
    branch, a renderer, and one branch in `GenerationTasks`. A task that renders
    a kind it does not declare fails, so the declaration stays true; the Maven
-   plugin reads the plan's `outputKinds` to decide whether the output
-   directory is compiled, packaged as resources, or both.
+   and Gradle plugins read the plan's `outputKinds` to decide whether the
+   output directory is compiled, packaged as resources, or both.
 5. **Write** (`output`). Every artifact is written under the one output
    directory at its relative path; its kind, `SOURCE` or `SCHEMA`, says
    whether the build compiles it or packages it as a resource. Bundled
