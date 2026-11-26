@@ -187,6 +187,15 @@ internal class JavaModelEmitter(
         data: Any,
     ): GeneratedArtifact = templates.render(model.packageName, "${model.name}.java", templateName, data)
 
+    /**
+     * A class or record property, ready for the template.
+     *
+     * @property name the property identifier
+     * @property type the property type
+     * @property description the Javadoc lines
+     * @property annotations the annotations as source text
+     * @property annotationImports the imports the annotations need
+     */
     private data class JavaProperty(
         val name: String,
         val type: TypeRef,

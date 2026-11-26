@@ -7,10 +7,15 @@ import org.apache.avro.Schema
 
 /**
  * Parses native Avro `schemaFormat` payloads into Apache Avro schemas.
+ *
+ * @param objectMapper writes schema content given as YAML or a map as JSON
  */
 internal class NativeAvroSchemaParser(
     private val objectMapper: ObjectMapper = ObjectMapper(),
 ) {
+    // Apache Avro reports an invalid schema with several unchecked exception types; each one means
+    // the payload's schema is invalid.
+    @Suppress("TooGenericExceptionCaught")
     fun parse(
         payloadName: String,
         schema: MultiFormatSchema,
@@ -26,9 +31,7 @@ internal class NativeAvroSchemaParser(
         }
 
     fun schemaJson(schema: Any?): String {
-        if (schema == null) {
-            throw IllegalArgumentException("Missing Avro schema content")
-        }
+        requireNotNull(schema) { "Missing Avro schema content" }
 
         if (schema is String && schema.trim().startsWithJsonContainer()) {
             return schema.trim()

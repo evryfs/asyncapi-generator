@@ -150,6 +150,17 @@ internal class KotlinModelEmitter(
         data: Any,
     ): GeneratedArtifact = templates.render(model.packageName, "${model.name}.kt", templateName, data)
 
+    /**
+     * A data class property, ready for the template.
+     *
+     * @property name the property identifier
+     * @property type the Kotlin type name
+     * @property description the KDoc lines
+     * @property nullable whether the type is nullable
+     * @property defaultValue the default as Kotlin source; null without one
+     * @property annotations the annotations as source text
+     * @property annotationImports the imports the annotations need
+     */
     private data class KotlinProperty(
         val name: String,
         val type: String,

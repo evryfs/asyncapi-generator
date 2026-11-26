@@ -17,6 +17,9 @@ import java.nio.file.Path
 /**
  * Renders native Protobuf `schemaFormat` payloads into `.proto` artifacts and
  * optional Java or Kotlin model APIs.
+ *
+ * @param protocProvider supplies the `protoc` executable that compiles the models
+ * @param protocVersion the `protoc` version to use
  */
 internal class NativeProtobufGenerator(
     private val protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
@@ -70,60 +73,68 @@ internal class NativeProtobufGenerator(
         models: ProtobufModelGeneration,
     ): List<GeneratedArtifact> {
         validateModelGenerationSupport(parsedSchema, models)
-
-        val workspaceDirectory =
+        return failingAsModelGeneration(parsedSchema, models) {
+            val workspaceDirectory = Files.createTempDirectory("asyncapi-native-protobuf-")
             try {
-                Files.createTempDirectory("asyncapi-native-protobuf-")
-            } catch (ex: IOException) {
-                throw protobufModelGenerationFailed(parsedSchema, models, ex)
+                compileModels(parsedSchema, models, workspaceDirectory)
+            } finally {
+                workspaceDirectory.toFile().deleteRecursively()
             }
-        val sourceDirectory = workspaceDirectory.resolve("schemas")
+        }
+    }
+
+    /** The Java, and for Kotlin also Kotlin, sources protoc writes for [parsedSchema] in [workspaceDirectory]. */
+    private fun compileModels(
+        parsedSchema: ParsedNativeProtobufSchema,
+        models: ProtobufModelGeneration,
+        workspaceDirectory: Path,
+    ): List<GeneratedArtifact> {
+        val sourceDirectory = Files.createDirectory(workspaceDirectory.resolve("schemas"))
         val sourceSchemaFile = sourceDirectory.resolve("${parsedSchema.payloadName}.proto")
-        val destinationDirectory = workspaceDirectory.resolve("java")
+        val destinationDirectory = Files.createDirectory(workspaceDirectory.resolve("java"))
         val kotlinDestinationDirectory =
-            models.modelType
-                .takeIf { it == ProtobufModelType.KOTLIN }
-                ?.let { workspaceDirectory.resolve("kotlin") }
+            workspaceDirectory.resolve("kotlin").takeIf { models.modelType == ProtobufModelType.KOTLIN }
+        kotlinDestinationDirectory?.let(Files::createDirectory)
+        Files.writeString(sourceSchemaFile, parsedSchema.protobufSchema.content.trimEnd() + System.lineSeparator())
+        val compilerArguments =
+            listOfNotNull(
+                "--proto_path=${sourceDirectory.toAbsolutePath()}",
+                "--java_out=${destinationDirectory.toAbsolutePath()}",
+                kotlinDestinationDirectory?.let { "--kotlin_out=${it.toAbsolutePath()}" },
+                sourceSchemaFile.fileName.toString(),
+            )
+        val (exitCode, output) = runProtoc(compilerArguments, workspaceDirectory)
+        if (exitCode != 0) {
+            throw NativeProtobufModelGenerationFailed(
+                payloadName = parsedSchema.payloadName,
+                schemaFormat = parsedSchema.schema.schemaFormat,
+                modelType = models.modelType.name.lowercase(),
+                reason = "protoc exited with status code $exitCode: ${output.trim()}",
+            )
+        }
+        return generatedSourceArtifacts(destinationDirectory, ".java", GeneratedArtifactKind.JAVA_SOURCE) +
+            kotlinDestinationDirectory
+                ?.let { generatedSourceArtifacts(it, ".kt", GeneratedArtifactKind.SOURCE) }
+                .orEmpty()
+    }
 
+    // Running protoc reports failures with I/O exceptions and several unchecked exception types; each
+    // one fails model generation of this payload, except a failure that already says so.
+    @Suppress("TooGenericExceptionCaught")
+    private fun <T> failingAsModelGeneration(
+        parsedSchema: ParsedNativeProtobufSchema,
+        models: ProtobufModelGeneration,
+        generation: () -> T,
+    ): T =
         try {
-            Files.createDirectory(sourceDirectory)
-            Files.createDirectory(destinationDirectory)
-            kotlinDestinationDirectory?.let(Files::createDirectory)
-            Files.writeString(sourceSchemaFile, parsedSchema.protobufSchema.content.trimEnd() + System.lineSeparator())
-            val compilerArguments =
-                buildList {
-                    add("--proto_path=${sourceDirectory.toAbsolutePath()}")
-                    add("--java_out=${destinationDirectory.toAbsolutePath()}")
-                    kotlinDestinationDirectory?.let { add("--kotlin_out=${it.toAbsolutePath()}") }
-                    add(sourceSchemaFile.fileName.toString())
-                }
-            val (exitCode, output) = runProtoc(compilerArguments, workspaceDirectory)
-
-            if (exitCode != 0) {
-                throw NativeProtobufModelGenerationFailed(
-                    payloadName = parsedSchema.payloadName,
-                    schemaFormat = parsedSchema.schema.schemaFormat,
-                    modelType = models.modelType.name.lowercase(),
-                    reason = "protoc exited with status code $exitCode: ${output.trim()}",
-                )
-            }
-
-            return buildList {
-                addAll(generatedSourceArtifacts(destinationDirectory, ".java", GeneratedArtifactKind.JAVA_SOURCE))
-                kotlinDestinationDirectory?.let { kotlinDirectory ->
-                    addAll(generatedSourceArtifacts(kotlinDirectory, ".kt", GeneratedArtifactKind.SOURCE))
-                }
-            }
+            generation()
         } catch (ex: NativeProtobufModelGenerationFailed) {
             throw ex
         } catch (ex: IOException) {
             throw protobufModelGenerationFailed(parsedSchema, models, ex)
         } catch (ex: RuntimeException) {
             throw protobufModelGenerationFailed(parsedSchema, models, ex)
-        } finally {
-            workspaceDirectory.toFile().deleteRecursively()
         }
-    }
 
     /** Runs protoc in [workingDirectory]; returns its exit code and combined output. */
     private fun runProtoc(
@@ -145,46 +156,27 @@ internal class NativeProtobufGenerator(
     ) {
         val protobufSchema = parsedSchema.protobufSchema
         val payloadName = parsedSchema.payloadName
-        val schemaFormat = parsedSchema.schema.schemaFormat
         val schemaPackageName = protobufSchema.javaPackageName ?: protobufSchema.protoPackageName
-
-        if (schemaPackageName.isNullOrBlank()) {
-            throw InvalidNativeProtobufSchema(
-                payloadName = payloadName,
-                schemaFormat = schemaFormat,
-                reason =
+        val reason =
+            when {
+                schemaPackageName.isNullOrBlank() ->
                     "Protobuf model generation requires either `option java_package = \"...\";` " +
-                        "or a `package ...;` declaration.",
-            )
-        }
-
-        if (schemaPackageName != models.packageName) {
-            throw InvalidNativeProtobufSchema(
-                payloadName = payloadName,
-                schemaFormat = schemaFormat,
-                reason =
+                        "or a `package ...;` declaration."
+                schemaPackageName != models.packageName ->
                     "Configured model package '${models.packageName}' must match the Protobuf Java package " +
-                        "'$schemaPackageName'.",
-            )
-        }
-
-        if (protobufSchema.javaMultipleFiles != true) {
-            throw InvalidNativeProtobufSchema(
-                payloadName = payloadName,
-                schemaFormat = schemaFormat,
-                reason =
+                        "'$schemaPackageName'."
+                protobufSchema.javaMultipleFiles != true ->
                     "Protobuf model generation requires `option java_multiple_files = true;` " +
-                        "so the payload message is generated as a top-level Java class.",
-            )
-        }
-
-        if (payloadName !in protobufSchema.messageNames) {
-            throw InvalidNativeProtobufSchema(
-                payloadName = payloadName,
-                schemaFormat = schemaFormat,
-                reason = "Protobuf model generation requires a top-level message named '$payloadName'.",
-            )
-        }
+                        "so the payload message is generated as a top-level Java class."
+                payloadName !in protobufSchema.messageNames ->
+                    "Protobuf model generation requires a top-level message named '$payloadName'."
+                else -> return
+            }
+        throw InvalidNativeProtobufSchema(
+            payloadName = payloadName,
+            schemaFormat = parsedSchema.schema.schemaFormat,
+            reason = reason,
+        )
     }
 
     private fun generatedSourceArtifacts(
@@ -222,6 +214,13 @@ internal class NativeProtobufGenerator(
         )
 }
 
+/**
+ * A native Protobuf payload and its parsed declarations.
+ *
+ * @property payloadName the payload name
+ * @property schema the Multi Format Schema of the payload
+ * @property protobufSchema the declarations of its `.proto` content
+ */
 private data class ParsedNativeProtobufSchema(
     val payloadName: String,
     val schema: MultiFormatSchema,

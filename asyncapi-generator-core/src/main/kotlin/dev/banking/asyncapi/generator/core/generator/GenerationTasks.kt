@@ -58,7 +58,13 @@ internal class GenerationTasks(
             is GenerationTask.JsonSchemaArtifacts -> BoundTask(task, jsonSchemas)
         }
 
-    /** A task with the renderer of its type. */
+    /**
+     * A task with the renderer of its type.
+     *
+     * @param T the type of the task
+     * @param task the planned task
+     * @param renderer the renderer of tasks of its type
+     */
     private class BoundTask<T : GenerationTask>(
         private val task: T,
         private val renderer: TaskRenderer<T>,
