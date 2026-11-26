@@ -48,8 +48,7 @@ Package `configuration` turns what a user configured into a
    plans, such as `ClientGeneration` or a `SchemaGeneration`, so a setting is
    defined once. The planner adds only the order, the source language of the
    client, and the Kafka key-model task, which a client needs when native Avro
-   or Protobuf models carry the payloads. A request that only writes documents
-   skips the remaining stages.
+   or Protobuf models carry the payloads.
 2. **Prepare input** (`catalog`, `normalizer`, `analyzer`, `messaging`, `input`).
    `GenerationInputFactory` builds the schema catalog, then analyzes channels:
    - `SchemaCatalogLoader` declares every component schema and every message
@@ -71,14 +70,19 @@ Package `configuration` turns what a user configured into a
      and its `KafkaKey`. The Kafka key is analyzed once, with the name of its
      model when it is an object; the schema catalog declares that model from
      the same analysis.
-3. **Check compatibility** (`input`). `GenerationInputCompatibilityValidator`
-   checks the prepared input against the planned tasks, for example that
-   native payloads have an output that handles them and that native model
-   packages match the schemas. These are target-specific failures; see
+3. **Check compatibility** (`task`). `GenerationTasks` pairs every planned
+   task with the `TaskRenderer` of its type and calls `validate` on each, for
+   example to check that native model packages match the schemas. Then
+   `PayloadFormatChecks` checks that every native payload has an output that
+   handles it. These are target-specific failures; see
    [Validation boundary](../contributing/validation-boundary.md).
-4. **Render** (`artifact` and the format packages). Each task renders
-   `GeneratedArtifact`s in memory. Nothing is written until every task has
-   rendered.
+4. **Render** (`artifact`, `kafka.spring.client` and the format packages).
+   Each task renders `GeneratedArtifact`s in memory, from a
+   `GenerationContext` that prepares the input of stage 2 only when a task
+   first needs it, so a request that only writes documents never analyzes
+   schemas. Nothing is written until every task has rendered. A new task type
+   needs a `GenerationTask` subtype, a planner branch, a renderer, and one
+   branch in `GenerationTasks`.
 5. **Write** (`output`). `FileSystemGeneratedArtifactWriter` rejects two
    artifacts with the same destination, stages every file, skips files whose
    content is unchanged, and replaces the rest atomically where the file

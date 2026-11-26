@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -19,7 +20,7 @@ class AvroSchemaArtifactGenerationTest {
                     GenerationTask.AvroSchemaArtifacts(
                         SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
                     ),
-                generationInput = fixtures.generationInputWithObjectEnumAndPrimitive(),
+                context = generationContext(fixtures.generationInputWithObjectEnumAndPrimitive()),
             )
 
         assertEquals(

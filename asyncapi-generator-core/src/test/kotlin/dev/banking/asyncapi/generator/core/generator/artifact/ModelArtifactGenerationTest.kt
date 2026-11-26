@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.generator.SourceTargets
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
@@ -24,7 +25,7 @@ class ModelArtifactGenerationTest {
     @Test
     fun `render model artifacts applies configured annotation to Kotlin models`() {
         val result =
-            generation.renderModelArtifacts(
+            generation.render(
                 task =
                     GenerationTask.ModelArtifacts(
                         ModelGeneration.Enabled(
@@ -45,7 +46,7 @@ class ModelArtifactGenerationTest {
     @Test
     fun `render model artifacts applies configured annotation to Java classes`() {
         val result =
-            generation.renderModelArtifacts(
+            generation.render(
                 task =
                     GenerationTask.ModelArtifacts(
                         ModelGeneration.Enabled(
@@ -70,13 +71,13 @@ class ModelArtifactGenerationTest {
     @Test
     fun `render Kafka key model artifacts returns only native payload key models`() {
         val result =
-            generation.renderKafkaKeyModelArtifacts(
+            KafkaKeyModelArtifactGeneration(generation).render(
                 task =
                     GenerationTask.KafkaKeyModelArtifacts(
                         language = SourceLanguage.KOTLIN,
                         packageName = "com.example.model",
                     ),
-                generationInput = fixtures.generationInputWithNativeAvroMessageAndObjectKey(),
+                context = generationContext(fixtures.generationInputWithNativeAvroMessageAndObjectKey()),
             )
 
         assertEquals(
@@ -88,7 +89,7 @@ class ModelArtifactGenerationTest {
     @Test
     fun `render model artifacts returns Java records when configured`() {
         val result =
-            generation.renderModelArtifacts(
+            generation.render(
                 task =
                     GenerationTask.ModelArtifacts(
                         ModelGeneration.Enabled(

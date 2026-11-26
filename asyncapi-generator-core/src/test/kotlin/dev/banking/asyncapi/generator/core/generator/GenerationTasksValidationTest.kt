@@ -1,6 +1,7 @@
-package dev.banking.asyncapi.generator.core.generator.input
+package dev.banking.asyncapi.generator.core.generator
 
 import dev.banking.asyncapi.generator.core.fixtures.analyzedMessage
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.fixtures.nativeMessage
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
@@ -11,11 +12,13 @@ import dev.banking.asyncapi.generator.core.generator.configuration.ModelGenerati
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedChannel
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessage
 import dev.banking.asyncapi.generator.core.generator.messaging.AnalyzedMessageHeaders
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlan
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
+import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.generator.schema.SchemaDeclarationCatalog
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
@@ -28,12 +31,17 @@ import java.io.File
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class GenerationInputCompatibilityValidatorTest {
-    private val validator = GenerationInputCompatibilityValidator()
+class GenerationTasksValidationTest {
+    private val tasks = GenerationTasks(MavenRepositoryProtocProvider())
+
+    private fun validate(
+        generationInput: GenerationInput,
+        generationPlan: GenerationPlan,
+    ) = tasks.validate(generationContext(generationInput, generationPlan))
 
     @Test
     fun `allows asyncapi schema object input for model and avro projection tasks`() {
-        validator.validate(
+        validate(
             generationInput =
                 generationInputOf(
                     schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
@@ -175,7 +183,7 @@ class GenerationInputCompatibilityValidatorTest {
         val selectedKey = Schema(type = JsonSchemaType.Single("object"))
         val unrelatedPayload = Schema(tupleItems = listOf(inline(Schema(type = JsonSchemaType.Single("string")))))
 
-        validator.validate(
+        validate(
             generationInput =
                 generationInputOf(
                     schemas =
@@ -224,7 +232,7 @@ class GenerationInputCompatibilityValidatorTest {
         val selectedKey = Schema(items = SchemaInterface.BooleanSchema(false))
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputOf(
                             schemas = mapOf("SelectedKey" to selectedKey),
@@ -272,7 +280,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `active spring kafka rejects a Java incompatible ordinary message key pattern`() {
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
-                validator.validate(
+                validate(
                     generationInput =
                         inputWithMessage(
                             analyzedMessage(
@@ -293,7 +301,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `active spring kafka allows an object key with a nested Java incompatible pattern`() {
-        validator.validate(
+        validate(
             generationInput =
                 inputWithMessage(
                     analyzedMessage(
@@ -322,7 +330,7 @@ class GenerationInputCompatibilityValidatorTest {
         val schema = nativeAvroSchema()
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = emptyMap(),
@@ -363,7 +371,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `spring kafka key pattern validation does not inspect payload or header patterns`() {
-        validator.validate(
+        validate(
             generationInput =
                 inputWithMessage(
                     analyzedMessage(
@@ -401,7 +409,7 @@ class GenerationInputCompatibilityValidatorTest {
                 channels = emptyList(),
             )
 
-        validator.validate(
+        validate(
             generationInput = input,
             generationPlan =
                 GenerationPlan(
@@ -412,7 +420,7 @@ class GenerationInputCompatibilityValidatorTest {
                     ),
                 ),
         )
-        validator.validate(
+        validate(
             generationInput = input,
             generationPlan =
                 GenerationPlan(
@@ -429,7 +437,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects multi format schemas for model generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput = generationInputWithMultiFormatSchema(),
                     generationPlan =
                         GenerationPlan(
@@ -453,7 +461,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects multi format schemas for avro projection`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput = generationInputWithMultiFormatSchema(),
                     generationPlan =
                         GenerationPlan(
@@ -472,7 +480,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows native Avro schemas when Avro schema generation includes native artifacts`() {
-        validator.validate(
+        validate(
             generationInput = generationInputWithMultiFormatSchema(),
             generationPlan =
                 GenerationPlan(
@@ -493,7 +501,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows native Protobuf schemas when dedicated generation is planned with Avro projection`() {
-        validator.validate(
+        validate(
             generationInput =
                 GenerationInput(
                     schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
@@ -522,7 +530,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects multi format schemas without their dedicated generation task alongside Avro projection`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
@@ -558,7 +566,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects unhandled native format when only one format has a generation task`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
@@ -590,7 +598,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows mixed formats when both have generation tasks`() {
-        validator.validate(
+        validate(
             generationInput =
                 GenerationInput(
                     schemas = mapOf("Account" to Schema(type = JsonSchemaType.Single("object"))),
@@ -619,7 +627,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows Boolean-only input for JSON Schema generation`() {
-        validator.validate(
+        validate(
             generationInput =
                 GenerationInput(
                     schemas = emptyMap(),
@@ -643,7 +651,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows native Avro model package matching the schema namespace`() {
-        validator.validate(
+        validate(
             generationInput =
                 generationInputWithMultiFormatSchema(
                     namespace = "com.example.avro",
@@ -666,7 +674,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects native Avro model package differing from the schema namespace`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputWithMultiFormatSchema(
                             namespace = "com.example.contract",
@@ -694,7 +702,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects configured native Avro model package when the schema has no namespace`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
-                validator.validate(
+                validate(
                     generationInput = generationInputWithMultiFormatSchema(),
                     generationPlan =
                         GenerationPlan(
@@ -717,7 +725,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects AsyncAPI Schema Objects for native Protobuf generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputOf(
                             schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
@@ -743,7 +751,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects native Avro schemas for native Protobuf generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
-                validator.validate(
+                validate(
                     generationInput = generationInputWithMultiFormatSchema(),
                     generationPlan =
                         GenerationPlan(
@@ -763,7 +771,7 @@ class GenerationInputCompatibilityValidatorTest {
     @Test
     fun `allows AsyncAPI and native Draft 07 schemas for JSON Schema generation`() {
         val userCreatedSchema = Schema(type = JsonSchemaType.Single("object"))
-        validator.validate(
+        validate(
             generationInput =
                 GenerationInput(
                     schemas = mapOf("UserCreated" to userCreatedSchema),
@@ -797,7 +805,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects incompatible native formats for JSON Schema generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
-                validator.validate(
+                validate(
                     generationInput = generationInputWithMultiFormatSchema(),
                     generationPlan =
                         GenerationPlan(
@@ -822,7 +830,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects incompatible native formats when regular JSON schemas are also present`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedSchemaGenerationInput> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = mapOf("UserCreated" to Schema(type = JsonSchemaType.Single("object"))),
@@ -858,7 +866,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects empty input for schema generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.MissingSchemaGenerationInput> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputOf(
                             schemas = emptyMap(),
@@ -881,7 +889,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows native Avro declarations used by spring kafka client messages`() {
-        validator.validate(
+        validate(
             generationInput = generationInputWithMultiFormatMessage(nativeAvroSchema()),
             generationPlan =
                 GenerationPlan(
@@ -901,7 +909,7 @@ class GenerationInputCompatibilityValidatorTest {
 
     @Test
     fun `allows native Protobuf declarations used by spring kafka client messages`() {
-        validator.validate(
+        validate(
             generationInput = generationInputWithMultiFormatMessage(nativeProtobufSchema()),
             generationPlan =
                 GenerationPlan(
@@ -925,7 +933,7 @@ class GenerationInputCompatibilityValidatorTest {
         val unrelatedProtobufSchema = nativeProtobufSchema()
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = emptyMap(),
@@ -968,7 +976,7 @@ class GenerationInputCompatibilityValidatorTest {
         val unrelatedAvroSchema = nativeAvroSchema()
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput =
                         GenerationInput(
                             schemas = emptyMap(),
@@ -1009,7 +1017,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `native artifact task handles declaration unrelated to active spring kafka message`() {
         val usedAvroSchema = nativeAvroSchema()
         val unrelatedProtobufSchema = nativeProtobufSchema()
-        validator.validate(
+        validate(
             generationInput =
                 GenerationInput(
                     schemas = emptyMap(),
@@ -1052,7 +1060,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects unsupported multi format messages for spring kafka client generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputWithMultiFormatMessage(
                             MultiFormatSchema(
@@ -1085,7 +1093,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects channels without messages for spring kafka client generation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutMessages> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputOf(
                             schemas = emptyMap(),
@@ -1123,7 +1131,7 @@ class GenerationInputCompatibilityValidatorTest {
     fun `rejects additional producer method name collisions during compatibility validation`() {
         val error =
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision> {
-                validator.validate(
+                validate(
                     generationInput =
                         generationInputOf(
                             schemas = emptyMap(),
@@ -1192,7 +1200,7 @@ class GenerationInputCompatibilityValidatorTest {
         schema: Schema,
         task: GenerationTask,
     ) {
-        validator.validate(
+        validate(
             generationInput =
                 generationInputOf(
                     schemas = mapOf("Event" to schema),

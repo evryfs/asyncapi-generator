@@ -1,6 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
+import dev.banking.asyncapi.generator.core.fixtures.generationContext
 import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGeneration
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
@@ -22,7 +23,7 @@ class NativeAvroArtifactGenerationTest {
                             schemaPackageName = "com.example.schemas",
                         ),
                     ),
-                generationInput = fixtures.generationInputWithNativeAvroSchema(),
+                context = generationContext(fixtures.generationInputWithNativeAvroSchema()),
             )
 
         assertEquals(
