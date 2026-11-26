@@ -1,0 +1,15 @@
+asyncapi: 3.0.0
+info:
+  title: Compact Protobuf schema
+  version: 1.0.0
+components:
+  schemas:
+    EventPayload:
+      schemaFormat: application/vnd.google.protobuf;version=3
+      schema: |
+        syntax = "proto3"; package com.example.compactproto;
+        option java_package = "com.example.compactproto"; option java_multiple_files = true;
+
+        // Braces in comments do not count: {
+        message Note { string text = 1; /* } */ }
+        message EventPayload { string id = 1; Note note = 2; }

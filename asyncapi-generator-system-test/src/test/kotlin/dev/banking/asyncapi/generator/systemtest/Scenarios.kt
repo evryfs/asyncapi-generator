@@ -508,6 +508,22 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "protobuf-compact-schema",
+        executions = listOf(
+            Execution(
+                id = "protobuf-models",
+                generatorName = "java",
+                modelPackage = "com.example.compactproto",
+                modelType = "protobuf-message",
+            ),
+            Execution(
+                id = "protobuf-schema",
+                generatorName = "protobuf-schema",
+                schemaPackage = "com.example.compactproto.schema",
+            ),
+        ),
+    ),
+    Scenario(
         name = "diagnostics-property-name-collision",
         executions = listOf(
             Execution(id = "property-name-collision", generatorName = "kotlin", modelPackage = "com.example.model"),
