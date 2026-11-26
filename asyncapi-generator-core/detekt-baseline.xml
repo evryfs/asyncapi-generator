@@ -9,7 +9,6 @@
     <ID>LargeClass:JsonSchemaGenerator.kt$JsonSchemaGenerator</ID>
     <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
     <ID>LongMethod:AsyncApiGenerator.kt$AsyncApiGenerator$private fun renderArtifactTask( task: GenerationTask, generationInput: GenerationInput, asyncApiDocument: AsyncApiDocument, ): GenerationResult</ID>
-    <ID>LongMethod:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun removeUnchanged(stagedFiles: MutableList&lt;StagedFile&gt;): List&lt;StagedFile&gt;</ID>
     <ID>LongMethod:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$private fun stageFile(output: ResolvedOutput): StagedFile</ID>
     <ID>LongMethod:GenerationInputCompatibilityValidator.kt$GenerationInputCompatibilityValidator$fun validate( generationInput: GenerationInput, generationPlan: GenerationPlan, )</ID>
@@ -37,8 +36,6 @@
     <ID>NestedBlockDepth:NativeProtobufSchemaParser.kt$NativeProtobufSchemaParser$private fun extractTopLevelMessageNames(content: String): List&lt;String&gt;</ID>
     <ID>OutdatedDocumentation:MavenRepositoryProtocProvider.kt$MavenRepositoryProtocProvider : ProtocProvider</ID>
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
-    <ID>ReturnCount:AvroGeneratorModelFactory.kt$AvroGeneratorModelFactory$fun create( name: String, schema: Schema, ): AvroSchema?</ID>
-    <ID>ReturnCount:AvroTypeMapper.kt$AvroTypeMapper$fun requiredType( schema: Schema?, refName: String? = null, ): String</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
     <ID>SwallowedException:FileSystemGeneratedArtifactWriter.kt$FileSystemGeneratedArtifactWriter$ex: AtomicMoveNotSupportedException</ID>

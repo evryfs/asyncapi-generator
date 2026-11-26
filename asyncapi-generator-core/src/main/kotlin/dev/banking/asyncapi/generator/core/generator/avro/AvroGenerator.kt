@@ -1,30 +1,38 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
 import dev.banking.asyncapi.generator.core.generator.avro.factory.AvroGeneratorModelFactory
+import dev.banking.asyncapi.generator.core.generator.input.GenerationInput
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinitionFactory
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.OpenObjectModel
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidGeneratedAvroSchema
 import org.apache.avro.Schema
 import org.apache.avro.SchemaParseException
-import dev.banking.asyncapi.generator.core.model.schemas.Schema as AsyncApiSchema
 
 /**
- * Renders parsed schemas into Avro schema artifacts before writing them.
+ * Renders the models of a contract as Avro schema artifacts, in the order of their names. An open
+ * object becomes an empty record when its schema is `type: object`; a schema without a type has none.
+ *
+ * @param packageName the Avro namespace of the generated schemas
  */
 internal class AvroGenerator(
-    packageName: String,
+    private val packageName: String,
 ) {
-    private val factory = AvroGeneratorModelFactory(packageName)
     private val generator = AvroSchemaGenerator()
 
-    fun render(schemas: Map<String, AsyncApiSchema>): GenerationResult =
-        GenerationResult(
-            schemas.entries
-                .sortedBy(Map.Entry<String, AsyncApiSchema>::key)
-                .mapNotNull { (name, schema) ->
-                    factory.create(name, schema)?.let(generator::render)
-                }.also(::verifyParses),
+    fun render(input: GenerationInput): GenerationResult {
+        val models = ModelDefinitionFactory(input, packageName, AvroNaming).create()
+        val factory = AvroGeneratorModelFactory(packageName, models)
+        return GenerationResult(
+            models
+                .filter { model -> model !is OpenObjectModel || input.schemas[model.name]?.type?.primary == "object" }
+                .sortedBy(ModelDefinition::name)
+                .mapNotNull { model -> factory.create(model)?.let(generator::render) }
+                .also(::verifyParses),
         )
+    }
 
     /**
      * Parses the generated schemas with Apache Avro, each after the schemas it refers to, so that a

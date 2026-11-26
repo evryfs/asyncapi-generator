@@ -132,10 +132,12 @@ nullability, and documentation markup, come from a `SpringKafkaClientSyntax`:
 
 ## Schema formats
 
-- `avro`: Avro Projection from AsyncAPI Schema Objects
-  (`AvroSchemaGenerator`, `AvroTypeMapper`) and native Avro schemas and
-  SpecificRecords (`NativeAvroGenerator`). Invalid Avro names fail with
-  `InvalidAvroName`; they are never rewritten.
+- `avro`: Avro Projection and native Avro schemas and SpecificRecords
+  (`NativeAvroGenerator`). Avro Projection is built from the same
+  `ModelDefinition`s as the Kotlin and Java models, named with `AvroNaming`,
+  which keeps the contract's names; `AvroTypeMapper` maps each `TypeRef` to
+  an `AvroType`. Invalid Avro names fail with `InvalidAvroName`; they are
+  never rewritten.
 - `protobuf`: native Protobuf schemas and `protoc` compilation
   (`NativeProtobufGenerator`), with `ProtocProvider` implementations for each
   frontend.

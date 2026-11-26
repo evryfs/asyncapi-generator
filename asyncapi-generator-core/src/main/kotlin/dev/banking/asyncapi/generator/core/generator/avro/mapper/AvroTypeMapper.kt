@@ -1,92 +1,56 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
-import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelTypeMapper
-import dev.banking.asyncapi.generator.core.generator.sourcemodel.NameCase
+import dev.banking.asyncapi.generator.core.generator.avro.model.AvroType
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
-import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
 
 /**
- * Maps JSON Schema types to Avro type JSON.
+ * Maps the types of the source model to Avro types.
  *
- * Named schemas are referenced by their full name, `<namespace>.<SchemaName>`, which is the
- * name their own `.avsc` file declares. Arrays and maps map their items and values recursively.
+ * Models are referred to by their full name, `<namespace>.<Name>`, which is the name their own
+ * `.avsc` file declares. A field typed by a union holds the union's members directly.
+ *
+ * @param packageName the Avro namespace of the generated schemas
+ * @param models the models of the contract, to find the members of a union
  */
 internal class AvroTypeMapper(
-    val packageName: String,
+    private val packageName: String,
+    models: List<ModelDefinition>,
 ) {
-    fun mapToAvroType(
-        schema: Schema?,
-        isOptional: Boolean,
-        refName: String? = null,
-    ): String {
-        val type = requiredType(schema, refName)
-        if (!isOptional) return type
-        // Avro unions cannot nest, so an optional union gets "null" as its first branch.
-        return if (type.startsWith("[")) "[\"null\", ${type.removePrefix("[")}" else "[\"null\", $type]"
-    }
+    private val unions = models.filterIsInstance<UnionModel>().associateBy(UnionModel::name)
 
-    /** The Avro type of a field that must hold a value; [refName] names a referenced schema. */
-    fun requiredType(
-        schema: Schema?,
-        refName: String? = null,
-    ): String {
-        if (schema != null && !(schema.oneOf ?: schema.anyOf).isNullOrEmpty()) {
-            val unionTypes =
-                (schema.oneOf ?: schema.anyOf)
-                    .orEmpty()
-                    .filterIsInstance<SchemaInterface.SchemaReference>()
-                    .map(
-                        ::namedType,
-                    )
-            if (unionTypes.isNotEmpty()) return unionTypes.joinToString(", ", "[", "]")
-        }
-        // A named scalar or array schema has no .avsc of its own, so it is used in place.
-        if (refName != null && (schema == null || !schema.isAlias())) return namedType(refName)
-        if (schema == null) return "\"string\""
-
-        return when (schema.type?.primary) {
-            "array" -> "{\"type\": \"array\", \"items\": ${elementType(schema.items)}}"
-            "object" -> "{\"type\": \"map\", \"values\": ${elementType(schema.additionalProperties)}}"
-            else -> baseType(schema)
+    /** The Avro type of a record field of [type]. */
+    fun fieldType(type: TypeRef): AvroType {
+        val union = (type as? TypeRef.Named)?.let { unions[it.name] }
+        return if (union != null && union.members.isNotEmpty()) {
+            AvroType.Union(union.members.map(::named))
+        } else {
+            map(type)
         }
     }
 
-    private fun elementType(element: SchemaInterface?): String =
-        when (element) {
-            is SchemaInterface.SchemaReference ->
-                (element.reference.model as? Schema)?.takeIf { it.isAlias() }?.let(::requiredType) ?: namedType(element)
-            is SchemaInterface.SchemaInline -> requiredType(element.schema)
-            else -> "\"string\""
+    private fun map(type: TypeRef): AvroType =
+        when (type) {
+            is TypeRef.Scalar -> scalar(type)
+            is TypeRef.ListOf -> AvroType.ArrayOf(map(type.element))
+            is TypeRef.MapOf -> AvroType.MapOf(map(type.value))
+            is TypeRef.Named -> named(type.name)
+            is TypeRef.External -> AvroType.Named("${type.packageName}.${type.name}")
         }
 
-    private fun Schema.isAlias(): Boolean =
-        enum.isNullOrEmpty() && oneOf.isNullOrEmpty() && anyOf.isNullOrEmpty() &&
-            type?.primary in setOf("string", "number", "integer", "boolean", "array")
+    private fun named(name: String): AvroType = AvroType.Named("$packageName.$name")
 
-    private fun namedType(reference: SchemaInterface.SchemaReference): String =
-        namedType(reference.reference.ref.substringAfterLast('/'))
-
-    /** Schema names reach the generator in PascalCase, which is also the record name in its own file. */
-    private fun namedType(schemaName: String): String = "\"$packageName.${NameCase.toPascalCase(schemaName)}\""
-
-    private fun baseType(schema: Schema): String =
-        when (schema.type?.primary) {
-            "string" ->
-                when (schema.format) {
-                    "uuid" -> "{\"type\": \"string\", \"logicalType\": \"uuid\"}"
-                    "date" -> "{\"type\": \"int\", \"logicalType\": \"date\"}"
-                    "date-time" -> "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}"
-                    else -> "\"string\""
-                }
-            "integer" ->
-                when (schema.format) {
-                    "date" -> "{\"type\": \"int\", \"logicalType\": \"date\"}"
-                    else -> if (ModelTypeMapper.integerType(schema) == TypeRef.Scalar.INT64) "\"long\"" else "\"int\""
-                }
+    private fun scalar(type: TypeRef.Scalar): AvroType =
+        when (type) {
+            TypeRef.Scalar.STRING, TypeRef.Scalar.TIME, TypeRef.Scalar.ANY -> AvroType.STRING
+            TypeRef.Scalar.UUID -> AvroType.Logical("string", "uuid")
+            TypeRef.Scalar.DATE -> AvroType.Logical("int", "date")
+            TypeRef.Scalar.DATE_TIME -> AvroType.Logical("long", "timestamp-millis")
+            TypeRef.Scalar.INT32 -> AvroType.Primitive("int")
+            TypeRef.Scalar.INT64 -> AvroType.Primitive("long")
             // Always double: narrowing an existing double field to float breaks registered schemas.
-            "number" -> "\"double\""
-            "boolean" -> "\"boolean\""
-            else -> "\"string\""
+            TypeRef.Scalar.FLOAT, TypeRef.Scalar.DOUBLE, TypeRef.Scalar.DECIMAL -> AvroType.Primitive("double")
+            TypeRef.Scalar.BOOLEAN -> AvroType.Primitive("boolean")
         }
 }

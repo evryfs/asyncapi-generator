@@ -36,25 +36,51 @@ internal class ModelDefinitionFactory(
         val primaryType = schema.type?.primary
         return when {
             primaryType == "string" && !schema.enum.isNullOrEmpty() ->
-                EnumModel(
-                    name = name,
-                    packageName = packageName,
-                    description = schema.description,
-                    constants = enumLiteralNormalizer.normalize(name, schema.enum),
-                )
-            !schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty() ->
-                UnionModel(
-                    name = name,
-                    packageName = packageName,
-                    description = schema.description,
-                    discriminator = schema.discriminator,
-                    subtypes = unionSubtypes(schema),
-                )
+                enumModel(name, schema)
+            !schema.oneOf.isNullOrEmpty() || !schema.anyOf.isNullOrEmpty() -> unionModel(name, schema)
             schema.isOpenPayload() ->
                 OpenObjectModel(name = name, packageName = packageName, description = schema.description)
             primaryType == "object" -> objectModel(name, schema)
             else -> null
         }
+    }
+
+    private fun enumModel(
+        name: String,
+        schema: Schema,
+    ): EnumModel {
+        val constants = enumLiteralNormalizer.normalize(name, schema.enum.orEmpty())
+        val values = constants.map { it.jsonValue ?: it.name }
+        return EnumModel(
+            name = name,
+            packageName = packageName,
+            description = schema.description,
+            constants = constants,
+            default = schema.default?.toString()?.takeIf { it in values },
+        )
+    }
+
+    /**
+     * Without a discriminator the subtypes are only listed so that Jackson can deduce them, which
+     * needs a generated class: members that are scalars, unions, or open objects have none.
+     */
+    private fun unionModel(
+        name: String,
+        schema: Schema,
+    ): UnionModel {
+        val members = UnionSubtypes.of(schema, schemas)
+        return UnionModel(
+            name = name,
+            packageName = packageName,
+            description = schema.description,
+            discriminator = schema.discriminator,
+            subtypes =
+                members.filter { subtype ->
+                    schema.discriminator != null ||
+                        schemas[subtype.type]?.let { it.type?.primary == "object" && !it.isOpenPayload() } == true
+                },
+            members = members.map(UnionSubtype::type),
+        )
     }
 
     private fun objectModel(
@@ -73,17 +99,6 @@ internal class ModelDefinitionFactory(
                     }.also { failOnIdentifierCollision(name, it) },
             unions = input.polymorphicRelationships[name].orEmpty(),
         )
-
-    /**
-     * Without a discriminator the subtypes are only listed so that Jackson can deduce them, which
-     * needs a generated class: members that are scalars, unions, or open objects have none.
-     */
-    private fun unionSubtypes(schema: Schema): List<UnionSubtype> =
-        UnionSubtypes.of(schema, schemas).filter { subtype ->
-            schema.discriminator != null ||
-                schemas[subtype.type]
-                    ?.let { it.type?.primary == "object" && !it.isOpenPayload() } == true
-        }
 
     private fun failOnIdentifierCollision(
         schemaName: String,

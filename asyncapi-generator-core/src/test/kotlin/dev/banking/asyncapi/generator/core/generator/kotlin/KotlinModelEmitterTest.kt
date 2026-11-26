@@ -23,7 +23,14 @@ class KotlinModelEmitterTest {
                 listOf(
                     ObjectModel("User", PACKAGE, null, properties = emptyList(), unions = listOf("Command")),
                     EnumModel("Status", PACKAGE, null, listOf(EnumConstant("ACTIVE", jsonValue = null))),
-                    UnionModel("Command", PACKAGE, null, discriminator = null, subtypes = emptyList()),
+                    UnionModel(
+                        "Command",
+                        PACKAGE,
+                        null,
+                        discriminator = null,
+                        subtypes = emptyList(),
+                        members = emptyList(),
+                    ),
                     OpenObjectModel("Payload", PACKAGE, null),
                 ),
             )

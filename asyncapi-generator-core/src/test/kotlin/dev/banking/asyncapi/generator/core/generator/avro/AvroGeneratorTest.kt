@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
+import dev.banking.asyncapi.generator.core.fixtures.generationInputOf
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
@@ -29,7 +30,7 @@ class AvroGeneratorTest {
                     ),
             )
 
-        val result = generator.render(schemas)
+        val result = generator.render(generationInputOf(schemas))
 
         assertEquals(
             listOf(
