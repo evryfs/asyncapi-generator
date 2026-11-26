@@ -41,6 +41,7 @@ have to describe the same configuration.
 | [generated-code](generated-code) | Kotlin and Java models for enums, `oneOf` with a discriminator, defaults, and property names. |
 | [avro-schemas](avro-schemas) | Avro schemas for recursive types, defaults, and escaped documentation. |
 | [avro-schema-types](avro-schema-types) | Avro schemas use `long` for wide integers and inline `anyOf` unions. |
+| [avro-union-collections](avro-union-collections) | Avro schemas inline unions used as array items and map values, and type integer enums as `int`. |
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [kafka-scalar-payloads](kafka-scalar-payloads) | Spring Kafka clients for UUID, date, date-time and number payloads, typed as models type them, in Kotlin and Java. |

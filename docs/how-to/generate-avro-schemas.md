@@ -70,7 +70,7 @@ application.
 | `boolean`                                  | `boolean`                                                                                  |
 | `array`                                    | `array`, with item types mapped recursively, including arrays of arrays                    |
 | Object with `additionalProperties`         | `map`, with value types mapped recursively                                                 |
-| `oneOf` or `anyOf`                         | A union of the member types                                                                |
+| `oneOf` or `anyOf`                         | A union of the member types, also as array items and map values                            |
 | `description`                              | `doc`, JSON-escaped                                                                        |
 
 Optional properties become unions with `null`:

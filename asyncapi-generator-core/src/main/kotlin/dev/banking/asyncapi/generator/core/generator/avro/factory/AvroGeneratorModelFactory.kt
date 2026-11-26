@@ -80,7 +80,7 @@ internal class AvroGeneratorModelFactory(
         property: PropertyDefinition,
         last: Boolean,
     ): AvroField {
-        val type = typeMapper.fieldType(property.type)
+        val type = typeMapper.map(property.type)
         val default = property.default?.let(::defaultJson)
         return AvroField(
             name = property.wireName,

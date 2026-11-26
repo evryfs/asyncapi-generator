@@ -9,7 +9,8 @@ import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
  * Maps the types of the source model to Avro types.
  *
  * Models are referred to by their full name, `<namespace>.<Name>`, which is the name their own
- * `.avsc` file declares. A field typed by a union holds the union's members directly.
+ * `.avsc` file declares. A union has no schema of its own: a field, array item or map value typed
+ * by a union holds the union's members directly.
  *
  * @param packageName the Avro namespace of the generated schemas
  * @param models the models of the contract, to find the members of a union
@@ -20,24 +21,19 @@ internal class AvroTypeMapper(
 ) {
     private val unions = models.filterIsInstance<UnionModel>().associateBy(UnionModel::name)
 
-    /** The Avro type of a record field of [type]. */
-    fun fieldType(type: TypeRef): AvroType {
-        val union = (type as? TypeRef.Named)?.let { unions[it.name] }
-        return if (union != null && union.members.isNotEmpty()) {
-            AvroType.Union(union.members.map(::named))
-        } else {
-            map(type)
-        }
-    }
-
-    private fun map(type: TypeRef): AvroType =
+    /** The Avro type of [type]. */
+    fun map(type: TypeRef): AvroType =
         when (type) {
             is TypeRef.Scalar -> scalar(type)
             is TypeRef.ListOf -> AvroType.ArrayOf(map(type.element))
             is TypeRef.MapOf -> AvroType.MapOf(map(type.value))
-            is TypeRef.Named -> named(type.name)
+            is TypeRef.Named -> unionOf(type.name) ?: named(type.name)
             is TypeRef.External -> AvroType.Named("${type.packageName}.${type.name}")
         }
+
+    /** The members of the union [name] as an Avro union, or null when [name] is not a union. */
+    private fun unionOf(name: String): AvroType? =
+        unions[name]?.members?.takeIf { it.isNotEmpty() }?.let { members -> AvroType.Union(members.map(::named)) }
 
     private fun named(name: String): AvroType = AvroType.Named("$packageName.$name")
 

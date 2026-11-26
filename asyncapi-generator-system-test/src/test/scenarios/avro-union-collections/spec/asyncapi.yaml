@@ -1,0 +1,45 @@
+asyncapi: 3.0.0
+info:
+  title: Avro union collections
+  version: 1.0.0
+channels:
+  shelters:
+    address: shelters
+    messages:
+      shelter:
+        payload:
+          $ref: '#/components/schemas/Shelter'
+components:
+  schemas:
+    Shelter:
+      type: object
+      required: [residents]
+      properties:
+        residents:
+          description: An array whose items are a union.
+          type: array
+          items:
+            $ref: '#/components/schemas/Pet'
+        byName:
+          description: A map whose values are a union.
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Pet'
+        level:
+          $ref: '#/components/schemas/Level'
+    Pet:
+      oneOf:
+        - $ref: '#/components/schemas/Dog'
+        - $ref: '#/components/schemas/Cat'
+    Dog:
+      type: object
+      properties:
+        bark: {type: string}
+    Cat:
+      type: object
+      properties:
+        purr: {type: boolean}
+    Level:
+      description: An integer enum, typed as its scalar.
+      type: integer
+      enum: [1, 2, 3]
