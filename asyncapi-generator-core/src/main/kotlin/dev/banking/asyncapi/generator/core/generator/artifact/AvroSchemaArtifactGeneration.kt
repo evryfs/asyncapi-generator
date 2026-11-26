@@ -17,6 +17,6 @@ internal class AvroSchemaArtifactGeneration {
             AvroGenerator(
                 packageName = task.schema.packageName,
             )
-        return avroGenerator.render(generationInput.schemas)
+        return avroGenerator.render(generationInput)
     }
 }

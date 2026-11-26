@@ -1,61 +1,49 @@
 package dev.banking.asyncapi.generator.core.generator.avro.mapper
 
-import dev.banking.asyncapi.generator.core.model.schemas.JsonSchemaType
-import dev.banking.asyncapi.generator.core.model.schemas.Schema
+import dev.banking.asyncapi.generator.core.generator.avro.model.AvroType
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
+import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
 class AvroTypeMapperTest {
-    private val mapper = AvroTypeMapper("com.example.avro")
-
-    @Test
-    fun `should map simple primitives`() {
-        assertMapping("string", Schema(type = JsonSchemaType.Single("string")))
-        assertMapping("int", Schema(type = JsonSchemaType.Single("integer")))
-        assertMapping("long", Schema(type = JsonSchemaType.Single("integer"), format = "int64"))
-        assertMapping("double", Schema(type = JsonSchemaType.Single("number")))
-        assertMapping("boolean", Schema(type = JsonSchemaType.Single("boolean")))
-    }
-
-    @Test
-    fun `should map logical types`() {
-        assertMapping(
-            "{\"type\": \"string\", \"logicalType\": \"uuid\"}",
-            Schema(type = JsonSchemaType.Single("string"), format = "uuid"),
+    private val pet =
+        UnionModel(
+            name = "Pet",
+            packageName = "com.example",
+            description = null,
+            discriminator = null,
+            subtypes = emptyList(),
+            members = listOf("Dog", "Cat"),
         )
-        assertMapping(
-            "{\"type\": \"int\", \"logicalType\": \"date\"}",
-            Schema(type = JsonSchemaType.Single("string"), format = "date"),
-        )
-        assertMapping(
-            "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}",
-            Schema(type = JsonSchemaType.Single("string"), format = "date-time"),
-        )
+    private val mapper = AvroTypeMapper("com.example.avro", listOf(pet))
+
+    @Test
+    fun `maps scalars, collections and models to Avro types`() {
+        val expectations =
+            mapOf(
+                TypeRef.Scalar.STRING to "\"string\"",
+                TypeRef.Scalar.INT64 to "\"long\"",
+                TypeRef.Scalar.DECIMAL to "\"double\"",
+                TypeRef.Scalar.UUID to "{\"type\": \"string\", \"logicalType\": \"uuid\"}",
+                TypeRef.Scalar.DATE_TIME to "{\"type\": \"long\", \"logicalType\": \"timestamp-millis\"}",
+                TypeRef.ListOf(TypeRef.Scalar.INT32) to "{\"type\": \"array\", \"items\": \"int\"}",
+                TypeRef.MapOf(TypeRef.Named("Account", isModel = true)) to
+                    "{\"type\": \"map\", \"values\": \"com.example.avro.Account\"}",
+            )
+
+        expectations.forEach { (type, json) -> assertEquals(json, mapper.fieldType(type).json(), "$type") }
     }
 
     @Test
-    fun `should map unions for optional fields`() {
-        val schema = Schema(type = JsonSchemaType.Single("string"))
-        assertEquals("[\"null\", \"string\"]", mapper.mapToAvroType(schema, isOptional = true))
-    }
+    fun `a field typed by a union holds its members, with null first unless there is a default`() {
+        val union = mapper.fieldType(TypeRef.Named("Pet", isModel = true))
 
-    @Test
-    fun `should default to string for unknown types`() {
-        assertMapping("string", Schema(type = JsonSchemaType.Single("unknown")))
-        assertMapping("string", null)
-    }
-
-    private fun assertMapping(
-        expectedJson: String,
-        schema: Schema?,
-    ) {
-        val actual = mapper.mapToAvroType(schema, isOptional = false)
-        val effectiveExpected =
-            if (!expectedJson.startsWith("{") && !expectedJson.startsWith("[")) {
-                "\"$expectedJson\""
-            } else {
-                expectedJson
-            }
-        assertEquals(effectiveExpected, actual)
+        assertEquals("[\"com.example.avro.Dog\", \"com.example.avro.Cat\"]", union.json())
+        assertEquals(
+            "[\"null\", \"com.example.avro.Dog\", \"com.example.avro.Cat\"]",
+            AvroType.optional(union, hasDefault = false).json(),
+        )
+        assertEquals("[\"string\", \"null\"]", AvroType.optional(AvroType.STRING, hasDefault = true).json())
     }
 }

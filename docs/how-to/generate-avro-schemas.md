@@ -61,6 +61,7 @@ application.
 |--------------------------------------------|--------------------------------------------------------------------------------------------|
 | Object with properties                     | `record`, one field per property                                                           |
 | String enum                                | `enum`; a schema `default` becomes the enum default                                        |
+| Integer or number enum                     | Its scalar type, as in the models                                                          |
 | Reference to another schema                | The full name of that schema, such as `com.example.accounts.avro.AccountStatus`            |
 | `string`                                   | `string`; `format` `uuid` adds logical type `uuid`                                         |
 | `string` with `format` `date` / `date-time` | `int` with logical type `date` / `long` with logical type `timestamp-millis`             |
@@ -77,6 +78,9 @@ Optional properties become unions with `null`:
 - Without a default, the field type is `["null", T]` with `"default": null`.
 - With a scalar or enum default, the field type is `[T, "null"]` with that
   default, because Avro requires a union's default to match its first branch.
+  This also holds for a default on a property with a `format` such as `int64`,
+  or on a referenced scalar schema. Date, time and UUID defaults are left out,
+  because Avro encodes those types differently.
 - An optional `oneOf` becomes one flat union with `null` first, because Avro
   unions cannot contain unions.
 

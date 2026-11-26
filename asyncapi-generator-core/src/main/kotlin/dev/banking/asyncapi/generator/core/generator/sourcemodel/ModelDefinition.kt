@@ -36,12 +36,14 @@ internal data class ObjectModel(
  * @property packageName Package the type is generated in.
  * @property description Contract description as written.
  * @property constants Constants in contract order.
+ * @property default The schema's default value, when it is one of the enum values; null otherwise.
  */
 internal data class EnumModel(
     override val name: String,
     override val packageName: String,
     override val description: String?,
     val constants: List<EnumConstant>,
+    val default: String? = null,
 ) : ModelDefinition
 
 /**
@@ -51,7 +53,9 @@ internal data class EnumModel(
  * @property packageName Package the type is generated in.
  * @property description Contract description as written.
  * @property discriminator Property whose value selects the member; null without one.
- * @property subtypes Members that have a generated type.
+ * @property subtypes Members that Jackson can choose: every member with a discriminator, and
+ *   otherwise only the members that are generated as classes.
+ * @property members Generated type names of every member, in contract order.
  */
 internal data class UnionModel(
     override val name: String,
@@ -59,6 +63,7 @@ internal data class UnionModel(
     override val description: String?,
     val discriminator: String?,
     val subtypes: List<UnionSubtype>,
+    val members: List<String>,
 ) : ModelDefinition {
     /** Whether the member is deduced from the properties present, because there is no discriminator. */
     val deduction: Boolean get() = discriminator == null && subtypes.isNotEmpty()

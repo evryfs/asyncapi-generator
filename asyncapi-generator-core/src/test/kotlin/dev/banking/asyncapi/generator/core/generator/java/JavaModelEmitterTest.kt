@@ -23,7 +23,14 @@ class JavaModelEmitterTest {
                 listOf(
                     user(),
                     EnumModel("Status", PACKAGE, null, listOf(EnumConstant("ACTIVE", jsonValue = null))),
-                    UnionModel("Command", PACKAGE, null, discriminator = null, subtypes = emptyList()),
+                    UnionModel(
+                        "Command",
+                        PACKAGE,
+                        null,
+                        discriminator = null,
+                        subtypes = emptyList(),
+                        members = emptyList(),
+                    ),
                     OpenObjectModel("Payload", PACKAGE, null),
                 ),
             )
