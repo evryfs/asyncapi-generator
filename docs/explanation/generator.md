@@ -123,7 +123,10 @@ in the language-neutral model (such as `EnumLiteralNormalizer` in
 `JsonPropertyAccessAnnotationMapper`), so both languages produce the same
 JSON. The `jvm` package also holds what only JVM sources need: imports,
 Jackson and Jakarta Validation annotations, string literal escaping, and KDoc
-and Javadoc comments. The model takes its property identifier and enum
+and Javadoc comments. An annotation is a `SourceAnnotation`, its type and
+arguments: each emitter writes it with the use-site target its language needs,
+such as `@field:` on Kotlin properties, and imports it by its type. Every
+emitter renders its Mustache templates through one `TemplateRenderer`. The model takes its property identifier and enum
 constant rules from a `SourceNaming`; `JvmNaming` gives Kotlin and Java the
 same rules, so a contract generates the same identifiers in both. When adding
 a feature, put the decision in shared code and only the syntax in the

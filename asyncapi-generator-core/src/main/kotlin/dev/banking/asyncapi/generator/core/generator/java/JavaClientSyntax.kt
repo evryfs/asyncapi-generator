@@ -1,19 +1,15 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
-import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.JavaModelEmitter.Companion.withoutOpenObjects
-import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceAnnotation
 import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
 import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringKafkaClientSyntax
-import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 
 /** Java syntax of Spring Kafka clients: nullability annotations, and `Object` for open objects. */
 internal object JavaClientSyntax : SpringKafkaClientSyntax {
-    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
-
     override val templateRoot = "java"
     override val fileExtension = "java"
     override val anyType = "Object"
@@ -35,8 +31,8 @@ internal object JavaClientSyntax : SpringKafkaClientSyntax {
 
     override fun stringLiteral(value: String): String = SourceLiteralEscaper.forJava(value)
 
-    override fun nullabilityAnnotation(nullable: Boolean): String = if (nullable) "@Nullable" else "@NotNull"
+    override fun nullabilityAnnotation(nullable: Boolean): SourceAnnotation = if (nullable) NULLABLE else NOT_NULL
 
-    override fun parameterConstraints(constraints: Constraints): List<String> =
-        constraintMapper.buildAnnotations(constraints)
+    private val NULLABLE = SourceAnnotation("org.springframework.lang.Nullable")
+    private val NOT_NULL = SourceAnnotation("jakarta.validation.constraints.NotNull")
 }

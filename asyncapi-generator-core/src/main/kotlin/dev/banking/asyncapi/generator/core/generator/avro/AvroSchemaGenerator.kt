@@ -1,50 +1,23 @@
 package dev.banking.asyncapi.generator.core.generator.avro
 
-import com.github.mustachejava.DefaultMustacheFactory
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroEnum
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroRecord
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroSchema
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
-import java.io.StringWriter
+import dev.banking.asyncapi.generator.core.generator.output.TemplateRenderer
 
 /**
- * Renders Avro schema model items into schema artifacts.
+ * Renders Avro records and enums as `.avsc` schema artifacts.
  */
 internal class AvroSchemaGenerator {
-    private val mustacheFactory = DefaultMustacheFactory("avro")
+    private val templates = TemplateRenderer("avro", GeneratedArtifactKind.SCHEMA)
 
     fun render(schemaItem: AvroSchema): GeneratedArtifact =
         when (schemaItem) {
-            is AvroRecord -> renderRecord(schemaItem)
-            is AvroEnum -> renderEnum(schemaItem)
+            is AvroRecord ->
+                templates.render(schemaItem.namespace, "${schemaItem.name}.avsc", "avro.mustache", schemaItem)
+            is AvroEnum ->
+                templates.render(schemaItem.namespace, "${schemaItem.name}.avsc", "avro-enum.mustache", schemaItem)
         }
-
-    private fun renderRecord(record: AvroRecord): GeneratedArtifact {
-        val template = mustacheFactory.compile("avro.mustache")
-        val writer = StringWriter()
-        template.execute(writer, record).flush()
-
-        return schemaArtifact(record.namespace, record.name, writer.toString())
-    }
-
-    private fun renderEnum(enumModel: AvroEnum): GeneratedArtifact {
-        val template = mustacheFactory.compile("avro-enum.mustache")
-        val writer = StringWriter()
-        template.execute(writer, enumModel).flush()
-
-        return schemaArtifact(enumModel.namespace, enumModel.name, writer.toString())
-    }
-
-    private fun schemaArtifact(
-        namespace: String,
-        name: String,
-        content: String,
-    ): GeneratedArtifact =
-        GeneratedArtifact(
-            relativePath = GeneratedArtifactPaths.fromNamespace(namespace, "$name.avsc"),
-            content = content,
-            kind = GeneratedArtifactKind.SCHEMA,
-        )
 }

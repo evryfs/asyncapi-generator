@@ -1,20 +1,18 @@
 package dev.banking.asyncapi.generator.core.generator.java
 
 import dev.banking.asyncapi.generator.core.generator.configuration.QualifiedTypeName
-import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaClassTemplate
 import dev.banking.asyncapi.generator.core.generator.java.model.JavaRecordTemplate
 import dev.banking.asyncapi.generator.core.generator.jvm.ConstraintAnnotationMapper
 import dev.banking.asyncapi.generator.core.generator.jvm.DocComments
 import dev.banking.asyncapi.generator.core.generator.jvm.JsonPropertyAccessAnnotationMapper
+import dev.banking.asyncapi.generator.core.generator.jvm.SourceAnnotation
 import dev.banking.asyncapi.generator.core.generator.jvm.SourceLiteralEscaper
-import dev.banking.asyncapi.generator.core.generator.jvm.SourceMustacheFactory
-import dev.banking.asyncapi.generator.core.generator.jvm.annotationImports
 import dev.banking.asyncapi.generator.core.generator.jvm.imports
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactPaths
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
+import dev.banking.asyncapi.generator.core.generator.output.TemplateRenderer
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.Constraints
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.EnumModel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
@@ -26,7 +24,6 @@ import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.cascadesValidation
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.rejectReservedNames
-import java.io.StringWriter
 
 /**
  * Renders payload models as Java sources: classes or records, enums, and interfaces for unions.
@@ -40,8 +37,7 @@ internal class JavaModelEmitter(
     private val javaModelType: JavaModelType = JavaModelType.CLASS,
     private val annotation: QualifiedTypeName? = null,
 ) : ModelEmitter {
-    private val mustacheFactory = SourceMustacheFactory("java")
-    private val constraintMapper = ConstraintAnnotationMapper(SourceLanguage.JAVA)
+    private val templates = TemplateRenderer("java", GeneratedArtifactKind.SOURCE)
 
     override fun emit(models: List<ModelDefinition>): GenerationResult {
         models
@@ -113,20 +109,21 @@ internal class JavaModelEmitter(
             }
         val type = property.type.withoutOpenObjects()
         val wireName = property.wireName.takeIf { it != property.identifier }?.let(SourceLiteralEscaper::forJava)
-        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.access, wireName, "@JsonProperty")
+        val jsonProperty = JsonPropertyAccessAnnotationMapper.annotationFor(property.access, wireName)
         val annotations =
             buildList {
                 if (wireName != null) jsonProperty?.let(::add)
-                addAll(constraintMapper.buildAnnotations(property.constraints))
+                addAll(ConstraintAnnotationMapper.buildAnnotations(property.constraints, SourceLiteralEscaper::forJava))
                 if (wireName == null) jsonProperty?.let(::add)
-                if (property.required && !property.nullable) add("@NotNull")
-                if (type.cascadesValidation) add("@Valid")
+                if (property.required && !property.nullable) add(NOT_NULL)
+                if (type.cascadesValidation) add(VALID)
             }
         return JavaProperty(
             name = property.identifier,
             type = type,
             description = DocComments.toJavaDocLines(property.description),
-            annotations = annotations,
+            annotations = annotations.map { it.render() },
+            annotationImports = annotations.flatMap(SourceAnnotation::imports),
         )
     }
 
@@ -137,7 +134,7 @@ internal class JavaModelEmitter(
     ): List<String> {
         val typeImports =
             properties.flatMap { it.type.imports(model.packageName, model.name, "java.util.List", "java.util.Map") }
-        val annotationImports = properties.flatMap { annotationImports(it.annotations, "@", "access = Access.") }
+        val annotationImports = properties.flatMap { it.annotationImports }
         return (
             fixedImports.toList() + "java.io.Serializable" + typeImports + annotationImports +
                 listOfNotNull(annotation?.value) +
@@ -188,21 +185,14 @@ internal class JavaModelEmitter(
         model: ModelDefinition,
         templateName: String,
         data: Any,
-    ): GeneratedArtifact {
-        val writer = StringWriter()
-        mustacheFactory.compile(templateName).execute(writer, data).flush()
-        return GeneratedArtifact(
-            relativePath = GeneratedArtifactPaths.fromNamespace(model.packageName, "${model.name}.java"),
-            content = writer.toString(),
-            kind = GeneratedArtifactKind.SOURCE,
-        )
-    }
+    ): GeneratedArtifact = templates.render(model.packageName, "${model.name}.java", templateName, data)
 
     private data class JavaProperty(
         val name: String,
         val type: TypeRef,
         val description: List<String>,
         val annotations: List<String>,
+        val annotationImports: List<String>,
     ) {
         fun accessorName(prefix: String): String = prefix + name.replaceFirstChar { it.uppercase() }
 
@@ -218,6 +208,9 @@ internal class JavaModelEmitter(
     }
 
     companion object {
+        private val NOT_NULL = SourceAnnotation("jakarta.validation.constraints.NotNull")
+        private val VALID = SourceAnnotation("jakarta.validation.Valid")
+
         /**
          * Types that generated Java models use without qualification: the `java.lang` and `java.util`
          * types of the class bodies, the scalar, collection, and date types, and the Jackson and
