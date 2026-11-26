@@ -1,7 +1,8 @@
-package dev.banking.asyncapi.generator.core.generator.kafka.spring
+package dev.banking.asyncapi.generator.core.generator.kafka.spring.client
 
 import dev.banking.asyncapi.generator.core.fixtures.GenerationInputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SchemaFixtures
+import dev.banking.asyncapi.generator.core.generator.SourceTargets
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
@@ -19,7 +20,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SpringKafkaClientGenerationTest {
-    private val generator = SpringKafkaClientGeneration()
+    private val generator = SpringKafkaClientGeneration { SourceTargets.of(it).clientSyntax }
     private val fixtures = GenerationInputFixtures()
     private val validationAnnotations =
         ClientValidationAnnotations(

@@ -105,6 +105,12 @@ Emitters render that model:
 - `JavaModelEmitter` (`java`) renders classes or records, enums, and
   interfaces.
 
+Each language has one `SourceTarget` in its own package (`KotlinTarget`,
+`JavaTarget`) that gives its model emitter and its Spring Kafka client syntax,
+and `SourceTargets` lists them. Adding a language means adding a
+`SourceLanguage` entry and its target; the settings-level rules of a language,
+such as its default model type, stay in `configuration`.
+
 Decisions that affect the wire format, such as enum constant names and their
 `@JsonProperty` values, property identifiers for invalid names, access
 annotations for `readOnly` and `writeOnly`, and discriminator names, are made
