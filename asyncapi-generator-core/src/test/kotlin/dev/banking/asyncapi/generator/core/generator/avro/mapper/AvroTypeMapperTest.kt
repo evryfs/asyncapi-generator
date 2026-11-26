@@ -30,14 +30,16 @@ class AvroTypeMapperTest {
                 TypeRef.ListOf(TypeRef.Scalar.INT32) to "{\"type\": \"array\", \"items\": \"int\"}",
                 TypeRef.MapOf(TypeRef.Named("Account", isModel = true)) to
                     "{\"type\": \"map\", \"values\": \"com.example.avro.Account\"}",
+                TypeRef.ListOf(TypeRef.Named("Pet", isModel = true)) to
+                    "{\"type\": \"array\", \"items\": [\"com.example.avro.Dog\", \"com.example.avro.Cat\"]}",
             )
 
-        expectations.forEach { (type, json) -> assertEquals(json, mapper.fieldType(type).json(), "$type") }
+        expectations.forEach { (type, json) -> assertEquals(json, mapper.map(type).json(), "$type") }
     }
 
     @Test
     fun `a field typed by a union holds its members, with null first unless there is a default`() {
-        val union = mapper.fieldType(TypeRef.Named("Pet", isModel = true))
+        val union = mapper.map(TypeRef.Named("Pet", isModel = true))
 
         assertEquals("[\"com.example.avro.Dog\", \"com.example.avro.Cat\"]", union.json())
         assertEquals(
