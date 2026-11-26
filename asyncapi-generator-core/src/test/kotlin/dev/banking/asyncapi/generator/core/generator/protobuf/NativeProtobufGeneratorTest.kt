@@ -72,8 +72,8 @@ class NativeProtobufGeneratorTest {
             }
 
         assertEquals(GeneratedArtifactKind.SCHEMA, schemaArtifact.kind)
-        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, messageArtifact.kind)
-        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, builderArtifact.kind)
+        assertEquals(GeneratedArtifactKind.SOURCE, messageArtifact.kind)
+        assertEquals(GeneratedArtifactKind.SOURCE, builderArtifact.kind)
         assertTrue(messageArtifact.content.contains("public final class UserCreated"))
         assertTrue(messageArtifact.content.contains("com.google.protobuf.GeneratedMessageV3"))
         assertTrue(builderArtifact.content.contains("public interface UserCreatedOrBuilder"))
@@ -118,7 +118,7 @@ class NativeProtobufGeneratorTest {
         val messageArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }
         val kotlinArtifact = result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreatedKt.kt" }
 
-        assertEquals(GeneratedArtifactKind.JAVA_SOURCE, messageArtifact.kind)
+        assertEquals(GeneratedArtifactKind.SOURCE, messageArtifact.kind)
         assertEquals(GeneratedArtifactKind.SOURCE, kotlinArtifact.kind)
         assertTrue(kotlinArtifact.content.contains("public object UserCreatedKt"))
         assertTrue(kotlinArtifact.content.contains("public inline fun userCreated"))

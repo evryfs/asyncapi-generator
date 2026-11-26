@@ -58,17 +58,15 @@ class AsyncApiGeneratorOutputContractTest {
     lateinit var tempDir: Path
 
     @Test
-    fun `generate writes model artifacts to source output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes model artifacts to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
         val bundled = bundledDocument()
 
         generator.generate(
             bundled = bundled,
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     models =
                         ModelGeneration.Enabled(
                             packageName = "com.example.model",
@@ -77,70 +75,61 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        assertTrue(sourceOutputDirectory.resolve("com/example/model/Task.kt").exists())
-        assertFalse(resourceOutputDirectory.resolve("com/example/model/Task.kt").exists())
+        assertTrue(outputDirectory.resolve("com/example/model/Task.kt").exists())
     }
 
     @Test
-    fun `generate writes schema artifacts to resource output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes schema artifacts to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
         val bundled = bundledDocument()
 
         generator.generate(
             bundled = bundled,
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.AvroProjection(packageName = "com.example.avro")),
                 ),
         )
 
-        assertTrue(resourceOutputDirectory.resolve("com/example/avro/Task.avsc").exists())
-        assertFalse(sourceOutputDirectory.resolve("com/example/avro/Task.avsc").exists())
+        assertTrue(outputDirectory.resolve("com/example/avro/Task.avsc").exists())
     }
 
     @Test
-    fun `generate writes JSON Schema artifacts to resource output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes JSON Schema artifacts to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = bundledDocument(),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
         )
 
-        val schemaArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json")
+        val schemaArtifact = outputDirectory.resolve("com/example/jsonschema/Task.schema.json")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
         assertTrue(schemaArtifact.readText().contains("\"${'$'}schema\" : \"http://json-schema.org/draft-07/schema#\""))
-        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/Task.schema.json").exists())
     }
 
     @Test
     fun `generate preserves source incompatible constructs in JSON Schema artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(sourceIncompatibleSchemaDocument()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
         )
 
-        val outputDirectory = resourceOutputDirectory.resolve("com/example/jsonschema")
-        val tupleItems = jsonMapper.readTree(outputDirectory.resolve("TupleItems.schema.json"))
-        val falseItems = jsonMapper.readTree(outputDirectory.resolve("FalseItems.schema.json"))
-        val untypedEnum = jsonMapper.readTree(outputDirectory.resolve("UntypedEnum.schema.json"))
-        val ecmaPattern = jsonMapper.readTree(outputDirectory.resolve("EcmaPattern.schema.json"))
+        val schemaDirectory = outputDirectory.resolve("com/example/jsonschema")
+        val tupleItems = jsonMapper.readTree(schemaDirectory.resolve("TupleItems.schema.json"))
+        val falseItems = jsonMapper.readTree(schemaDirectory.resolve("FalseItems.schema.json"))
+        val untypedEnum = jsonMapper.readTree(schemaDirectory.resolve("UntypedEnum.schema.json"))
+        val ecmaPattern = jsonMapper.readTree(schemaDirectory.resolve("EcmaPattern.schema.json"))
         val expectedEnum = jsonMapper.valueToTree<JsonNode>(listOf("open", 2, true, null))
 
         assertEquals(2, tupleItems.path("items").size())
@@ -163,73 +152,60 @@ class AsyncApiGeneratorOutputContractTest {
         assertEquals(false, falseItems.path("items").booleanValue())
         assertEquals(expectedEnum, untypedEnum.path("enum"))
         assertEquals("(?<group_name>a)", ecmaPattern.path("pattern").textValue())
-        assertFalse(sourceOutputDirectory.exists())
     }
 
     @Test
     fun `generate writes inline message payload as a standalone JSON Schema artifact`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(documentWithInlineMessagePayload()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
         )
 
         val schemaArtifact =
-            resourceOutputDirectory.resolve("com/example/jsonschema/AccountUpdatedPayload.schema.json")
+            outputDirectory.resolve("com/example/jsonschema/AccountUpdatedPayload.schema.json")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
-        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/AccountUpdatedPayload.schema.json").exists())
     }
 
     @Test
     fun `generate names resolved external payload artifact from the final reference fragment`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = resolvedExternalMessagePayloadDocument(),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
         )
 
         val schemaArtifact =
-            resourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json")
+            outputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("\"type\" : \"object\""))
-        assertFalse(
-            sourceOutputDirectory.resolve("com/example/jsonschema/MyAccountCreatedV1Payload.schema.json").exists(),
-        )
     }
 
     @Test
     fun `generate writes component Boolean schemas as exact scalar artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(documentWithBooleanComponents()),
             generatorConfiguration =
                 jsonSchemaGeneratorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
         )
 
-        val allowedArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/AllowAnything.schema.json")
-        val deniedArtifact = resourceOutputDirectory.resolve("com/example/jsonschema/DenyAnything.schema.json")
+        val allowedArtifact = outputDirectory.resolve("com/example/jsonschema/AllowAnything.schema.json")
+        val deniedArtifact = outputDirectory.resolve("com/example/jsonschema/DenyAnything.schema.json")
         assertEquals("true${System.lineSeparator()}", allowedArtifact.readText())
         assertEquals("false${System.lineSeparator()}", deniedArtifact.readText())
-        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/AllowAnything.schema.json").exists())
-        assertFalse(sourceOutputDirectory.resolve("com/example/jsonschema/DenyAnything.schema.json").exists())
     }
 
     @Test
@@ -311,8 +287,7 @@ class AsyncApiGeneratorOutputContractTest {
 
     @Test
     fun `generate rejects source incompatible models before creating output directories`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<UnsupportedSourceSchemaFeature> {
@@ -320,8 +295,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(sourceIncompatibleSchemaDocument()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             models =
                                 ModelGeneration.Enabled(
                                     packageName = "com.example.model",
@@ -333,8 +307,7 @@ class AsyncApiGeneratorOutputContractTest {
 
         assertTrue(error.message!!.contains("Model generation cannot represent schema 'TupleItems'"))
         assertTrue(error.message!!.contains("tuple-form 'items'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
@@ -357,8 +330,7 @@ class AsyncApiGeneratorOutputContractTest {
 
     @Test
     fun `generate rejects model-only plan when scalar schema produces no artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
@@ -366,8 +338,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(documentWithScalarSchema()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             models =
                                 ModelGeneration.Enabled(
                                     packageName = "com.example.model",
@@ -378,14 +349,12 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("Generation completed without producing any artifacts"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate rejects spring kafka client plan when document has no channels`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.NoArtifactsGenerated> {
@@ -393,8 +362,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(documentWithoutChannels()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             client =
                                 ClientGeneration(
                                     packageName = "com.example.kafka",
@@ -405,14 +373,12 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("Generation completed without producing any artifacts"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate rejects spring kafka channel without address before creating output directories`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.SpringKafkaClientChannelWithoutAddress> {
@@ -420,8 +386,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(documentWithInlineMessagePayload()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             client =
                                 ClientGeneration(
                                     packageName = "com.example.kafka",
@@ -432,19 +397,16 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("Declare channels.accountEvents.address"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate allows empty model task when bundled document produces an artifact`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
         val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
         val sourceConfiguration =
             generatorConfiguration(
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
+                outputDirectory = outputDirectory,
                 models =
                     ModelGeneration.Enabled(
                         packageName = "com.example.model",
@@ -469,19 +431,16 @@ class AsyncApiGeneratorOutputContractTest {
         )
 
         assertTrue(documentOutputFile.exists())
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `late native Avro rendering failure leaves earlier outputs unwritten`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
         val documentOutputFile = tempDir.resolve("bundled/asyncapi.yaml").toFile()
         val sourceConfiguration =
             generatorConfiguration(
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
+                outputDirectory = outputDirectory,
                 schemas =
                     listOf(
                         SchemaGeneration.AvroProjection(packageName = "com.example.avro"),
@@ -509,15 +468,13 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("Native Avro generation failed for payload 'InvalidNative'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
         assertFalse(documentOutputFile.exists())
     }
 
     @Test
     fun `schema name collision during input loading creates no output directories`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
         val document =
             AsyncApiDocument(
                 asyncapi = "3.0.0",
@@ -558,8 +515,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(document),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             models =
                                 ModelGeneration.Enabled(
                                     packageName = "com.example.model",
@@ -572,19 +528,16 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(error.message!!.contains("AccountKey"))
         assertTrue(error.message!!.contains("components.schemas['account-key']"))
         assertTrue(error.message!!.contains("components.messages['account'].bindings.kafka.key"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate rejects bundled document and generated artifact destination collisions`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
-        val documentOutputFile = sourceOutputDirectory.resolve("com/example/model/Task.kt")
+        val outputDirectory = tempDir.resolve("output").toFile()
+        val documentOutputFile = outputDirectory.resolve("com/example/model/Task.kt")
         val sourceConfiguration =
             generatorConfiguration(
-                sourceOutputDirectory = sourceOutputDirectory,
-                resourceOutputDirectory = resourceOutputDirectory,
+                outputDirectory = outputDirectory,
                 models =
                     ModelGeneration.Enabled(
                         packageName = "com.example.model",
@@ -614,53 +567,41 @@ class AsyncApiGeneratorOutputContractTest {
         assertTrue(error.message!!.contains("SOURCE: com/example/model/Task.kt"))
         assertTrue(error.message!!.contains("BUNDLED_DOCUMENT: ${documentOutputFile.path}"))
         assertFalse(documentOutputFile.exists())
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate writes native Avro schema and SpecificRecord artifacts to output directories`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
                 ),
         )
 
-        assertTrue(resourceOutputDirectory.resolve("UserCreated.avsc").exists())
-        assertTrue(javaSourceOutputDirectory.resolve("UserCreated.java").exists())
-        assertFalse(sourceOutputDirectory.resolve("UserCreated.avsc").exists())
-        assertFalse(sourceOutputDirectory.resolve("UserCreated.java").exists())
-        assertFalse(resourceOutputDirectory.resolve("UserCreated.java").exists())
+        assertTrue(outputDirectory.resolve("UserCreated.avsc").exists())
+        assertTrue(outputDirectory.resolve("UserCreated.java").exists())
     }
 
     @Test
     fun `generate writes external native Avro schema asset content to output directories`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = externalNativeAvroSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
                 ),
         )
 
-        val schemaArtifact = resourceOutputDirectory.resolve("com/example/external/avro/UserCreatedAvro.avsc")
-        val specificRecordArtifact = javaSourceOutputDirectory.resolve("com/example/external/avro/UserCreatedAvro.java")
+        val schemaArtifact = outputDirectory.resolve("com/example/external/avro/UserCreatedAvro.avsc")
+        val specificRecordArtifact = outputDirectory.resolve("com/example/external/avro/UserCreatedAvro.java")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("\"namespace\" : \"com.example.external.avro\""))
         assertTrue(specificRecordArtifact.exists())
@@ -669,9 +610,7 @@ class AsyncApiGeneratorOutputContractTest {
 
     @Test
     fun `generate rejects mismatched native Avro model package before writing artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.NativeAvroModelPackageMismatch> {
@@ -679,9 +618,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            javaSourceOutputDirectory = javaSourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             schemas =
                                 listOf(
                                     SchemaGeneration.NativeAvro(
@@ -694,46 +631,34 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("modelPackage 'com.example.configured'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(javaSourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
-    fun `generate writes native Protobuf schema artifacts to resource output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes native Protobuf schema artifacts to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufComponent()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeProtobuf()),
                 ),
         )
 
-        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
-        assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
-        assertFalse(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
     }
 
     @Test
-    fun `generate writes native Protobuf Java message artifacts to Java source output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes native Protobuf Java message artifacts to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufJavaMessageComponent()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas =
                         listOf(
                             SchemaGeneration.NativeProtobuf(
@@ -743,43 +668,33 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
-        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
-        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreatedOrBuilder.java").exists())
-        assertFalse(sourceOutputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreated.proto").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreated.java").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreatedOrBuilder.java").exists())
     }
 
     @Test
-    fun `generate writes external native Protobuf schema asset content to resource output directory`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+    fun `generate writes external native Protobuf schema asset content to output directory`() {
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = externalNativeProtobufSchemaAssetsDocument(),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeProtobuf()),
                 ),
         )
 
-        val schemaArtifact = resourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto")
+        val schemaArtifact = outputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto")
         assertTrue(schemaArtifact.exists())
         assertTrue(schemaArtifact.readText().contains("package com.example.external.protobuf;"))
         assertTrue(schemaArtifact.readText().contains("message UserCreatedProtobuf"))
-        assertFalse(sourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists())
-        assertFalse(
-            javaSourceOutputDirectory.resolve("com/example/external/protobuf/UserCreatedProtobuf.proto").exists(),
-        )
     }
 
     @Test
     fun `generate rejects multi format component schemas before writing model artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
@@ -787,8 +702,7 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             models =
                                 ModelGeneration.Enabled(
                                     packageName = "com.example.model",
@@ -799,14 +713,12 @@ class AsyncApiGeneratorOutputContractTest {
             }
 
         assertTrue(error.message!!.contains("Model generation cannot consume payload 'UserCreated'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate rejects multi format component schemas before writing avro projection artifacts`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         val error =
             assertFailsWith<AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat> {
@@ -814,29 +726,25 @@ class AsyncApiGeneratorOutputContractTest {
                     bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatComponent()),
                     generatorConfiguration =
                         generatorConfiguration(
-                            sourceOutputDirectory = sourceOutputDirectory,
-                            resourceOutputDirectory = resourceOutputDirectory,
+                            outputDirectory = outputDirectory,
                             schemas = listOf(SchemaGeneration.AvroProjection(packageName = "com.example.avro")),
                         ),
                 )
             }
 
         assertTrue(error.message!!.contains("Avro Projection cannot consume payload 'UserCreated'"))
-        assertFalse(sourceOutputDirectory.exists())
-        assertFalse(resourceOutputDirectory.exists())
+        assertFalse(outputDirectory.exists())
     }
 
     @Test
     fun `generate writes spring kafka artifacts for native avro message payloads`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithMultiFormatMessagePayload()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     client =
                         ClientGeneration(
                             packageName = "com.example.kafka",
@@ -845,23 +753,19 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt").exists())
-        assertTrue(sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
+        assertTrue(outputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt").exists())
+        assertTrue(outputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt").exists())
     }
 
     @Test
     fun `generate writes object Kafka key models alongside native Avro payload models and clients`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
 
         generator.generate(
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeAvroMessageAndObjectKey()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeAvro(generateSpecificRecords = true)),
                     client =
                         ClientGeneration(
@@ -871,21 +775,19 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        val keyModel = sourceOutputDirectory.resolve("com/example/model/UserCreatedKey.kt")
-        val producer = sourceOutputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt")
+        val keyModel = outputDirectory.resolve("com/example/model/UserCreatedKey.kt")
+        val producer = outputDirectory.resolve("com/example/kafka/producer/UserEventsProducer.kt")
         assertTrue(keyModel.exists())
         assertTrue(keyModel.readText().contains("data class UserCreatedKey("))
         assertTrue(producer.exists())
         assertTrue(producer.readText().contains("import com.example.model.UserCreatedKey"))
-        assertTrue(javaSourceOutputDirectory.resolve("com/example/avro/UserCreated.java").exists())
-        assertTrue(resourceOutputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
+        assertTrue(outputDirectory.resolve("com/example/avro/UserCreated.java").exists())
+        assertTrue(outputDirectory.resolve("com/example/avro/UserCreated.avsc").exists())
     }
 
     @Test
     fun `generate writes object Kafka key models alongside native Protobuf payload models and clients`() {
-        val sourceOutputDirectory = tempDir.resolve("sources").toFile()
-        val javaSourceOutputDirectory = tempDir.resolve("java-sources").toFile()
-        val resourceOutputDirectory = tempDir.resolve("resources").toFile()
+        val outputDirectory = tempDir.resolve("output").toFile()
         val protobufModels =
             ProtobufModelGeneration(
                 packageName = "com.example.protobuf",
@@ -895,9 +797,7 @@ class AsyncApiGeneratorOutputContractTest {
             bundled = BundledAsyncApiDocument(generationInputFixtures.documentWithNativeProtobufMessageAndObjectKey()),
             generatorConfiguration =
                 generatorConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                     schemas = listOf(SchemaGeneration.NativeProtobuf(models = protobufModels)),
                     client =
                         ClientGeneration(
@@ -907,14 +807,14 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-        val keyModel = sourceOutputDirectory.resolve("com/example/protobuf/UserCreatedKey.kt")
-        val consumer = sourceOutputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt")
+        val keyModel = outputDirectory.resolve("com/example/protobuf/UserCreatedKey.kt")
+        val consumer = outputDirectory.resolve("com/example/kafka/consumer/UserEventsConsumer.kt")
         assertTrue(keyModel.exists())
         assertTrue(keyModel.readText().contains("data class UserCreatedKey("))
         assertTrue(consumer.exists())
         assertTrue(consumer.readText().contains("import com.example.protobuf.UserCreatedKey"))
-        assertTrue(javaSourceOutputDirectory.resolve("com/example/protobuf/UserCreatedPayload.java").exists())
-        assertTrue(resourceOutputDirectory.resolve("com/example/protobuf/UserCreatedPayload.proto").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreatedPayload.java").exists())
+        assertTrue(outputDirectory.resolve("com/example/protobuf/UserCreatedPayload.proto").exists())
     }
 
     private fun bundledDocument() =
@@ -1039,25 +939,18 @@ class AsyncApiGeneratorOutputContractTest {
                 ),
         )
 
-    private fun jsonSchemaGeneratorConfiguration(
-        sourceOutputDirectory: File,
-        resourceOutputDirectory: File,
-    ): GeneratorConfiguration =
+    private fun jsonSchemaGeneratorConfiguration(outputDirectory: File): GeneratorConfiguration =
         GeneratorConfiguration(
             profile = GeneratorProfile.Schema(SchemaType.JSON_SCHEMA),
             output =
                 GeneratorOutputConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = sourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
             schemas = listOf(SchemaGeneration.JsonSchema(packageName = "com.example.jsonschema")),
         )
 
     private fun generatorConfiguration(
-        sourceOutputDirectory: File,
-        resourceOutputDirectory: File,
-        javaSourceOutputDirectory: File = sourceOutputDirectory,
+        outputDirectory: File,
         models: ModelGeneration = ModelGeneration.Disabled,
         schemas: List<SchemaGeneration> = emptyList(),
         client: ClientGeneration? = null,
@@ -1066,9 +959,7 @@ class AsyncApiGeneratorOutputContractTest {
             profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
             output =
                 GeneratorOutputConfiguration(
-                    sourceOutputDirectory = sourceOutputDirectory,
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
+                    outputDirectory = outputDirectory,
                 ),
             models = models,
             schemas = schemas,
@@ -1083,8 +974,7 @@ class AsyncApiGeneratorOutputContractTest {
             profile = GeneratorProfile.Document(format),
             output =
                 GeneratorOutputConfiguration(
-                    sourceOutputDirectory = tempDir.resolve("sources").toFile(),
-                    resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                    outputDirectory = tempDir.resolve("output").toFile(),
                     document =
                         DocumentOutput(
                             file = outputFile,

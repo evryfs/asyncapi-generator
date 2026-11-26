@@ -67,8 +67,7 @@ class GeneratedOutputManifestTest {
         vararg relativePaths: String,
     ) {
         FileSystemGeneratedArtifactWriter(
-            sourceOutputDirectory = sources,
-            resourceOutputDirectory = sources,
+            outputDirectory = sources,
             manifest = GeneratedOutputManifest(manifestFile, owner),
         ).write(
             GenerationResult(

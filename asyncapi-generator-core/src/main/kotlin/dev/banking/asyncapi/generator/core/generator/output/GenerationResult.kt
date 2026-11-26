@@ -10,8 +10,6 @@ data class GenerationResult(
 ) {
     fun isEmpty(): Boolean = artifacts.isEmpty() && documentArtifacts.isEmpty()
 
-    fun artifactsOfKind(kind: GeneratedArtifactKind): List<GeneratedArtifact> = artifacts.filter { it.kind == kind }
-
     operator fun plus(other: GenerationResult): GenerationResult =
         GenerationResult(
             artifacts = artifacts + other.artifacts,

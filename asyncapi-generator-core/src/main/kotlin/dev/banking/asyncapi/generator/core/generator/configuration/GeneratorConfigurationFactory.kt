@@ -115,9 +115,7 @@ object GeneratorConfigurationFactory {
         profile: GeneratorProfile,
     ): GeneratorOutputConfiguration =
         GeneratorOutputConfiguration(
-            sourceOutputDirectory = settings.outputDirectory,
-            javaSourceOutputDirectory = settings.outputDirectory,
-            resourceOutputDirectory = settings.outputDirectory,
+            outputDirectory = settings.outputDirectory,
             manifest = settings.manifest,
             document =
                 settings.outputFile?.let { outputFile ->

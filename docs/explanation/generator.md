@@ -83,7 +83,10 @@ Package `configuration` turns what a user configured into a
    schemas. Nothing is written until every task has rendered. A new task type
    needs a `GenerationTask` subtype, a planner branch, a renderer, and one
    branch in `GenerationTasks`.
-5. **Write** (`output`). `FileSystemGeneratedArtifactWriter` rejects two
+5. **Write** (`output`). Every artifact is written under the one output
+   directory at its relative path; its kind, `SOURCE` or `SCHEMA`, says
+   whether the build compiles it or packages it as a resource. Bundled
+   documents go to their own file. `FileSystemGeneratedArtifactWriter` rejects two
    artifacts with the same destination, stages every file, skips files whose
    content is unchanged, and replaces the rest atomically where the file
    system allows. With a `GeneratedOutputManifest` it then removes files the

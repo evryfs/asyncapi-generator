@@ -19,7 +19,6 @@ class AvroSchemaApprovalTest : AbstractAvroGeneratorClass() {
             generateAvro(
                 yaml = File("src/test/resources/generator/asyncapi_enum_default_value.yaml"),
                 codegenOutputDirectory = tempDir.resolve("sources").toFile(),
-                resourceOutputDirectory = tempDir.resolve("resources").toFile(),
                 packageName = "com.example.avro",
                 schema = "Task.avsc",
             )

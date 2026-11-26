@@ -10,10 +10,8 @@ import java.nio.file.StandardCopyOption
 /**
  * Writes generated artifacts to the filesystem, preserving outputs from earlier executions.
  *
- * Source artifacts are written under [sourceOutputDirectory]. Java source
- * artifacts are written under [javaSourceOutputDirectory]. Resource and schema
- * artifacts are written under [resourceOutputDirectory]. Bundled documents are
- * written to their explicitly configured files.
+ * Sources and schemas are written under [outputDirectory] at their relative paths. Bundled
+ * documents are written to their explicitly configured files.
  *
  * The writer guarantees:
  * - Atomic per-file replacement when the filesystem supports it.
@@ -29,18 +27,14 @@ import java.nio.file.StandardCopyOption
  * destination is under a cleaned build directory. Bundled documents targeting
  * arbitrary locations outside build output may require manual cleanup.
  *
- * @param sourceOutputDirectory root directory for Kotlin and general source artifacts
- * @param resourceOutputDirectory root directory for resource and schema artifacts
- * @param javaSourceOutputDirectory root directory for Java source artifacts
+ * @param outputDirectory root directory of generated sources and schemas
  * @param manifest records generated files across runs; without it, stale files are kept
  */
 class FileSystemGeneratedArtifactWriter(
-    private val sourceOutputDirectory: File,
-    private val resourceOutputDirectory: File,
-    private val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    private val outputDirectory: File,
     private val manifest: GeneratedOutputManifest? = null,
-) : GeneratedArtifactWriter {
-    override fun write(result: GenerationResult) {
+) {
+    fun write(result: GenerationResult) {
         val outputs = resolveOutputs(result)
         if (outputs.isEmpty()) return
 
@@ -57,10 +51,7 @@ class FileSystemGeneratedArtifactWriter(
             for (staged in toCommit) {
                 commitFile(staged)
             }
-            manifest?.update(
-                result.artifacts.map(::outputFile),
-                listOf(sourceOutputDirectory, javaSourceOutputDirectory, resourceOutputDirectory),
-            )
+            manifest?.update(result.artifacts.map(::outputFile), listOf(outputDirectory))
         } catch (ex: Exception) {
             primaryFailure = ex
             throw ex
@@ -227,18 +218,7 @@ class FileSystemGeneratedArtifactWriter(
         }
     }
 
-    private fun outputFile(artifact: GeneratedArtifact): File {
-        val outputRoot = outputRoot(artifact)
-        return outputRoot.toPath().resolve(artifact.relativePath).toFile()
-    }
-
-    private fun outputRoot(artifact: GeneratedArtifact): File =
-        when (artifact.kind) {
-            GeneratedArtifactKind.SOURCE -> sourceOutputDirectory
-            GeneratedArtifactKind.JAVA_SOURCE -> javaSourceOutputDirectory
-            GeneratedArtifactKind.RESOURCE -> resourceOutputDirectory
-            GeneratedArtifactKind.SCHEMA -> resourceOutputDirectory
-        }
+    private fun outputFile(artifact: GeneratedArtifact): File = outputDirectory.resolve(artifact.relativePath)
 
     private data class ResolvedOutput(
         val file: File,

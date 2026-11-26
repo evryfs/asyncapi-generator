@@ -37,8 +37,7 @@ class GenerationPlannerTest {
                     profile = GeneratorProfile.Document(DocumentFormat.JSON),
                     output =
                         GeneratorOutputConfiguration(
-                            sourceOutputDirectory = tempDir.resolve("sources").toFile(),
-                            resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                            outputDirectory = tempDir.resolve("output").toFile(),
                             document =
                                 DocumentOutput(
                                     file = outputFile,
@@ -363,8 +362,7 @@ class GenerationPlannerTest {
             profile = GeneratorProfile.Source(language),
             output =
                 GeneratorOutputConfiguration(
-                    sourceOutputDirectory = tempDir.resolve("sources").toFile(),
-                    resourceOutputDirectory = tempDir.resolve("resources").toFile(),
+                    outputDirectory = tempDir.resolve("output").toFile(),
                 ),
             models = models,
             schemas = schemas,

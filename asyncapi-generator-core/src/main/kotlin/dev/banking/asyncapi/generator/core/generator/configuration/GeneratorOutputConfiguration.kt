@@ -4,18 +4,14 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManif
 import java.io.File
 
 /**
- * Output directories used by generated source and resource artifacts.
+ * Where generated output is written.
  *
- * @param sourceOutputDirectory the directory for generated sources.
- * @param resourceOutputDirectory the directory for generated schemas.
- * @param javaSourceOutputDirectory the directory for generated Java sources.
+ * @param outputDirectory the directory generated sources and schemas are written to.
  * @param document the bundled document to write, or `null` for none.
  * @param manifest the record of generated files used to remove stale ones, or `null` to keep every file.
  */
 data class GeneratorOutputConfiguration(
-    val sourceOutputDirectory: File,
-    val resourceOutputDirectory: File,
-    val javaSourceOutputDirectory: File = sourceOutputDirectory,
+    val outputDirectory: File,
     val document: DocumentOutput? = null,
     val manifest: GeneratedOutputManifest? = null,
 )

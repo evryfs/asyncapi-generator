@@ -1,11 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator.output
 
 /**
- * High-level destination category for generated artifacts.
+ * What a generated artifact is to the build that consumes it.
  */
 enum class GeneratedArtifactKind {
+    /** Kotlin or Java source, compiled with the project. */
     SOURCE,
-    JAVA_SOURCE,
-    RESOURCE,
+
+    /** A schema file, such as `.avsc`, `.proto` or `.json`, packaged as a resource. */
     SCHEMA,
 }

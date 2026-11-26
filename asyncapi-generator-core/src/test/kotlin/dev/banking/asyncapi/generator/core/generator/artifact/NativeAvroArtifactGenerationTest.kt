@@ -29,7 +29,7 @@ class NativeAvroArtifactGenerationTest {
         assertEquals(
             setOf(
                 "com/example/schemas/UserCreated.avsc" to GeneratedArtifactKind.SCHEMA,
-                "com/example/avro/UserCreated.java" to GeneratedArtifactKind.JAVA_SOURCE,
+                "com/example/avro/UserCreated.java" to GeneratedArtifactKind.SOURCE,
             ),
             result.artifacts.map { it.relativePath to it.kind }.toSet(),
         )

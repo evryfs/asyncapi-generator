@@ -49,7 +49,7 @@ class NativeProtobufArtifactGenerationTest {
             )
 
         assertEquals(
-            GeneratedArtifactKind.JAVA_SOURCE,
+            GeneratedArtifactKind.SOURCE,
             result.artifacts.single { it.relativePath == "com/example/protobuf/UserCreated.java" }.kind,
         )
         assertEquals(
