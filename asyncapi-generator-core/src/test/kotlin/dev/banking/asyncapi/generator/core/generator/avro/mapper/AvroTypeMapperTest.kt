@@ -3,8 +3,10 @@ package dev.banking.asyncapi.generator.core.generator.avro.mapper
 import dev.banking.asyncapi.generator.core.generator.avro.model.AvroType
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.TypeRef
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.UnionModel
+import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UntypedAvroValue
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class AvroTypeMapperTest {
     private val pet =
@@ -34,12 +36,22 @@ class AvroTypeMapperTest {
                     "{\"type\": \"array\", \"items\": [\"com.example.avro.Dog\", \"com.example.avro.Cat\"]}",
             )
 
-        expectations.forEach { (type, json) -> assertEquals(json, mapper.map(type).json(), "$type") }
+        expectations.forEach { (type, json) -> assertEquals(json, mapper.map(type, "value").json(), "$type") }
+    }
+
+    @Test
+    fun `a value that may be anything fails with its location`() {
+        val failure =
+            assertFailsWith<UntypedAvroValue> {
+                mapper.map(TypeRef.MapOf(TypeRef.Scalar.ANY), "property 'details' in components.schemas.Audit")
+            }
+
+        assertEquals("property 'details' in components.schemas.Audit", failure.location)
     }
 
     @Test
     fun `a field typed by a union holds its members, with null first unless there is a default`() {
-        val union = mapper.map(TypeRef.Named("Pet", isModel = true))
+        val union = mapper.map(TypeRef.Named("Pet", isModel = true), "pet")
 
         assertEquals("[\"com.example.avro.Dog\", \"com.example.avro.Cat\"]", union.json())
         assertEquals(

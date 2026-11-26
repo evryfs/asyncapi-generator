@@ -70,6 +70,7 @@ application.
 | `boolean`                                  | `boolean`                                                                                  |
 | `array`                                    | `array`, with item types mapped recursively, including arrays of arrays                    |
 | Object with `additionalProperties`         | `map`, with value types mapped recursively                                                 |
+| Value that may be anything                 | Fails, see below                                                                           |
 | `oneOf` or `anyOf`                         | A union of the member types, also as array items and map values                            |
 | `description`                              | `doc`, JSON-escaped                                                                        |
 
@@ -83,6 +84,16 @@ Optional properties become unions with `null`:
   because Avro encodes those types differently.
 - An optional `oneOf` becomes one flat union with `null` first, because Avro
   unions cannot contain unions.
+
+### Every value needs a type
+
+Avro has no type for a value that may be anything. An object without
+properties (`type: object`, which accepts any object), a schema without a
+type, a list of types such as `[string, integer]`, an array without `items`,
+or a map whose values have no type fails generation with a message naming the
+property, such as `property 'details' in components.schemas.AuditRecorded
+accepts any value`. Give the value a type in the contract, for example
+`additionalProperties: {type: string}` for a map of strings.
 
 ### Names must already be valid Avro names
 

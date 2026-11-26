@@ -1,0 +1,21 @@
+asyncapi: 3.0.0
+info:
+  title: Untyped Avro value
+  version: 1.0.0
+channels:
+  audits:
+    address: audits
+    messages:
+      auditRecorded:
+        payload:
+          $ref: '#/components/schemas/AuditRecorded'
+components:
+  schemas:
+    AuditRecorded:
+      type: object
+      properties:
+        actor:
+          type: string
+        details:
+          description: An open object, which accepts any object.
+          type: object

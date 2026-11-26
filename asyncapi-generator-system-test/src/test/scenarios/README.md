@@ -80,3 +80,4 @@ in the contract, that every frontend must reject with a clear message:
 | [diagnostics-ref-operation-channel-scope](diagnostics-ref-operation-channel-scope) | A root operation or reply reached through `$ref` that uses a component channel instead of a root channel. |
 | [diagnostics-invalid-component-name](diagnostics-invalid-component-name) | A components key with characters the spec does not allow. |
 | [diagnostics-invalid-avro-name](diagnostics-invalid-avro-name) | A property name that is not a valid Avro name. |
+| [diagnostics-avro-untyped-value](diagnostics-avro-untyped-value) | An open object property, which Avro has no type for. |

@@ -6,14 +6,12 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinition
 import dev.banking.asyncapi.generator.core.generator.sourcemodel.ModelDefinitionFactory
-import dev.banking.asyncapi.generator.core.generator.sourcemodel.OpenObjectModel
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.InvalidGeneratedAvroSchema
 import org.apache.avro.Schema
 import org.apache.avro.SchemaParseException
 
 /**
- * Renders the models of a contract as Avro schema artifacts, in the order of their names. An open
- * object becomes an empty record when its schema is `type: object`; a schema without a type has none.
+ * Renders the models of a contract as Avro schema artifacts, in the order of their names.
  *
  * @param packageName the Avro namespace of the generated schemas
  */
@@ -27,7 +25,6 @@ internal class AvroGenerator(
         val factory = AvroGeneratorModelFactory(packageName, models)
         return GenerationResult(
             models
-                .filter { model -> model !is OpenObjectModel || input.schemas[model.name]?.type?.primary == "object" }
                 .sortedBy(ModelDefinition::name)
                 .mapNotNull { model -> factory.create(model)?.let(generator::render) }
                 .also(::verifyParses),
