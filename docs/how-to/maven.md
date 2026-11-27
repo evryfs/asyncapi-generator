@@ -40,8 +40,9 @@ mvn generate-sources
 ```
 
 Generated sources are written to `target/generated-sources/asyncapi` by
-default. The plugin registers the directories it writes to as compile source
-roots, and generated schema files as resources, so `mvn compile` and
+default. An execution that generates sources registers the output directory
+as a compile source root, and one that generates schemas registers its schema
+files as resources, so `mvn compile` and
 `mvn package` pick them up without further configuration. The goal binds to
 `generate-sources` by default.
 

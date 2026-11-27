@@ -45,6 +45,7 @@ have to describe the same configuration.
 | [protobuf-compact-schema](protobuf-compact-schema) | Java Protobuf messages and the `.proto` schema from a native schema with several declarations on one line and braces in comments. |
 | [doc-comments](doc-comments) | Kotlin, Java, and Avro documentation keeps descriptions as written, including a leading `>`, `\|`, or quote. |
 | [any-value-properties](any-value-properties) | Kotlin and Java models type a property whose schema is `true` as any value. |
+| [project-resources](project-resources) | Generated sources and schemas in one directory, next to a project resource named like a Kotlin source, which stays packaged. |
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [kafka-scalar-payloads](kafka-scalar-payloads) | Spring Kafka clients for UUID, date, date-time and number payloads, typed as models type them, in Kotlin and Java. |

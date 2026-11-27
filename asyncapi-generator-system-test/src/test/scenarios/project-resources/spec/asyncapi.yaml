@@ -1,0 +1,18 @@
+asyncapi: 3.0.0
+info:
+  title: Project resources
+  version: 1.0.0
+channels:
+  notes:
+    address: notes
+    messages:
+      note:
+        payload:
+          $ref: '#/components/schemas/Note'
+components:
+  schemas:
+    Note:
+      type: object
+      properties:
+        text:
+          type: string
