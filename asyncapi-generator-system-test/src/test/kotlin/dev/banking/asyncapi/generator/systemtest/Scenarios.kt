@@ -550,6 +550,18 @@ private val allScenarios: List<Scenario> = listOf(
         ),
     ),
     Scenario(
+        name = "javadoc-html",
+        executions = listOf(
+            Execution(
+                id = "java-models",
+                generatorName = "java",
+                modelPackage = "com.example.javadochtml.model",
+                clientPackage = "com.example.javadochtml.client",
+            ),
+        ),
+        client = ClientConfig(),
+    ),
+    Scenario(
         name = "diagnostics-property-name-collision",
         executions = listOf(
             Execution(id = "property-name-collision", generatorName = "kotlin", modelPackage = "com.example.model"),

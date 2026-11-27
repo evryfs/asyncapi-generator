@@ -34,8 +34,15 @@ internal object DocComments {
             .flatMap { logicalLine ->
                 wrapLine(logicalLine)
             }.filter { it.isNotBlank() }
+            .map(::escapeJavaHtml)
             .map(::escapeJavaComment)
     }
+
+    /**
+     * Javadoc is HTML, and `javadoc` rejects a bare `&` and a `<` that opens no valid tag. Both are written
+     * as entities, so the text reads as the contract wrote it; `>` is valid on its own and stays.
+     */
+    private fun escapeJavaHtml(line: String): String = line.replace("&", "&amp;").replace("<", "&lt;")
 
     /** Keeps text inside a Javadoc comment: `*` + `/` would end the comment early. */
     private fun escapeJavaComment(line: String): String = line.replace("*/", "*&#47;")
