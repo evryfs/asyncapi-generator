@@ -8,7 +8,12 @@ import org.apache.maven.project.MavenProject
 import java.io.File
 
 /**
- * Registers generated source and schema directories with the Maven project.
+ * Registers the output directory of an execution with the Maven project: as a compile source root
+ * when the execution generates sources, and as a resource root without sources when it generates
+ * schemas.
+ *
+ * @param project the project the directories are registered with
+ * @param generationPlanner plans the execution, whose output kinds decide the registration
  */
 internal class MavenGeneratedOutputRegistrar(
     private val project: MavenProject,

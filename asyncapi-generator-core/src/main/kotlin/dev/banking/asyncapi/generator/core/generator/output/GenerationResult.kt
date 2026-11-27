@@ -3,6 +3,9 @@ package dev.banking.asyncapi.generator.core.generator.output
 /**
  * Result of a generator run before rooted artifacts and explicit bundled
  * documents are written to disk.
+ *
+ * @param artifacts the sources and schemas written under the output directory
+ * @param documentArtifacts the bundled documents written to their own files
  */
 data class GenerationResult(
     val artifacts: List<GeneratedArtifact>,

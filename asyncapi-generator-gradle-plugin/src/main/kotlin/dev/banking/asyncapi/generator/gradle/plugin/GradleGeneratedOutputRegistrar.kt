@@ -13,6 +13,8 @@ import org.gradle.language.jvm.tasks.ProcessResources
 /**
  * Registers the output directory of each execution with the main source set: as Java and Kotlin
  * sources when the execution generates sources, and as resources when it generates schemas.
+ *
+ * @param project the project whose main source set receives the directories
  */
 internal class GradleGeneratedOutputRegistrar(
     private val project: Project,

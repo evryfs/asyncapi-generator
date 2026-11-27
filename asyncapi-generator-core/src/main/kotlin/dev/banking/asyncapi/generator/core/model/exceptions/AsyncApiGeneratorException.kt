@@ -3,6 +3,12 @@ package dev.banking.asyncapi.generator.core.model.exceptions
 sealed class AsyncApiGeneratorException(
     message: String,
 ) : Exception(message) {
+    /**
+     * Two artifacts of one run would be written to the same file, so one of them would be lost.
+     *
+     * @param destination the file both would be written to
+     * @param artifacts the colliding artifacts, by kind and path
+     */
     class GeneratedArtifactCollision(
         destination: String,
         artifacts: List<String>,
