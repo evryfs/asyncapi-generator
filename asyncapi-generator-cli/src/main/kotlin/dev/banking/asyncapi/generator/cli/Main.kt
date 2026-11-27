@@ -8,10 +8,10 @@ import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
+import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
@@ -83,7 +83,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
 
             val bundler = AsyncApiBundler()
             val bundledDoc = bundler.bundle(loaded)
-            AsyncApiGenerator(MavenRepositoryProtocProvider(override = generationOptions.protocExecutable?.toPath()))
+            GenerationPipeline(MavenRepositoryProtocProvider(override = generationOptions.protocExecutable?.toPath()))
                 .generate(bundledDoc, generatorConfiguration)
         } catch (exception: Exception) {
             throw CliktError(

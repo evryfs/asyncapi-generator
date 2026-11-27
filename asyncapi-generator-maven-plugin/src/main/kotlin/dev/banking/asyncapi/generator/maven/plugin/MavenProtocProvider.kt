@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocPlatform
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.DefaultArtifact

@@ -1,12 +1,12 @@
 package dev.banking.asyncapi.generator.core.generator
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.bundler.BundledAsyncApiDocument
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
 import dev.banking.asyncapi.generator.core.generator.input.GenerationInputFactory
 import dev.banking.asyncapi.generator.core.generator.output.FileSystemGeneratedArtifactWriter
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.task.GenerationContext
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.NoArtifactsGenerated
 
@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
  * @param protocProvider Supplies `protoc` for native Protobuf model generation; frontends pass one
  *   that resolves it through their build tool's repositories.
  */
-class AsyncApiGenerator(
+class GenerationPipeline(
     protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
 ) {
     private val generationInputFactory = GenerationInputFactory()

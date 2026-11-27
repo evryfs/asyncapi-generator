@@ -46,13 +46,13 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AsyncApiGeneratorOutputContractTest {
+class GenerationPipelineOutputContractTest {
     private val jsonMapper = ObjectMapper()
     private val yamlMapper = ObjectMapper(YAMLFactory())
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     private val generationInputFixtures = GenerationInputFixtures()
-    private val generator = AsyncApiGenerator()
+    private val generator = GenerationPipeline()
 
     @TempDir
     lateinit var tempDir: Path

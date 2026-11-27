@@ -1,5 +1,8 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
+
 /**
  * Turns [GeneratorSettings] into a typed [GeneratorConfiguration].
  *
@@ -116,7 +119,7 @@ object GeneratorConfigurationFactory {
     ): GeneratorOutputConfiguration =
         GeneratorOutputConfiguration(
             outputDirectory = settings.outputDirectory,
-            manifest = settings.manifest,
+            manifest = settings.manifest?.let { GeneratedOutputManifest(it.file, it.executionName) },
             document =
                 settings.outputFile?.let { outputFile ->
                     DocumentOutput(

@@ -1,13 +1,12 @@
 package dev.banking.asyncapi.generator.gradle.plugin.tasks
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -125,7 +124,9 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
 
         val generatorConfiguration =
             GeneratorConfigurationFactory.create(
-                settings().copy(manifest = GeneratedOutputManifest(outputManifest.get().asFile, executionName.get())),
+                settings().copy(
+                    manifest = GeneratorSettings.Manifest(outputManifest.get().asFile, executionName.get()),
+                ),
             )
         generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { logger.warn(it.trimEnd()) }
         val loaded = AsyncApiDocumentLoader().load(inputSpec.get().asFile)
@@ -134,7 +135,7 @@ abstract class GenerateAsyncApiTask : DefaultTask() {
         }
 
         val bundled = AsyncApiBundler().bundle(loaded)
-        AsyncApiGenerator(ProtocProvider { protoc.singleFile.toPath().also { it.toFile().setExecutable(true) } })
+        GenerationPipeline(ProtocProvider { protoc.singleFile.toPath().also { it.toFile().setExecutable(true) } })
             .generate(bundled, generatorConfiguration)
 
         logger.lifecycle("AsyncAPI generation '$name' completed")

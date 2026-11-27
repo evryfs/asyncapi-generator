@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.artifact.AvroSchemaArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.DocumentArtifactGeneration
 import dev.banking.asyncapi.generator.core.generator.artifact.JsonSchemaArtifactGeneration
@@ -12,7 +13,6 @@ import dev.banking.asyncapi.generator.core.generator.kafka.spring.client.SpringK
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.task.GenerationContext
 import dev.banking.asyncapi.generator.core.generator.task.TaskRenderer
 

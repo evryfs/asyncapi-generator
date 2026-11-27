@@ -15,7 +15,7 @@ import java.io.File
 abstract class AbstractJavaGeneratorClass {
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
-    protected val generator = AsyncApiGenerator()
+    protected val generator = GenerationPipeline()
 
     protected fun generateElement(
         yaml: File,

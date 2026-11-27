@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
+
 /**
  * Selects the schema artifacts a configuration generates.
  *

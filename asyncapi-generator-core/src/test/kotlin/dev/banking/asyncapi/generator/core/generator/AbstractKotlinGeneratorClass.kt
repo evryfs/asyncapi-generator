@@ -15,7 +15,7 @@ import java.io.File
 abstract class AbstractKotlinGeneratorClass {
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
-    val generator = AsyncApiGenerator()
+    val generator = GenerationPipeline()
 
     fun generateElement(
         yaml: File,

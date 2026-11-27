@@ -40,7 +40,7 @@ safety limits belong here, before AsyncAPI meaning is applied.
 Malformed syntax, unsupported extensions, unreadable files, duplicate keys,
 recursive YAML aliases, and resource-limit violations stop the pipeline. See
 [Use the core library](../how-to/load-asyncapi-document.md) for the public
-loading API.
+API.
 
 ## Parse and load local references
 
