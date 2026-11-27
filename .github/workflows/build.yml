@@ -9,6 +9,11 @@ on:
 permissions:
   contents: read
 
+# A newer push to a pull request replaces its running checks; runs on main always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   release-checks:
     runs-on: ubuntu-latest
@@ -110,6 +115,17 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      # The consumer builds use their own local repository, so their third-party dependencies are
+      # not in the setup-java cache. The generator's artifacts are staged anew on every run.
+      - name: Cache consumer build dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            asyncapi-generator-system-test/target/system-test-repo
+            !asyncapi-generator-system-test/target/system-test-repo/dev/banking
+          key: system-test-repo-${{ hashFiles('**/pom.xml', 'asyncapi-generator-system-test/src/test/scenarios/**/build.gradle*') }}
+          restore-keys: system-test-repo-
 
       # Unit tests and the Maven plugin's own integration test run in the build job.
       - name: Run system tests
