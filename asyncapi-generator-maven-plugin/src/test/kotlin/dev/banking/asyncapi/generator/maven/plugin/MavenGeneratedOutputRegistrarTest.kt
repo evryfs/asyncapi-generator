@@ -1,9 +1,8 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.ConfiguredGeneration
 import dev.banking.asyncapi.generator.core.GeneratorSettings
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
 import org.apache.maven.project.MavenProject
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -17,7 +16,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("source")
         val configuration =
             configuration(
-                generatorName = GeneratorName.KOTLIN,
+                generatorName = "kotlin",
                 outputDirectory = outputDirectory,
                 modelPackage = "com.example.model",
             )
@@ -37,7 +36,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("schema")
         val configuration =
             configuration(
-                generatorName = GeneratorName.AVRO_SCHEMA,
+                generatorName = "avro-schema",
                 outputDirectory = outputDirectory,
                 schemaPackage = "com.example.schema",
             )
@@ -56,7 +55,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("protobuf")
         val configuration =
             configuration(
-                generatorName = GeneratorName.KOTLIN,
+                generatorName = "kotlin",
                 outputDirectory = outputDirectory,
                 modelPackage = "com.example.protobuf",
                 modelType = "protobuf-message",
@@ -74,7 +73,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("avro")
         val configuration =
             configuration(
-                generatorName = GeneratorName.KOTLIN,
+                generatorName = "kotlin",
                 outputDirectory = outputDirectory,
                 modelPackage = "com.example.avro",
                 modelType = "avro-specific-record",
@@ -93,7 +92,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("document")
         val configuration =
             configuration(
-                generatorName = GeneratorName.ASYNCAPI_JSON,
+                generatorName = "asyncapi-json",
                 outputDirectory = outputDirectory,
                 outputFile = outputDirectory.resolve("asyncapi.json"),
             )
@@ -110,7 +109,7 @@ class MavenGeneratedOutputRegistrarTest {
         val outputDirectory = outputDirectory("native-avro")
         val configuration =
             configuration(
-                generatorName = GeneratorName.JAVA,
+                generatorName = "java",
                 outputDirectory = outputDirectory,
                 modelPackage = "com.example.avro",
                 modelType = "avro-specific-record",
@@ -125,17 +124,17 @@ class MavenGeneratedOutputRegistrarTest {
     }
 
     private fun configuration(
-        generatorName: GeneratorName,
+        generatorName: String,
         outputDirectory: File,
         outputFile: File? = null,
         schemaPackage: String? = null,
         modelPackage: String? = null,
         modelType: String? = null,
         clientPackage: String? = null,
-    ): GeneratorConfiguration =
-        GeneratorConfigurationFactory.create(
+    ): ConfiguredGeneration =
+        AsyncApiGenerator().configure(
             GeneratorSettings(
-                generatorName = generatorName.configurationValue,
+                generatorName = generatorName,
                 outputDirectory = outputDirectory,
                 outputFile = outputFile,
                 modelPackage = modelPackage,

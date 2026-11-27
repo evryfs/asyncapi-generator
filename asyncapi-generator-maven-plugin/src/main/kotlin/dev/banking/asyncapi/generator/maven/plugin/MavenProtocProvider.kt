@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.ProtocProvider
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocPlatform
 import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.DefaultArtifact
@@ -19,7 +18,8 @@ internal class MavenProtocProvider(
     private val repositories: List<RemoteRepository>,
 ) : ProtocProvider {
     override fun protoc(version: String): Path {
-        val artifact = DefaultArtifact("com.google.protobuf", "protoc", ProtocPlatform.classifier(), "exe", version)
+        val artifact =
+            DefaultArtifact("com.google.protobuf", "protoc", ProtocProvider.platformClassifier(), "exe", version)
         val file =
             repositorySystem
                 .resolveArtifact(

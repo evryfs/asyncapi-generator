@@ -1,12 +1,9 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.AsyncApiGenerationException
+import dev.banking.asyncapi.generator.core.AsyncApiGenerator
 import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.core.ProtocProvider
-import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
-import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecution
 import org.apache.maven.plugin.MojoExecutionException
@@ -20,6 +17,10 @@ import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.repository.RemoteRepository
 import java.io.File
 
+/**
+ * Generates models, client contracts, schemas or a bundled document from an AsyncAPI contract, and
+ * registers the generated sources and schemas with the project.
+ */
 @Mojo(
     name = "generate",
     defaultPhase = LifecyclePhase.GENERATE_SOURCES,
@@ -82,46 +83,35 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter
     private var suppressedWarnings: List<String>? = null
 
-    private val loader = AsyncApiDocumentLoader()
-    private val bundler = AsyncApiBundler()
-
     override fun execute() {
+        log.info("asyncapi-generator-maven-plugin started")
+        val generator = AsyncApiGenerator(protocProvider())
         try {
-            log.info("asyncapi-generator-maven-plugin started")
-            loader.requireInputFile(inputSpec)
-            val generatorConfiguration = generatorConfiguration()
-            generatorConfiguration.formatWarnings().takeIf(String::isNotEmpty)?.let { log.warn(it.trimEnd()) }
-            val loaded = loader.load(inputSpec)
-            if (loaded.warnings.isNotEmpty()) {
-                log.warn(loaded.formatWarnings().trimEnd())
+            generator.requireInputFile(inputSpec)
+            val generation = generator.configure(settings())
+            if (generation.warnings.isNotEmpty()) {
+                log.warn(generation.warnings)
             }
-            val bundled = bundler.bundle(loaded)
-            GenerationPipeline(protocProvider()).generate(bundled, generatorConfiguration)
-            MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
-            log.info("asyncapi-generator-maven-plugin completed successfully")
-        } catch (e: MojoExecutionException) {
-            throw e
-        } catch (e: IllegalArgumentException) {
-            throw MojoExecutionException(e.message, e)
-        } catch (e: Exception) {
-            throw MojoExecutionException(e.message, e)
+            generator.generate(inputSpec, generation) { warnings -> log.warn(warnings) }
+            MavenGeneratedOutputRegistrar(project).register(generation)
+        } catch (exception: AsyncApiGenerationException) {
+            throw MojoExecutionException(exception.message, exception)
         }
+        log.info("asyncapi-generator-maven-plugin completed successfully")
     }
 
-    private fun generatorConfiguration() =
-        GeneratorConfigurationFactory.create(
-            GeneratorSettings(
-                generatorName = generatorName,
-                outputDirectory = outputDirectory,
-                outputFile = outputFile,
-                modelPackage = modelPackage,
-                clientPackage = clientPackage,
-                schemaPackage = schemaPackage,
-                modelConfig = modelConfig?.toSettings(),
-                clientConfig = clientConfig?.toSettings(),
-                suppressedWarnings = suppressedWarnings.orEmpty(),
-                manifest = outputManifest(),
-            ),
+    private fun settings() =
+        GeneratorSettings(
+            generatorName = generatorName,
+            outputDirectory = outputDirectory,
+            outputFile = outputFile,
+            modelPackage = modelPackage,
+            clientPackage = clientPackage,
+            schemaPackage = schemaPackage,
+            modelConfig = modelConfig?.toSettings(),
+            clientConfig = clientConfig?.toSettings(),
+            suppressedWarnings = suppressedWarnings.orEmpty(),
+            manifest = outputManifest(),
         )
 
     /** One manifest per project, shared by all executions, so executions writing to one directory cooperate. */
@@ -134,13 +124,13 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         }
 
     private fun protocProvider(): ProtocProvider {
-        protocExecutable?.let { return MavenRepositoryProtocProvider(override = it.toPath()) }
+        protocExecutable?.let { return ProtocProvider.executable(it.toPath()) }
         val system = repositorySystem
         val session = repositorySession
         return if (system != null && session != null) {
             MavenProtocProvider(system, session, remoteRepositories.orEmpty())
         } else {
-            MavenRepositoryProtocProvider()
+            ProtocProvider.fromMavenRepository()
         }
     }
 }
