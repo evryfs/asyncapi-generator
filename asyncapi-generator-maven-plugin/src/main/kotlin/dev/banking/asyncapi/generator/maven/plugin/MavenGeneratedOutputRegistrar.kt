@@ -1,10 +1,8 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorOutputConfiguration
-import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
+import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
-import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.apache.maven.model.Resource
 import org.apache.maven.project.MavenProject
 import java.io.File
@@ -17,16 +15,14 @@ internal class MavenGeneratedOutputRegistrar(
     private val generationPlanner: GenerationPlanner = GenerationPlanner(),
 ) {
     fun register(configuration: GeneratorConfiguration) {
-        val tasks = generationPlanner.plan(configuration).tasks
+        val outputKinds = generationPlanner.plan(configuration).outputKinds
+        val outputDirectory = configuration.output.outputDirectory
 
-        tasks
-            .flatMap { task -> task.sourceDirectories(configuration.output) }
-            .map { directory -> directory.normalizedAbsolutePath() }
-            .distinct()
-            .forEach(::registerCompileSourceRoot)
-
-        if (tasks.any { task -> task.generatesSchemaResources() }) {
-            registerSchemaResourceRoot(configuration.output.outputDirectory)
+        if (GeneratedArtifactKind.SOURCE in outputKinds) {
+            registerCompileSourceRoot(outputDirectory.normalizedAbsolutePath())
+        }
+        if (GeneratedArtifactKind.SCHEMA in outputKinds) {
+            registerSchemaResourceRoot(outputDirectory)
         }
     }
 
@@ -56,44 +52,6 @@ internal class MavenGeneratedOutputRegistrar(
             )
         }
     }
-
-    private fun GenerationTask.sourceDirectories(output: GeneratorOutputConfiguration): List<File> =
-        when (this) {
-            is GenerationTask.ModelArtifacts,
-            is GenerationTask.KafkaKeyModelArtifacts,
-            is GenerationTask.SpringKafkaClient,
-            -> listOf(output.outputDirectory)
-            is GenerationTask.NativeAvroArtifacts ->
-                listOfNotNull(output.outputDirectory.takeIf { schema.generateSpecificRecords })
-            is GenerationTask.NativeProtobufArtifacts ->
-                schema.models
-                    ?.let { modelGeneration ->
-                        buildList {
-                            add(output.outputDirectory)
-                            if (modelGeneration.modelType == ProtobufModelType.KOTLIN) {
-                                add(output.outputDirectory)
-                            }
-                        }
-                    }.orEmpty()
-            is GenerationTask.AvroSchemaArtifacts,
-            is GenerationTask.DocumentArtifact,
-            is GenerationTask.JsonSchemaArtifacts,
-            -> emptyList()
-        }
-
-    private fun GenerationTask.generatesSchemaResources(): Boolean =
-        when (this) {
-            is GenerationTask.AvroSchemaArtifacts,
-            is GenerationTask.JsonSchemaArtifacts,
-            is GenerationTask.NativeAvroArtifacts,
-            is GenerationTask.NativeProtobufArtifacts,
-            -> true
-            is GenerationTask.DocumentArtifact,
-            is GenerationTask.KafkaKeyModelArtifacts,
-            is GenerationTask.ModelArtifacts,
-            is GenerationTask.SpringKafkaClient,
-            -> false
-        }
 
     private fun File.normalizedAbsolutePath(): String = toPath().toAbsolutePath().normalize().toString()
 
