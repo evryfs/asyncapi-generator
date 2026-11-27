@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManif
 object GeneratorConfigurationFactory {
     /** Checks [settings] and resolves them; throws [IllegalArgumentException] for the first invalid setting. */
     fun create(settings: GeneratorSettings): GeneratorConfiguration {
-        validateClientConfigAndPaths(settings)
+        validateClientPackage(settings)
         val generatorName = GeneratorName.fromConfigurationValue(settings.generatorName, "generatorName")
         val configuredModelType =
             settings.modelConfig?.modelType?.let { ModelType.fromConfigurationValue(it, "modelConfig.modelType") }
@@ -38,15 +38,9 @@ object GeneratorConfigurationFactory {
         return configuration
     }
 
-    private fun validateClientConfigAndPaths(settings: GeneratorSettings) {
+    private fun validateClientPackage(settings: GeneratorSettings) {
         require(settings.clientPackage == null || settings.clientConfig != null) {
             "clientConfig is required when clientPackage is configured"
-        }
-        require(!settings.outputDirectory.exists() || settings.outputDirectory.isDirectory) {
-            "outputDirectory must be a directory: ${settings.outputDirectory}"
-        }
-        require(settings.outputFile?.isDirectory != true) {
-            "outputFile must be a file: ${settings.outputFile}"
         }
     }
 

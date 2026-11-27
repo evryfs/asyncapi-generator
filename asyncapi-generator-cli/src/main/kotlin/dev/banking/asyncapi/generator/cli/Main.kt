@@ -10,7 +10,6 @@ import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
 import dev.banking.asyncapi.generator.core.AsyncApiGenerationException
 import dev.banking.asyncapi.generator.core.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.ConfiguredGeneration
 import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.core.ProtocProvider
 
@@ -66,18 +65,22 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
             asyncapi-generator @generation.args
         """.trimIndent()
 
+    // A settings mistake is a usage error, which Clikt shows with the usage hint; UsageError has no
+    // cause, and the message is the whole diagnostic.
+    @Suppress("SwallowedException")
     override fun run() {
         val generator = AsyncApiGenerator(protocProvider())
-        val generation = configure(generator)
-        if (generation.warnings.isNotEmpty()) {
-            echo(message = generation.warnings, err = true)
-        }
-        echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
-
         try {
+            val generation = generator.configure(settings())
+            if (generation.warnings.isNotEmpty()) {
+                echo(message = generation.warnings, err = true)
+            }
+            echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
             generator.generate(generationOptions.inputSpec, generation) { warnings ->
                 echo(message = warnings, err = true)
             }
+        } catch (exception: AsyncApiGenerationException.InvalidSettings) {
+            throw UsageError(exception.message)
         } catch (exception: AsyncApiGenerationException) {
             throw CliktError(message = exception.message, cause = exception)
         }
@@ -89,25 +92,16 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         generationOptions.protocExecutable?.let { ProtocProvider.executable(it.toPath()) }
             ?: ProtocProvider.fromMavenRepository()
 
-    // A configuration mistake is a usage error, which Clikt shows with the usage hint; UsageError has no
-    // cause, and the message is the whole diagnostic.
-    @Suppress("SwallowedException")
-    private fun configure(generator: AsyncApiGenerator): ConfiguredGeneration =
-        try {
-            generator.configure(
-                GeneratorSettings(
-                    generatorName = generationOptions.generatorName,
-                    outputDirectory = outputOptions.outputDirectory,
-                    outputFile = outputOptions.outputFile,
-                    modelPackage = outputOptions.modelPackage,
-                    clientPackage = outputOptions.clientPackage,
-                    schemaPackage = outputOptions.schemaPackage,
-                    modelConfig = modelOptions.toSettings(),
-                    clientConfig = clientOptions.toSettings(),
-                    suppressedWarnings = generationOptions.suppressedWarnings,
-                ),
-            )
-        } catch (exception: AsyncApiGenerationException.InvalidSettings) {
-            throw UsageError(exception.message)
-        }
+    private fun settings(): GeneratorSettings =
+        GeneratorSettings(
+            generatorName = generationOptions.generatorName,
+            outputDirectory = outputOptions.outputDirectory,
+            outputFile = outputOptions.outputFile,
+            modelPackage = outputOptions.modelPackage,
+            clientPackage = outputOptions.clientPackage,
+            schemaPackage = outputOptions.schemaPackage,
+            modelConfig = modelOptions.toSettings(),
+            clientConfig = clientOptions.toSettings(),
+            suppressedWarnings = generationOptions.suppressedWarnings,
+        )
 }

@@ -366,18 +366,6 @@ class GeneratorConfigurationFactoryTest {
         )
     }
 
-    @Test
-    fun `output paths of the wrong kind are rejected`() {
-        val file = tempDir.resolve("file").toFile().apply { writeText("") }
-        val directory = tempDir.resolve("directory").toFile().apply { mkdirs() }
-
-        assertRejected(
-            "outputDirectory must be a directory: $file",
-            settings(modelPackage = "com.example.model").copy(outputDirectory = file),
-        )
-        assertRejected("outputFile must be a file: $directory", settings(outputFile = directory))
-    }
-
     private fun create(settings: GeneratorSettings): GeneratorConfiguration =
         GeneratorConfigurationFactory.create(settings)
 

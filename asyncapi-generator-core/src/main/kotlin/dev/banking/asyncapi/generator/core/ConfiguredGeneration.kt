@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import java.io.File
 
 /**
- * Settings that passed every check, and what generating with them will produce.
+ * Settings that passed every check that needs no file system, and what generating with them will produce.
  *
  * Build plugins use it before generating, to tell their build which directories hold sources and
  * resources, and whether `protoc` is needed.
