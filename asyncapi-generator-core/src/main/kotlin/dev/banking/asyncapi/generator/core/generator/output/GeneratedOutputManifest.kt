@@ -132,13 +132,12 @@ data class GeneratedOutputManifest(
         if (!Files.isRegularFile(target)) return
         try {
             Files.delete(target)
-            var directory = target.parent
-            while (directory != null && directory != base && isBelowRoot(directory, roots) &&
-                isEmptyDirectory(directory)
-            ) {
-                Files.delete(directory)
-                directory = directory.parent
-            }
+            // Lazy: each parent is checked after its child is deleted.
+            generateSequence(target.parent, Path::getParent)
+                .takeWhile { directory ->
+                    directory != base && isBelowRoot(directory, roots) &&
+                        isEmptyDirectory(directory)
+                }.forEach(Files::delete)
         } catch (exception: IOException) {
             throw IOException("Failed to remove stale generated file '$target'", exception)
         }
