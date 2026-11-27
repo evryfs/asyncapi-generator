@@ -193,10 +193,7 @@ internal class SpringKafkaClientCompilationFixtures(
     }
 
     fun compileKotlinContracts(
-        producerSource: String,
-        consumerSource: String,
-        producerName: String,
-        consumerName: String,
+        contracts: ClientContractSources,
         payloadNames: List<String>,
         workspace: Path,
         keyModelNames: List<String> = emptyList(),
@@ -207,14 +204,14 @@ internal class SpringKafkaClientCompilationFixtures(
                     kotlinSource(
                         relativePath =
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/producer/" +
-                                "$producerName.kt",
-                        content = producerSource,
+                                "${contracts.producerName}.kt",
+                        content = contracts.producerSource,
                     ),
                     kotlinSource(
                         relativePath =
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
-                                "$consumerName.kt",
-                        content = consumerSource,
+                                "${contracts.consumerName}.kt",
+                        content = contracts.consumerSource,
                     ),
                     kotlinSource(
                         relativePath =
@@ -223,10 +220,10 @@ internal class SpringKafkaClientCompilationFixtures(
                             """
                             package ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}
 
-                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.$consumerName
-                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.$producerName
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.${contracts.consumerName}
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.${contracts.producerName}
 
-                            class PartialContracts : $producerName, $consumerName
+                            class PartialContracts : ${contracts.producerName}, ${contracts.consumerName}
                             """.trimIndent(),
                     ),
                     kotlinSource(
@@ -297,10 +294,7 @@ internal class SpringKafkaClientCompilationFixtures(
     }
 
     fun compileJavaContracts(
-        producerSource: String,
-        consumerSource: String,
-        producerName: String,
-        consumerName: String,
+        contracts: ClientContractSources,
         payloadNames: List<String>,
         workspace: Path,
         keyModelNames: List<String> = emptyList(),
@@ -311,14 +305,14 @@ internal class SpringKafkaClientCompilationFixtures(
                     javaSource(
                         relativePath =
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/producer/" +
-                                "$producerName.java",
-                        content = producerSource,
+                                "${contracts.producerName}.java",
+                        content = contracts.producerSource,
                     ),
                     javaSource(
                         relativePath =
                             "${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE.replace('.', '/')}/consumer/" +
-                                "$consumerName.java",
-                        content = consumerSource,
+                                "${contracts.consumerName}.java",
+                        content = contracts.consumerSource,
                     ),
                     javaSource(
                         relativePath =
@@ -327,10 +321,11 @@ internal class SpringKafkaClientCompilationFixtures(
                             """
                             package ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE};
 
-                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.$consumerName;
-                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.$producerName;
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.consumer.${contracts.consumerName};
+                            import ${SpringKafkaClientOutputFixtures.CLIENT_PACKAGE}.producer.${contracts.producerName};
 
-                            public final class PartialContracts implements $producerName, $consumerName {}
+                            public final class PartialContracts
+                                implements ${contracts.producerName}, ${contracts.consumerName} {}
                             """.trimIndent(),
                     ),
                     javaSource(
@@ -451,3 +446,18 @@ internal class SpringKafkaClientCompilationFixtures(
             kind = GeneratedArtifactKind.SOURCE,
         )
 }
+
+/**
+ * The generated producer and consumer of one channel.
+ *
+ * @param producerSource the producer's source
+ * @param consumerSource the consumer's source
+ * @param producerName the producer's simple name
+ * @param consumerName the consumer's simple name
+ */
+internal data class ClientContractSources(
+    val producerSource: String,
+    val consumerSource: String,
+    val producerName: String,
+    val consumerName: String,
+)

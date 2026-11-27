@@ -2,28 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>CyclomaticComplexMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
-    <ID>CyclomaticComplexMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>LargeClass:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator</ID>
-    <ID>LongMethod:SchemaMerger.kt$SchemaMerger$fun merge( base: Schema, override: Schema, ): Schema</ID>
     <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
-    <ID>LongMethod:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$private fun validateSchema( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, field: String, schemas: List&lt;SchemaInterface&gt;?, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: Schema, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>LongParameterList:SourceSchemaCompatibilityValidator.kt$SourceSchemaCompatibilityValidator$( output: String, rootSchemaName: String, path: String, schema: SchemaInterface, checkStructuralModels: Boolean, checkJavaPatterns: Boolean, visited: MutableSet&lt;Schema&gt;, )</ID>
-    <ID>LongParameterList:SpringKafkaClientCompilationFixtures.kt$SpringKafkaClientCompilationFixtures$( producerSource: String, consumerSource: String, producerName: String, consumerName: String, payloadNames: List&lt;String&gt;, workspace: Path, keyModelNames: List&lt;String&gt; = emptyList(), )</ID>
-    <ID>MagicNumber:ReferencePointer.kt$3</ID>
-    <ID>MatchingDeclarationName:ReferencePointer.kt$ParsedReference</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.InvalidNativeProtobufSchema$"The payload uses schemaFormat '$schemaFormat', but its schema is not valid Protobuf artifact content."</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Rename the header so that it differs from payload, receivedTopic, receivedKey, and messageKey."</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.KafkaHeaderParameterNameCollision$"Use distinct header names that remain unique after non-identifier characters are replaced with underscores."</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.SpringKafkaClientMethodNameCollision$"Give each Message Object a unique 'name', or use unique channel message keys when 'name' is omitted."</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedKafkaKeySchema$"Use a supported bindings.kafka.key schema, or omit it when the message has no contract-defined Kafka key."</ID>
-    <ID>MaxLineLength:AsyncApiGeneratorException.kt$AsyncApiGeneratorException.UnsupportedPayloadSchemaFormat$"Native Avro, Protobuf, and other explicit schema formats must be handled by dedicated generator capabilities."</ID>
-    <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
-    <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
-    <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
-    <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
   </CurrentIssues>
 </SmellBaseline>

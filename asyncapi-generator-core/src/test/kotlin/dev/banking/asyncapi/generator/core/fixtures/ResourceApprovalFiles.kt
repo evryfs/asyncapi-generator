@@ -8,16 +8,9 @@ import java.nio.file.Paths
 
 internal fun testResourcesDirectory(): Path {
     val moduleDirectory = Paths.get("src/test/resources")
-    if (Files.exists(moduleDirectory)) {
-        return moduleDirectory
-    }
-
-    val rootDirectory = Paths.get("asyncapi-generator-core/src/test/resources")
-    if (Files.exists(rootDirectory)) {
-        return rootDirectory
-    }
-
-    return moduleDirectory
+    return listOf(moduleDirectory, Paths.get("asyncapi-generator-core/src/test/resources"))
+        .firstOrNull { Files.exists(it) }
+        ?: moduleDirectory
 }
 
 internal class ResourceApprovalNamer(

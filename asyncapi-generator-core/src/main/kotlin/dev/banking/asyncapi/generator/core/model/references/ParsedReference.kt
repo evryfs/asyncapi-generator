@@ -55,10 +55,13 @@ internal fun String.parseReference(): ParsedReference {
     return ParsedReference(documentUri, pointer)
 }
 
+/** The segments of a `#/components/schemas/<name>` pointer. */
+private const val COMPONENT_SCHEMA_POINTER_SEGMENTS = 3
+
 internal fun String.componentSchemaNameOrNull(): String? {
     val segments = runCatching { parseReference().pointerSegments() }.getOrNull() ?: return null
     return segments
-        .takeIf { it.size == 3 && it[0] == "components" && it[1] == "schemas" }
+        .takeIf { it.size == COMPONENT_SCHEMA_POINTER_SEGMENTS && it[0] == "components" && it[1] == "schemas" }
         ?.get(2)
         ?.takeIf(String::isNotBlank)
 }

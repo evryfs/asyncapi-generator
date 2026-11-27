@@ -98,26 +98,16 @@ internal abstract class AbstractJavaGeneratorClass {
 
     protected fun extractClassBody(source: String): String {
         val classStart =
-            source
-                .indexOf("public class")
-                .let { if (it == -1) source.indexOf("public enum") else it }
-                .let { if (it == -1) source.indexOf("public interface") else it }
-
-        if (classStart == -1) {
-            val packageEnd = source.indexOf("package ")
-            if (packageEnd != -1) {
-                return source
-                    .substring(source.indexOf(';', packageEnd) + 1)
-                    .trim()
-                    .trimIndent()
+            listOf("public class", "public enum", "public interface")
+                .map(source::indexOf)
+                .firstOrNull { it != -1 }
+        val packageStart = source.indexOf("package ")
+        val body =
+            when {
+                classStart != null -> source.substring(classStart)
+                packageStart != -1 -> source.substring(source.indexOf(';', packageStart) + 1)
+                else -> source
             }
-            return source
-                .trim()
-                .trimIndent()
-        }
-        return source
-            .substring(classStart)
-            .trim()
-            .trimIndent()
+        return body.trim().trimIndent()
     }
 }

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.kafka.spring
 
+import dev.banking.asyncapi.generator.core.fixtures.ClientContractSources
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientCompilationFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures
 import dev.banking.asyncapi.generator.core.fixtures.SpringKafkaClientOutputFixtures.Companion.SINGLE_MESSAGE_CONTRACT
@@ -89,10 +90,13 @@ internal class SpringKafkaTopicAddressCompilationTest {
         }
 
         compilationFixtures.compileKotlinContracts(
-            producerSource = producerSource,
-            consumerSource = contracts.singleConsumer(),
-            producerName = "MyAccountLifecycleProducer",
-            consumerName = "MyAccountLifecycleConsumer",
+            contracts =
+                ClientContractSources(
+                    producerSource = producerSource,
+                    consumerSource = contracts.singleConsumer(),
+                    producerName = "MyAccountLifecycleProducer",
+                    consumerName = "MyAccountLifecycleConsumer",
+                ),
             payloadNames =
                 listOf(
                     "MyAccountCreatedPayload",
@@ -134,10 +138,13 @@ internal class SpringKafkaTopicAddressCompilationTest {
         }
 
         compilationFixtures.compileJavaContracts(
-            producerSource = producerSource,
-            consumerSource = contracts.singleConsumer(),
-            producerName = "MyAccountLifecycleProducer",
-            consumerName = "MyAccountLifecycleConsumer",
+            contracts =
+                ClientContractSources(
+                    producerSource = producerSource,
+                    consumerSource = contracts.singleConsumer(),
+                    producerName = "MyAccountLifecycleProducer",
+                    consumerName = "MyAccountLifecycleConsumer",
+                ),
             payloadNames =
                 listOf(
                     "MyAccountCreatedPayload",
@@ -161,10 +168,13 @@ internal class SpringKafkaTopicAddressCompilationTest {
             )
 
         compilationFixtures.compileKotlinContracts(
-            producerSource = contracts.singleProducer(),
-            consumerSource = contracts.singleConsumer(),
-            producerName = "MyAccountUpdatedProducer",
-            consumerName = "MyAccountUpdatedConsumer",
+            contracts =
+                ClientContractSources(
+                    producerSource = contracts.singleProducer(),
+                    consumerSource = contracts.singleConsumer(),
+                    producerName = "MyAccountUpdatedProducer",
+                    consumerName = "MyAccountUpdatedConsumer",
+                ),
             payloadNames = listOf("MyAccountUpdatedPayload"),
             keyModelNames = listOf("MyAccountKey"),
             workspace = tempDir.resolve("kotlin-payload-compilation"),
@@ -183,10 +193,13 @@ internal class SpringKafkaTopicAddressCompilationTest {
             )
 
         compilationFixtures.compileJavaContracts(
-            producerSource = contracts.singleProducer(),
-            consumerSource = contracts.singleConsumer(),
-            producerName = "MyAccountUpdatedProducer",
-            consumerName = "MyAccountUpdatedConsumer",
+            contracts =
+                ClientContractSources(
+                    producerSource = contracts.singleProducer(),
+                    consumerSource = contracts.singleConsumer(),
+                    producerName = "MyAccountUpdatedProducer",
+                    consumerName = "MyAccountUpdatedConsumer",
+                ),
             payloadNames = listOf("MyAccountUpdatedPayload"),
             keyModelNames = listOf("MyAccountKey"),
             workspace = tempDir.resolve("java-payload-compilation"),

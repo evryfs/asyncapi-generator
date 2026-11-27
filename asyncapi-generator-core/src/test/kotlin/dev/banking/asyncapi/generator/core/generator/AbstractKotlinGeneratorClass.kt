@@ -23,7 +23,6 @@ internal abstract class AbstractKotlinGeneratorClass {
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
         modelPackage: String,
         clientPackage: String? = null,
-        schemaPackage: String? = null,
         generateModels: Boolean = true,
         generateSpringKafkaClient: Boolean = false,
         modelAnnotation: String? = null,
