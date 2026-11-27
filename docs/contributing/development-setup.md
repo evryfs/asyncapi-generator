@@ -19,7 +19,7 @@ mvn test -pl asyncapi-generator-core
 mvn ktlint:format -pl asyncapi-generator-core
 ```
 
-The rules and the detekt baseline policy are described in the
+The rules and the detekt policy are described in the
 [code conventions](code-conventions.md).
 
 ## Full check: system tests
