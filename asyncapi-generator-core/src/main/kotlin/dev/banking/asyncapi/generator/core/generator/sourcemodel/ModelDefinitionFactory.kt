@@ -142,7 +142,7 @@ internal class ModelDefinitionFactory(
                 val schema = schemas[reference.name]
                 schema to typeMapper.resolveReference(propertyName, propertySchema.reference)
             }
-            is SchemaInterface.BooleanSchema -> null to TypeRef.Scalar.BOOLEAN
+            // A `true` schema accepts any value; a `false` one is rejected before generation.
             else -> null to TypeRef.Scalar.ANY
         }
 

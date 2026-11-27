@@ -44,6 +44,7 @@ have to describe the same configuration.
 | [avro-union-collections](avro-union-collections) | Avro schemas inline unions used as array items and map values, and type integer enums as `int`. |
 | [protobuf-compact-schema](protobuf-compact-schema) | Java Protobuf messages and the `.proto` schema from a native schema with several declarations on one line and braces in comments. |
 | [doc-comments](doc-comments) | Kotlin, Java, and Avro documentation keeps descriptions as written, including a leading `>`, `\|`, or quote. |
+| [any-value-properties](any-value-properties) | Kotlin and Java models type a property whose schema is `true` as any value. |
 | [generated-code-edge-cases](generated-code-edge-cases) | Kotlin and Java models for date defaults, fieldless objects, escaped discriminators, snake_case union members, and unions without a discriminator; prints the indistinguishable-members warning. |
 | [kafka-payload-types](kafka-payload-types) | Spring Kafka clients for array and 64-bit integer payloads, in Kotlin and Java. |
 | [kafka-scalar-payloads](kafka-scalar-payloads) | Spring Kafka clients for UUID, date, date-time and number payloads, typed as models type them, in Kotlin and Java. |
@@ -83,3 +84,4 @@ in the contract, that every frontend must reject with a clear message:
 | [diagnostics-invalid-component-name](diagnostics-invalid-component-name) | A components key with characters the spec does not allow. |
 | [diagnostics-invalid-avro-name](diagnostics-invalid-avro-name) | A property name that is not a valid Avro name. |
 | [diagnostics-avro-untyped-value](diagnostics-avro-untyped-value) | An open object property, which Avro has no type for. |
+| [diagnostics-false-property](diagnostics-false-property) | A property whose schema is `false`, which no value satisfies. |

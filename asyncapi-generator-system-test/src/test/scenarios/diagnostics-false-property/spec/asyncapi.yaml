@@ -1,0 +1,19 @@
+asyncapi: 3.0.0
+info:
+  title: A property no value satisfies
+  version: 1.0.0
+channels:
+  accounts:
+    address: accounts
+    messages:
+      account:
+        payload:
+          $ref: '#/components/schemas/Account'
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+        legacy: false

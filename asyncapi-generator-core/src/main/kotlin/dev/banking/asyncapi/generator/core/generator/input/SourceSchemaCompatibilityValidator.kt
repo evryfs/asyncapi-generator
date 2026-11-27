@@ -55,12 +55,25 @@ internal object SourceSchemaCompatibilityValidator {
         if (!visited.add(schema)) return
 
         if (checkStructuralModels) {
+            val forbiddenProperty =
+                schema.properties
+                    ?.entries
+                    ?.firstOrNull { (_, child) -> child.isFalseSchema() }
+                    ?.key
             when {
                 schema.tupleItems != null ->
                     reject(output, rootSchemaName, path, "tuple-form 'items'")
 
-                schema.items is SchemaInterface.BooleanSchema && !schema.items.value ->
+                schema.items?.isFalseSchema() == true ->
                     reject(output, rootSchemaName, path, "'items: false'")
+
+                forbiddenProperty != null ->
+                    reject(
+                        output,
+                        rootSchemaName,
+                        "$path.properties['$forbiddenProperty']",
+                        "a property schema 'false', which no value satisfies",
+                    )
 
                 schema.type == null && schema.enum?.any { value -> value !is String } == true ->
                     reject(
@@ -341,4 +354,7 @@ internal object SourceSchemaCompatibilityValidator {
             schemaPath = path,
             feature = feature,
         )
+
+    /** True for the schema `false`, which no value satisfies. */
+    private fun SchemaInterface.isFalseSchema(): Boolean = this is SchemaInterface.BooleanSchema && !value
 }
