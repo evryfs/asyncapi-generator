@@ -112,9 +112,9 @@ internal class NativeProtobufGenerator(
                 reason = "protoc exited with status code $exitCode: ${output.trim()}",
             )
         }
-        return generatedSourceArtifacts(destinationDirectory, ".java", GeneratedArtifactKind.JAVA_SOURCE) +
+        return generatedSourceArtifacts(destinationDirectory, ".java") +
             kotlinDestinationDirectory
-                ?.let { generatedSourceArtifacts(it, ".kt", GeneratedArtifactKind.SOURCE) }
+                ?.let { generatedSourceArtifacts(it, ".kt") }
                 .orEmpty()
     }
 
@@ -182,7 +182,6 @@ internal class NativeProtobufGenerator(
     private fun generatedSourceArtifacts(
         directory: Path,
         extension: String,
-        kind: GeneratedArtifactKind,
     ): List<GeneratedArtifact> =
         Files.walk(directory).use { paths ->
             paths
@@ -193,7 +192,7 @@ internal class NativeProtobufGenerator(
                     GeneratedArtifact(
                         relativePath = directory.relativeUnixPathTo(sourceFile),
                         content = Files.readString(sourceFile).trimEnd() + System.lineSeparator(),
-                        kind = kind,
+                        kind = GeneratedArtifactKind.SOURCE,
                     )
                 }
         }

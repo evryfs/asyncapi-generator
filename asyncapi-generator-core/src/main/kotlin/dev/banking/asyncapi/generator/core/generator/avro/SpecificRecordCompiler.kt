@@ -56,7 +56,7 @@ internal class SpecificRecordCompiler(
             GeneratedArtifact(
                 relativePath = destinationDirectory.relativize(sourceFile).toString().replace(File.separatorChar, '/'),
                 content = Files.readString(sourceFile).trimEnd() + System.lineSeparator(),
-                kind = GeneratedArtifactKind.JAVA_SOURCE,
+                kind = GeneratedArtifactKind.SOURCE,
             )
         }
     }

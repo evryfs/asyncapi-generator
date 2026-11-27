@@ -18,7 +18,6 @@ abstract class AbstractAvroGeneratorClass {
     protected fun generateAvro(
         yaml: File,
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
-        resourceOutputDirectory: File = File("target/generated-resources/asyncapi"),
         packageName: String,
         schema: String? = null,
     ): String {
@@ -29,8 +28,7 @@ abstract class AbstractAvroGeneratorClass {
                 profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
                 output =
                     GeneratorOutputConfiguration(
-                        sourceOutputDirectory = codegenOutputDirectory,
-                        resourceOutputDirectory = resourceOutputDirectory,
+                        outputDirectory = codegenOutputDirectory,
                     ),
                 models = ModelGeneration.Disabled,
                 schemas = listOf(SchemaGeneration.AvroProjection(packageName)),
@@ -44,7 +42,7 @@ abstract class AbstractAvroGeneratorClass {
         if (schema != null) {
             val packagePath = packageName.replace('.', '/')
             val output =
-                resourceOutputDirectory
+                codegenOutputDirectory
                     .resolve(packagePath)
                     .resolve(schema)
             if (output.exists()) return output.readText()

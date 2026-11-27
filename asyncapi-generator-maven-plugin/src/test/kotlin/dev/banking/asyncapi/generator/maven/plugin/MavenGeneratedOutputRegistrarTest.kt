@@ -51,56 +51,40 @@ class MavenGeneratedOutputRegistrarTest {
     }
 
     @Test
-    fun `registers separate Kotlin and Java roots for Protobuf Kotlin models`() {
+    fun `registers the single output root as source and resource root for Protobuf Kotlin models`() {
         val project = MavenProject()
-        val sourceOutputDirectory = outputDirectory("protobuf-kotlin")
-        val javaSourceOutputDirectory = outputDirectory("protobuf-java")
-        val resourceOutputDirectory = outputDirectory("protobuf-schema")
+        val outputDirectory = outputDirectory("protobuf")
         val configuration =
             configuration(
                 generatorName = GeneratorName.KOTLIN,
-                outputDirectory = sourceOutputDirectory,
+                outputDirectory = outputDirectory,
                 modelPackage = "com.example.protobuf",
                 modelType = "protobuf-message",
-            ).withSeparateRoots(javaSourceOutputDirectory, resourceOutputDirectory)
+            )
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
 
-        assertEquals(
-            setOf(
-                sourceOutputDirectory.normalizedAbsolutePath(),
-                javaSourceOutputDirectory.normalizedAbsolutePath(),
-            ),
-            project.compileSourceRoots.toSet(),
-        )
-        assertEquals(resourceOutputDirectory.normalizedAbsolutePath(), project.resources.single().directory)
+        assertEquals(listOf(outputDirectory.normalizedAbsolutePath()), project.compileSourceRoots)
+        assertEquals(outputDirectory.normalizedAbsolutePath(), project.resources.single().directory)
     }
 
     @Test
-    fun `registers Kotlin key models and Java native model roots for Avro Spring Kafka contracts`() {
+    fun `registers the single output root as source and resource root for Avro Spring Kafka contracts`() {
         val project = MavenProject()
-        val sourceOutputDirectory = outputDirectory("avro-kotlin-client")
-        val javaSourceOutputDirectory = outputDirectory("avro-java-model")
-        val resourceOutputDirectory = outputDirectory("avro-schema")
+        val outputDirectory = outputDirectory("avro")
         val configuration =
             configuration(
                 generatorName = GeneratorName.KOTLIN,
-                outputDirectory = sourceOutputDirectory,
+                outputDirectory = outputDirectory,
                 modelPackage = "com.example.avro",
                 modelType = "avro-specific-record",
                 clientPackage = "com.example.client",
-            ).withSeparateRoots(javaSourceOutputDirectory, resourceOutputDirectory)
+            )
 
         MavenGeneratedOutputRegistrar(project).register(configuration)
 
-        assertEquals(
-            setOf(
-                sourceOutputDirectory.normalizedAbsolutePath(),
-                javaSourceOutputDirectory.normalizedAbsolutePath(),
-            ),
-            project.compileSourceRoots.toSet(),
-        )
-        assertEquals(resourceOutputDirectory.normalizedAbsolutePath(), project.resources.single().directory)
+        assertEquals(listOf(outputDirectory.normalizedAbsolutePath()), project.compileSourceRoots)
+        assertEquals(outputDirectory.normalizedAbsolutePath(), project.resources.single().directory)
     }
 
     @Test
@@ -163,18 +147,6 @@ class MavenGeneratedOutputRegistrarTest {
                         GeneratorSettings.ClientConfig(clientType = "spring-kafka", clientContract = "interface")
                     },
             ),
-        )
-
-    private fun GeneratorConfiguration.withSeparateRoots(
-        javaSourceOutputDirectory: File,
-        resourceOutputDirectory: File,
-    ): GeneratorConfiguration =
-        copy(
-            output =
-                output.copy(
-                    javaSourceOutputDirectory = javaSourceOutputDirectory,
-                    resourceOutputDirectory = resourceOutputDirectory,
-                ),
         )
 
     private fun outputDirectory(name: String): File = File("target/generated-output-registration/$name")

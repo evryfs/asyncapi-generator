@@ -28,15 +28,19 @@ internal class GeneratedKotlinCompiler(
         artifacts: Iterable<GeneratedArtifact>,
         workspace: Path,
     ): GeneratedKotlinCompilation {
-        val kotlinArtifacts = artifacts.filter { artifact -> artifact.kind == GeneratedArtifactKind.SOURCE }
+        val kotlinArtifacts =
+            artifacts.filter { artifact ->
+                artifact.kind == GeneratedArtifactKind.SOURCE && artifact.relativePath.endsWith(".kt")
+            }
         require(kotlinArtifacts.isNotEmpty()) {
             "Expected at least one Kotlin source artifact to compile"
         }
 
         val javaCompilation =
             artifacts
-                .filter { artifact -> artifact.kind == GeneratedArtifactKind.JAVA_SOURCE }
-                .takeIf(List<GeneratedArtifact>::isNotEmpty)
+                .filter { artifact ->
+                    artifact.kind == GeneratedArtifactKind.SOURCE && artifact.relativePath.endsWith(".java")
+                }.takeIf(List<GeneratedArtifact>::isNotEmpty)
                 ?.let { javaArtifacts -> javaCompiler.compile(javaArtifacts, workspace) }
         val sourceDirectory = workspace.resolve("generated-kotlin-sources").createDirectories()
         val classesDirectory = workspace.resolve("generated-kotlin-classes").createDirectories()

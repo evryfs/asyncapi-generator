@@ -28,7 +28,7 @@ class NativeAvroApprovalTest {
 
     @Test
     fun approves_native_avro_specific_record_artifact() {
-        val generated = nativeAvroArtifacts().singleArtifact(GeneratedArtifactKind.JAVA_SOURCE).content
+        val generated = nativeAvroArtifacts().singleArtifact(GeneratedArtifactKind.SOURCE).content
 
         assertTrue(generated.isNotBlank())
         GeneratorApprovals.verify(

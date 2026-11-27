@@ -39,14 +39,9 @@ class AsyncApiGenerator(
         if (result.isEmpty()) {
             throw NoArtifactsGenerated()
         }
-        val artifactWriter =
-            FileSystemGeneratedArtifactWriter(
-                sourceOutputDirectory = generatorConfiguration.output.sourceOutputDirectory,
-                resourceOutputDirectory = generatorConfiguration.output.resourceOutputDirectory,
-                javaSourceOutputDirectory = generatorConfiguration.output.javaSourceOutputDirectory,
-                manifest = generatorConfiguration.output.manifest,
-            )
-
-        artifactWriter.write(result)
+        FileSystemGeneratedArtifactWriter(
+            outputDirectory = generatorConfiguration.output.outputDirectory,
+            manifest = generatorConfiguration.output.manifest,
+        ).write(result)
     }
 }

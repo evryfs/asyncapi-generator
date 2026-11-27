@@ -21,7 +21,6 @@ abstract class AbstractKotlinGeneratorClass {
         yaml: File,
         generated: String? = null,
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
-        resourceOutputDirectory: File = File("target/generated-resources/asyncapi"),
         modelPackage: String,
         clientPackage: String? = null,
         schemaPackage: String? = null,
@@ -36,8 +35,7 @@ abstract class AbstractKotlinGeneratorClass {
                 profile = GeneratorProfile.Source(SourceLanguage.KOTLIN),
                 output =
                     GeneratorOutputConfiguration(
-                        sourceOutputDirectory = codegenOutputDirectory,
-                        resourceOutputDirectory = resourceOutputDirectory,
+                        outputDirectory = codegenOutputDirectory,
                     ),
                 models =
                     if (generateModels) {

@@ -46,8 +46,7 @@ internal class SpringKafkaClientOutputFixtures(
                     profile = GeneratorProfile.Source(language),
                     output =
                         GeneratorOutputConfiguration(
-                            sourceOutputDirectory = outputDirectory.toFile(),
-                            resourceOutputDirectory = outputDirectory.resolve("resources").toFile(),
+                            outputDirectory = outputDirectory.toFile(),
                         ),
                     models =
                         ModelGeneration.Enabled(

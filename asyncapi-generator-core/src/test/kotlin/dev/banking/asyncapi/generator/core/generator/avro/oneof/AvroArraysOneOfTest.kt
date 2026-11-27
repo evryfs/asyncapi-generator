@@ -15,7 +15,7 @@ class AvroArraysOneOfTest : AbstractAvroGeneratorClass() {
             schema = null,
         )
 
-        val outputDir = File("target/generated-resources/asyncapi")
+        val outputDir = File("target/generated-sources/asyncapi")
         val packageDir = outputDir.resolve("com/example/poly/arrays")
 
         assertTrue(packageDir.resolve("Payment.avsc").exists(), "Payment missing")

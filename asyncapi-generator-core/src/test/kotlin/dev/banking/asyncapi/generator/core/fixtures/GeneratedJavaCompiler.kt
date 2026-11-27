@@ -28,7 +28,10 @@ internal class GeneratedJavaCompiler(
         artifacts: Iterable<GeneratedArtifact>,
         workspace: Path,
     ): GeneratedJavaCompilation {
-        val javaArtifacts = artifacts.filter { artifact -> artifact.kind == GeneratedArtifactKind.JAVA_SOURCE }
+        val javaArtifacts =
+            artifacts.filter { artifact ->
+                artifact.kind == GeneratedArtifactKind.SOURCE && artifact.relativePath.endsWith(".java")
+            }
         require(javaArtifacts.isNotEmpty()) {
             "Expected at least one Java source artifact to compile"
         }

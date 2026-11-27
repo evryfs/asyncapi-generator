@@ -141,12 +141,10 @@ class GeneratorConfigurationFactoryTest {
     }
 
     @Test
-    fun `the output directory holds sources, Java sources and resources`() {
+    fun `the output directory is the single root for all generated artifacts`() {
         val output = create(settings(modelPackage = "com.example.model")).output
 
-        assertEquals(outputDirectory(), output.sourceOutputDirectory)
-        assertEquals(outputDirectory(), output.javaSourceOutputDirectory)
-        assertEquals(outputDirectory(), output.resourceOutputDirectory)
+        assertEquals(outputDirectory(), output.outputDirectory)
     }
 
     @Test

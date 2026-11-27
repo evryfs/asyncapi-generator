@@ -20,7 +20,6 @@ class KotlinModelApprovalTest : AbstractKotlinGeneratorClass() {
                 yaml = File("src/test/resources/generator/asyncapi_simple_transaction_type.yaml"),
                 generated = "SimpleTransactionType.kt",
                 codegenOutputDirectory = tempDir.resolve("sources").toFile(),
-                resourceOutputDirectory = tempDir.resolve("resources").toFile(),
                 modelPackage = "dev.banking.asyncapi.generator.core.model.generated.transaction",
             )
 

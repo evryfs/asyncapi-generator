@@ -20,7 +20,6 @@ abstract class AbstractJavaGeneratorClass {
     protected fun generateElement(
         yaml: File,
         codegenOutputDirectory: File = File("target/generated-sources/asyncapi"),
-        resourceOutputDirectory: File = File("target/generated-resources/asyncapi"),
         generated: String? = null,
         modelPackage: String,
         clientPackage: String? = null,
@@ -37,8 +36,7 @@ abstract class AbstractJavaGeneratorClass {
                 profile = GeneratorProfile.Source(SourceLanguage.JAVA),
                 output =
                     GeneratorOutputConfiguration(
-                        sourceOutputDirectory = codegenOutputDirectory,
-                        resourceOutputDirectory = resourceOutputDirectory,
+                        outputDirectory = codegenOutputDirectory,
                     ),
                 models =
                     if (generateModels) {

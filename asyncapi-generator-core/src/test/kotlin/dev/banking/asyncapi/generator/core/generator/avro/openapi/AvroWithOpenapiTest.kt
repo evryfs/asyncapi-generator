@@ -14,7 +14,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
             schema = null,
         )
 
-        val outputDir = File("target/generated-resources/asyncapi")
+        val outputDir = File("target/generated-sources/asyncapi")
         val packageDir = outputDir.resolve("com/example/openapi")
 
         assertTrue(packageDir.resolve("ActionType.avsc").exists(), "ActionType missing")
@@ -29,7 +29,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
             schema = null,
         )
 
-        val outputDir = File("target/generated-resources/asyncapi")
+        val outputDir = File("target/generated-sources/asyncapi")
         val packageDir = outputDir.resolve("com/example/openapi")
 
         assertTrue(packageDir.resolve("ActionType.avsc").exists(), "ActionType missing")
@@ -45,7 +45,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
             schema = null,
         )
 
-        val outputDir = File("target/generated-resources/asyncapi")
+        val outputDir = File("target/generated-sources/asyncapi")
         val packageDir = outputDir.resolve("com/example/openapi")
 
         assertTrue(packageDir.resolve("ActionType.avsc").exists(), "ActionType missing")
@@ -61,7 +61,7 @@ class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
             schema = null,
         )
 
-        val outputDir = File("target/generated-resources/asyncapi")
+        val outputDir = File("target/generated-sources/asyncapi")
         val packageDir = outputDir.resolve("com/example/openapi")
 
         assertTrue(packageDir.resolve("ActionType.avsc").exists(), "ActionType missing")

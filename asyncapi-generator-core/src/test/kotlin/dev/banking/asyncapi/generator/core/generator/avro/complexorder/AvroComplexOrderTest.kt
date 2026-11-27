@@ -51,7 +51,7 @@ class AvroComplexOrderTest : AbstractAvroGeneratorClass() {
         )
 
         val packagePath = "com/example/avro"
-        val outputPath = File("target/generated-resources/asyncapi")
+        val outputPath = File("target/generated-sources/asyncapi")
         val packageDir = outputPath.resolve(packagePath)
 
         assertTrue(packageDir.resolve("ComplexOrderPayloadType.avsc").exists(), "Main schema missing")

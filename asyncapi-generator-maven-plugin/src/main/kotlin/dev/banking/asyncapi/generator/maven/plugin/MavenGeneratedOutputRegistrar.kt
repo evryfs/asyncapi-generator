@@ -26,7 +26,7 @@ internal class MavenGeneratedOutputRegistrar(
             .forEach(::registerCompileSourceRoot)
 
         if (tasks.any { task -> task.generatesSchemaResources() }) {
-            registerSchemaResourceRoot(configuration.output.resourceOutputDirectory)
+            registerSchemaResourceRoot(configuration.output.outputDirectory)
         }
     }
 
@@ -62,16 +62,16 @@ internal class MavenGeneratedOutputRegistrar(
             is GenerationTask.ModelArtifacts,
             is GenerationTask.KafkaKeyModelArtifacts,
             is GenerationTask.SpringKafkaClient,
-            -> listOf(output.sourceOutputDirectory)
+            -> listOf(output.outputDirectory)
             is GenerationTask.NativeAvroArtifacts ->
-                listOfNotNull(output.javaSourceOutputDirectory.takeIf { schema.generateSpecificRecords })
+                listOfNotNull(output.outputDirectory.takeIf { schema.generateSpecificRecords })
             is GenerationTask.NativeProtobufArtifacts ->
                 schema.models
                     ?.let { modelGeneration ->
                         buildList {
-                            add(output.javaSourceOutputDirectory)
+                            add(output.outputDirectory)
                             if (modelGeneration.modelType == ProtobufModelType.KOTLIN) {
-                                add(output.sourceOutputDirectory)
+                                add(output.outputDirectory)
                             }
                         }
                     }.orEmpty()

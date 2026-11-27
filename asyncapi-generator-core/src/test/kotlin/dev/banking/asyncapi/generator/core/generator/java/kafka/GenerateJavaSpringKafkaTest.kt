@@ -92,14 +92,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         val modelPackage = "dev.banking.test.userservice.v1.model"
         val clientPackage = "dev.banking.test.userservice.v1.client"
         val outputDir = File("target/generated-sources/asyncapi-java-message-headers")
-        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-message-headers")
         outputDir.deleteRecursively()
-        resourceOutputDirectory.deleteRecursively()
 
         generateElement(
             yaml = yaml,
             codegenOutputDirectory = outputDir,
-            resourceOutputDirectory = resourceOutputDirectory,
             modelPackage = modelPackage,
             clientPackage = clientPackage,
             generateModels = true,
@@ -184,14 +181,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         val modelPackage = "dev.banking.test.cache.v1.model"
         val clientPackage = "dev.banking.test.cache.v1.client"
         val outputDir = File("target/generated-sources/asyncapi-java-payloadless")
-        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-payloadless")
         outputDir.deleteRecursively()
-        resourceOutputDirectory.deleteRecursively()
 
         generateElement(
             yaml = yaml,
             codegenOutputDirectory = outputDir,
-            resourceOutputDirectory = resourceOutputDirectory,
             modelPackage = modelPackage,
             clientPackage = clientPackage,
             generateModels = true,
@@ -346,14 +340,11 @@ class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
         val modelPackage = "dev.banking.test.account.model"
         val clientPackage = "dev.banking.test.account.client"
         val outputDir = File("target/generated-sources/asyncapi-java-external-message")
-        val resourceOutputDirectory = File("target/generated-resources/asyncapi-java-external-message")
         outputDir.deleteRecursively()
-        resourceOutputDirectory.deleteRecursively()
 
         generateElement(
             yaml = yaml,
             codegenOutputDirectory = outputDir,
-            resourceOutputDirectory = resourceOutputDirectory,
             modelPackage = modelPackage,
             clientPackage = clientPackage,
             generateModels = true,

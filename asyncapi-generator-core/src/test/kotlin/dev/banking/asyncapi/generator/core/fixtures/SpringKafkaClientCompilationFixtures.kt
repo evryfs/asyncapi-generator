@@ -448,6 +448,6 @@ internal class SpringKafkaClientCompilationFixtures(
         GeneratedArtifact(
             relativePath = relativePath,
             content = content,
-            kind = GeneratedArtifactKind.JAVA_SOURCE,
+            kind = GeneratedArtifactKind.SOURCE,
         )
 }
