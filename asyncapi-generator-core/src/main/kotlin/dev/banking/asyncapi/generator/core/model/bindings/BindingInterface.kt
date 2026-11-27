@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Bindings Object written inline or as a `$ref`. */
-sealed interface BindingInterface : ReferenceOr<Binding> {
+internal sealed interface BindingInterface : ReferenceOr<Binding> {
     /**
      * A Bindings Object written inline.
      *

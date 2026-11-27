@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
-class CorrelationIdParserTest {
+internal class CorrelationIdParserTest {
     private val context = AsyncApiContext()
     private val parser = CorrelationIdParser()
 

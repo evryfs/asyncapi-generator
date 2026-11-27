@@ -24,7 +24,7 @@ import java.time.Duration
  * @param override An explicit `protoc` executable to use instead, for offline or locked-down machines.
  * @param classifier The `protoc` classifier of the running platform, such as `linux-x86_64`.
  */
-class MavenRepositoryProtocProvider(
+internal class MavenRepositoryProtocProvider(
     private val localRepository: Path = defaultLocalRepository(),
     private val remoteRepository: URI = MAVEN_CENTRAL,
     private val override: Path? = null,

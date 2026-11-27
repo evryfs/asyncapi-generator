@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class GeneratedArtifactPathsTest {
+internal class GeneratedArtifactPathsTest {
     @Test
     fun `from namespace converts dot-separated namespace to relative path`() {
         val path = GeneratedArtifactPaths.fromNamespace("com.example.model", "User.kt")

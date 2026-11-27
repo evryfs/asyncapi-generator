@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateMoneyAmountTest : AbstractJavaGeneratorClass() {
+internal class GenerateMoneyAmountTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_asyncapi_money_amount_type_MoneyAmountType_dataClass() {
         val generated =

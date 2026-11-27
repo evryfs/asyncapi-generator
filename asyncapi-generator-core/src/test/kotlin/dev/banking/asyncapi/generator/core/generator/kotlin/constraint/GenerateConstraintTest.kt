@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateConstraintTest : AbstractKotlinGeneratorClass() {
+internal class GenerateConstraintTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_asyncapi_string_constraints_type_StringConstraintsType_dataClass() {
         val generated =

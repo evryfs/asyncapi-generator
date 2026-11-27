@@ -9,7 +9,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertTrue
 
-class AvroSchemaApprovalTest : AbstractAvroGeneratorClass() {
+internal class AvroSchemaApprovalTest : AbstractAvroGeneratorClass() {
     @TempDir
     lateinit var tempDir: Path
 

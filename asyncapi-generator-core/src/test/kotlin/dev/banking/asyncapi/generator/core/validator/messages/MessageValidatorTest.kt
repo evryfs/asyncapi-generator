@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-class MessageValidatorTest : AbstractValidatorTest() {
+internal class MessageValidatorTest : AbstractValidatorTest() {
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test

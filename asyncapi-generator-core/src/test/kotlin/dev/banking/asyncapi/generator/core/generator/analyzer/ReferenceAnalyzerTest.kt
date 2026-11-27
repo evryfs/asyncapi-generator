@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class ReferenceAnalyzerTest {
+internal class ReferenceAnalyzerTest {
     private val analyzer = ReferenceAnalyzer()
 
     @Test

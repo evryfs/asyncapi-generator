@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param mappings channel parameter names mapped to Spring property names, sorted by parameter name.
  */
 @ConsistentCopyVisibility
-data class TopicParameterProperties private constructor(
+internal data class TopicParameterProperties private constructor(
     val mappings: Map<String, String>,
 ) {
     /** The Spring property name for [parameterName], or `null` when it has none. */

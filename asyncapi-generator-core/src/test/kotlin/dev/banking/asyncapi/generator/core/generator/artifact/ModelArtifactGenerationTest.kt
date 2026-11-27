@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ModelArtifactGenerationTest {
+internal class ModelArtifactGenerationTest {
     private val generation = ModelArtifactGeneration(SourceTargets::of)
     private val fixtures = GenerationInputFixtures()
     private val modelAnnotation =

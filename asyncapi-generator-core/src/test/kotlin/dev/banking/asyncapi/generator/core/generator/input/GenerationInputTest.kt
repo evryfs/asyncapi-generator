@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
-class GenerationInputTest {
+internal class GenerationInputTest {
     @Test
     fun `schema declaration catalog backs contract compatibility views`() {
         val declaredSchema = Schema(type = JsonSchemaType.Single("object"))

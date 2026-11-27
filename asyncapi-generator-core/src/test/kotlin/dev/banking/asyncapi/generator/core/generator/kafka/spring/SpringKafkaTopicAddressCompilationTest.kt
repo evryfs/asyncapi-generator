@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
-class SpringKafkaTopicAddressCompilationTest {
+internal class SpringKafkaTopicAddressCompilationTest {
     private val generatedClients = SpringKafkaClientOutputFixtures()
     private val compilationFixtures = SpringKafkaClientCompilationFixtures()
 

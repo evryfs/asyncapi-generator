@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class ModelTypeResolverTest {
+internal class ModelTypeResolverTest {
     @Test
     fun `resolve applies source generator defaults`() {
         assertEquals(

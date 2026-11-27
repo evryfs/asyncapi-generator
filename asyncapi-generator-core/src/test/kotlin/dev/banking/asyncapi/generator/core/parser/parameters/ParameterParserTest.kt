@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ParameterParserTest {
+internal class ParameterParserTest {
     private val context = AsyncApiContext()
     private val parser = ParameterParser()
 

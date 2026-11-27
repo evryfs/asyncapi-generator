@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class OperationTraitParserTest {
+internal class OperationTraitParserTest {
     private val context = AsyncApiContext()
     private val parser = OperationTraitParser(context)
 

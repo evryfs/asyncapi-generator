@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class CompositionNormalizerTest {
+internal class CompositionNormalizerTest {
     private val normalizer = CompositionNormalizer()
 
     @Test

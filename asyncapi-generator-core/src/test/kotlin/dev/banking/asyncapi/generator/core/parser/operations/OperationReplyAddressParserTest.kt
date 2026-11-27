@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
-class OperationReplyAddressParserTest {
+internal class OperationReplyAddressParserTest {
     private val context = AsyncApiContext()
     private val parser = OperationReplyAddressParser()
 

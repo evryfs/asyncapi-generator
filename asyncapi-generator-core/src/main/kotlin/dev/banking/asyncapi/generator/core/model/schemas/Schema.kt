@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import dev.banking.asyncapi.generator.core.model.bindings.BindingInterface
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 
-data class Schema(
+internal data class Schema(
     @get:JsonProperty($$"$id")
     val id: String? = null, // is $id in JSON/Yaml Schema
     @get:JsonProperty($$"$schema")

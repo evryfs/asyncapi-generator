@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManif
  * Every check on the settings happens here or in the resolvers this factory
  * calls, and every message names the setting as users write it.
  */
-object GeneratorConfigurationFactory {
+internal object GeneratorConfigurationFactory {
     /** Checks [settings] and resolves them; throws [IllegalArgumentException] for the first invalid setting. */
     fun create(settings: GeneratorSettings): GeneratorConfiguration {
         validateClientPackage(settings)

@@ -15,7 +15,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class InfoBundlerTest {
+internal class InfoBundlerTest {
     private val walk = BundlingWalk()
 
     @Test

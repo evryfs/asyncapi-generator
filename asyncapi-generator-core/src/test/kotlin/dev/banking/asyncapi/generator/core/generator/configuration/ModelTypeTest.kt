@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class ModelTypeTest {
+internal class ModelTypeTest {
     @Test
     fun `fromConfigurationValue parses supported model types`() {
         mapOf(

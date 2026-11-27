@@ -10,7 +10,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class SourceReaderTest {
+internal class SourceReaderTest {
     @TempDir
     lateinit var tempDir: Path
 

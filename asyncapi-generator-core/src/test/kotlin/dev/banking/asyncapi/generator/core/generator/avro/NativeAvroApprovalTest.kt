@@ -9,7 +9,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
-class NativeAvroApprovalTest {
+internal class NativeAvroApprovalTest {
     private val generator = NativeAvroGenerator()
     private val bundlerFixtures = BundlerFixtures()
     private val generationInputFactory = GenerationInputFactory()

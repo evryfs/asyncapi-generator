@@ -19,7 +19,7 @@ import java.util.Collections.unmodifiableSet
  * @param sourceFiles the files the load read
  * @param formattedWarnings the warnings rendered with their source snippets
  */
-class AsyncApiDocumentLoadResult internal constructor(
+internal class AsyncApiDocumentLoadResult internal constructor(
     val document: AsyncApiDocument,
     warnings: List<ValidationFinding>,
     sourceFiles: Set<File>,

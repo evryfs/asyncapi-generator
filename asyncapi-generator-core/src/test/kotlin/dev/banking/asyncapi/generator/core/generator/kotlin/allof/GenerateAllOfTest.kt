@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateAllOfTest : AbstractKotlinGeneratorClass() {
+internal class GenerateAllOfTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_asyncapi_allOf_composition_BaseAccount_dataClass() {
         val generated =

@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class SpringKafkaClientMethodNameValidatorTest {
+internal class SpringKafkaClientMethodNameValidatorTest {
     @Test
     fun `allows messages with distinct generated method names`() {
         SpringKafkaClientMethodNameValidator.validate(

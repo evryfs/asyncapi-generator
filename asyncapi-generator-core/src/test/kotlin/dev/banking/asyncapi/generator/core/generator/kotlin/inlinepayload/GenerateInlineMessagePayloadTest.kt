@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateInlineMessagePayloadTest : AbstractKotlinGeneratorClass() {
+internal class GenerateInlineMessagePayloadTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_data_class_for_inline_payload_with_properties() {
         val generated =

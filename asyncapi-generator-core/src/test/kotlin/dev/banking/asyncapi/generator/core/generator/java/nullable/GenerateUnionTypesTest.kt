@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateUnionTypesTest : AbstractJavaGeneratorClass() {
+internal class GenerateUnionTypesTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_union_types_with_strict_json_schema_semantics() {
         val generated =

@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class DocumentArtifactGenerationTest {
+internal class DocumentArtifactGenerationTest {
     private val generation = DocumentArtifactGeneration()
 
     @TempDir

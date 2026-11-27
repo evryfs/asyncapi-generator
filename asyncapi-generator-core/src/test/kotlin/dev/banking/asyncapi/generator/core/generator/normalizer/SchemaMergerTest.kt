@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class SchemaMergerTest {
+internal class SchemaMergerTest {
     private val merger = SchemaMerger()
 
     @Test

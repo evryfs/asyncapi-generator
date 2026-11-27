@@ -1,7 +1,6 @@
 package dev.banking.asyncapi.generator.cli
 
 import com.github.ajalt.clikt.testing.test
-import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
@@ -93,7 +92,6 @@ class CliDiagnosticsTest {
         assertTrue(result.stderr.isBlank(), result.stderr)
         assertTrue(result.stdout.contains("Generation complete."))
         assertTrue(outputFile.exists())
-        val generatedDocument = AsyncApiDocumentLoader().load(outputFile).document
-        assertEquals("release-candidate", generatedDocument.info.version)
+        assertTrue("version: release-candidate" in outputFile.readText(), outputFile.readText())
     }
 }

@@ -12,7 +12,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class BundlingWalkTest {
+internal class BundlingWalkTest {
     private val walk = BundlingWalk()
 
     @Test

@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param value the validated fully qualified type name.
  */
 @JvmInline
-value class QualifiedTypeName private constructor(
+internal value class QualifiedTypeName private constructor(
     val value: String,
 ) {
     val simpleName: String

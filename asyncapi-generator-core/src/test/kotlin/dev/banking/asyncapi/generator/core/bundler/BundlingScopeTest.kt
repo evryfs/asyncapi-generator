@@ -6,7 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
-class BundlingScopeTest {
+internal class BundlingScopeTest {
     @Test
     fun `empty scope has no visited references`() {
         val reference = Reference("#/components/schemas/User")

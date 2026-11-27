@@ -22,7 +22,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class AsyncApiParserTest {
+internal class AsyncApiParserTest {
     private val context = AsyncApiContext()
     private val parser = AsyncApiParser(context)
 

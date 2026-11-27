@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
  * A task refers to the configuration value it plans, so a setting is defined
  * once; the planner adds only what it decides itself.
  */
-sealed interface GenerationTask {
+internal sealed interface GenerationTask {
     /**
      * The kinds of artifact the task writes under the output directory, which tell a build tool
      * whether to compile the directory, package it as resources, or both. A bundled document is

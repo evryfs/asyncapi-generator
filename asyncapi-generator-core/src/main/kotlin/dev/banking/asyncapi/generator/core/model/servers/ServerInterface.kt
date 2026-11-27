@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Server Object written inline or as a `$ref`. */
-sealed interface ServerInterface : ReferenceOr<Server> {
+internal sealed interface ServerInterface : ReferenceOr<Server> {
     /**
      * A Server Object written inline.
      *

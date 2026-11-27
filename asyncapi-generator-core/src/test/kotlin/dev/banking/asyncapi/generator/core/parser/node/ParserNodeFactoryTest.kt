@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-class ParserNodeFactoryTest {
+internal class ParserNodeFactoryTest {
     @Test
     fun `creates parser root node from input document`() {
         val context = AsyncApiContext()

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue
  * The `type` keyword of a Schema Object: one type name, or a list of type names. It is written back
  * in the form it was read.
  */
-sealed interface JsonSchemaType {
+internal sealed interface JsonSchemaType {
     /** The type names, in the order the schema lists them. */
     val names: List<String>
 

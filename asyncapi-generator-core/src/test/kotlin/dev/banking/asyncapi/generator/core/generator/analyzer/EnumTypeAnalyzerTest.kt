@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class EnumTypeAnalyzerTest {
+internal class EnumTypeAnalyzerTest {
     private val analyzer = EnumTypeAnalyzer()
 
     @Test

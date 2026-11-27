@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.model.exceptions
 import dev.banking.asyncapi.generator.core.model.validator.ValidationFinding
 
 /** A failure of an AsyncAPI contract to pass validation. */
-sealed class AsyncApiValidateException(
+internal sealed class AsyncApiValidateException(
     message: String,
 ) : Exception(message) {
     /**

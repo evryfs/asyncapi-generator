@@ -9,7 +9,7 @@ import java.util.Collections.unmodifiableList
  *
  * @param findings the findings
  */
-class ValidationReport internal constructor(
+internal class ValidationReport internal constructor(
     findings: List<ValidationFinding>,
 ) {
     val findings: List<ValidationFinding> = unmodifiableList(findings.toList())

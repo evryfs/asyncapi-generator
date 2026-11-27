@@ -8,7 +8,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class GenerationInputFactoryTest {
+internal class GenerationInputFactoryTest {
     private val factory = GenerationInputFactory()
     private val fixtures = GenerationInputFixtures()
 

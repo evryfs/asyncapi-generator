@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.operations.OperationInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class AsyncApiDocument(
+internal data class AsyncApiDocument(
     val asyncapi: String,
     val id: String? = null,
     val info: Info,

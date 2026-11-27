@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class TopicParameterPropertiesTest {
+internal class TopicParameterPropertiesTest {
     @Test
     fun `keeps configured mappings in deterministic order`() {
         val properties =

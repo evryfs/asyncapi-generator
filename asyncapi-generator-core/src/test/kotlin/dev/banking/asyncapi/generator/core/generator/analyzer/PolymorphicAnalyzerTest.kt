@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class PolymorphicAnalyzerTest {
+internal class PolymorphicAnalyzerTest {
     private val analyzer = PolymorphicAnalyzer()
 
     @Test

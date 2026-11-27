@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateTransactionTest : AbstractKotlinGeneratorClass() {
+internal class GenerateTransactionTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_asyncapi_simple_transaction_type_SimpleTransactionType_dataClass() {
         val generated =

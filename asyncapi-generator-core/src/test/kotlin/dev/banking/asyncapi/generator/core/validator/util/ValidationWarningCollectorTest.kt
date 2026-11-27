@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.validator.ValidationSeverity
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class ValidationWarningCollectorTest {
+internal class ValidationWarningCollectorTest {
     private val collector = ValidationWarningCollector()
 
     @Test

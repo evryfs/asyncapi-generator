@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class NativeProtobufGeneratorTest {
+internal class NativeProtobufGeneratorTest {
     private val generator = NativeProtobufGenerator()
     private val fixtures = GenerationInputFixtures()
     private val javaCompiler = GeneratedJavaCompiler()

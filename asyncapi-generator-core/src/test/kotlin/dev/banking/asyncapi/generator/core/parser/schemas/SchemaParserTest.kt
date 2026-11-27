@@ -25,7 +25,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class SchemaParserTest {
+internal class SchemaParserTest {
     private val context = AsyncApiContext()
     private val parser = SchemaParser(context)
 

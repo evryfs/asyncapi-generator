@@ -21,7 +21,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class SchemaCatalogLoaderTest {
+internal class SchemaCatalogLoaderTest {
     @Test
     fun `should load explicit schemas`() {
         val components =

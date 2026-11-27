@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AvroOneOfTest : AbstractAvroGeneratorClass() {
+internal class AvroOneOfTest : AbstractAvroGeneratorClass() {
     @Test
     fun `should generate individual records for polymorphic types`() {
         generateAvro(

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class ClientContractTest {
+internal class ClientContractTest {
     @Test
     fun `fromConfigurationValue parses supported client contract`() {
         assertEquals(

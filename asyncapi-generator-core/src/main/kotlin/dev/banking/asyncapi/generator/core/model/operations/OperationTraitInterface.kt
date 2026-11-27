@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Operation Trait Object written inline or as a `$ref`. */
-sealed interface OperationTraitInterface : ReferenceOr<OperationTrait> {
+internal sealed interface OperationTraitInterface : ReferenceOr<OperationTrait> {
     /**
      * A Operation Trait Object written inline.
      *

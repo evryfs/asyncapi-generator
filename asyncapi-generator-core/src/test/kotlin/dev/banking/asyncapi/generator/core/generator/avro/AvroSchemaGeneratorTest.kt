@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class AvroSchemaGeneratorTest {
+internal class AvroSchemaGeneratorTest {
     @Test
     fun `record render returns schema artifact with namespace-relative path and content`() {
         val generator = AvroSchemaGenerator()

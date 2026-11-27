@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Parameter Object written inline or as a `$ref`. */
-sealed interface ParameterInterface : ReferenceOr<Parameter> {
+internal sealed interface ParameterInterface : ReferenceOr<Parameter> {
     /**
      * A Parameter Object written inline.
      *

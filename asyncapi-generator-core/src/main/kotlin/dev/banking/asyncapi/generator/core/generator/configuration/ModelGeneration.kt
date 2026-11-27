@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 /**
  * Typed source model generation configuration.
  */
-sealed interface ModelGeneration {
+internal sealed interface ModelGeneration {
     /** No source models; native Avro and Protobuf models are [SchemaGeneration]s instead. */
     data object Disabled : ModelGeneration
 

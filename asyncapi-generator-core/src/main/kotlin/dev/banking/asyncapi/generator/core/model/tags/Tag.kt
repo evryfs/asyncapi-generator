@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.model.tags
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 
-data class Tag(
+internal data class Tag(
     val name: String,
     val description: String? = null,
     val externalDocs: ExternalDocInterface? = null,

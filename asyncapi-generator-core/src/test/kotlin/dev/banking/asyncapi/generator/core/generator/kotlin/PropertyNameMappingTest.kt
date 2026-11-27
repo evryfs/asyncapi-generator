@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class PropertyNameMappingTest : AbstractKotlinGeneratorClass() {
+internal class PropertyNameMappingTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `converts kebab-case property names to camelCase with JsonProperty`() {
         val generated =

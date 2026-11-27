@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class SourceSchemaCompatibilityValidatorTest {
+internal class SourceSchemaCompatibilityValidatorTest {
     @Test
     fun `rejects tuple form items for structural model output`() {
         val error =

@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class Operation(
+internal data class Operation(
     val title: String? = null,
     val action: String,
     val summary: String? = null,

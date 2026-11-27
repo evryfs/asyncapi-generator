@@ -13,7 +13,7 @@ import java.io.File
  * @property line one-based source line
  * @property column one-based source column
  */
-data class SourceLocation(
+internal data class SourceLocation(
     val file: File,
     val path: String,
     val line: Int,

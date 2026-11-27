@@ -11,7 +11,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class DocumentReaderContractTest {
+internal class DocumentReaderContractTest {
     private val reader = YamlDocumentReader()
     private val jsonReader = JsonDocumentReader()
 

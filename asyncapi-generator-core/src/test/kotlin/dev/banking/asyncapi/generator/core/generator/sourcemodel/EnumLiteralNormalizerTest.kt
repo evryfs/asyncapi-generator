@@ -8,7 +8,7 @@ import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class EnumLiteralNormalizerTest {
+internal class EnumLiteralNormalizerTest {
     private val normalizer = EnumLiteralNormalizer("com.example.model", JvmNaming)
 
     @Test

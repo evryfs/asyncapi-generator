@@ -8,7 +8,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class DocumentReadExceptionTest {
+internal class DocumentReadExceptionTest {
     private val reader = YamlDocumentReader()
 
     @Test

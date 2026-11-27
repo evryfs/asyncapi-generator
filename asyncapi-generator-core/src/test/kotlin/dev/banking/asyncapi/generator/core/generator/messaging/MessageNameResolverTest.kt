@@ -4,7 +4,7 @@ import dev.banking.asyncapi.generator.core.model.messages.Message
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class MessageNameResolverTest {
+internal class MessageNameResolverTest {
     @Test
     fun `uses the message name when it is present`() {
         val message =

@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SpringKafkaClientGenerationTest {
+internal class SpringKafkaClientGenerationTest {
     private val generator = SpringKafkaClientGeneration { SourceTargets.of(it).clientSyntax }
     private val fixtures = GenerationInputFixtures()
     private val validationAnnotations =

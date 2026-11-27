@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateStringDefaultValueTest : AbstractKotlinGeneratorClass() {
+internal class GenerateStringDefaultValueTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_data_class_with_string_default_value() {
         val generated =

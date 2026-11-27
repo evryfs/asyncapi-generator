@@ -10,7 +10,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class GeneratorConfigurationFactoryTest {
+internal class GeneratorConfigurationFactoryTest {
     @TempDir
     lateinit var tempDir: Path
 

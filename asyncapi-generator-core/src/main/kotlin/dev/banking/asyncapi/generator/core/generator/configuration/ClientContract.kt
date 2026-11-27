@@ -5,7 +5,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * @param configurationValue the value users write in `clientConfig.clientContract`.
  */
-enum class ClientContract(
+internal enum class ClientContract(
     val configurationValue: String,
 ) {
     INTERFACE("interface"),

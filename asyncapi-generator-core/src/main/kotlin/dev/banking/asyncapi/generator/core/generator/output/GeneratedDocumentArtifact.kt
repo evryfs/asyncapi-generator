@@ -8,7 +8,7 @@ import java.io.File
  * @param file the file the document is written to
  * @param content the document content
  */
-data class GeneratedDocumentArtifact(
+internal data class GeneratedDocumentArtifact(
     val file: File,
     val content: String,
 )

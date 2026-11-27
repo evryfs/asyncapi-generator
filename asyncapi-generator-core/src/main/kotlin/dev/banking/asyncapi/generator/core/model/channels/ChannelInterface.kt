@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Channel Object written inline or as a `$ref`. */
-sealed interface ChannelInterface : ReferenceOr<Channel> {
+internal sealed interface ChannelInterface : ReferenceOr<Channel> {
     /**
      * A Channel Object written inline.
      *

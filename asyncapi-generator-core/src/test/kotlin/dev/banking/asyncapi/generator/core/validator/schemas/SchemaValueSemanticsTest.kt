@@ -7,7 +7,7 @@ import java.math.BigInteger
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SchemaValueSemanticsTest {
+internal class SchemaValueSemanticsTest {
     @Test
     fun `numeric and nested JSON values use mathematical equality`() {
         val first = mapOf("values" to listOf(1, BigInteger("100000000000000000000000000000000000000")))

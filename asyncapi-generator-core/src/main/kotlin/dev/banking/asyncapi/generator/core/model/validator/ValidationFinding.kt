@@ -12,7 +12,7 @@ import dev.banking.asyncapi.generator.core.source.SourceLocation
  * @property sourceLocation where in the source it is, when known
  * @property documentation where the rule is documented
  */
-data class ValidationFinding(
+internal data class ValidationFinding(
     val code: String,
     val concern: ValidationConcern,
     val severity: ValidationSeverity,

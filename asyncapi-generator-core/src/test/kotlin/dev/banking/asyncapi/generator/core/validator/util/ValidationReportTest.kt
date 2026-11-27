@@ -18,7 +18,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ValidationReportTest {
+internal class ValidationReportTest {
     @Test
     fun `report exposes stable rule metadata and source-derived coordinates`() {
         val sourceLocation =

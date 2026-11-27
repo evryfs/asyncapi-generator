@@ -25,7 +25,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-class OperationParserTest {
+internal class OperationParserTest {
     private val context = AsyncApiContext()
     private val parser = OperationParser(context)
 

@@ -7,7 +7,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class YamlDocumentReaderTest {
+internal class YamlDocumentReaderTest {
     private val reader = YamlDocumentReader()
 
     @Test

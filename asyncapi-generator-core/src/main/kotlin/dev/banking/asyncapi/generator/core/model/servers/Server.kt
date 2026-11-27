@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class Server(
+internal data class Server(
     val host: String,
     val protocol: String,
     val protocolVersion: String? = null,

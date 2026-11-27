@@ -31,7 +31,7 @@ import java.io.File
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class GenerationTasksValidationTest {
+internal class GenerationTasksValidationTest {
     private val tasks = GenerationTasks(MavenRepositoryProtocProvider())
 
     private fun validate(

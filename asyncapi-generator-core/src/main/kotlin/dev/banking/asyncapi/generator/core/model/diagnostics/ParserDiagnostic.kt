@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.model.diagnostics
 import dev.banking.asyncapi.generator.core.source.SourceLocation
 
 /** Stable categories for failures produced while mapping document nodes. */
-enum class ParserDiagnosticCategory(
+internal enum class ParserDiagnosticCategory(
     val code: String,
 ) {
     MISSING_REQUIRED_MEMBER("parser.missing-required-member"),
@@ -20,7 +20,7 @@ enum class ParserDiagnosticCategory(
 }
 
 /** Load-scoped resource controlled by the parser loading boundary. */
-enum class ParserLoadResourceLimit(
+internal enum class ParserLoadResourceLimit(
     val displayName: String,
 ) {
     SOURCE_DOCUMENTS("source documents"),
@@ -31,7 +31,7 @@ enum class ParserLoadResourceLimit(
 }
 
 /** JSON-compatible runtime value categories exposed by parser diagnostics. */
-enum class ParserValueType(
+internal enum class ParserValueType(
     val displayName: String,
 ) {
     OBJECT("Map"),
@@ -43,7 +43,7 @@ enum class ParserValueType(
 }
 
 /** A structured parse or load failure: what failed and where. */
-sealed interface ParserDiagnostic {
+internal sealed interface ParserDiagnostic {
     /** The stable kind of failure. */
     val category: ParserDiagnosticCategory
 

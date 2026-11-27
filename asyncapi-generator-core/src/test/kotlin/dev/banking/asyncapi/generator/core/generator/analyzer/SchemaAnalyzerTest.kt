@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class SchemaAnalyzerTest {
+internal class SchemaAnalyzerTest {
     private val analyzer = SchemaAnalyzer()
 
     @Test

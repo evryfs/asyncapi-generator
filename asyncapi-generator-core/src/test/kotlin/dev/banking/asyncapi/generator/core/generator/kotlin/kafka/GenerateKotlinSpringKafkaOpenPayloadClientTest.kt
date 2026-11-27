@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorClass() {
+internal class GenerateKotlinSpringKafkaOpenPayloadClientTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should use typealias for open payload in spring kafka clients`() {
         val yaml = File("src/test/resources/generator/asyncapi_open_payload_kafka.yaml")

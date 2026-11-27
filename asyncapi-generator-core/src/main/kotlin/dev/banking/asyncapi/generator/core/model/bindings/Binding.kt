@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * @property content the binding as written
  * @property protocolBindings the binding of each protocol, with its schema-valued fields parsed
  */
-data class Binding(
+internal data class Binding(
     @get:JsonAnyGetter val content: Map<String, Any?>,
     @get:JsonIgnore val protocolBindings: List<ProtocolBinding> = emptyList(),
 ) {
@@ -26,7 +26,7 @@ data class Binding(
 }
 
 /** Location whose protocol-specific binding vocabulary owns a binding object. */
-enum class BindingLocation {
+internal enum class BindingLocation {
     SERVER,
     CHANNEL,
     OPERATION,
@@ -36,7 +36,7 @@ enum class BindingLocation {
 }
 
 /** Exact protocol binding content plus parser-owned validation metadata. */
-data class ProtocolBinding(
+internal data class ProtocolBinding(
     val protocol: String,
     val location: BindingLocation,
     val content: Any?,

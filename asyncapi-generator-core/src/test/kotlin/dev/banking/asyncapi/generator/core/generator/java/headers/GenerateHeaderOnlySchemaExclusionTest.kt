@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateHeaderOnlySchemaExclusionTest : AbstractJavaGeneratorClass() {
+internal class GenerateHeaderOnlySchemaExclusionTest : AbstractJavaGeneratorClass() {
     @Test
     fun `should not generate java model class for schema used only in message headers`() {
         val modelPackage = "dev.banking.asyncapi.generator.core.model.generated.headerexclusion"

@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class KafkaHeaderParameterNamesTest {
+internal class KafkaHeaderParameterNamesTest {
     @Test
     fun `converts wire names to camelCase`() {
         val parameterNames =

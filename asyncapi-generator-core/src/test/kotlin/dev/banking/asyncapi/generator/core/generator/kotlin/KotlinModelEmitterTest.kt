@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class KotlinModelEmitterTest {
+internal class KotlinModelEmitterTest {
     private val emitter = KotlinModelEmitter()
 
     @Test

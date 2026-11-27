@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class AvroComplexOrderTest : AbstractAvroGeneratorClass() {
+internal class AvroComplexOrderTest : AbstractAvroGeneratorClass() {
     @Test
     fun `should generate complex order schema`() {
         val content =

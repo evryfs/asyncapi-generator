@@ -5,7 +5,7 @@ package dev.banking.asyncapi.generator.core.bundler
  *
  * @param message the explanation shown to the user
  */
-sealed class AsyncApiBundlingException(
+internal sealed class AsyncApiBundlingException(
     message: String,
 ) : Exception(message) {
     /**

@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateJavaPrimitivePayloadTest {
+internal class GenerateJavaPrimitivePayloadTest {
     @Test
     fun `should generate producer contract for single string payload`() {
         val packageName = "com.example.primitive"

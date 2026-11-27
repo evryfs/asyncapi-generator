@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateAdditionalPropertiesTest : AbstractKotlinGeneratorClass() {
+internal class GenerateAdditionalPropertiesTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_data_class_with_map_properties() {
         val generated =

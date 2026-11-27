@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateArrayTest : AbstractJavaGeneratorClass() {
+internal class GenerateArrayTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_asyncapi_array_primitive_object_ContactPointType_dataClass() {
         val generated =

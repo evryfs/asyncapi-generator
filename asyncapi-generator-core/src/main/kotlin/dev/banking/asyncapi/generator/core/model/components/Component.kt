@@ -18,7 +18,7 @@ import dev.banking.asyncapi.generator.core.model.servers.ServerInterface
 import dev.banking.asyncapi.generator.core.model.servers.ServerVariableInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class Component(
+internal data class Component(
     val schemas: Map<String, SchemaInterface>? = null,
     val servers: Map<String, ServerInterface>? = null,
     val channels: Map<String, ChannelInterface>? = null,

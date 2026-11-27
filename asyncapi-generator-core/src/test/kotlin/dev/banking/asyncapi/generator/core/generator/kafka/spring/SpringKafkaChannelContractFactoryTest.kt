@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 
-class SpringKafkaChannelContractFactoryTest {
+internal class SpringKafkaChannelContractFactoryTest {
     private val factory =
         SpringKafkaChannelContractFactory(
             additionalPayloadTypes =

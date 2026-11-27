@@ -36,7 +36,7 @@ import java.nio.file.StandardCopyOption
  * @param outputDirectory root directory of generated sources and schemas
  * @param manifest records generated files across runs; without it, stale files are kept
  */
-class FileSystemGeneratedArtifactWriter(
+internal class FileSystemGeneratedArtifactWriter(
     private val outputDirectory: File,
     private val manifest: GeneratedOutputManifest? = null,
 ) {

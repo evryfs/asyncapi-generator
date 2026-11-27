@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class AvroTypeMapperTest {
+internal class AvroTypeMapperTest {
     private val pet =
         UnionModel(
             name = "Pet",

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PackageNameTest {
+internal class PackageNameTest {
     @Test
     fun `fromConfigurationValue creates package name`() {
         val packageName =

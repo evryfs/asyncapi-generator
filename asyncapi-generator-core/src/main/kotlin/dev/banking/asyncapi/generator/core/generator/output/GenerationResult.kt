@@ -7,7 +7,7 @@ package dev.banking.asyncapi.generator.core.generator.output
  * @param artifacts the sources and schemas written under the output directory
  * @param documentArtifacts the bundled documents written to their own files
  */
-data class GenerationResult(
+internal data class GenerationResult(
     val artifacts: List<GeneratedArtifact>,
     val documentArtifacts: List<GeneratedDocumentArtifact> = emptyList(),
 ) {

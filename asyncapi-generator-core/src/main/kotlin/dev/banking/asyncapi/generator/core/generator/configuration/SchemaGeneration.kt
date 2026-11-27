@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 /**
  * Typed schema artifact generation configuration.
  */
-sealed interface SchemaGeneration {
+internal sealed interface SchemaGeneration {
     /**
      * Projects AsyncAPI Schema Objects to `.avsc` files.
      *

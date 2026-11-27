@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class ModelTypeMapperTest {
+internal class ModelTypeMapperTest {
     private val mapper =
         ModelTypeMapper(
             mapOf(

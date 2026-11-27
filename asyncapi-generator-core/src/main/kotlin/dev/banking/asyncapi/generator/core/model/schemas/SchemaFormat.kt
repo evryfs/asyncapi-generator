@@ -7,7 +7,7 @@ package dev.banking.asyncapi.generator.core.model.schemas
  * from native schema formats such as Avro and Protobuf before generation decides which
  * outputs can consume each payload format.
  */
-enum class SchemaFormat(
+internal enum class SchemaFormat(
     val value: String,
     val family: SchemaFormatFamily,
 ) {
@@ -91,7 +91,7 @@ enum class SchemaFormat(
 /**
  * Broad semantic family for a known `schemaFormat` value.
  */
-enum class SchemaFormatFamily {
+internal enum class SchemaFormatFamily {
     ASYNCAPI,
     JSON_SCHEMA_DRAFT_07,
     AVRO,

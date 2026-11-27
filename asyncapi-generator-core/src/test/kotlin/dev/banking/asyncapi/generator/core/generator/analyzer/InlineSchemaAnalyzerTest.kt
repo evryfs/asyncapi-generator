@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class InlineSchemaAnalyzerTest {
+internal class InlineSchemaAnalyzerTest {
     private val analyzer = InlineSchemaAnalyzer()
 
     @Test

@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param clientContract the annotation placed on each generated contract.
  * @param payloadParameter the annotation placed on each payload parameter.
  */
-data class ClientValidationAnnotations(
+internal data class ClientValidationAnnotations(
     val clientContract: QualifiedTypeName? = null,
     val payloadParameter: QualifiedTypeName? = null,
 )

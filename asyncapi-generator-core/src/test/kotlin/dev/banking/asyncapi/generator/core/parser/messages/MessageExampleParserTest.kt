@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-class MessageExampleParserTest {
+internal class MessageExampleParserTest {
     private val context = AsyncApiContext()
     private val parser = MessageExampleParser()
 

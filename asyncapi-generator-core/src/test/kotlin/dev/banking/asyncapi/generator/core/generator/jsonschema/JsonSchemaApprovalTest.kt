@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovalFormat
 import dev.banking.asyncapi.generator.core.fixtures.GeneratorApprovals
 import org.junit.jupiter.api.Test
 
-class JsonSchemaApprovalTest {
+internal class JsonSchemaApprovalTest {
     private val generator = JsonSchemaGenerator()
     private val fixtures = GenerationInputFixtures()
 

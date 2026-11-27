@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
+internal class GenerateOpenapiReferencedTypeTest : AbstractJavaGeneratorClass() {
     private val actionTypeClassBody =
         """
         public enum ActionType implements Serializable {

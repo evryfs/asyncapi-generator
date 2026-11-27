@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap
  * @property file Manifest file; created on first use.
  * @property owner Stable name of the execution, such as the Maven execution id.
  */
-data class GeneratedOutputManifest(
+internal data class GeneratedOutputManifest(
     val file: File,
     val owner: String,
 ) {

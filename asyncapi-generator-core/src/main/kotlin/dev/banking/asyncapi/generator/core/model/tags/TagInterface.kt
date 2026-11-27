@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Tag Object written inline or as a `$ref`. */
-sealed interface TagInterface : ReferenceOr<Tag> {
+internal sealed interface TagInterface : ReferenceOr<Tag> {
     /**
      * A Tag Object written inline.
      *

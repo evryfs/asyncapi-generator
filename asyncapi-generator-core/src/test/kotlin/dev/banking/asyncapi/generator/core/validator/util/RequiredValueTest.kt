@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.validator.AbstractValidatorTest
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
-class RequiredValueTest : AbstractValidatorTest() {
+internal class RequiredValueTest : AbstractValidatorTest() {
     @Test
     fun `required values that are only whitespace are reported as missing`() {
         val codes = validate("validator/util/asyncapi_validator_blank_required_values.yaml").errors.map { it.code }

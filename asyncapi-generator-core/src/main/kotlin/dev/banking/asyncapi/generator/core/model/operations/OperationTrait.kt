@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterfa
 import dev.banking.asyncapi.generator.core.model.security.SecuritySchemeInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class OperationTrait(
+internal data class OperationTrait(
     val title: String? = null,
     val summary: String? = null,
     val description: String? = null,

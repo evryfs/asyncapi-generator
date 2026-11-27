@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
+internal class AvroWithOpenapiTest : AbstractAvroGeneratorClass() {
     @Test
     fun `should generate individual records for polymorphic types with ref types from unknown schema`() {
         generateAvro(

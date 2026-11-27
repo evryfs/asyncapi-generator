@@ -16,7 +16,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-class SecuritySchemeParserTest {
+internal class SecuritySchemeParserTest {
     private val context = AsyncApiContext()
     private val parser = SecuritySchemeParser()
 

@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class KafkaHeaderPropertyFactoryTest {
+internal class KafkaHeaderPropertyFactoryTest {
     @Test
     fun `preserves supported scalar types and header nullability`() {
         val properties =

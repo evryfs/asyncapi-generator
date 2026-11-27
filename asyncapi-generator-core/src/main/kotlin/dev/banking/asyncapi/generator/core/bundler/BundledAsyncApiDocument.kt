@@ -10,6 +10,6 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  *
  * @property document the bundled document
  */
-class BundledAsyncApiDocument internal constructor(
+internal class BundledAsyncApiDocument internal constructor(
     val document: AsyncApiDocument,
 )

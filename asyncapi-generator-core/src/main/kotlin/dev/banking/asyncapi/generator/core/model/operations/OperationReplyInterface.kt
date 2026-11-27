@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Operation Reply Object written inline or as a `$ref`. */
-sealed interface OperationReplyInterface : ReferenceOr<OperationReply> {
+internal sealed interface OperationReplyInterface : ReferenceOr<OperationReply> {
     /**
      * A Operation Reply Object written inline.
      *

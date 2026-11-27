@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class ConditionalNormalizerTest {
+internal class ConditionalNormalizerTest {
     private val normalizer = ConditionalNormalizer()
 
     @Test

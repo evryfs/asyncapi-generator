@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param configurationValue the value users write in `generatorName`.
  * @param profile what the generator produces.
  */
-enum class GeneratorName(
+internal enum class GeneratorName(
     val configurationValue: String,
     val profile: GeneratorProfile,
 ) {

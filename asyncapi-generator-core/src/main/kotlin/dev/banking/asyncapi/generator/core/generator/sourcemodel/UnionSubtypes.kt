@@ -11,7 +11,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
  * @property name Discriminator value that selects this member.
  * @property type Generated type name of the member.
  */
-data class UnionSubtype(
+internal data class UnionSubtype(
     val name: String,
     val type: String,
 )

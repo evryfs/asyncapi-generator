@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
-class ReferenceTest {
+internal class ReferenceTest {
     @Test
     fun `recursive schemas can be compared, hashed and printed`() {
         val first = recursiveNode()

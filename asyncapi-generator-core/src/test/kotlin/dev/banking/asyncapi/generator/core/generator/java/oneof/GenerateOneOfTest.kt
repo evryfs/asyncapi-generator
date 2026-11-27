@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateOneOfTest : AbstractJavaGeneratorClass() {
+internal class GenerateOneOfTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_java_oneOf_composition_Payment_interface() {
         val generated =

@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class JavaModelEmitterTest {
+internal class JavaModelEmitterTest {
     @Test
     fun `emits one Java source per model except open objects`() {
         val result =

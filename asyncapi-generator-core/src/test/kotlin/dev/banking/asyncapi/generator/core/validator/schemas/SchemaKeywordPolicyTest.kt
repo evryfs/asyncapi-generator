@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class SchemaKeywordPolicyTest {
+internal class SchemaKeywordPolicyTest {
     @Test
     fun `all represented Draft 7 and AsyncAPI keywords are supported`() {
         val supportedKeywords =
