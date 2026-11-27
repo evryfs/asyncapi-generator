@@ -49,28 +49,28 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
     @Parameter(property = "asyncapi.protocExecutable")
     private var protocExecutable: File? = null
 
-    @Parameter(property = "generatorName", required = true)
+    @Parameter(property = "asyncapi.generatorName", required = true)
     private var generatorName: String? = null
 
-    @Parameter(property = "inputSpec", required = true)
+    @Parameter(property = "asyncapi.inputSpec", required = true)
     private lateinit var inputSpec: File
 
-    @Parameter(property = "outputFile")
+    @Parameter(property = "asyncapi.outputFile")
     private var outputFile: File? = null
 
     @Parameter(
-        property = "outputDirectory",
+        property = "asyncapi.outputDirectory",
         defaultValue = "\${project.build.directory}/generated-sources/asyncapi",
     )
     private lateinit var outputDirectory: File
 
-    @Parameter(property = "modelPackage")
+    @Parameter(property = "asyncapi.modelPackage")
     private var modelPackage: String? = null
 
-    @Parameter(property = "clientPackage")
+    @Parameter(property = "asyncapi.clientPackage")
     private var clientPackage: String? = null
 
-    @Parameter(property = "schemaPackage")
+    @Parameter(property = "asyncapi.schemaPackage")
     private var schemaPackage: String? = null
 
     @Parameter

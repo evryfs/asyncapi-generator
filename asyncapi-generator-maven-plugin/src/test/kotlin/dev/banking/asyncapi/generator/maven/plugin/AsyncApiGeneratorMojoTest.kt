@@ -24,7 +24,9 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.w3c.dom.Element
 import java.io.File
+import javax.xml.parsers.DocumentBuilderFactory
 
 class AsyncApiGeneratorMojoTest {
     @Test
@@ -82,5 +84,27 @@ class AsyncApiGeneratorMojoTest {
             ),
             settings,
         )
+    }
+
+    @Test
+    fun `every user property of the generate goal is prefixed with asyncapi`() {
+        val descriptor =
+            DocumentBuilderFactory
+                .newInstance()
+                .newDocumentBuilder()
+                .parse(File("target/classes/META-INF/maven/plugin.xml"))
+        val mojos = descriptor.getElementsByTagName("mojo")
+        val generate =
+            (0 until mojos.length)
+                .map { mojos.item(it) as Element }
+                .single { it.getElementsByTagName("goal").item(0).textContent == "generate" }
+        val parameters = generate.getElementsByTagName("configuration").item(0).childNodes
+        val properties =
+            (0 until parameters.length)
+                .map(parameters::item)
+                .mapNotNull { parameter -> parameter.textContent.trim().ifEmpty { null } }
+
+        assertTrue(properties.isNotEmpty())
+        assertTrue(properties.all { it.startsWith("\${asyncapi.") }, "unprefixed user properties: $properties")
     }
 }
