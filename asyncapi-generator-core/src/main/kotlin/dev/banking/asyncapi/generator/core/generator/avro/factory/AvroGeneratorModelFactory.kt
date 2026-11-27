@@ -135,7 +135,6 @@ internal class AvroGeneratorModelFactory(
             ?.takeUnless { it.isBlank() }
             ?.replace("\n", " ")
             ?.replace("\r", "")
-            ?.trimStart('"', '\'', '|', '>')
             ?.trim()
             ?.let(::jsonText)
 

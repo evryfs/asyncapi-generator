@@ -1,0 +1,25 @@
+asyncapi: 3.0.0
+info:
+  title: Doc comments
+  version: 1.0.0
+channels:
+  notices:
+    address: notices
+    messages:
+      notice:
+        payload:
+          $ref: '#/components/schemas/Notice'
+components:
+  schemas:
+    Notice:
+      description: |-
+        > Quoted from the policy.
+        | Column | Meaning |
+      type: object
+      properties:
+        body:
+          description: '"Quoted" wording stays.'
+          type: string
+        marker:
+          description: '|pipe and >arrow'
+          type: string

@@ -8,7 +8,6 @@ internal object DocComments {
 
         return cleanAndUnescape(raw)
             .lines()
-            .map { stripMarkdownPrefixes(it) }
             .flatMap { logicalLine ->
                 val trimmedStart = logicalLine.trimStart()
                 // KDoc specific: preserve bullets/preformatted blocks without wrapping
@@ -30,13 +29,11 @@ internal object DocComments {
     fun toJavaDocLines(raw: String?): List<String> {
         if (raw.isNullOrBlank()) return emptyList()
 
-        // JavaDoc logic: clean -> strip prefixes -> wrap everything (JavaDoc handles <p> etc)
         return cleanAndUnescape(raw)
             .lines()
             .flatMap { logicalLine ->
                 wrapLine(logicalLine)
             }.filter { it.isNotBlank() }
-            .map { stripMarkdownPrefixes(it) }
             .map(::escapeJavaComment)
     }
 
@@ -50,19 +47,6 @@ internal object DocComments {
         unescapeBasicHtml(raw)
             .replace("\r\n", "\n")
             .trim()
-            .removePrefix("\"")
-            .removeSuffix("\"")
-
-    private fun stripMarkdownPrefixes(line: String): String {
-        val trimmedRight = line.trimEnd()
-        return when {
-            trimmedRight.trimStart().startsWith("|") ->
-                trimmedRight.trimStart().removePrefix("|").trimStart()
-            trimmedRight.trimStart().startsWith(">") ->
-                trimmedRight.trimStart().removePrefix(">").trimStart()
-            else -> trimmedRight
-        }
-    }
 
     private fun wrapLine(line: String): List<String> {
         val trimmed = line.trim()
