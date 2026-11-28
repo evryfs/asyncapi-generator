@@ -2,7 +2,5 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>SwallowedException:Main.kt$AsyncApiGeneratorCli$exception: IllegalArgumentException</ID>
-    <ID>TooGenericExceptionCaught:Main.kt$AsyncApiGeneratorCli$exception: Exception</ID>
   </CurrentIssues>
 </SmellBaseline>

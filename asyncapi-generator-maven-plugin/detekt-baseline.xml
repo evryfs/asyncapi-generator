@@ -2,7 +2,5 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>TooGenericExceptionCaught:AsyncApiGeneratorMojo.kt$AsyncApiGeneratorMojo$e: Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorMojo.kt$AsyncApiGeneratorMojo : AbstractMojo</ID>
   </CurrentIssues>
 </SmellBaseline>

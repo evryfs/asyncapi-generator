@@ -10,11 +10,6 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
 import dev.banking.asyncapi.generator.core.GeneratorSettings
-import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
-import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import java.io.File
 
 /**
@@ -35,7 +30,7 @@ internal class CliGenerationOptions : OptionGroup(name = "Generation") {
         "--generator-name",
         "-g",
         help = "Generator profile.",
-    ).choice(GeneratorName.supportedConfigurationValues.associateWith { it })
+    ).choice(GeneratorSettings.generatorNames.associateWith { it })
         .required()
 
     val protocExecutable by option(
@@ -95,7 +90,7 @@ internal class CliModelOptions : OptionGroup(name = "Models") {
     val modelType by option(
         "--model-type",
         help = "Payload model implementation; defaults from the generator profile.",
-    ).choice(ModelType.supportedConfigurationValues.associateWith { it })
+    ).choice(GeneratorSettings.modelTypes.associateWith { it })
 
     fun toSettings(): GeneratorSettings.ModelConfig? =
         if (modelAnnotation != null || modelType != null) {
@@ -112,12 +107,12 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
     private val clientType by option(
         "--client-type",
         help = "Client technology.",
-    ).choice(ClientType.supportedConfigurationValues.associateWith { it })
+    ).choice(GeneratorSettings.clientTypes.associateWith { it })
 
     private val clientContract by option(
         "--client-contract",
         help = "Generated client contract shape.",
-    ).choice(ClientContract.supportedConfigurationValues.associateWith { it })
+    ).choice(GeneratorSettings.clientContracts.associateWith { it })
 
     private val producerEnabled by option(
         "--generate-producer",
@@ -127,7 +122,7 @@ internal class CliClientOptions : OptionGroup(name = "Clients") {
     private val producerAdditionalPayloadTypes by option(
         "--producer-additional-payload-type",
         help = "Add a producer method for an already serialized payload value.",
-    ).choice(AdditionalProducerPayloadType.supportedConfigurationValues.associateWith { it })
+    ).choice(GeneratorSettings.additionalPayloadTypes.associateWith { it })
         .multiple()
 
     private val consumerEnabled by option(

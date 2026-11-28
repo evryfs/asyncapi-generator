@@ -1,8 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfiguration
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
-import dev.banking.asyncapi.generator.core.generator.plan.GenerationPlanner
+import dev.banking.asyncapi.generator.core.ConfiguredGeneration
 import org.apache.maven.model.Resource
 import org.apache.maven.project.MavenProject
 import java.io.File
@@ -13,21 +11,16 @@ import java.io.File
  * schemas.
  *
  * @param project the project the directories are registered with
- * @param generationPlanner plans the execution, whose output kinds decide the registration
  */
 internal class MavenGeneratedOutputRegistrar(
     private val project: MavenProject,
-    private val generationPlanner: GenerationPlanner = GenerationPlanner(),
 ) {
-    fun register(configuration: GeneratorConfiguration) {
-        val outputKinds = generationPlanner.plan(configuration).outputKinds
-        val outputDirectory = configuration.output.outputDirectory
-
-        if (GeneratedArtifactKind.SOURCE in outputKinds) {
-            registerCompileSourceRoot(outputDirectory.normalizedAbsolutePath())
+    fun register(generation: ConfiguredGeneration) {
+        if (generation.writesSources) {
+            registerCompileSourceRoot(generation.outputDirectory.normalizedAbsolutePath())
         }
-        if (GeneratedArtifactKind.SCHEMA in outputKinds) {
-            registerSchemaResourceRoot(outputDirectory)
+        if (generation.writesSchemas) {
+            registerSchemaResourceRoot(generation.outputDirectory)
         }
     }
 

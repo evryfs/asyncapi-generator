@@ -8,13 +8,11 @@ import com.github.ajalt.clikt.core.UsageError
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.parameters.groups.provideDelegate
 import com.github.ajalt.clikt.parameters.options.versionOption
+import dev.banking.asyncapi.generator.core.AsyncApiGenerationException
+import dev.banking.asyncapi.generator.core.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.ConfiguredGeneration
 import dev.banking.asyncapi.generator.core.GeneratorSettings
-import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
-import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoadResult
-import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
+import dev.banking.asyncapi.generator.core.ProtocProvider
 
 fun main(args: Array<String>) = AsyncApiGeneratorCli().main(args)
 
@@ -69,41 +67,34 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
         """.trimIndent()
 
     override fun run() {
-        val generatorConfiguration = generatorConfiguration()
-        generatorConfiguration
-            .formatWarnings()
-            .takeIf(
-                String::isNotEmpty,
-            )?.let { echo(message = it.trimEnd(), err = true) }
+        val generator = AsyncApiGenerator(protocProvider())
+        val generation = configure(generator)
+        if (generation.warnings.isNotEmpty()) {
+            echo(message = generation.warnings, err = true)
+        }
         echo("Generating AsyncAPI output from ${generationOptions.inputSpec}...")
 
         try {
-            val loaded = AsyncApiDocumentLoader().load(generationOptions.inputSpec)
-            reportWarnings(loaded)
-
-            val bundler = AsyncApiBundler()
-            val bundledDoc = bundler.bundle(loaded)
-            GenerationPipeline(MavenRepositoryProtocProvider(override = generationOptions.protocExecutable?.toPath()))
-                .generate(bundledDoc, generatorConfiguration)
-        } catch (exception: Exception) {
-            throw CliktError(
-                message = exception.message ?: "AsyncAPI generation failed.",
-                cause = exception,
-            )
+            generator.generate(generationOptions.inputSpec, generation) { warnings ->
+                echo(message = warnings, err = true)
+            }
+        } catch (exception: AsyncApiGenerationException) {
+            throw CliktError(message = exception.message, cause = exception)
         }
 
         echo("Generation complete.")
     }
 
-    private fun reportWarnings(result: AsyncApiDocumentLoadResult) {
-        if (result.warnings.isNotEmpty()) {
-            echo(message = result.formatWarnings().trimEnd(), err = true)
-        }
-    }
+    private fun protocProvider(): ProtocProvider =
+        generationOptions.protocExecutable?.let { ProtocProvider.executable(it.toPath()) }
+            ?: ProtocProvider.fromMavenRepository()
 
-    private fun generatorConfiguration() =
+    // A configuration mistake is a usage error, which Clikt shows with the usage hint; UsageError has no
+    // cause, and the message is the whole diagnostic.
+    @Suppress("SwallowedException")
+    private fun configure(generator: AsyncApiGenerator): ConfiguredGeneration =
         try {
-            GeneratorConfigurationFactory.create(
+            generator.configure(
                 GeneratorSettings(
                     generatorName = generationOptions.generatorName,
                     outputDirectory = outputOptions.outputDirectory,
@@ -116,7 +107,7 @@ class AsyncApiGeneratorCli : CliktCommand(name = "asyncapi-generator") {
                     suppressedWarnings = generationOptions.suppressedWarnings,
                 ),
             )
-        } catch (exception: IllegalArgumentException) {
-            throw UsageError(exception.message ?: "Invalid generator configuration")
+        } catch (exception: AsyncApiGenerationException.InvalidSettings) {
+            throw UsageError(exception.message)
         }
 }
