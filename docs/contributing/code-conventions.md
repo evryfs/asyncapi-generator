@@ -122,17 +122,8 @@ KDoc follows the [KDoc style guide](kdoc-style-guide.md).
 |---------|--------------|
 | `mvn ktlint:format` | Formats the Kotlin sources. |
 | `mvn ktlint:check` | Fails on formatting violations. It also runs in `mvn verify`. |
-| `mvn verify` | Runs detekt, which fails on any finding that is not in the baseline. |
+| `mvn verify` | Runs detekt, which fails on any finding. |
 
-Each module has a `detekt-baseline.xml` that lists the findings that existed
-when detekt was introduced. The baseline only shrinks:
-
-- Never add an entry to a baseline. Fix the finding, or, if the rule is wrong
-  for that case, suppress it in code with `@Suppress` and a comment that says
-  why.
-- A baseline entry is keyed by the function signature. When a refactoring
-  changes the signature of a function that already has an entry, update the
-  key in the same change; that is not a new finding.
-- When a cleanup fixes a baselined finding, remove its entry. Regenerate the
-  baseline with `mvn detekt:create-baseline -pl <module>` and check that the
-  diff only removes lines.
+detekt runs without a baseline: every finding fails the build. Fix the
+finding, or, if the rule is wrong for that case, suppress it in code with
+`@Suppress` and a comment that says why. Never add a baseline file.

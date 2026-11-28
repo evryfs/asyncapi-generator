@@ -72,6 +72,8 @@ internal data class Schema(
     val bindings: Map<String, BindingInterface>? = null,
     @get:JsonAnyGetter val extensions: Map<String, Any?>? = null,
 ) {
+    // Read by Jackson only: writes `items` back as a list for tuple-form items and as one schema otherwise.
+    @Suppress("UnusedPrivateProperty")
     @get:JsonProperty("items")
     private val serializedItems: Any?
         get() = tupleItems ?: items

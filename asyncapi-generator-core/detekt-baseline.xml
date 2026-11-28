@@ -1,8 +1,0 @@
-<?xml version="1.0" ?>
-<SmellBaseline>
-  <ManuallySuppressedIssues/>
-  <CurrentIssues>
-    <ID>LongMethod:SchemaParser.kt$SchemaParser$private fun parseSchema(parserNode: ParserNode): SchemaInterface</ID>
-    <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
-  </CurrentIssues>
-</SmellBaseline>

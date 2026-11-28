@@ -74,7 +74,13 @@ internal class SchemaParser(
             .also { asyncApiContext.register(multiFormatSchema, parserNode) }
     }
 
-    /** Parses a Schema Object; its members are read in the order the JSON Schema vocabularies list them. */
+    /**
+     * Parses a Schema Object; its members are read in the order the JSON Schema vocabularies list them.
+     *
+     * It reads one keyword per line, mirroring the [Schema] constructor, so the keyword list can be checked
+     * against the specification in one place; that is why it is longer than the usual limit.
+     */
+    @Suppress("LongMethod")
     private fun parseSchema(parserNode: ParserNode): SchemaInterface {
         val objectNode = parserNode.expectObject()
         val defaultNode = objectNode.optional("default")

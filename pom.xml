@@ -305,7 +305,6 @@
                         <excludes>**/resources/**</excludes>
                         <config>${maven.multiModuleProjectDirectory}/config/detekt/detekt.yml</config>
                         <buildUponDefaultConfig>true</buildUponDefaultConfig>
-                        <baseline>${project.basedir}/detekt-baseline.xml</baseline>
                     </configuration>
                     <executions>
                         <execution>
