@@ -3,6 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.input
 import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorException.UnsupportedSourceSchemaFeature
 import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
+import dev.banking.asyncapi.generator.core.model.schemas.childSchemasByPath
 import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.regex.Pattern
@@ -18,15 +19,7 @@ internal object SourceSchemaCompatibilityValidator {
     ) {
         val visited = Collections.newSetFromMap(IdentityHashMap<Schema, Boolean>())
         schemas.forEach { (schemaName, schema) ->
-            validateSchema(
-                output = output,
-                rootSchemaName = schemaName,
-                path = "$",
-                schema = schema,
-                checkStructuralModels = checkStructuralModels,
-                checkJavaPatterns = checkJavaPatterns,
-                visited = visited,
-            )
+            SchemaWalk(output, schemaName, checkStructuralModels, checkJavaPatterns, visited).validate("$", schema)
         }
     }
 
@@ -35,26 +28,41 @@ internal object SourceSchemaCompatibilityValidator {
         rootSchemaName: String,
         schema: Schema,
     ) {
-        validateJavaPattern(
-            output = output,
-            rootSchemaName = rootSchemaName,
-            path = "$",
-            schema = schema,
-        )
+        validateJavaPattern(output, rootSchemaName, "$", schema)
     }
 
-    private fun validateSchema(
-        output: String,
-        rootSchemaName: String,
-        path: String,
-        schema: Schema,
-        checkStructuralModels: Boolean,
-        checkJavaPatterns: Boolean,
-        visited: MutableSet<Schema>,
+    /**
+     * Validates one root schema and every inline schema it holds, each schema once.
+     *
+     * @param output the generated output the schemas are checked for, as named in errors
+     * @param rootSchemaName the root schema, as named in errors
+     * @param checkStructuralModels whether shapes that no model class can represent are rejected
+     * @param checkJavaPatterns whether every `pattern` must compile as a Java regular expression
+     * @param visited the schemas already validated, shared by every root
+     */
+    private class SchemaWalk(
+        private val output: String,
+        private val rootSchemaName: String,
+        private val checkStructuralModels: Boolean,
+        private val checkJavaPatterns: Boolean,
+        private val visited: MutableSet<Schema>,
     ) {
-        if (!visited.add(schema)) return
+        fun validate(
+            path: String,
+            schema: Schema,
+        ) {
+            if (!visited.add(schema)) return
+            if (checkStructuralModels) validateStructure(path, schema)
+            if (checkJavaPatterns) validateJavaPattern(output, rootSchemaName, path, schema)
+            schema.childSchemasByPath().forEach { (childPath, child) ->
+                if (child is SchemaInterface.SchemaInline) validate(path + childPath, child.schema)
+            }
+        }
 
-        if (checkStructuralModels) {
+        private fun validateStructure(
+            path: String,
+            schema: Schema,
+        ) {
             val forbiddenProperty =
                 schema.properties
                     ?.entries
@@ -76,249 +84,8 @@ internal object SourceSchemaCompatibilityValidator {
                     )
 
                 schema.type == null && schema.enum?.any { value -> value !is String } == true ->
-                    reject(
-                        output,
-                        rootSchemaName,
-                        path,
-                        "an enum without 'type' that contains non-string values",
-                    )
+                    reject(output, rootSchemaName, path, "an enum without 'type' that contains non-string values")
             }
-        }
-
-        if (checkJavaPatterns) {
-            validateJavaPattern(output, rootSchemaName, path, schema)
-        }
-
-        schema.items?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.items",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.tupleItems?.forEachIndexed { index, child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.items[$index]",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.additionalItems?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.additionalItems",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.contains?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.contains",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.properties?.forEach { (name, child) ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.properties['$name']",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.patternProperties?.forEach { (pattern, child) ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.patternProperties['$pattern']",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.additionalProperties?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.additionalProperties",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.propertyNames?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.propertyNames",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.dependencies?.forEach { (name, child) ->
-            if (child is SchemaInterface) {
-                validateInterface(
-                    output,
-                    rootSchemaName,
-                    "$path.dependencies['$name']",
-                    child,
-                    checkStructuralModels,
-                    checkJavaPatterns,
-                    visited,
-                )
-            }
-        }
-        schema.definitions?.forEach { (name, child) ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.definitions['$name']",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        validateList(
-            output,
-            rootSchemaName,
-            path,
-            "allOf",
-            schema.allOf,
-            checkStructuralModels,
-            checkJavaPatterns,
-            visited,
-        )
-        validateList(
-            output,
-            rootSchemaName,
-            path,
-            "anyOf",
-            schema.anyOf,
-            checkStructuralModels,
-            checkJavaPatterns,
-            visited,
-        )
-        validateList(
-            output,
-            rootSchemaName,
-            path,
-            "oneOf",
-            schema.oneOf,
-            checkStructuralModels,
-            checkJavaPatterns,
-            visited,
-        )
-        schema.not?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.not",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.ifSchema?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.if",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.thenSchema?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.then",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-        schema.elseSchema?.let { child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.else",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-    }
-
-    private fun validateList(
-        output: String,
-        rootSchemaName: String,
-        path: String,
-        field: String,
-        schemas: List<SchemaInterface>?,
-        checkStructuralModels: Boolean,
-        checkJavaPatterns: Boolean,
-        visited: MutableSet<Schema>,
-    ) {
-        schemas?.forEachIndexed { index, child ->
-            validateInterface(
-                output,
-                rootSchemaName,
-                "$path.$field[$index]",
-                child,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
-        }
-    }
-
-    private fun validateInterface(
-        output: String,
-        rootSchemaName: String,
-        path: String,
-        schema: SchemaInterface,
-        checkStructuralModels: Boolean,
-        checkJavaPatterns: Boolean,
-        visited: MutableSet<Schema>,
-    ) {
-        if (schema is SchemaInterface.SchemaInline) {
-            validateSchema(
-                output,
-                rootSchemaName,
-                path,
-                schema.schema,
-                checkStructuralModels,
-                checkJavaPatterns,
-                visited,
-            )
         }
     }
 
@@ -332,12 +99,7 @@ internal object SourceSchemaCompatibilityValidator {
             try {
                 Pattern.compile(pattern)
             } catch (exception: PatternSyntaxException) {
-                reject(
-                    output,
-                    rootSchemaName,
-                    path,
-                    "a 'pattern' that Java cannot compile: ${exception.description}",
-                )
+                reject(output, rootSchemaName, path, "a 'pattern' that Java cannot compile: ${exception.description}")
             }
         }
     }

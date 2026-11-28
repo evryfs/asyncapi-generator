@@ -13,24 +13,18 @@ internal class SchemaMerger {
     fun merge(
         base: Schema,
         override: Schema,
-    ): Schema {
-        val baseProps = base.properties ?: emptyMap()
-        val overrideProps = override.properties ?: emptyMap()
-        val allPropKeys = baseProps.keys + overrideProps.keys
+    ): Schema =
+        mergeAnnotations(base, override)
+            .withMergedConstraints(base, override)
+            .withMergedStructure(base, override)
 
-        val mergedProperties =
-            allPropKeys
-                .associateWith { key ->
-                    // Every key comes from one of the two sides, so the merge always has a property.
-                    checkNotNull(mergeSchemaInterface(baseProps[key], overrideProps[key])) {
-                        "Property $key is missing on both sides of the merge"
-                    }
-                }.ifEmpty { null }
-        val lowerBound = strictestLowerBound(base, override)
-        val upperBound = strictestUpperBound(base, override)
+    /** [override] with the descriptive keywords and exact values it lacks taken from [base]. */
+    private fun mergeAnnotations(
+        base: Schema,
+        override: Schema,
+    ): Schema {
         val overrideHasDefault = override.defaultSet || override.default != null
         val overrideHasConst = override.constSet || override.const != null
-
         return override.copy(
             title = override.title ?: base.title,
             type = override.type ?: base.type,
@@ -43,6 +37,17 @@ internal class SchemaMerger {
             constSet = if (overrideHasConst) override.constSet else base.constSet,
             readOnly = override.readOnly ?: base.readOnly,
             writeOnly = override.writeOnly ?: base.writeOnly,
+        )
+    }
+
+    /** This schema with the strictest numeric and string constraints of [base] and [override]. */
+    private fun Schema.withMergedConstraints(
+        base: Schema,
+        override: Schema,
+    ): Schema {
+        val lowerBound = strictestLowerBound(base, override)
+        val upperBound = strictestUpperBound(base, override)
+        return copy(
             multipleOf = override.multipleOf ?: base.multipleOf,
             minimum = lowerBound?.value?.takeUnless { lowerBound.exclusive },
             exclusiveMinimum = lowerBound?.value?.takeIf { lowerBound.exclusive },
@@ -51,6 +56,25 @@ internal class SchemaMerger {
             minLength = max(base.minLength, override.minLength),
             maxLength = min(base.maxLength, override.maxLength),
             pattern = override.pattern ?: base.pattern,
+        )
+    }
+
+    /** This schema with the properties, items and compositions of [base] and [override] combined. */
+    private fun Schema.withMergedStructure(
+        base: Schema,
+        override: Schema,
+    ): Schema {
+        val baseProps = base.properties ?: emptyMap()
+        val overrideProps = override.properties ?: emptyMap()
+        val mergedProperties =
+            (baseProps.keys + overrideProps.keys)
+                .associateWith { key ->
+                    // Every key comes from one of the two sides, so the merge always has a property.
+                    checkNotNull(mergeSchemaInterface(baseProps[key], overrideProps[key])) {
+                        "Property $key is missing on both sides of the merge"
+                    }
+                }.ifEmpty { null }
+        return copy(
             items = mergeSchemaInterface(base.items, override.items),
             additionalProperties = mergeSchemaInterface(base.additionalProperties, override.additionalProperties),
             properties = mergedProperties,

@@ -80,37 +80,27 @@ internal class PromotedSchemaRegistry(
     fun reserve(
         reference: Reference,
         model: Any,
-    ): Entry {
-        entriesByModel[model]?.let { return it }
-
-        val name =
-            reference.ref.componentSchemaNameOrNull()
-                ?: reference.ref.referenceTargetNameOrNull()
-                ?: throw AsyncApiBundlingException.ExternalSchemaNameUnavailable(reference.ref)
-        val origin = reference.origin()
-        entriesByName[name]?.let { existing ->
-            if (sameContent(existing.model, model)) {
-                entriesByModel[model] = existing
-                return existing
+    ): Entry =
+        entriesByModel.getOrPut(model) {
+            val name =
+                reference.ref.componentSchemaNameOrNull()
+                    ?: reference.ref.referenceTargetNameOrNull()
+                    ?: throw AsyncApiBundlingException.ExternalSchemaNameUnavailable(reference.ref)
+            val origin = reference.origin()
+            val existing = entriesByName[name]
+            when {
+                existing == null ->
+                    Entry(name = name, model = model, origin = origin, promoted = true, state = State.PENDING)
+                        .also { entry -> entriesByName[name] = entry }
+                sameContent(existing.model, model) -> existing
+                else ->
+                    throw AsyncApiBundlingException.PromotedSchemaNameCollision(
+                        schemaName = name,
+                        existingOrigin = existing.origin,
+                        incomingOrigin = origin,
+                    )
             }
-            throw AsyncApiBundlingException.PromotedSchemaNameCollision(
-                schemaName = name,
-                existingOrigin = existing.origin,
-                incomingOrigin = origin,
-            )
         }
-
-        return Entry(
-            name = name,
-            model = model,
-            origin = origin,
-            promoted = true,
-            state = State.PENDING,
-        ).also { entry ->
-            entriesByModel[model] = entry
-            entriesByName[name] = entry
-        }
-    }
 
     /** Marks [entry] as being bundled; `false` when it is already being bundled or complete. */
     fun startBundling(entry: Entry): Boolean {
