@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateSettingsObjectTest : AbstractKotlinGeneratorClass() {
+internal class GenerateSettingsObjectTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_asyncapi_settings_object_type_SettingsObjectType_dataClass() {
         val generated =

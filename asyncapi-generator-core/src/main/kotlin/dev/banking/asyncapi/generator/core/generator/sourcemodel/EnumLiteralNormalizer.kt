@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
  * @property jsonValue The wire value when it differs from [name], so generated code maps it with
  *   `@JsonProperty`; null when Jackson's default (the constant name) already matches.
  */
-data class EnumConstant(
+internal data class EnumConstant(
     val name: String,
     val jsonValue: String?,
 )

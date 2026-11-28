@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
-class KafkaKeyTest {
+internal class KafkaKeyTest {
     @Test
     fun `uses message name for untitled inline object key`() {
         val schema = Schema(type = JsonSchemaType.Single("object"))

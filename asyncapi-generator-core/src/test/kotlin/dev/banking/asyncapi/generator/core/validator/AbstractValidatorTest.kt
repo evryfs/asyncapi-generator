@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.fixtures.ValidatorFixtures
 import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
 import dev.banking.asyncapi.generator.core.model.validator.ValidationReport
 
-abstract class AbstractValidatorTest {
+internal abstract class AbstractValidatorTest {
     internal val asyncApiContext = AsyncApiContext()
     private val validatorFixtures = ValidatorFixtures(asyncApiContext)
 

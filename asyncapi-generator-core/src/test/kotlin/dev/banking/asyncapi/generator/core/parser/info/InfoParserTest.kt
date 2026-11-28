@@ -16,7 +16,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class InfoParserTest {
+internal class InfoParserTest {
     private val context = AsyncApiContext()
     private val parser = InfoParser()
 

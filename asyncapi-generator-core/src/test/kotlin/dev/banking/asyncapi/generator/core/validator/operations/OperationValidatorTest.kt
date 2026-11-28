@@ -17,7 +17,7 @@ import dev.banking.asyncapi.generator.core.validator.AsyncApiValidator
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class OperationValidatorTest : AbstractValidatorTest() {
+internal class OperationValidatorTest : AbstractValidatorTest() {
     private val asyncApiValidator = AsyncApiValidator(asyncApiContext)
 
     @Test

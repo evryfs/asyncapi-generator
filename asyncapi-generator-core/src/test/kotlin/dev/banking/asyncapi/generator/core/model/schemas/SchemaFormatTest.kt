@@ -5,7 +5,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class SchemaFormatTest {
+internal class SchemaFormatTest {
     @Test
     fun `fromValue recognizes asyncapi schema object formats`() {
         assertEquals(

@@ -22,7 +22,7 @@ import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 import kotlin.test.assertEquals
 
-class GenerationPlannerTest {
+internal class GenerationPlannerTest {
     private val planner = GenerationPlanner()
 
     @TempDir

@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class KafkaKeyModelSelectorTest {
+internal class KafkaKeyModelSelectorTest {
     @Test
     fun `selects native payload object key models and their dependencies`() {
         val tenantSchema =

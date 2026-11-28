@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Correlation ID Object written inline or as a `$ref`. */
-sealed interface CorrelationIdInterface : ReferenceOr<CorrelationId> {
+internal sealed interface CorrelationIdInterface : ReferenceOr<CorrelationId> {
     /**
      * A Correlation ID Object written inline.
      *

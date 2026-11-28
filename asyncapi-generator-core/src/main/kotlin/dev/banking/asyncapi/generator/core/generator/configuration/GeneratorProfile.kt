@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * A profile has exactly one responsibility: generate source code, generate
  * schema artifacts, or serialize an AsyncAPI document.
  */
-sealed interface GeneratorProfile {
+internal sealed interface GeneratorProfile {
     /**
      * Generates source code.
      *

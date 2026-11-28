@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 /**
  * Programming language of the source code a source generator writes.
  */
-enum class SourceLanguage {
+internal enum class SourceLanguage {
     KOTLIN,
     JAVA,
     ;

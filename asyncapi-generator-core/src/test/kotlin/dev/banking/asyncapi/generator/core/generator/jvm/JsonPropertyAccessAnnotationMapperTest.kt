@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class JsonPropertyAccessAnnotationMapperTest {
+internal class JsonPropertyAccessAnnotationMapperTest {
     private fun annotation(
         schema: Schema?,
         wireName: String? = null,

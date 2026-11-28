@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
-class NativeProtobufPayloadTypeResolverTest {
+internal class NativeProtobufPayloadTypeResolverTest {
     private val resolver = NativeProtobufPayloadTypeResolver()
 
     @Test

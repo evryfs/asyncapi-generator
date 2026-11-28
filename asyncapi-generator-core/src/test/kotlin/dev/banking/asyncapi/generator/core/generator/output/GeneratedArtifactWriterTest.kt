@@ -10,7 +10,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GeneratedArtifactWriterTest {
+internal class GeneratedArtifactWriterTest {
     @TempDir
     lateinit var tempDir: Path
 

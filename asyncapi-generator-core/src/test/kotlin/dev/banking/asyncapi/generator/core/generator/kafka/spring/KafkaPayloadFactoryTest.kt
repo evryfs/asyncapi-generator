@@ -18,7 +18,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class KafkaPayloadFactoryTest {
+internal class KafkaPayloadFactoryTest {
     private val factory = KafkaPayloadFactory()
 
     @Test

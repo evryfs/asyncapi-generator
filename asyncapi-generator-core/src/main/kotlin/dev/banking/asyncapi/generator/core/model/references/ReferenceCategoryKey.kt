@@ -25,7 +25,7 @@ import kotlin.reflect.KClass
  *
  * @param targetTypes the model types an object of this kind is parsed into
  */
-enum class ReferenceCategoryKey(
+internal enum class ReferenceCategoryKey(
     private vararg val targetTypes: KClass<*>,
 ) {
     SCHEMA(Schema::class, MultiFormatSchema::class, SchemaInterface.BooleanSchema::class),

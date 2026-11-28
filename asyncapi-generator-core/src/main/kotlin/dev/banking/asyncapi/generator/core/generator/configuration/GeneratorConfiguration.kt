@@ -15,7 +15,7 @@ import dev.banking.asyncapi.generator.core.diagnostics.DiagnosticLayout
  * @param client the client contracts to generate, or `null` for none.
  * @param warnings valid settings that have no effect on this execution.
  */
-data class GeneratorConfiguration(
+internal data class GeneratorConfiguration(
     val profile: GeneratorProfile,
     val output: GeneratorOutputConfiguration,
     val models: ModelGeneration = ModelGeneration.Disabled,

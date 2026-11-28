@@ -19,7 +19,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-class BundledDocumentApprovalTest {
+internal class BundledDocumentApprovalTest {
     private val bundlerFixtures = BundlerFixtures()
 
     @TempDir

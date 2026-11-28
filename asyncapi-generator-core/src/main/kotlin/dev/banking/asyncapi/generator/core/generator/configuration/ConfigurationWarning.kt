@@ -14,7 +14,7 @@ private const val CONFIGURATION_WARNINGS =
  * @param id the identifier users list in `suppressedWarnings`.
  * @param message what is ignored and why.
  */
-data class ConfigurationWarning(
+internal data class ConfigurationWarning(
     val id: ConfigurationWarningId,
     val message: String,
 ) {
@@ -29,7 +29,7 @@ data class ConfigurationWarning(
  * @param configurationValue the value users write in `suppressedWarnings`.
  * @param documentation the link to the warning's documentation.
  */
-enum class ConfigurationWarningId(
+internal enum class ConfigurationWarningId(
     val configurationValue: String,
     val documentation: String,
 ) {

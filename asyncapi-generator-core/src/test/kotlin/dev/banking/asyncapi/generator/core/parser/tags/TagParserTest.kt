@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 
-class TagParserTest {
+internal class TagParserTest {
     private val context = AsyncApiContext()
     private val parser = TagParser()
 

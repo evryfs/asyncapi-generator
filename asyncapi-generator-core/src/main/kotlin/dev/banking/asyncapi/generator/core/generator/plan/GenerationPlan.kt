@@ -7,7 +7,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
  *
  * @param tasks the tasks in the order their artifacts are rendered.
  */
-data class GenerationPlan(
+internal data class GenerationPlan(
     val tasks: List<GenerationTask>,
 ) {
     /** The kinds of artifact any task writes under the output directory. */

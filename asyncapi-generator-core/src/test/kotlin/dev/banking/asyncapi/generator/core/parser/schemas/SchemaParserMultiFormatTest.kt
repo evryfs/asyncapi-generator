@@ -23,7 +23,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class SchemaParserMultiFormatTest {
+internal class SchemaParserMultiFormatTest {
     @TempDir
     lateinit var tempDir: Path
 

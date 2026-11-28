@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class ClientTypeTest {
+internal class ClientTypeTest {
     @Test
     fun `fromConfigurationValue parses supported client type`() {
         assertEquals(

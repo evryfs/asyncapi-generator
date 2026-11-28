@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class KafkaKeyContractResolverTest {
+internal class KafkaKeyContractResolverTest {
     @Test
     fun `resolves supported scalar key schemas`() {
         val scenarios =

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateConditionalTest : AbstractJavaGeneratorClass() {
+internal class GenerateConditionalTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_asyncapi_conditional_example_ConditionalExample_dataClass() {
         val generated =

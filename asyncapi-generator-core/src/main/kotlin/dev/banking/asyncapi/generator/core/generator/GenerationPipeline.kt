@@ -16,7 +16,7 @@ import dev.banking.asyncapi.generator.core.model.exceptions.AsyncApiGeneratorExc
  * @param protocProvider Supplies `protoc` for native Protobuf model generation; frontends pass one
  *   that resolves it through their build tool's repositories.
  */
-class GenerationPipeline(
+internal class GenerationPipeline(
     protocProvider: ProtocProvider = MavenRepositoryProtocProvider(),
 ) {
     private val generationInputFactory = GenerationInputFactory()

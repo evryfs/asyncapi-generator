@@ -23,59 +23,6 @@
     <ID>ReturnCount:AbstractJavaGeneratorClass.kt$AbstractJavaGeneratorClass$protected fun extractClassBody(source: String): String</ID>
     <ID>ReturnCount:PromotedSchemaRegistry.kt$PromotedSchemaRegistry$fun reserve( reference: Reference, model: Any, ): Entry</ID>
     <ID>ReturnCount:ResourceApprovalFiles.kt$internal fun testResourcesDirectory(): Path</ID>
-    <ID>UndocumentedPublicClass:AsyncApiDocument.kt$AsyncApiDocument</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException : Exception</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$EnumLiteralCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidAvroName : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidEnum : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidJsonSchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidKafkaHeaderName : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidNativeAvroSchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$InvalidNativeProtobufSchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$KafkaHeaderParameterNameCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$MissingSchemaGenerationInput : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeAvroModelPackageMismatch : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeAvroSpecificRecordGenerationFailed : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NativeProtobufModelGenerationFailed : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$NoArtifactsGenerated : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SchemaNameCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutAddress : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientChannelWithoutMessages : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientContractNameCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$SpringKafkaClientMethodNameCollision : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaHeaderSchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedKafkaKeySchema : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeAvroPayloadType : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedNativeProtobufPayloadType : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedPayloadSchemaFormat : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:AsyncApiGeneratorException.kt$AsyncApiGeneratorException$UnsupportedSchemaGenerationInput : AsyncApiGeneratorException</ID>
-    <ID>UndocumentedPublicClass:Channel.kt$Channel</ID>
-    <ID>UndocumentedPublicClass:Component.kt$Component</ID>
-    <ID>UndocumentedPublicClass:Contact.kt$Contact</ID>
-    <ID>UndocumentedPublicClass:CorrelationId.kt$CorrelationId</ID>
-    <ID>UndocumentedPublicClass:ExternalDoc.kt$ExternalDoc</ID>
-    <ID>UndocumentedPublicClass:Info.kt$Info</ID>
-    <ID>UndocumentedPublicClass:License.kt$License</ID>
-    <ID>UndocumentedPublicClass:Message.kt$Message</ID>
-    <ID>UndocumentedPublicClass:MessageExample.kt$MessageExample</ID>
-    <ID>UndocumentedPublicClass:MessageTrait.kt$MessageTrait</ID>
-    <ID>UndocumentedPublicClass:OAuthFlow.kt$OAuthFlow</ID>
-    <ID>UndocumentedPublicClass:OAuthFlows.kt$OAuthFlows</ID>
-    <ID>UndocumentedPublicClass:Operation.kt$Operation</ID>
-    <ID>UndocumentedPublicClass:OperationReply.kt$OperationReply</ID>
-    <ID>UndocumentedPublicClass:OperationReplyAddress.kt$OperationReplyAddress</ID>
-    <ID>UndocumentedPublicClass:OperationTrait.kt$OperationTrait</ID>
-    <ID>UndocumentedPublicClass:Parameter.kt$Parameter</ID>
-    <ID>UndocumentedPublicClass:Schema.kt$Schema</ID>
-    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface</ID>
-    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$BooleanSchema : SchemaInterface</ID>
-    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$MultiFormatSchemaInline : SchemaInterface</ID>
-    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaInline : SchemaInterface</ID>
-    <ID>UndocumentedPublicClass:SchemaInterface.kt$SchemaInterface$SchemaReference : SchemaInterface</ID>
-    <ID>UndocumentedPublicClass:SecurityScheme.kt$SecurityScheme</ID>
-    <ID>UndocumentedPublicClass:Server.kt$Server</ID>
-    <ID>UndocumentedPublicClass:ServerVariable.kt$ServerVariable</ID>
-    <ID>UndocumentedPublicClass:Tag.kt$Tag</ID>
     <ID>UnusedParameter:AbstractKotlinGeneratorClass.kt$AbstractKotlinGeneratorClass$schemaPackage: String? = null</ID>
     <ID>UnusedPrivateProperty:Schema.kt$Schema$@get:JsonProperty("items") private val serializedItems: Any? get() = tupleItems ?: items</ID>
   </CurrentIssues>

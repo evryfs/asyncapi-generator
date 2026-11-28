@@ -9,7 +9,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ComponentParserTest {
+internal class ComponentParserTest {
     private val context = AsyncApiContext()
     private val parser = ComponentParser(context)
 

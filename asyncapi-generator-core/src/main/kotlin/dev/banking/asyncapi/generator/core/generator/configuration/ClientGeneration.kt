@@ -10,7 +10,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param producer the producer contract settings.
  * @param consumer the consumer contract settings.
  */
-data class ClientGeneration(
+internal data class ClientGeneration(
     val packageName: String,
     val modelPackageName: String,
     val topicParameterProperties: TopicParameterProperties = TopicParameterProperties.EMPTY,

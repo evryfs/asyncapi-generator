@@ -13,7 +13,7 @@ import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Path
 
-class SpringKafkaClientApprovalTest {
+internal class SpringKafkaClientApprovalTest {
     private val generatedClients = SpringKafkaClientOutputFixtures()
 
     @TempDir

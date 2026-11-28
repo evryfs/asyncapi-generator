@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.model.exceptions
 import dev.banking.asyncapi.generator.core.model.diagnostics.ParserDiagnostic
 
 /** A failure to load the documents of an AsyncAPI contract. */
-sealed class AsyncApiParseException(
+internal sealed class AsyncApiParseException(
     message: String,
 ) : Exception(message) {
     /**

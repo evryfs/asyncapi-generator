@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKin
 import org.junit.jupiter.api.Test
 import kotlin.test.assertTrue
 
-class NativeProtobufApprovalTest {
+internal class NativeProtobufApprovalTest {
     private val generator = NativeProtobufGenerator()
     private val bundlerFixtures = BundlerFixtures()
     private val generationInputFactory = GenerationInputFactory()

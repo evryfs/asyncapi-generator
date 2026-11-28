@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A External Documentation Object written inline or as a `$ref`. */
-sealed interface ExternalDocInterface : ReferenceOr<ExternalDoc> {
+internal sealed interface ExternalDocInterface : ReferenceOr<ExternalDoc> {
     /**
      * A External Documentation Object written inline.
      *

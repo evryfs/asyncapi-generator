@@ -20,7 +20,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 
-class ServerParserTest {
+internal class ServerParserTest {
     private val context = AsyncApiContext()
     private val parser = ServerParser(context)
 

@@ -5,7 +5,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * @param configurationValue the value users write in `clientConfig.producer.additionalPayloadTypes`.
  */
-enum class AdditionalProducerPayloadType(
+internal enum class AdditionalProducerPayloadType(
     val configurationValue: String,
 ) {
     BYTE_ARRAY("byte-array"),

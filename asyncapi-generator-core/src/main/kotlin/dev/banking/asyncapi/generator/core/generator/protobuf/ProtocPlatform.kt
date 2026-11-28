@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.protobuf
 /**
  * The Maven classifier of the `protoc` executable for this machine, such as `linux-x86_64`.
  */
-object ProtocPlatform {
+internal object ProtocPlatform {
     fun classifier(
         osName: String = System.getProperty("os.name"),
         osArch: String = System.getProperty("os.arch"),

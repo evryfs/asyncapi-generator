@@ -7,7 +7,7 @@ import java.nio.file.Path
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GeneratedOutputManifestTest {
+internal class GeneratedOutputManifestTest {
     @TempDir
     lateinit var tempDir: Path
 

@@ -29,7 +29,7 @@ private fun kafkaBinding(anchor: String? = null) = anchor?.let { "$KAFKA_BINDING
  * @param reference the specification section that defines the rule; `GEN-` and `ADV-` rules have none and link
  *   to their row in the rule inventory
  */
-enum class ValidationRule(
+internal enum class ValidationRule(
     val code: String,
     val concern: ValidationConcern,
     val severity: ValidationSeverity,

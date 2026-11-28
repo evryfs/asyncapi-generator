@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class NativeProtobufArtifactGenerationTest {
+internal class NativeProtobufArtifactGenerationTest {
     private val generation = NativeProtobufArtifactGeneration()
     private val fixtures = GenerationInputFixtures()
 

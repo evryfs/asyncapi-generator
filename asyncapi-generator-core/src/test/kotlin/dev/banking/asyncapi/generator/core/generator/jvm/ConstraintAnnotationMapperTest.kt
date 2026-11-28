@@ -6,7 +6,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.Schema
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class ConstraintAnnotationMapperTest {
+internal class ConstraintAnnotationMapperTest {
     private fun java(constraints: Constraints) =
         ConstraintAnnotationMapper.buildAnnotations(constraints, SourceLiteralEscaper::forJava).map { it.render() }
 

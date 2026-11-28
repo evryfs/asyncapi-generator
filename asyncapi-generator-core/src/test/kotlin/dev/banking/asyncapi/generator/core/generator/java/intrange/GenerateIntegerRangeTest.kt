@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateIntegerRangeTest : AbstractJavaGeneratorClass() {
+internal class GenerateIntegerRangeTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_asyncapi_integer_range_type_IntegerRangesType_dataClass() {
         val generated =

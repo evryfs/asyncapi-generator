@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class ChannelAnalyzerTest {
+internal class ChannelAnalyzerTest {
     private val analyzer = ChannelAnalyzer()
 
     @Test

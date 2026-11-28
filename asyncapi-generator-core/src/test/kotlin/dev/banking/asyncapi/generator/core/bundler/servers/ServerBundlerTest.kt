@@ -13,7 +13,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class ServerBundlerTest {
+internal class ServerBundlerTest {
     private val walk = BundlingWalk()
 
     @Test

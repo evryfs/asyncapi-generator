@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateEnumDefaultTest : AbstractKotlinGeneratorClass() {
+internal class GenerateEnumDefaultTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_data_class_with_enum_default_values() {
         val generated =

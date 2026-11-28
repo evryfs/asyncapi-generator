@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * `KOTLIN` generates the Java Protobuf messages required at runtime together
  * with the official Kotlin DSL sources.
  */
-enum class ProtobufModelType {
+internal enum class ProtobufModelType {
     JAVA,
     KOTLIN,
 }

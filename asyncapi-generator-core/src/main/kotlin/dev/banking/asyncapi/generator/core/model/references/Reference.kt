@@ -19,7 +19,7 @@ import java.util.IdentityHashMap
  * @param referenceCategoryKey the model type expected at the reference target
  * @param inline whether the reference is written as its [model] instead of as a `$ref`
  */
-data class Reference(
+internal data class Reference(
     @get:JsonIgnore
     val ref: String,
     @get:JsonIgnore

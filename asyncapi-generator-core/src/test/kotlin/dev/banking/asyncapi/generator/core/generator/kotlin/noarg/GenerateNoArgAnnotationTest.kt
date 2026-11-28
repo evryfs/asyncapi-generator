@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateNoArgAnnotationTest : AbstractKotlinGeneratorClass() {
+internal class GenerateNoArgAnnotationTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should include no-arg annotation when configured`() {
         val generated =

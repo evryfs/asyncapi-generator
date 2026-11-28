@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class GeneratorNameTest {
+internal class GeneratorNameTest {
     @Test
     fun `fromConfigurationValue requires generator name`() {
         val exception =

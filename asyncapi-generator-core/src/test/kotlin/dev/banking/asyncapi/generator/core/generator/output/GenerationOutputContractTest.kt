@@ -7,7 +7,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerationOutputContractTest {
+internal class GenerationOutputContractTest {
     @Test
     fun `generated document artifact keeps explicit file and content`() {
         val file = File("bundled/asyncapi.yaml")

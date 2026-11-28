@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class KafkaTopicAddressTest {
+internal class KafkaTopicAddressTest {
     private val topicParameterProperties =
         TopicParameterProperties.fromConfigurationValues(
             values =

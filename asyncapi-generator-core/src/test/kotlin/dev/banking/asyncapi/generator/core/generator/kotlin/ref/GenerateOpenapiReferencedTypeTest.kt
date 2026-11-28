@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
+internal class GenerateOpenapiReferencedTypeTest : AbstractKotlinGeneratorClass() {
     private val actionTypeClassBody =
         """
         enum class ActionType {

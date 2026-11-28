@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
+internal class GenerateOpenPayloadTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_typealias_for_empty_schema_payload() {
         val generated =

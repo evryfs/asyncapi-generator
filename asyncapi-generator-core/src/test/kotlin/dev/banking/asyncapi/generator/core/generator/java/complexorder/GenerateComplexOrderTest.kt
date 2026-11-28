@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateComplexOrderTest : AbstractJavaGeneratorClass() {
+internal class GenerateComplexOrderTest : AbstractJavaGeneratorClass() {
     @Test
     fun `generate OrderLineType data class`() {
         val generated =

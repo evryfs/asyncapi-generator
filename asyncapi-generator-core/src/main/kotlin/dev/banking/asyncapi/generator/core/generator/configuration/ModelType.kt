@@ -12,7 +12,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param supportsAnnotation whether `modelConfig.modelAnnotation` can be placed on
  *   the generated models.
  */
-enum class ModelType(
+internal enum class ModelType(
     val configurationValue: String,
     val language: SourceLanguage?,
     val supportsAnnotation: Boolean,

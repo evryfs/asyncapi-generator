@@ -26,7 +26,7 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class AsyncApiBundlerTest {
+internal class AsyncApiBundlerTest {
     private val asyncApiContext = AsyncApiContext()
     private val bundler = AsyncApiBundler()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)

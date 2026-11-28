@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.model.exceptions
 
-sealed class AsyncApiGeneratorException(
+internal sealed class AsyncApiGeneratorException(
     message: String,
 ) : Exception(message) {
     /**

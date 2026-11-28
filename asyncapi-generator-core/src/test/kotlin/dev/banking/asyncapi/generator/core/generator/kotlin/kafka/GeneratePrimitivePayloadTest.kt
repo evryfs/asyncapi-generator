@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
+internal class GeneratePrimitivePayloadTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should generate client for primitive string payload`() {
         val packageName = "com.example.primitive"

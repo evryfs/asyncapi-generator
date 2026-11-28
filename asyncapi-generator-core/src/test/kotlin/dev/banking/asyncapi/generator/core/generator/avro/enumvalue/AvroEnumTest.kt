@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class AvroEnumTest : AbstractAvroGeneratorClass() {
+internal class AvroEnumTest : AbstractAvroGeneratorClass() {
     @Test
     fun `should generate strict avro enums`() {
         val content =

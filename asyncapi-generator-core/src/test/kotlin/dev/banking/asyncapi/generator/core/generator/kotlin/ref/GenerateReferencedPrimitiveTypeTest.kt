@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateReferencedPrimitiveTypeTest : AbstractKotlinGeneratorClass() {
+internal class GenerateReferencedPrimitiveTypeTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `primitive refs should map to primitive kotlin types while enum and object refs stay named`() {
         val modelPackage = "dev.banking.asyncapi.generator.core.model.generated.reftyping"

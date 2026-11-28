@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
 import dev.banking.asyncapi.generator.core.generator.configuration.SourceLanguage
 import java.io.File
 
-abstract class AbstractAvroGeneratorClass {
+internal abstract class AbstractAvroGeneratorClass {
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
     protected val generator = GenerationPipeline()

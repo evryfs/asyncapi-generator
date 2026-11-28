@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter
 import dev.banking.asyncapi.generator.core.model.externaldocs.ExternalDocInterface
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class Info(
+internal data class Info(
     val title: String,
     val version: String,
     val description: String? = null,

@@ -13,7 +13,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class MessageTraitBundlerTest {
+internal class MessageTraitBundlerTest {
     private val walk = BundlingWalk()
 
     @Test

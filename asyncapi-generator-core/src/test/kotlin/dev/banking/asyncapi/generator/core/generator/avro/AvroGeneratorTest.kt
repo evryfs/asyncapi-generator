@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.schemas.SchemaInterface
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class AvroGeneratorTest {
+internal class AvroGeneratorTest {
     @Test
     fun `render returns Avro schema artifacts in schema name order`() {
         val generator =

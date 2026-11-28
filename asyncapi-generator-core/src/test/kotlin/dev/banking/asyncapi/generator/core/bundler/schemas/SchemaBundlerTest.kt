@@ -17,7 +17,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class SchemaBundlerTest {
+internal class SchemaBundlerTest {
     private val walk = BundlingWalk()
 
     @Test

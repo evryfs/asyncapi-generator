@@ -9,7 +9,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertSame
 
-class DocumentNodeTest {
+internal class DocumentNodeTest {
     @Test
     fun `object preserves member order and key and value locations`() {
         val firstValue = DocumentString("first", location("root.first", line = 1, column = 8))

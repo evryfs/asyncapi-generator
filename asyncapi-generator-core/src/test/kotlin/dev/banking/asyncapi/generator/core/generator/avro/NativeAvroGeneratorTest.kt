@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class NativeAvroGeneratorTest {
+internal class NativeAvroGeneratorTest {
     private val generator = NativeAvroGenerator()
     private val fixtures = GenerationInputFixtures()
 

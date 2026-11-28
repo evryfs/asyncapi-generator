@@ -13,7 +13,7 @@ import java.nio.file.Path
  * @param content the file content
  * @param kind whether the build compiles the file or packages it as a resource
  */
-data class GeneratedArtifact(
+internal data class GeneratedArtifact(
     val relativePath: String,
     val content: String,
     val kind: GeneratedArtifactKind,

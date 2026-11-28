@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class ReferencePointerTest {
+internal class ReferencePointerTest {
     @Test
     fun `extracts a component schema name from the reference fragment`() {
         assertEquals(

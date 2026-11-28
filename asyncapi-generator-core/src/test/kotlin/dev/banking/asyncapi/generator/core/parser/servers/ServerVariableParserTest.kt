@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ServerVariableParserTest {
+internal class ServerVariableParserTest {
     private val context = AsyncApiContext()
     private val parser = ServerVariableParser()
 

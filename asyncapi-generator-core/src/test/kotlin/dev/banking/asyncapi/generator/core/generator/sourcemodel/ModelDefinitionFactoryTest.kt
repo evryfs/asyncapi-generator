@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class ModelDefinitionFactoryTest {
+internal class ModelDefinitionFactoryTest {
     @Test
     fun `creates object and enum models and skips scalar aliases`() {
         val models =

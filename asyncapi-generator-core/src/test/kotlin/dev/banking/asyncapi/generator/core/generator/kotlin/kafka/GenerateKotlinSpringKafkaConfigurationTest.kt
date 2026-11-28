@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateKotlinSpringKafkaConfigurationTest {
+internal class GenerateKotlinSpringKafkaConfigurationTest {
     private val packageName = "com.example.kafka"
     private val channel =
         AnalyzedChannel(

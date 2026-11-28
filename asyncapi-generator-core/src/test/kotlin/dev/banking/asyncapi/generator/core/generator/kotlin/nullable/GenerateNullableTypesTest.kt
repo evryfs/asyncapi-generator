@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateNullableTypesTest : AbstractKotlinGeneratorClass() {
+internal class GenerateNullableTypesTest : AbstractKotlinGeneratorClass() {
     @Test
     fun generate_nullable_object_with_various_nullable_fields() {
         val generated =

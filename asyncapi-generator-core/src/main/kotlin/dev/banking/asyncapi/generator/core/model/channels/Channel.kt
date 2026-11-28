@@ -8,7 +8,7 @@ import dev.banking.asyncapi.generator.core.model.parameters.ParameterInterface
 import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.tags.TagInterface
 
-data class Channel(
+internal data class Channel(
     val address: String? = null,
     val messages: Map<String, MessageInterface>? = null,
     val title: String? = null,

@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class AvroArrayTest : AbstractAvroGeneratorClass() {
+internal class AvroArrayTest : AbstractAvroGeneratorClass() {
     @Test
     fun `should generate array types correctly`() {
         val content =

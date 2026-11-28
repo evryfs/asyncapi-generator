@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class AsyncApiDocumentSerializerTest {
+internal class AsyncApiDocumentSerializerTest {
     @Test
     fun `write then read preserves YAML scalar values and types`(
         @TempDir tempDir: Path,

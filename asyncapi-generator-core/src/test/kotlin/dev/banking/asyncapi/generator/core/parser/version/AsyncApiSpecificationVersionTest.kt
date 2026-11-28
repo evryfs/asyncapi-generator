@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-class AsyncApiSpecificationVersionTest {
+internal class AsyncApiSpecificationVersionTest {
     @Test
     fun `parses a valid version into its specification line`() {
         assertEquals(

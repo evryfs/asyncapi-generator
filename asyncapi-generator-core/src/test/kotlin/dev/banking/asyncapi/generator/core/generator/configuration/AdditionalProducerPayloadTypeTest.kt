@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class AdditionalProducerPayloadTypeTest {
+internal class AdditionalProducerPayloadTypeTest {
     private val path = "clientConfig.producer.additionalPayloadTypes"
 
     @Test

@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
-class ChannelParserTest {
+internal class ChannelParserTest {
     private val context = AsyncApiContext()
     private val parser = ChannelParser(context)
 

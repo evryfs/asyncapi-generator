@@ -10,7 +10,7 @@ import java.io.File
 import java.nio.file.Path
 import kotlin.test.assertTrue
 
-class JavaModelApprovalTest : AbstractJavaGeneratorClass() {
+internal class JavaModelApprovalTest : AbstractJavaGeneratorClass() {
     @TempDir
     lateinit var tempDir: Path
 

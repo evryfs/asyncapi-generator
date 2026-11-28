@@ -18,7 +18,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertNull
 
-class ParserNodeTest {
+internal class ParserNodeTest {
     @Test
     fun `child cursors retain the selected parser profile`() {
         val context = AsyncApiContext()

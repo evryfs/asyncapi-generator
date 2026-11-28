@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateReadWriteOnlyTest : AbstractJavaGeneratorClass() {
+internal class GenerateReadWriteOnlyTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_data_class_with_readOnly_writeOnly_fields() {
         val generated =

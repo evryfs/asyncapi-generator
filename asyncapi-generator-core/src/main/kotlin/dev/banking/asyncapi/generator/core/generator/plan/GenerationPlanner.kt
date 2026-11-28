@@ -13,7 +13,7 @@ import dev.banking.asyncapi.generator.core.generator.configuration.SchemaGenerat
  * when a client uses native Avro or Protobuf payload models, which do not
  * cover the message keys.
  */
-class GenerationPlanner {
+internal class GenerationPlanner {
     /** The tasks [configuration] asks for, in render order. */
     fun plan(configuration: GeneratorConfiguration): GenerationPlan =
         GenerationPlan(

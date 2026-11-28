@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertTrue
 
-class NamingStrategyTest : AbstractKotlinGeneratorClass() {
+internal class NamingStrategyTest : AbstractKotlinGeneratorClass() {
     @Test
     fun `should preserve snake_case property names`() {
         val yamlContent =

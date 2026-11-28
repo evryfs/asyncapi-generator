@@ -17,7 +17,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 
-class ModelTrackingTest {
+internal class ModelTrackingTest {
     @Test
     fun `references resolve through typed addresses for adversarial member names`() {
         val context = AsyncApiContext()

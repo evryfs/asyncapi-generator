@@ -20,7 +20,7 @@ import java.io.File
  * and validates them all: each loaded target first, then the root document. Bundling and generation
  * are separate downstream stages.
  */
-class AsyncApiDocumentLoader {
+internal class AsyncApiDocumentLoader {
     /**
      * Fails when [file] does not exist or is not a regular file.
      *

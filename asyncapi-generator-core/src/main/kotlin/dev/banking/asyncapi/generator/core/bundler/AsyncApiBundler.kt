@@ -10,7 +10,7 @@ import dev.banking.asyncapi.generator.core.model.asyncapi.AsyncApiDocument
  * expected by generator stages. It does not read files, parse YAML or JSON,
  * validate AsyncAPI semantics, or generate code.
  */
-class AsyncApiBundler {
+internal class AsyncApiBundler {
     private val walk = BundlingWalk()
 
     /** Bundles a loaded and validated document. */

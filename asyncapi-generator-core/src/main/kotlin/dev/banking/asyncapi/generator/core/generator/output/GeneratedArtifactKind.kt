@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.output
 /**
  * What a generated artifact is to the build that consumes it.
  */
-enum class GeneratedArtifactKind {
+internal enum class GeneratedArtifactKind {
     /** Kotlin or Java source, compiled with the project. */
     SOURCE,
 

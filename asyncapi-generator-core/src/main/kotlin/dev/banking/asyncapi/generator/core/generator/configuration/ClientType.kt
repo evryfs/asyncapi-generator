@@ -5,7 +5,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  *
  * @param configurationValue the value users write in `clientConfig.clientType`.
  */
-enum class ClientType(
+internal enum class ClientType(
     val configurationValue: String,
 ) {
     SPRING_KAFKA("spring-kafka"),

@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.model.messages
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 
-data class MessageExample(
+internal data class MessageExample(
     val headers: Map<String, Any?>? = null,
     val payload: Any? = null,
     val name: String? = null,

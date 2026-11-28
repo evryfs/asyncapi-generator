@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import java.io.File
 import kotlin.test.assertEquals
 
-class GenerateKafkaExampleTest : AbstractJavaGeneratorClass() {
+internal class GenerateKafkaExampleTest : AbstractJavaGeneratorClass() {
     @Test
     fun generate_AMPKafkaExampleEvent_v1_yaml_CustomerReadPayload_dataClass() {
         val generated =

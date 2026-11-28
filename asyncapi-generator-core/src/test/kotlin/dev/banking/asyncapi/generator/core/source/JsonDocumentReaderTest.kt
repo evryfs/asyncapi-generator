@@ -8,7 +8,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class JsonDocumentReaderTest {
+internal class JsonDocumentReaderTest {
     private val reader = JsonDocumentReader()
 
     @Test

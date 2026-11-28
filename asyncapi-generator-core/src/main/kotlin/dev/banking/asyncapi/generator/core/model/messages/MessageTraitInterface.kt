@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Message Trait Object written inline or as a `$ref`. */
-sealed interface MessageTraitInterface : ReferenceOr<MessageTrait> {
+internal sealed interface MessageTraitInterface : ReferenceOr<MessageTrait> {
     /**
      * A Message Trait Object written inline.
      *

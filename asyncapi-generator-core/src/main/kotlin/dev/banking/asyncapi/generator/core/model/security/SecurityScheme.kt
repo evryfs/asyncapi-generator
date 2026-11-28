@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.model.security
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class SecurityScheme(
+internal data class SecurityScheme(
     val type: String,
     val description: String? = null,
     val name: String? = null,

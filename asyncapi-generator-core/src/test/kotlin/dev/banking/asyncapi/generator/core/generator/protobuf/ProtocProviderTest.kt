@@ -8,7 +8,7 @@ import java.nio.file.Path
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class ProtocProviderTest {
+internal class ProtocProviderTest {
     @TempDir
     lateinit var tempDir: Path
 

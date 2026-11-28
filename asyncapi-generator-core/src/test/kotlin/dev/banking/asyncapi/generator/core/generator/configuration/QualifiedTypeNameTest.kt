@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class QualifiedTypeNameTest {
+internal class QualifiedTypeNameTest {
     @Test
     fun `fromConfigurationValue creates qualified type name`() {
         val typeName =

@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.model.security
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 
-data class OAuthFlow(
+internal data class OAuthFlow(
     val authorizationUrl: String? = null,
     val tokenUrl: String? = null,
     val refreshUrl: String? = null,

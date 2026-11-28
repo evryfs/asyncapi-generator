@@ -23,7 +23,7 @@ import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
-class SchemaNameCollisionTest {
+internal class SchemaNameCollisionTest {
     @Test
     fun `rejects component schemas that normalize to the same name`() {
         val error =

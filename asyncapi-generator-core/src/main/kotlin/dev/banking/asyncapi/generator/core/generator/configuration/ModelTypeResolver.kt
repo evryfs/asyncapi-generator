@@ -3,7 +3,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
 /**
  * Resolves model defaults and validates model compatibility for a generator.
  */
-object ModelTypeResolver {
+internal object ModelTypeResolver {
     /**
      * The configured model type, or the language's default, checked against the
      * model types the source generator [generatorName] supports.

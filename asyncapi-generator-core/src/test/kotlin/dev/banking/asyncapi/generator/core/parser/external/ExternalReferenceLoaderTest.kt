@@ -48,7 +48,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class ExternalReferenceLoaderTest {
+internal class ExternalReferenceLoaderTest {
     @TempDir
     lateinit var tempDir: Path
 

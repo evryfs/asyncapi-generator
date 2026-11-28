@@ -6,7 +6,7 @@ package dev.banking.asyncapi.generator.core.generator.configuration
  * @param value the validated package name.
  */
 @JvmInline
-value class PackageName private constructor(
+internal value class PackageName private constructor(
     val value: String,
 ) {
     companion object {

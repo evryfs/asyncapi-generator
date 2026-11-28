@@ -6,7 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class JsonSchemaTypeTest {
+internal class JsonSchemaTypeTest {
     @Test
     fun `reads the main type, null, and type unions from single and listed names`() {
         val single = JsonSchemaType.Single("string")

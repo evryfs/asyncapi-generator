@@ -2,7 +2,7 @@ package dev.banking.asyncapi.generator.core.model.parameters
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter
 
-data class Parameter(
+internal data class Parameter(
     val description: String? = null,
     val location: String? = null,
     val enum: List<String>? = null,

@@ -6,7 +6,7 @@ import java.io.File
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
+internal class GenerateJavaSpringKafkaTest : AbstractJavaGeneratorClass() {
     @Test
     fun `should generate spring kafka client for Java`() {
         val yaml = File("src/test/resources/generator/asyncapi_spring_kafka_client_example.yaml")

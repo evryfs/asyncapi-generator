@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
+internal class ReferenceIntegrityValidatorTest : AbstractValidatorTest() {
     @Test
     fun `validates a multiply referenced target once after following reference chains`() {
         val report = validate("validator/references/asyncapi_validator_reference_chain.yaml")

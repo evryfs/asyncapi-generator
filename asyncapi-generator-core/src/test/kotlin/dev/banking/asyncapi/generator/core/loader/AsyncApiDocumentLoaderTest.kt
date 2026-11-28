@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class AsyncApiDocumentLoaderTest {
+internal class AsyncApiDocumentLoaderTest {
     @TempDir
     lateinit var tempDir: Path
 

@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Security Scheme Object written inline or as a `$ref`. */
-sealed interface SecuritySchemeInterface : ReferenceOr<SecurityScheme> {
+internal sealed interface SecuritySchemeInterface : ReferenceOr<SecurityScheme> {
     /**
      * A Security Scheme Object written inline.
      *

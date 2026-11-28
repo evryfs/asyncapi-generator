@@ -15,7 +15,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class JsonSchemaGeneratorTest {
+internal class JsonSchemaGeneratorTest {
     private val generator = JsonSchemaGenerator()
     private val fixtures = GenerationInputFixtures()
     private val objectMapper = ObjectMapper()

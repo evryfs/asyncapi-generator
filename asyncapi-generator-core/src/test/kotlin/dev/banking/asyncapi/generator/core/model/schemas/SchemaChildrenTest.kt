@@ -7,7 +7,7 @@ import java.lang.reflect.Type
 import java.lang.reflect.WildcardType
 import kotlin.test.assertTrue
 
-class SchemaChildrenTest {
+internal class SchemaChildrenTest {
     @Test
     fun `child schemas include every schema-valued field of a schema`() {
         val schema = Schema()

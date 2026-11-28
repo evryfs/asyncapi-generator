@@ -5,7 +5,7 @@ import dev.banking.asyncapi.generator.core.model.references.Reference
 import dev.banking.asyncapi.generator.core.model.references.ReferenceOr
 
 /** A Message Object written inline or as a `$ref`. */
-sealed interface MessageInterface : ReferenceOr<Message> {
+internal sealed interface MessageInterface : ReferenceOr<Message> {
     /**
      * A Message Object written inline.
      *

@@ -10,7 +10,7 @@ import java.io.File
  * @param document the bundled document to write, or `null` for none.
  * @param manifest the record of generated files used to remove stale ones, or `null` to keep every file.
  */
-data class GeneratorOutputConfiguration(
+internal data class GeneratorOutputConfiguration(
     val outputDirectory: File,
     val document: DocumentOutput? = null,
     val manifest: GeneratedOutputManifest? = null,
@@ -22,7 +22,7 @@ data class GeneratorOutputConfiguration(
  * @param file the file the document is written to.
  * @param format the serialization of the document.
  */
-data class DocumentOutput(
+internal data class DocumentOutput(
     val file: File,
     val format: DocumentFormat,
 )

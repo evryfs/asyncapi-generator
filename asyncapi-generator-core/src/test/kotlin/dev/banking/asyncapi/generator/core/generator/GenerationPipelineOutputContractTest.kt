@@ -46,7 +46,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class GenerationPipelineOutputContractTest {
+internal class GenerationPipelineOutputContractTest {
     private val jsonMapper = ObjectMapper()
     private val yamlMapper = ObjectMapper(YAMLFactory())
     private val asyncApiContext = AsyncApiContext()

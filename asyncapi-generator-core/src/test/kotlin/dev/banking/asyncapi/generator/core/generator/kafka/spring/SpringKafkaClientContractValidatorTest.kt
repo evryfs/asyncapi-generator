@@ -18,7 +18,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class SpringKafkaClientContractValidatorTest {
+internal class SpringKafkaClientContractValidatorTest {
     @Test
     fun `allows channels with messages and distinct generated contract names`() {
         SpringKafkaClientContractValidator.validate(

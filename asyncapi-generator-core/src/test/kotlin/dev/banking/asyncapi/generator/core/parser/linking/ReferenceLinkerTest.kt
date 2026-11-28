@@ -15,7 +15,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertSame
 
-class ReferenceLinkerTest {
+internal class ReferenceLinkerTest {
     @Test
     fun `links every reference and reports where each chain leads`() {
         val context = AsyncApiContext()
