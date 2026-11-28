@@ -1,0 +1,43 @@
+asyncapi: 3.0.0
+info:
+  title: Javadoc HTML
+  version: 1.0.0
+channels:
+  orders:
+    address: orders
+    messages:
+      orderPlaced:
+        $ref: '#/components/messages/OrderPlaced'
+operations:
+  placeOrder:
+    action: send
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/orderPlaced'
+  receiveOrder:
+    action: receive
+    channel:
+      $ref: '#/channels/orders'
+    messages:
+      - $ref: '#/channels/orders/messages/orderPlaced'
+components:
+  messages:
+    OrderPlaced:
+      name: OrderPlaced
+      headers:
+        type: object
+        properties:
+          region:
+            description: Region code; A < B sorts first.
+            type: string
+      payload:
+        $ref: '#/components/schemas/Order'
+  schemas:
+    Order:
+      description: Totals must be < 100 & above 0. Written escaped as &lt;b&gt; too.
+      type: object
+      properties:
+        total:
+          description: Salt & pepper < 5 grams.
+          type: integer
