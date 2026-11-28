@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.core.fixtures
 
-import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientValidationAnnotations
@@ -27,7 +27,7 @@ import kotlin.io.path.readText
  * out of approval test classes.
  */
 internal class SpringKafkaClientOutputFixtures(
-    private val generator: AsyncApiGenerator = AsyncApiGenerator(),
+    private val generator: GenerationPipeline = GenerationPipeline(),
     private val bundlerFixtures: BundlerFixtures = BundlerFixtures(),
 ) {
     fun generate(

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.core.diagnostics.DiagnosticLayout
 
 /**

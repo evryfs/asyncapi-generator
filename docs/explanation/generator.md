@@ -7,10 +7,18 @@ This page is for maintainers changing code generation in
 
 ## Input and entry point
 
-`AsyncApiGenerator.generate(bundled, configuration)` accepts only a
+Frontends call `AsyncApiGenerator` in the root package
+`dev.banking.asyncapi.generator.core`: `configure(settings)` checks the
+settings and returns a `ConfiguredGeneration`, which also tells the build
+plugins whether sources or schemas are written and whether `protoc` runs.
+`generate(inputSpec, generation, reportWarnings)` loads, validates and bundles
+the contract and hands it to `GenerationPipeline`. Every failure reaches the
+frontend as an `AsyncApiGenerationException`.
+
+`GenerationPipeline.generate(bundled, configuration)` accepts only a
 `BundledAsyncApiDocument`, which only the bundler can create, and a
 `GeneratorConfiguration` built by `GeneratorConfigurationFactory`. Unbundled
-or unvalidated documents therefore cannot reach generation. The generator
+or unvalidated documents therefore cannot reach generation. The pipeline
 receives a `ProtocProvider` from its frontend; it never decides on its own how
 `protoc` is obtained.
 

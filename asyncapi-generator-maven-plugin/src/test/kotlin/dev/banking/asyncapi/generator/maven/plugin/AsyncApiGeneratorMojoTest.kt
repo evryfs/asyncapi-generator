@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
+import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientConfig
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.clientPackage
 import dev.banking.asyncapi.generator.maven.plugin.MavenTestHelper.consumer

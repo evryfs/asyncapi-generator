@@ -1,12 +1,11 @@
 package dev.banking.asyncapi.generator.maven.plugin
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.generator.GenerationPipeline
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedOutputManifest
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
 import org.apache.maven.plugin.AbstractMojo
 import org.apache.maven.plugin.MojoExecution
@@ -97,7 +96,7 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
                 log.warn(loaded.formatWarnings().trimEnd())
             }
             val bundled = bundler.bundle(loaded)
-            AsyncApiGenerator(protocProvider()).generate(bundled, generatorConfiguration)
+            GenerationPipeline(protocProvider()).generate(bundled, generatorConfiguration)
             MavenGeneratedOutputRegistrar(project).register(generatorConfiguration)
             log.info("asyncapi-generator-maven-plugin completed successfully")
         } catch (e: MojoExecutionException) {
@@ -126,11 +125,11 @@ class AsyncApiGeneratorMojo : AbstractMojo() {
         )
 
     /** One manifest per project, shared by all executions, so executions writing to one directory cooperate. */
-    private fun outputManifest(): GeneratedOutputManifest? =
+    private fun outputManifest(): GeneratorSettings.Manifest? =
         mojoExecution?.executionId?.let { executionId ->
-            GeneratedOutputManifest(
+            GeneratorSettings.Manifest(
                 file = File(project.build.directory, "asyncapi-generator/output-manifest.txt"),
-                owner = executionId,
+                executionName = executionId,
             )
         }
 

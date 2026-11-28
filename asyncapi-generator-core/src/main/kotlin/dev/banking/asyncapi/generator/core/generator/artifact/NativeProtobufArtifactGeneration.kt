@@ -1,11 +1,11 @@
 package dev.banking.asyncapi.generator.core.generator.artifact
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.input.PayloadFormatChecks
 import dev.banking.asyncapi.generator.core.generator.output.GenerationResult
 import dev.banking.asyncapi.generator.core.generator.plan.GenerationTask
 import dev.banking.asyncapi.generator.core.generator.protobuf.MavenRepositoryProtocProvider
 import dev.banking.asyncapi.generator.core.generator.protobuf.NativeProtobufGenerator
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.task.GenerationContext
 import dev.banking.asyncapi.generator.core.generator.task.TaskRenderer
 

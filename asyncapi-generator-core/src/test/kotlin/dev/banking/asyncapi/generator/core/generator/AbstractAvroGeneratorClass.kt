@@ -13,7 +13,7 @@ import java.io.File
 abstract class AbstractAvroGeneratorClass {
     private val asyncApiContext = AsyncApiContext()
     private val bundlerFixtures = BundlerFixtures(asyncApiContext)
-    protected val generator = AsyncApiGenerator()
+    protected val generator = GenerationPipeline()
 
     protected fun generateAvro(
         yaml: File,

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import java.io.IOException
 import java.net.ProxySelector
 import java.net.URI

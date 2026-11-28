@@ -16,91 +16,59 @@ Add `asyncapi-generator-core` as a dependency:
 </dependency>
 ```
 
-The public API is the three phases below and their configuration types. Other
-classes in the library are internal and can change without notice.
+The API is the package `dev.banking.asyncapi.generator.core`: `AsyncApiGenerator`,
+`GeneratorSettings`, and the types they use. Every other package of the library
+is internal and can change without notice.
 
-## Load a document
+## Generate
 
 ```kotlin
-import dev.banking.asyncapi.generator.core.loader.AsyncApiDocumentLoader
+import dev.banking.asyncapi.generator.core.AsyncApiGenerator
+import dev.banking.asyncapi.generator.core.GeneratorSettings
 import java.io.File
 
-val loaded = AsyncApiDocumentLoader().load(File("src/main/resources/asyncapi.yaml"))
-```
-
-`load` reads the file and every file it references, parses the contract, and
-validates it. The result exposes:
-
-```kotlin
-val document = loaded.document       // AsyncApiDocument domain model
-val warnings = loaded.warnings       // validation warnings
-val sourceFiles = loaded.sourceFiles // every file read, for incremental builds
-```
-
-`formatWarnings()` returns an empty string when there are no warnings, or the
-warnings with source-aware snippets:
-
-```kotlin
-if (loaded.warnings.isNotEmpty()) {
-    println(loaded.formatWarnings())
-}
-```
-
-`sourceFiles` contains the root document, every external document, and every
-native schema file, as canonical files in path order. Use it as the input set
-of an incremental build step.
-
-## Bundle and generate
-
-Generation accepts only a bundled document, so bundle the loaded result
-first:
-
-```kotlin
-import dev.banking.asyncapi.generator.core.bundler.AsyncApiBundler
-import dev.banking.asyncapi.generator.core.generator.AsyncApiGenerator
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorConfigurationFactory
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
-
-val bundled = AsyncApiBundler().bundle(loaded)
-
-val configuration =
-    GeneratorConfigurationFactory.create(
+val generator = AsyncApiGenerator()
+val generation =
+    generator.configure(
         GeneratorSettings(
             generatorName = "kotlin",
             outputDirectory = File("build/generated/asyncapi"),
             modelPackage = "com.example.model",
         ),
     )
-configuration.warnings.forEach { warning -> println(warning.message) }
+if (generation.warnings.isNotEmpty()) println(generation.warnings)
 
-AsyncApiGenerator().generate(bundled, configuration)
+generator.generate(File("src/main/resources/asyncapi.yaml"), generation) { warnings -> println(warnings) }
 ```
 
-`GeneratorSettings` has the same fields as the frontends, and
-`GeneratorConfigurationFactory.create` checks them with the same rules; see
-[Generator configuration](../reference/generator-configuration.md).
-`bundled.document` is the bundled `AsyncApiDocument` if you need the model
-itself.
+`configure` checks the settings without reading the contract. `GeneratorSettings`
+has the same fields as the frontends, checked with the same rules; see
+[Generator configuration](../reference/generator-configuration.md). The result
+tells what generation will write: `writesSources` and `writesSchemas` say
+whether `outputDirectory` will hold sources to compile or schemas to package,
+and `requiresProtoc` whether `protoc` runs.
 
-`AsyncApiGenerator()` resolves `protoc` like the CLI does, from the local
-Maven repository or Maven Central. To control it, pass a `ProtocProvider`,
-for example `AsyncApiGenerator(MavenRepositoryProtocProvider(override = path))`
-for a local executable.
+`generate` reads the contract and every file it references, validates and
+bundles it, and writes the output. Contract warnings, with source snippets, go
+to the function you pass.
+
+`inputFiles` returns the root document, every external document, and every
+native schema file of a contract, as canonical files in path order. Use it as
+the input set of an incremental build step.
+
+`AsyncApiGenerator()` resolves `protoc` like the CLI does, from the local Maven
+repository or Maven Central. To control it, pass a `ProtocProvider`, for
+example `AsyncApiGenerator(ProtocProvider.executable(path))` for a local
+executable.
 
 ## Handle errors
 
-Every phase throws instead of returning partial results:
+Every step throws an `AsyncApiGenerationException` instead of returning partial
+results:
 
-| Phase     | Exception                          | Cause                                                                                           |
-|-----------|------------------------------------|-------------------------------------------------------------------------------------------------|
-| Load      | `DocumentReadException` subclasses | Missing, unreadable, empty, or malformed files, unsupported extensions, and resource limits.     |
-| Load      | `AsyncApiParseException`           | Contract structure that does not match the supported AsyncAPI profile, and unreadable native schema files. |
-| Load      | `AsyncApiValidateException`        | Validation errors, including unresolved references and reference cycles, with source locations. |
-| Bundle    | `AsyncApiBundlingException`        | Schemas from different files that share a name but differ in content.                           |
-| Configure | `IllegalArgumentException`         | Invalid or incomplete generator configuration.                                                  |
-| Generate  | `AsyncApiGeneratorException`       | Outputs that cannot represent the contract, such as inline schemas that would get the same generated name but describe different types, and destination conflicts. |
+| Exception         | Cause |
+|-------------------|-------|
+| `InvalidSettings` | A missing, invalid, or incomplete setting. Nothing was read or written. |
+| `Failed`          | Missing, unreadable, or malformed files; contract structure outside the supported AsyncAPI profile; validation errors with source locations; schemas that cannot be bundled; outputs that cannot represent the contract; and files that cannot be written. |
 
-The exception messages are formatted for people. For programmatic handling,
-use the structured fields described in the
-[parser contract](../reference/parser-contract.md#parser-diagnostics) and the
-[validation rule inventory](../reference/validation-rules.md).
+The messages are formatted for people.

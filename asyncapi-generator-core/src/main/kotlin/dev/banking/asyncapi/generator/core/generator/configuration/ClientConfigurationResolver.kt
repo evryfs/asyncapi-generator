@@ -1,5 +1,7 @@
 package dev.banking.asyncapi.generator.core.generator.configuration
 
+import dev.banking.asyncapi.generator.core.GeneratorSettings
+
 /**
  * Checks the `clientConfig` settings and resolves them into a [ClientGeneration].
  *

@@ -9,11 +9,11 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
+import dev.banking.asyncapi.generator.core.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.configuration.AdditionalProducerPayloadType
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientContract
 import dev.banking.asyncapi.generator.core.generator.configuration.ClientType
 import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorName
-import dev.banking.asyncapi.generator.core.generator.configuration.GeneratorSettings
 import dev.banking.asyncapi.generator.core.generator.configuration.ModelType
 import java.io.File
 

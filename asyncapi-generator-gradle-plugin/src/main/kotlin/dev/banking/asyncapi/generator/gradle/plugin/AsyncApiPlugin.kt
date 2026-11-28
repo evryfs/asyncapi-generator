@@ -1,7 +1,7 @@
 package dev.banking.asyncapi.generator.gradle.plugin
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocPlatform
-import dev.banking.asyncapi.generator.core.generator.protobuf.ProtocProvider
 import dev.banking.asyncapi.generator.gradle.plugin.extensions.AsyncApiExtension
 import dev.banking.asyncapi.generator.gradle.plugin.tasks.GenerateAsyncApiTask
 import org.gradle.api.Plugin

@@ -1,5 +1,6 @@
 package dev.banking.asyncapi.generator.core.generator.protobuf
 
+import dev.banking.asyncapi.generator.core.ProtocProvider
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelGeneration
 import dev.banking.asyncapi.generator.core.generator.configuration.ProtobufModelType
 import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifact
