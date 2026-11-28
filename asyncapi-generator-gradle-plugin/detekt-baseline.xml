@@ -2,9 +2,5 @@
 <SmellBaseline>
   <ManuallySuppressedIssues/>
   <CurrentIssues>
-    <ID>ComplexCondition:GenerateAsyncApiTask.kt$GenerateAsyncApiTask$clientType.isPresent || clientContract.isPresent || producerEnabled.isPresent || consumerEnabled.isPresent || producerAdditionalPayloadTypes.orNull.orEmpty().isNotEmpty() || topicParameterProperties.orNull.orEmpty().isNotEmpty() || clientContractValidationAnnotation.isPresent || payloadParameterValidationAnnotation.isPresent</ID>
-    <ID>LongMethod:AsyncApiPlugin.kt$AsyncApiPlugin$override fun apply(project: Project)</ID>
-    <ID>MaxLineLength:AsyncApiPlugin.kt$AsyncApiPlugin$"com.google.protobuf:protoc:${ProtocProvider.DEFAULT_VERSION}:${ProtocPlatform.classifier()}@exe"</ID>
-    <ID>UndocumentedPublicClass:AsyncApiInputFilesValueSource.kt$AsyncApiInputFilesValueSource$Parameters : ValueSourceParameters</ID>
   </CurrentIssues>
 </SmellBaseline>

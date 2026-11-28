@@ -1,6 +1,6 @@
 package dev.banking.asyncapi.generator.gradle.plugin
 
-import dev.banking.asyncapi.generator.core.generator.output.GeneratedArtifactKind
+import dev.banking.asyncapi.generator.core.ConfiguredGeneration
 import dev.banking.asyncapi.generator.gradle.plugin.tasks.GenerateAsyncApiTask
 import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
@@ -20,8 +20,8 @@ internal class GradleGeneratedOutputRegistrar(
     private val project: Project,
 ) {
     fun register(task: TaskProvider<GenerateAsyncApiTask>) {
-        val sourceDirectory = task.outputDirectoryFor(GeneratedArtifactKind.SOURCE)
-        val schemaDirectory = task.outputDirectoryFor(GeneratedArtifactKind.SCHEMA)
+        val sourceDirectory = task.outputDirectoryWhen(ConfiguredGeneration::writesSources)
+        val schemaDirectory = task.outputDirectoryWhen(ConfiguredGeneration::writesSchemas)
 
         project.pluginManager.withPlugin("java") {
             val mainSourceSet = mainSourceSet()
@@ -48,12 +48,19 @@ internal class GradleGeneratedOutputRegistrar(
             .getByName(SourceSet.MAIN_SOURCE_SET_NAME)
 
     /**
-     * The output directory of the task when it writes artifacts of [kind], else no directory; either
+     * The output directory of the task when its generation [writes] there, else no directory; either
      * way built by the task. The decision reads the task's configuration, not its output, which
-     * Gradle does not allow reading before the task has run.
+     * Gradle does not allow reading before the task has run. An invalid configuration registers the
+     * directory, and the task reports the configuration error when it runs.
      */
-    private fun TaskProvider<GenerateAsyncApiTask>.outputDirectoryFor(kind: GeneratedArtifactKind): FileCollection =
+    private fun TaskProvider<GenerateAsyncApiTask>.outputDirectoryWhen(
+        writes: (ConfiguredGeneration) -> Boolean,
+    ): FileCollection =
         project
-            .files(map { task -> if (kind in task.outputKinds()) listOf(task.outputDirectory.get()) else emptyList() })
-            .builtBy(this)
+            .files(
+                map { task ->
+                    val generation = task.generation()
+                    if (generation == null || writes(generation)) listOf(task.outputDirectory.get()) else emptyList()
+                },
+            ).builtBy(this)
 }

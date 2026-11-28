@@ -62,6 +62,36 @@ class AsyncApiGeneratorTest {
         }
     }
 
+    @Test
+    fun `output paths of the wrong kind fail when generation starts`() {
+        val file = outputDirectory.resolve("file").apply { writeText("") }
+        val directory = outputDirectory.resolve("directory").apply { mkdirs() }
+        val contract = File("src/test/resources/asyncapi_kafka_single_file_example.yaml")
+        val fileAsDirectory =
+            generator.configure(
+                settings(generatorName = "kotlin", modelPackage = "com.example.model").copy(outputDirectory = file),
+            )
+        val directoryAsFile =
+            generator.configure(
+                settings(generatorName = "asyncapi-yaml").copy(outputFile = directory),
+            )
+
+        val failures =
+            listOf(fileAsDirectory, directoryAsFile).map { generation ->
+                assertThrows<AsyncApiGenerationException.InvalidSettings> {
+                    generator.generate(
+                        contract,
+                        generation,
+                    ) {}
+                }
+            }
+
+        assertEquals(
+            listOf("outputDirectory must be a directory: $file", "outputFile must be a file: $directory"),
+            failures.map { it.message },
+        )
+    }
+
     private fun settings(
         generatorName: String,
         modelPackage: String? = null,

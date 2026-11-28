@@ -41,16 +41,18 @@ if (generation.warnings.isNotEmpty()) println(generation.warnings)
 generator.generate(File("src/main/resources/asyncapi.yaml"), generation) { warnings -> println(warnings) }
 ```
 
-`configure` checks the settings without reading the contract. `GeneratorSettings`
-has the same fields as the frontends, checked with the same rules; see
+`configure` checks the settings without reading the contract or the file
+system. `GeneratorSettings` has the same fields as the frontends, checked with
+the same rules; see
 [Generator configuration](../reference/generator-configuration.md). The result
 tells what generation will write: `writesSources` and `writesSchemas` say
 whether `outputDirectory` will hold sources to compile or schemas to package,
 and `requiresProtoc` whether `protoc` runs.
 
-`generate` reads the contract and every file it references, validates and
-bundles it, and writes the output. Contract warnings, with source snippets, go
-to the function you pass.
+`generate` first checks that an existing `outputDirectory` is a directory and
+that `outputFile` is not one. It then reads the contract and every file it
+references, validates and bundles it, and writes the output. Contract warnings,
+with source snippets, go to the function you pass.
 
 `inputFiles` returns the root document, every external document, and every
 native schema file of a contract, as canonical files in path order. Use it as

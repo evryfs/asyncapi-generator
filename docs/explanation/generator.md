@@ -11,8 +11,9 @@ Frontends call `AsyncApiGenerator` in the root package
 `dev.banking.asyncapi.generator.core`: `configure(settings)` checks the
 settings and returns a `ConfiguredGeneration`, which also tells the build
 plugins whether sources or schemas are written and whether `protoc` runs.
-`generate(inputSpec, generation, reportWarnings)` loads, validates and bundles
-the contract and hands it to `GenerationPipeline`. Every failure reaches the
+`configure` never touches the file system, so the Gradle plugin can call it
+while it configures. `generate(inputSpec, generation, reportWarnings)` checks
+the output paths on disk, loads, validates and bundles the contract and hands it to `GenerationPipeline`. Every failure reaches the
 frontend as an `AsyncApiGenerationException`.
 
 `GenerationPipeline.generate(bundled, configuration)` accepts only a
